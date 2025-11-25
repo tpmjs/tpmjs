@@ -3,24 +3,285 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light mode (default) */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    /* Backgrounds & Surfaces */
+    --background: 0 0% 100%;            /* Pure white */
+    --surface: 210 20% 98%;             /* Off-white */
+    --surface-elevated: 0 0% 100%;      /* White (elevated) */
+    --surface-overlay: 0 0% 98%;        /* Light gray */
+
+    /* Foreground (Text) */
+    --foreground: 222 47% 11%;          /* Almost black */
+    --foreground-secondary: 215 16% 47%; /* Medium gray */
+    --foreground-tertiary: 215 16% 65%;  /* Light gray */
+    --foreground-muted: 215 16% 75%;     /* Very light gray */
+
+    /* Borders */
+    --border: 214 32% 91%;              /* Light gray */
+    --border-strong: 214 32% 80%;       /* Medium gray */
+    --border-subtle: 214 20% 95%;       /* Very light gray */
+
+    /* Interactive States */
+    --primary: 222 47% 11%;             /* Dark for light mode */
+    --primary-foreground: 210 40% 98%;  /* Light text */
+    --secondary: 210 40% 96%;           /* Light secondary */
+    --secondary-foreground: 222 47% 11%; /* Dark text */
+    --accent: 210 40% 96%;              /* Accent bg */
+    --accent-foreground: 222 47% 11%;   /* Accent text */
+    --muted: 210 40% 96%;               /* Muted bg */
+    --muted-foreground: 215 16% 47%;    /* Muted text */
+
+    /* Status Colors */
+    --success: 142 71% 45%;
+    --success-foreground: 142 76% 15%;
+    --error: 0 72% 51%;
+    --error-foreground: 0 86% 17%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 19%;
+    --info: 217 91% 60%;
+    --info-foreground: 214 95% 23%;
+
+    /* Destructive (legacy) */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+
+    /* Form Elements */
+    --input: 214 32% 91%;
+    --ring: 222 84% 5%;
+    --ring-offset: 0 0% 100%;
+
+    /* Grid/Blueprint Pattern */
+    --grid-color: 214 32% 95%;
+    --grid-size: 24px;                  /* Grid cell size */
+
+    /* Card */
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    /* Border Radii */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius: var(--radius-md);
+
+    /* Typography */
+    --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-mono: 'Geist Mono', 'SF Mono', Consolas, monospace;
+  }
+
+  /* Dark mode (opt-in) - Vercel/Cursor/Perplexity aesthetic */
+  .dark {
+    /* Backgrounds & Surfaces */
+    --background: 210 10% 5%;           /* #0d0d0f - Almost black */
+    --surface: 210 10% 8%;              /* #14141a - Slightly lighter */
+    --surface-elevated: 210 10% 12%;    /* #1c1c24 - Cards, modals */
+    --surface-overlay: 210 10% 16%;     /* #25252f - Overlays, popovers */
+
+    /* Foreground (Text) */
+    --foreground: 210 10% 90%;          /* #e3e3e8 - Primary text */
+    --foreground-secondary: 210 8% 60%; /* #949499 - Secondary text */
+    --foreground-tertiary: 210 6% 40%;  /* #64646a - Tertiary text */
+    --foreground-muted: 210 6% 30%;     /* #4a4a50 - Muted text */
+
+    /* Borders (1px, subtle) */
+    --border: 210 10% 20%;              /* #30303a - Default border */
+    --border-strong: 210 12% 30%;       /* #494954 - Emphasized border */
+    --border-subtle: 210 8% 15%;        /* #22222c - Subtle border */
+
+    /* Interactive States */
+    --primary: 210 10% 98%;             /* White-ish for dark mode */
+    --primary-foreground: 210 10% 5%;   /* Dark text on light bg */
+    --secondary: 210 10% 15%;           /* Dark secondary */
+    --secondary-foreground: 210 10% 90%; /* Light text on dark bg */
+    --accent: 210 10% 18%;              /* Accent background */
+    --accent-foreground: 210 10% 95%;   /* Accent text */
+    --muted: 210 10% 12%;               /* Muted background */
+    --muted-foreground: 210 8% 60%;     /* Muted text */
+
+    /* Status Colors (desaturated for dark mode) */
+    --success: 142 71% 45%;             /* #10b981 - Green */
+    --success-foreground: 142 76% 95%;  /* Light green text */
+    --error: 0 72% 51%;                 /* #ef4444 - Red */
+    --error-foreground: 0 86% 97%;      /* Light red text */
+    --warning: 38 92% 50%;              /* #f59e0b - Amber */
+    --warning-foreground: 48 96% 89%;   /* Light amber text */
+    --info: 217 91% 60%;                /* #3b82f6 - Blue */
+    --info-foreground: 214 95% 93%;     /* Light blue text */
+
+    /* Destructive (legacy support) */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 86% 97%;
+
+    /* Form Elements */
+    --input: 210 10% 20%;               /* Input border */
+    --ring: 210 10% 90%;                /* Focus ring */
+    --ring-offset: 210 10% 5%;          /* Focus ring offset */
+
+    /* Grid/Blueprint Pattern */
+    --grid-color: 210 10% 15%;          /* Grid line color */
+
+    /* Card */
+    --card: 210 10% 8%;
+    --card-foreground: 210 10% 90%;
+  }
+
+  /* Base element styles */
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Grid/Blueprint background patterns */
+  .grid-background {
+    background-image:
+      linear-gradient(hsl(var(--grid-color)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--grid-color)) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+    background-position: -1px -1px;
+  }
+
+  .dotted-grid-background {
+    background-image:
+      radial-gradient(circle, hsl(var(--grid-color)) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+  }
+
+  .blueprint-background {
+    background-color: hsl(var(--background));
+    background-image:
+      /* Major grid lines (4x size) */
+      linear-gradient(hsl(var(--grid-color)) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--grid-color)) 1px, transparent 1px),
+      /* Minor grid lines (1x size) */
+      linear-gradient(hsl(var(--grid-color) / 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--grid-color) / 0.3) 1px, transparent 1px);
+    background-size:
+      calc(var(--grid-size) * 4) calc(var(--grid-size) * 4),
+      calc(var(--grid-size) * 4) calc(var(--grid-size) * 4),
+      var(--grid-size) var(--grid-size),
+      var(--grid-size) var(--grid-size);
+  }
+
+  /* Animated grid (subtle pulse) */
+  .grid-background-animated {
+    @apply grid-background;
+    animation: grid-pulse 8s ease-in-out infinite;
+  }
+
+  @keyframes grid-pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.6; }
+  }
+}
+
+@layer utilities {
+  /* Border utilities */
+  .border-1 {
+    border-width: 1px;
+  }
+
+  .border-dotted-1 {
+    border-width: 1px;
+    border-style: dotted;
+  }
+
+  .border-dashed-1 {
+    border-width: 1px;
+    border-style: dashed;
+  }
+
+  /* Directional dotted borders */
+  .border-t-dotted {
+    border-top-width: 1px;
+    border-top-style: dotted;
+  }
+
+  .border-b-dotted {
+    border-bottom-width: 1px;
+    border-bottom-style: dotted;
+  }
+
+  .border-l-dotted {
+    border-left-width: 1px;
+    border-left-style: dotted;
+  }
+
+  .border-r-dotted {
+    border-right-width: 1px;
+    border-right-style: dotted;
+  }
+
+  /* Transition presets */
+  .transition-base {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  .transition-transform {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  .transition-all-smooth {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-transform hover:-translate-y-0.5 hover:shadow-md;
+  }
+
+  /* Focus ring (modern, accessible) */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+
+  /* Custom animations */
+  @keyframes slide-up {
+    from {
+      transform: translateY(10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--muted)) 100%
+    );
+    background-size: 1000px 100%;
   }
 }

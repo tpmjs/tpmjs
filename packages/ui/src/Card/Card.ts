@@ -1,53 +1,160 @@
-import { createElement, forwardRef, type HTMLAttributes } from 'react';
-import { cn } from '@tpmjs/utils/cn';
+import { cn } from "@tpmjs/utils/cn";
+import { createElement, forwardRef } from "react";
+import type {
+	CardContentProps,
+	CardDescriptionProps,
+	CardFooterProps,
+	CardHeaderProps,
+	CardProps,
+	CardTitleProps,
+} from "./types";
+import {
+	cardContentVariants,
+	cardDescriptionVariants,
+	cardFooterVariants,
+	cardHeaderVariants,
+	cardTitleVariants,
+	cardVariants,
+} from "./variants";
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {}
+/**
+ * Card component
+ *
+ * A flexible container component with multiple variants and sub-components.
+ * Built with .ts-only React using createElement.
+ *
+ * @example
+ * ```typescript
+ * import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@tpmjs/ui/Card/Card';
+ * import { createElement } from 'react';
+ *
+ * function MyComponent() {
+ *   return createElement(Card, { variant: 'elevated' },
+ *     createElement(CardHeader, null,
+ *       createElement(CardTitle, null, 'Card Title'),
+ *       createElement(CardDescription, null, 'Card description text')
+ *     ),
+ *     createElement(CardContent, null, 'Card content goes here'),
+ *     createElement(CardFooter, null, 'Footer content')
+ *   );
+ * }
+ * ```
+ */
+export const Card = forwardRef<HTMLDivElement, CardProps>(
+	({ className, variant = "default", padding = "none", ...props }, ref) => {
+		return createElement("div", {
+			ref,
+			className: cn(
+				cardVariants({
+					variant,
+					padding,
+				}),
+				className,
+			),
+			...props,
+		});
+	},
+);
 
-export const Card = forwardRef<HTMLDivElement, CardProps>(({ className, ...props }, ref) => {
-  return createElement('div', {
-    ref,
-    className: cn(
-      'rounded-lg border border-border bg-card text-card-foreground shadow-sm',
-      className
-    ),
-    ...props,
-  });
+Card.displayName = "Card";
+
+/**
+ * CardHeader component
+ *
+ * Header section of a card, typically contains title and description.
+ */
+export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
+	({ className, padding = "md", ...props }, ref) => {
+		return createElement("div", {
+			ref,
+			className: cn(
+				cardHeaderVariants({
+					padding,
+				}),
+				className,
+			),
+			...props,
+		});
+	},
+);
+
+CardHeader.displayName = "CardHeader";
+
+/**
+ * CardTitle component
+ *
+ * Title heading for a card.
+ */
+export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
+	({ className, as = "h3", ...props }, ref) => {
+		return createElement(as, {
+			ref,
+			className: cn(cardTitleVariants(), className),
+			...props,
+		});
+	},
+);
+
+CardTitle.displayName = "CardTitle";
+
+/**
+ * CardDescription component
+ *
+ * Description text for a card, typically placed below the title.
+ */
+export const CardDescription = forwardRef<
+	HTMLParagraphElement,
+	CardDescriptionProps
+>(({ className, ...props }, ref) => {
+	return createElement("p", {
+		ref,
+		className: cn(cardDescriptionVariants(), className),
+		...props,
+	});
 });
 
-Card.displayName = 'Card';
+CardDescription.displayName = "CardDescription";
 
-export const CardHeader = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => {
-    return createElement('div', {
-      ref,
-      className: cn('flex flex-col space-y-1.5 p-6', className),
-      ...props,
-    });
-  }
+/**
+ * CardContent component
+ *
+ * Main content area of a card.
+ */
+export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
+	({ className, padding = "md", ...props }, ref) => {
+		return createElement("div", {
+			ref,
+			className: cn(
+				cardContentVariants({
+					padding,
+				}),
+				className,
+			),
+			...props,
+		});
+	},
 );
 
-CardHeader.displayName = 'CardHeader';
+CardContent.displayName = "CardContent";
 
-export const CardTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, ...props }, ref) => {
-    return createElement('h3', {
-      ref,
-      className: cn('text-2xl font-semibold leading-none tracking-tight', className),
-      ...props,
-    });
-  }
+/**
+ * CardFooter component
+ *
+ * Footer section of a card, typically contains actions.
+ */
+export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
+	({ className, padding = "md", ...props }, ref) => {
+		return createElement("div", {
+			ref,
+			className: cn(
+				cardFooterVariants({
+					padding,
+				}),
+				className,
+			),
+			...props,
+		});
+	},
 );
 
-CardTitle.displayName = 'CardTitle';
-
-export const CardContent = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, ...props }, ref) => {
-    return createElement('div', {
-      ref,
-      className: cn('p-6 pt-0', className),
-      ...props,
-    });
-  }
-);
-
-CardContent.displayName = 'CardContent';
+CardFooter.displayName = "CardFooter";
