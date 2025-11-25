@@ -9,8 +9,6 @@ export const tabsContainerVariants = createVariants({
 		"flex items-center",
 		// Overflow
 		"overflow-x-auto",
-		// Border
-		"border-b border-zinc-800",
 	].join(" "),
 
 	variants: {
@@ -19,12 +17,17 @@ export const tabsContainerVariants = createVariants({
 			md: "gap-1",
 			lg: "gap-1",
 		},
+		variant: {
+			default: "border-b border-border",
+			blueprint: "border-b border-dotted border-border",
+		},
 	},
 
 	compoundVariants: [],
 
 	defaultVariants: {
 		size: "md",
+		variant: "default",
 	},
 });
 
@@ -37,8 +40,6 @@ export const tabButtonVariants = createVariants({
 		"inline-flex items-center gap-2",
 		// Font
 		"font-medium whitespace-nowrap",
-		// Border
-		"border-b-2",
 		// Transition
 		"transition-colors duration-200",
 		// Cursor
@@ -52,9 +53,13 @@ export const tabButtonVariants = createVariants({
 			lg: "text-lg px-6 py-4",
 		},
 		active: {
-			true: "text-zinc-100 border-blue-500",
+			true: "text-foreground border-primary",
 			false:
-				"text-zinc-400 border-transparent hover:text-zinc-300 hover:border-zinc-700",
+				"text-foreground-secondary border-transparent hover:text-foreground hover:border-border-strong",
+		},
+		variant: {
+			default: "border-b-2",
+			blueprint: "border-b-2 border-dotted",
 		},
 	},
 
@@ -63,6 +68,7 @@ export const tabButtonVariants = createVariants({
 	defaultVariants: {
 		size: "md",
 		active: "false",
+		variant: "default",
 	},
 });
 
@@ -80,15 +86,15 @@ export const tabCountVariants = createVariants({
 		// Font
 		"text-xs font-medium tabular-nums",
 		// Background
-		"bg-zinc-800",
+		"bg-surface-elevated",
 		// Border
 		"rounded-full",
 	].join(" "),
 
 	variants: {
 		active: {
-			true: "text-zinc-100",
-			false: "text-zinc-500",
+			true: "text-foreground",
+			false: "text-foreground-tertiary",
 		},
 	},
 

@@ -108,7 +108,7 @@ describe("ProgressBar", () => {
 			);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
-			expect(fill?.className).toContain("bg-blue-500");
+			expect(fill?.className).toContain("bg-primary");
 		});
 
 		it("applies success variant", () => {
@@ -117,7 +117,7 @@ describe("ProgressBar", () => {
 			);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
-			expect(fill?.className).toContain("bg-green-500");
+			expect(fill?.className).toContain("bg-success");
 		});
 
 		it("applies warning variant", () => {
@@ -126,7 +126,7 @@ describe("ProgressBar", () => {
 			);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
-			expect(fill?.className).toContain("bg-yellow-500");
+			expect(fill?.className).toContain("bg-warning");
 		});
 
 		it("applies danger variant", () => {
@@ -135,14 +135,14 @@ describe("ProgressBar", () => {
 			);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
-			expect(fill?.className).toContain("bg-red-500");
+			expect(fill?.className).toContain("bg-error");
 		});
 
 		it("uses primary variant by default", () => {
 			render(<ProgressBar value={50} data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
-			expect(fill?.className).toContain("bg-blue-500");
+			expect(fill?.className).toContain("bg-primary");
 		});
 	});
 
@@ -176,7 +176,7 @@ describe("ProgressBar", () => {
 			render(<ProgressBar value={50} showLabel />);
 			const label = screen.getByText("50%");
 			expect(label.className).toContain("text-sm");
-			expect(label.className).toContain("text-zinc-400");
+			expect(label.className).toContain("text-foreground-secondary");
 			expect(label.className).toContain("tabular-nums");
 		});
 	});
@@ -210,7 +210,7 @@ describe("ProgressBar", () => {
 			);
 			const progress = screen.getByTestId("progress");
 			expect(progress.className).toContain("custom-class");
-			expect(progress.className).toContain("bg-zinc-800");
+			expect(progress.className).toContain("bg-surface");
 			expect(progress.className).toContain("rounded");
 		});
 	});
@@ -237,7 +237,7 @@ describe("ProgressBar", () => {
 			const progress = screen.getByTestId("progress");
 			expect(progress.className).toContain("relative");
 			expect(progress.className).toContain("overflow-hidden");
-			expect(progress.className).toContain("bg-zinc-800");
+			expect(progress.className).toContain("bg-surface");
 			expect(progress.className).toContain("rounded");
 		});
 
@@ -264,7 +264,7 @@ describe("ProgressBar", () => {
 			const progress = screen.getByTestId("progress");
 			expect(progress.className).toContain("h-3");
 			const fill = progress.querySelector("div");
-			expect(fill?.className).toContain("bg-green-500");
+			expect(fill?.className).toContain("bg-success");
 			expect(fill).toHaveStyle({ width: "80%" });
 		});
 
@@ -283,7 +283,7 @@ describe("ProgressBar", () => {
 			const track = wrapper.querySelector('[role="progressbar"]');
 			expect(track?.className).toContain("my-custom-class");
 			const fill = track?.querySelector("div");
-			expect(fill?.className).toContain("bg-yellow-500");
+			expect(fill?.className).toContain("bg-warning");
 			expect(screen.getByText("45%")).toBeInTheDocument();
 		});
 	});

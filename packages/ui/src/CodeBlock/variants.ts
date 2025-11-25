@@ -8,9 +8,9 @@ export const codeBlockContainerVariants = createVariants({
 		// Layout
 		"relative",
 		// Background
-		"bg-zinc-900",
+		"bg-background",
 		// Border
-		"border border-zinc-800 rounded-lg",
+		"border border-border rounded-lg",
 		// Overflow
 		"overflow-hidden",
 	].join(" "),
@@ -32,7 +32,7 @@ export const codeBlockCodeVariants = createVariants({
 		// Font
 		"font-mono",
 		// Color
-		"text-zinc-300",
+		"text-foreground-secondary",
 		// Overflow
 		"overflow-x-auto",
 		// Whitespace
@@ -66,11 +66,11 @@ export const codeBlockCopyButtonVariants = createVariants({
 		// Size
 		"w-8 h-8",
 		// Background
-		"bg-zinc-800 hover:bg-zinc-700",
+		"bg-surface-elevated hover:bg-accent",
 		// Border
-		"border border-zinc-700 rounded",
+		"border border-border rounded",
 		// Color
-		"text-zinc-400 hover:text-zinc-100",
+		"text-foreground-secondary hover:text-foreground",
 		// Cursor
 		"cursor-pointer",
 		// Transition

@@ -46,6 +46,14 @@
 		"./Header/Header": {
 			"types": "./dist/Header/Header.d.ts",
 			"default": "./dist/Header/Header.js"
+		},
+		"./Section/Section": {
+			"types": "./dist/Section/Section.d.ts",
+			"default": "./dist/Section/Section.js"
+		},
+		"./GridContainer/GridContainer": {
+			"types": "./dist/GridContainer/GridContainer.d.ts",
+			"default": "./dist/GridContainer/GridContainer.js"
 		}
 	},
 	"files": [

@@ -36,12 +36,24 @@ import {
  * ```
  */
 export const Tabs = forwardRef<HTMLDivElement, TabsProps>(
-	({ className, tabs, activeTab, onTabChange, size = "md", ...props }, ref) => {
+	(
+		{
+			className,
+			tabs,
+			activeTab,
+			onTabChange,
+			size = "md",
+			variant = "default",
+			...props
+		},
+		ref,
+	) => {
 		return (
 			<div
 				className={cn(
 					tabsContainerVariants({
 						size,
+						variant,
 					}),
 					className,
 				)}
@@ -63,6 +75,7 @@ export const Tabs = forwardRef<HTMLDivElement, TabsProps>(
 							className={tabButtonVariants({
 								size,
 								active: isActive ? "true" : "false",
+								variant,
 							})}
 							onClick={() => onTabChange(tab.id)}
 							data-testid={`tab-${tab.id}`}

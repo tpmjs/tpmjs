@@ -93,7 +93,7 @@ export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
 						}}
 					/>
 				</div>
-				<span className="text-sm text-zinc-400 tabular-nums min-w-[3ch]">
+				<span className="text-sm text-foreground-secondary tabular-nums min-w-[3ch]">
 					{Math.round(clampedValue)}%
 				</span>
 			</div>

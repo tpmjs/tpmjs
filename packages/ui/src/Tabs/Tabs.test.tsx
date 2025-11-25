@@ -101,8 +101,8 @@ describe("Tabs", () => {
 				<Tabs tabs={mockTabs} activeTab="all" onTabChange={handleChange} />,
 			);
 			const activeTab = screen.getByTestId("tab-all");
-			expect(activeTab.className).toContain("text-zinc-100");
-			expect(activeTab.className).toContain("border-blue-500");
+			expect(activeTab.className).toContain("text-foreground");
+			expect(activeTab.className).toContain("border-primary");
 		});
 
 		it("applies inactive styling to inactive tabs", () => {
@@ -111,7 +111,7 @@ describe("Tabs", () => {
 				<Tabs tabs={mockTabs} activeTab="all" onTabChange={handleChange} />,
 			);
 			const inactiveTab = screen.getByTestId("tab-featured");
-			expect(inactiveTab.className).toContain("text-zinc-400");
+			expect(inactiveTab.className).toContain("text-foreground-secondary");
 			expect(inactiveTab.className).toContain("border-transparent");
 		});
 	});
@@ -181,7 +181,7 @@ describe("Tabs", () => {
 				<Tabs tabs={mockTabs} activeTab="all" onTabChange={handleChange} />,
 			);
 			const activeBadge = screen.getByText("1234");
-			expect(activeBadge.className).toContain("text-zinc-100");
+			expect(activeBadge.className).toContain("text-foreground");
 		});
 
 		it("applies inactive styling to count badge on inactive tab", () => {
@@ -190,7 +190,7 @@ describe("Tabs", () => {
 				<Tabs tabs={mockTabs} activeTab="all" onTabChange={handleChange} />,
 			);
 			const inactiveBadge = screen.getByText("42");
-			expect(inactiveBadge.className).toContain("text-zinc-500");
+			expect(inactiveBadge.className).toContain("text-foreground-tertiary");
 		});
 
 		it("handles zero count", () => {
@@ -428,10 +428,10 @@ describe("Tabs", () => {
 			expect(tab.className).toContain("text-lg");
 			expect(tab.className).toContain("px-6");
 			expect(tab.className).toContain("py-4");
-			expect(tab.className).toContain("text-zinc-100");
-			expect(tab.className).toContain("border-blue-500");
+			expect(tab.className).toContain("text-foreground");
+			expect(tab.className).toContain("border-primary");
 			const badge = screen.getByText("42");
-			expect(badge.className).toContain("text-zinc-100");
+			expect(badge.className).toContain("text-foreground");
 		});
 
 		it("handles single tab", () => {

@@ -71,8 +71,8 @@ export default function HomePage(): React.ReactElement {
 
 			<main className="flex-1">
 				{/* Hero Section */}
-				<section className="relative py-24 overflow-hidden">
-					<div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-amber-500 to-red-500 opacity-10" />
+				<section className="relative py-24 overflow-hidden dotted-grid-background">
+					<div className="absolute inset-0 bg-background/95" />
 					<Container size="xl" padding="lg">
 						<div className="max-w-3xl mx-auto text-center space-y-8 relative z-10">
 							<h1 className="text-5xl md:text-6xl font-bold tracking-tight">
@@ -97,7 +97,7 @@ export default function HomePage(): React.ReactElement {
 				</section>
 
 				{/* Featured Tools Section */}
-				<section className="py-16 bg-surface">
+				<section className="py-16 bg-surface blueprint-background">
 					<Container size="xl" padding="lg">
 						<div className="flex items-center justify-between mb-8">
 							<h2 className="text-3xl font-semibold">Featured Tools</h2>
@@ -164,14 +164,14 @@ export default function HomePage(): React.ReactElement {
 				</section>
 
 				{/* Statistics Section */}
-				<section className="py-16 bg-surface">
+				<section className="py-16 bg-surface grid-background">
 					<Container size="xl" padding="lg">
 						<h2 className="text-3xl font-semibold mb-8 text-center">
 							Platform Statistics
 						</h2>
 						<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-							{statistics.map((stat, index) => (
-								<Card key={index}>
+							{statistics.map((stat) => (
+								<Card key={stat.label}>
 									<CardContent className="p-6 text-center space-y-3">
 										<Icon
 											icon={stat.icon}

@@ -41,6 +41,18 @@ export const buttonVariants = createVariants({
 				"active:bg-accent/80",
 			].join(" "),
 
+			"outline-dotted": [
+				"border border-dotted border-border bg-transparent",
+				"hover:bg-accent hover:text-accent-foreground hover:border-border-strong",
+				"active:bg-accent/80",
+			].join(" "),
+
+			blueprint: [
+				"border border-dotted border-border bg-card",
+				"hover:shadow-blueprint-hover",
+				"active:bg-card/90",
+			].join(" "),
+
 			secondary: [
 				"bg-secondary text-secondary-foreground",
 				"hover:bg-secondary/80",
@@ -48,6 +60,7 @@ export const buttonVariants = createVariants({
 			].join(" "),
 
 			ghost: [
+				"text-foreground",
 				"hover:bg-accent hover:text-accent-foreground",
 				"active:bg-accent/80",
 			].join(" "),

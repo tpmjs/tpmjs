@@ -45,6 +45,12 @@ export interface TabsProps
 	 * @default 'md'
 	 */
 	size?: "sm" | "md" | "lg";
+
+	/**
+	 * Visual variant
+	 * @default 'default'
+	 */
+	variant?: "default" | "blueprint";
 }
 
 /**

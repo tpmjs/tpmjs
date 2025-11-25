@@ -17,20 +17,27 @@ export const cardVariants = createVariants({
 	variants: {
 		variant: {
 			default: [
-				"border border-border",
+				"border border-dotted border-border",
 				"bg-card text-card-foreground",
 				"shadow-sm",
 			].join(" "),
 
 			elevated: [
-				"border border-border",
+				"border border-dotted border-border",
 				"bg-surface-elevated text-card-foreground",
 				"shadow-md",
 			].join(" "),
 
 			outline: [
-				"border-2 border-border",
+				"border-2 border-dotted border-border",
 				"bg-transparent text-foreground",
+			].join(" "),
+
+			blueprint: [
+				"border border-dotted border-border",
+				"bg-card text-card-foreground",
+				"shadow-blueprint",
+				"hover:shadow-blueprint-hover",
 			].join(" "),
 
 			ghost: ["bg-transparent text-foreground"].join(" "),

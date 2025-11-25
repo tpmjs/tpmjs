@@ -2,6 +2,23 @@ import type { Config } from "tailwindcss";
 
 export default {
 	content: [],
+	safelist: [
+		// Custom border utilities
+		"border-dotted-1",
+		"border-dotted-2",
+		"border-dashed-1",
+		"border-t-dotted",
+		"border-b-dotted",
+		"border-l-dotted",
+		"border-r-dotted",
+		// Custom shadow utilities
+		"shadow-blueprint",
+		"shadow-blueprint-hover",
+		// Grid backgrounds
+		"dotted-grid-background",
+		"blueprint-background",
+		"grid-background",
+	],
 	theme: {
 		extend: {
 			colors: {
@@ -94,6 +111,24 @@ export default {
 				mono: "var(--font-mono)",
 			},
 
+
+		lineHeight: {
+			tight: "var(--leading-tight)",
+			snug: "var(--leading-snug)",
+			normal: "var(--leading-normal)",
+			relaxed: "var(--leading-relaxed)",
+			loose: "var(--leading-loose)",
+			editorial: "var(--leading-editorial)",
+		},
+
+		letterSpacing: {
+			tighter: "var(--tracking-tighter)",
+			tight: "var(--tracking-tight)",
+			normal: "var(--tracking-normal)",
+			wide: "var(--tracking-wide)",
+			wider: "var(--tracking-wider)",
+			widest: "var(--tracking-widest)",
+		},
 			keyframes: {
 				"slide-up": {
 					from: { transform: "translateY(10px)", opacity: "0" },

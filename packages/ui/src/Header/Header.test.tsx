@@ -39,7 +39,7 @@ describe("Header", () => {
 			expect(titleContainer.className).toContain("flex");
 			expect(titleContainer.className).toContain("items-center");
 			expect(titleContainer.className).toContain("font-semibold");
-			expect(titleContainer.className).toContain("text-zinc-100");
+			expect(titleContainer.className).toContain("text-foreground");
 		});
 
 		it("renders ReactNode as title", () => {
@@ -240,7 +240,7 @@ describe("Header", () => {
 			const header = screen.getByTestId("header");
 			expect(header.className).toContain("custom-class");
 			expect(header.className).toContain("flex");
-			expect(header.className).toContain("bg-black");
+			expect(header.className).toContain("bg-surface");
 		});
 	});
 
@@ -267,9 +267,9 @@ describe("Header", () => {
 			expect(header.className).toContain("items-center");
 			expect(header.className).toContain("justify-between");
 			expect(header.className).toContain("w-full");
-			expect(header.className).toContain("bg-black");
+			expect(header.className).toContain("bg-surface");
 			expect(header.className).toContain("border-b");
-			expect(header.className).toContain("border-zinc-800");
+			expect(header.className).toContain("border-border");
 		});
 	});
 

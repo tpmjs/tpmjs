@@ -49,7 +49,7 @@ describe("Card", () => {
 				</Card>,
 			);
 			const card = screen.getByTestId("card");
-			expect(card.className).toContain("border");
+			expect(card.className).toContain("border-dotted");
 			expect(card.className).toContain("bg-card");
 			expect(card.className).toContain("shadow-sm");
 		});
@@ -61,6 +61,7 @@ describe("Card", () => {
 				</Card>,
 			);
 			const card = screen.getByTestId("card");
+			expect(card.className).toContain("border-dotted");
 			expect(card.className).toContain("bg-surface-elevated");
 			expect(card.className).toContain("shadow-md");
 		});
@@ -72,7 +73,8 @@ describe("Card", () => {
 				</Card>,
 			);
 			const card = screen.getByTestId("card");
-			expect(card.className).toContain("border-2");
+			expect(card.className).toContain("border-dotted");
+		expect(card.className).toContain("border-2");
 			expect(card.className).toContain("bg-transparent");
 		});
 

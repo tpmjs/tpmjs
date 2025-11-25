@@ -8,7 +8,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 	 * Visual variant of the card
 	 * @default 'default'
 	 */
-	variant?: "default" | "elevated" | "outline" | "ghost";
+	variant?: "default" | "elevated" | "outline" | "blueprint" | "ghost";
 
 	/**
 	 * Padding size for the card

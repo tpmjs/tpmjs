@@ -66,9 +66,32 @@
     --radius-xl: 12px;
     --radius: var(--radius-md);
 
+    /* Spacing - Editorial scale for airy layouts */
+    --spacing-section: 6rem;        /* 96px - Between major sections */
+    --spacing-component: 3rem;      /* 48px - Between components */
+    --spacing-element: 1.5rem;      /* 24px - Between related elements */
+    --spacing-tight: 0.75rem;       /* 12px - Tight groupings */
+    --spacing-comfortable: 2rem;    /* 32px - Comfortable breathing room */
+
     /* Typography */
-    --font-sans: 'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --font-mono: 'Geist Mono', 'SF Mono', Consolas, monospace;
+    --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-mono: var(--font-mono), 'SF Mono', Consolas, monospace;
+
+    /* Editorial Line Heights - Airy, readable */
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 1.75;
+    --leading-editorial: 1.8;        /* Extra generous for body copy */
+
+    /* Letter Spacing - Technical precision */
+    --tracking-tighter: -0.05em;
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0;
+    --tracking-wide: 0.025em;
+    --tracking-wider: 0.05em;
+    --tracking-widest: 0.1em;
   }
 
   /* Dark mode (opt-in) - Vercel/Cursor/Perplexity aesthetic */
@@ -199,6 +222,11 @@
     border-style: dashed;
   }
 
+  .border-dotted-2 {
+    border-width: 2px;
+    border-style: dotted;
+  }
+
   /* Directional dotted borders */
   .border-t-dotted {
     border-top-width: 1px;
@@ -218,6 +246,19 @@
   .border-r-dotted {
     border-right-width: 1px;
     border-right-style: dotted;
+  }
+
+  /* Shadow utilities - Blueprint aesthetic */
+  .shadow-blueprint {
+    box-shadow:
+      0 1px 2px 0 rgb(0 0 0 / 0.03),
+      0 0 0 1px rgb(0 0 0 / 0.02);
+  }
+
+  .shadow-blueprint-hover {
+    box-shadow:
+      0 2px 4px 0 rgb(0 0 0 / 0.05),
+      0 0 0 1px rgb(0 0 0 / 0.03);
   }
 
   /* Transition presets */

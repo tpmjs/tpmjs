@@ -8,7 +8,7 @@ export const progressBarTrackVariants = createVariants({
 		// Layout
 		"relative overflow-hidden",
 		// Background
-		"bg-zinc-800",
+		"bg-surface",
 		// Border
 		"rounded",
 	].join(" "),
@@ -43,10 +43,10 @@ export const progressBarFillVariants = createVariants({
 
 	variants: {
 		variant: {
-			primary: "bg-blue-500",
-			success: "bg-green-500",
-			warning: "bg-yellow-500",
-			danger: "bg-red-500",
+			primary: "bg-primary",
+			success: "bg-success",
+			warning: "bg-warning",
+			danger: "bg-error",
 		},
 	},
 

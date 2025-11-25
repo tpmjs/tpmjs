@@ -276,7 +276,7 @@ describe("CodeBlock", () => {
 			);
 			const codeblock = screen.getByTestId("codeblock");
 			expect(codeblock.className).toContain("custom-class");
-			expect(codeblock.className).toContain("bg-zinc-900");
+			expect(codeblock.className).toContain("bg-background");
 			expect(codeblock.className).toContain("border");
 		});
 	});
@@ -302,7 +302,7 @@ describe("CodeBlock", () => {
 			render(<CodeBlock code="code" data-testid="codeblock" />);
 			const codeblock = screen.getByTestId("codeblock");
 			expect(codeblock.className).toContain("relative");
-			expect(codeblock.className).toContain("bg-zinc-900");
+			expect(codeblock.className).toContain("bg-background");
 			expect(codeblock.className).toContain("border");
 			expect(codeblock.className).toContain("overflow-hidden");
 		});
@@ -313,7 +313,7 @@ describe("CodeBlock", () => {
 			const code = codeblock.querySelector("code");
 			expect(code?.className).toContain("block");
 			expect(code?.className).toContain("font-mono");
-			expect(code?.className).toContain("text-zinc-300");
+			expect(code?.className).toContain("text-foreground-secondary");
 			expect(code?.className).toContain("overflow-x-auto");
 			expect(code?.className).toContain("whitespace-pre");
 		});

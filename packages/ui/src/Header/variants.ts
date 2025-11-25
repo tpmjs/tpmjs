@@ -10,9 +10,9 @@ export const headerVariants = createVariants({
 		// Width
 		"w-full",
 		// Background
-		"bg-black",
+		"bg-surface",
 		// Border
-		"border-b border-zinc-800",
+		"border-b border-border",
 	].join(" "),
 
 	variants: {
@@ -31,7 +31,7 @@ export const headerVariants = createVariants({
 
 	defaultVariants: {
 		size: "md",
-		sticky: false,
+		sticky: "false",
 	},
 });
 
@@ -45,7 +45,7 @@ export const headerTitleVariants = createVariants({
 		// Font
 		"font-semibold",
 		// Color
-		"text-zinc-100",
+		"text-foreground",
 	].join(" "),
 
 	variants: {

@@ -12,9 +12,11 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 		| "default"
 		| "destructive"
 		| "outline"
+		| "outline-dotted"
 		| "secondary"
 		| "ghost"
-		| "link";
+		| "link"
+		| "blueprint";
 
 	/**
 	 * Size of the button

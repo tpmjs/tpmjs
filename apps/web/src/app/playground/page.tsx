@@ -27,7 +27,7 @@ export default function PlaygroundPage() {
 	const [progress, setProgress] = useState(65);
 
 	return (
-		<div className="min-h-screen flex flex-col">
+		<div className="min-h-screen flex flex-col dotted-grid-background">
 			{/* Header */}
 			<Header
 				title={
@@ -53,7 +53,8 @@ export default function PlaygroundPage() {
 				}
 			/>
 
-			<main className="flex-1 py-12">
+			<main className="flex-1 py-12 relative">
+				<div className="absolute inset-0 bg-background/95 -z-10" />
 				<Container size="xl" padding="lg">
 					<div className="space-y-16">
 						{/* Page Title */}
@@ -166,7 +167,7 @@ export default function PlaygroundPage() {
 								<div className="space-y-4">
 									<h3 className="text-xl font-medium">Available Icons</h3>
 									<div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
-										{[
+										{([
 											"check",
 											"x",
 											"chevronDown",
@@ -175,12 +176,12 @@ export default function PlaygroundPage() {
 											"github",
 											"sun",
 											"moon",
-										].map((icon) => (
+										] as const).map((icon) => (
 											<div
 												key={icon}
 												className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-surface transition-colors"
 											>
-												<Icon icon={icon as any} size="lg" />
+												<Icon icon={icon} size="lg" />
 												<span className="text-xs text-center">{icon}</span>
 											</div>
 										))}
