@@ -1,0 +1,11 @@
+{
+  "name": "@tpmjs/config",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "biome.json",
+    "eslint",
+    "tailwind",
+    "tsconfig"
+  ]
+}

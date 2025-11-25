@@ -1,0 +1,14 @@
+{
+  "name": "@tpmjs/test",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./vitest": "./vitest.config.ts"
+  },
+  "files": [
+    "vitest.config.ts"
+  ],
+  "dependencies": {
+    "vitest": "^2.1.8"
+  }
+}

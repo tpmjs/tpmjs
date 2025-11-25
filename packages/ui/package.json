@@ -1,0 +1,51 @@
+{
+  "name": "@tpmjs/ui",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    "./Button/Button": {
+      "types": "./dist/Button/Button.d.ts",
+      "default": "./dist/Button/Button.js"
+    },
+    "./Card/Card": {
+      "types": "./dist/Card/Card.d.ts",
+      "default": "./dist/Card/Card.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "clean": "rm -rf dist .turbo"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@tpmjs/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "@tpmjs/eslint-config": "workspace:*",
+    "@tpmjs/test": "workspace:*",
+    "@tpmjs/tsconfig": "workspace:*",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "happy-dom": "^15.11.7",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.8"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

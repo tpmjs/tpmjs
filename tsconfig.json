@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/web" },
+    { "path": "./packages/ui" },
+    { "path": "./packages/utils" },
+    { "path": "./packages/types" },
+    { "path": "./packages/env" },
+    { "path": "./packages/test" },
+    { "path": "./packages/mocks" },
+    { "path": "./packages/storybook" }
+  ]
+}

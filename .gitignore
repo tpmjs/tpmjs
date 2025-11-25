@@ -1,0 +1,44 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# testing
+coverage
+.nyc_output
+
+# next.js
+.next/
+out/
+build
+dist
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# local env files
+.env*.local
+.env
+
+# turbo
+.turbo
+
+# typescript
+*.tsbuildinfo
+
+# ide
+.idea
+
+# storybook
+storybook-static
+
+# changesets
+.changeset/*.md
+!.changeset/README.md
