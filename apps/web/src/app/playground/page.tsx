@@ -10,14 +10,22 @@ import {
   CardHeader,
   CardTitle,
 } from '@tpmjs/ui/Card/Card';
+import { Checkbox } from '@tpmjs/ui/Checkbox/Checkbox';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
+import { FormField } from '@tpmjs/ui/FormField/FormField';
 import { Header } from '@tpmjs/ui/Header/Header';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { Label } from '@tpmjs/ui/Label/Label';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
+import { Radio } from '@tpmjs/ui/Radio/Radio';
+import { RadioGroup } from '@tpmjs/ui/Radio/RadioGroup';
+import { Select } from '@tpmjs/ui/Select/Select';
+import { Slider } from '@tpmjs/ui/Slider/Slider';
+import { Switch } from '@tpmjs/ui/Switch/Switch';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import Link from 'next/link';
 import { useState } from 'react';
 import { ThemeToggle } from '../../components/ThemeToggle';
@@ -25,6 +33,17 @@ import { ThemeToggle } from '../../components/ThemeToggle';
 export default function PlaygroundPage() {
   const [activeTab, setActiveTab] = useState('all');
   const [progress, setProgress] = useState(65);
+
+  // Form state
+  const [name, setName] = useState('');
+  const [bio, setBio] = useState('');
+  const [newsletter, setNewsletter] = useState(false);
+  const [terms, setTerms] = useState(false);
+  const [theme, setTheme] = useState('system');
+  const [notifications, setNotifications] = useState(true);
+  const [country, setCountry] = useState('');
+  const [volume, setVolume] = useState(50);
+  const [privacy, setPrivacy] = useState('public');
 
   return (
     <div className="min-h-screen flex flex-col dotted-grid-background">
@@ -440,6 +459,244 @@ export default function Example() {
                     </Container>
                   </div>
                 </div>
+              </div>
+            </section>
+
+            {/* Forms Section */}
+            <section className="space-y-6">
+              <h2 className="text-3xl font-semibold border-b border-border pb-2">Form Components</h2>
+
+              {/* Textarea */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium">Textarea</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField label="Bio" helperText="Tell us about yourself">
+                    <Textarea
+                      placeholder="Write something..."
+                      rows={4}
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                    />
+                  </FormField>
+                  <FormField label="Feedback" helperText="Maximum 200 characters">
+                    <Textarea
+                      placeholder="Your feedback..."
+                      rows={4}
+                      maxLength={200}
+                      showCount
+                    />
+                  </FormField>
+                </div>
+              </div>
+
+              {/* Checkboxes */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium">Checkboxes</h3>
+                <Card>
+                  <CardContent className="p-6 space-y-4">
+                    <Checkbox
+                      checked={newsletter}
+                      onCheckedChange={setNewsletter}
+                      label="Subscribe to newsletter"
+                    />
+                    <Checkbox
+                      checked={terms}
+                      onCheckedChange={setTerms}
+                      label="I agree to the terms and conditions"
+                    />
+                    <Checkbox disabled label="Disabled checkbox" />
+                    <Checkbox checked disabled label="Checked and disabled" />
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Radio Buttons */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium">Radio Buttons</h3>
+                <Card>
+                  <CardContent className="p-6 space-y-6">
+                    <FormField label="Theme Preference">
+                      <RadioGroup name="theme" value={theme} onChange={setTheme}>
+                        <Radio value="light" label="Light" />
+                        <Radio value="dark" label="Dark" />
+                        <Radio value="system" label="System" />
+                      </RadioGroup>
+                    </FormField>
+
+                    <FormField label="Privacy Setting">
+                      <RadioGroup name="privacy" value={privacy} onChange={setPrivacy}>
+                        <Radio value="public" label="Public" />
+                        <Radio value="private" label="Private" />
+                        <Radio value="friends" label="Friends only" />
+                      </RadioGroup>
+                    </FormField>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Switches */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium">Switches</h3>
+                <Card>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Enable notifications</Label>
+                        <p className="text-sm text-foreground-secondary">
+                          Receive email notifications about updates
+                        </p>
+                      </div>
+                      <Switch checked={notifications} onCheckedChange={setNotifications} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label>Marketing emails</Label>
+                        <p className="text-sm text-foreground-secondary">
+                          Receive marketing and promotional emails
+                        </p>
+                      </div>
+                      <Switch />
+                    </div>
+                    <div className="flex items-center justify-between opacity-50">
+                      <div className="space-y-0.5">
+                        <Label>Disabled switch</Label>
+                        <p className="text-sm text-foreground-secondary">
+                          This switch is disabled
+                        </p>
+                      </div>
+                      <Switch disabled />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Select */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium">Select</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField label="Country" helperText="Select your country">
+                    <Select
+                      placeholder="Choose a country"
+                      value={country}
+                      onChange={(e) => setCountry(e.target.value)}
+                      options={[
+                        { value: 'us', label: 'United States' },
+                        { value: 'uk', label: 'United Kingdom' },
+                        { value: 'ca', label: 'Canada' },
+                        { value: 'au', label: 'Australia' },
+                      ]}
+                    />
+                  </FormField>
+                  <FormField label="Size">
+                    <Select
+                      placeholder="Choose a size"
+                      size="md"
+                      options={[
+                        { value: 'xs', label: 'Extra Small' },
+                        { value: 's', label: 'Small' },
+                        { value: 'm', label: 'Medium' },
+                        { value: 'l', label: 'Large' },
+                        { value: 'xl', label: 'Extra Large' },
+                      ]}
+                    />
+                  </FormField>
+                </div>
+              </div>
+
+              {/* Slider */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium">Slider</h3>
+                <Card>
+                  <CardContent className="p-6 space-y-8">
+                    <FormField label="Volume" helperText={`Current volume: ${volume}%`}>
+                      <Slider
+                        min={0}
+                        max={100}
+                        value={volume}
+                        onChange={(e) => setVolume(Number(e.target.value))}
+                        showValue
+                      />
+                    </FormField>
+
+                    <FormField label="Temperature (°C)">
+                      <Slider
+                        min={0}
+                        max={100}
+                        step={5}
+                        defaultValue={20}
+                        showMarks
+                        marks={[
+                          { value: 0, label: 'Cold' },
+                          { value: 50, label: 'Warm' },
+                          { value: 100, label: 'Hot' },
+                        ]}
+                      />
+                    </FormField>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Complete Form Example */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-medium">Complete Form Example</h3>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>User Profile</CardTitle>
+                    <CardDescription>Update your profile information</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <FormField label="Name" htmlFor="profile-name" required>
+                      <Input
+                        id="profile-name"
+                        placeholder="Enter your name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
+                    </FormField>
+
+                    <FormField label="Bio" htmlFor="profile-bio" helperText="Tell us about yourself">
+                      <Textarea
+                        id="profile-bio"
+                        placeholder="Write something..."
+                        rows={4}
+                        maxLength={500}
+                        showCount
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value)}
+                      />
+                    </FormField>
+
+                    <FormField label="Country" htmlFor="profile-country">
+                      <Select
+                        id="profile-country"
+                        placeholder="Select your country"
+                        value={country}
+                        onChange={(e) => setCountry(e.target.value)}
+                        options={[
+                          { value: 'us', label: 'United States' },
+                          { value: 'uk', label: 'United Kingdom' },
+                          { value: 'ca', label: 'Canada' },
+                        ]}
+                      />
+                    </FormField>
+
+                    <div className="space-y-3">
+                      <Checkbox
+                        checked={newsletter}
+                        onCheckedChange={setNewsletter}
+                        label="Subscribe to newsletter"
+                      />
+                      <Checkbox
+                        checked={terms}
+                        onCheckedChange={setTerms}
+                        label="I agree to the terms and conditions"
+                      />
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button disabled={!terms}>Save Changes</Button>
+                  </CardFooter>
+                </Card>
               </div>
             </section>
 

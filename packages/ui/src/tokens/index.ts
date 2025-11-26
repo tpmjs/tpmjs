@@ -9,3 +9,4 @@ export * from './spacing';
 export * from './borders';
 export * from './shadows';
 export * from './animations';
+export * from './forms';

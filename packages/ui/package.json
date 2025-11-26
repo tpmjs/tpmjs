@@ -54,9 +54,43 @@
     "./GridContainer/GridContainer": {
       "types": "./dist/GridContainer/GridContainer.d.ts",
       "default": "./dist/GridContainer/GridContainer.js"
+    },
+    "./Textarea/Textarea": {
+      "types": "./dist/Textarea/Textarea.d.ts",
+      "default": "./dist/Textarea/Textarea.js"
+    },
+    "./Checkbox/Checkbox": {
+      "types": "./dist/Checkbox/Checkbox.d.ts",
+      "default": "./dist/Checkbox/Checkbox.js"
+    },
+    "./Radio/Radio": {
+      "types": "./dist/Radio/Radio.d.ts",
+      "default": "./dist/Radio/Radio.js"
+    },
+    "./Radio/RadioGroup": {
+      "types": "./dist/Radio/RadioGroup.d.ts",
+      "default": "./dist/Radio/RadioGroup.js"
+    },
+    "./Switch/Switch": {
+      "types": "./dist/Switch/Switch.d.ts",
+      "default": "./dist/Switch/Switch.js"
+    },
+    "./Select/Select": {
+      "types": "./dist/Select/Select.d.ts",
+      "default": "./dist/Select/Select.js"
+    },
+    "./Slider/Slider": {
+      "types": "./dist/Slider/Slider.d.ts",
+      "default": "./dist/Slider/Slider.js"
+    },
+    "./FormField/FormField": {
+      "types": "./dist/FormField/FormField.d.ts",
+      "default": "./dist/FormField/FormField.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -76,6 +110,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@tpmjs/eslint-config": "workspace:*",
     "@tpmjs/test": "workspace:*",
     "@tpmjs/tsconfig": "workspace:*",
