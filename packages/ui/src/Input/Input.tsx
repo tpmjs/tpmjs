@@ -1,7 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { InputProps } from "./types";
-import { inputVariants } from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { InputProps } from './types';
+import { inputVariants } from './variants';
 
 /**
  * Input component
@@ -25,36 +25,36 @@ import { inputVariants } from "./variants";
  * ```
  */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-	(
-		{
-			className,
-			type = "text",
-			state = "default",
-			size = "md",
-			fullWidth = true,
-			disabled = false,
-			...props
-		},
-		ref,
-	) => {
-		return (
-			<input
-				ref={ref}
-				type={type}
-				className={cn(
-					inputVariants({
-						state,
-						size,
-						fullWidth: fullWidth ? "true" : "false",
-					}),
-					className,
-				)}
-				disabled={disabled}
-				aria-invalid={state === "error" ? "true" : undefined}
-				{...props}
-			/>
-		);
-	},
+  (
+    {
+      className,
+      type = 'text',
+      state = 'default',
+      size = 'md',
+      fullWidth = true,
+      disabled = false,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <input
+        ref={ref}
+        type={type}
+        className={cn(
+          inputVariants({
+            state,
+            size,
+            fullWidth: fullWidth ? 'true' : 'false',
+          }),
+          className
+        )}
+        disabled={disabled}
+        aria-invalid={state === 'error' ? 'true' : undefined}
+        {...props}
+      />
+    );
+  }
 );
 
-Input.displayName = "Input";
+Input.displayName = 'Input';

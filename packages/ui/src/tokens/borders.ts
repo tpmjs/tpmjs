@@ -7,21 +7,21 @@
  * Border widths
  */
 export const borderWidth = {
-	DEFAULT: "1px",
-	0: "0",
-	2: "2px",
-	4: "4px",
-	8: "8px",
+  DEFAULT: '1px',
+  0: '0',
+  2: '2px',
+  4: '4px',
+  8: '8px',
 } as const;
 
 /**
  * Border styles
  */
 export const borderStyle = {
-	solid: "solid",
-	dashed: "dashed",
-	dotted: "dotted",
-	none: "none",
+  solid: 'solid',
+  dashed: 'dashed',
+  dotted: 'dotted',
+  none: 'none',
 } as const;
 
 /**
@@ -29,14 +29,14 @@ export const borderStyle = {
  * References CSS variables for theme consistency
  */
 export const borderRadius = {
-	none: "0",
-	sm: "var(--radius-sm)",
-	md: "var(--radius-md)",
-	lg: "var(--radius-lg)",
-	xl: "var(--radius-xl)",
-	"2xl": "var(--radius-2xl, 1rem)",
-	"3xl": "var(--radius-3xl, 1.5rem)",
-	full: "9999px",
+  none: '0',
+  sm: 'var(--radius-sm)',
+  md: 'var(--radius-md)',
+  lg: 'var(--radius-lg)',
+  xl: 'var(--radius-xl)',
+  '2xl': 'var(--radius-2xl, 1rem)',
+  '3xl': 'var(--radius-3xl, 1.5rem)',
+  full: '9999px',
 } as const;
 
 /**
@@ -44,29 +44,29 @@ export const borderRadius = {
  * Used in globals.css
  */
 export const borderRadiusVars = {
-	sm: "4px",
-	md: "6px",
-	lg: "8px",
-	xl: "12px",
+  sm: '4px',
+  md: '6px',
+  lg: '8px',
+  xl: '12px',
 } as const;
 
 /**
  * Border color references (use CSS variables)
  */
 export const borderColor = {
-	DEFAULT: "hsl(var(--border))",
-	strong: "hsl(var(--border-strong))",
-	subtle: "hsl(var(--border-subtle))",
-	input: "hsl(var(--input))",
-	ring: "hsl(var(--ring))",
+  DEFAULT: 'hsl(var(--border))',
+  strong: 'hsl(var(--border-strong))',
+  subtle: 'hsl(var(--border-subtle))',
+  input: 'hsl(var(--input))',
+  ring: 'hsl(var(--ring))',
 } as const;
 
 /**
  * Complete border export
  */
 export const borders = {
-	width: borderWidth,
-	style: borderStyle,
-	radius: borderRadius,
-	color: borderColor,
+  width: borderWidth,
+  style: borderStyle,
+  radius: borderRadius,
+  color: borderColor,
 } as const;

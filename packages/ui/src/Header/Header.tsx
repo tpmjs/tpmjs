@@ -1,11 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { HeaderProps } from "./types";
-import {
-	headerActionsVariants,
-	headerTitleVariants,
-	headerVariants,
-} from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { HeaderProps } from './types';
+import { headerActionsVariants, headerTitleVariants, headerVariants } from './variants';
 
 /**
  * Header component
@@ -31,61 +27,47 @@ import {
  * ```
  */
 export const Header = forwardRef<HTMLElement, HeaderProps>(
-	(
-		{
-			className,
-			title,
-			actions,
-			size = "md",
-			sticky = false,
-			children,
-			...props
-		},
-		ref,
-	) => {
-		return (
-			<header
-				className={cn(
-					headerVariants({
-						size,
-						sticky: sticky ? "true" : "false",
-					}),
-					className,
-				)}
-				ref={ref}
-				{...props}
-			>
-				{title && (
-					<div
-						className={headerTitleVariants({
-							size,
-						})}
-						data-testid="header-title"
-					>
-						{title}
-					</div>
-				)}
-				{children && (
-					<div
-						className="flex-1 flex items-center justify-center"
-						data-testid="header-children"
-					>
-						{children}
-					</div>
-				)}
-				{actions && (
-					<div
-						className={headerActionsVariants({
-							size,
-						})}
-						data-testid="header-actions"
-					>
-						{actions}
-					</div>
-				)}
-			</header>
-		);
-	},
+  ({ className, title, actions, size = 'md', sticky = false, children, ...props }, ref) => {
+    return (
+      <header
+        className={cn(
+          headerVariants({
+            size,
+            sticky: sticky ? 'true' : 'false',
+          }),
+          className
+        )}
+        ref={ref}
+        {...props}
+      >
+        {title && (
+          <div
+            className={headerTitleVariants({
+              size,
+            })}
+            data-testid="header-title"
+          >
+            {title}
+          </div>
+        )}
+        {children && (
+          <div className="flex-1 flex items-center justify-center" data-testid="header-children">
+            {children}
+          </div>
+        )}
+        {actions && (
+          <div
+            className={headerActionsVariants({
+              size,
+            })}
+            data-testid="header-actions"
+          >
+            {actions}
+          </div>
+        )}
+      </header>
+    );
+  }
 );
 
-Header.displayName = "Header";
+Header.displayName = 'Header';

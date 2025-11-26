@@ -1,7 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { LabelProps } from "./types";
-import { labelVariants } from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { LabelProps } from './types';
+import { labelVariants } from './variants';
 
 /**
  * Label component
@@ -18,39 +18,29 @@ import { labelVariants } from "./variants";
  * ```
  */
 export const Label = forwardRef<HTMLLabelElement, LabelProps>(
-	(
-		{
-			className,
-			size = "md",
-			required = false,
-			disabled = false,
-			children,
-			...props
-		},
-		ref,
-	) => {
-		return (
-			// biome-ignore lint/a11y/noLabelWithoutControl: This is a generic label component that can be used with htmlFor or wrap inputs
-			<label
-				ref={ref}
-				className={cn(
-					labelVariants({
-						size,
-						disabled: disabled ? "true" : "false",
-					}),
-					className,
-				)}
-				{...props}
-			>
-				{children}
-				{required && (
-					<span className="ml-1 text-error" aria-hidden="true">
-						*
-					</span>
-				)}
-			</label>
-		);
-	},
+  ({ className, size = 'md', required = false, disabled = false, children, ...props }, ref) => {
+    return (
+      // biome-ignore lint/a11y/noLabelWithoutControl: This is a generic label component that can be used with htmlFor or wrap inputs
+      <label
+        ref={ref}
+        className={cn(
+          labelVariants({
+            size,
+            disabled: disabled ? 'true' : 'false',
+          }),
+          className
+        )}
+        {...props}
+      >
+        {children}
+        {required && (
+          <span className="ml-1 text-error" aria-hidden="true">
+            *
+          </span>
+        )}
+      </label>
+    );
+  }
 );
 
-Label.displayName = "Label";
+Label.displayName = 'Label';

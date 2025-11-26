@@ -1,57 +1,57 @@
 {
-	"$schema": "https://unpkg.com/knip@5/schema.json",
-	"workspaces": {
-		".": {
-			"entry": ["turbo.json"],
-			"project": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
-			"ignore": [
-				"**/*.test.ts",
-				"**/*.test.tsx",
-				"**/*.spec.ts",
-				"**/*.spec.tsx",
-				"**/dist/**",
-				"**/.next/**",
-				"**/node_modules/**",
-				"**/.turbo/**",
-				"**/storybook-static/**"
-			]
-		},
-		"apps/*": {
-			"entry": [
-				"app/**/*.ts",
-				"app/**/*.tsx",
-				"pages/**/*.ts",
-				"pages/**/*.tsx",
-				"src/**/*.ts",
-				"src/**/*.tsx"
-			],
-			"project": ["**/*.ts", "**/*.tsx"]
-		},
-		"packages/*": {
-			"entry": ["src/**/*.ts", "src/**/*.tsx", "index.ts", "index.tsx"],
-			"project": ["**/*.ts", "**/*.tsx"]
-		}
-	},
-	"ignore": [
-		"**/*.test.ts",
-		"**/*.test.tsx",
-		"**/*.spec.ts",
-		"**/*.spec.tsx",
-		"**/vitest.config.ts",
-		"**/tsup.config.ts",
-		"**/tailwind.config.ts",
-		"reset.d.ts"
-	],
-	"ignoreDependencies": [
-		"@changesets/cli",
-		"lefthook",
-		"turbo",
-		"typescript",
-		"@biomejs/biome",
-		"@total-typescript/ts-reset",
-		"type-coverage",
-		"knip",
-		"dependency-cruiser"
-	],
-	"ignoreExportsUsedInFile": true
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["turbo.json"],
+      "project": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+      "ignore": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/dist/**",
+        "**/.next/**",
+        "**/node_modules/**",
+        "**/.turbo/**",
+        "**/storybook-static/**"
+      ]
+    },
+    "apps/*": {
+      "entry": [
+        "app/**/*.ts",
+        "app/**/*.tsx",
+        "pages/**/*.ts",
+        "pages/**/*.tsx",
+        "src/**/*.ts",
+        "src/**/*.tsx"
+      ],
+      "project": ["**/*.ts", "**/*.tsx"]
+    },
+    "packages/*": {
+      "entry": ["src/**/*.ts", "src/**/*.tsx", "index.ts", "index.tsx"],
+      "project": ["**/*.ts", "**/*.tsx"]
+    }
+  },
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/vitest.config.ts",
+    "**/tsup.config.ts",
+    "**/tailwind.config.ts",
+    "reset.d.ts"
+  ],
+  "ignoreDependencies": [
+    "@changesets/cli",
+    "lefthook",
+    "turbo",
+    "typescript",
+    "@biomejs/biome",
+    "@total-typescript/ts-reset",
+    "type-coverage",
+    "knip",
+    "dependency-cruiser"
+  ],
+  "ignoreExportsUsedInFile": true
 }

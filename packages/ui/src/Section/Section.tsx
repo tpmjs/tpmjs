@@ -1,7 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { SectionProps } from "./types";
-import { sectionVariants } from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { SectionProps } from './types';
+import { sectionVariants } from './variants';
 
 /**
  * Section component
@@ -28,41 +28,40 @@ import { sectionVariants } from "./variants";
  * ```
  */
 export const Section = forwardRef<HTMLElement, SectionProps>(
-	(
-		{
-			className,
-			as = "section",
-			spacing = "md",
-			background = "default",
-			container = "none",
-			centered = false,
-			children,
-			...props
-		},
-		ref,
-	) => {
-		const Component = as;
+  (
+    {
+      className,
+      as = 'section',
+      spacing = 'md',
+      background = 'default',
+      container = 'none',
+      centered = false,
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const Component = as;
 
-		return (
-			<Component
-				// biome-ignore lint/suspicious/noExplicitAny: Polymorphic component requires any for ref type
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				ref={ref as any}
-				className={cn(
-					sectionVariants({
-						spacing,
-						background,
-						container,
-						centered: centered ? "true" : "false",
-					}),
-					className,
-				)}
-				{...props}
-			>
-				{children}
-			</Component>
-		);
-	},
+    return (
+      <Component
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ref={ref as any}
+        className={cn(
+          sectionVariants({
+            spacing,
+            background,
+            container,
+            centered: centered ? 'true' : 'false',
+          }),
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </Component>
+    );
+  }
 );
 
-Section.displayName = "Section";
+Section.displayName = 'Section';

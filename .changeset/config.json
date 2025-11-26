@@ -7,11 +7,7 @@
   "access": "public",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": [
-    "@tpmjs/config",
-    "@tpmjs/storybook",
-    "@tpmjs/web"
-  ],
+  "ignore": ["@tpmjs/config", "@tpmjs/storybook", "@tpmjs/web"],
   "privatePackages": {
     "version": false,
     "tag": false

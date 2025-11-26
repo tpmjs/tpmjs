@@ -1,33 +1,33 @@
 {
-	"name": "@tpmjs/storybook",
-	"version": "0.0.0",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"dev": "storybook dev -p 6006",
-		"build": "storybook build",
-		"clean": "rm -rf storybook-static .turbo"
-	},
-	"dependencies": {
-		"@tpmjs/ui": "workspace:*",
-		"react": "^19.0.0",
-		"react-dom": "^19.0.0"
-	},
-	"devDependencies": {
-		"@storybook/addon-essentials": "^8.5.0",
-		"@storybook/addon-interactions": "^8.5.0",
-		"@storybook/addon-links": "^8.5.0",
-		"@storybook/blocks": "^8.5.0",
-		"@storybook/react": "^8.5.0",
-		"@storybook/react-vite": "^8.5.0",
-		"@storybook/test": "^8.5.0",
-		"@tpmjs/tailwind-config": "workspace:*",
-		"@types/react": "^19.0.2",
-		"@types/react-dom": "^19.0.2",
-		"autoprefixer": "^10.4.20",
-		"postcss": "^8.5.1",
-		"storybook": "^8.5.0",
-		"tailwindcss": "^3.4.17",
-		"vite": "^6.0.7"
-	}
+  "name": "@tpmjs/storybook",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "storybook dev -p 6006",
+    "build": "storybook build",
+    "clean": "rm -rf storybook-static .turbo"
+  },
+  "dependencies": {
+    "@tpmjs/ui": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.5.0",
+    "@storybook/addon-interactions": "^8.5.0",
+    "@storybook/addon-links": "^8.5.0",
+    "@storybook/blocks": "^8.5.0",
+    "@storybook/react": "^8.5.0",
+    "@storybook/react-vite": "^8.5.0",
+    "@storybook/test": "^8.5.0",
+    "@tpmjs/tailwind-config": "workspace:*",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "storybook": "^8.5.0",
+    "tailwindcss": "^3.4.17",
+    "vite": "^6.0.7"
+  }
 }

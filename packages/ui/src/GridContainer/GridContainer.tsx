@@ -1,7 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { GridContainerProps } from "./types";
-import { gridContainerVariants } from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { GridContainerProps } from './types';
+import { gridContainerVariants } from './variants';
 
 /**
  * GridContainer component
@@ -25,38 +25,38 @@ import { gridContainerVariants } from "./variants";
  * ```
  */
 export const GridContainer = forwardRef<HTMLDivElement, GridContainerProps>(
-	(
-		{
-			className,
-			columns = "auto",
-			gap = "md",
-			responsive = "responsive",
-			align = "stretch",
-			justify = "start",
-			children,
-			...props
-		},
-		ref,
-	) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					gridContainerVariants({
-						columns,
-						gap,
-						responsive,
-						align,
-						justify,
-					}),
-					className,
-				)}
-				{...props}
-			>
-				{children}
-			</div>
-		);
-	},
+  (
+    {
+      className,
+      columns = 'auto',
+      gap = 'md',
+      responsive = 'responsive',
+      align = 'stretch',
+      justify = 'start',
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          gridContainerVariants({
+            columns,
+            gap,
+            responsive,
+            align,
+            justify,
+          }),
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
 );
 
-GridContainer.displayName = "GridContainer";
+GridContainer.displayName = 'GridContainer';

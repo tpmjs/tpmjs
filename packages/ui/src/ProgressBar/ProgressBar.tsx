@@ -1,7 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { ProgressBarProps } from "./types";
-import { progressBarFillVariants, progressBarTrackVariants } from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { ProgressBarProps } from './types';
+import { progressBarFillVariants, progressBarTrackVariants } from './variants';
 
 /**
  * ProgressBar component
@@ -26,79 +26,69 @@ import { progressBarFillVariants, progressBarTrackVariants } from "./variants";
  * ```
  */
 export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
-	(
-		{
-			className,
-			value,
-			size = "md",
-			variant = "primary",
-			showLabel = false,
-			...props
-		},
-		ref,
-	) => {
-		// Clamp value between 0 and 100
-		const clampedValue = Math.min(Math.max(value, 0), 100);
+  ({ className, value, size = 'md', variant = 'primary', showLabel = false, ...props }, ref) => {
+    // Clamp value between 0 and 100
+    const clampedValue = Math.min(Math.max(value, 0), 100);
 
-		if (!showLabel) {
-			return (
-				<div
-					ref={ref}
-					className={cn(
-						progressBarTrackVariants({
-							size,
-						}),
-						className,
-					)}
-					role="progressbar"
-					aria-valuenow={clampedValue}
-					aria-valuemin={0}
-					aria-valuemax={100}
-					tabIndex={0}
-					{...props}
-				>
-					<div
-						className={progressBarFillVariants({
-							variant,
-						})}
-						style={{
-							width: `${clampedValue}%`,
-						}}
-					/>
-				</div>
-			);
-		}
+    if (!showLabel) {
+      return (
+        <div
+          ref={ref}
+          className={cn(
+            progressBarTrackVariants({
+              size,
+            }),
+            className
+          )}
+          role="progressbar"
+          aria-valuenow={clampedValue}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          tabIndex={0}
+          {...props}
+        >
+          <div
+            className={progressBarFillVariants({
+              variant,
+            })}
+            style={{
+              width: `${clampedValue}%`,
+            }}
+          />
+        </div>
+      );
+    }
 
-		return (
-			<div ref={ref} className="flex items-center gap-3" {...props}>
-				<div
-					className={cn(
-						progressBarTrackVariants({
-							size,
-						}),
-						className,
-					)}
-					role="progressbar"
-					aria-valuenow={clampedValue}
-					aria-valuemin={0}
-					aria-valuemax={100}
-					tabIndex={0}
-				>
-					<div
-						className={progressBarFillVariants({
-							variant,
-						})}
-						style={{
-							width: `${clampedValue}%`,
-						}}
-					/>
-				</div>
-				<span className="text-sm text-foreground-secondary tabular-nums min-w-[3ch]">
-					{Math.round(clampedValue)}%
-				</span>
-			</div>
-		);
-	},
+    return (
+      <div ref={ref} className="flex items-center gap-3" {...props}>
+        <div
+          className={cn(
+            progressBarTrackVariants({
+              size,
+            }),
+            className
+          )}
+          role="progressbar"
+          aria-valuenow={clampedValue}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          tabIndex={0}
+        >
+          <div
+            className={progressBarFillVariants({
+              variant,
+            })}
+            style={{
+              width: `${clampedValue}%`,
+            }}
+          />
+        </div>
+        <span className="text-sm text-foreground-secondary tabular-nums min-w-[3ch]">
+          {Math.round(clampedValue)}%
+        </span>
+      </div>
+    );
+  }
 );
 
-ProgressBar.displayName = "ProgressBar";
+ProgressBar.displayName = 'ProgressBar';

@@ -1,56 +1,55 @@
-import type { HTMLAttributes } from "react";
+import type { HTMLAttributes } from 'react';
 
 /**
  * Tab definition
  */
 export interface Tab {
-	/**
-	 * Unique identifier for the tab
-	 */
-	id: string;
+  /**
+   * Unique identifier for the tab
+   */
+  id: string;
 
-	/**
-	 * Display label for the tab
-	 */
-	label: string;
+  /**
+   * Display label for the tab
+   */
+  label: string;
 
-	/**
-	 * Optional badge count to display
-	 */
-	count?: number;
+  /**
+   * Optional badge count to display
+   */
+  count?: number;
 }
 
 /**
  * Tabs component props
  */
-export interface TabsProps
-	extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
-	/**
-	 * Array of tabs to display
-	 */
-	tabs: Tab[];
+export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange'> {
+  /**
+   * Array of tabs to display
+   */
+  tabs: Tab[];
 
-	/**
-	 * Currently active tab ID
-	 */
-	activeTab: string;
+  /**
+   * Currently active tab ID
+   */
+  activeTab: string;
 
-	/**
-	 * Callback when tab is changed
-	 */
-	onTabChange: (tabId: string) => void;
+  /**
+   * Callback when tab is changed
+   */
+  onTabChange: (tabId: string) => void;
 
-	/**
-	 * Size variant
-	 * @default 'md'
-	 */
-	size?: "sm" | "md" | "lg";
+  /**
+   * Size variant
+   * @default 'md'
+   */
+  size?: 'sm' | 'md' | 'lg';
 
-	/**
-	 * Visual variant
-	 * @default 'default'
-	 */
-	variant?: "default" | "blueprint";
+  /**
+   * Visual variant
+   * @default 'default'
+   */
+  variant?: 'default' | 'blueprint';
 }
 
 /**

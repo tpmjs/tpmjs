@@ -1,38 +1,38 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { CodeBlock } from "@tpmjs/ui/CodeBlock/CodeBlock";
-import { createElement } from "react";
+import type { Meta, StoryObj } from '@storybook/react';
+import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
+import { createElement } from 'react';
 
 const meta = {
-	title: "Components/CodeBlock",
-	component: CodeBlock,
-	tags: ["autodocs"],
-	parameters: {
-		layout: "centered",
-	},
+  title: 'Components/CodeBlock',
+  component: CodeBlock,
+  tags: ['autodocs'],
+  parameters: {
+    layout: 'centered',
+  },
 } satisfies Meta<typeof CodeBlock>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-	render: () =>
-		createElement(CodeBlock, {
-			code: `console.log('Hello, World!');`,
-		}),
+  render: () =>
+    createElement(CodeBlock, {
+      code: `console.log('Hello, World!');`,
+    }),
 };
 
 export const BashCommand: Story = {
-	render: () =>
-		createElement(CodeBlock, {
-			code: "npm install @tpmjs/ui",
-			language: "bash",
-		}),
+  render: () =>
+    createElement(CodeBlock, {
+      code: 'npm install @tpmjs/ui',
+      language: 'bash',
+    }),
 };
 
 export const TypeScriptCode: Story = {
-	render: () =>
-		createElement(CodeBlock, {
-			code: `import { Button } from '@tpmjs/ui/Button/Button';
+  render: () =>
+    createElement(CodeBlock, {
+      code: `import { Button } from '@tpmjs/ui/Button/Button';
 import { createElement } from 'react';
 
 export function MyComponent() {
@@ -41,29 +41,29 @@ export function MyComponent() {
     onClick: () => console.log('clicked'),
   }, 'Click me');
 }`,
-			language: "typescript",
-		}),
+      language: 'typescript',
+    }),
 };
 
 export const JSONData: Story = {
-	render: () =>
-		createElement(CodeBlock, {
-			code: `{
+  render: () =>
+    createElement(CodeBlock, {
+      code: `{
   "name": "@tpmjs/ui",
   "version": "0.0.1",
   "description": "UI components for TPMJS"
 }`,
-			language: "json",
-		}),
+      language: 'json',
+    }),
 };
 
 export const LongCode: Story = {
-	render: () =>
-		createElement(
-			"div",
-			{ className: "w-96" },
-			createElement(CodeBlock, {
-				code: `export const buttonVariants = createVariants({
+  render: () =>
+    createElement(
+      'div',
+      { className: 'w-96' },
+      createElement(CodeBlock, {
+        code: `export const buttonVariants = createVariants({
   base: 'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2',
   variants: {
     variant: {
@@ -73,7 +73,7 @@ export const LongCode: Story = {
     },
   },
 });`,
-				language: "typescript",
-			}),
-		),
+        language: 'typescript',
+      })
+    ),
 };

@@ -6,31 +6,31 @@
   /* Light mode (default) */
   :root {
     /* Backgrounds & Surfaces */
-    --background: 0 0% 100%;            /* Pure white */
-    --surface: 210 20% 98%;             /* Off-white */
-    --surface-elevated: 0 0% 100%;      /* White (elevated) */
-    --surface-overlay: 0 0% 98%;        /* Light gray */
+    --background: 0 0% 100%; /* Pure white */
+    --surface: 210 20% 98%; /* Off-white */
+    --surface-elevated: 0 0% 100%; /* White (elevated) */
+    --surface-overlay: 0 0% 98%; /* Light gray */
 
     /* Foreground (Text) */
-    --foreground: 222 47% 11%;          /* Almost black */
+    --foreground: 222 47% 11%; /* Almost black */
     --foreground-secondary: 215 16% 47%; /* Medium gray */
-    --foreground-tertiary: 215 16% 65%;  /* Light gray */
-    --foreground-muted: 215 16% 75%;     /* Very light gray */
+    --foreground-tertiary: 215 16% 65%; /* Light gray */
+    --foreground-muted: 215 16% 75%; /* Very light gray */
 
     /* Borders */
-    --border: 214 32% 91%;              /* Light gray */
-    --border-strong: 214 32% 80%;       /* Medium gray */
-    --border-subtle: 214 20% 95%;       /* Very light gray */
+    --border: 214 32% 91%; /* Light gray */
+    --border-strong: 214 32% 80%; /* Medium gray */
+    --border-subtle: 214 20% 95%; /* Very light gray */
 
     /* Interactive States */
-    --primary: 222 47% 11%;             /* Dark for light mode */
-    --primary-foreground: 210 40% 98%;  /* Light text */
-    --secondary: 210 40% 96%;           /* Light secondary */
+    --primary: 222 47% 11%; /* Dark for light mode */
+    --primary-foreground: 210 40% 98%; /* Light text */
+    --secondary: 210 40% 96%; /* Light secondary */
     --secondary-foreground: 222 47% 11%; /* Dark text */
-    --accent: 210 40% 96%;              /* Accent bg */
-    --accent-foreground: 222 47% 11%;   /* Accent text */
-    --muted: 210 40% 96%;               /* Muted bg */
-    --muted-foreground: 215 16% 47%;    /* Muted text */
+    --accent: 210 40% 96%; /* Accent bg */
+    --accent-foreground: 222 47% 11%; /* Accent text */
+    --muted: 210 40% 96%; /* Muted bg */
+    --muted-foreground: 215 16% 47%; /* Muted text */
 
     /* Status Colors */
     --success: 142 71% 45%;
@@ -53,7 +53,7 @@
 
     /* Grid/Blueprint Pattern */
     --grid-color: 214 32% 95%;
-    --grid-size: 24px;                  /* Grid cell size */
+    --grid-size: 24px; /* Grid cell size */
 
     /* Card */
     --card: 0 0% 100%;
@@ -67,15 +67,15 @@
     --radius: var(--radius-md);
 
     /* Spacing - Editorial scale for airy layouts */
-    --spacing-section: 6rem;        /* 96px - Between major sections */
-    --spacing-component: 3rem;      /* 48px - Between components */
-    --spacing-element: 1.5rem;      /* 24px - Between related elements */
-    --spacing-tight: 0.75rem;       /* 12px - Tight groupings */
-    --spacing-comfortable: 2rem;    /* 32px - Comfortable breathing room */
+    --spacing-section: 6rem; /* 96px - Between major sections */
+    --spacing-component: 3rem; /* 48px - Between components */
+    --spacing-element: 1.5rem; /* 24px - Between related elements */
+    --spacing-tight: 0.75rem; /* 12px - Tight groupings */
+    --spacing-comfortable: 2rem; /* 32px - Comfortable breathing room */
 
     /* Typography */
     --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --font-mono: var(--font-mono), 'SF Mono', Consolas, monospace;
+    --font-mono: var(--font-mono), "SF Mono", Consolas, monospace;
 
     /* Editorial Line Heights - Airy, readable */
     --leading-tight: 1.25;
@@ -83,7 +83,7 @@
     --leading-normal: 1.5;
     --leading-relaxed: 1.625;
     --leading-loose: 1.75;
-    --leading-editorial: 1.8;        /* Extra generous for body copy */
+    --leading-editorial: 1.8; /* Extra generous for body copy */
 
     /* Letter Spacing - Technical precision */
     --tracking-tighter: -0.05em;
@@ -97,53 +97,53 @@
   /* Dark mode (opt-in) - Vercel/Cursor/Perplexity aesthetic */
   .dark {
     /* Backgrounds & Surfaces */
-    --background: 210 10% 5%;           /* #0d0d0f - Almost black */
-    --surface: 210 10% 8%;              /* #14141a - Slightly lighter */
-    --surface-elevated: 210 10% 12%;    /* #1c1c24 - Cards, modals */
-    --surface-overlay: 210 10% 16%;     /* #25252f - Overlays, popovers */
+    --background: 210 10% 5%; /* #0d0d0f - Almost black */
+    --surface: 210 10% 8%; /* #14141a - Slightly lighter */
+    --surface-elevated: 210 10% 12%; /* #1c1c24 - Cards, modals */
+    --surface-overlay: 210 10% 16%; /* #25252f - Overlays, popovers */
 
     /* Foreground (Text) */
-    --foreground: 210 10% 90%;          /* #e3e3e8 - Primary text */
+    --foreground: 210 10% 90%; /* #e3e3e8 - Primary text */
     --foreground-secondary: 210 8% 60%; /* #949499 - Secondary text */
-    --foreground-tertiary: 210 6% 40%;  /* #64646a - Tertiary text */
-    --foreground-muted: 210 6% 30%;     /* #4a4a50 - Muted text */
+    --foreground-tertiary: 210 6% 40%; /* #64646a - Tertiary text */
+    --foreground-muted: 210 6% 30%; /* #4a4a50 - Muted text */
 
     /* Borders (1px, subtle) */
-    --border: 210 10% 20%;              /* #30303a - Default border */
-    --border-strong: 210 12% 30%;       /* #494954 - Emphasized border */
-    --border-subtle: 210 8% 15%;        /* #22222c - Subtle border */
+    --border: 210 10% 20%; /* #30303a - Default border */
+    --border-strong: 210 12% 30%; /* #494954 - Emphasized border */
+    --border-subtle: 210 8% 15%; /* #22222c - Subtle border */
 
     /* Interactive States */
-    --primary: 210 10% 98%;             /* White-ish for dark mode */
-    --primary-foreground: 210 10% 5%;   /* Dark text on light bg */
-    --secondary: 210 10% 15%;           /* Dark secondary */
+    --primary: 210 10% 98%; /* White-ish for dark mode */
+    --primary-foreground: 210 10% 5%; /* Dark text on light bg */
+    --secondary: 210 10% 15%; /* Dark secondary */
     --secondary-foreground: 210 10% 90%; /* Light text on dark bg */
-    --accent: 210 10% 18%;              /* Accent background */
-    --accent-foreground: 210 10% 95%;   /* Accent text */
-    --muted: 210 10% 12%;               /* Muted background */
-    --muted-foreground: 210 8% 60%;     /* Muted text */
+    --accent: 210 10% 18%; /* Accent background */
+    --accent-foreground: 210 10% 95%; /* Accent text */
+    --muted: 210 10% 12%; /* Muted background */
+    --muted-foreground: 210 8% 60%; /* Muted text */
 
     /* Status Colors (desaturated for dark mode) */
-    --success: 142 71% 45%;             /* #10b981 - Green */
-    --success-foreground: 142 76% 95%;  /* Light green text */
-    --error: 0 72% 51%;                 /* #ef4444 - Red */
-    --error-foreground: 0 86% 97%;      /* Light red text */
-    --warning: 38 92% 50%;              /* #f59e0b - Amber */
-    --warning-foreground: 48 96% 89%;   /* Light amber text */
-    --info: 217 91% 60%;                /* #3b82f6 - Blue */
-    --info-foreground: 214 95% 93%;     /* Light blue text */
+    --success: 142 71% 45%; /* #10b981 - Green */
+    --success-foreground: 142 76% 95%; /* Light green text */
+    --error: 0 72% 51%; /* #ef4444 - Red */
+    --error-foreground: 0 86% 97%; /* Light red text */
+    --warning: 38 92% 50%; /* #f59e0b - Amber */
+    --warning-foreground: 48 96% 89%; /* Light amber text */
+    --info: 217 91% 60%; /* #3b82f6 - Blue */
+    --info-foreground: 214 95% 93%; /* Light blue text */
 
     /* Destructive (legacy support) */
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 86% 97%;
 
     /* Form Elements */
-    --input: 210 10% 20%;               /* Input border */
-    --ring: 210 10% 90%;                /* Focus ring */
-    --ring-offset: 210 10% 5%;          /* Focus ring offset */
+    --input: 210 10% 20%; /* Input border */
+    --ring: 210 10% 90%; /* Focus ring */
+    --ring-offset: 210 10% 5%; /* Focus ring offset */
 
     /* Grid/Blueprint Pattern */
-    --grid-color: 210 10% 15%;          /* Grid line color */
+    --grid-color: 210 10% 15%; /* Grid line color */
 
     /* Card */
     --card: 210 10% 8%;
@@ -158,39 +158,34 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   /* Grid/Blueprint background patterns */
   .grid-background {
-    background-image:
-      linear-gradient(hsl(var(--grid-color)) 1px, transparent 1px),
+    background-image: linear-gradient(hsl(var(--grid-color)) 1px, transparent 1px),
       linear-gradient(90deg, hsl(var(--grid-color)) 1px, transparent 1px);
     background-size: var(--grid-size) var(--grid-size);
     background-position: -1px -1px;
   }
 
   .dotted-grid-background {
-    background-image:
-      radial-gradient(circle, hsl(var(--grid-color)) 1px, transparent 1px);
+    background-image: radial-gradient(circle, hsl(var(--grid-color)) 1px, transparent 1px);
     background-size: var(--grid-size) var(--grid-size);
   }
 
   .blueprint-background {
     background-color: hsl(var(--background));
-    background-image:
-      /* Major grid lines (4x size) */
-      linear-gradient(hsl(var(--grid-color)) 1px, transparent 1px),
+    /* Major grid lines (4x size) */
+    background-image: linear-gradient(hsl(var(--grid-color)) 1px, transparent 1px),
       linear-gradient(90deg, hsl(var(--grid-color)) 1px, transparent 1px),
       /* Minor grid lines (1x size) */
       linear-gradient(hsl(var(--grid-color) / 0.3) 1px, transparent 1px),
       linear-gradient(90deg, hsl(var(--grid-color) / 0.3) 1px, transparent 1px);
-    background-size:
-      calc(var(--grid-size) * 4) calc(var(--grid-size) * 4),
-      calc(var(--grid-size) * 4) calc(var(--grid-size) * 4),
-      var(--grid-size) var(--grid-size),
+    background-size: calc(var(--grid-size) * 4) calc(var(--grid-size) * 4),
+      calc(var(--grid-size) * 4) calc(var(--grid-size) * 4), var(--grid-size) var(--grid-size),
       var(--grid-size) var(--grid-size);
   }
 
@@ -201,8 +196,13 @@
   }
 
   @keyframes grid-pulse {
-    0%, 100% { opacity: 0.4; }
-    50% { opacity: 0.6; }
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.6;
+    }
   }
 }
 
@@ -250,15 +250,11 @@
 
   /* Shadow utilities - Blueprint aesthetic */
   .shadow-blueprint {
-    box-shadow:
-      0 1px 2px 0 rgb(0 0 0 / 0.03),
-      0 0 0 1px rgb(0 0 0 / 0.02);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.03), 0 0 0 1px rgb(0 0 0 / 0.02);
   }
 
   .shadow-blueprint-hover {
-    box-shadow:
-      0 2px 4px 0 rgb(0 0 0 / 0.05),
-      0 0 0 1px rgb(0 0 0 / 0.03);
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.05), 0 0 0 1px rgb(0 0 0 / 0.03);
   }
 
   /* Transition presets */

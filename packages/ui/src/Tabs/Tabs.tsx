@@ -1,11 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { Tab, TabsProps } from "./types";
-import {
-	tabButtonVariants,
-	tabCountVariants,
-	tabsContainerVariants,
-} from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { Tab, TabsProps } from './types';
+import { tabButtonVariants, tabCountVariants, tabsContainerVariants } from './variants';
 
 // Re-export types for consumers
 export type { Tab, TabsProps };
@@ -39,67 +35,59 @@ export type { Tab, TabsProps };
  * ```
  */
 export const Tabs = forwardRef<HTMLDivElement, TabsProps>(
-	(
-		{
-			className,
-			tabs,
-			activeTab,
-			onTabChange,
-			size = "md",
-			variant = "default",
-			...props
-		},
-		ref,
-	) => {
-		return (
-			<div
-				className={cn(
-					tabsContainerVariants({
-						size,
-						variant,
-					}),
-					className,
-				)}
-				role="tablist"
-				ref={ref}
-				{...props}
-			>
-				{tabs.map((tab) => {
-					const isActive = tab.id === activeTab;
+  (
+    { className, tabs, activeTab, onTabChange, size = 'md', variant = 'default', ...props },
+    ref
+  ) => {
+    return (
+      <div
+        className={cn(
+          tabsContainerVariants({
+            size,
+            variant,
+          }),
+          className
+        )}
+        role="tablist"
+        ref={ref}
+        {...props}
+      >
+        {tabs.map((tab) => {
+          const isActive = tab.id === activeTab;
 
-					return (
-						<button
-							key={tab.id}
-							type="button"
-							role="tab"
-							aria-selected={isActive}
-							aria-controls={`tabpanel-${tab.id}`}
-							id={`tab-${tab.id}`}
-							className={tabButtonVariants({
-								size,
-								active: isActive ? "true" : "false",
-								variant,
-							})}
-							onClick={() => onTabChange(tab.id)}
-							data-testid={`tab-${tab.id}`}
-						>
-							<span>{tab.label}</span>
-							{tab.count !== undefined && (
-								<span
-									className={tabCountVariants({
-										active: isActive ? "true" : "false",
-									})}
-									aria-label={`${tab.count} items`}
-								>
-									{tab.count.toString()}
-								</span>
-							)}
-						</button>
-					);
-				})}
-			</div>
-		);
-	},
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              aria-controls={`tabpanel-${tab.id}`}
+              id={`tab-${tab.id}`}
+              className={tabButtonVariants({
+                size,
+                active: isActive ? 'true' : 'false',
+                variant,
+              })}
+              onClick={() => onTabChange(tab.id)}
+              data-testid={`tab-${tab.id}`}
+            >
+              <span>{tab.label}</span>
+              {tab.count !== undefined && (
+                <span
+                  className={tabCountVariants({
+                    active: isActive ? 'true' : 'false',
+                  })}
+                  aria-label={`${tab.count} items`}
+                >
+                  {tab.count.toString()}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 );
 
-Tabs.displayName = "Tabs";
+Tabs.displayName = 'Tabs';

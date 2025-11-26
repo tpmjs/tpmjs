@@ -1,4 +1,4 @@
 {
-	"extends": "@tpmjs/tsconfig/react-library.json",
-	"include": [".storybook", "stories"]
+  "extends": "@tpmjs/tsconfig/react-library.json",
+  "include": [".storybook", "stories"]
 }

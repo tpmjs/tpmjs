@@ -1,85 +1,85 @@
-import { createVariants } from "../system/variants";
+import { createVariants } from '../system/variants';
 
 /**
  * CodeBlock container variant definitions
  */
 export const codeBlockContainerVariants = createVariants({
-	base: [
-		// Layout
-		"relative",
-		// Background
-		"bg-background",
-		// Border
-		"border border-border rounded-lg",
-		// Overflow
-		"overflow-hidden",
-	].join(" "),
+  base: [
+    // Layout
+    'relative',
+    // Background
+    'bg-background',
+    // Border
+    'border border-border rounded-lg',
+    // Overflow
+    'overflow-hidden',
+  ].join(' '),
 
-	variants: {},
+  variants: {},
 
-	compoundVariants: [],
+  compoundVariants: [],
 
-	defaultVariants: {},
+  defaultVariants: {},
 });
 
 /**
  * CodeBlock code element variant definitions
  */
 export const codeBlockCodeVariants = createVariants({
-	base: [
-		// Display
-		"block",
-		// Font
-		"font-mono",
-		// Color
-		"text-foreground-secondary",
-		// Overflow
-		"overflow-x-auto",
-		// Whitespace
-		"whitespace-pre",
-	].join(" "),
+  base: [
+    // Display
+    'block',
+    // Font
+    'font-mono',
+    // Color
+    'text-foreground-secondary',
+    // Overflow
+    'overflow-x-auto',
+    // Whitespace
+    'whitespace-pre',
+  ].join(' '),
 
-	variants: {
-		size: {
-			sm: "text-xs p-3", // 12px font, 12px padding
-			md: "text-sm p-4", // 14px font, 16px padding
-			lg: "text-base p-6", // 16px font, 24px padding
-		},
-	},
+  variants: {
+    size: {
+      sm: 'text-xs p-3', // 12px font, 12px padding
+      md: 'text-sm p-4', // 14px font, 16px padding
+      lg: 'text-base p-6', // 16px font, 24px padding
+    },
+  },
 
-	compoundVariants: [],
+  compoundVariants: [],
 
-	defaultVariants: {
-		size: "md",
-	},
+  defaultVariants: {
+    size: 'md',
+  },
 });
 
 /**
  * CodeBlock copy button variant definitions
  */
 export const codeBlockCopyButtonVariants = createVariants({
-	base: [
-		// Position
-		"absolute top-2 right-2",
-		// Display
-		"flex items-center justify-center",
-		// Size
-		"w-8 h-8",
-		// Background
-		"bg-surface-elevated hover:bg-accent",
-		// Border
-		"border border-border rounded",
-		// Color
-		"text-foreground-secondary hover:text-foreground",
-		// Cursor
-		"cursor-pointer",
-		// Transition
-		"transition-colors duration-200",
-	].join(" "),
+  base: [
+    // Position
+    'absolute top-2 right-2',
+    // Display
+    'flex items-center justify-center',
+    // Size
+    'w-8 h-8',
+    // Background
+    'bg-surface-elevated hover:bg-accent',
+    // Border
+    'border border-border rounded',
+    // Color
+    'text-foreground-secondary hover:text-foreground',
+    // Cursor
+    'cursor-pointer',
+    // Transition
+    'transition-colors duration-200',
+  ].join(' '),
 
-	variants: {},
+  variants: {},
 
-	compoundVariants: [],
+  compoundVariants: [],
 
-	defaultVariants: {},
+  defaultVariants: {},
 });

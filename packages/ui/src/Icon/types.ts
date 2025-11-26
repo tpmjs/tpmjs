@@ -1,21 +1,20 @@
-import type { SVGAttributes } from "react";
-import type { IconName } from "./icons";
+import type { SVGAttributes } from 'react';
+import type { IconName } from './icons';
 
 /**
  * Icon component props
  */
-export interface IconProps
-	extends Omit<SVGAttributes<SVGSVGElement>, "children"> {
-	/**
-	 * Icon to display
-	 */
-	icon: IconName;
+export interface IconProps extends Omit<SVGAttributes<SVGSVGElement>, 'children'> {
+  /**
+   * Icon to display
+   */
+  icon: IconName;
 
-	/**
-	 * Size of the icon
-	 * @default 'md'
-	 */
-	size?: "sm" | "md" | "lg";
+  /**
+   * Size of the icon
+   * @default 'md'
+   */
+  size?: 'sm' | 'md' | 'lg';
 }
 
 /**

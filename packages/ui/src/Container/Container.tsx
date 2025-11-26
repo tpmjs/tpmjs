@@ -1,7 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { ContainerProps } from "./types";
-import { containerVariants } from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { ContainerProps } from './types';
+import { containerVariants } from './variants';
 
 /**
  * Container component
@@ -23,23 +23,23 @@ import { containerVariants } from "./variants";
  * ```
  */
 export const Container = forwardRef<HTMLDivElement, ContainerProps>(
-	({ className, size = "xl", padding = "md", children, ...props }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					containerVariants({
-						size,
-						padding,
-					}),
-					className,
-				)}
-				{...props}
-			>
-				{children}
-			</div>
-		);
-	},
+  ({ className, size = 'xl', padding = 'md', children, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          containerVariants({
+            size,
+            padding,
+          }),
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </div>
+    );
+  }
 );
 
-Container.displayName = "Container";
+Container.displayName = 'Container';

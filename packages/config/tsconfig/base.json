@@ -20,9 +20,5 @@
     "target": "ES2022",
     "verbatimModuleSyntax": true
   },
-  "exclude": [
-    "node_modules",
-    "dist",
-    ".turbo"
-  ]
+  "exclude": ["node_modules", "dist", ".turbo"]
 }

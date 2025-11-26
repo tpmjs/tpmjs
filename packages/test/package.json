@@ -5,9 +5,7 @@
   "exports": {
     "./vitest": "./vitest.config.ts"
   },
-  "files": [
-    "vitest.config.ts"
-  ],
+  "files": ["vitest.config.ts"],
   "dependencies": {
     "vitest": "^2.1.8"
   }

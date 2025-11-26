@@ -1,41 +1,41 @@
 {
-	"name": "@tpmjs/monorepo",
-	"version": "0.0.0",
-	"private": true,
-	"type": "module",
-	"engines": {
-		"node": ">=22",
-		"pnpm": ">=8"
-	},
-	"packageManager": "pnpm@10.14.0",
-	"scripts": {
-		"dev": "turbo dev",
-		"build": "turbo build",
-		"test": "turbo test",
-		"test:ui": "turbo test:ui",
-		"lint": "turbo lint",
-		"format": "biome format --write .",
-		"format:check": "biome check .",
-		"type-check": "turbo type-check",
-		"type-coverage": "type-coverage --at-least 95",
-		"find-deadcode": "knip",
-		"check-architecture": "depcruise --validate --config .dependency-cruiser.js apps packages",
-		"clean": "turbo clean && rm -rf node_modules .turbo",
-		"changeset": "changeset",
-		"changeset:version": "changeset version && pnpm install --no-frozen-lockfile",
-		"changeset:publish": "pnpm build && changeset publish",
-		"prepare": "lefthook install"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@changesets/cli": "^2.27.10",
-		"@total-typescript/ts-reset": "^0.6.1",
-		"@types/node": "^22.10.2",
-		"dependency-cruiser": "^17.3.1",
-		"knip": "^5.70.2",
-		"lefthook": "^1.10.1",
-		"turbo": "^2.6.1",
-		"type-coverage": "^2.29.7",
-		"typescript": "^5.9.3"
-	}
+  "name": "@tpmjs/monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=8"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "test:ui": "turbo test:ui",
+    "lint": "turbo lint",
+    "format": "biome format --write .",
+    "format:check": "biome check .",
+    "type-check": "turbo type-check",
+    "type-coverage": "type-coverage --at-least 95",
+    "find-deadcode": "knip",
+    "check-architecture": "depcruise --validate --config .dependency-cruiser.js apps packages",
+    "clean": "turbo clean && rm -rf node_modules .turbo",
+    "changeset": "changeset",
+    "changeset:version": "changeset version && pnpm install --no-frozen-lockfile",
+    "changeset:publish": "pnpm build && changeset publish",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@changesets/cli": "^2.27.10",
+    "@total-typescript/ts-reset": "^0.6.1",
+    "@types/node": "^22.10.2",
+    "dependency-cruiser": "^17.3.1",
+    "knip": "^5.70.2",
+    "lefthook": "^1.10.1",
+    "turbo": "^2.6.1",
+    "type-coverage": "^2.29.7",
+    "typescript": "^5.9.3"
+  }
 }

@@ -1,32 +1,31 @@
-import type { HTMLAttributes } from "react";
+import type { HTMLAttributes } from 'react';
 
 /**
  * CodeBlock component props
  */
-export interface CodeBlockProps
-	extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
-	/**
-	 * Code content to display
-	 */
-	code: string;
+export interface CodeBlockProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /**
+   * Code content to display
+   */
+  code: string;
 
-	/**
-	 * Programming language (for display/metadata only)
-	 * @default 'text'
-	 */
-	language?: string;
+  /**
+   * Programming language (for display/metadata only)
+   * @default 'text'
+   */
+  language?: string;
 
-	/**
-	 * Size variant
-	 * @default 'md'
-	 */
-	size?: "sm" | "md" | "lg";
+  /**
+   * Size variant
+   * @default 'md'
+   */
+  size?: 'sm' | 'md' | 'lg';
 
-	/**
-	 * Whether to show copy button
-	 * @default true
-	 */
-	showCopy?: boolean;
+  /**
+   * Whether to show copy button
+   * @default true
+   */
+  showCopy?: boolean;
 }
 
 /**

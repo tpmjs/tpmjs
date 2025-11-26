@@ -1,27 +1,26 @@
-import type { InputHTMLAttributes } from "react";
+import type { InputHTMLAttributes } from 'react';
 
 /**
  * Input component props
  */
-export interface InputProps
-	extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
-	/**
-	 * Visual state of the input
-	 * @default 'default'
-	 */
-	state?: "default" | "error" | "success";
+export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+  /**
+   * Visual state of the input
+   * @default 'default'
+   */
+  state?: 'default' | 'error' | 'success';
 
-	/**
-	 * Size of the input
-	 * @default 'md'
-	 */
-	size?: "sm" | "md" | "lg";
+  /**
+   * Size of the input
+   * @default 'md'
+   */
+  size?: 'sm' | 'md' | 'lg';
 
-	/**
-	 * Full width input
-	 * @default false
-	 */
-	fullWidth?: boolean;
+  /**
+   * Full width input
+   * @default false
+   */
+  fullWidth?: boolean;
 }
 
 /**

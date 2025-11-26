@@ -1,8 +1,8 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import { type IconName, icons } from "./icons";
-import type { IconProps } from "./types";
-import { iconVariants } from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import { type IconName, icons } from './icons';
+import type { IconProps } from './types';
+import { iconVariants } from './variants';
 
 export type { IconName };
 
@@ -22,27 +22,27 @@ export type { IconName };
  * ```
  */
 export const Icon = forwardRef<SVGSVGElement, IconProps>(
-	({ className, icon, size = "md", ...props }, ref) => {
-		const iconData = icons[icon];
+  ({ className, icon, size = 'md', ...props }, ref) => {
+    const iconData = icons[icon];
 
-		return (
-			<svg
-				ref={ref}
-				className={cn(
-					iconVariants({
-						size,
-					}),
-					className,
-				)}
-				viewBox={iconData.viewBox}
-				fill="currentColor"
-				aria-hidden={props["aria-hidden"] ?? true}
-				{...props}
-			>
-				<path d={iconData.path} />
-			</svg>
-		);
-	},
+    return (
+      <svg
+        ref={ref}
+        className={cn(
+          iconVariants({
+            size,
+          }),
+          className
+        )}
+        viewBox={iconData.viewBox}
+        fill="currentColor"
+        aria-hidden={props['aria-hidden'] ?? true}
+        {...props}
+      >
+        <path d={iconData.path} />
+      </svg>
+    );
+  }
 );
 
-Icon.displayName = "Icon";
+Icon.displayName = 'Icon';

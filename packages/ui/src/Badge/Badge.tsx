@@ -1,7 +1,7 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
-import type { BadgeProps } from "./types";
-import { badgeVariants } from "./variants";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
+import type { BadgeProps } from './types';
+import { badgeVariants } from './variants';
 
 /**
  * Badge component
@@ -18,21 +18,21 @@ import { badgeVariants } from "./variants";
  * ```
  */
 export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
-	({ className, variant = "default", size = "md", ...props }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					badgeVariants({
-						variant,
-						size,
-					}),
-					className,
-				)}
-				{...props}
-			/>
-		);
-	},
+  ({ className, variant = 'default', size = 'md', ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          badgeVariants({
+            variant,
+            size,
+          }),
+          className
+        )}
+        {...props}
+      />
+    );
+  }
 );
 
-Badge.displayName = "Badge";
+Badge.displayName = 'Badge';

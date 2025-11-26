@@ -1,21 +1,21 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef } from "react";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef } from 'react';
 import type {
-	CardContentProps,
-	CardDescriptionProps,
-	CardFooterProps,
-	CardHeaderProps,
-	CardProps,
-	CardTitleProps,
-} from "./types";
+  CardContentProps,
+  CardDescriptionProps,
+  CardFooterProps,
+  CardHeaderProps,
+  CardProps,
+  CardTitleProps,
+} from './types';
 import {
-	cardContentVariants,
-	cardDescriptionVariants,
-	cardFooterVariants,
-	cardHeaderVariants,
-	cardTitleVariants,
-	cardVariants,
-} from "./variants";
+  cardContentVariants,
+  cardDescriptionVariants,
+  cardFooterVariants,
+  cardHeaderVariants,
+  cardTitleVariants,
+  cardVariants,
+} from './variants';
 
 /**
  * Card component
@@ -42,24 +42,24 @@ import {
  * ```
  */
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-	({ className, variant = "default", padding = "none", ...props }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					cardVariants({
-						variant,
-						padding,
-					}),
-					className,
-				)}
-				{...props}
-			/>
-		);
-	},
+  ({ className, variant = 'default', padding = 'none', ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          cardVariants({
+            variant,
+            padding,
+          }),
+          className
+        )}
+        {...props}
+      />
+    );
+  }
 );
 
-Card.displayName = "Card";
+Card.displayName = 'Card';
 
 /**
  * CardHeader component
@@ -67,23 +67,23 @@ Card.displayName = "Card";
  * Header section of a card, typically contains title and description.
  */
 export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
-	({ className, padding = "md", ...props }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					cardHeaderVariants({
-						padding,
-					}),
-					className,
-				)}
-				{...props}
-			/>
-		);
-	},
+  ({ className, padding = 'md', ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          cardHeaderVariants({
+            padding,
+          }),
+          className
+        )}
+        {...props}
+      />
+    );
+  }
 );
 
-CardHeader.displayName = "CardHeader";
+CardHeader.displayName = 'CardHeader';
 
 /**
  * CardTitle component
@@ -91,39 +91,26 @@ CardHeader.displayName = "CardHeader";
  * Title heading for a card.
  */
 export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
-	({ className, as = "h3", ...props }, ref) => {
-		const Component = as;
-		return (
-			<Component
-				ref={ref}
-				className={cn(cardTitleVariants(), className)}
-				{...props}
-			/>
-		);
-	},
+  ({ className, as = 'h3', ...props }, ref) => {
+    const Component = as;
+    return <Component ref={ref} className={cn(cardTitleVariants(), className)} {...props} />;
+  }
 );
 
-CardTitle.displayName = "CardTitle";
+CardTitle.displayName = 'CardTitle';
 
 /**
  * CardDescription component
  *
  * Description text for a card, typically placed below the title.
  */
-export const CardDescription = forwardRef<
-	HTMLParagraphElement,
-	CardDescriptionProps
->(({ className, ...props }, ref) => {
-	return (
-		<p
-			ref={ref}
-			className={cn(cardDescriptionVariants(), className)}
-			{...props}
-		/>
-	);
-});
+export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
+  ({ className, ...props }, ref) => {
+    return <p ref={ref} className={cn(cardDescriptionVariants(), className)} {...props} />;
+  }
+);
 
-CardDescription.displayName = "CardDescription";
+CardDescription.displayName = 'CardDescription';
 
 /**
  * CardContent component
@@ -131,23 +118,23 @@ CardDescription.displayName = "CardDescription";
  * Main content area of a card.
  */
 export const CardContent = forwardRef<HTMLDivElement, CardContentProps>(
-	({ className, padding = "md", ...props }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					cardContentVariants({
-						padding,
-					}),
-					className,
-				)}
-				{...props}
-			/>
-		);
-	},
+  ({ className, padding = 'md', ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          cardContentVariants({
+            padding,
+          }),
+          className
+        )}
+        {...props}
+      />
+    );
+  }
 );
 
-CardContent.displayName = "CardContent";
+CardContent.displayName = 'CardContent';
 
 /**
  * CardFooter component
@@ -155,20 +142,20 @@ CardContent.displayName = "CardContent";
  * Footer section of a card, typically contains actions.
  */
 export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
-	({ className, padding = "md", ...props }, ref) => {
-		return (
-			<div
-				ref={ref}
-				className={cn(
-					cardFooterVariants({
-						padding,
-					}),
-					className,
-				)}
-				{...props}
-			/>
-		);
-	},
+  ({ className, padding = 'md', ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          cardFooterVariants({
+            padding,
+          }),
+          className
+        )}
+        {...props}
+      />
+    );
+  }
 );
 
-CardFooter.displayName = "CardFooter";
+CardFooter.displayName = 'CardFooter';

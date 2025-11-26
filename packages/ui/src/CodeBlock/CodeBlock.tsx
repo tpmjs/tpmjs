@@ -1,12 +1,12 @@
-import { cn } from "@tpmjs/utils/cn";
-import { forwardRef, useState } from "react";
-import { Icon } from "../Icon/Icon";
-import type { CodeBlockProps } from "./types";
+import { cn } from '@tpmjs/utils/cn';
+import { forwardRef, useState } from 'react';
+import { Icon } from '../Icon/Icon';
+import type { CodeBlockProps } from './types';
 import {
-	codeBlockCodeVariants,
-	codeBlockContainerVariants,
-	codeBlockCopyButtonVariants,
-} from "./variants";
+  codeBlockCodeVariants,
+  codeBlockContainerVariants,
+  codeBlockCopyButtonVariants,
+} from './variants';
 
 /**
  * CodeBlock component
@@ -32,58 +32,44 @@ import {
  * ```
  */
 export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>(
-	(
-		{
-			className,
-			code,
-			language = "text",
-			size = "md",
-			showCopy = true,
-			...props
-		},
-		ref,
-	) => {
-		const [copied, setCopied] = useState(false);
+  ({ className, code, language = 'text', size = 'md', showCopy = true, ...props }, ref) => {
+    const [copied, setCopied] = useState(false);
 
-		const handleCopy = async () => {
-			try {
-				await navigator.clipboard.writeText(code);
-				setCopied(true);
-				setTimeout(() => setCopied(false), 2000);
-			} catch (err) {
-				// Silently fail if clipboard API is not available
-				console.error("Failed to copy code:", err);
-			}
-		};
+    const handleCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch (err) {
+        // Silently fail if clipboard API is not available
+        console.error('Failed to copy code:', err);
+      }
+    };
 
-		return (
-			<div
-				ref={ref}
-				className={cn(codeBlockContainerVariants(), className)}
-				{...props}
-			>
-				<code
-					className={codeBlockCodeVariants({
-						size,
-					})}
-					data-language={language}
-				>
-					{code}
-				</code>
-				{showCopy && (
-					<button
-						type="button"
-						className={codeBlockCopyButtonVariants()}
-						onClick={handleCopy}
-						aria-label={copied ? "Copied!" : "Copy code"}
-						data-testid="copy-button"
-					>
-						<Icon icon={copied ? "check" : "copy"} size="sm" />
-					</button>
-				)}
-			</div>
-		);
-	},
+    return (
+      <div ref={ref} className={cn(codeBlockContainerVariants(), className)} {...props}>
+        <code
+          className={codeBlockCodeVariants({
+            size,
+          })}
+          data-language={language}
+        >
+          {code}
+        </code>
+        {showCopy && (
+          <button
+            type="button"
+            className={codeBlockCopyButtonVariants()}
+            onClick={handleCopy}
+            aria-label={copied ? 'Copied!' : 'Copy code'}
+            data-testid="copy-button"
+          >
+            <Icon icon={copied ? 'check' : 'copy'} size="sm" />
+          </button>
+        )}
+      </div>
+    );
+  }
 );
 
-CodeBlock.displayName = "CodeBlock";
+CodeBlock.displayName = 'CodeBlock';

@@ -9,8 +9,8 @@ export default [
       '*.config.js',
       '*.config.ts',
       'next-env.d.ts',
-      'eslint.config.mjs'
-    ]
+      'eslint.config.mjs',
+    ],
   },
   ...reactConfig,
 ];

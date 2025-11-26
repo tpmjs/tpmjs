@@ -1,5 +1,5 @@
-import type { Config } from 'tailwindcss';
 import baseConfig from '@tpmjs/tailwind-config/base';
+import type { Config } from 'tailwindcss';
 
 export default {
   ...baseConfig,
