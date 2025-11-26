@@ -1,5 +1,5 @@
 import { cn } from '@tpmjs/utils/cn';
-import { forwardRef } from 'react';
+import { forwardRef, useEffect } from 'react';
 import { useRadioGroup } from './RadioGroup';
 import type { RadioProps } from './types';
 import { radioDotVariants, radioLabelVariants, radioUIVariants, radioVariants } from './variants';
@@ -43,6 +43,15 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
   ) => {
     // Get context from RadioGroup
     const context = useRadioGroup();
+
+    // Validate context is available after hydration (only in development)
+    useEffect(() => {
+      if (process.env.NODE_ENV !== 'production' && !context.name) {
+        console.error(
+          'Radio must be used within a RadioGroup. If you see this error, ensure your Radio components are wrapped in a RadioGroup component.'
+        );
+      }
+    }, [context.name]);
 
     // Merge props with context (props take precedence)
     const state = stateProp ?? context.state ?? 'default';

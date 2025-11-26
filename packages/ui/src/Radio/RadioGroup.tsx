@@ -1,5 +1,5 @@
 import { cn } from '@tpmjs/utils/cn';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { useControlled } from '../system/useControlled';
 import type { RadioGroupContextValue, RadioGroupProps } from './types';
 import { radioGroupVariants } from './variants';
@@ -15,20 +15,16 @@ export const RadioGroupContext = createContext<RadioGroupContextValue | null>(nu
 export const useRadioGroup = () => {
   const context = useContext(RadioGroupContext);
   if (!context) {
-    // During SSR/prerendering, context might not be available yet
-    // Return default values to prevent build errors
-    if (typeof window === 'undefined') {
-      return {
-        name: '',
-        value: undefined,
-        onChange: () => {},
-        state: 'default' as const,
-        size: 'md' as const,
-        disabled: false,
-      };
-    }
-    // In browser, this is a real error
-    throw new Error('Radio must be used within a RadioGroup');
+    // Return default values for SSR and hydration compatibility
+    // This prevents hydration mismatches while allowing the component to render
+    return {
+      name: '',
+      value: undefined,
+      onChange: () => {},
+      state: 'default' as const,
+      size: 'md' as const,
+      disabled: false,
+    };
   }
   return context;
 };
