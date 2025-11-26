@@ -93,13 +93,7 @@ CardHeader.displayName = "CardHeader";
 export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
 	({ className, as = "h3", ...props }, ref) => {
 		const Component = as;
-		return (
-			<Component
-				ref={ref}
-				className={cn(cardTitleVariants(), className)}
-				{...props}
-			/>
-		);
+		return <Component ref={ref} className={cn(cardTitleVariants(), className)} {...props} />;
 	},
 );
 
@@ -110,18 +104,11 @@ CardTitle.displayName = "CardTitle";
  *
  * Description text for a card, typically placed below the title.
  */
-export const CardDescription = forwardRef<
-	HTMLParagraphElement,
-	CardDescriptionProps
->(({ className, ...props }, ref) => {
-	return (
-		<p
-			ref={ref}
-			className={cn(cardDescriptionVariants(), className)}
-			{...props}
-		/>
-	);
-});
+export const CardDescription = forwardRef<HTMLParagraphElement, CardDescriptionProps>(
+	({ className, ...props }, ref) => {
+		return <p ref={ref} className={cn(cardDescriptionVariants(), className)} {...props} />;
+	},
+);
 
 CardDescription.displayName = "CardDescription";
 

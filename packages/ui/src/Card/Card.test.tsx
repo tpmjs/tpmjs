@@ -1,13 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "./Card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./Card";
 
 describe("Card", () => {
 	describe("Rendering", () => {
@@ -23,9 +16,7 @@ describe("Card", () => {
 				<Card data-testid="card">
 					<CardHeader data-testid="header">
 						<CardTitle data-testid="title">Title</CardTitle>
-						<CardDescription data-testid="description">
-							Description
-						</CardDescription>
+						<CardDescription data-testid="description">Description</CardDescription>
 					</CardHeader>
 					<CardContent data-testid="content">Content</CardContent>
 					<CardFooter data-testid="footer">Footer</CardFooter>
@@ -236,9 +227,7 @@ describe("Card", () => {
 			render(
 				<Card>
 					<CardHeader>
-						<CardDescription data-testid="description">
-							Description text
-						</CardDescription>
+						<CardDescription data-testid="description">Description text</CardDescription>
 					</CardHeader>
 				</Card>,
 			);
@@ -250,9 +239,7 @@ describe("Card", () => {
 			render(
 				<Card>
 					<CardHeader>
-						<CardDescription data-testid="description">
-							Description
-						</CardDescription>
+						<CardDescription data-testid="description">Description</CardDescription>
 					</CardHeader>
 				</Card>,
 			);
@@ -417,7 +404,7 @@ describe("Card", () => {
 				</Card>,
 			);
 			expect(ref).toBeInstanceOf(HTMLDivElement);
-			expect(ref!.tagName).toBe("DIV");
+			expect(ref?.tagName).toBe("DIV");
 		});
 
 		it("forwards ref to CardHeader element", () => {
@@ -452,7 +439,7 @@ describe("Card", () => {
 				</Card>,
 			);
 			expect(ref).toBeInstanceOf(HTMLHeadingElement);
-			expect(ref!.tagName).toBe("H3");
+			expect(ref?.tagName).toBe("H3");
 		});
 
 		it("forwards ref to CardDescription element", () => {
@@ -574,9 +561,7 @@ describe("Card", () => {
 			render(
 				<Card>
 					<CardHeader>
-						<CardDescription data-testid="description">
-							Description
-						</CardDescription>
+						<CardDescription data-testid="description">Description</CardDescription>
 					</CardHeader>
 				</Card>,
 			);
@@ -606,9 +591,7 @@ describe("Card", () => {
 						<CardTitle>Card Title</CardTitle>
 						<CardDescription>This is a card description</CardDescription>
 					</CardHeader>
-					<CardContent data-testid="content">
-						Card content goes here
-					</CardContent>
+					<CardContent data-testid="content">Card content goes here</CardContent>
 					<CardFooter data-testid="footer">Footer actions</CardFooter>
 				</Card>,
 			);
@@ -616,9 +599,7 @@ describe("Card", () => {
 			const card = screen.getByTestId("card");
 			expect(card).toBeInTheDocument();
 			expect(screen.getByText("Card Title")).toBeInTheDocument();
-			expect(
-				screen.getByText("This is a card description"),
-			).toBeInTheDocument();
+			expect(screen.getByText("This is a card description")).toBeInTheDocument();
 			expect(screen.getByText("Card content goes here")).toBeInTheDocument();
 			expect(screen.getByText("Footer actions")).toBeInTheDocument();
 		});

@@ -4,8 +4,7 @@ import type { IconName } from "./icons";
 /**
  * Icon component props
  */
-export interface IconProps
-	extends Omit<SVGAttributes<SVGSVGElement>, "children"> {
+export interface IconProps extends Omit<SVGAttributes<SVGSVGElement>, "children"> {
 	/**
 	 * Icon to display
 	 */

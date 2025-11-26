@@ -65,11 +65,9 @@ export const buttonVariants = createVariants({
 				"active:bg-accent/80",
 			].join(" "),
 
-			link: [
-				"text-primary underline-offset-4",
-				"hover:underline",
-				"active:text-primary/80",
-			].join(" "),
+			link: ["text-primary underline-offset-4", "hover:underline", "active:text-primary/80"].join(
+				" ",
+			),
 		},
 
 		size: {

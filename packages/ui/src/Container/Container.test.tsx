@@ -223,7 +223,7 @@ describe("Container", () => {
 				</Container>,
 			);
 			expect(ref).toBeInstanceOf(HTMLDivElement);
-			expect(ref!.tagName).toBe("DIV");
+			expect(ref?.tagName).toBe("DIV");
 		});
 	});
 

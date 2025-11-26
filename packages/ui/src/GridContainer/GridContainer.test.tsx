@@ -281,13 +281,7 @@ describe("GridContainer", () => {
 	describe("Compound Scenarios", () => {
 		it("works with multiple variants combined", () => {
 			render(
-				<GridContainer
-					columns={4}
-					gap="lg"
-					align="center"
-					justify="center"
-					data-testid="grid"
-				>
+				<GridContainer columns={4} gap="lg" align="center" justify="center" data-testid="grid">
 					Content
 				</GridContainer>,
 			);
@@ -300,12 +294,7 @@ describe("GridContainer", () => {
 
 		it("works with fixed columns and custom className", () => {
 			render(
-				<GridContainer
-					columns={3}
-					responsive="fixed"
-					className="my-custom-grid"
-					data-testid="grid"
-				>
+				<GridContainer columns={3} responsive="fixed" className="my-custom-grid" data-testid="grid">
 					Content
 				</GridContainer>,
 			);

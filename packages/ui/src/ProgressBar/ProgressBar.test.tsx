@@ -103,36 +103,28 @@ describe("ProgressBar", () => {
 
 	describe("Color Variants", () => {
 		it("applies primary variant", () => {
-			render(
-				<ProgressBar value={50} variant="primary" data-testid="progress" />,
-			);
+			render(<ProgressBar value={50} variant="primary" data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
 			expect(fill?.className).toContain("bg-primary");
 		});
 
 		it("applies success variant", () => {
-			render(
-				<ProgressBar value={50} variant="success" data-testid="progress" />,
-			);
+			render(<ProgressBar value={50} variant="success" data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
 			expect(fill?.className).toContain("bg-success");
 		});
 
 		it("applies warning variant", () => {
-			render(
-				<ProgressBar value={50} variant="warning" data-testid="progress" />,
-			);
+			render(<ProgressBar value={50} variant="warning" data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
 			expect(fill?.className).toContain("bg-warning");
 		});
 
 		it("applies danger variant", () => {
-			render(
-				<ProgressBar value={50} variant="danger" data-testid="progress" />,
-			);
+			render(<ProgressBar value={50} variant="danger" data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			const fill = progress.querySelector("div");
 			expect(fill?.className).toContain("bg-error");
@@ -183,17 +175,13 @@ describe("ProgressBar", () => {
 
 	describe("HTML Attributes", () => {
 		it("passes through id attribute", () => {
-			render(
-				<ProgressBar value={50} id="progress-id" data-testid="progress" />,
-			);
+			render(<ProgressBar value={50} id="progress-id" data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			expect(progress).toHaveAttribute("id", "progress-id");
 		});
 
 		it("passes through data attributes", () => {
-			render(
-				<ProgressBar value={50} data-custom="test" data-testid="progress" />,
-			);
+			render(<ProgressBar value={50} data-custom="test" data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			expect(progress).toHaveAttribute("data-custom", "test");
 		});
@@ -201,13 +189,7 @@ describe("ProgressBar", () => {
 
 	describe("Custom className", () => {
 		it("merges custom className with variant classes", () => {
-			render(
-				<ProgressBar
-					value={50}
-					className="custom-class"
-					data-testid="progress"
-				/>,
-			);
+			render(<ProgressBar value={50} className="custom-class" data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			expect(progress.className).toContain("custom-class");
 			expect(progress.className).toContain("bg-surface");
@@ -253,14 +235,7 @@ describe("ProgressBar", () => {
 
 	describe("Compound Scenarios", () => {
 		it("works correctly with large size and success variant", () => {
-			render(
-				<ProgressBar
-					value={80}
-					size="lg"
-					variant="success"
-					data-testid="progress"
-				/>,
-			);
+			render(<ProgressBar value={80} size="lg" variant="success" data-testid="progress" />);
 			const progress = screen.getByTestId("progress");
 			expect(progress.className).toContain("h-3");
 			const fill = progress.querySelector("div");

@@ -292,7 +292,7 @@ describe("Section", () => {
 				</Section>,
 			);
 			expect(ref).toBeInstanceOf(HTMLElement);
-			expect(ref!.tagName).toBe("SECTION");
+			expect(ref?.tagName).toBe("SECTION");
 		});
 	});
 
@@ -308,13 +308,7 @@ describe("Section", () => {
 	describe("Compound Scenarios", () => {
 		it("works with multiple variants combined", () => {
 			render(
-				<Section
-					spacing="lg"
-					background="blueprint"
-					container="xl"
-					centered
-					data-testid="section"
-				>
+				<Section spacing="lg" background="blueprint" container="xl" centered data-testid="section">
 					Content
 				</Section>,
 			);

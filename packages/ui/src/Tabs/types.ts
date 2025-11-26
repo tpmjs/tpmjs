@@ -23,8 +23,7 @@ export interface Tab {
 /**
  * Tabs component props
  */
-export interface TabsProps
-	extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
+export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, "onChange"> {
 	/**
 	 * Array of tabs to display
 	 */

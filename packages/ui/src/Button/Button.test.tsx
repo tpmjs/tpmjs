@@ -119,9 +119,7 @@ describe("Button", () => {
 		});
 
 		it("applies icon size classes", () => {
-			render(
-				<Button size="icon" data-testid="button" aria-label="Icon button" />,
-			);
+			render(<Button size="icon" data-testid="button" aria-label="Icon button" />);
 			const button = screen.getByTestId("button");
 			expect(button.className).toContain("h-10");
 			expect(button.className).toContain("w-10");
@@ -241,19 +239,14 @@ describe("Button", () => {
 				</Button>,
 			);
 			expect(ref).toBeInstanceOf(HTMLButtonElement);
-			expect(ref!.tagName).toBe("BUTTON");
+			expect(ref?.tagName).toBe("BUTTON");
 		});
 	});
 
 	describe("HTML Attributes", () => {
 		it("passes through HTML button attributes", () => {
 			render(
-				<Button
-					type="submit"
-					name="test-button"
-					value="test-value"
-					data-testid="button"
-				>
+				<Button type="submit" name="test-button" value="test-value" data-testid="button">
 					Submit
 				</Button>,
 			);

@@ -50,13 +50,7 @@ describe("CodeBlock", () => {
 
 	describe("Language", () => {
 		it("sets data-language attribute", () => {
-			render(
-				<CodeBlock
-					code="const x = 5"
-					language="javascript"
-					data-testid="codeblock"
-				/>,
-			);
+			render(<CodeBlock code="const x = 5" language="javascript" data-testid="codeblock" />);
 			const codeblock = screen.getByTestId("codeblock");
 			const code = codeblock.querySelector("code");
 			expect(code).toHaveAttribute("data-language", "javascript");
@@ -77,9 +71,7 @@ describe("CodeBlock", () => {
 			let code = codeblock.querySelector("code");
 			expect(code).toHaveAttribute("data-language", "python");
 
-			rerender(
-				<CodeBlock code="code" language="bash" data-testid="codeblock" />,
-			);
+			rerender(<CodeBlock code="code" language="bash" data-testid="codeblock" />);
 			codeblock = screen.getByTestId("codeblock");
 			code = codeblock.querySelector("code");
 			expect(code).toHaveAttribute("data-language", "bash");
@@ -223,12 +215,8 @@ describe("CodeBlock", () => {
 		});
 
 		it("handles clipboard API errors gracefully", async () => {
-			const consoleErrorSpy = vi
-				.spyOn(console, "error")
-				.mockImplementation(() => {});
-			mockClipboard.writeText.mockRejectedValueOnce(
-				new Error("Clipboard not available"),
-			);
+			const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+			mockClipboard.writeText.mockRejectedValueOnce(new Error("Clipboard not available"));
 
 			try {
 				render(<CodeBlock code="test code" />);
@@ -249,17 +237,13 @@ describe("CodeBlock", () => {
 
 	describe("HTML Attributes", () => {
 		it("passes through id attribute", () => {
-			render(
-				<CodeBlock code="code" id="codeblock-id" data-testid="codeblock" />,
-			);
+			render(<CodeBlock code="code" id="codeblock-id" data-testid="codeblock" />);
 			const codeblock = screen.getByTestId("codeblock");
 			expect(codeblock).toHaveAttribute("id", "codeblock-id");
 		});
 
 		it("passes through data attributes", () => {
-			render(
-				<CodeBlock code="code" data-custom="test" data-testid="codeblock" />,
-			);
+			render(<CodeBlock code="code" data-custom="test" data-testid="codeblock" />);
 			const codeblock = screen.getByTestId("codeblock");
 			expect(codeblock).toHaveAttribute("data-custom", "test");
 		});
@@ -267,13 +251,7 @@ describe("CodeBlock", () => {
 
 	describe("Custom className", () => {
 		it("merges custom className with variant classes", () => {
-			render(
-				<CodeBlock
-					code="code"
-					className="custom-class"
-					data-testid="codeblock"
-				/>,
-			);
+			render(<CodeBlock code="code" className="custom-class" data-testid="codeblock" />);
 			const codeblock = screen.getByTestId("codeblock");
 			expect(codeblock.className).toContain("custom-class");
 			expect(codeblock.className).toContain("bg-background");
@@ -293,7 +271,7 @@ describe("CodeBlock", () => {
 				/>,
 			);
 			expect(ref).toBeInstanceOf(HTMLDivElement);
-			expect(ref!.querySelector("code")).toBeInTheDocument();
+			expect(ref?.querySelector("code")).toBeInTheDocument();
 		});
 	});
 

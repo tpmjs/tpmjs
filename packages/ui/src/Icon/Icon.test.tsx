@@ -119,10 +119,7 @@ describe("Icon", () => {
 			render(<Icon icon="chevronDown" data-testid="icon" />);
 			const icon = screen.getByTestId("icon");
 			const path = icon.querySelector("path");
-			expect(path).toHaveAttribute(
-				"d",
-				"M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z",
-			);
+			expect(path).toHaveAttribute("d", "M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z");
 		});
 	});
 
@@ -148,14 +145,7 @@ describe("Icon", () => {
 		});
 
 		it("passes through aria-label", () => {
-			render(
-				<Icon
-					icon="check"
-					aria-label="Success"
-					aria-hidden={false}
-					data-testid="icon"
-				/>,
-			);
+			render(<Icon icon="check" aria-label="Success" aria-hidden={false} data-testid="icon" />);
 			const icon = screen.getByTestId("icon");
 			expect(icon).toHaveAttribute("aria-label", "Success");
 		});
@@ -179,7 +169,7 @@ describe("Icon", () => {
 				/>,
 			);
 			expect(ref).toBeInstanceOf(SVGSVGElement);
-			expect(ref!.tagName).toBe("svg");
+			expect(ref?.tagName).toBe("svg");
 		});
 	});
 

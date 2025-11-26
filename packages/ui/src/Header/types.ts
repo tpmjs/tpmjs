@@ -3,8 +3,7 @@ import type { HTMLAttributes, ReactNode } from "react";
 /**
  * Header component props
  */
-export interface HeaderProps
-	extends Omit<HTMLAttributes<HTMLElement>, "title"> {
+export interface HeaderProps extends Omit<HTMLAttributes<HTMLElement>, "title"> {
 	/**
 	 * Title/logo content for the left side
 	 */

@@ -32,17 +32,7 @@ import {
  * ```
  */
 export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>(
-	(
-		{
-			className,
-			code,
-			language = "text",
-			size = "md",
-			showCopy = true,
-			...props
-		},
-		ref,
-	) => {
+	({ className, code, language = "text", size = "md", showCopy = true, ...props }, ref) => {
 		const [copied, setCopied] = useState(false);
 
 		const handleCopy = async () => {
@@ -57,11 +47,7 @@ export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>(
 		};
 
 		return (
-			<div
-				ref={ref}
-				className={cn(codeBlockContainerVariants(), className)}
-				{...props}
-			>
+			<div ref={ref} className={cn(codeBlockContainerVariants(), className)} {...props}>
 				<code
 					className={codeBlockCodeVariants({
 						size,

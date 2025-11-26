@@ -77,11 +77,7 @@ describe("Header", () => {
 		});
 
 		it("renders ReactNode as actions", () => {
-			render(
-				<Header
-					actions={<div data-testid="custom-actions">Custom Actions</div>}
-				/>,
-			);
+			render(<Header actions={<div data-testid="custom-actions">Custom Actions</div>} />);
 			expect(screen.getByTestId("custom-actions")).toBeInTheDocument();
 		});
 	});
@@ -255,7 +251,7 @@ describe("Header", () => {
 				/>,
 			);
 			expect(ref).toBeInstanceOf(HTMLElement);
-			expect(ref!.tagName).toBe("HEADER");
+			expect(ref?.tagName).toBe("HEADER");
 		});
 	});
 
@@ -275,15 +271,7 @@ describe("Header", () => {
 
 	describe("Compound Scenarios", () => {
 		it("works correctly with large size and sticky", () => {
-			render(
-				<Header
-					title="App"
-					actions="Sign In"
-					size="lg"
-					sticky={true}
-					data-testid="header"
-				/>,
-			);
+			render(<Header title="App" actions="Sign In" size="lg" sticky={true} data-testid="header" />);
 			const header = screen.getByTestId("header");
 			expect(header.className).toContain("h-20");
 			expect(header.className).toContain("px-8");

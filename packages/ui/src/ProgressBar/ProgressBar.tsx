@@ -26,17 +26,7 @@ import { progressBarFillVariants, progressBarTrackVariants } from "./variants";
  * ```
  */
 export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
-	(
-		{
-			className,
-			value,
-			size = "md",
-			variant = "primary",
-			showLabel = false,
-			...props
-		},
-		ref,
-	) => {
+	({ className, value, size = "md", variant = "primary", showLabel = false, ...props }, ref) => {
 		// Clamp value between 0 and 100
 		const clampedValue = Math.min(Math.max(value, 0), 100);
 
