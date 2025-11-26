@@ -3,8 +3,7 @@ import type { TextareaHTMLAttributes } from 'react';
 /**
  * Textarea component props
  */
-export interface TextareaProps
-  extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
+export interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'size'> {
   /**
    * Visual state of the textarea
    * @default 'default'

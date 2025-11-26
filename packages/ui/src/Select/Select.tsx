@@ -98,27 +98,22 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {hasChildren && children}
 
           {/* Render simple options if provided */}
-          {!hasChildren && hasOptions &&
+          {!hasChildren &&
+            hasOptions &&
             options.map((option) => (
-              <option
-                key={option.value}
-                value={option.value}
-                disabled={option.disabled}
-              >
+              <option key={option.value} value={option.value} disabled={option.disabled}>
                 {option.label}
               </option>
             ))}
 
           {/* Render option groups if provided */}
-          {!hasChildren && !hasOptions && hasOptionGroups &&
+          {!hasChildren &&
+            !hasOptions &&
+            hasOptionGroups &&
             optionGroups.map((group) => (
               <optgroup key={group.label} label={group.label}>
                 {group.options.map((option) => (
-                  <option
-                    key={option.value}
-                    value={option.value}
-                    disabled={option.disabled}
-                  >
+                  <option key={option.value} value={option.value} disabled={option.disabled}>
                     {option.label}
                   </option>
                 ))}

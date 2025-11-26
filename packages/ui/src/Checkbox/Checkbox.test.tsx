@@ -107,9 +107,7 @@ describe('Checkbox', () => {
       const wrapper = container.querySelector('div');
       const children = Array.from(wrapper?.children || []);
       const labelIndex = children.findIndex((child) => child.tagName === 'LABEL');
-      const inputWrapperIndex = children.findIndex((child) =>
-        child.querySelector('input')
-      );
+      const inputWrapperIndex = children.findIndex((child) => child.querySelector('input'));
       expect(inputWrapperIndex).toBeLessThan(labelIndex);
     });
 
@@ -123,9 +121,7 @@ describe('Checkbox', () => {
       const wrapper = container.querySelector('div');
       const children = Array.from(wrapper?.children || []);
       const labelIndex = children.findIndex((child) => child.tagName === 'LABEL');
-      const inputWrapperIndex = children.findIndex((child) =>
-        child.querySelector('input')
-      );
+      const inputWrapperIndex = children.findIndex((child) => child.querySelector('input'));
       expect(labelIndex).toBeLessThan(inputWrapperIndex);
     });
   });
@@ -251,18 +247,12 @@ describe('Checkbox', () => {
 
     it('should support aria-describedby', () => {
       render(<Checkbox aria-describedby="description" />);
-      expect(screen.getByRole('checkbox')).toHaveAttribute(
-        'aria-describedby',
-        'description'
-      );
+      expect(screen.getByRole('checkbox')).toHaveAttribute('aria-describedby', 'description');
     });
 
     it('should support aria-labelledby', () => {
       render(<Checkbox aria-labelledby="label-id" />);
-      expect(screen.getByRole('checkbox')).toHaveAttribute(
-        'aria-labelledby',
-        'label-id'
-      );
+      expect(screen.getByRole('checkbox')).toHaveAttribute('aria-labelledby', 'label-id');
     });
 
     it('should support aria-required', () => {
@@ -519,9 +509,7 @@ describe('Checkbox', () => {
       const user = userEvent.setup();
       const ControlledCheckbox = () => {
         const [checked, setChecked] = React.useState(false);
-        return (
-          <Checkbox checked={checked} onChange={(e) => setChecked(e.target.checked)} />
-        );
+        return <Checkbox checked={checked} onChange={(e) => setChecked(e.target.checked)} />;
       };
 
       render(<ControlledCheckbox />);

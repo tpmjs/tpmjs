@@ -191,10 +191,7 @@ describe('FormField', () => {
 
     it('should hide helper text when error is present', () => {
       render(
-        <FormField
-          helperText="This is helper text"
-          error="This is an error"
-        >
+        <FormField helperText="This is helper text" error="This is an error">
           <input />
         </FormField>
       );
@@ -390,11 +387,7 @@ describe('FormField', () => {
 
     it('should work with success state and helper text', () => {
       render(
-        <FormField
-          label="Username"
-          state="success"
-          helperText="Username is available!"
-        >
+        <FormField label="Username" state="success" helperText="Username is available!">
           <input />
         </FormField>
       );

@@ -162,7 +162,9 @@ describe('Textarea', () => {
     });
 
     it('shows character count with max length', () => {
-      const { container } = render(<Textarea showCount maxLength={100} defaultValue="Hello" data-testid="textarea" />);
+      const { container } = render(
+        <Textarea showCount maxLength={100} defaultValue="Hello" data-testid="textarea" />
+      );
       const counter = container.querySelector('[aria-live="polite"]');
       expect(counter).toBeInTheDocument();
       expect(counter?.textContent).toContain('5');
@@ -483,7 +485,13 @@ describe('Textarea', () => {
 
     it('works with character counter and error state', () => {
       const { container } = render(
-        <Textarea showCount state="error" maxLength={100} defaultValue="Error text" data-testid="textarea" />
+        <Textarea
+          showCount
+          state="error"
+          maxLength={100}
+          defaultValue="Error text"
+          data-testid="textarea"
+        />
       );
       const textarea = screen.getByTestId('textarea');
       expect(textarea.className).toContain('border-error');
@@ -551,7 +559,9 @@ describe('Textarea', () => {
     });
 
     it('works as controlled component with value prop', () => {
-      const { rerender } = render(<Textarea value="Controlled" onChange={() => {}} data-testid="textarea" />);
+      const { rerender } = render(
+        <Textarea value="Controlled" onChange={() => {}} data-testid="textarea" />
+      );
       const textarea = screen.getByTestId('textarea') as HTMLTextAreaElement;
       expect(textarea.value).toBe('Controlled');
 

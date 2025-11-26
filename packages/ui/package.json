@@ -88,9 +88,7 @@
       "default": "./dist/FormField/FormField.js"
     }
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "NODE_OPTIONS='--max-old-space-size=4096' tsup",
     "dev": "tsup --watch",

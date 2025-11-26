@@ -3,8 +3,7 @@ import type { InputHTMLAttributes } from 'react';
 /**
  * Radio component props
  */
-export interface RadioProps
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
+export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'type'> {
   /**
    * Visual state of the radio button
    * @default 'default'

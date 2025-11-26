@@ -49,11 +49,9 @@ export const formControlBase = [
  * Error state classes
  * Applied when a form field has validation errors
  */
-export const formErrorState = [
-  'border-error',
-  'focus:border-error',
-  'focus:ring-error/20',
-].join(' ');
+export const formErrorState = ['border-error', 'focus:border-error', 'focus:ring-error/20'].join(
+  ' '
+);
 
 /**
  * Success state classes
@@ -69,9 +67,7 @@ export const formSuccessState = [
  * Loading state classes
  * Applied when a form field is in loading state
  */
-export const formLoadingState = ['cursor-wait', 'pointer-events-none', 'opacity-70'].join(
-  ' '
-);
+export const formLoadingState = ['cursor-wait', 'pointer-events-none', 'opacity-70'].join(' ');
 
 /**
  * Helper text base classes
@@ -89,11 +85,9 @@ export const formErrorMessage = ['text-sm text-error', 'mt-1.5'].join(' ');
  * Label base classes
  * For form field labels
  */
-export const formLabelBase = [
-  'text-sm font-medium text-foreground',
-  'mb-2',
-  'inline-block',
-].join(' ');
+export const formLabelBase = ['text-sm font-medium text-foreground', 'mb-2', 'inline-block'].join(
+  ' '
+);
 
 /**
  * Required indicator classes

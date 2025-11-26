@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
+import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Switch } from './Switch';
-import React from 'react';
 
 describe('Switch', () => {
   describe('Rendering', () => {
@@ -248,9 +248,7 @@ describe('Switch', () => {
     it('should sync hidden input checked state', async () => {
       const user = userEvent.setup();
       const { container } = render(<Switch name="test" />);
-      const hiddenInput = container.querySelector(
-        'input[name="test"]'
-      ) as HTMLInputElement;
+      const hiddenInput = container.querySelector('input[name="test"]') as HTMLInputElement;
       const switchEl = screen.getByRole('switch');
 
       expect(hiddenInput?.checked).toBe(false);
@@ -296,10 +294,7 @@ describe('Switch', () => {
 
     it('should support custom aria-labelledby', () => {
       render(<Switch aria-labelledby="custom-label" />);
-      expect(screen.getByRole('switch')).toHaveAttribute(
-        'aria-labelledby',
-        'custom-label'
-      );
+      expect(screen.getByRole('switch')).toHaveAttribute('aria-labelledby', 'custom-label');
     });
 
     it('should set aria-hidden on thumb', () => {

@@ -89,10 +89,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
     const labelElement = label ? (
       <label
         htmlFor={radioId}
-        className={cn(
-          radioLabelVariants({ size }),
-          labelPosition === 'left' ? 'mr-2' : 'ml-2'
-        )}
+        className={cn(radioLabelVariants({ size }), labelPosition === 'left' ? 'mr-2' : 'ml-2')}
       >
         {label}
       </label>

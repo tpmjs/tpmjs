@@ -120,12 +120,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           xmlns="http://www.w3.org/2000/svg"
           aria-hidden="true"
         >
-          <path
-            d="M4 8H12"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
+          <path d="M4 8H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </span>
     );
@@ -133,10 +128,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     const labelElement = label ? (
       <label
         htmlFor={checkboxId}
-        className={cn(
-          checkboxLabelVariants({ size }),
-          labelPosition === 'left' ? 'mr-2' : 'ml-2'
-        )}
+        className={cn(checkboxLabelVariants({ size }), labelPosition === 'left' ? 'mr-2' : 'ml-2')}
       >
         {label}
       </label>

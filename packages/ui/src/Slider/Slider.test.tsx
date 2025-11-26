@@ -159,10 +159,7 @@ describe('Slider', () => {
     });
 
     it('should show marks without labels (just values)', () => {
-      const marks = [
-        { value: 0 },
-        { value: 50 },
-      ];
+      const marks = [{ value: 0 }, { value: 50 }];
       render(<Slider marks={marks} />);
 
       expect(screen.getByText('0')).toBeInTheDocument();
@@ -282,18 +279,12 @@ describe('Slider', () => {
 
     it('should support aria-labelledby', () => {
       render(<Slider aria-labelledby="volume-label" />);
-      expect(screen.getByRole('slider')).toHaveAttribute(
-        'aria-labelledby',
-        'volume-label'
-      );
+      expect(screen.getByRole('slider')).toHaveAttribute('aria-labelledby', 'volume-label');
     });
 
     it('should support aria-describedby', () => {
       render(<Slider aria-describedby="volume-description" />);
-      expect(screen.getByRole('slider')).toHaveAttribute(
-        'aria-describedby',
-        'volume-description'
-      );
+      expect(screen.getByRole('slider')).toHaveAttribute('aria-describedby', 'volume-description');
     });
   });
 
@@ -446,7 +437,10 @@ describe('Slider', () => {
     });
 
     it('should work with all props combined', () => {
-      const marks = [{ value: 0, label: 'Low' }, { value: 100, label: 'High' }];
+      const marks = [
+        { value: 0, label: 'Low' },
+        { value: 100, label: 'High' },
+      ];
       render(
         <Slider
           min={0}

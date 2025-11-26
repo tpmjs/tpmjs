@@ -126,10 +126,7 @@ export function FormField({
 
         {/* Helper text (shown only if no error) */}
         {!error && helperText && (
-          <div
-            id={helperId}
-            className={cn(formFieldHelperVariants({ state: effectiveState }))}
-          >
+          <div id={helperId} className={cn(formFieldHelperVariants({ state: effectiveState }))}>
             {helperText}
           </div>
         )}

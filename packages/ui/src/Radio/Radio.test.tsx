@@ -1,10 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createRef } from 'react';
+import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { Radio } from './Radio';
 import { RadioGroup } from './RadioGroup';
-import React from 'react';
 
 describe('Radio', () => {
   describe('Rendering', () => {
@@ -347,10 +347,7 @@ describe('Radio', () => {
           <Radio value="option1" aria-describedby="description" />
         </RadioGroup>
       );
-      expect(screen.getByRole('radio')).toHaveAttribute(
-        'aria-describedby',
-        'description'
-      );
+      expect(screen.getByRole('radio')).toHaveAttribute('aria-describedby', 'description');
     });
 
     it('should support aria-labelledby', () => {
@@ -573,10 +570,7 @@ describe('RadioGroup', () => {
           <Radio value="option1" />
         </RadioGroup>
       );
-      expect(screen.getByRole('radiogroup')).toHaveAttribute(
-        'aria-label',
-        'Choose size'
-      );
+      expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-label', 'Choose size');
     });
 
     it('should support aria-labelledby', () => {
@@ -585,10 +579,7 @@ describe('RadioGroup', () => {
           <Radio value="option1" />
         </RadioGroup>
       );
-      expect(screen.getByRole('radiogroup')).toHaveAttribute(
-        'aria-labelledby',
-        'label-id'
-      );
+      expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-labelledby', 'label-id');
     });
 
     it('should support aria-describedby', () => {
@@ -597,10 +588,7 @@ describe('RadioGroup', () => {
           <Radio value="option1" />
         </RadioGroup>
       );
-      expect(screen.getByRole('radiogroup')).toHaveAttribute(
-        'aria-describedby',
-        'description-id'
-      );
+      expect(screen.getByRole('radiogroup')).toHaveAttribute('aria-describedby', 'description-id');
     });
 
     it('should support aria-required', () => {

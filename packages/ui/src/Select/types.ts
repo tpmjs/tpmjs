@@ -39,8 +39,7 @@ export interface SelectOptionGroup {
 /**
  * Select component props
  */
-export interface SelectProps
-  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
+export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'size'> {
   /**
    * Visual state of the select
    * @default 'default'

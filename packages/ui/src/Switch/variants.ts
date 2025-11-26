@@ -102,10 +102,7 @@ export const switchThumbVariants = createVariants({
  * Loading spinner variants
  */
 export const switchSpinnerVariants = createVariants({
-  base: [
-    'absolute inset-0 flex items-center justify-center',
-    'pointer-events-none',
-  ].join(' '),
+  base: ['absolute inset-0 flex items-center justify-center', 'pointer-events-none'].join(' '),
 
   variants: {
     size: {

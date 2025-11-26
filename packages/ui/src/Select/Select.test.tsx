@@ -231,9 +231,7 @@ describe('Select', () => {
     });
 
     it('should apply correct spinner size based on select size', () => {
-      const { container, rerender } = render(
-        <Select options={simpleOptions} loading size="sm" />
-      );
+      const { container, rerender } = render(<Select options={simpleOptions} loading size="sm" />);
       let spinner = container.querySelector('svg.animate-spin');
       expect(spinner).toHaveAttribute('width', '14');
 
@@ -300,18 +298,12 @@ describe('Select', () => {
 
     it('should support aria-describedby', () => {
       render(<Select options={simpleOptions} aria-describedby="description" />);
-      expect(screen.getByRole('combobox')).toHaveAttribute(
-        'aria-describedby',
-        'description'
-      );
+      expect(screen.getByRole('combobox')).toHaveAttribute('aria-describedby', 'description');
     });
 
     it('should support aria-labelledby', () => {
       render(<Select options={simpleOptions} aria-labelledby="label-id" />);
-      expect(screen.getByRole('combobox')).toHaveAttribute(
-        'aria-labelledby',
-        'label-id'
-      );
+      expect(screen.getByRole('combobox')).toHaveAttribute('aria-labelledby', 'label-id');
     });
 
     it('should support aria-required', () => {
@@ -506,9 +498,7 @@ describe('Select', () => {
     });
 
     it('should work with loading and disabled states', () => {
-      const { container } = render(
-        <Select options={simpleOptions} loading disabled />
-      );
+      const { container } = render(<Select options={simpleOptions} loading disabled />);
       const select = screen.getByRole('combobox');
       expect(select).toBeDisabled();
       expect(container.querySelector('svg.animate-spin')).toBeInTheDocument();
