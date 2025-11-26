@@ -43,9 +43,10 @@ export const Section = forwardRef<HTMLElement, SectionProps>(
 	) => {
 		const Component = as;
 
-		// biome-ignore lint/suspicious/noExplicitAny: Polymorphic component requires any for ref type
 		return (
 			<Component
+				// biome-ignore lint/suspicious/noExplicitAny: Polymorphic component requires any for ref type
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				ref={ref as any}
 				className={cn(
 					sectionVariants({
