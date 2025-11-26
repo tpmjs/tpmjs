@@ -15,7 +15,8 @@
       "**/coverage/**",
       "**/.turbo/**",
       "**/storybook-static/**",
-      "**/*.tsbuildinfo"
+      "**/*.tsbuildinfo",
+      "**/next-env.d.ts"
     ]
   },
   "formatter": {
