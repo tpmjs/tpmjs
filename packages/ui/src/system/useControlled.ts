@@ -48,31 +48,27 @@ export function useControlled<T>({
   // Use controlled value if provided, otherwise use internal state
   const value = isControlled ? controlled : valueState;
 
+  // Track previous controlled state for dev warning
+  const prevControlledRef = useRef(isControlled);
+
   // Dev warning for switching between controlled and uncontrolled
   if (process.env.NODE_ENV !== 'production') {
-    // biome-ignore lint/correctness/useHookAtTopLevel: dev-only warning
-    useRef(() => {
-      if (isControlled !== (controlled !== undefined)) {
-        console.error(
-          `Warning: A component (\`${name}\`) is changing from ${
-            isControlled ? 'controlled' : 'uncontrolled'
-          } to ${isControlled ? 'uncontrolled' : 'controlled'}. ` +
-            'Components should not switch from controlled to uncontrolled (or vice versa). ' +
-            'Decide between using a controlled or uncontrolled component for the lifetime of the component.'
-        );
-      }
-    });
+    if (prevControlledRef.current !== (controlled !== undefined)) {
+      console.error(
+        `Warning: A component (\`${name}\`) is changing from ${
+          prevControlledRef.current ? 'controlled' : 'uncontrolled'
+        } to ${prevControlledRef.current ? 'uncontrolled' : 'controlled'}. Components should not switch from controlled to uncontrolled (or vice versa). Decide between using a controlled or uncontrolled component for the lifetime of the component.`
+      );
+    }
+    prevControlledRef.current = controlled !== undefined;
   }
 
   // Callback to update the value
-  const setValueIfUncontrolled = useCallback(
-    (newValue: T) => {
-      if (!isControlled) {
-        setValue(newValue);
-      }
-    },
-    [isControlled]
-  );
+  const setValueIfUncontrolled = useCallback((newValue: T) => {
+    if (!isControlled) {
+      setValue(newValue);
+    }
+  }, []);
 
   return [value as T, setValueIfUncontrolled];
 }

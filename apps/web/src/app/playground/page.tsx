@@ -464,7 +464,9 @@ export default function Example() {
 
             {/* Forms Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Form Components</h2>
+              <h2 className="text-3xl font-semibold border-b border-border pb-2">
+                Form Components
+              </h2>
 
               {/* Textarea */}
               <div className="space-y-4">
@@ -479,12 +481,7 @@ export default function Example() {
                     />
                   </FormField>
                   <FormField label="Feedback" helperText="Maximum 200 characters">
-                    <Textarea
-                      placeholder="Your feedback..."
-                      rows={4}
-                      maxLength={200}
-                      showCount
-                    />
+                    <Textarea placeholder="Your feedback..." rows={4} maxLength={200} showCount />
                   </FormField>
                 </div>
               </div>
@@ -496,12 +493,12 @@ export default function Example() {
                   <CardContent className="p-6 space-y-4">
                     <Checkbox
                       checked={newsletter}
-                      onCheckedChange={setNewsletter}
+                      onChange={(e) => setNewsletter(e.target.checked)}
                       label="Subscribe to newsletter"
                     />
                     <Checkbox
                       checked={terms}
-                      onCheckedChange={setTerms}
+                      onChange={(e) => setTerms(e.target.checked)}
                       label="I agree to the terms and conditions"
                     />
                     <Checkbox disabled label="Disabled checkbox" />
@@ -546,7 +543,7 @@ export default function Example() {
                           Receive email notifications about updates
                         </p>
                       </div>
-                      <Switch checked={notifications} onCheckedChange={setNotifications} />
+                      <Switch checked={notifications} onChange={setNotifications} />
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
@@ -560,9 +557,7 @@ export default function Example() {
                     <div className="flex items-center justify-between opacity-50">
                       <div className="space-y-0.5">
                         <Label>Disabled switch</Label>
-                        <p className="text-sm text-foreground-secondary">
-                          This switch is disabled
-                        </p>
+                        <p className="text-sm text-foreground-secondary">This switch is disabled</p>
                       </div>
                       <Switch disabled />
                     </div>
@@ -654,7 +649,11 @@ export default function Example() {
                       />
                     </FormField>
 
-                    <FormField label="Bio" htmlFor="profile-bio" helperText="Tell us about yourself">
+                    <FormField
+                      label="Bio"
+                      htmlFor="profile-bio"
+                      helperText="Tell us about yourself"
+                    >
                       <Textarea
                         id="profile-bio"
                         placeholder="Write something..."
@@ -683,12 +682,12 @@ export default function Example() {
                     <div className="space-y-3">
                       <Checkbox
                         checked={newsletter}
-                        onCheckedChange={setNewsletter}
+                        onChange={(e) => setNewsletter(e.target.checked)}
                         label="Subscribe to newsletter"
                       />
                       <Checkbox
                         checked={terms}
-                        onCheckedChange={setTerms}
+                        onChange={(e) => setTerms(e.target.checked)}
                         label="I agree to the terms and conditions"
                       />
                     </div>

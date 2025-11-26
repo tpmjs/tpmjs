@@ -178,13 +178,6 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           labelPosition === 'left' ? 'mr-2' : 'ml-2',
           (disabled || loading) && 'cursor-not-allowed opacity-50'
         )}
-        onClick={(e) => {
-          // Prevent label from triggering button click (button handles it)
-          e.preventDefault();
-          if (!disabled && !loading) {
-            handleClick();
-          }
-        }}
       >
         {label}
       </label>
@@ -192,10 +185,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
 
     return (
       <div
-        className={cn(
-          'inline-flex items-center',
-          (disabled || loading) && 'cursor-not-allowed'
-        )}
+        className={cn('inline-flex items-center', (disabled || loading) && 'cursor-not-allowed')}
       >
         {labelPosition === 'left' && labelElement}
         {switchButton}
