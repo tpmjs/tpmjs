@@ -208,7 +208,7 @@ describe("Label", () => {
 				</Label>,
 			);
 			expect(ref).toBeInstanceOf(HTMLLabelElement);
-			expect(ref?.tagName).toBe("LABEL");
+			expect(ref!.tagName).toBe("LABEL");
 		});
 	});
 

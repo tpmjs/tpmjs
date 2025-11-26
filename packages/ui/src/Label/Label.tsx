@@ -18,7 +18,17 @@ import { labelVariants } from "./variants";
  * ```
  */
 export const Label = forwardRef<HTMLLabelElement, LabelProps>(
-	({ className, size = "md", required = false, disabled = false, children, ...props }, ref) => {
+	(
+		{
+			className,
+			size = "md",
+			required = false,
+			disabled = false,
+			children,
+			...props
+		},
+		ref,
+	) => {
 		return (
 			// biome-ignore lint/a11y/noLabelWithoutControl: This is a generic label component that can be used with htmlFor or wrap inputs
 			<label

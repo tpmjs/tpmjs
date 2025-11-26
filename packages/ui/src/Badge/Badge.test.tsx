@@ -250,7 +250,7 @@ describe("Badge", () => {
 				</Badge>,
 			);
 			expect(ref).toBeInstanceOf(HTMLDivElement);
-			expect(ref?.tagName).toBe("DIV");
+			expect(ref!.tagName).toBe("DIV");
 		});
 	});
 
@@ -297,7 +297,11 @@ describe("Badge", () => {
 
 		it("works correctly with outline variant and custom className", () => {
 			render(
-				<Badge variant="outline" className="hover:bg-accent" data-testid="badge">
+				<Badge
+					variant="outline"
+					className="hover:bg-accent"
+					data-testid="badge"
+				>
 					Outlined
 				</Badge>,
 			);
@@ -351,7 +355,12 @@ describe("Badge", () => {
 	describe("Semantic Usage", () => {
 		it("can be used as status indicator with role", () => {
 			render(
-				<Badge variant="success" role="status" aria-label="Online status" data-testid="badge">
+				<Badge
+					variant="success"
+					role="status"
+					aria-label="Online status"
+					data-testid="badge"
+				>
 					Online
 				</Badge>,
 			);
@@ -363,7 +372,12 @@ describe("Badge", () => {
 
 		it("can be used as notification count", () => {
 			render(
-				<Badge variant="error" size="sm" aria-label="3 unread messages" data-testid="badge">
+				<Badge
+					variant="error"
+					size="sm"
+					aria-label="3 unread messages"
+					data-testid="badge"
+				>
 					3
 				</Badge>,
 			);

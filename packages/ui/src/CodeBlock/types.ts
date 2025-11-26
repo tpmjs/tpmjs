@@ -3,7 +3,8 @@ import type { HTMLAttributes } from "react";
 /**
  * CodeBlock component props
  */
-export interface CodeBlockProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
+export interface CodeBlockProps
+	extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
 	/**
 	 * Code content to display
 	 */

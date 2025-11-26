@@ -57,9 +57,10 @@ export type VariantConfig<T extends Record<string, Record<string, string>>> = {
 /**
  * Props type for consuming variant functions
  */
-export type VariantProps<T extends Record<string, Record<string, string>>> = Partial<{
-	[K in keyof T]: keyof T[K];
-}>;
+export type VariantProps<T extends Record<string, Record<string, string>>> =
+	Partial<{
+		[K in keyof T]: keyof T[K];
+	}>;
 
 /**
  * Creates a type-safe variant composition function
@@ -67,9 +68,9 @@ export type VariantProps<T extends Record<string, Record<string, string>>> = Par
  * @param config - Variant configuration with base, variants, compound variants, and defaults
  * @returns Function that accepts variant props and returns composed className string
  */
-export function createVariants<T extends Record<string, Record<string, string>>>(
-	config: VariantConfig<T>,
-) {
+export function createVariants<
+	T extends Record<string, Record<string, string>>,
+>(config: VariantConfig<T>) {
 	return function getVariantClasses(props?: VariantProps<T>): string {
 		const classes: string[] = [config.base];
 
@@ -82,7 +83,11 @@ export function createVariants<T extends Record<string, Record<string, string>>>
 		// Apply variant classes
 		for (const [key, value] of Object.entries(mergedProps)) {
 			const valueStr = value as string;
-			if (value !== undefined && value !== null && config.variants[key]?.[valueStr]) {
+			if (
+				value !== undefined &&
+				value !== null &&
+				config.variants[key]?.[valueStr]
+			) {
 				classes.push(config.variants[key][valueStr]);
 			}
 		}
@@ -91,7 +96,8 @@ export function createVariants<T extends Record<string, Record<string, string>>>
 		if (config.compoundVariants) {
 			for (const { conditions, className } of config.compoundVariants) {
 				const matches = Object.entries(conditions).every(
-					([key, value]) => mergedProps[key as keyof typeof mergedProps] === value,
+					([key, value]) =>
+						mergedProps[key as keyof typeof mergedProps] === value,
 				);
 				if (matches) {
 					classes.push(className);

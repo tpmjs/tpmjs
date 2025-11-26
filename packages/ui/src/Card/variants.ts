@@ -28,7 +28,10 @@ export const cardVariants = createVariants({
 				"shadow-md",
 			].join(" "),
 
-			outline: ["border-2 border-dotted border-border", "bg-transparent text-foreground"].join(" "),
+			outline: [
+				"border-2 border-dotted border-border",
+				"bg-transparent text-foreground",
+			].join(" "),
 
 			blueprint: [
 				"border border-dotted border-border",
@@ -82,7 +85,10 @@ export const cardHeaderVariants = createVariants({
  * CardTitle variant definitions
  */
 export const cardTitleVariants = createVariants({
-	base: ["text-2xl font-semibold leading-none tracking-tight", "text-foreground"].join(" "),
+	base: [
+		"text-2xl font-semibold leading-none tracking-tight",
+		"text-foreground",
+	].join(" "),
 
 	variants: {},
 

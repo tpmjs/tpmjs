@@ -3,7 +3,8 @@ import type { InputHTMLAttributes } from "react";
 /**
  * Input component props
  */
-export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
+export interface InputProps
+	extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
 	/**
 	 * Visual state of the input
 	 * @default 'default'

@@ -3,7 +3,8 @@ import type { HTMLAttributes } from "react";
 /**
  * ProgressBar component props
  */
-export interface ProgressBarProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
+export interface ProgressBarProps
+	extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
 	/**
 	 * Progress value (0-100)
 	 */

@@ -1,7 +1,11 @@
 import { cn } from "@tpmjs/utils/cn";
 import { forwardRef } from "react";
 import type { Tab, TabsProps } from "./types";
-import { tabButtonVariants, tabCountVariants, tabsContainerVariants } from "./variants";
+import {
+	tabButtonVariants,
+	tabCountVariants,
+	tabsContainerVariants,
+} from "./variants";
 
 // Re-export types for consumers
 export type { Tab, TabsProps };
@@ -36,7 +40,15 @@ export type { Tab, TabsProps };
  */
 export const Tabs = forwardRef<HTMLDivElement, TabsProps>(
 	(
-		{ className, tabs, activeTab, onTabChange, size = "md", variant = "default", ...props },
+		{
+			className,
+			tabs,
+			activeTab,
+			onTabChange,
+			size = "md",
+			variant = "default",
+			...props
+		},
 		ref,
 	) => {
 		return (

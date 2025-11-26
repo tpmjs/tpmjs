@@ -196,7 +196,9 @@ describe("Input", () => {
 
 	describe("Value and onChange", () => {
 		it("renders with initial value", () => {
-			render(<Input value="test value" onChange={() => {}} data-testid="input" />);
+			render(
+				<Input value="test value" onChange={() => {}} data-testid="input" />,
+			);
 			const input = screen.getByTestId("input") as HTMLInputElement;
 			expect(input.value).toBe("test value");
 		});
@@ -315,7 +317,7 @@ describe("Input", () => {
 				/>,
 			);
 			expect(ref).toBeInstanceOf(HTMLInputElement);
-			expect(ref?.tagName).toBe("INPUT");
+			expect(ref!.tagName).toBe("INPUT");
 		});
 
 		it("can focus input through ref", () => {
@@ -328,7 +330,7 @@ describe("Input", () => {
 					data-testid="input"
 				/>,
 			);
-			ref?.focus();
+			ref!.focus();
 			expect(screen.getByTestId("input")).toHaveFocus();
 		});
 	});

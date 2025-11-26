@@ -19,17 +19,33 @@ export const badgeVariants = createVariants({
 
 	variants: {
 		variant: {
-			default: ["bg-primary text-primary-foreground", "border border-primary"].join(" "),
+			default: [
+				"bg-primary text-primary-foreground",
+				"border border-primary",
+			].join(" "),
 
-			secondary: ["bg-secondary text-secondary-foreground", "border border-secondary"].join(" "),
+			secondary: [
+				"bg-secondary text-secondary-foreground",
+				"border border-secondary",
+			].join(" "),
 
-			outline: ["bg-transparent text-foreground", "border border-border"].join(" "),
+			outline: ["bg-transparent text-foreground", "border border-border"].join(
+				" ",
+			),
 
-			success: ["bg-success text-success-foreground", "border border-success"].join(" "),
+			success: [
+				"bg-success text-success-foreground",
+				"border border-success",
+			].join(" "),
 
-			error: ["bg-error text-error-foreground", "border border-error"].join(" "),
+			error: ["bg-error text-error-foreground", "border border-error"].join(
+				" ",
+			),
 
-			warning: ["bg-warning text-warning-foreground", "border border-warning"].join(" "),
+			warning: [
+				"bg-warning text-warning-foreground",
+				"border border-warning",
+			].join(" "),
 
 			info: ["bg-info text-info-foreground", "border border-info"].join(" "),
 		},

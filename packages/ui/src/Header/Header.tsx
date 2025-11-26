@@ -1,7 +1,11 @@
 import { cn } from "@tpmjs/utils/cn";
 import { forwardRef } from "react";
 import type { HeaderProps } from "./types";
-import { headerActionsVariants, headerTitleVariants, headerVariants } from "./variants";
+import {
+	headerActionsVariants,
+	headerTitleVariants,
+	headerVariants,
+} from "./variants";
 
 /**
  * Header component
@@ -27,7 +31,18 @@ import { headerActionsVariants, headerTitleVariants, headerVariants } from "./va
  * ```
  */
 export const Header = forwardRef<HTMLElement, HeaderProps>(
-	({ className, title, actions, size = "md", sticky = false, children, ...props }, ref) => {
+	(
+		{
+			className,
+			title,
+			actions,
+			size = "md",
+			sticky = false,
+			children,
+			...props
+		},
+		ref,
+	) => {
 		return (
 			<header
 				className={cn(
@@ -51,7 +66,10 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(
 					</div>
 				)}
 				{children && (
-					<div className="flex-1 flex items-center justify-center" data-testid="header-children">
+					<div
+						className="flex-1 flex items-center justify-center"
+						data-testid="header-children"
+					>
 						{children}
 					</div>
 				)}
