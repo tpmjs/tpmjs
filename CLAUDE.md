@@ -240,3 +240,68 @@ pnpm format
 - **Documentation:** Storybook
 - **CI/CD:** GitHub Actions + Changesets
 - **Git Hooks:** Lefthook
+
+### Debugging CI/CD with CLI Tools
+
+When debugging CI failures or deployment issues, use command-line tools for efficient investigation:
+
+#### GitHub CLI (`gh`)
+
+Debug GitHub Actions CI runs:
+
+```bash
+# List recent workflow runs
+gh run list --limit 10
+
+# View specific run details
+gh run view <run-id>
+
+# View failed job logs
+gh run view <run-id> --log-failed
+
+# View specific job logs
+gh run view <run-id> --job <job-id> --log
+
+# Rerun failed jobs
+gh run rerun <run-id> --failed
+```
+
+**Common debugging workflow:**
+1. `gh run list` - Find the failed run ID
+2. `gh run view <run-id> --log-failed` - See what failed
+3. Fix the issue locally
+4. Push and monitor: `gh run watch`
+
+#### Vercel CLI
+
+Debug deployments and preview environments:
+
+```bash
+# List deployments
+vercel ls
+
+# View deployment details
+vercel inspect <deployment-url>
+
+# View deployment logs
+vercel logs <deployment-url>
+
+# Pull environment variables
+vercel env pull
+
+# Link local project to Vercel project
+vercel link
+```
+
+**Common debugging workflow:**
+1. `vercel ls` - Find the deployment URL
+2. `vercel inspect <url>` - Check deployment status and build logs
+3. `vercel logs <url>` - View runtime logs
+4. Compare env vars: `vercel env pull` and check `.env.local`
+
+#### Tips
+
+- Use `gh` and `vercel` CLIs to debug without leaving the terminal
+- Check CI logs before making blind fixes
+- Vercel deployments are blocked until GitHub Actions pass (configured in vercel.json)
+- Pre-commit/pre-push hooks run the same checks as CI - if they pass locally, CI should pass too
