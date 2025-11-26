@@ -178,7 +178,7 @@ describe('Radio', () => {
 
   describe('Label Position', () => {
     it('should position label on the right by default', () => {
-      const { container } = render(
+      render(
         <RadioGroup name="test">
           <Radio value="option1" label="Right label" />
         </RadioGroup>
@@ -189,7 +189,7 @@ describe('Radio', () => {
     });
 
     it('should position label on the left when specified', () => {
-      const { container } = render(
+      render(
         <RadioGroup name="test">
           <Radio value="option1" label="Left label" labelPosition="left" />
         </RadioGroup>

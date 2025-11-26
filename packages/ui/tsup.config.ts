@@ -30,6 +30,9 @@ const entries = allFiles.filter((file) => {
   return folderName === fileName;
 });
 
+// Manually add RadioGroup which doesn't match the folder/file naming convention
+entries.push('src/Radio/RadioGroup.tsx');
+
 export default defineConfig({
   entry: entries,
   format: ['esm'],

@@ -368,7 +368,7 @@ describe('Textarea', () => {
 
   describe('Ref Forwarding', () => {
     it('forwards ref to textarea element', () => {
-      let ref: HTMLTextareaElement | null = null;
+      let ref: HTMLTextAreaElement | null = null;
       render(
         <Textarea
           ref={(el) => {
@@ -381,7 +381,7 @@ describe('Textarea', () => {
     });
 
     it('allows programmatic focus via ref', () => {
-      let ref: HTMLTextareaElement | null = null;
+      let ref: HTMLTextAreaElement | null = null;
       render(
         <Textarea
           data-testid="textarea"
@@ -398,7 +398,7 @@ describe('Textarea', () => {
     });
 
     it('allows reading value via ref', () => {
-      let ref: HTMLTextareaElement | null = null;
+      let ref: HTMLTextAreaElement | null = null;
       render(
         <Textarea
           defaultValue="Test value"

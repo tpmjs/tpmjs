@@ -139,7 +139,7 @@ describe('Slider', () => {
         { value: 50, label: 'Mid' },
         { value: 100, label: 'Max' },
       ];
-      const { container } = render(<Slider marks={marks} />);
+      render(<Slider marks={marks} />);
 
       expect(screen.getByText('Min')).toBeInTheDocument();
       expect(screen.getByText('Mid')).toBeInTheDocument();
@@ -331,7 +331,6 @@ describe('Slider', () => {
 
   describe('Keyboard Navigation', () => {
     it('should support arrow key navigation', async () => {
-      const user = userEvent.setup();
       render(<Slider defaultValue={50} min={0} max={100} step={10} />);
 
       const slider = screen.getByRole('slider') as HTMLInputElement;

@@ -311,7 +311,6 @@ describe('Checkbox', () => {
     });
 
     it('should call onBlur when blurred', async () => {
-      const user = userEvent.setup();
       const handleBlur = vi.fn();
       render(<Checkbox onBlur={handleBlur} />);
 
