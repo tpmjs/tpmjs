@@ -15,7 +15,7 @@
     "test:ui": "turbo test:ui",
     "lint": "turbo lint",
     "format": "biome format --write .",
-    "format:check": "biome check .",
+    "format:check": "biome format .",
     "type-check": "turbo type-check",
     "type-coverage": "type-coverage --at-least 95",
     "find-deadcode": "knip",
