@@ -215,7 +215,7 @@ describe("Container", () => {
 			let ref: HTMLDivElement | null = null;
 			render(
 				<Container
-					ref={(el: HTMLDivElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				>
@@ -223,7 +223,7 @@ describe("Container", () => {
 				</Container>,
 			);
 			expect(ref).toBeInstanceOf(HTMLDivElement);
-			expect(ref?.tagName).toBe("DIV");
+			expect(ref!.tagName).toBe("DIV");
 		});
 	});
 

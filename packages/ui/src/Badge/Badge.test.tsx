@@ -242,7 +242,7 @@ describe("Badge", () => {
 			let ref: HTMLDivElement | null = null;
 			render(
 				<Badge
-					ref={(el: HTMLDivElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				>
@@ -250,7 +250,7 @@ describe("Badge", () => {
 				</Badge>,
 			);
 			expect(ref).toBeInstanceOf(HTMLDivElement);
-			expect(ref?.tagName).toBe("DIV");
+			expect(ref!.tagName).toBe("DIV");
 		});
 	});
 

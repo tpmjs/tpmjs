@@ -42,8 +42,7 @@ export interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
 /**
  * CardDescription component props
  */
-export interface CardDescriptionProps
-	extends HTMLAttributes<HTMLParagraphElement> {}
+export type CardDescriptionProps = HTMLAttributes<HTMLParagraphElement>;
 
 /**
  * CardContent component props

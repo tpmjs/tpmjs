@@ -179,7 +179,7 @@ describe("Icon", () => {
 				/>,
 			);
 			expect(ref).toBeInstanceOf(SVGSVGElement);
-			expect(ref?.tagName).toBe("svg");
+			expect(ref!.tagName).toBe("svg");
 		});
 	});
 

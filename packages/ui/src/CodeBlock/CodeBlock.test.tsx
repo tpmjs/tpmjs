@@ -287,13 +287,13 @@ describe("CodeBlock", () => {
 			render(
 				<CodeBlock
 					code="code"
-					ref={(el: HTMLDivElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				/>,
 			);
 			expect(ref).toBeInstanceOf(HTMLDivElement);
-			expect(ref?.querySelector("code")).toBeInTheDocument();
+			expect(ref!.querySelector("code")).toBeInTheDocument();
 		});
 	});
 

@@ -284,7 +284,7 @@ describe("Section", () => {
 			let ref: HTMLElement | null = null;
 			render(
 				<Section
-					ref={(el: HTMLElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				>
@@ -292,7 +292,7 @@ describe("Section", () => {
 				</Section>,
 			);
 			expect(ref).toBeInstanceOf(HTMLElement);
-			expect(ref?.tagName).toBe("SECTION");
+			expect(ref!.tagName).toBe("SECTION");
 		});
 	});
 

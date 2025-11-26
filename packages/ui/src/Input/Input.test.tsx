@@ -311,26 +311,26 @@ describe("Input", () => {
 			let ref: HTMLInputElement | null = null;
 			render(
 				<Input
-					ref={(el: HTMLInputElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				/>,
 			);
 			expect(ref).toBeInstanceOf(HTMLInputElement);
-			expect(ref?.tagName).toBe("INPUT");
+			expect(ref!.tagName).toBe("INPUT");
 		});
 
 		it("can focus input through ref", () => {
 			let ref: HTMLInputElement | null = null;
 			render(
 				<Input
-					ref={(el: HTMLInputElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 					data-testid="input"
 				/>,
 			);
-			ref?.focus();
+			ref!.focus();
 			expect(screen.getByTestId("input")).toHaveFocus();
 		});
 	});

@@ -167,16 +167,18 @@ export default function PlaygroundPage() {
 								<div className="space-y-4">
 									<h3 className="text-xl font-medium">Available Icons</h3>
 									<div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
-										{([
-											"check",
-											"x",
-											"chevronDown",
-											"copy",
-											"externalLink",
-											"github",
-											"sun",
-											"moon",
-										] as const).map((icon) => (
+										{(
+											[
+												"check",
+												"x",
+												"chevronDown",
+												"copy",
+												"externalLink",
+												"github",
+												"sun",
+												"moon",
+											] as const
+										).map((icon) => (
 											<div
 												key={icon}
 												className="flex flex-col items-center gap-2 p-3 rounded-lg hover:bg-surface transition-colors"
@@ -463,28 +465,28 @@ export default function Example() {
 										<Container size="sm" padding="md">
 											<Card>
 												<CardContent className="p-4 text-center">
-													<code className="text-sm">size="sm"</code>
+													<code className="text-sm">size=&quot;sm&quot;</code>
 												</CardContent>
 											</Card>
 										</Container>
 										<Container size="md" padding="md">
 											<Card>
 												<CardContent className="p-4 text-center">
-													<code className="text-sm">size="md"</code>
+													<code className="text-sm">size=&quot;md&quot;</code>
 												</CardContent>
 											</Card>
 										</Container>
 										<Container size="lg" padding="md">
 											<Card>
 												<CardContent className="p-4 text-center">
-													<code className="text-sm">size="lg"</code>
+													<code className="text-sm">size=&quot;lg&quot;</code>
 												</CardContent>
 											</Card>
 										</Container>
 										<Container size="xl" padding="md">
 											<Card>
 												<CardContent className="p-4 text-center">
-													<code className="text-sm">size="xl"</code>
+													<code className="text-sm">size=&quot;xl&quot;</code>
 												</CardContent>
 											</Card>
 										</Container>

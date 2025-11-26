@@ -233,7 +233,7 @@ describe("Button", () => {
 			let ref: HTMLButtonElement | null = null;
 			render(
 				<Button
-					ref={(el: HTMLButtonElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				>
@@ -241,7 +241,7 @@ describe("Button", () => {
 				</Button>,
 			);
 			expect(ref).toBeInstanceOf(HTMLButtonElement);
-			expect(ref?.tagName).toBe("BUTTON");
+			expect(ref!.tagName).toBe("BUTTON");
 		});
 	});
 

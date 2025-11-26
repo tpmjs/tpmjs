@@ -370,7 +370,7 @@ describe("Tabs", () => {
 					tabs={mockTabs}
 					activeTab="all"
 					onTabChange={handleChange}
-					ref={(el: HTMLDivElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				/>,

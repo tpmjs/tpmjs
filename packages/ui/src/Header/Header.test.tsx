@@ -249,13 +249,13 @@ describe("Header", () => {
 			let ref: HTMLElement | null = null;
 			render(
 				<Header
-					ref={(el: HTMLElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				/>,
 			);
 			expect(ref).toBeInstanceOf(HTMLElement);
-			expect(ref?.tagName).toBe("HEADER");
+			expect(ref!.tagName).toBe("HEADER");
 		});
 	});
 

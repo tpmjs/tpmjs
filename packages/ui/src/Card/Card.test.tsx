@@ -74,7 +74,7 @@ describe("Card", () => {
 			);
 			const card = screen.getByTestId("card");
 			expect(card.className).toContain("border-dotted");
-		expect(card.className).toContain("border-2");
+			expect(card.className).toContain("border-2");
 			expect(card.className).toContain("bg-transparent");
 		});
 
@@ -409,7 +409,7 @@ describe("Card", () => {
 			let ref: HTMLDivElement | null = null;
 			render(
 				<Card
-					ref={(el: HTMLDivElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				>
@@ -417,7 +417,7 @@ describe("Card", () => {
 				</Card>,
 			);
 			expect(ref).toBeInstanceOf(HTMLDivElement);
-			expect(ref?.tagName).toBe("DIV");
+			expect(ref!.tagName).toBe("DIV");
 		});
 
 		it("forwards ref to CardHeader element", () => {
@@ -425,7 +425,7 @@ describe("Card", () => {
 			render(
 				<Card>
 					<CardHeader
-						ref={(el: HTMLDivElement | null) => {
+						ref={(el) => {
 							ref = el;
 						}}
 					>
@@ -442,7 +442,7 @@ describe("Card", () => {
 				<Card>
 					<CardHeader>
 						<CardTitle
-							ref={(el: HTMLHeadingElement | null) => {
+							ref={(el) => {
 								ref = el;
 							}}
 						>
@@ -452,7 +452,7 @@ describe("Card", () => {
 				</Card>,
 			);
 			expect(ref).toBeInstanceOf(HTMLHeadingElement);
-			expect(ref?.tagName).toBe("H3");
+			expect(ref!.tagName).toBe("H3");
 		});
 
 		it("forwards ref to CardDescription element", () => {
@@ -461,7 +461,7 @@ describe("Card", () => {
 				<Card>
 					<CardHeader>
 						<CardDescription
-							ref={(el: HTMLParagraphElement | null) => {
+							ref={(el) => {
 								ref = el;
 							}}
 						>
@@ -478,7 +478,7 @@ describe("Card", () => {
 			render(
 				<Card>
 					<CardContent
-						ref={(el: HTMLDivElement | null) => {
+						ref={(el) => {
 							ref = el;
 						}}
 					>
@@ -494,7 +494,7 @@ describe("Card", () => {
 			render(
 				<Card>
 					<CardFooter
-						ref={(el: HTMLDivElement | null) => {
+						ref={(el) => {
 							ref = el;
 						}}
 					>

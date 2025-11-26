@@ -258,7 +258,7 @@ describe("GridContainer", () => {
 			let ref: HTMLDivElement | null = null;
 			render(
 				<GridContainer
-					ref={(el: HTMLDivElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				>

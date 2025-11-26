@@ -221,7 +221,7 @@ describe("ProgressBar", () => {
 			render(
 				<ProgressBar
 					value={50}
-					ref={(el: HTMLDivElement | null) => {
+					ref={(el) => {
 						ref = el;
 					}}
 				/>,
