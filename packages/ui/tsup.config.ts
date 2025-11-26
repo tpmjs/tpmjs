@@ -33,7 +33,13 @@ const entries = allFiles.filter((file) => {
 export default defineConfig({
   entry: entries,
   format: ['esm'],
-  dts: true,
+  dts: {
+    // Reduce memory usage in CI by disabling concurrent workers
+    // This prevents "JS heap out of memory" errors when building many components
+    compilerOptions: {
+      composite: false,
+    },
+  },
   clean: true,
   treeshake: true,
   splitting: false,
@@ -41,4 +47,6 @@ export default defineConfig({
   esbuildOptions(options) {
     options.jsx = 'automatic';
   },
+  // Reduce bundle size by minifying in production
+  minify: process.env.NODE_ENV === 'production',
 });
