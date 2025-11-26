@@ -1,5 +1,7 @@
 # TPMJS Monorepo
 
+[![CI](https://github.com/YOUR_ORG/tpmjs/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_ORG/tpmjs/actions/workflows/ci.yml)
+
 Tool Package Manager for AI Agents - A Turborepo monorepo with strict TypeScript, Next.js 16, and best practices.
 
 ## Structure
@@ -22,8 +24,9 @@ packages/
 
 ### Prerequisites
 
-- Node.js >= 18
+- Node.js >= 22 (LTS)
 - pnpm >= 8
+- nvm (recommended for Node version management)
 
 ### Installation
 
@@ -74,6 +77,21 @@ pnpm format
 # Check formatting
 pnpm format:check
 ```
+
+### Quality Gates
+
+```bash
+# Check architecture/dependency rules
+pnpm check-architecture
+
+# Find unused code and dependencies
+pnpm find-deadcode
+
+# Check type coverage
+pnpm type-coverage
+```
+
+See [QUALITY-GATES.md](./QUALITY-GATES.md) for details.
 
 ## Component Usage
 
@@ -129,6 +147,20 @@ git push --follow-tags
 - `@tpmjs/types` - TypeScript types
 - `@tpmjs/env` - Environment schema loader
 
+## Deployment
+
+The project is configured to only deploy to Vercel when all CI checks pass. This ensures production always has high-quality, tested code.
+
+**CI Checks:**
+- Linting & formatting
+- Type checking
+- Tests
+- Production build
+- Architecture validation
+- Dead code detection
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for full configuration details.
+
 ## Module Boundaries
 
 ESLint enforces module boundaries:
@@ -171,6 +203,9 @@ Using `.ts` instead of `.tsx` for React components:
 - `format` - Format code with Biome
 - `format:check` - Check formatting
 - `type-check` - TypeScript type checking
+- `type-coverage` - Check type coverage (no implicit any)
+- `check-architecture` - Validate dependency rules
+- `find-deadcode` - Find unused code/dependencies
 - `clean` - Remove build artifacts
 - `changeset` - Create a changeset
 - `changeset:version` - Version packages
