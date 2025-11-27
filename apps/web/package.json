@@ -11,6 +11,7 @@
     "clean": "rm -rf .next .turbo"
   },
   "dependencies": {
+    "@tpmjs/db": "workspace:*",
     "@tpmjs/env": "workspace:*",
     "@tpmjs/types": "workspace:*",
     "@tpmjs/ui": "workspace:*",
