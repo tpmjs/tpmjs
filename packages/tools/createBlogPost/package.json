@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/createblogpost",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A tool for creating structured blog posts with AI-generated content",
   "type": "module",
   "keywords": ["tpmjs-tool", "blog", "content", "ai", "writing"],
