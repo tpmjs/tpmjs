@@ -1,0 +1,108 @@
+{
+  "name": "@tpmjs/createblogpost",
+  "version": "0.1.0",
+  "description": "A tool for creating structured blog posts with AI-generated content",
+  "type": "module",
+  "keywords": ["tpmjs-tool", "blog", "content", "ai", "writing"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/createBlogPost"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "text-analysis",
+    "description": "Creates structured blog posts with customizable frontmatter, content sections, and SEO metadata. Supports multiple output formats including Markdown and MDX.",
+    "example": "const post = await createBlogPost({ title: 'My First Post', author: 'John Doe', content: 'Hello World!', tags: ['intro', 'blog'] });",
+    "parameters": [
+      {
+        "name": "title",
+        "type": "string",
+        "description": "The title of the blog post",
+        "required": true
+      },
+      {
+        "name": "author",
+        "type": "string",
+        "description": "The author of the blog post",
+        "required": true
+      },
+      {
+        "name": "content",
+        "type": "string",
+        "description": "The main content of the blog post",
+        "required": true
+      },
+      {
+        "name": "tags",
+        "type": "string[]",
+        "description": "Array of tags for categorization",
+        "required": false,
+        "default": []
+      },
+      {
+        "name": "format",
+        "type": "'markdown' | 'mdx'",
+        "description": "Output format for the blog post",
+        "required": false,
+        "default": "markdown"
+      },
+      {
+        "name": "excerpt",
+        "type": "string",
+        "description": "Short excerpt or summary of the post",
+        "required": false
+      }
+    ],
+    "returns": {
+      "type": "BlogPost",
+      "description": "A structured blog post object with frontmatter, content, and metadata including slug, wordCount, readingTime, and formattedOutput"
+    },
+    "authentication": {
+      "required": false,
+      "type": "api-key"
+    },
+    "pricing": {
+      "model": "free"
+    },
+    "frameworks": ["vercel-ai", "langchain"],
+    "links": {
+      "documentation": "https://tpmjs.com/tools/createblogpost",
+      "repository": "https://github.com/ajaxdavis/tpmjs/tree/main/packages/tools/createBlogPost",
+      "homepage": "https://tpmjs.com"
+    },
+    "tags": ["blog", "content", "markdown", "mdx", "writing", "seo"],
+    "status": "stable",
+    "aiAgent": {
+      "useCase": "Use this tool when users need to generate blog posts, articles, or structured content with proper frontmatter and metadata. Ideal for content management systems, static site generators, and documentation sites.",
+      "limitations": "Does not include AI content generation - you must provide the content. Only formats and structures existing content.",
+      "examples": [
+        "Create a blog post about TypeScript best practices",
+        "Generate a tutorial post with code examples",
+        "Format an article with SEO metadata"
+      ]
+    }
+  }
+}

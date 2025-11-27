@@ -4,3 +4,4 @@ packages:
   - 'packages/config/eslint'
   - 'packages/config/tailwind'
   - 'packages/config/tsconfig'
+  - 'packages/tools/*'
