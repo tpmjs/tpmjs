@@ -9,6 +9,19 @@
     "silent": false,
     "autoJobCancelation": true
   },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.tpmjs.com"
+        }
+      ],
+      "destination": "https://tpmjs.com/:path*",
+      "permanent": true
+    }
+  ],
   "crons": [
     {
       "path": "/api/sync/changes",
