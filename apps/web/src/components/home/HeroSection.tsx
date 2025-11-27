@@ -1,15 +1,11 @@
 'use client';
 
-import { AnimatedCounter } from '@tpmjs/ui/AnimatedCounter/AnimatedCounter';
 import { Button } from '@tpmjs/ui/Button/Button';
-import { DitherHeadline } from '@tpmjs/ui/DitherText/DitherHeadline';
 import { Input } from '@tpmjs/ui/Input/Input';
-import { useParallax } from '@tpmjs/ui/system/hooks/useParallax';
 import { useState } from 'react';
 
 export function HeroSection(): React.ReactElement {
   const [searchQuery, setSearchQuery] = useState('');
-  const parallaxStyle = useParallax({ speed: 0.5 });
 
   return (
     <section className="relative min-h-[90vh] overflow-hidden bg-background">
@@ -27,68 +23,31 @@ export function HeroSection(): React.ReactElement {
         />
       </div>
 
-      {/* Animated Scanline */}
-      <div className="blueprint-scanline" />
-
-      {/* Content Container with Parallax */}
-      <div
-        style={parallaxStyle}
-        className="relative z-10 flex min-h-[90vh] flex-col justify-center px-6 md:px-12 lg:px-24"
-      >
-        {/* Glitch Bars - Decorative Elements */}
-        <div
-          className="absolute left-0 top-32 h-1.5 w-64 bg-brutalist-accent opacity-80 animate-glitch"
-          style={{
-            animationDelay: '0.5s',
-            animationIterationCount: 'infinite',
-            animationDuration: '3s',
-          }}
-        />
-        <div
-          className="absolute right-0 top-48 h-1 w-48 bg-foreground opacity-30 animate-glitch"
-          style={{
-            animationDelay: '1.5s',
-            animationIterationCount: 'infinite',
-            animationDuration: '4s',
-          }}
-        />
-
-        {/* Main Heading - Dithered Typography */}
+      {/* Content Container */}
+      <div className="relative z-10 flex min-h-[90vh] flex-col justify-center px-6 md:px-12 lg:px-24">
+        {/* Main Heading */}
         <div className="max-w-7xl">
-          <DitherHeadline
-            delay={500}
-            stagger={150}
-            speed={1500}
-            fontSize="clamp(60px, 12vw, 120px)"
-            fontWeight="800"
-            className="mb-8"
+          <h1
+            className="mb-8 font-bold leading-none tracking-tight text-foreground"
+            style={{ fontSize: 'clamp(48px, 10vw, 96px)' }}
           >
             TOOL REGISTRY FOR AI AGENTS
-          </DitherHeadline>
+          </h1>
 
           {/* Live Metrics Strip */}
           <div className="mb-12 flex flex-wrap items-center gap-3 border-l-[6px] border-brutalist-accent pl-6 font-mono text-base md:text-lg font-bold uppercase tracking-wider">
             <div className="flex items-center gap-2">
-              <AnimatedCounter value={2847} separator="," size="md" />
+              <span className="text-foreground">2,847</span>
               <span className="text-foreground-secondary">TOOLS</span>
             </div>
             <span className="text-foreground-tertiary">/</span>
             <div className="flex items-center gap-2">
-              {/* Mobile: abbreviated */}
-              <AnimatedCounter value={12} suffix="M+" size="md" className="md:hidden" />
-              {/* Desktop: full */}
-              <AnimatedCounter
-                value={12000000}
-                suffix="+"
-                separator=","
-                size="md"
-                className="hidden md:inline"
-              />
+              <span className="text-foreground">12M+</span>
               <span className="text-foreground-secondary">INVOCATIONS</span>
             </div>
             <span className="text-foreground-tertiary">/</span>
             <div className="flex items-center gap-2">
-              <AnimatedCounter value={47} suffix="ms" size="md" />
+              <span className="text-foreground">47ms</span>
               <span className="text-foreground-secondary">LATENCY</span>
             </div>
           </div>
