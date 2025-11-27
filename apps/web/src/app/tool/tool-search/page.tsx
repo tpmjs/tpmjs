@@ -19,7 +19,7 @@ import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import { Select } from '@tpmjs/ui/Select/Select';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
-import { createElement, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Tool {
   id: string;
@@ -38,7 +38,6 @@ interface Tool {
  * Tool Registry Search Page
  *
  * Fetches tools from the /api/tools endpoint and displays them in a searchable grid.
- * Built with .ts-only React using createElement.
  */
 export default function ToolSearchPage(): React.ReactElement {
   const [activeTab, setActiveTab] = useState('all');
@@ -112,351 +111,240 @@ export default function ToolSearchPage(): React.ReactElement {
       ? tools.filter((tool) => selectedTags.some((tag) => tool.tags.includes(tag)))
       : tools;
 
-  return createElement('div', { className: 'min-h-screen bg-background' }, [
-    // Header
-    createElement(Header, {
-      key: 'header',
-      title: createElement('div', { className: 'flex items-center gap-2' }, [
-        createElement('span', { key: 'title', className: 'text-2xl font-bold' }, 'TPMJS'),
-        createElement(Badge, { key: 'badge', variant: 'outline', size: 'sm' }, 'Beta'),
-      ]),
-      actions: createElement('div', { className: 'flex items-center gap-3' }, [
-        createElement(Button, { key: 'docs', variant: 'ghost', size: 'sm' }, 'Docs'),
-        createElement(
-          'a',
-          {
-            key: 'github',
-            href: 'https://github.com/tpmjs/tpmjs',
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            className: 'text-foreground-secondary hover:text-foreground transition-colors',
-          },
-          createElement(Icon, { icon: 'github', size: 'md' })
-        ),
-        createElement(Button, { key: 'publish', variant: 'default', size: 'sm' }, 'Publish Tool'),
-      ]),
-      sticky: true,
-      size: 'md',
-    }),
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <Header
+        title={
+          <div className="flex items-center gap-2">
+            <span className="text-2xl font-bold">TPMJS</span>
+            <Badge variant="outline" size="sm">
+              Beta
+            </Badge>
+          </div>
+        }
+        actions={
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm">
+              Docs
+            </Button>
+            <a
+              href="https://github.com/tpmjs/tpmjs"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-foreground-secondary hover:text-foreground transition-colors"
+            >
+              <Icon icon="github" size="md" />
+            </a>
+            <Button variant="default" size="sm">
+              Publish Tool
+            </Button>
+          </div>
+        }
+        sticky={true}
+        size="md"
+      />
 
-    // Main content
-    createElement(Container, { key: 'container', size: 'xl', padding: 'md', className: 'py-8' }, [
-      // Page header
-      createElement('div', { key: 'page-header', className: 'space-y-4 mb-8' }, [
-        createElement(
-          'h1',
-          { key: 'title', className: 'text-4xl font-bold text-foreground' },
-          'Tool Registry'
-        ),
-        createElement(
-          'p',
-          { key: 'description', className: 'text-lg text-foreground-secondary' },
-          'Discover, share, and integrate tools that give your AI agents superpowers.'
-        ),
-      ]),
+      {/* Main content */}
+      <Container size="xl" padding="md" className="py-8">
+        {/* Page header */}
+        <div className="space-y-4 mb-8">
+          <h1 className="text-4xl font-bold text-foreground">Tool Registry</h1>
+          <p className="text-lg text-foreground-secondary">
+            Discover, share, and integrate tools that give your AI agents superpowers.
+          </p>
+        </div>
 
-      // Search and filters section
-      createElement('div', { key: 'filters', className: 'space-y-4 mb-6' }, [
-        // Search input
-        createElement(Input, {
-          key: 'search',
-          placeholder: 'Search tools...',
-          value: searchQuery,
-          onChange: (e) => setSearchQuery(e.target.value),
-        }),
+        {/* Search and filters section */}
+        <div className="space-y-4 mb-6">
+          {/* Search input */}
+          <Input
+            placeholder="Search tools..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
 
-        // Filter row
-        createElement('div', { key: 'filter-row', className: 'flex flex-wrap gap-4' }, [
-          // Category filter
-          createElement(
-            'div',
-            { key: 'category', className: 'flex items-center gap-2 min-w-[200px]' },
-            [
-              createElement(
-                'span',
-                { key: 'label', className: 'text-sm font-medium text-foreground-secondary' },
-                'Category:'
-              ),
-              createElement(Select, {
-                key: 'select',
-                value: categoryFilter,
-                onChange: (e) => setCategoryFilter(e.target.value),
-                size: 'sm',
-                options: [
+          {/* Filter row */}
+          <div className="flex flex-wrap gap-4">
+            {/* Category filter */}
+            <div className="flex items-center gap-2 min-w-[200px]">
+              <span className="text-sm font-medium text-foreground-secondary">Category:</span>
+              <Select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                size="sm"
+                options={[
                   { value: 'all', label: 'All Categories' },
                   ...availableCategories.map((cat) => ({
                     value: cat,
                     label: cat.charAt(0).toUpperCase() + cat.slice(1),
                   })),
-                ],
-              }),
-            ]
-          ),
+                ]}
+              />
+            </div>
 
-          // Clear filters button
-          categoryFilter !== 'all' || selectedTags.length > 0
-            ? createElement(
-                Button,
-                {
-                  key: 'clear',
-                  variant: 'ghost',
-                  size: 'sm',
-                  onClick: () => {
-                    setCategoryFilter('all');
-                    setSelectedTags([]);
-                  },
-                },
-                'Clear Filters'
-              )
-            : null,
-        ]),
+            {/* Clear filters button */}
+            {(categoryFilter !== 'all' || selectedTags.length > 0) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setCategoryFilter('all');
+                  setSelectedTags([]);
+                }}
+              >
+                Clear Filters
+              </Button>
+            )}
+          </div>
 
-        // Popular tags
-        availableTags.length > 0
-          ? createElement('div', { key: 'tags', className: 'flex flex-wrap gap-2' }, [
-              createElement(
-                'span',
-                {
-                  key: 'label',
-                  className: 'text-sm font-medium text-foreground-secondary mr-2',
-                },
-                'Filter by tag:'
-              ),
-              ...availableTags.slice(0, 10).map((tag) =>
-                createElement(
-                  Badge,
-                  {
-                    key: tag,
-                    variant: selectedTags.includes(tag) ? 'default' : 'outline',
-                    size: 'sm',
-                    className: 'cursor-pointer hover:bg-foreground/10 transition-colors',
-                    onClick: () => {
-                      setSelectedTags((prev) =>
-                        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-                      );
-                    },
-                  },
-                  tag
-                )
-              ),
-            ])
-          : null,
-      ]),
+          {/* Popular tags */}
+          {availableTags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm font-medium text-foreground-secondary mr-2">
+                Filter by tag:
+              </span>
+              {availableTags.slice(0, 10).map((tag) => (
+                <Badge
+                  key={tag}
+                  variant={selectedTags.includes(tag) ? 'default' : 'outline'}
+                  size="sm"
+                  className="cursor-pointer hover:bg-foreground/10 transition-colors"
+                  onClick={() => {
+                    setSelectedTags((prev) =>
+                      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                    );
+                  }}
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
 
-      // Tabs
-      createElement(Tabs, {
-        key: 'tabs',
-        tabs: [
-          { id: 'all', label: 'All Tools', count: tools.length },
-          {
-            id: 'featured',
-            label: 'Official',
-            count: tools.filter((t) => t.isOfficial).length,
-          },
-        ],
-        activeTab,
-        onTabChange: setActiveTab,
-        size: 'md',
-        className: 'mb-8',
-      }),
-
-      // Loading state
-      loading
-        ? createElement(
-            'div',
+        {/* Tabs */}
+        <Tabs
+          tabs={[
+            { id: 'all', label: 'All Tools', count: tools.length },
             {
-              key: 'loading',
-              className: 'text-center py-12 text-foreground-secondary',
+              id: 'featured',
+              label: 'Official',
+              count: tools.filter((t) => t.isOfficial).length,
             },
-            'Loading tools...'
-          )
-        : null,
+          ]}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          size="md"
+          className="mb-8"
+        />
 
-      // Error state
-      error
-        ? createElement(
-            'div',
-            {
-              key: 'error',
-              className: 'text-center py-12 text-red-500',
-            },
-            `Error: ${error}`
-          )
-        : null,
+        {/* Loading state */}
+        {loading && (
+          <div className="text-center py-12 text-foreground-secondary">Loading tools...</div>
+        )}
 
-      // Tool grid
-      !loading && !error
-        ? createElement(
-            'div',
-            {
-              key: 'tools-grid',
-              className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6',
-            },
-            displayedTools.length > 0
-              ? displayedTools.map((tool) =>
-                  createElement(Card, { key: tool.id, className: 'flex flex-col' }, [
-                    createElement(CardHeader, { key: 'header' }, [
-                      createElement(
-                        'div',
-                        {
-                          key: 'title-row',
-                          className: 'flex items-start justify-between gap-2',
-                        },
-                        [
-                          createElement(CardTitle, { key: 'title' }, tool.npmPackageName),
-                          tool.npmRepository
-                            ? createElement(
-                                'a',
-                                {
-                                  key: 'link',
-                                  href: tool.npmRepository.url
-                                    .replace('git+', '')
-                                    .replace('.git', ''),
-                                  target: '_blank',
-                                  rel: 'noopener noreferrer',
-                                  className:
-                                    'text-foreground-secondary hover:text-foreground transition-colors',
-                                },
-                                createElement(Icon, {
-                                  icon: 'externalLink',
-                                  size: 'sm',
-                                })
-                              )
-                            : null,
-                        ]
-                      ),
-                      createElement(CardDescription, { key: 'description' }, tool.description),
-                    ]),
-                    createElement(CardContent, { key: 'content', className: 'flex-1 space-y-4' }, [
-                      // Category badge and version
-                      createElement(
-                        'div',
-                        {
-                          key: 'category',
-                          className: 'flex items-center gap-2 flex-wrap',
-                        },
-                        [
-                          createElement(
-                            Badge,
-                            {
-                              key: 'badge',
-                              variant: 'secondary',
-                              size: 'sm',
-                            },
-                            tool.category
-                          ),
-                          createElement(
-                            'span',
-                            {
-                              key: 'version',
-                              className: 'text-xs text-foreground-tertiary',
-                            },
-                            `v${tool.npmVersion}`
-                          ),
-                          tool.isOfficial
-                            ? createElement(
-                                Badge,
-                                {
-                                  key: 'official',
-                                  variant: 'default',
-                                  size: 'sm',
-                                },
-                                'Official'
-                              )
-                            : null,
-                        ]
-                      ),
+        {/* Error state */}
+        {error && <div className="text-center py-12 text-red-500">Error: {error}</div>}
 
-                      // Tags
-                      tool.tags.length > 0
-                        ? createElement(
-                            'div',
-                            { key: 'tags', className: 'flex flex-wrap gap-2' },
-                            tool.tags
-                              .slice(0, 5)
-                              .map((tag) =>
-                                createElement(
-                                  Badge,
-                                  { key: tag, variant: 'outline', size: 'sm' },
-                                  tag
-                                )
-                              )
-                          )
-                        : null,
+        {/* Tool grid */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayedTools.length > 0 ? (
+              displayedTools.map((tool) => (
+                <Card key={tool.id} className="flex flex-col">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle>{tool.npmPackageName}</CardTitle>
+                      {tool.npmRepository && (
+                        <a
+                          href={tool.npmRepository.url.replace('git+', '').replace('.git', '')}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-foreground-secondary hover:text-foreground transition-colors"
+                        >
+                          <Icon icon="externalLink" size="sm" />
+                        </a>
+                      )}
+                    </div>
+                    <CardDescription>{tool.description}</CardDescription>
+                  </CardHeader>
 
-                      // Quality score and downloads
-                      createElement('div', { key: 'stats', className: 'space-y-2' }, [
-                        createElement(
-                          'div',
-                          {
-                            key: 'label',
-                            className: 'flex items-center justify-between text-sm',
-                          },
-                          [
-                            createElement(
-                              'span',
-                              { key: 'text', className: 'text-foreground-secondary' },
-                              'Quality Score'
-                            ),
-                            createElement(
-                              'span',
-                              { key: 'downloads', className: 'text-foreground-tertiary' },
-                              `${tool.npmDownloadsLastMonth.toLocaleString()} downloads/mo`
-                            ),
-                          ]
-                        ),
-                        createElement(ProgressBar, {
-                          key: 'progress',
-                          value: Number.parseFloat(tool.qualityScore) * 100,
-                          variant:
-                            Number.parseFloat(tool.qualityScore) >= 0.7
-                              ? 'success'
-                              : Number.parseFloat(tool.qualityScore) >= 0.5
-                                ? 'primary'
-                                : 'warning',
-                          size: 'sm',
-                          showLabel: true,
-                        }),
-                      ]),
+                  <CardContent className="flex-1 space-y-4">
+                    {/* Category badge and version */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="secondary" size="sm">
+                        {tool.category}
+                      </Badge>
+                      <span className="text-xs text-foreground-tertiary">v{tool.npmVersion}</span>
+                      {tool.isOfficial && (
+                        <Badge variant="default" size="sm">
+                          Official
+                        </Badge>
+                      )}
+                    </div>
 
-                      // Install command
-                      createElement(CodeBlock, {
-                        key: 'install',
-                        code: `npm install ${tool.npmPackageName}`,
-                        language: 'bash',
-                        size: 'sm',
-                        showCopy: true,
-                      }),
-                    ]),
-                    createElement(
-                      CardFooter,
-                      { key: 'footer' },
-                      createElement(
-                        Link,
-                        { href: `/tool/${encodeURIComponent(tool.npmPackageName)}` },
-                        createElement(
-                          Button,
-                          { variant: 'outline', size: 'sm', className: 'w-full' },
-                          'View Details'
-                        )
-                      )
-                    ),
-                  ])
-                )
-              : [
-                  createElement(
-                    'div',
-                    {
-                      key: 'no-results',
-                      className: 'col-span-full text-center py-12 text-foreground-tertiary',
-                    },
-                    searchQuery
-                      ? `No tools found matching "${searchQuery}"`
-                      : 'No tools available yet'
-                  ),
-                ]
-          )
-        : null,
-    ]),
-  ]);
+                    {/* Tags */}
+                    {tool.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {tool.tags.slice(0, 5).map((tag) => (
+                          <Badge key={tag} variant="outline" size="sm">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Quality score and downloads */}
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-foreground-secondary">Quality Score</span>
+                        <span className="text-foreground-tertiary">
+                          {tool.npmDownloadsLastMonth.toLocaleString()} downloads/mo
+                        </span>
+                      </div>
+                      <ProgressBar
+                        value={Number.parseFloat(tool.qualityScore) * 100}
+                        variant={
+                          Number.parseFloat(tool.qualityScore) >= 0.7
+                            ? 'success'
+                            : Number.parseFloat(tool.qualityScore) >= 0.5
+                              ? 'primary'
+                              : 'warning'
+                        }
+                        size="sm"
+                        showLabel={true}
+                      />
+                    </div>
+
+                    {/* Install command */}
+                    <CodeBlock
+                      code={`npm install ${tool.npmPackageName}`}
+                      language="bash"
+                      size="sm"
+                      showCopy={true}
+                    />
+                  </CardContent>
+
+                  <CardFooter>
+                    <Link href={`/tool/${encodeURIComponent(tool.npmPackageName)}`}>
+                      <Button variant="outline" size="sm" className="w-full">
+                        View Details
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-foreground-tertiary">
+                {searchQuery
+                  ? `No tools found matching "${searchQuery}"`
+                  : 'No tools available yet'}
+              </div>
+            )}
+          </div>
+        )}
+      </Container>
+    </div>
+  );
 }
