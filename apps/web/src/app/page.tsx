@@ -17,7 +17,10 @@ export default function HomePage(): React.ReactElement {
       {/* Header */}
       <Header
         title={
-          <Link href="/" className="text-foreground hover:text-foreground">
+          <Link
+            href="/"
+            className="text-foreground hover:text-foreground text-xl md:text-2xl font-bold uppercase tracking-tight"
+          >
             TPMJS
           </Link>
         }

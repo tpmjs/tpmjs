@@ -60,14 +60,23 @@ export function HeroSection(): React.ReactElement {
           </h1>
 
           {/* Live Metrics Strip */}
-          <div className="mb-12 flex flex-wrap items-center gap-3 border-l-[6px] border-brutalist-accent pl-6 font-mono text-sm md:text-base font-bold uppercase tracking-wider">
+          <div className="mb-12 flex flex-wrap items-center gap-3 border-l-[6px] border-brutalist-accent pl-6 font-mono text-base md:text-lg font-bold uppercase tracking-wider">
             <div className="flex items-center gap-2">
               <AnimatedCounter value={2847} separator="," size="md" />
               <span className="text-foreground-secondary">TOOLS</span>
             </div>
             <span className="text-foreground-tertiary">/</span>
             <div className="flex items-center gap-2">
-              <AnimatedCounter value={12000000} suffix="+" size="md" />
+              {/* Mobile: abbreviated */}
+              <AnimatedCounter value={12} suffix="M+" size="md" className="md:hidden" />
+              {/* Desktop: full */}
+              <AnimatedCounter
+                value={12000000}
+                suffix="+"
+                separator=","
+                size="md"
+                className="hidden md:inline"
+              />
               <span className="text-foreground-secondary">INVOCATIONS</span>
             </div>
             <span className="text-foreground-tertiary">/</span>
@@ -97,14 +106,14 @@ export function HeroSection(): React.ReactElement {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="search tools..."
-                className="brutalist-border h-16 md:h-20 pl-14 pr-4 text-lg md:text-xl font-mono placeholder:text-foreground-tertiary placeholder:uppercase focus:ring-4 focus:ring-brutalist-accent focus:ring-offset-0 bg-background"
+                className="brutalist-border h-16 md:h-20 pl-14 pr-36 md:pr-40 text-lg md:text-xl font-mono placeholder:text-foreground-tertiary placeholder:uppercase focus:ring-4 focus:ring-brutalist-accent focus:ring-offset-0 bg-background"
                 style={{ borderRadius: 0 }}
               />
 
               {/* Search Button */}
               <Button
                 size="lg"
-                className="brutalist-border-thick absolute right-2 top-1/2 -translate-y-1/2 h-12 md:h-14 px-8 bg-brutalist-accent text-background hover:bg-brutalist-accent-hover font-bold uppercase tracking-wider"
+                className="brutalist-border-thick absolute right-2 top-1/2 -translate-y-1/2 h-12 md:h-16 px-6 md:px-8 bg-brutalist-accent text-background hover:bg-brutalist-accent-hover font-bold uppercase tracking-wider shadow-lg"
                 style={{ borderRadius: 0, borderColor: 'hsl(var(--foreground))' }}
               >
                 Search
