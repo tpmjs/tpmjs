@@ -16,6 +16,7 @@ import { Header } from '@tpmjs/ui/Header/Header';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
+import { Select } from '@tpmjs/ui/Select/Select';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
 import { createElement, useEffect, useState } from 'react';
@@ -42,9 +43,13 @@ interface Tool {
 export default function ToolSearchPage(): React.ReactElement {
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   // Fetch tools from API
   useEffect(() => {
@@ -61,12 +66,33 @@ export default function ToolSearchPage(): React.ReactElement {
           params.set('official', 'true');
         }
 
+        if (categoryFilter !== 'all') {
+          params.set('category', categoryFilter);
+        }
+
         const response = await fetch(`/api/tools?${params.toString()}`);
         const data = await response.json();
 
         if (data.success) {
-          setTools(data.data);
+          const fetchedTools = data.data;
+          setTools(fetchedTools);
           setError(null);
+
+          // Extract unique categories and tags from all tools
+          const categories = new Set<string>();
+          const tags = new Set<string>();
+
+          for (const tool of fetchedTools) {
+            if (tool.category) {
+              categories.add(tool.category);
+            }
+            for (const tag of tool.tags) {
+              tags.add(tag);
+            }
+          }
+
+          setAvailableCategories(Array.from(categories).sort());
+          setAvailableTags(Array.from(tags).sort());
         } else {
           setError(data.error || 'Failed to fetch tools');
         }
@@ -78,9 +104,14 @@ export default function ToolSearchPage(): React.ReactElement {
     };
 
     fetchTools();
-  }, [searchQuery, activeTab]);
+  }, [searchQuery, activeTab, categoryFilter]);
 
-  const displayedTools = tools;
+  // Filter tools by selected tags (client-side)
+  const displayedTools = selectedTags.length > 0
+    ? tools.filter((tool) =>
+        selectedTags.some((tag) => tool.tags.includes(tag))
+      )
+    : tools;
 
   return createElement('div', { className: 'min-h-screen bg-background' }, [
     // Header
@@ -125,14 +156,93 @@ export default function ToolSearchPage(): React.ReactElement {
         ),
       ]),
 
-      // Search input
-      createElement(Input, {
-        key: 'search',
-        placeholder: 'Search tools...',
-        value: searchQuery,
-        onChange: (e) => setSearchQuery(e.target.value),
-        className: 'mb-6',
-      }),
+      // Search and filters section
+      createElement('div', { key: 'filters', className: 'space-y-4 mb-6' }, [
+        // Search input
+        createElement(Input, {
+          key: 'search',
+          placeholder: 'Search tools...',
+          value: searchQuery,
+          onChange: (e) => setSearchQuery(e.target.value),
+        }),
+
+        // Filter row
+        createElement('div', { key: 'filter-row', className: 'flex flex-wrap gap-4' }, [
+          // Category filter
+          createElement(
+            'div',
+            { key: 'category', className: 'flex items-center gap-2 min-w-[200px]' },
+            [
+              createElement(
+                'span',
+                { key: 'label', className: 'text-sm font-medium text-foreground-secondary' },
+                'Category:'
+              ),
+              createElement(Select, {
+                key: 'select',
+                value: categoryFilter,
+                onChange: (e) => setCategoryFilter(e.target.value),
+                size: 'sm',
+                options: [
+                  { value: 'all', label: 'All Categories' },
+                  ...availableCategories.map((cat) => ({
+                    value: cat,
+                    label: cat.charAt(0).toUpperCase() + cat.slice(1),
+                  })),
+                ],
+              }),
+            ]
+          ),
+
+          // Clear filters button
+          (categoryFilter !== 'all' || selectedTags.length > 0)
+            ? createElement(
+                Button,
+                {
+                  key: 'clear',
+                  variant: 'ghost',
+                  size: 'sm',
+                  onClick: () => {
+                    setCategoryFilter('all');
+                    setSelectedTags([]);
+                  },
+                },
+                'Clear Filters'
+              )
+            : null,
+        ]),
+
+        // Popular tags
+        availableTags.length > 0
+          ? createElement('div', { key: 'tags', className: 'flex flex-wrap gap-2' }, [
+              createElement(
+                'span',
+                {
+                  key: 'label',
+                  className: 'text-sm font-medium text-foreground-secondary mr-2',
+                },
+                'Filter by tag:'
+              ),
+              ...availableTags.slice(0, 10).map((tag) =>
+                createElement(
+                  Badge,
+                  {
+                    key: tag,
+                    variant: selectedTags.includes(tag) ? 'default' : 'outline',
+                    size: 'sm',
+                    className: 'cursor-pointer hover:bg-foreground/10 transition-colors',
+                    onClick: () => {
+                      setSelectedTags((prev) =>
+                        prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+                      );
+                    },
+                  },
+                  tag
+                )
+              ),
+            ])
+          : null,
+      ]),
 
       // Tabs
       createElement(Tabs, {
