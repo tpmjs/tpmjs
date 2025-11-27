@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Main tools table - stores all discovered NPM packages with TPMJS metadata
+model Tool {
+  id String @id @default(cuid())
+
+  // NPM Metadata
+  npmPackageName     String   @unique @map("npm_package_name") @db.VarChar(214)
+  npmVersion         String   @map("npm_version") @db.VarChar(50)
+  npmPublishedAt     DateTime @map("npm_published_at")
+  npmDescription     String?  @map("npm_description") @db.Text
+  npmRepository      Json?    @map("npm_repository") @db.JsonB
+  npmHomepage        String?  @map("npm_homepage") @db.Text
+  npmLicense         String?  @map("npm_license") @db.VarChar(50)
+
+  // TPMJS Metadata (from package.json tpmjs field)
+  category       String  @db.VarChar(50)
+  description    String  @db.Text
+  example        String  @db.Text
+  parameters     Json?   @db.JsonB
+  returns        Json?   @db.JsonB
+  authentication Json?   @db.JsonB
+  pricing        Json?   @db.JsonB
+  frameworks     String[] @db.Text
+  links          Json?   @db.JsonB
+  tags           String[] @db.Text
+  status         String? @db.VarChar(20)
+  aiAgent        Json?   @map("ai_agent") @db.JsonB
+
+  // Discovery Metadata
+  discoveryMethod String  @map("discovery_method") @db.VarChar(20) // 'keyword' | 'changes-feed'
+  isOfficial      Boolean @default(false) @map("is_official")
+  tier            String  @db.VarChar(20) // 'minimal' | 'rich'
+
+  // Metrics
+  npmDownloadsLastMonth Int?     @default(0) @map("npm_downloads_last_month")
+  githubStars           Int?     @default(0) @map("github_stars")
+  qualityScore          Decimal? @map("quality_score") @db.Decimal(3, 2) // 0.00 to 1.00
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([isOfficial])
+  @@index([qualityScore])
+  @@index([npmDownloadsLastMonth])
+  @@index([createdAt])
+  @@map("tools")
+}
+
+/// Sync checkpoints - tracks progress of sync workers
+model SyncCheckpoint {
+  id String @id @default(cuid())
+
+  source     String   @unique @db.VarChar(50) // 'changes-feed' | 'keyword-search' | 'metrics'
+  checkpoint Json     @db.JsonB // Stores last sequence, timestamp, etc.
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("sync_checkpoints")
+}
+
+/// Sync logs - audit trail of sync operations
+model SyncLog {
+  id String @id @default(cuid())
+
+  source      String   @db.VarChar(50) // 'changes-feed' | 'keyword-search' | 'metrics'
+  status      String   @db.VarChar(20) // 'success' | 'error' | 'partial'
+  processed   Int      @default(0) // Number of packages processed
+  skipped     Int      @default(0) // Number of packages skipped
+  errors      Int      @default(0) // Number of errors encountered
+  message     String?  @db.Text // Error message or summary
+  metadata    Json?    @db.JsonB // Additional context
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([source])
+  @@index([status])
+  @@index([createdAt])
+  @@map("sync_logs")
+}
