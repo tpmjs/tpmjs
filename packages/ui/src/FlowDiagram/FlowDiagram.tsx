@@ -48,16 +48,20 @@ export function FlowDiagram({
             y="20"
             width="100"
             height="60"
-            className="fill-surface stroke-foreground"
+            fill="hsl(var(--surface))"
+            stroke="hsl(var(--foreground))"
             strokeWidth="2"
             rx="0"
           />
           <text
             x="200"
             y="45"
-            className="text-sm font-mono font-bold fill-foreground"
+            fill="hsl(var(--foreground))"
             textAnchor="middle"
             dominantBaseline="middle"
+            fontSize="14"
+            fontFamily="monospace"
+            fontWeight="700"
           >
             AI Agent
           </text>
@@ -67,7 +71,7 @@ export function FlowDiagram({
         <path
           id="path1"
           d="M 200 80 L 200 130"
-          className="stroke-brutalist-accent"
+          stroke="hsl(var(--brutalist-accent))"
           strokeWidth="3"
           fill="none"
           markerEnd="url(#arrowhead)"
@@ -85,25 +89,31 @@ export function FlowDiagram({
             y="130"
             width="160"
             height="50"
-            className="fill-brutalist-accent/10 stroke-brutalist-accent"
+            fill="hsl(var(--brutalist-accent) / 0.1)"
+            stroke="hsl(var(--brutalist-accent))"
             strokeWidth="2"
             rx="0"
           />
           <text
             x="200"
             y="152"
-            className="text-xs font-mono font-bold fill-foreground"
+            fill="hsl(var(--foreground))"
             textAnchor="middle"
             dominantBaseline="middle"
+            fontSize="12"
+            fontFamily="monospace"
+            fontWeight="700"
           >
             Semantic Query
           </text>
           <text
             x="200"
             y="168"
-            className="text-xs font-mono fill-foreground-secondary"
+            fill="hsl(var(--foreground-secondary))"
             textAnchor="middle"
             dominantBaseline="middle"
+            fontSize="12"
+            fontFamily="monospace"
           >
             &quot;email, slack...&quot;
           </text>
@@ -113,7 +123,7 @@ export function FlowDiagram({
         <path
           id="path2"
           d="M 200 180 L 200 240"
-          className="stroke-brutalist-accent"
+          stroke="hsl(var(--brutalist-accent))"
           strokeWidth="3"
           fill="none"
           markerEnd="url(#arrowhead)"
@@ -131,34 +141,42 @@ export function FlowDiagram({
             y="240"
             width="200"
             height="80"
-            className="fill-surface stroke-foreground"
+            fill="hsl(var(--surface))"
+            stroke="hsl(var(--foreground))"
             strokeWidth="3"
             rx="0"
           />
           <text
             x="200"
             y="265"
-            className="text-base font-bold fill-foreground"
+            fill="hsl(var(--foreground))"
             textAnchor="middle"
             dominantBaseline="middle"
+            fontSize="16"
+            fontFamily="monospace"
+            fontWeight="700"
           >
             TPMJS REGISTRY
           </text>
           <text
             x="200"
             y="285"
-            className="text-xs font-mono fill-foreground-secondary"
+            fill="hsl(var(--foreground-secondary))"
             textAnchor="middle"
             dominantBaseline="middle"
+            fontSize="12"
+            fontFamily="monospace"
           >
             Dynamic Discovery
           </text>
           <text
             x="200"
             y="305"
-            className="text-xs font-mono fill-brutalist-accent"
+            fill="hsl(var(--brutalist-accent))"
             textAnchor="middle"
             dominantBaseline="middle"
+            fontSize="12"
+            fontFamily="monospace"
           >
             2,847 tools
           </text>
@@ -169,7 +187,8 @@ export function FlowDiagram({
           cx="200"
           cy="280"
           r="5"
-          className="fill-none stroke-brutalist-accent"
+          fill="none"
+          stroke="hsl(var(--brutalist-accent))"
           strokeWidth="2"
           opacity="0"
           style={{
@@ -181,7 +200,7 @@ export function FlowDiagram({
         <path
           id="path3a"
           d="M 150 320 L 80 380"
-          className="stroke-brutalist-accent"
+          stroke="hsl(var(--brutalist-accent))"
           strokeWidth="2"
           fill="none"
           markerEnd="url(#arrowhead)"
@@ -194,7 +213,7 @@ export function FlowDiagram({
         <path
           id="path3b"
           d="M 200 320 L 200 380"
-          className="stroke-brutalist-accent"
+          stroke="hsl(var(--brutalist-accent))"
           strokeWidth="2"
           fill="none"
           markerEnd="url(#arrowhead)"
@@ -207,7 +226,7 @@ export function FlowDiagram({
         <path
           id="path3c"
           d="M 250 320 L 320 380"
-          className="stroke-brutalist-accent"
+          stroke="hsl(var(--brutalist-accent))"
           strokeWidth="2"
           fill="none"
           markerEnd="url(#arrowhead)"
@@ -226,22 +245,38 @@ export function FlowDiagram({
             y="380"
             width="100"
             height="80"
-            className="fill-surface stroke-foreground"
+            fill="hsl(var(--surface))"
+            stroke="hsl(var(--foreground))"
             strokeWidth="2"
             rx="0"
           />
-          <text x="70" y="405" className="text-sm font-bold fill-foreground" textAnchor="middle">
+          <text
+            x="70"
+            y="405"
+            fill="hsl(var(--foreground))"
+            textAnchor="middle"
+            fontSize="14"
+            fontWeight="700"
+          >
             Email
           </text>
           <text
             x="70"
             y="425"
-            className="text-xs font-mono fill-foreground-secondary"
+            fill="hsl(var(--foreground-secondary))"
             textAnchor="middle"
+            fontSize="12"
+            fontFamily="monospace"
           >
             Tool
           </text>
-          <text x="70" y="445" className="text-xs fill-brutalist-accent" textAnchor="middle">
+          <text
+            x="70"
+            y="445"
+            fill="hsl(var(--brutalist-accent))"
+            textAnchor="middle"
+            fontSize="12"
+          >
             12K calls
           </text>
 
@@ -251,22 +286,38 @@ export function FlowDiagram({
             y="380"
             width="100"
             height="80"
-            className="fill-surface stroke-foreground"
+            fill="hsl(var(--surface))"
+            stroke="hsl(var(--foreground))"
             strokeWidth="2"
             rx="0"
           />
-          <text x="200" y="405" className="text-sm font-bold fill-foreground" textAnchor="middle">
+          <text
+            x="200"
+            y="405"
+            fill="hsl(var(--foreground))"
+            textAnchor="middle"
+            fontSize="14"
+            fontWeight="700"
+          >
             Slack
           </text>
           <text
             x="200"
             y="425"
-            className="text-xs font-mono fill-foreground-secondary"
+            fill="hsl(var(--foreground-secondary))"
             textAnchor="middle"
+            fontSize="12"
+            fontFamily="monospace"
           >
             Tool
           </text>
-          <text x="200" y="445" className="text-xs fill-brutalist-accent" textAnchor="middle">
+          <text
+            x="200"
+            y="445"
+            fill="hsl(var(--brutalist-accent))"
+            textAnchor="middle"
+            fontSize="12"
+          >
             8K calls
           </text>
 
@@ -276,22 +327,38 @@ export function FlowDiagram({
             y="380"
             width="100"
             height="80"
-            className="fill-surface stroke-foreground"
+            fill="hsl(var(--surface))"
+            stroke="hsl(var(--foreground))"
             strokeWidth="2"
             rx="0"
           />
-          <text x="330" y="405" className="text-sm font-bold fill-foreground" textAnchor="middle">
+          <text
+            x="330"
+            y="405"
+            fill="hsl(var(--foreground))"
+            textAnchor="middle"
+            fontSize="14"
+            fontWeight="700"
+          >
             Calendar
           </text>
           <text
             x="330"
             y="425"
-            className="text-xs font-mono fill-foreground-secondary"
+            fill="hsl(var(--foreground-secondary))"
             textAnchor="middle"
+            fontSize="12"
+            fontFamily="monospace"
           >
             Tool
           </text>
-          <text x="330" y="445" className="text-xs fill-brutalist-accent" textAnchor="middle">
+          <text
+            x="330"
+            y="445"
+            fill="hsl(var(--brutalist-accent))"
+            textAnchor="middle"
+            fontSize="12"
+          >
             5K calls
           </text>
         </g>
