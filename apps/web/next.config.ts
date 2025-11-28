@@ -6,14 +6,14 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
-        source: '/:path*',
+        source: '/((?!api).*)',
         has: [
           {
             type: 'host',
             value: 'www.tpmjs.com',
           },
         ],
-        destination: 'https://tpmjs.com/:path*',
+        destination: 'https://tpmjs.com/$1',
         permanent: true,
       },
     ];
