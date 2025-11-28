@@ -1,10 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && turbo build --filter=@tpmjs/web -- --webpack",
-  "installCommand": "pnpm install",
-  "functions": {
-    "app/api/**/*.ts": {
-      "maxDuration": 60
-    }
-  }
+  "buildCommand": "cd ../.. && pnpm --filter=@tpmjs/web build",
+  "installCommand": "pnpm install"
 }
