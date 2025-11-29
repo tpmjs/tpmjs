@@ -89,7 +89,7 @@ export default function ToolDetailPage({
     const fetchTool = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/tools/${encodeURIComponent(slug)}`);
+        const response = await fetch(`/api/tools/${slug}`);
         const data = await response.json();
 
         if (data.success) {
