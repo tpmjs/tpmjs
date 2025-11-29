@@ -183,7 +183,6 @@ export async function executeToolWithAgent(
     model: openai('gpt-4-turbo'),
     messages,
     tools: {
-      // biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 streaming type compatibility
       [tool.npmPackageName]: toolDef,
     },
     // biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 chunk type compatibility
