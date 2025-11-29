@@ -31,7 +31,6 @@
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
-    "tiktoken": "^1.0.22",
     "zod": "^3.25.76"
   },
   "devDependencies": {

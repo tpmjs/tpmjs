@@ -7,7 +7,6 @@ import { openai } from '@ai-sdk/openai';
 import type { Tool } from '@tpmjs/db';
 import { executePackage } from '@tpmjs/package-executor';
 import { type CoreMessage, tool as aiTool, streamText } from 'ai';
-import { encoding_for_model } from 'tiktoken';
 import { z } from 'zod';
 
 /**
@@ -121,19 +120,12 @@ export function createToolDefinition(tool: Tool) {
 }
 
 /**
- * Count tokens in text using tiktoken
+ * Count tokens in text using character estimation
+ * Uses rough estimation: ~4 characters per token
+ * This is used instead of tiktoken to avoid WASM dependency issues in serverless
  */
-function countTokens(text: string, model = 'gpt-4'): number {
-  try {
-    // biome-ignore lint/suspicious/noExplicitAny: tiktoken type compatibility workaround
-    const encoder = encoding_for_model(model as any);
-    const tokens = encoder.encode(text);
-    encoder.free();
-    return tokens.length;
-  } catch {
-    // Fallback to rough estimation: ~4 characters per token
-    return Math.ceil(text.length / 4);
-  }
+function countTokens(text: string): number {
+  return Math.ceil(text.length / 4);
 }
 
 /**
