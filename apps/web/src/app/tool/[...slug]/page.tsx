@@ -12,6 +12,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Markdown } from '../../../components/Markdown';
 import { ThemeToggle } from '../../../components/ThemeToggle';
+import { ToolPlayground } from '../../../components/ToolPlayground';
 
 interface Tool {
   id: string;
@@ -241,6 +242,10 @@ export default function ToolDetailPage({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left column - Main content */}
           <div className="lg:col-span-2 space-y-6">
+            {/* Interactive Playground */}
+            {/* biome-ignore lint/suspicious/noExplicitAny: Prisma Tool type compatibility with component props */}
+            <ToolPlayground tool={tool as any} />
+
             {/* Installation */}
             <Card>
               <CardHeader>

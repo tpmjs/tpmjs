@@ -55,6 +55,9 @@ model Tool {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  // Relations
+  simulations Simulation[]
+
   @@index([category])
   @@index([isOfficial])
   @@index([qualityScore])
@@ -91,4 +94,76 @@ model SyncLog {
   @@index([status])
   @@index([createdAt])
   @@map("sync_logs")
+}
+
+/// Simulations - tracks tool playground executions
+model Simulation {
+  id String @id @default(cuid())
+
+  // Relations
+  toolId String @map("tool_id")
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Request data
+  userPrompt String  @map("user_prompt") @db.Text
+  parameters Json?   @db.JsonB
+  ipAddress  String? @map("ip_address") @db.VarChar(45)
+  userAgent  String? @map("user_agent") @db.Text
+
+  // Results
+  status          String  @db.VarChar(20) // pending|running|success|error|timeout
+  executionTimeMs Int?    @map("execution_time_ms")
+  output          Json?   @db.JsonB
+  error           String? @db.Text
+
+  // AI metadata
+  agentSteps Int     @default(0) @map("agent_steps")
+  model      String? @db.VarChar(50)
+
+  // Relations
+  tokenUsage TokenUsage?
+  logs       ExecutionLog[]
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@index([toolId])
+  @@index([status])
+  @@index([ipAddress, createdAt]) // For rate limiting
+  @@map("simulations")
+}
+
+/// Token usage - tracks token consumption per simulation
+model TokenUsage {
+  id String @id @default(cuid())
+
+  simulationId String     @unique @map("simulation_id")
+  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  inputTokens     Int      @default(0) @map("input_tokens")
+  toolDescTokens  Int      @default(0) @map("tool_desc_tokens")
+  schemaTokens    Int      @default(0) @map("schema_tokens")
+  outputTokens    Int      @default(0) @map("output_tokens")
+  totalTokens     Int      @default(0) @map("total_tokens")
+  estimatedCost   Decimal? @map("estimated_cost") @db.Decimal(10, 6)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  @@map("token_usage")
+}
+
+/// Execution logs - detailed logs for each simulation
+model ExecutionLog {
+  id String @id @default(cuid())
+
+  simulationId String     @map("simulation_id")
+  simulation   Simulation @relation(fields: [simulationId], references: [id], onDelete: Cascade)
+
+  timestamp DateTime @default(now())
+  level     String   @db.VarChar(20) // info|warning|error|debug
+  event     String   @db.VarChar(50)
+  message   String   @db.Text
+  metadata  Json?    @db.JsonB
+
+  @@index([simulationId])
+  @@map("execution_logs")
 }
