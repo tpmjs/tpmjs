@@ -32,6 +32,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
   const [error, setError] = useState<string | null>(null);
   const [rateLimitInfo, setRateLimitInfo] = useState<{ remaining: number } | null>(null);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE stream handling requires sequential logic
   const handleExecute = async () => {
     if (!prompt.trim() || isExecuting) return;
 
@@ -44,7 +45,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
 
     try {
       const response = await fetch(
-        `/api/tools/${encodeURIComponent(tool.npmPackageName)}/execute`,
+        `/api/tools/execute/${encodeURIComponent(tool.npmPackageName)}`,
         {
           method: 'POST',
           headers: {
@@ -253,6 +254,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
             >
               {isExecuting ? (
                 <span className="flex items-center">
+                  {/* biome-ignore lint/a11y/noSvgWithoutTitle: decorative loading spinner */}
                   <svg
                     className="animate-spin -ml-1 mr-3 h-5 w-5"
                     xmlns="http://www.w3.org/2000/svg"
@@ -298,6 +300,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
             ) : isExecuting ? (
               <div className="flex items-center justify-center py-12">
                 <div className="text-center">
+                  {/* biome-ignore lint/a11y/noSvgWithoutTitle: decorative loading spinner */}
                   <svg
                     className="animate-spin h-8 w-8 text-primary mx-auto mb-4"
                     xmlns="http://www.w3.org/2000/svg"
