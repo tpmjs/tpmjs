@@ -96,13 +96,21 @@ export function createToolDefinition(tool: Tool) {
     ? (tool.parameters as unknown as TPMJSParameter[])
     : [];
 
+  console.log('[createToolDefinition] Tool:', tool.npmPackageName);
+  console.log('[createToolDefinition] Parameters array:', JSON.stringify(parameters));
+  console.log('[createToolDefinition] Parameters length:', parameters.length);
+
   // Ensure we have a valid schema - if no parameters, use an empty object with explicit additionalProperties
   const schema =
     parameters.length > 0
       ? tpmjsParamsToZodSchema(parameters)
       : z.object({}).describe('No parameters required');
 
-  return aiTool({
+  console.log('[createToolDefinition] Created Zod schema:', schema);
+  console.log('[createToolDefinition] Schema type:', typeof schema);
+  console.log('[createToolDefinition] Schema constructor:', schema.constructor.name);
+
+  const toolDef = aiTool({
     description: tool.description,
     parameters: schema,
     execute: async (params: Record<string, unknown>) => {
@@ -122,6 +130,10 @@ export function createToolDefinition(tool: Tool) {
     },
     // biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 type compatibility workaround
   } as any);
+
+  console.log('[createToolDefinition] Tool definition created:', JSON.stringify(toolDef, null, 2));
+
+  return toolDef;
 }
 
 /**
@@ -184,6 +196,10 @@ export async function executeToolWithAgent(
 ) {
   const toolDef = createToolDefinition(tool);
   const sanitizedToolName = sanitizeToolName(tool.npmPackageName);
+
+  console.log('[executeToolWithAgent] Sanitized tool name:', sanitizedToolName);
+  console.log('[executeToolWithAgent] Tool definition:', toolDef);
+
   const messages: CoreMessage[] = [
     {
       role: 'user',
@@ -194,12 +210,19 @@ export async function executeToolWithAgent(
   let fullOutput = '';
   let agentSteps = 0;
 
+  const toolsConfig = {
+    [sanitizedToolName]: toolDef,
+  };
+
+  console.log(
+    '[executeToolWithAgent] Tools config being sent to OpenAI:',
+    JSON.stringify(toolsConfig, null, 2)
+  );
+
   const result = await streamText({
     model: openai('gpt-4-turbo'),
     messages,
-    tools: {
-      [sanitizedToolName]: toolDef,
-    },
+    tools: toolsConfig,
     // biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 chunk type compatibility
     onChunk: ({ chunk }: { chunk: any }) => {
       if (chunk.type === 'text-delta') {
