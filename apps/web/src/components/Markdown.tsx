@@ -1,6 +1,9 @@
 'use client';
 
 import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+// eslint-disable-next-line import/no-internal-modules
+import { solarizedlight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
@@ -18,63 +21,71 @@ interface MarkdownProps {
 export function Markdown({ content, className = '' }: MarkdownProps): React.ReactElement {
   return (
     <div
-      className={`prose prose-slate dark:prose-invert max-w-none
-        prose-headings:font-semibold prose-headings:tracking-tight
-        prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-8 prose-h1:pb-3 prose-h1:border-b prose-h1:border-border
-        prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8 prose-h2:pb-2 prose-h2:border-b prose-h2:border-border
-        prose-h3:text-xl prose-h3:mb-3 prose-h3:mt-6
-        prose-h4:text-lg prose-h4:mb-2 prose-h4:mt-5
-        prose-p:text-base prose-p:leading-7 prose-p:mb-4
-        prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-a:font-medium
-        prose-code:text-sm prose-code:font-mono prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:before:content-none prose-code:after:content-none prose-code:font-semibold
-        prose-pre:bg-zinc-50 dark:prose-pre:bg-zinc-900 prose-pre:border prose-pre:border-zinc-200 dark:prose-pre:border-zinc-800 prose-pre:rounded-lg prose-pre:p-4 prose-pre:overflow-x-auto prose-pre:shadow-sm
-        prose-pre:my-5
-        prose-blockquote:border-l-4 prose-blockquote:border-zinc-300 dark:prose-blockquote:border-zinc-700 prose-blockquote:pl-4 prose-blockquote:py-1 prose-blockquote:italic prose-blockquote:text-zinc-600 dark:prose-blockquote:text-zinc-400 prose-blockquote:bg-zinc-50 dark:prose-blockquote:bg-zinc-900/50 prose-blockquote:my-4
-        prose-ul:list-disc prose-ul:pl-6 prose-ul:my-4 prose-ul:space-y-2
-        prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-4 prose-ol:space-y-2
-        prose-li:text-base prose-li:leading-7
-        prose-table:border-collapse prose-table:w-full prose-table:my-6 prose-table:text-sm
-        prose-thead:bg-zinc-50 dark:prose-thead:bg-zinc-800/50
-        prose-th:border prose-th:border-zinc-300 dark:prose-th:border-zinc-700 prose-th:px-4 prose-th:py-3 prose-th:text-left prose-th:font-semibold
-        prose-td:border prose-td:border-zinc-300 dark:prose-td:border-zinc-700 prose-td:px-4 prose-td:py-3
-        prose-tr:border-b prose-tr:border-zinc-200 dark:prose-tr:border-zinc-800
-        prose-img:rounded-lg prose-img:shadow-lg prose-img:my-6
-        prose-hr:border-zinc-300 dark:prose-hr:border-zinc-700 prose-hr:my-8
-        prose-strong:font-semibold
+      className={`prose prose-slate dark:prose-invert max-w-none prose-lg
+        prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-zinc-900 dark:prose-headings:text-zinc-100
+        prose-h1:text-4xl prose-h1:mb-6 prose-h1:mt-8 prose-h1:pb-3 prose-h1:border-b prose-h1:border-zinc-200 dark:prose-h1:border-zinc-700
+        prose-h2:text-3xl prose-h2:mb-5 prose-h2:mt-10 prose-h2:pb-2 prose-h2:border-b prose-h2:border-zinc-200 dark:prose-h2:border-zinc-700
+        prose-h3:text-2xl prose-h3:mb-4 prose-h3:mt-8
+        prose-h4:text-xl prose-h4:mb-3 prose-h4:mt-6
+        prose-p:text-base prose-p:leading-relaxed prose-p:mb-4 prose-p:text-zinc-700 dark:prose-p:text-zinc-300
+        prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-a:font-medium prose-a:transition-colors
+        prose-code:text-sm prose-code:font-mono prose-code:before:content-none prose-code:after:content-none
+        prose-pre:p-0 prose-pre:m-0 prose-pre:bg-transparent prose-pre:border-0
+        prose-blockquote:border-l-4 prose-blockquote:border-blue-500 dark:prose-blockquote:border-blue-400 prose-blockquote:pl-5 prose-blockquote:py-2 prose-blockquote:italic prose-blockquote:text-zinc-700 dark:prose-blockquote:text-zinc-300 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-950/20 prose-blockquote:my-6 prose-blockquote:rounded-r
+        prose-ul:list-disc prose-ul:pl-6 prose-ul:my-5 prose-ul:space-y-2
+        prose-ol:list-decimal prose-ol:pl-6 prose-ol:my-5 prose-ol:space-y-2
+        prose-li:text-base prose-li:leading-relaxed prose-li:text-zinc-700 dark:prose-li:text-zinc-300
+        prose-img:rounded-lg prose-img:shadow-lg prose-img:my-8 prose-img:border prose-img:border-zinc-200 dark:prose-img:border-zinc-700
+        prose-hr:border-zinc-300 dark:prose-hr:border-zinc-700 prose-hr:my-10
+        prose-strong:font-semibold prose-strong:text-zinc-900 dark:prose-strong:text-zinc-100
         ${className}`}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeSanitize]}
         components={{
-          // Custom component for code blocks with better styling
+          // Custom component for code blocks with syntax highlighting
           code: ({ className, children, ...props }) => {
+            const match = /language-(\w+)/.exec(className || '');
+            const language = match ? match[1] : '';
             const isInline = !className;
+
             if (isInline) {
               return (
                 <code
-                  className="bg-zinc-100 dark:bg-zinc-800 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded text-sm font-mono font-semibold"
+                  className="bg-pink-50 dark:bg-pink-950/30 text-pink-700 dark:text-pink-400 px-1.5 py-0.5 rounded text-sm font-mono font-semibold border border-pink-200 dark:border-pink-900"
                   {...props}
                 >
                   {children}
                 </code>
               );
             }
+
             return (
-              <code className={className} {...props}>
-                {children}
-              </code>
-            );
-          },
-          // Better styled pre blocks
-          pre: ({ children, ...props }) => {
-            return (
-              <pre
-                className="bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 overflow-x-auto my-5 shadow-sm"
+              <SyntaxHighlighter
+                language={language || 'text'}
+                // @ts-expect-error - Type conflict between solarizedlight theme and SyntaxHighlighter props
+                style={solarizedlight}
+                customStyle={{
+                  margin: '0',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  lineHeight: '1.5',
+                  padding: '1rem',
+                }}
+                wrapLongLines={true}
                 {...props}
               >
-                {children}
-              </pre>
+                {String(children).replace(/\n$/, '')}
+              </SyntaxHighlighter>
+            );
+          },
+          // Pre wrapper for code blocks (SyntaxHighlighter handles its own styling)
+          pre: ({ children, ...props }) => {
+            return (
+              <div className="my-6 overflow-hidden rounded-lg shadow-md border border-zinc-200 dark:border-zinc-700">
+                <pre {...props}>{children}</pre>
+              </div>
             );
           },
           // Make links open in new tab with better styling
@@ -92,17 +103,55 @@ export function Markdown({ content, className = '' }: MarkdownProps): React.Reac
               </a>
             );
           },
-          // Better table styling
+          // Better table styling with improved readability
           table: ({ children, ...props }) => {
             return (
-              <div className="overflow-x-auto my-6">
+              <div className="overflow-x-auto my-8 rounded-lg border border-zinc-300 dark:border-zinc-700 shadow-sm">
                 <table
-                  className="min-w-full divide-y divide-zinc-300 dark:divide-zinc-700 border border-zinc-300 dark:border-zinc-700 rounded-lg"
+                  className="min-w-full divide-y divide-zinc-300 dark:divide-zinc-700"
                   {...props}
                 >
                   {children}
                 </table>
               </div>
+            );
+          },
+          // Table header with better styling
+          thead: ({ children, ...props }) => {
+            return (
+              <thead className="bg-zinc-100 dark:bg-zinc-800" {...props}>
+                {children}
+              </thead>
+            );
+          },
+          // Table header cells with better spacing
+          th: ({ children, ...props }) => {
+            return (
+              <th
+                className="px-6 py-3 text-left text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider"
+                {...props}
+              >
+                {children}
+              </th>
+            );
+          },
+          // Table data cells with better spacing
+          td: ({ children, ...props }) => {
+            return (
+              <td className="px-6 py-4 text-sm text-zinc-900 dark:text-zinc-100" {...props}>
+                {children}
+              </td>
+            );
+          },
+          // Table rows with hover effect
+          tr: ({ children, ...props }) => {
+            return (
+              <tr
+                className="border-b border-zinc-200 dark:border-zinc-800 last:border-b-0 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                {...props}
+              >
+                {children}
+              </tr>
             );
           },
         }}
