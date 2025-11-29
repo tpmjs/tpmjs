@@ -64,11 +64,7 @@ export async function GET(request: NextRequest) {
     // For first page, we can skip count if we don't need total pages
     const tools = await prisma.tool.findMany({
       where,
-      orderBy: [
-        { qualityScore: 'desc' },
-        { npmDownloadsLastMonth: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ qualityScore: 'desc' }, { npmDownloadsLastMonth: 'desc' }, { createdAt: 'desc' }],
       take: limit + 1, // Fetch one extra to check if there are more
       skip: offset,
     });
