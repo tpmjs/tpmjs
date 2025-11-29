@@ -95,7 +95,12 @@ export function createToolDefinition(tool: Tool) {
   const parameters = Array.isArray(tool.parameters)
     ? (tool.parameters as unknown as TPMJSParameter[])
     : [];
-  const schema = tpmjsParamsToZodSchema(parameters);
+
+  // Ensure we have a valid schema - if no parameters, use an empty object with explicit additionalProperties
+  const schema =
+    parameters.length > 0
+      ? tpmjsParamsToZodSchema(parameters)
+      : z.object({}).describe('No parameters required');
 
   return aiTool({
     description: tool.description,
