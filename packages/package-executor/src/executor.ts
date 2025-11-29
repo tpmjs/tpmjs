@@ -1,12 +1,14 @@
 /**
- * Package executor with VM2 sandboxing
- * Safely executes npm packages in an isolated environment
+ * Package executor without sandboxing
+ * Executes npm packages directly
+ *
+ * TODO: Add proper sandboxing with isolated-vm or similar when Next.js compatible solution is found
+ * VM2 doesn't work with Next.js Turbopack due to runtime file access requirements
  */
 
 import { execSync } from 'child_process';
 import { existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { VM } from 'vm2';
 import type { ExecutionResult, ExecutorOptions } from './types.js';
 
 const DEFAULT_TIMEOUT = 5000; // 5 seconds
@@ -27,45 +29,36 @@ export async function executePackage(
 
   try {
     // Ensure package is installed
-    const packagePath = await ensurePackageInstalled(packageName, cacheDir);
+    const packageDir = await ensurePackageInstalled(packageName, cacheDir);
 
-    // Create VM sandbox
-    const vm = new VM({
-      timeout,
-      sandbox: {
-        console: {
-          log: (...args: unknown[]) => console.log('[VM]', ...args),
-          error: (...args: unknown[]) => console.error('[VM]', ...args),
-          warn: (...args: unknown[]) => console.warn('[VM]', ...args),
-        },
-      },
-      require: {
-        external: true,
-        root: packagePath,
-        mock: {
-          // Mock dangerous modules
-          fs: {},
-          net: {},
-          http: {},
-          https: {},
-          child_process: {},
-        },
-      } as any,
-    } as any);
+    // Set up timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Execution timeout')), timeout);
+    });
 
-    // Execute the package
-    const code = `
-      const pkg = require('${packageName}');
-      const fn = typeof pkg === 'function' ? pkg : pkg.${functionName || 'default'};
+    // Execute the package with dynamic import
+    const executionPromise = (async () => {
+      // Dynamic require from the package directory
+      const packagePath = join(packageDir, 'node_modules', packageName);
+
+      // Use require to load the package
+      // biome-ignore lint/security/noGlobalEval: Required for dynamic package execution
+      const pkg = require(packagePath);
+
+      // Get the function to execute
+      const fn = typeof pkg === 'function' ? pkg : pkg[functionName || 'default'];
 
       if (typeof fn !== 'function') {
-        throw new Error('Package does not export a function');
+        throw new Error(`Package ${packageName} does not export a function named ${functionName || 'default'}`);
       }
 
-      fn(${JSON.stringify(params)});
-    `;
+      // Execute the function
+      const result = await Promise.resolve(fn(params));
+      return result;
+    })();
 
-    const result = vm.run(code);
+    // Race between execution and timeout
+    const result = await Promise.race([executionPromise, timeoutPromise]);
     const executionTimeMs = Date.now() - startTime;
 
     return {

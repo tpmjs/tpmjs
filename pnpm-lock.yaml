@@ -261,9 +261,6 @@ importers:
       semver:
         specifier: ^7.6.0
         version: 7.7.3
-      vm2:
-        specifier: ^3.10.0
-        version: 3.10.0
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
@@ -4996,11 +4993,6 @@ packages:
         optional: true
       jsdom:
         optional: true
-
-  vm2@3.10.0:
-    resolution: {integrity: sha512-3ggF4Bs0cw4M7Rxn19/Cv3nJi04xrgHwt4uLto+zkcZocaKwP/nKP9wPx6ggN2X0DSXxOOIc63BV1jvES19wXQ==}
-    engines: {node: '>=6.0'}
-    hasBin: true
 
   walk-up-path@4.0.0:
     resolution: {integrity: sha512-3hu+tD8YzSLGuFYtPRb48vdhKMi0KQV5sn+uWr8+7dMEq/2G/dtLrdDinkLjqq5TIbIBjYJ4Ax/n3YiaW7QM8A==}
@@ -10340,11 +10332,6 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-
-  vm2@3.10.0:
-    dependencies:
-      acorn: 8.15.0
-      acorn-walk: 8.3.4
 
   walk-up-path@4.0.0: {}
 
