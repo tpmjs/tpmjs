@@ -160,6 +160,15 @@ export function calculateTokenBreakdown(
 }
 
 /**
+ * Sanitize npm package name to valid OpenAI tool name
+ * OpenAI tool names must match: ^[a-zA-Z0-9_-]+
+ * Converts: @tpmjs/createblogpost -> tpmjs-createblogpost
+ */
+function sanitizeToolName(npmPackageName: string): string {
+  return npmPackageName.replace(/[@/]/g, '-').replace(/^-+/, '');
+}
+
+/**
  * Execute tool with AI agent and streaming
  */
 export async function executeToolWithAgent(
@@ -169,6 +178,7 @@ export async function executeToolWithAgent(
   onTokenUpdate?: (tokens: Partial<TokenBreakdown>) => void
 ) {
   const toolDef = createToolDefinition(tool);
+  const sanitizedToolName = sanitizeToolName(tool.npmPackageName);
   const messages: CoreMessage[] = [
     {
       role: 'user',
@@ -183,7 +193,7 @@ export async function executeToolWithAgent(
     model: openai('gpt-4-turbo'),
     messages,
     tools: {
-      [tool.npmPackageName]: toolDef,
+      [sanitizedToolName]: toolDef,
     },
     // biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 chunk type compatibility
     onChunk: ({ chunk }: { chunk: any }) => {
