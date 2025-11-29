@@ -11,6 +11,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 // Use Node.js runtime for SSE streaming
 export const runtime = 'nodejs';
 export const maxDuration = 60; // 60 seconds timeout
+export const dynamic = 'force-dynamic'; // Prevent static generation for AI SDK routes
 
 interface ExecuteRequest {
   prompt: string;
