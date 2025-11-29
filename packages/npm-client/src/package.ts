@@ -160,6 +160,48 @@ export async function fetchLatestPackageVersion(
   };
 }
 
+export type PackageVersionWithReadme = PackageVersion & {
+  readme?: string;
+  topLevelKeywords?: string[];
+  topLevelDescription?: string;
+};
+
+/**
+ * Gets the latest version of a package with additional top-level metadata
+ * @param packageName - The name of the package
+ * @returns The latest package version with README and top-level metadata, or null if not found
+ */
+export async function fetchLatestPackageWithMetadata(
+  packageName: string
+): Promise<PackageVersionWithReadme | null> {
+  const metadata = await fetchPackageMetadata(packageName);
+
+  if (!metadata) {
+    return null;
+  }
+
+  const latestTag = metadata['dist-tags'].latest;
+  if (!latestTag) {
+    return null;
+  }
+
+  const version = metadata.versions[latestTag];
+  if (!version) {
+    return null;
+  }
+
+  // Add publishedAt from metadata.time
+  const publishedAt = metadata.time?.[latestTag];
+
+  return {
+    ...version,
+    publishedAt,
+    readme: metadata.readme,
+    topLevelKeywords: metadata.keywords,
+    topLevelDescription: metadata.description,
+  };
+}
+
 /**
  * Checks if a package has a tpmjs field in its latest version
  * @param packageName - The name of the package

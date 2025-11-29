@@ -1,5 +1,5 @@
 import { prisma } from '@tpmjs/db';
-import { fetchChanges, fetchLatestPackageVersion } from '@tpmjs/npm-client';
+import { fetchChanges, fetchLatestPackageWithMetadata } from '@tpmjs/npm-client';
 import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '~/env';
@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
     // Process each change
     for (const change of changesResult.results) {
       try {
-        // Fetch full package metadata
-        const pkg = await fetchLatestPackageVersion(change.id);
+        // Fetch full package metadata with README
+        const pkg = await fetchLatestPackageWithMetadata(change.id);
 
         // Skip if package not found
         if (!pkg) {
@@ -100,6 +100,10 @@ export async function POST(request: NextRequest) {
           npmRepository: pkg.repository ?? undefined,
           npmHomepage: pkg.homepage ?? undefined,
           npmLicense: pkg.license ?? undefined,
+          npmKeywords: pkg.topLevelKeywords || pkg.keywords || [],
+          npmReadme: pkg.readme ?? undefined,
+          npmAuthor: pkg.author ?? undefined,
+          npmMaintainers: pkg.maintainers ?? undefined,
           category: tpmjsData.category,
           description: tpmjsData.description,
           example: tpmjsData.example,

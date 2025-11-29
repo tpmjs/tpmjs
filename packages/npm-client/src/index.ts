@@ -26,9 +26,11 @@ export {
 export {
   fetchPackageMetadata,
   fetchLatestPackageVersion,
+  fetchLatestPackageWithMetadata,
   fetchPackageTpmjsField,
   type PackageVersion,
   type PackageMetadata,
+  type PackageVersionWithReadme,
 } from './package';
 
 // Download statistics

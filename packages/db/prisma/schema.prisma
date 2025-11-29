@@ -22,6 +22,10 @@ model Tool {
   npmRepository      Json?    @map("npm_repository") @db.JsonB
   npmHomepage        String?  @map("npm_homepage") @db.Text
   npmLicense         String?  @map("npm_license") @db.VarChar(50)
+  npmKeywords        String[] @default([]) @map("npm_keywords") @db.Text
+  npmReadme          String?  @map("npm_readme") @db.Text
+  npmAuthor          Json?    @map("npm_author") @db.JsonB
+  npmMaintainers     Json?    @map("npm_maintainers") @db.JsonB
 
   // TPMJS Metadata (from package.json tpmjs field)
   category       String  @db.VarChar(50)
