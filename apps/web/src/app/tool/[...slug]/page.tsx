@@ -71,7 +71,7 @@ interface Tool {
 export default function ToolDetailPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string[] }>;
 }): React.ReactElement {
   const [tool, setTool] = useState<Tool | null>(null);
   const [loading, setLoading] = useState(true);
@@ -79,7 +79,8 @@ export default function ToolDetailPage({
   const [slug, setSlug] = useState<string>('');
 
   useEffect(() => {
-    params.then((p) => setSlug(p.slug));
+    // Join slug array to reconstruct package name (e.g., ['@tpmjs', 'text-transformer'] -> '@tpmjs/text-transformer')
+    params.then((p) => setSlug(p.slug.join('/')));
   }, [params]);
 
   useEffect(() => {

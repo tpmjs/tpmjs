@@ -327,7 +327,7 @@ export default function ToolSearchPage(): React.ReactElement {
                   </CardContent>
 
                   <CardFooter>
-                    <Link href={`/tool/${encodeURIComponent(tool.npmPackageName)}`}>
+                    <Link href={`/tool/${tool.npmPackageName}`}>
                       <Button variant="outline" size="sm" className="w-full">
                         View Details
                       </Button>
