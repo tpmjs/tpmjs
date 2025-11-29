@@ -32,9 +32,11 @@ export default function HomePage(): React.ReactElement {
                 Playground
               </Button>
             </Link>
-            <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-              Documentation
-            </Button>
+            <Link href="/publish">
+              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                Publish
+              </Button>
+            </Link>
             <Button variant="secondary" size="sm">
               Sign In
             </Button>
@@ -101,6 +103,49 @@ export default function HomePage(): React.ReactElement {
                   examples.
                 </p>
               </div>
+            </div>
+          </Container>
+        </section>
+
+        {/* Publish Your Tool Section */}
+        <section className="py-16 bg-surface">
+          <Container size="xl" padding="lg">
+            <div className="text-center max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                Publish Your AI Tool
+              </h2>
+              <p className="text-lg text-foreground-secondary mb-8">
+                Share your tool with the AI community. Automatic discovery, quality scoring, and
+                seamless integration with popular AI frameworks.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="p-4">
+                  <div className="text-3xl mb-2">🚀</div>
+                  <h3 className="font-semibold mb-1 text-foreground">Quick Setup</h3>
+                  <p className="text-sm text-foreground-secondary">
+                    Add one keyword to package.json and publish to NPM
+                  </p>
+                </div>
+                <div className="p-4">
+                  <div className="text-3xl mb-2">⚡</div>
+                  <h3 className="font-semibold mb-1 text-foreground">Auto Discovery</h3>
+                  <p className="text-sm text-foreground-secondary">
+                    Your tool appears on tpmjs.com within 15 minutes
+                  </p>
+                </div>
+                <div className="p-4">
+                  <div className="text-3xl mb-2">📊</div>
+                  <h3 className="font-semibold mb-1 text-foreground">Quality Metrics</h3>
+                  <p className="text-sm text-foreground-secondary">
+                    Automatic scoring based on docs, downloads, and stars
+                  </p>
+                </div>
+              </div>
+              <Link href="/publish">
+                <Button size="lg" variant="default">
+                  Learn How to Publish
+                </Button>
+              </Link>
             </div>
           </Container>
         </section>
