@@ -26,7 +26,7 @@ async function main() {
       npmKeywords: pkg.topLevelKeywords || pkg.keywords || [],
       npmAuthor: pkg.author || null,
       npmMaintainers: pkg.maintainers || null,
-    }
+    },
   });
 
   console.log('\n✅ Tool updated successfully!');

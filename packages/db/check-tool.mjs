@@ -8,22 +8,22 @@ async function main() {
       npmPackageName: true,
       npmVersion: true,
       npmReadme: true,
-    }
+    },
   });
-  
+
   if (tool) {
     console.log('Tool found:', tool.npmPackageName, tool.npmVersion);
     console.log('Has README:', tool.npmReadme ? `Yes (${tool.npmReadme.length} chars)` : 'No');
   } else {
     console.log('Tool @tpmjs/text-transformer not found in database');
-    
+
     // List all tools to see what's available
     const allTools = await prisma.tool.findMany({
       select: { npmPackageName: true },
-      take: 10
+      take: 10,
     });
     console.log('\nAvailable tools:');
-    allTools.forEach(t => console.log(' -', t.npmPackageName));
+    allTools.forEach((t) => console.log(' -', t.npmPackageName));
   }
 }
 

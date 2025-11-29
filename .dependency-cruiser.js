@@ -105,8 +105,8 @@ export default {
       from: {},
       to: {
         couldNotResolve: true,
-        // Allow TypeScript path aliases that are resolved by the TS compiler
-        pathNot: ['^~/'],
+        // Allow TypeScript path aliases and workspace packages that are resolved by the TS compiler
+        pathNot: ['^~/', '^@/', '^@tpmjs/'],
       },
     },
     {
