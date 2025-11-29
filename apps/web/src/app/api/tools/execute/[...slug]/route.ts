@@ -3,7 +3,6 @@
  * Executes TPMJS tools with AI agents and streams real-time progress
  */
 
-import { executeToolWithAgent } from '@/lib/ai-agent/tool-executor-agent';
 import { checkRateLimit, getClientIP } from '@/lib/rate-limiter';
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -99,6 +98,9 @@ export async function POST(
 
         try {
           const startTime = Date.now();
+
+          // Dynamically import AI agent to avoid loading tiktoken at build time
+          const { executeToolWithAgent } = await import('@/lib/ai-agent/tool-executor-agent');
 
           // Execute tool with AI agent
           const result = await executeToolWithAgent(
