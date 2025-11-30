@@ -1,12 +1,12 @@
 /**
  * AI Agent service for executing TPMJS tools
- * Converts TPMJS metadata to Zod schemas and executes with AI SDK
+ * Converts TPMJS metadata to Zod schemas and executes with AI SDK v6
  */
 
 import { openai } from '@ai-sdk/openai';
 import type { Tool } from '@tpmjs/db';
 import { executePackage } from '@tpmjs/package-executor';
-import { type CoreMessage, tool as aiTool, streamText } from 'ai';
+import { type CoreMessage, streamText } from 'ai';
 import { z } from 'zod';
 
 /**
@@ -89,7 +89,7 @@ export function tpmjsParamsToZodSchema(parameters: TPMJSParameter[]): z.ZodObjec
 }
 
 /**
- * Create AI SDK tool definition from TPMJS Tool
+ * Create AI SDK v6 tool definition from TPMJS Tool
  */
 export function createToolDefinition(tool: Tool) {
   const parameters = Array.isArray(tool.parameters)
@@ -100,7 +100,7 @@ export function createToolDefinition(tool: Tool) {
   console.log('[createToolDefinition] Parameters array:', JSON.stringify(parameters));
   console.log('[createToolDefinition] Parameters length:', parameters.length);
 
-  // Ensure we have a valid schema - if no parameters, use an empty object with explicit additionalProperties
+  // Ensure we have a valid schema - if no parameters, use an empty object
   const schema =
     parameters.length > 0
       ? tpmjsParamsToZodSchema(parameters)
@@ -110,9 +110,10 @@ export function createToolDefinition(tool: Tool) {
   console.log('[createToolDefinition] Schema type:', typeof schema);
   console.log('[createToolDefinition] Schema constructor:', schema.constructor.name);
 
-  const toolDef = aiTool({
+  // AI SDK v6 beta tool definition - uses inputSchema instead of parameters
+  return {
     description: tool.description,
-    parameters: schema,
+    inputSchema: schema, // Changed from 'parameters' to 'inputSchema' in v6
     execute: async (params: Record<string, unknown>) => {
       // Execute the actual npm package in a sandbox
       const result = await executePackage(
@@ -128,12 +129,7 @@ export function createToolDefinition(tool: Tool) {
 
       return result.output;
     },
-    // biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 type compatibility workaround
-  } as any);
-
-  console.log('[createToolDefinition] Tool definition created:', JSON.stringify(toolDef, null, 2));
-
-  return toolDef;
+  };
 }
 
 /**
@@ -223,22 +219,16 @@ export async function executeToolWithAgent(
     model: openai('gpt-4-turbo'),
     messages,
     tools: toolsConfig,
-    // biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 chunk type compatibility
-    onChunk: ({ chunk }: { chunk: any }) => {
-      if (chunk.type === 'text-delta') {
-        const text = chunk.text || '';
-        fullOutput += text;
-        onChunk?.(text);
-      }
-    },
     onFinish: () => {
       agentSteps++;
     },
-    // biome-ignore lint/suspicious/noExplicitAny: AI SDK v5 streaming configuration workaround
-  } as any);
+  });
 
-  // Wait for completion
-  await result.text;
+  // Stream and collect text
+  for await (const chunk of result.textStream) {
+    fullOutput += chunk;
+    onChunk?.(chunk);
+  }
 
   // Calculate final token breakdown
   const parameters = Array.isArray(tool.parameters)

@@ -2,5 +2,8 @@
   "name": "@tpmjs/config",
   "version": "0.0.0",
   "private": true,
-  "files": ["biome.json", "eslint", "tailwind", "tsconfig"]
+  "files": ["biome.json", "eslint", "tailwind", "tsconfig"],
+  "dependencies": {
+    "zod": "^4.1.13"
+  }
 }

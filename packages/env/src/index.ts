@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-export function createEnv<T extends z.ZodRawShape>(schema: T): z.infer<z.ZodObject<T>> {
+export function createEnv<T extends Record<string, z.ZodTypeAny>>(
+  schema: T
+): z.infer<z.ZodObject<T>> {
   const envSchema = z.object(schema);
 
   const parsed = envSchema.safeParse(process.env);

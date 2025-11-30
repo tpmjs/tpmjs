@@ -95,9 +95,7 @@ export type TpmjsAiAgent = z.infer<typeof TpmjsAiAgentSchema>;
  */
 export const TpmjsMinimalSchema = z.object({
   category: z.enum(TPMJS_CATEGORIES, {
-    errorMap: () => ({
-      message: `Category must be one of: ${TPMJS_CATEGORIES.join(', ')}`,
-    }),
+    message: `Category must be one of: ${TPMJS_CATEGORIES.join(', ')}`,
   }),
   description: z.string().min(20, 'Description must be at least 20 characters').max(500),
   example: z.string().min(10, 'Example must be at least 10 characters'),

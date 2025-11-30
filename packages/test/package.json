@@ -7,6 +7,7 @@
   },
   "files": ["vitest.config.ts"],
   "dependencies": {
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "zod": "^4.1.13"
   }
 }

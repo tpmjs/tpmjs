@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
-    "tailwind-merge": "^2.6.0"
+    "tailwind-merge": "^2.6.0",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@tpmjs/test": "workspace:*",

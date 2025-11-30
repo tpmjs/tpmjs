@@ -5,7 +5,8 @@
   "main": "./base.ts",
   "files": ["base.ts"],
   "dependencies": {
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

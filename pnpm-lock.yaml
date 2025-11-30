@@ -42,8 +42,8 @@ importers:
   apps/web:
     dependencies:
       '@ai-sdk/openai':
-        specifier: ^2.0.74
-        version: 2.0.74(zod@3.25.76)
+        specifier: 3.0.0-beta.74
+        version: 3.0.0-beta.74(effect@3.18.4)(zod@4.1.13)
       '@tpmjs/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -69,8 +69,8 @@ importers:
         specifier: ^15.5.13
         version: 15.5.13
       ai:
-        specifier: ^5.0.104
-        version: 5.0.104(zod@3.25.76)
+        specifier: 6.0.0-beta.124
+        version: 6.0.0-beta.124(effect@3.18.4)(zod@4.1.13)
       next:
         specifier: ^16.0.4
         version: 16.0.4(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -79,7 +79,7 @@ importers:
         version: 0.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       openai:
         specifier: ^6.9.1
-        version: 6.9.1(ws@8.18.3)(zod@3.25.76)
+        version: 6.9.1(ws@8.18.3)(zod@4.1.13)
       react:
         specifier: ^19.0.0
         version: 19.2.0
@@ -102,8 +102,8 @@ importers:
         specifier: ^4.0.1
         version: 4.0.1
       zod:
-        specifier: ^3.25.76
-        version: 3.25.76
+        specifier: ^4.0.0
+        version: 4.1.13
     devDependencies:
       '@tpmjs/eslint-config':
         specifier: workspace:*
@@ -142,7 +142,11 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/config: {}
+  packages/config:
+    dependencies:
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
 
   packages/config/eslint:
     dependencies:
@@ -167,24 +171,37 @@ importers:
       typescript-eslint:
         specifier: ^8.19.1
         version: 8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
 
   packages/config/tailwind:
     dependencies:
       tailwindcss:
         specifier: ^3.4.17
         version: 3.4.18(tsx@4.20.6)
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/config/tsconfig: {}
+  packages/config/tsconfig:
+    dependencies:
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
 
   packages/db:
     dependencies:
       '@prisma/client':
         specifier: ^6.2.0
         version: 6.19.0(prisma@6.19.0(typescript@5.9.3))(typescript@5.9.3)
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
@@ -205,8 +222,8 @@ importers:
   packages/env:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
@@ -226,6 +243,9 @@ importers:
       msw:
         specifier: ^2.7.0
         version: 2.12.3(@types/node@22.19.1)(typescript@5.9.3)
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
@@ -240,8 +260,8 @@ importers:
   packages/npm-client:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
@@ -258,6 +278,9 @@ importers:
       semver:
         specifier: ^7.6.0
         version: 7.7.3
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
@@ -283,6 +306,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.0(react@19.2.0)
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@storybook/addon-essentials':
         specifier: ^8.5.0
@@ -335,8 +361,15 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.19.1)(happy-dom@15.11.7)(msw@2.12.3(@types/node@22.19.1)(typescript@5.9.3))
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
 
   packages/tools/createBlogPost:
+    dependencies:
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
@@ -351,8 +384,8 @@ importers:
   packages/types:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
@@ -369,6 +402,9 @@ importers:
       '@tpmjs/utils':
         specifier: workspace:*
         version: link:../utils
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.9.1
@@ -427,6 +463,9 @@ importers:
       tailwind-merge:
         specifier: ^2.6.0
         version: 2.6.0
+      zod:
+        specifier: ^4.1.13
+        version: 4.1.13
     devDependencies:
       '@tpmjs/test':
         specifier: workspace:*
@@ -449,26 +488,36 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
-  '@ai-sdk/gateway@2.0.17':
-    resolution: {integrity: sha512-oVAG6q72KsjKlrYdLhWjRO7rcqAR8CjokAbYuyVZoCO4Uh2PH/VzZoxZav71w2ipwlXhHCNaInGYWNs889MMDA==}
+  '@ai-sdk/gateway@2.0.0-beta.68':
+    resolution: {integrity: sha512-eYv3hBfu/M+0XmxE1RoH4X7uhYplNbSDvRClzirKzTY+ZM5yQwP86L3DqLR7Y9/vH7yrQaSIwsBT3OMmcBnGaw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/openai@2.0.74':
-    resolution: {integrity: sha512-vvsL7rGoBEyQIePs630p31ebLeF+xxwLOrRKeIArHko8w7Wh9Kj3wL4Ns+PCzrEpAij31OKKDcxLQ1dSIg/qMw==}
+  '@ai-sdk/openai@3.0.0-beta.74':
+    resolution: {integrity: sha512-0AofFL0odf7dUjmpiKVBxemXWK7L5YTmqD+9sY3V/0yzxtWuP8effQVOTz3rXO7kSF8OabDxW4WUHGwAOBiIJA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
-  '@ai-sdk/provider-utils@3.0.18':
-    resolution: {integrity: sha512-ypv1xXMsgGcNKUP+hglKqtdDuMg68nWHucPPAhIENrbFAI+xCHiqPVN8Zllxyv1TNZwGWUghPxJXU+Mqps0YRQ==}
+  '@ai-sdk/provider-utils@4.0.0-beta.40':
+    resolution: {integrity: sha512-5345iQxWV1coKbs85vkrThsEmiFcIkgqMZUKFrVDM7E4FRqgsnWtn4394/RnShOKRun5K7TWIYCLz3GfRGy/Ig==}
     engines: {node: '>=18'}
     peerDependencies:
+      '@valibot/to-json-schema': ^1.3.0
+      arktype: ^2.1.22
+      effect: ^3.18.4
       zod: ^3.25.76 || ^4.1.8
+    peerDependenciesMeta:
+      '@valibot/to-json-schema':
+        optional: true
+      arktype:
+        optional: true
+      effect:
+        optional: true
 
-  '@ai-sdk/provider@2.0.0':
-    resolution: {integrity: sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA==}
+  '@ai-sdk/provider@3.0.0-beta.22':
+    resolution: {integrity: sha512-Ss0tgCZwzccS6MREhjAI28lkAV5PfJnoBFbv8mas74Cs5OseFKqxg3dEd1lRL8mf4Qapu1xpBLkV4/ldSShSdA==}
     engines: {node: '>=18'}
 
   '@alloc/quick-lru@5.2.0':
@@ -2268,8 +2317,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  ai@5.0.104:
-    resolution: {integrity: sha512-MZOkL9++nY5PfkpWKBR3Rv+Oygxpb9S16ctv8h91GvrSif7UnNEdPMVZe3bUyMd2djxf0AtBk/csBixP0WwWZQ==}
+  ai@6.0.0-beta.124:
+    resolution: {integrity: sha512-Apl4uNZLzc4sAUtu4W77DpM9o+bJJB46A/ayVLDck3MBv+rw4/qGBY9H6/gY9Xpc/CeVogyyEr1DxBMv47olCw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -5094,9 +5143,6 @@ packages:
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
-
   zod@4.1.13:
     resolution: {integrity: sha512-AvvthqfqrAhNH9dnfmrfKzX5upOdjUVJYFqNSlkmGf64gRaTzlPwz99IHYnVs28qYAybvAlBV+H7pn0saFY4Ig==}
 
@@ -5107,27 +5153,37 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@ai-sdk/gateway@2.0.17(zod@3.25.76)':
+  '@ai-sdk/gateway@2.0.0-beta.68(effect@3.18.4)(zod@4.1.13)':
     dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.18(zod@3.25.76)
+      '@ai-sdk/provider': 3.0.0-beta.22
+      '@ai-sdk/provider-utils': 4.0.0-beta.40(effect@3.18.4)(zod@4.1.13)
       '@vercel/oidc': 3.0.5
-      zod: 3.25.76
+      zod: 4.1.13
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
 
-  '@ai-sdk/openai@2.0.74(zod@3.25.76)':
+  '@ai-sdk/openai@3.0.0-beta.74(effect@3.18.4)(zod@4.1.13)':
     dependencies:
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.18(zod@3.25.76)
-      zod: 3.25.76
+      '@ai-sdk/provider': 3.0.0-beta.22
+      '@ai-sdk/provider-utils': 4.0.0-beta.40(effect@3.18.4)(zod@4.1.13)
+      zod: 4.1.13
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
 
-  '@ai-sdk/provider-utils@3.0.18(zod@3.25.76)':
+  '@ai-sdk/provider-utils@4.0.0-beta.40(effect@3.18.4)(zod@4.1.13)':
     dependencies:
-      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider': 3.0.0-beta.22
       '@standard-schema/spec': 1.0.0
       eventsource-parser: 3.0.6
-      zod: 3.25.76
+      zod: 4.1.13
+    optionalDependencies:
+      effect: 3.18.4
 
-  '@ai-sdk/provider@2.0.0':
+  '@ai-sdk/provider@3.0.0-beta.22':
     dependencies:
       json-schema: 0.4.0
 
@@ -6816,13 +6872,17 @@ snapshots:
 
   acorn@8.15.0: {}
 
-  ai@5.0.104(zod@3.25.76):
+  ai@6.0.0-beta.124(effect@3.18.4)(zod@4.1.13):
     dependencies:
-      '@ai-sdk/gateway': 2.0.17(zod@3.25.76)
-      '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.18(zod@3.25.76)
+      '@ai-sdk/gateway': 2.0.0-beta.68(effect@3.18.4)(zod@4.1.13)
+      '@ai-sdk/provider': 3.0.0-beta.22
+      '@ai-sdk/provider-utils': 4.0.0-beta.40(effect@3.18.4)(zod@4.1.13)
       '@opentelemetry/api': 1.9.0
-      zod: 3.25.76
+      zod: 4.1.13
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
 
   ajv@6.12.6:
     dependencies:
@@ -7670,8 +7730,8 @@ snapshots:
       '@babel/parser': 7.28.5
       eslint: 9.39.1(jiti@1.21.7)
       hermes-parser: 0.25.1
-      zod: 3.25.76
-      zod-validation-error: 4.0.2(zod@3.25.76)
+      zod: 4.1.13
+      zod-validation-error: 4.0.2(zod@4.1.13)
     transitivePeerDependencies:
       - supports-color
 
@@ -9104,10 +9164,10 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@6.9.1(ws@8.18.3)(zod@3.25.76):
+  openai@6.9.1(ws@8.18.3)(zod@4.1.13):
     optionalDependencies:
       ws: 8.18.3
-      zod: 3.25.76
+      zod: 4.1.13
 
   optionator@0.9.4:
     dependencies:
@@ -10429,11 +10489,9 @@ snapshots:
 
   yoctocolors-cjs@2.1.3: {}
 
-  zod-validation-error@4.0.2(zod@3.25.76):
+  zod-validation-error@4.0.2(zod@4.1.13):
     dependencies:
-      zod: 3.25.76
-
-  zod@3.25.76: {}
+      zod: 4.1.13
 
   zod@4.1.13: {}
 

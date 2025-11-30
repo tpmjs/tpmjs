@@ -151,7 +151,8 @@
     "react-dom": "^18.0.0 || ^19.0.0"
   },
   "dependencies": {
-    "@tpmjs/utils": "workspace:*"
+    "@tpmjs/utils": "workspace:*",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",

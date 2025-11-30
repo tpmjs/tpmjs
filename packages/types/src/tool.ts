@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const ToolParameterSchema = z.object({
   name: z.string(),
   description: z.string(),
-  schema: z.record(z.unknown()),
+  schema: z.record(z.string(), z.unknown()),
   required: z.boolean().default(false),
 });
 

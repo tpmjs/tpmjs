@@ -21,7 +21,8 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "msw": "^2.7.0"
+    "msw": "^2.7.0",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",

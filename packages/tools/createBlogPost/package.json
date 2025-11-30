@@ -104,5 +104,8 @@
         "Format an article with SEO metadata"
       ]
     }
+  },
+  "dependencies": {
+    "zod": "^4.1.13"
   }
 }

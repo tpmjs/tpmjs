@@ -62,9 +62,9 @@ const PackageVersionSchema = z.object({
  */
 const PackageMetadataSchema = z.object({
   name: z.string(),
-  'dist-tags': z.record(z.string()),
-  versions: z.record(PackageVersionSchema),
-  time: z.record(z.string()),
+  'dist-tags': z.record(z.string(), z.string()),
+  versions: z.record(z.string(), PackageVersionSchema),
+  time: z.record(z.string(), z.string()),
   maintainers: z
     .array(
       z.object({
@@ -146,13 +146,13 @@ export async function fetchLatestPackageVersion(
     return null;
   }
 
-  const version = metadata.versions[latestTag];
+  const version = metadata.versions[latestTag as string];
   if (!version) {
     return null;
   }
 
   // Add publishedAt from metadata.time
-  const publishedAt = metadata.time?.[latestTag];
+  const publishedAt = metadata.time?.[latestTag as string];
 
   return {
     ...version,
@@ -185,13 +185,13 @@ export async function fetchLatestPackageWithMetadata(
     return null;
   }
 
-  const version = metadata.versions[latestTag];
+  const version = metadata.versions[latestTag as string];
   if (!version) {
     return null;
   }
 
   // Add publishedAt from metadata.time
-  const publishedAt = metadata.time?.[latestTag];
+  const publishedAt = metadata.time?.[latestTag as string];
 
   return {
     ...version,
