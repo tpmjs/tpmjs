@@ -80,10 +80,6 @@
       "type": "BlogPost",
       "description": "A structured blog post object with frontmatter, content, and metadata including slug, wordCount, readingTime, and formattedOutput"
     },
-    "authentication": {
-      "required": false,
-      "type": "api-key"
-    },
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
       "documentation": "https://tpmjs.com/tools/createblogpost",

@@ -129,10 +129,13 @@ Complete metadata for maximum visibility:
       "type": "SentimentResult",
       "description": "Object with score, label, and optional emotions array"
     },
-    "authentication": {
-      "type": "api-key",
-      "required": true
-    },
+    "envVars": [
+      {
+        "name": "SENTIMENT_API_KEY",
+        "description": "API key for sentiment analysis service",
+        "required": true
+      }
+    ],
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
       "documentation": "https://docs.example.com",
@@ -308,10 +311,6 @@ Here's the complete `package.json` from the published example:
       "type": "BlogPost",
       "description": "A structured blog post object with frontmatter, content, and metadata including slug, wordCount, readingTime, and formattedOutput"
     },
-    "authentication": {
-      "required": false,
-      "type": "api-key"
-    },
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
       "documentation": "https://tpmjs.com/tools/createblogpost",
@@ -354,7 +353,7 @@ Here's the complete `package.json` from the published example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `authentication` | object | Auth requirements |
+| `envVars` | array | Required environment variables |
 | `frameworks` | array | Compatible frameworks |
 | `links` | object | Related URLs |
 | `tags` | array | Additional tags |
@@ -374,15 +373,24 @@ Choose one of these for the `category` field:
 - `integration` - Third-party integrations
 - `other` - Anything else
 
-### Authentication Types
+### Environment Variables
 
-If your tool requires authentication:
+If your tool requires environment variables:
 
 ```json
-"authentication": {
-  "type": "api-key",  // or "oauth", "bearer-token", "basic"
-  "required": true
-}
+"envVars": [
+  {
+    "name": "OPENAI_API_KEY",
+    "description": "API key for OpenAI services",
+    "required": true
+  },
+  {
+    "name": "API_ENDPOINT",
+    "description": "Custom API endpoint URL",
+    "required": false,
+    "default": "https://api.example.com"
+  }
+]
 ```
 
 ## Quality Score

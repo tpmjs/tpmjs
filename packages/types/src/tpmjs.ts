@@ -44,16 +44,16 @@ export const TpmjsReturnsSchema = z.object({
 export type TpmjsReturns = z.infer<typeof TpmjsReturnsSchema>;
 
 /**
- * Authentication configuration schema
+ * Environment variable schema
  */
-export const TpmjsAuthenticationSchema = z.object({
-  required: z.boolean(),
-  type: z.enum(['api-key', 'oauth', 'basic-auth', 'custom']),
-  envVar: z.string().optional(),
-  docsUrl: z.string().url().optional(),
+export const TpmjsEnvVarSchema = z.object({
+  name: z.string().min(1),
+  description: z.string().min(1),
+  required: z.boolean().default(true),
+  default: z.string().optional(),
 });
 
-export type TpmjsAuthentication = z.infer<typeof TpmjsAuthenticationSchema>;
+export type TpmjsEnvVar = z.infer<typeof TpmjsEnvVarSchema>;
 
 /**
  * External links schema
@@ -99,7 +99,7 @@ export type TpmjsMinimal = z.infer<typeof TpmjsMinimalSchema>;
 export const TpmjsRichSchema = TpmjsMinimalSchema.extend({
   parameters: z.array(TpmjsParameterSchema).optional(),
   returns: TpmjsReturnsSchema.optional(),
-  authentication: TpmjsAuthenticationSchema.optional(),
+  envVars: z.array(TpmjsEnvVarSchema).optional(),
   frameworks: z
     .array(z.enum(['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel']))
     .optional(),
@@ -138,7 +138,7 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
     const hasRichFields =
       data.parameters ||
       data.returns ||
-      data.authentication ||
+      data.envVars ||
       data.frameworks ||
       data.links ||
       data.tags ||

@@ -165,10 +165,13 @@ export default function PublishPage(): React.ReactElement {
     "example": "const result = await analyzeSentiment({ text: 'I love this!', includeEmotions: true });",
     "parameters": [...],
     "returns": {...},
-    "authentication": {
-      "type": "api-key",
-      "required": true
-    },
+    "envVars": [
+      {
+        "name": "SENTIMENT_API_KEY",
+        "description": "API key for sentiment analysis service",
+        "required": true
+      }
+    ],
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
       "documentation": "https://docs.example.com",

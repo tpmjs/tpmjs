@@ -289,26 +289,27 @@ export default function SpecPage(): React.ReactElement {
                   <div className="space-y-6">
                     <div>
                       <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>authentication</code>
+                        <code>envVars</code>
                       </h4>
                       <p className="text-sm text-foreground-secondary mb-2">
-                        Authentication requirements. Fields:
+                        Array of environment variables required by the tool. Each variable has:
                       </p>
                       <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
                         <li>
-                          <code className="text-foreground">required</code> - Boolean
+                          <code className="text-foreground">name</code> - Environment variable name
+                          (e.g., "OPENAI_API_KEY")
                         </li>
                         <li>
-                          <code className="text-foreground">type</code> - "api-key", "oauth",
-                          "basic-auth", or "custom"
+                          <code className="text-foreground">description</code> - What the variable is
+                          used for
                         </li>
                         <li>
-                          <code className="text-foreground">envVar</code> - Environment variable
-                          name (optional)
+                          <code className="text-foreground">required</code> - Boolean (defaults to
+                          true)
                         </li>
                         <li>
-                          <code className="text-foreground">docsUrl</code> - Auth documentation URL
-                          (optional)
+                          <code className="text-foreground">default</code> - Default value if not
+                          provided (optional)
                         </li>
                       </ul>
                     </div>
@@ -419,12 +420,13 @@ export default function SpecPage(): React.ReactElement {
     "example": "const result = await analyzeSentiment({ text: 'I love this!', includeEmotions: true });",
     "parameters": [...],
     "returns": {...},
-    "authentication": {
-      "required": true,
-      "type": "api-key",
-      "envVar": "SENTIMENT_API_KEY",
-      "docsUrl": "https://docs.example.com/auth"
-    },
+    "envVars": [
+      {
+        "name": "SENTIMENT_API_KEY",
+        "description": "API key for sentiment analysis service",
+        "required": true
+      }
+    ],
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
       "documentation": "https://docs.example.com",
@@ -540,16 +542,16 @@ export default function SpecPage(): React.ReactElement {
                       </tr>
                       <tr className="border-b border-border">
                         <td className="py-3 px-4">
-                          <code className="text-foreground">authentication</code>
+                          <code className="text-foreground">envVars</code>
                         </td>
-                        <td className="py-3 px-4">object</td>
+                        <td className="py-3 px-4">array</td>
                         <td className="py-3 px-4">
                           <Badge variant="success" size="sm">
                             Rich
                           </Badge>
                         </td>
                         <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">Auth requirements</td>
+                        <td className="py-3 px-4">Required environment variables</td>
                       </tr>
                       <tr className="border-b border-border">
                         <td className="py-3 px-4">
@@ -780,8 +782,8 @@ export default function SpecPage(): React.ReactElement {
                     at least 10 characters
                   </li>
                   <li>
-                    <strong className="text-foreground">Invalid authentication type:</strong> Type
-                    must be "api-key", "oauth", "basic-auth", or "custom"
+                    <strong className="text-foreground">Invalid envVar:</strong> Each environment
+                    variable must have a name and description
                   </li>
                   <li>
                     <strong className="text-foreground">Too many tags:</strong> Maximum 10 tags
