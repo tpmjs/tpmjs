@@ -221,14 +221,20 @@ export async function executeToolWithAgent(
     tools: toolsConfig,
     onFinish: () => {
       agentSteps++;
+      console.log('[executeToolWithAgent] Stream finished, steps:', agentSteps);
     },
   });
 
+  console.log('[executeToolWithAgent] Starting text stream consumption');
+
   // Stream and collect text
   for await (const chunk of result.textStream) {
+    console.log('[executeToolWithAgent] Received chunk:', chunk);
     fullOutput += chunk;
     onChunk?.(chunk);
   }
+
+  console.log('[executeToolWithAgent] Text stream complete, fullOutput length:', fullOutput.length);
 
   // Calculate final token breakdown
   const parameters = Array.isArray(tool.parameters)
