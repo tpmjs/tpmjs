@@ -96,8 +96,7 @@ export default function PublishPage(): React.ReactElement {
                 code={`{
   "tpmjs": {
     "category": "text-analysis",
-    "description": "A concise description of what your tool does",
-    "example": "const result = await myTool({ input: 'hello' });"
+    "description": "A concise description of what your tool does"
   }
 }`}
               />
@@ -120,7 +119,6 @@ export default function PublishPage(): React.ReactElement {
   "tpmjs": {
     "category": "text-analysis",
     "description": "Analyzes sentiment in text",
-    "example": "const result = await analyzeSentiment({ text: 'I love this!' });",
     "parameters": [
       {
         "name": "text",
@@ -162,10 +160,9 @@ export default function PublishPage(): React.ReactElement {
   "tpmjs": {
     "category": "text-analysis",
     "description": "Advanced sentiment analysis with emotion detection",
-    "example": "const result = await analyzeSentiment({ text: 'I love this!', includeEmotions: true });",
     "parameters": [...],
     "returns": {...},
-    "envVars": [
+    "env": [
       {
         "name": "SENTIMENT_API_KEY",
         "description": "API key for sentiment analysis service",
@@ -290,7 +287,6 @@ npm publish --access public
   "tpmjs": {
     "category": "text-analysis",
     "description": "Creates structured blog posts with frontmatter and SEO metadata",
-    "example": "const post = await createBlogPost({ title: 'My Post', author: 'John', content: 'Hello' });",
     "parameters": [
       {
         "name": "title",

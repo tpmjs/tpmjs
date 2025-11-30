@@ -1,9 +1,9 @@
+import { TPMJS_CATEGORIES } from '@tpmjs/types/tpmjs';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
-import { TPMJS_CATEGORIES } from '@tpmjs/types/tpmjs';
 import Link from 'next/link';
 import { AppHeader } from '~/components/AppHeader';
 
@@ -49,8 +49,8 @@ export default function SpecPage(): React.ReactElement {
                   specification for describing tool capabilities
                 </li>
                 <li>
-                  <strong className="text-foreground">Quality Scoring</strong> - Algorithmic
-                  ranking based on documentation completeness and community adoption
+                  <strong className="text-foreground">Quality Scoring</strong> - Algorithmic ranking
+                  based on documentation completeness and community adoption
                 </li>
                 <li>
                   <strong className="text-foreground">AI Agent Integration</strong> - Structured
@@ -71,9 +71,11 @@ export default function SpecPage(): React.ReactElement {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-foreground-secondary">
-                    Add the <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code> keyword
-                    and a <code className="text-foreground bg-surface px-1 rounded">tpmjs</code> metadata field
-                    to your package.json
+                    Add the{' '}
+                    <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code>{' '}
+                    keyword and a{' '}
+                    <code className="text-foreground bg-surface px-1 rounded">tpmjs</code> metadata
+                    field to your package.json
                   </p>
                 </CardContent>
               </Card>
@@ -110,9 +112,10 @@ export default function SpecPage(): React.ReactElement {
           <section className="mb-16">
             <h2 className="text-3xl font-bold mb-6 text-foreground">The Specification</h2>
             <p className="text-lg text-foreground-secondary mb-8">
-              The TPMJS specification defines a <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code> field
-              in package.json with three tiers of metadata. Higher tiers receive better visibility
-              and quality scores.
+              The TPMJS specification defines a{' '}
+              <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code> field in
+              package.json with three tiers of metadata. Higher tiers receive better visibility and
+              quality scores.
             </p>
 
             {/* Tier 1: Minimal */}
@@ -151,16 +154,6 @@ export default function SpecPage(): React.ReactElement {
                         appears in search results and tool listings.
                       </p>
                     </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>example</code> <span className="text-red-500">*</span>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary">
-                        Code example showing basic usage. Minimum 10 characters. Helps developers
-                        understand how to use your tool.
-                      </p>
-                    </div>
                   </div>
 
                   <div className="mt-6">
@@ -170,8 +163,7 @@ export default function SpecPage(): React.ReactElement {
                       code={`{
   "tpmjs": {
     "category": "text-analysis",
-    "description": "Analyzes sentiment in text and returns positive/negative/neutral classification",
-    "example": "const result = await analyzeSentiment({ text: 'I love this!' });"
+    "description": "Analyzes sentiment in text and returns positive/negative/neutral classification"
   }
 }`}
                     />
@@ -246,7 +238,6 @@ export default function SpecPage(): React.ReactElement {
   "tpmjs": {
     "category": "text-analysis",
     "description": "Analyzes sentiment in text",
-    "example": "const result = await analyzeSentiment({ text: 'I love this!' });",
     "parameters": [
       {
         "name": "text",
@@ -289,7 +280,7 @@ export default function SpecPage(): React.ReactElement {
                   <div className="space-y-6">
                     <div>
                       <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>envVars</code>
+                        <code>env</code>
                       </h4>
                       <p className="text-sm text-foreground-secondary mb-2">
                         Array of environment variables required by the tool. Each variable has:
@@ -297,11 +288,11 @@ export default function SpecPage(): React.ReactElement {
                       <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
                         <li>
                           <code className="text-foreground">name</code> - Environment variable name
-                          (e.g., "OPENAI_API_KEY")
+                          (e.g., &quot;OPENAI_API_KEY&quot;)
                         </li>
                         <li>
-                          <code className="text-foreground">description</code> - What the variable is
-                          used for
+                          <code className="text-foreground">description</code> - What the variable
+                          is used for
                         </li>
                         <li>
                           <code className="text-foreground">required</code> - Boolean (defaults to
@@ -322,13 +313,17 @@ export default function SpecPage(): React.ReactElement {
                         Array of compatible AI frameworks. Supported values:
                       </p>
                       <div className="flex flex-wrap gap-2 mt-2">
-                        {['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel'].map(
-                          (fw) => (
-                            <Badge key={fw} variant="outline" size="sm">
-                              {fw}
-                            </Badge>
-                          )
-                        )}
+                        {[
+                          'vercel-ai',
+                          'langchain',
+                          'llamaindex',
+                          'haystack',
+                          'semantic-kernel',
+                        ].map((fw) => (
+                          <Badge key={fw} variant="outline" size="sm">
+                            {fw}
+                          </Badge>
+                        ))}
                       </div>
                     </div>
 
@@ -417,10 +412,9 @@ export default function SpecPage(): React.ReactElement {
   "tpmjs": {
     "category": "text-analysis",
     "description": "Advanced sentiment analysis with emotion detection",
-    "example": "const result = await analyzeSentiment({ text: 'I love this!', includeEmotions: true });",
     "parameters": [...],
     "returns": {...},
-    "envVars": [
+    "env": [
       {
         "name": "SENTIMENT_API_KEY",
         "description": "API key for sentiment analysis service",
@@ -501,21 +495,6 @@ export default function SpecPage(): React.ReactElement {
                       </tr>
                       <tr className="border-b border-border">
                         <td className="py-3 px-4">
-                          <code className="text-foreground">example</code>
-                        </td>
-                        <td className="py-3 px-4">string</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="outline" size="sm">
-                            Minimal
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-red-500">Yes</span>
-                        </td>
-                        <td className="py-3 px-4">Usage example code (min 10 chars)</td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
                           <code className="text-foreground">parameters</code>
                         </td>
                         <td className="py-3 px-4">array</td>
@@ -542,7 +521,7 @@ export default function SpecPage(): React.ReactElement {
                       </tr>
                       <tr className="border-b border-border">
                         <td className="py-3 px-4">
-                          <code className="text-foreground">envVars</code>
+                          <code className="text-foreground">env</code>
                         </td>
                         <td className="py-3 px-4">array</td>
                         <td className="py-3 px-4">
@@ -708,7 +687,7 @@ export default function SpecPage(): React.ReactElement {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-foreground-secondary mb-2">
-                    Monitors NPM's real-time changes feed every 2 minutes
+                    Monitors NPM&apos;s real-time changes feed every 2 minutes
                   </p>
                   <Badge variant="outline" size="sm">
                     Real-time
@@ -722,8 +701,9 @@ export default function SpecPage(): React.ReactElement {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-foreground-secondary mb-2">
-                    Searches for <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code> keyword
-                    every 15 minutes
+                    Searches for{' '}
+                    <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code>{' '}
+                    keyword every 15 minutes
                   </p>
                   <Badge variant="outline" size="sm">
                     Every 15 min
@@ -778,11 +758,7 @@ export default function SpecPage(): React.ReactElement {
                     Description must be 20-500 characters
                   </li>
                   <li>
-                    <strong className="text-foreground">Example too short:</strong> Example must be
-                    at least 10 characters
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Invalid envVar:</strong> Each environment
+                    <strong className="text-foreground">Invalid env:</strong> Each environment
                     variable must have a name and description
                   </li>
                   <li>
@@ -809,7 +785,8 @@ export default function SpecPage(): React.ReactElement {
                 <CardContent className="pt-6 text-center">
                   <div className="text-3xl mb-2">1️⃣</div>
                   <p className="text-sm text-foreground-secondary">
-                    Add <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code> keyword
+                    Add <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code>{' '}
+                    keyword
                   </p>
                 </CardContent>
               </Card>

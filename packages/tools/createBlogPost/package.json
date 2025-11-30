@@ -35,7 +35,6 @@
   "tpmjs": {
     "category": "text-analysis",
     "description": "Creates structured blog posts with customizable frontmatter, content sections, and SEO metadata. Supports multiple output formats including Markdown and MDX.",
-    "example": "const post = await createBlogPost({ title: 'My First Post', author: 'John Doe', content: 'Hello World!', tags: ['intro', 'blog'] });",
     "parameters": [
       {
         "name": "title",

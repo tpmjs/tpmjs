@@ -46,14 +46,14 @@ export type TpmjsReturns = z.infer<typeof TpmjsReturnsSchema>;
 /**
  * Environment variable schema
  */
-export const TpmjsEnvVarSchema = z.object({
+export const TpmjsEnvSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
   required: z.boolean().default(true),
   default: z.string().optional(),
 });
 
-export type TpmjsEnvVar = z.infer<typeof TpmjsEnvVarSchema>;
+export type TpmjsEnv = z.infer<typeof TpmjsEnvSchema>;
 
 /**
  * External links schema
@@ -87,7 +87,6 @@ export const TpmjsMinimalSchema = z.object({
     message: `Category must be one of: ${TPMJS_CATEGORIES.join(', ')}`,
   }),
   description: z.string().min(20, 'Description must be at least 20 characters').max(500),
-  example: z.string().min(10, 'Example must be at least 10 characters'),
 });
 
 export type TpmjsMinimal = z.infer<typeof TpmjsMinimalSchema>;
@@ -99,7 +98,7 @@ export type TpmjsMinimal = z.infer<typeof TpmjsMinimalSchema>;
 export const TpmjsRichSchema = TpmjsMinimalSchema.extend({
   parameters: z.array(TpmjsParameterSchema).optional(),
   returns: TpmjsReturnsSchema.optional(),
-  envVars: z.array(TpmjsEnvVarSchema).optional(),
+  env: z.array(TpmjsEnvSchema).optional(),
   frameworks: z
     .array(z.enum(['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel']))
     .optional(),
@@ -138,7 +137,7 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
     const hasRichFields =
       data.parameters ||
       data.returns ||
-      data.envVars ||
+      data.env ||
       data.frameworks ||
       data.links ||
       data.tags ||

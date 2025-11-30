@@ -49,8 +49,7 @@ The bare minimum to get listed:
 {
   "tpmjs": {
     "category": "text-analysis",
-    "description": "A concise description of what your tool does",
-    "example": "const result = await myTool({ input: 'hello' });"
+    "description": "A concise description of what your tool does"
   }
 }
 ```
@@ -58,7 +57,6 @@ The bare minimum to get listed:
 **Required fields:**
 - `category` - One of: `text-analysis`, `code-generation`, `data-processing`, `image-generation`, `audio-processing`, `search`, `integration`, `other`
 - `description` - Clear description of what the tool does (1-3 sentences)
-- `example` - Simple code example showing how to use the tool
 
 #### Tier 2: Basic (Recommended)
 
@@ -69,7 +67,6 @@ Add parameter and return type information:
   "tpmjs": {
     "category": "text-analysis",
     "description": "Analyzes sentiment in text and returns a score",
-    "example": "const result = await analyzeSentiment({ text: 'I love this!' });",
     "parameters": [
       {
         "name": "text",
@@ -102,7 +99,6 @@ Complete metadata for maximum visibility:
   "tpmjs": {
     "category": "text-analysis",
     "description": "Advanced sentiment analysis with emotion detection",
-    "example": "const result = await analyzeSentiment({ text: 'I love this!', includeEmotions: true });",
     "parameters": [
       {
         "name": "text",
@@ -129,7 +125,7 @@ Complete metadata for maximum visibility:
       "type": "SentimentResult",
       "description": "Object with score, label, and optional emotions array"
     },
-    "envVars": [
+    "env": [
       {
         "name": "SENTIMENT_API_KEY",
         "description": "API key for sentiment analysis service",
@@ -266,7 +262,6 @@ Here's the complete `package.json` from the published example:
   "tpmjs": {
     "category": "text-analysis",
     "description": "Creates structured blog posts with customizable frontmatter, content sections, and SEO metadata. Supports multiple output formats including Markdown and MDX.",
-    "example": "const post = await createBlogPost({ title: 'My First Post', author: 'John Doe', content: 'Hello World!', tags: ['intro', 'blog'] });",
     "parameters": [
       {
         "name": "title",
@@ -340,7 +335,6 @@ Here's the complete `package.json` from the published example:
 |-------|------|-------------|
 | `category` | string | Tool category (see categories below) |
 | `description` | string | Clear description (1-3 sentences) |
-| `example` | string | Code example showing usage |
 
 ### Optional Fields (Tier 2 - Basic)
 
@@ -353,7 +347,7 @@ Here's the complete `package.json` from the published example:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `envVars` | array | Required environment variables |
+| `env` | array | Required environment variables |
 | `frameworks` | array | Compatible frameworks |
 | `links` | object | Related URLs |
 | `tags` | array | Additional tags |
@@ -378,7 +372,7 @@ Choose one of these for the `category` field:
 If your tool requires environment variables:
 
 ```json
-"envVars": [
+"env": [
   {
     "name": "OPENAI_API_KEY",
     "description": "API key for OpenAI services",
@@ -426,7 +420,7 @@ Or manually check the structure matches the examples above.
 
 **Tool not appearing after 15 minutes?**
 - Check that you added `"tpmjs-tool"` to keywords
-- Verify your `tpmjs` field has required fields (category, description, example)
+- Verify your `tpmjs` field has required fields (category, description)
 - Check the NPM package is public: `npm view yourpackage`
 
 **Tool showing as "minimal" tier?**
