@@ -8,4 +8,5 @@ export default {
     './src/components/**/*.{ts,tsx}',
     '../../packages/ui/src/**/*.ts',
   ],
+  plugins: [...(baseConfig.plugins || []), require('@tailwindcss/typography')],
 } satisfies Config;

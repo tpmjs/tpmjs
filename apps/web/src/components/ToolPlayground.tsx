@@ -8,6 +8,8 @@
 import type { TokenBreakdown as TokenData } from '@/lib/ai-agent/tool-executor-agent';
 import type { Tool } from '@tpmjs/db';
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { TokenBreakdown } from './TokenBreakdown';
 
 interface ToolPlaygroundProps {
@@ -119,7 +121,8 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                   break;
 
                 case 'complete':
-                  setOutput(data.output);
+                  // Don't replace output - keep the streamed text
+                  // setOutput(data.output); // Removed: this was overwriting streamed content
                   setTokens(data.tokenBreakdown);
                   setLogs((prev) => [
                     ...prev,
@@ -208,6 +211,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 text-sm font-medium transition-colors relative ${
                 activeTab === tab.id
@@ -248,6 +252,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
             </div>
 
             <button
+              type="button"
               onClick={handleExecute}
               disabled={isExecuting || !prompt.trim()}
               className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -292,10 +297,8 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                 <p className="text-sm text-red-600 dark:text-red-500 mt-1">{error}</p>
               </div>
             ) : output ? (
-              <div className="rounded-lg border border-border bg-muted/30 p-4">
-                <pre className="text-sm text-foreground whitespace-pre-wrap font-mono">
-                  {output}
-                </pre>
+              <div className="rounded-lg border border-border bg-muted/30 p-6 prose prose-sm dark:prose-invert max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{output}</ReactMarkdown>
               </div>
             ) : isExecuting ? (
               <div className="flex items-center justify-center py-12">
