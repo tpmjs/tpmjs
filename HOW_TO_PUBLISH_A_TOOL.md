@@ -133,10 +133,6 @@ Complete metadata for maximum visibility:
       "type": "api-key",
       "required": true
     },
-    "pricing": {
-      "model": "pay-per-use",
-      "cost": "$0.001 per request"
-    },
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
       "documentation": "https://docs.example.com",
@@ -316,9 +312,6 @@ Here's the complete `package.json` from the published example:
       "required": false,
       "type": "api-key"
     },
-    "pricing": {
-      "model": "free"
-    },
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
       "documentation": "https://tpmjs.com/tools/createblogpost",
@@ -362,7 +355,6 @@ Here's the complete `package.json` from the published example:
 | Field | Type | Description |
 |-------|------|-------------|
 | `authentication` | object | Auth requirements |
-| `pricing` | object | Pricing information |
 | `frameworks` | array | Compatible frameworks |
 | `links` | object | Related URLs |
 | `tags` | array | Additional tags |
@@ -390,23 +382,6 @@ If your tool requires authentication:
 "authentication": {
   "type": "api-key",  // or "oauth", "bearer-token", "basic"
   "required": true
-}
-```
-
-### Pricing Models
-
-```json
-"pricing": {
-  "model": "free"  // or "pay-per-use", "subscription", "freemium"
-}
-```
-
-For paid tools, add cost information:
-
-```json
-"pricing": {
-  "model": "pay-per-use",
-  "cost": "$0.001 per request"
 }
 ```
 

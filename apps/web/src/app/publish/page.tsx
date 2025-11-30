@@ -169,10 +169,6 @@ export default function PublishPage(): React.ReactElement {
       "type": "api-key",
       "required": true
     },
-    "pricing": {
-      "model": "pay-per-use",
-      "cost": "$0.001 per request"
-    },
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
       "documentation": "https://docs.example.com",

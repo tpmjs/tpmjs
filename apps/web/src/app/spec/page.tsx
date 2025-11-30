@@ -315,29 +315,6 @@ export default function SpecPage(): React.ReactElement {
 
                     <div>
                       <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>pricing</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-2">
-                        Pricing information. Fields:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
-                        <li>
-                          <code className="text-foreground">model</code> - "free", "freemium",
-                          "paid", or "enterprise"
-                        </li>
-                        <li>
-                          <code className="text-foreground">freeLimit</code> - Description of free
-                          tier limits (optional)
-                        </li>
-                        <li>
-                          <code className="text-foreground">paidUrl</code> - Pricing page URL
-                          (optional)
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
                         <code>frameworks</code>
                       </h4>
                       <p className="text-sm text-foreground-secondary mb-2">
@@ -447,11 +424,6 @@ export default function SpecPage(): React.ReactElement {
       "type": "api-key",
       "envVar": "SENTIMENT_API_KEY",
       "docsUrl": "https://docs.example.com/auth"
-    },
-    "pricing": {
-      "model": "freemium",
-      "freeLimit": "1000 requests/month",
-      "paidUrl": "https://example.com/pricing"
     },
     "frameworks": ["vercel-ai", "langchain"],
     "links": {
@@ -578,19 +550,6 @@ export default function SpecPage(): React.ReactElement {
                         </td>
                         <td className="py-3 px-4">No</td>
                         <td className="py-3 px-4">Auth requirements</td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">pricing</code>
-                        </td>
-                        <td className="py-3 px-4">object</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="success" size="sm">
-                            Rich
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">Pricing model and details</td>
                       </tr>
                       <tr className="border-b border-border">
                         <td className="py-3 px-4">

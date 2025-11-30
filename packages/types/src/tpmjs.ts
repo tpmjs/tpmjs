@@ -56,17 +56,6 @@ export const TpmjsAuthenticationSchema = z.object({
 export type TpmjsAuthentication = z.infer<typeof TpmjsAuthenticationSchema>;
 
 /**
- * Pricing information schema
- */
-export const TpmjsPricingSchema = z.object({
-  model: z.enum(['free', 'freemium', 'paid', 'enterprise']),
-  freeLimit: z.string().optional(),
-  paidUrl: z.string().url().optional(),
-});
-
-export type TpmjsPricing = z.infer<typeof TpmjsPricingSchema>;
-
-/**
  * External links schema
  */
 export const TpmjsLinksSchema = z.object({
@@ -111,7 +100,6 @@ export const TpmjsRichSchema = TpmjsMinimalSchema.extend({
   parameters: z.array(TpmjsParameterSchema).optional(),
   returns: TpmjsReturnsSchema.optional(),
   authentication: TpmjsAuthenticationSchema.optional(),
-  pricing: TpmjsPricingSchema.optional(),
   frameworks: z
     .array(z.enum(['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel']))
     .optional(),
@@ -151,7 +139,6 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
       data.parameters ||
       data.returns ||
       data.authentication ||
-      data.pricing ||
       data.frameworks ||
       data.links ||
       data.tags ||
