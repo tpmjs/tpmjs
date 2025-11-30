@@ -6,7 +6,18 @@
 import type { ExecutionResult, ExecutorOptions } from './types.js';
 
 const DEFAULT_TIMEOUT = 10000; // 10 seconds
-const SANDBOX_URL = process.env.SANDBOX_EXECUTOR_URL || 'http://localhost:3000';
+
+// Ensure URL has protocol
+function getSandboxUrl(): string {
+  const url = process.env.SANDBOX_EXECUTOR_URL || 'http://localhost:3000';
+  // If URL doesn't start with http:// or https://, add https://
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return `https://${url}`;
+  }
+  return url;
+}
+
+const SANDBOX_URL = getSandboxUrl();
 
 /**
  * Execute a package function with parameters via remote sandbox

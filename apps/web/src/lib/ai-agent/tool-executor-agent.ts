@@ -6,7 +6,7 @@
 import { openai } from '@ai-sdk/openai';
 import type { Tool } from '@tpmjs/db';
 import { executePackage } from '@tpmjs/package-executor';
-import { type CoreMessage, streamText } from 'ai';
+import { type CoreMessage, generateText } from 'ai';
 import { z } from 'zod';
 
 /**
@@ -101,20 +101,22 @@ export function createToolDefinition(tool: Tool) {
   console.log('[createToolDefinition] Parameters length:', parameters.length);
 
   // Ensure we have a valid schema - if no parameters, use an empty object
-  const schema =
+  const inputSchema =
     parameters.length > 0
       ? tpmjsParamsToZodSchema(parameters)
       : z.object({}).describe('No parameters required');
 
-  console.log('[createToolDefinition] Created Zod schema:', schema);
-  console.log('[createToolDefinition] Schema type:', typeof schema);
-  console.log('[createToolDefinition] Schema constructor:', schema.constructor.name);
+  console.log('[createToolDefinition] Created Zod schema:', inputSchema);
 
-  // AI SDK v6 beta tool definition - uses inputSchema instead of parameters
+  const sanitizedName = sanitizeToolName(tool.npmPackageName);
+
+  // AI SDK v6 tool definition
   return {
     description: tool.description,
-    inputSchema: schema, // Changed from 'parameters' to 'inputSchema' in v6
+    inputSchema, // AI SDK v6 uses inputSchema
     execute: async (params: Record<string, unknown>) => {
+      console.log('[Tool execute] Running:', sanitizedName, params);
+
       // Execute the actual npm package in a sandbox
       const result = await executePackage(
         tool.npmPackageName,
@@ -127,6 +129,7 @@ export function createToolDefinition(tool: Tool) {
         throw new Error(result.error || 'Package execution failed');
       }
 
+      console.log('[Tool execute] Result:', result.output);
       return result.output;
     },
   };
@@ -182,7 +185,7 @@ function sanitizeToolName(npmPackageName: string): string {
 }
 
 /**
- * Execute tool with AI agent and streaming
+ * Execute tool with AI agent using AI SDK v6
  */
 export async function executeToolWithAgent(
   tool: Tool,
@@ -193,8 +196,7 @@ export async function executeToolWithAgent(
   const toolDef = createToolDefinition(tool);
   const sanitizedToolName = sanitizeToolName(tool.npmPackageName);
 
-  console.log('[executeToolWithAgent] Sanitized tool name:', sanitizedToolName);
-  console.log('[executeToolWithAgent] Tool definition:', toolDef);
+  console.log('[executeToolWithAgent] Tool name:', sanitizedToolName);
 
   const messages: CoreMessage[] = [
     {
@@ -203,82 +205,30 @@ export async function executeToolWithAgent(
     },
   ];
 
-  let fullOutput = '';
-  let agentSteps = 0;
-
   const toolsConfig = {
     [sanitizedToolName]: toolDef,
   };
 
-  console.log(
-    '[executeToolWithAgent] Tools config being sent to OpenAI:',
-    JSON.stringify(toolsConfig, null, 2)
-  );
+  console.log('[executeToolWithAgent] Calling generateText');
 
-  const result = await streamText({
+  // Use generateText for tool execution
+  const result = await generateText({
     model: openai('gpt-4-turbo'),
     messages,
     tools: toolsConfig,
-    onFinish: () => {
-      agentSteps++;
-      console.log('[executeToolWithAgent] Stream finished, steps:', agentSteps);
-    },
+    system: `You are a helpful assistant. When the user asks you to do something, use the ${sanitizedToolName} tool to help them, then provide a clear, natural language summary of the results.`,
   });
 
-  console.log('[executeToolWithAgent] Starting text stream consumption');
+  console.log('[executeToolWithAgent] Result:', JSON.stringify(result, null, 2));
 
-  // In AI SDK v6, we need to handle both text and tool calls
-  // The response might be ONLY a tool call with no text
-  let toolCallResult: unknown = null;
+  // Extract the final text output
+  const fullOutput = result.text || JSON.stringify(result, null, 2);
 
-  // Stream and collect text
-  for await (const chunk of result.textStream) {
-    console.log('[executeToolWithAgent] Received text chunk:', chunk);
-    fullOutput += chunk;
-    onChunk?.(chunk);
-  }
+  console.log('[executeToolWithAgent] Final output:', fullOutput);
 
-  console.log('[executeToolWithAgent] Text stream complete, fullOutput length:', fullOutput.length);
-
-  // Get the full response including tool calls
-  const fullResponse = await result.response;
-  console.log('[executeToolWithAgent] Full response:', JSON.stringify(fullResponse, null, 2));
-  console.log('[executeToolWithAgent] Response keys:', Object.keys(fullResponse));
-
-  // In AI SDK v6, check the messages array for tool calls
-  if (fullResponse.messages && fullResponse.messages.length > 0) {
-    console.log('[executeToolWithAgent] Messages detected:', fullResponse.messages.length);
-
-    for (const message of fullResponse.messages) {
-      console.log('[executeToolWithAgent] Message role:', message.role);
-      console.log('[executeToolWithAgent] Message keys:', Object.keys(message));
-
-      // Tool results are in messages with role 'tool'
-      if (message.role === 'tool' && 'content' in message) {
-        toolCallResult = message.content;
-        console.log('[executeToolWithAgent] Tool message result:', toolCallResult);
-
-        // If there's no text output, use the tool result as the output
-        if (fullOutput.length === 0 && toolCallResult) {
-          fullOutput =
-            typeof toolCallResult === 'string'
-              ? toolCallResult
-              : JSON.stringify(toolCallResult, null, 2);
-
-          // Stream the tool result
-          onChunk?.(fullOutput);
-          console.log(
-            '[executeToolWithAgent] Using tool result as output, length:',
-            fullOutput.length
-          );
-        }
-      }
-
-      // Also check assistant messages for tool calls
-      if (message.role === 'assistant' && 'toolCalls' in message) {
-        console.log('[executeToolWithAgent] Assistant message has toolCalls:', message.toolCalls);
-      }
-    }
+  // Stream the output (all at once since generateText is non-streaming)
+  if (onChunk) {
+    onChunk(fullOutput);
   }
 
   // Calculate final token breakdown
@@ -298,6 +248,6 @@ export async function executeToolWithAgent(
   return {
     output: fullOutput,
     tokenBreakdown,
-    agentSteps,
+    agentSteps: result.steps?.length || 1,
   };
 }
