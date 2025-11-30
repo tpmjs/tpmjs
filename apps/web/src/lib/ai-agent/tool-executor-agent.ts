@@ -216,13 +216,26 @@ export async function executeToolWithAgent(
     model: openai('gpt-4-turbo'),
     messages,
     tools: toolsConfig,
-    system: `You are a helpful assistant. When the user asks you to do something, use the ${sanitizedToolName} tool to help them, then provide a clear, natural language summary of the results.`,
   });
 
   console.log('[executeToolWithAgent] Result:', JSON.stringify(result, null, 2));
 
-  // Extract the final text output
-  const fullOutput = result.text || JSON.stringify(result, null, 2);
+  // Extract tool results from the response
+  let toolOutput: unknown = null;
+  if (result.response?.messages) {
+    for (const message of result.response.messages) {
+      if (message.role === 'tool' && 'content' in message) {
+        toolOutput = message.content;
+        console.log('[executeToolWithAgent] Tool output found:', toolOutput);
+        break;
+      }
+    }
+  }
+
+  // Format the output as JSON
+  const fullOutput = toolOutput
+    ? JSON.stringify(toolOutput, null, 2)
+    : result.text || JSON.stringify(result, null, 2);
 
   console.log('[executeToolWithAgent] Final output:', fullOutput);
 

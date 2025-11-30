@@ -297,8 +297,48 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                 <p className="text-sm text-red-600 dark:text-red-500 mt-1">{error}</p>
               </div>
             ) : output ? (
-              <div className="rounded-lg border border-border bg-muted/30 p-6 prose prose-sm dark:prose-invert max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{output}</ReactMarkdown>
+              <div className="space-y-4">
+                {/* JSON Output */}
+                <div>
+                  <h3 className="text-sm font-medium text-foreground mb-2">Raw Output (JSON)</h3>
+                  <div className="rounded-lg border border-border bg-muted/30 p-4 overflow-x-auto">
+                    <pre className="text-xs text-foreground font-mono">{output}</pre>
+                  </div>
+                </div>
+
+                {/* Human-Readable Preview */}
+                {(() => {
+                  try {
+                    const parsed = JSON.parse(output);
+                    return (
+                      <div>
+                        <h3 className="text-sm font-medium text-foreground mb-2">
+                          Human-Readable Preview
+                        </h3>
+                        <div className="rounded-lg border border-border bg-muted/30 p-6 prose prose-sm dark:prose-invert max-w-none">
+                          {parsed.formattedOutput ? (
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {parsed.formattedOutput}
+                            </ReactMarkdown>
+                          ) : (
+                            <div className="space-y-2">
+                              {Object.entries(parsed).map(([key, value]) => (
+                                <div key={key}>
+                                  <span className="font-semibold">{key}:</span>{' '}
+                                  {typeof value === 'object'
+                                    ? JSON.stringify(value, null, 2)
+                                    : String(value)}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  } catch {
+                    return null;
+                  }
+                })()}
               </div>
             ) : isExecuting ? (
               <div className="flex items-center justify-center py-12">
