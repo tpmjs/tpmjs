@@ -5,14 +5,13 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
-import { Header } from '@tpmjs/ui/Header/Header';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Markdown } from '../../../components/Markdown';
-import { ThemeToggle } from '../../../components/ThemeToggle';
-import { ToolPlayground } from '../../../components/ToolPlayground';
+import { AppHeader } from '~/components/AppHeader';
+import { Markdown } from '~/components/Markdown';
+import { ToolPlayground } from '~/components/ToolPlayground';
 
 interface Tool {
   id: string;
@@ -112,19 +111,7 @@ export default function ToolDetailPage({
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header
-          title={
-            <Link
-              href="/"
-              className="text-foreground hover:text-foreground text-xl md:text-2xl font-bold uppercase tracking-tight"
-            >
-              TPMJS
-            </Link>
-          }
-          actions={<ThemeToggle />}
-          sticky={true}
-          size="md"
-        />
+        <AppHeader />
         <Container size="xl" padding="md" className="py-12">
           <div className="text-center text-foreground-secondary">Loading tool...</div>
         </Container>
@@ -135,19 +122,7 @@ export default function ToolDetailPage({
   if (error || !tool) {
     return (
       <div className="min-h-screen bg-background">
-        <Header
-          title={
-            <Link
-              href="/"
-              className="text-foreground hover:text-foreground text-xl md:text-2xl font-bold uppercase tracking-tight"
-            >
-              TPMJS
-            </Link>
-          }
-          actions={<ThemeToggle />}
-          sticky={true}
-          size="md"
-        />
+        <AppHeader />
         <Container size="xl" padding="md" className="py-12">
           <div className="text-center">
             <p className="text-red-500 text-lg mb-4">{error || 'Tool not found'}</p>
@@ -164,39 +139,7 @@ export default function ToolDetailPage({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Header
-        title={
-          <Link
-            href="/"
-            className="text-foreground hover:text-foreground text-xl md:text-2xl font-bold uppercase tracking-tight"
-          >
-            TPMJS
-          </Link>
-        }
-        actions={
-          <div className="flex items-center gap-3">
-            <Link href="/tool/tool-search">
-              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Browse Tools
-              </Button>
-            </Link>
-            {tool.npmRepository && (
-              <a
-                href={tool.npmRepository.url.replace('git+', '').replace('.git', '')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                <Icon icon="github" size="md" />
-              </a>
-            )}
-            <ThemeToggle />
-          </div>
-        }
-        sticky={true}
-        size="md"
-      />
+      <AppHeader />
 
       {/* Main content */}
       <Container size="xl" padding="md" className="py-8">

@@ -12,7 +12,6 @@ import {
 } from '@tpmjs/ui/Card/Card';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
-import { Header } from '@tpmjs/ui/Header/Header';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
@@ -20,6 +19,7 @@ import { Select } from '@tpmjs/ui/Select/Select';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { AppHeader } from '~/components/AppHeader';
 
 interface Tool {
   id: string;
@@ -113,37 +113,7 @@ export default function ToolSearchPage(): React.ReactElement {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Header
-        title={
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold">TPMJS</span>
-            <Badge variant="outline" size="sm">
-              Beta
-            </Badge>
-          </div>
-        }
-        actions={
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              Docs
-            </Button>
-            <a
-              href="https://github.com/tpmjs/tpmjs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground-secondary hover:text-foreground transition-colors"
-            >
-              <Icon icon="github" size="md" />
-            </a>
-            <Button variant="default" size="sm">
-              Publish Tool
-            </Button>
-          </div>
-        }
-        sticky={true}
-        size="md"
-      />
+      <AppHeader />
 
       {/* Main content */}
       <Container size="xl" padding="md" className="py-8">

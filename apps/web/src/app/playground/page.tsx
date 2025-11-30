@@ -14,7 +14,6 @@ import { Checkbox } from '@tpmjs/ui/Checkbox/Checkbox';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { FormField } from '@tpmjs/ui/FormField/FormField';
-import { Header } from '@tpmjs/ui/Header/Header';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { Label } from '@tpmjs/ui/Label/Label';
@@ -26,9 +25,8 @@ import { Slider } from '@tpmjs/ui/Slider/Slider';
 import { Switch } from '@tpmjs/ui/Switch/Switch';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
-import Link from 'next/link';
 import { useState } from 'react';
-import { ThemeToggle } from '../../components/ThemeToggle';
+import { AppHeader } from '~/components/AppHeader';
 
 // Disable static generation for this page due to context provider requirements
 export const dynamic = 'force-dynamic';
@@ -50,26 +48,7 @@ export default function PlaygroundPage() {
 
   return (
     <div className="min-h-screen flex flex-col dotted-grid-background">
-      {/* Header */}
-      <Header
-        title={
-          <Link href="/" className="text-foreground hover:text-foreground">
-            TPMJS Playground
-          </Link>
-        }
-        size="md"
-        sticky={true}
-        actions={
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Home
-              </Button>
-            </Link>
-            <ThemeToggle />
-          </div>
-        }
-      />
+      <AppHeader />
 
       <main className="flex-1 py-12 relative">
         <div className="absolute inset-0 bg-background/95 -z-10" />

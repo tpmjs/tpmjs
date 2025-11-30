@@ -2,9 +2,8 @@ import { prisma } from '@tpmjs/db';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
-import { Header } from '@tpmjs/ui/Header/Header';
 import Link from 'next/link';
-import { ThemeToggle } from '../components/ThemeToggle';
+import { AppHeader } from '../components/AppHeader';
 import { HeroSection } from '../components/home/HeroSection';
 
 async function getHomePageData() {
@@ -93,43 +92,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
   const data = await getHomePageData();
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <Header
-        title={
-          <Link
-            href="/"
-            className="text-foreground hover:text-foreground text-xl md:text-2xl font-bold uppercase tracking-tight"
-          >
-            TPMJS
-          </Link>
-        }
-        size="md"
-        sticky={true}
-        actions={
-          <div className="flex items-center gap-4">
-            <Link href="/tool/tool-search">
-              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Tools
-              </Button>
-            </Link>
-            <Link href="/playground">
-              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Playground
-              </Button>
-            </Link>
-            <Link href="/publish">
-              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Publish
-              </Button>
-            </Link>
-            <Button variant="secondary" size="sm">
-              Sign In
-            </Button>
-            <Button size="sm">Sign Up</Button>
-            <ThemeToggle />
-          </div>
-        }
-      />
+      <AppHeader />
 
       <main className="flex-1">
         {/* Hero Section - Dithered Design */}

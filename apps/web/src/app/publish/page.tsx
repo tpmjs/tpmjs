@@ -1,9 +1,8 @@
 import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
-import { Header } from '@tpmjs/ui/Header/Header';
 import Link from 'next/link';
-import { ThemeToggle } from '../../components/ThemeToggle';
+import { AppHeader } from '~/components/AppHeader';
 
 export const metadata = {
   title: 'Publish a Tool | TPMJS',
@@ -13,39 +12,7 @@ export const metadata = {
 export default function PublishPage(): React.ReactElement {
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <Header
-        title={
-          <Link
-            href="/"
-            className="text-foreground hover:text-foreground text-xl md:text-2xl font-bold uppercase tracking-tight"
-          >
-            TPMJS
-          </Link>
-        }
-        size="md"
-        sticky={true}
-        actions={
-          <div className="flex items-center gap-4">
-            <Link href="/tool/tool-search">
-              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Tools
-              </Button>
-            </Link>
-            <Link href="/playground">
-              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Playground
-              </Button>
-            </Link>
-            <Link href="/publish">
-              <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                Publish
-              </Button>
-            </Link>
-            <ThemeToggle />
-          </div>
-        }
-      />
+      <AppHeader />
 
       <main className="flex-1 py-16">
         <Container size="lg" padding="lg">
