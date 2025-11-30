@@ -227,14 +227,59 @@ export async function executeToolWithAgent(
 
   console.log('[executeToolWithAgent] Starting text stream consumption');
 
+  // In AI SDK v6, we need to handle both text and tool calls
+  // The response might be ONLY a tool call with no text
+  let toolCallResult: unknown = null;
+
   // Stream and collect text
   for await (const chunk of result.textStream) {
-    console.log('[executeToolWithAgent] Received chunk:', chunk);
+    console.log('[executeToolWithAgent] Received text chunk:', chunk);
     fullOutput += chunk;
     onChunk?.(chunk);
   }
 
   console.log('[executeToolWithAgent] Text stream complete, fullOutput length:', fullOutput.length);
+
+  // Get the full response including tool calls
+  const fullResponse = await result.response;
+  console.log('[executeToolWithAgent] Full response:', JSON.stringify(fullResponse, null, 2));
+  console.log('[executeToolWithAgent] Response keys:', Object.keys(fullResponse));
+
+  // In AI SDK v6, check the messages array for tool calls
+  if (fullResponse.messages && fullResponse.messages.length > 0) {
+    console.log('[executeToolWithAgent] Messages detected:', fullResponse.messages.length);
+
+    for (const message of fullResponse.messages) {
+      console.log('[executeToolWithAgent] Message role:', message.role);
+      console.log('[executeToolWithAgent] Message keys:', Object.keys(message));
+
+      // Tool results are in messages with role 'tool'
+      if (message.role === 'tool' && 'content' in message) {
+        toolCallResult = message.content;
+        console.log('[executeToolWithAgent] Tool message result:', toolCallResult);
+
+        // If there's no text output, use the tool result as the output
+        if (fullOutput.length === 0 && toolCallResult) {
+          fullOutput =
+            typeof toolCallResult === 'string'
+              ? toolCallResult
+              : JSON.stringify(toolCallResult, null, 2);
+
+          // Stream the tool result
+          onChunk?.(fullOutput);
+          console.log(
+            '[executeToolWithAgent] Using tool result as output, length:',
+            fullOutput.length
+          );
+        }
+      }
+
+      // Also check assistant messages for tool calls
+      if (message.role === 'assistant' && 'toolCalls' in message) {
+        console.log('[executeToolWithAgent] Assistant message has toolCalls:', message.toolCalls);
+      }
+    }
+  }
 
   // Calculate final token breakdown
   const parameters = Array.isArray(tool.parameters)
