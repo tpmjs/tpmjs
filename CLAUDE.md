@@ -679,3 +679,422 @@ API timeouts in serverless environments often stem from build configuration issu
 5. Test database performance locally before deploying
 
 The full working implementation is live at [tpmjs.com](https://tpmjs.com).
+
+---
+
+## NPM Package Syncing System
+
+TPMJS.com automatically mirrors npm packages with the `tpmjs-tool` keyword to keep the tool registry up-to-date. This section documents how the syncing system works.
+
+### Overview
+
+The sync system uses three automated strategies running on Vercel Cron to discover and update TPMJS tools:
+
+1. **Changes Feed** - Monitors npm's real-time changes feed for all package updates
+2. **Keyword Search** - Actively searches npm for packages with the `tpmjs-tool` keyword
+3. **Metrics Sync** - Updates download stats and calculates quality scores
+
+### Sync Endpoints
+
+All sync endpoints are located in `apps/web/src/app/api/sync/`:
+
+#### 1. Changes Feed Sync (`/api/sync/changes`)
+
+**Purpose:** Monitors npm's changes feed to catch new packages and updates in real-time.
+
+**Schedule:** Every 2 minutes (`*/2 * * * *`)
+
+**How it works:**
+1. Fetches the last checkpoint sequence number from the database
+2. Calls npm's `/_changes` endpoint with `since=<lastSeq>` (limit 100 per run)
+3. For each changed package, fetches full metadata with `fetchLatestPackageWithMetadata()`
+4. Validates that the package has a valid `tpmjs` field using `validateTpmjsField()`
+5. Upserts the tool to the database with `discoveryMethod: 'changes-feed'`
+6. Updates the checkpoint with the new sequence number for next run
+
+**Key Features:**
+- Uses checkpoints to track progress and avoid reprocessing
+- Processes up to 100 changes per run to avoid timeouts
+- Logs all sync operations to `syncLog` table
+- Requires `Authorization: Bearer <CRON_SECRET>` header
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "processed": 5,
+    "skipped": 93,
+    "errors": 0,
+    "lastSeq": "12345678",
+    "pending": 1250,
+    "durationMs": 2834
+  }
+}
+```
+
+#### 2. Keyword Search Sync (`/api/sync/keyword`)
+
+**Purpose:** Actively searches npm for packages with the `tpmjs-tool` keyword.
+
+**Schedule:** Every 15 minutes (`*/15 * * * *`)
+
+**How it works:**
+1. Searches npm registry for packages with keyword `tpmjs-tool` (up to 250 results)
+2. Fetches full metadata for each package
+3. Validates the `tpmjs` field
+4. Upserts tools with `discoveryMethod: 'keyword'`
+5. Updates checkpoint with last run timestamp
+
+**Key Features:**
+- Catches packages that might be missed by changes feed
+- Useful for backfilling existing packages
+- Processes up to 250 packages per run
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "processed": 12,
+    "skipped": 3,
+    "errors": 0,
+    "packagesFound": 15,
+    "durationMs": 4521
+  }
+}
+```
+
+#### 3. Metrics Sync (`/api/sync/metrics`)
+
+**Purpose:** Updates download statistics and calculates quality scores for all tools.
+
+**Schedule:** Every hour (`0 * * * *`)
+
+**How it works:**
+1. Fetches all tools from the database
+2. For each tool, calls `fetchDownloadStats()` to get last 30 days of downloads
+3. Calculates quality score based on:
+   - Tier (rich = 0.6, minimal = 0.4)
+   - Downloads (logarithmic scale, max 0.3)
+   - GitHub stars (logarithmic scale, max 0.1)
+4. Updates `npmDownloadsLastMonth` and `qualityScore` fields
+
+**Quality Score Formula:**
+```typescript
+function calculateQualityScore(params: {
+  tier: string;
+  downloads: number;
+  githubStars: number;
+}): number {
+  const tierScore = tier === 'rich' ? 0.6 : 0.4;
+  const downloadsScore = Math.min(0.3, Math.log10(downloads + 1) / 10);
+  const starsScore = Math.min(0.1, Math.log10(githubStars + 1) / 10);
+  return Math.min(1.0, tierScore + downloadsScore + starsScore);
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "processed": 25,
+    "skipped": 0,
+    "errors": 0,
+    "totalTools": 25,
+    "durationMs": 8234
+  }
+}
+```
+
+### Automated Sync Configuration
+
+The sync system can run via two methods:
+
+#### Option 1: Vercel Cron (Primary)
+
+Cron jobs are configured in `vercel.json` at the repository root:
+
+```json
+{
+  "crons": [
+    {
+      "path": "/api/sync/changes",
+      "schedule": "*/2 * * * *"
+    },
+    {
+      "path": "/api/sync/keyword",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/sync/metrics",
+      "schedule": "0 * * * *"
+    }
+  ]
+}
+```
+
+**Pros:**
+- Native Vercel integration
+- Automatic authentication with `CRON_SECRET`
+- Same infrastructure as the app
+- No setup required (works automatically on deploy)
+
+#### Option 2: GitHub Actions (Backup)
+
+A GitHub Actions workflow (`.github/workflows/sync.yml`) provides redundancy:
+
+```yaml
+name: NPM Package Sync
+
+on:
+  schedule:
+    - cron: '*/2 * * * *'   # Changes feed
+    - cron: '*/15 * * * *'  # Keyword search
+    - cron: '0 * * * *'     # Metrics
+  workflow_dispatch:        # Manual trigger
+```
+
+**Pros:**
+- Redundancy if Vercel Cron fails
+- Manual trigger via GitHub UI
+- Free on GitHub (included in free tier)
+- Runs from GitHub's infrastructure
+
+**Setup:**
+
+1. Add secrets to GitHub repository settings:
+   - `VERCEL_PRODUCTION_URL` - Your production URL (e.g., `https://tpmjs.com`)
+   - `CRON_SECRET` - Same secret used in Vercel environment variables
+
+2. Enable GitHub Actions in repository settings
+
+3. The workflow will run automatically on schedule OR manually via:
+   - GitHub Actions tab → NPM Package Sync → Run workflow → Select sync type
+
+**Schedule Breakdown:**
+- Changes feed: Every 2 minutes (30 times per hour)
+- Keyword search: Every 15 minutes (4 times per hour)
+- Metrics: Every hour (once per hour)
+
+**Recommendation:** Use Vercel Cron as primary and GitHub Actions as backup. Both can run simultaneously - the sync endpoints are idempotent.
+
+### Database Schema
+
+The sync system uses these Prisma models:
+
+**`Tool` - The main tool registry:**
+```prisma
+model Tool {
+  id                   String   @id @default(cuid())
+  npmPackageName       String   @unique
+  npmVersion           String
+  npmDownloadsLastMonth Int     @default(0)
+  qualityScore         Float?
+  discoveryMethod      String   // 'changes-feed' | 'keyword'
+  tier                 String   // 'minimal' | 'rich'
+  // ... other fields
+
+  @@index([qualityScore])
+  @@index([npmDownloadsLastMonth])
+}
+```
+
+**`SyncCheckpoint` - Tracks sync progress:**
+```prisma
+model SyncCheckpoint {
+  id         String @id @default(cuid())
+  source     String @unique // 'changes-feed' | 'keyword-search' | 'metrics'
+  checkpoint Json   // { lastSeq: string, lastRun: string, ... }
+}
+```
+
+**`SyncLog` - Records all sync operations:**
+```prisma
+model SyncLog {
+  id        String   @id @default(cuid())
+  source    String
+  status    String   // 'success' | 'partial' | 'error'
+  processed Int
+  skipped   Int
+  errors    Int
+  message   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
+```
+
+### Manual Sync Triggers
+
+To manually trigger a sync (useful for testing or debugging):
+
+```bash
+# Trigger changes feed sync
+curl -X POST https://tpmjs.com/api/sync/changes \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# Trigger keyword search
+curl -X POST https://tpmjs.com/api/sync/keyword \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# Trigger metrics update
+curl -X POST https://tpmjs.com/api/sync/metrics \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+**Note:** You need the `CRON_SECRET` environment variable set in Vercel. The endpoints return 401 Unauthorized without it.
+
+### Monitoring Sync Health
+
+Check sync logs in the database:
+
+```typescript
+// Get recent sync operations
+const recentSyncs = await prisma.syncLog.findMany({
+  orderBy: { createdAt: 'desc' },
+  take: 20,
+});
+
+// Check last successful sync for each source
+const checkpoints = await prisma.syncCheckpoint.findMany();
+```
+
+**Sync Log Example:**
+```json
+{
+  "id": "clx...",
+  "source": "changes-feed",
+  "status": "success",
+  "processed": 5,
+  "skipped": 93,
+  "errors": 0,
+  "message": "Successfully processed 5 packages",
+  "metadata": {
+    "durationMs": 2834,
+    "lastSeq": "12345678",
+    "pending": 1250
+  },
+  "createdAt": "2025-11-30T12:00:00Z"
+}
+```
+
+### Error Handling
+
+All sync endpoints follow this error handling pattern:
+
+1. **Partial Success:** If some packages fail but others succeed, status is `partial`
+2. **Complete Failure:** If the entire sync fails, status is `error`
+3. **Error Messages:** First 3 errors are included in the response
+4. **Logging:** All operations are logged to `syncLog` regardless of success
+
+**Example Partial Failure:**
+```json
+{
+  "success": true,
+  "data": {
+    "processed": 5,
+    "skipped": 2,
+    "errors": 3,
+    "durationMs": 5234
+  }
+}
+```
+
+The sync log will contain:
+```json
+{
+  "status": "partial",
+  "message": "Processed with errors: Failed to process pkg1: Network timeout; Failed to process pkg2: Invalid tpmjs field; ..."
+}
+```
+
+### Configuration
+
+Required environment variables in Vercel:
+
+```bash
+# Database connection
+DATABASE_URL="postgresql://..."
+
+# Cron job authentication
+CRON_SECRET="your-secret-key"
+```
+
+**Important:** Vercel Cron automatically adds the `Authorization: Bearer $CRON_SECRET` header when calling the endpoints. No manual configuration needed.
+
+### Performance Considerations
+
+**Timeouts:**
+- All sync routes have `maxDuration: 300` (5 minutes)
+- Changes feed processes max 100 packages per run to avoid timeouts
+- Keyword search processes max 250 packages per run
+- Metrics sync processes all tools but runs only once per hour
+
+**Rate Limiting:**
+- npm API has rate limits - be cautious when testing manually
+- Vercel Cron jobs run from Vercel's infrastructure (different IP than dev)
+- Consider implementing exponential backoff for npm API errors
+
+**Cold Starts:**
+- First request to each sync endpoint may be slow due to Prisma initialization
+- Subsequent requests are faster with warm Prisma Client
+- This is acceptable for background cron jobs
+
+### Debugging Sync Issues
+
+**Check if cron jobs are running:**
+
+```bash
+# View recent deployments
+vercel ls
+
+# Check logs for a specific deployment
+vercel logs <deployment-url>
+
+# Filter for sync-related logs
+vercel logs <deployment-url> | grep sync
+```
+
+**Common issues:**
+
+1. **"Unauthorized" errors:** Check that `CRON_SECRET` is set in Vercel environment variables
+2. **Timeouts:** Reduce batch size in changes feed (currently 100)
+3. **Missing packages:** Check `syncLog` for errors during processing
+4. **Stale data:** Verify metrics sync is running every hour
+
+**Test sync locally:**
+
+```bash
+# Start dev server
+pnpm dev --filter=@tpmjs/web
+
+# Trigger sync (requires CRON_SECRET in .env.local)
+curl -X POST http://localhost:3000/api/sync/changes \
+  -H "Authorization: Bearer $CRON_SECRET"
+```
+
+### Package Discovery Flow
+
+Here's how a new TPMJS tool gets discovered:
+
+1. **Developer publishes package to npm** with `tpmjs-tool` keyword and `tpmjs` field in package.json
+2. **Within 2 minutes:** Changes feed sync picks it up from npm's `/_changes` endpoint
+3. **Validation:** `validateTpmjsField()` checks that the `tpmjs` field meets requirements
+4. **Database Insert:** Tool is upserted with initial data
+5. **Within 1 hour:** Metrics sync updates download stats and calculates quality score
+6. **Visible on tpmjs.com:** Tool appears in search results and category pages
+
+**Backup Discovery:** If changes feed misses a package, the keyword search (every 15 minutes) will catch it.
+
+### Future Improvements
+
+Potential enhancements to the sync system:
+
+- [ ] Add webhook endpoint for instant npm package notifications
+- [ ] Implement exponential backoff for npm API rate limits
+- [ ] Add Slack/Discord notifications for sync failures
+- [ ] Create admin dashboard to monitor sync health
+- [ ] Support GitHub stars syncing (requires GitHub API integration)
+- [ ] Add sync metrics to Vercel Analytics
+- [ ] Implement differential sync to reduce database writes

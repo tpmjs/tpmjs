@@ -1,0 +1,71 @@
+name: NPM Package Sync
+
+on:
+  schedule:
+    # Changes feed: Every 2 minutes
+    - cron: '*/2 * * * *'
+    # Keyword search: Every 15 minutes
+    - cron: '*/15 * * * *'
+    # Metrics: Every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      sync_type:
+        description: 'Type of sync to run'
+        required: true
+        type: choice
+        options:
+          - changes
+          - keyword
+          - metrics
+          - all
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.inputs.sync_type || 'scheduled' }}
+  cancel-in-progress: false
+
+jobs:
+  sync-changes:
+    runs-on: ubuntu-latest
+    # Run on schedule every 2 minutes OR manual trigger with 'changes' or 'all'
+    if: |
+      github.event.schedule == '*/2 * * * *' ||
+      github.event.inputs.sync_type == 'changes' ||
+      github.event.inputs.sync_type == 'all'
+    steps:
+      - name: Trigger changes feed sync
+        run: |
+          curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/changes" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -f -s -S -w "\nHTTP Status: %{http_code}\n"
+
+  sync-keyword:
+    runs-on: ubuntu-latest
+    # Run on schedule every 15 minutes OR manual trigger with 'keyword' or 'all'
+    if: |
+      github.event.schedule == '*/15 * * * *' ||
+      github.event.inputs.sync_type == 'keyword' ||
+      github.event.inputs.sync_type == 'all'
+    steps:
+      - name: Trigger keyword search sync
+        run: |
+          curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/keyword" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -f -s -S -w "\nHTTP Status: %{http_code}\n"
+
+  sync-metrics:
+    runs-on: ubuntu-latest
+    # Run on schedule every hour OR manual trigger with 'metrics' or 'all'
+    if: |
+      github.event.schedule == '0 * * * *' ||
+      github.event.inputs.sync_type == 'metrics' ||
+      github.event.inputs.sync_type == 'all'
+    steps:
+      - name: Trigger metrics sync
+        run: |
+          curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/metrics" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -f -s -S -w "\nHTTP Status: %{http_code}\n"
