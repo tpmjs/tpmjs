@@ -56,18 +56,6 @@ export const TpmjsEnvSchema = z.object({
 export type TpmjsEnv = z.infer<typeof TpmjsEnvSchema>;
 
 /**
- * External links schema
- */
-export const TpmjsLinksSchema = z.object({
-  documentation: z.string().url().optional(),
-  playground: z.string().url().optional(),
-  repository: z.string().url().optional(),
-  homepage: z.string().url().optional(),
-});
-
-export type TpmjsLinks = z.infer<typeof TpmjsLinksSchema>;
-
-/**
  * AI Agent guidance schema
  */
 export const TpmjsAiAgentSchema = z.object({
@@ -102,9 +90,6 @@ export const TpmjsRichSchema = TpmjsMinimalSchema.extend({
   frameworks: z
     .array(z.enum(['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel']))
     .optional(),
-  links: TpmjsLinksSchema.optional(),
-  tags: z.array(z.string().min(2).max(30)).max(10).optional(),
-  status: z.enum(['experimental', 'beta', 'stable', 'deprecated']).optional(),
   aiAgent: TpmjsAiAgentSchema.optional(),
 });
 
@@ -135,14 +120,7 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
     // Check if it has any rich-tier fields
     const data = richResult.data;
     const hasRichFields =
-      data.parameters ||
-      data.returns ||
-      data.env ||
-      data.frameworks ||
-      data.links ||
-      data.tags ||
-      data.status ||
-      data.aiAgent;
+      data.parameters || data.returns || data.env || data.frameworks || data.aiAgent;
 
     return {
       valid: true,

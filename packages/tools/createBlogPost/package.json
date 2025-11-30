@@ -80,13 +80,6 @@
       "description": "A structured blog post object with frontmatter, content, and metadata including slug, wordCount, readingTime, and formattedOutput"
     },
     "frameworks": ["vercel-ai", "langchain"],
-    "links": {
-      "documentation": "https://tpmjs.com/tools/createblogpost",
-      "repository": "https://github.com/ajaxdavis/tpmjs/tree/main/packages/tools/createBlogPost",
-      "homepage": "https://tpmjs.com"
-    },
-    "tags": ["blog", "content", "markdown", "mdx", "writing", "seo"],
-    "status": "stable",
     "aiAgent": {
       "useCase": "Use this tool when users need to generate blog posts, articles, or structured content with proper frontmatter and metadata. Ideal for content management systems, static site generators, and documentation sites.",
       "limitations": "Does not include AI content generation - you must provide the content. Only formats and structures existing content.",

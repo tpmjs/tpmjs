@@ -329,56 +329,6 @@ export default function SpecPage(): React.ReactElement {
 
                     <div>
                       <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>links</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-2">
-                        External links. Optional fields:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
-                        <li>
-                          <code className="text-foreground">documentation</code> - Full
-                          documentation URL
-                        </li>
-                        <li>
-                          <code className="text-foreground">playground</code> - Interactive demo URL
-                        </li>
-                        <li>
-                          <code className="text-foreground">repository</code> - Source code URL
-                        </li>
-                        <li>
-                          <code className="text-foreground">homepage</code> - Project website
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>tags</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary">
-                        Array of additional tags for searchability. Maximum 10 tags, each 2-30
-                        characters.
-                      </p>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>status</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-2">
-                        Tool maturity level. One of:
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {['experimental', 'beta', 'stable', 'deprecated'].map((status) => (
-                          <Badge key={status} variant="outline" size="sm">
-                            {status}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
                         <code>aiAgent</code>
                       </h4>
                       <p className="text-sm text-foreground-secondary mb-2">
@@ -422,13 +372,6 @@ export default function SpecPage(): React.ReactElement {
       }
     ],
     "frameworks": ["vercel-ai", "langchain"],
-    "links": {
-      "documentation": "https://docs.example.com",
-      "repository": "https://github.com/yourname/tool",
-      "homepage": "https://yourwebsite.com"
-    },
-    "tags": ["sentiment", "nlp", "emotions", "ai"],
-    "status": "stable",
     "aiAgent": {
       "useCase": "Use when users need to analyze sentiment or detect emotions in text",
       "limitations": "English and Spanish only. Max 10,000 characters per request.",
@@ -544,45 +487,6 @@ export default function SpecPage(): React.ReactElement {
                         </td>
                         <td className="py-3 px-4">No</td>
                         <td className="py-3 px-4">Compatible AI frameworks</td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">links</code>
-                        </td>
-                        <td className="py-3 px-4">object</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="success" size="sm">
-                            Rich
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">External resource URLs</td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">tags</code>
-                        </td>
-                        <td className="py-3 px-4">array</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="success" size="sm">
-                            Rich
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">Additional search tags (max 10)</td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">status</code>
-                        </td>
-                        <td className="py-3 px-4">string</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="success" size="sm">
-                            Rich
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">Maturity level</td>
                       </tr>
                       <tr className="border-b border-border">
                         <td className="py-3 px-4">
@@ -760,14 +664,6 @@ export default function SpecPage(): React.ReactElement {
                   <li>
                     <strong className="text-foreground">Invalid env:</strong> Each environment
                     variable must have a name and description
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Too many tags:</strong> Maximum 10 tags
-                    allowed
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Invalid URL:</strong> Links must be valid
-                    HTTP(S) URLs
                   </li>
                 </ul>
               </CardContent>

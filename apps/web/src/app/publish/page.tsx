@@ -170,13 +170,6 @@ export default function PublishPage(): React.ReactElement {
       }
     ],
     "frameworks": ["vercel-ai", "langchain"],
-    "links": {
-      "documentation": "https://docs.example.com",
-      "repository": "https://github.com/yourname/tool",
-      "homepage": "https://yourwebsite.com"
-    },
-    "tags": ["sentiment", "nlp", "emotions"],
-    "status": "stable",
     "aiAgent": {
       "useCase": "Use when users need to analyze sentiment or detect emotions",
       "limitations": "English and Spanish only. Max 10,000 characters",
@@ -305,9 +298,7 @@ npm publish --access public
       "type": "BlogPost",
       "description": "Structured blog post with frontmatter"
     },
-    "frameworks": ["vercel-ai", "langchain"],
-    "tags": ["blog", "content", "markdown"],
-    "status": "stable"
+    "frameworks": ["vercel-ai", "langchain"]
   }
 }`}
             />
@@ -331,7 +322,7 @@ npm publish --access public
                 {
                   icon: '📚',
                   title: 'Good documentation',
-                  desc: 'Link to docs in the links.documentation field',
+                  desc: 'Add documentation URL to package.json homepage or repository fields',
                 },
                 {
                   icon: '🔄',

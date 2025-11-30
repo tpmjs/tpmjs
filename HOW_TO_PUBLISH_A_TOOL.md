@@ -133,13 +133,6 @@ Complete metadata for maximum visibility:
       }
     ],
     "frameworks": ["vercel-ai", "langchain"],
-    "links": {
-      "documentation": "https://docs.example.com",
-      "repository": "https://github.com/yourname/tool",
-      "homepage": "https://yourwebsite.com"
-    },
-    "tags": ["sentiment", "nlp", "emotions", "ai"],
-    "status": "stable",
     "aiAgent": {
       "useCase": "Use this tool when users need to analyze sentiment in text, detect emotions, or understand the tone of customer feedback, reviews, or social media posts.",
       "limitations": "Only supports English and Spanish. Maximum 10,000 characters per request.",
@@ -307,13 +300,6 @@ Here's the complete `package.json` from the published example:
       "description": "A structured blog post object with frontmatter, content, and metadata including slug, wordCount, readingTime, and formattedOutput"
     },
     "frameworks": ["vercel-ai", "langchain"],
-    "links": {
-      "documentation": "https://tpmjs.com/tools/createblogpost",
-      "repository": "https://github.com/ajaxdavis/tpmjs/tree/main/packages/tools/createBlogPost",
-      "homepage": "https://tpmjs.com"
-    },
-    "tags": ["blog", "content", "markdown", "mdx", "writing", "seo"],
-    "status": "stable",
     "aiAgent": {
       "useCase": "Use this tool when users need to generate blog posts, articles, or structured content with proper frontmatter and metadata. Ideal for content management systems, static site generators, and documentation sites.",
       "limitations": "Does not include AI content generation - you must provide the content. Only formats and structures existing content.",
@@ -349,9 +335,6 @@ Here's the complete `package.json` from the published example:
 |-------|------|-------------|
 | `env` | array | Required environment variables |
 | `frameworks` | array | Compatible frameworks |
-| `links` | object | Related URLs |
-| `tags` | array | Additional tags |
-| `status` | string | `stable`, `beta`, or `experimental` |
 | `aiAgent` | object | AI agent integration info |
 
 ### Categories
@@ -401,7 +384,7 @@ Higher scores = better visibility on tpmjs.com!
 
 1. **Use descriptive names** - Make your package name clear and searchable
 2. **Complete metadata** - Tier 3 (Rich) tools get 4x the base score
-3. **Good documentation** - Link to docs in the `links.documentation` field
+3. **Good documentation** - Add documentation URL to package.json homepage or repository fields
 4. **Active maintenance** - Regular updates boost download counts
 5. **AI-friendly descriptions** - Write the `aiAgent.useCase` field as guidance for AI agents
 
