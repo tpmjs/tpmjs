@@ -1,0 +1,18 @@
+name: Sync NPM Changes Feed
+
+on:
+  schedule:
+    # Run every 2 minutes
+    - cron: '*/2 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger changes feed sync
+        run: |
+          curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/changes" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -f -s -S -w "\nHTTP Status: %{http_code}\n"

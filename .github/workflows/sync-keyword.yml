@@ -1,0 +1,18 @@
+name: Sync NPM Keyword Search
+
+on:
+  schedule:
+    # Run every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-keyword:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger keyword search sync
+        run: |
+          curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/keyword" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -f -s -S -w "\nHTTP Status: %{http_code}\n"
