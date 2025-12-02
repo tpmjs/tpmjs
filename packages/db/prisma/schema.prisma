@@ -28,18 +28,18 @@ model Tool {
   npmMaintainers     Json?    @map("npm_maintainers") @db.JsonB
 
   // TPMJS Metadata (from package.json tpmjs field)
-  category       String  @db.VarChar(50)
-  description    String  @db.Text
-  example        String  @db.Text
-  parameters     Json?   @db.JsonB
-  returns        Json?   @db.JsonB
-  authentication Json?   @db.JsonB
-  pricing        Json?   @db.JsonB
-  frameworks     String[] @db.Text
-  links          Json?   @db.JsonB
-  tags           String[] @db.Text
-  status         String? @db.VarChar(20)
-  aiAgent        Json?   @map("ai_agent") @db.JsonB
+  category       String   @db.VarChar(50)
+  description    String   @db.Text
+  example        String?  @db.Text
+  parameters     Json?    @db.JsonB
+  returns        Json?    @db.JsonB
+  authentication Json?    @db.JsonB
+  pricing        Json?    @db.JsonB
+  frameworks     String[] @default([]) @db.Text
+  links          Json?    @db.JsonB
+  tags           String[] @default([]) @db.Text
+  status         String?  @db.VarChar(20)
+  aiAgent        Json?    @map("ai_agent") @db.JsonB
 
   // Discovery Metadata
   discoveryMethod String  @map("discovery_method") @db.VarChar(20) // 'keyword' | 'changes-feed'
