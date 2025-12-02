@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
         errors,
         packagesFound: searchResults.length,
         durationMs: Date.now() - startTime,
+        errorMessages: errorMessages.slice(0, 5), // Include first 5 error messages
       },
     });
   } catch (error) {

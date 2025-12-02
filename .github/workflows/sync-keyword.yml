@@ -28,12 +28,34 @@ jobs:
           packagesFound=$(echo "$response" | jq -r '.data.packagesFound')
           durationMs=$(echo "$response" | jq -r '.data.durationMs')
 
+          # Extract and display error messages
+          errorMessages=$(echo "$response" | jq -r '.data.errorMessages[]?' 2>/dev/null || echo "")
+
+          if [ -n "$errorMessages" ]; then
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "⚠️  SYNC ERRORS ($errors total):"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "$response" | jq -r '.data.errorMessages[]?' | while IFS= read -r error; do
+              echo "  • $error"
+            done
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          fi
+
           # Set outputs for Discord notification
           echo "processed=$processed" >> $GITHUB_OUTPUT
           echo "skipped=$skipped" >> $GITHUB_OUTPUT
           echo "errors=$errors" >> $GITHUB_OUTPUT
           echo "packagesFound=$packagesFound" >> $GITHUB_OUTPUT
           echo "durationMs=$durationMs" >> $GITHUB_OUTPUT
+
+          # Store error messages for Discord (first 3, truncated)
+          if [ "$errors" -gt 0 ]; then
+            errorSummary=$(echo "$response" | jq -r '.data.errorMessages[0:3]? | join("\n• ")' 2>/dev/null || echo "")
+            if [ -n "$errorSummary" ]; then
+              # Save to file to preserve newlines
+              echo "• $errorSummary" > /tmp/error_summary.txt
+            fi
+          fi
 
           # Determine status emoji
           if [ "$errors" -gt 0 ]; then
@@ -50,6 +72,52 @@ jobs:
           # Format duration
           duration_sec=$(echo "scale=2; ${{ steps.sync.outputs.durationMs }} / 1000" | bc)
 
+          # Build base fields
+          fields='[
+            {
+              "name": "📦 Packages Found",
+              "value": "${{ steps.sync.outputs.packagesFound }}",
+              "inline": true
+            },
+            {
+              "name": "✨ Processed",
+              "value": "${{ steps.sync.outputs.processed }}",
+              "inline": true
+            },
+            {
+              "name": "⏭️ Skipped",
+              "value": "${{ steps.sync.outputs.skipped }}",
+              "inline": true
+            },
+            {
+              "name": "❌ Errors",
+              "value": "${{ steps.sync.outputs.errors }}",
+              "inline": true
+            },
+            {
+              "name": "⏱️ Duration",
+              "value": "'"$duration_sec"'s",
+              "inline": true
+            },
+            {
+              "name": "🔗 Run",
+              "value": "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+              "inline": true
+            }'
+
+          # Add error details if errors exist
+          if [ -f /tmp/error_summary.txt ] && [ ${{ steps.sync.outputs.errors }} -gt 0 ]; then
+            error_text=$(cat /tmp/error_summary.txt | head -c 900)
+            fields="$fields"',
+            {
+              "name": "🔍 Error Details",
+              "value": "```\n'"$error_text"'\n```",
+              "inline": false
+            }'
+          fi
+
+          fields="$fields"']'
+
           # Create Discord embed
           curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
             -H "Content-Type: application/json" \
@@ -57,38 +125,7 @@ jobs:
               "embeds": [{
                 "title": "${{ steps.sync.outputs.status_emoji }} NPM Keyword Search Sync",
                 "color": ${{ steps.sync.outputs.status_color }},
-                "fields": [
-                  {
-                    "name": "📦 Packages Found",
-                    "value": "${{ steps.sync.outputs.packagesFound }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "✨ Processed",
-                    "value": "${{ steps.sync.outputs.processed }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "⏭️ Skipped",
-                    "value": "${{ steps.sync.outputs.skipped }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "❌ Errors",
-                    "value": "${{ steps.sync.outputs.errors }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "⏱️ Duration",
-                    "value": "'"$duration_sec"'s",
-                    "inline": true
-                  },
-                  {
-                    "name": "🔗 Run",
-                    "value": "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
-                    "inline": true
-                  }
-                ],
+                "fields": '"$fields"',
                 "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"'"
               }]
             }'
