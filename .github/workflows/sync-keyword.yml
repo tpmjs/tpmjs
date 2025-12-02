@@ -11,8 +11,84 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger keyword search sync
+        id: sync
         run: |
-          curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/keyword" \
+          # Call the sync API and capture response
+          response=$(curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/keyword" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
-            -f -s -S -w "\nHTTP Status: %{http_code}\n"
+            -f -s -S)
+
+          echo "Response: $response"
+
+          # Extract data using jq
+          processed=$(echo "$response" | jq -r '.data.processed')
+          skipped=$(echo "$response" | jq -r '.data.skipped')
+          errors=$(echo "$response" | jq -r '.data.errors')
+          packagesFound=$(echo "$response" | jq -r '.data.packagesFound')
+          durationMs=$(echo "$response" | jq -r '.data.durationMs')
+
+          # Set outputs for Discord notification
+          echo "processed=$processed" >> $GITHUB_OUTPUT
+          echo "skipped=$skipped" >> $GITHUB_OUTPUT
+          echo "errors=$errors" >> $GITHUB_OUTPUT
+          echo "packagesFound=$packagesFound" >> $GITHUB_OUTPUT
+          echo "durationMs=$durationMs" >> $GITHUB_OUTPUT
+
+          # Determine status emoji
+          if [ "$errors" -gt 0 ]; then
+            echo "status_emoji=⚠️" >> $GITHUB_OUTPUT
+            echo "status_color=16776960" >> $GITHUB_OUTPUT  # Yellow
+          else
+            echo "status_emoji=✅" >> $GITHUB_OUTPUT
+            echo "status_color=5763719" >> $GITHUB_OUTPUT   # Green
+          fi
+
+      - name: Send Discord notification
+        if: always()
+        run: |
+          # Format duration
+          duration_sec=$(echo "scale=2; ${{ steps.sync.outputs.durationMs }} / 1000" | bc)
+
+          # Create Discord embed
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "${{ steps.sync.outputs.status_emoji }} NPM Keyword Search Sync",
+                "color": ${{ steps.sync.outputs.status_color }},
+                "fields": [
+                  {
+                    "name": "📦 Packages Found",
+                    "value": "${{ steps.sync.outputs.packagesFound }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "✨ Processed",
+                    "value": "${{ steps.sync.outputs.processed }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "⏭️ Skipped",
+                    "value": "${{ steps.sync.outputs.skipped }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "❌ Errors",
+                    "value": "${{ steps.sync.outputs.errors }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "⏱️ Duration",
+                    "value": "'"$duration_sec"'s",
+                    "inline": true
+                  },
+                  {
+                    "name": "🔗 Run",
+                    "value": "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+                    "inline": true
+                  }
+                ],
+                "timestamp": "'"$(date -u +%Y-%m-%dT%H:%M:%S.000Z)"'"
+              }]
+            }'
