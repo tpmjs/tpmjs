@@ -59,7 +59,7 @@ jobs:
 
           # Store skipped packages for Discord
           if [ "$skipped" -gt 0 ]; then
-            skippedList=$(echo "$response" | jq -r '.data.skippedPackages[]? | "\(.name) - \(.reason)"' 2>/dev/null | paste -sd "\n" - || echo "")
+            skippedList=$(echo "$response" | jq -r '.data.skippedPackages[]? | "\(.name) (by \(.author)) - \(.reason)"' 2>/dev/null | paste -sd "\n" - || echo "")
             if [ -n "$skippedList" ]; then
               echo "$skippedList" > /tmp/skipped_packages.txt
             fi
