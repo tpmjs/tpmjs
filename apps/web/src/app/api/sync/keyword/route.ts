@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   let skipped = 0;
   let errors = 0;
   const errorMessages: string[] = [];
-  const skippedPackages: string[] = [];
+  const skippedPackages: Array<{ name: string; reason: string }> = [];
 
   try {
     // Search for packages with 'tpmjs-tool' keyword
@@ -48,14 +48,14 @@ export async function POST(request: NextRequest) {
         // Skip if package not found
         if (!pkg) {
           skipped++;
-          skippedPackages.push(result.package.name);
+          skippedPackages.push({ name: result.package.name, reason: 'package not found' });
           continue;
         }
 
         // Check if package has tpmjs field
         if (!pkg.tpmjs) {
           skipped++;
-          skippedPackages.push(pkg.name);
+          skippedPackages.push({ name: pkg.name, reason: 'missing tpmjs field' });
           continue;
         }
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         const validation = validateTpmjsField(pkg.tpmjs);
         if (!validation.valid || !validation.data) {
           skipped++;
-          skippedPackages.push(pkg.name);
+          skippedPackages.push({ name: pkg.name, reason: 'invalid tpmjs field' });
           continue;
         }
 
