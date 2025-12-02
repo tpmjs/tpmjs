@@ -57,6 +57,14 @@ jobs:
             fi
           fi
 
+          # Store skipped packages for Discord
+          if [ "$skipped" -gt 0 ]; then
+            skippedList=$(echo "$response" | jq -r '.data.skippedPackages[]?' 2>/dev/null | paste -sd ", " - || echo "")
+            if [ -n "$skippedList" ]; then
+              echo "$skippedList" > /tmp/skipped_packages.txt
+            fi
+          fi
+
           # Determine status emoji
           if [ "$errors" -gt 0 ]; then
             echo "status_emoji=⚠️" >> $GITHUB_OUTPUT
@@ -73,66 +81,49 @@ jobs:
           duration_sec=$(echo "scale=2; ${{ steps.sync.outputs.durationMs }} / 1000" | bc)
 
           # Build Discord payload using jq for proper JSON escaping
-          if [ -f /tmp/error_summary.txt ] && [ ${{ steps.sync.outputs.errors }} -gt 0 ]; then
-            # Read and truncate error text
-            error_text=$(cat /tmp/error_summary.txt | head -c 800)
+          # Read optional data
+          error_text=""
+          skipped_text=""
 
-            # Create payload with error details using jq
-            payload=$(jq -n \
-              --arg title "${{ steps.sync.outputs.status_emoji }} NPM Keyword Search Sync" \
-              --argjson color ${{ steps.sync.outputs.status_color }} \
-              --arg packages "${{ steps.sync.outputs.packagesFound }}" \
-              --arg processed "${{ steps.sync.outputs.processed }}" \
-              --arg skipped "${{ steps.sync.outputs.skipped }}" \
-              --arg errors "${{ steps.sync.outputs.errors }}" \
-              --arg duration "${duration_sec}s" \
-              --arg url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-              --arg error_text "$error_text" \
-              --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
-              '{
-                embeds: [{
-                  title: $title,
-                  color: $color,
-                  fields: [
-                    { name: "📦 Packages Found", value: $packages, inline: true },
-                    { name: "✨ Processed", value: $processed, inline: true },
-                    { name: "⏭️ Skipped", value: $skipped, inline: true },
-                    { name: "❌ Errors", value: $errors, inline: true },
-                    { name: "⏱️ Duration", value: $duration, inline: true },
-                    { name: "🔗 Run", value: ("[View Logs](" + $url + ")"), inline: true },
-                    { name: "🔍 Error Details", value: ("```\n" + $error_text + "\n```"), inline: false }
-                  ],
-                  timestamp: $timestamp
-                }]
-              }')
-          else
-            # Create payload without error details
-            payload=$(jq -n \
-              --arg title "${{ steps.sync.outputs.status_emoji }} NPM Keyword Search Sync" \
-              --argjson color ${{ steps.sync.outputs.status_color }} \
-              --arg packages "${{ steps.sync.outputs.packagesFound }}" \
-              --arg processed "${{ steps.sync.outputs.processed }}" \
-              --arg skipped "${{ steps.sync.outputs.skipped }}" \
-              --arg errors "${{ steps.sync.outputs.errors }}" \
-              --arg duration "${duration_sec}s" \
-              --arg url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-              --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
-              '{
-                embeds: [{
-                  title: $title,
-                  color: $color,
-                  fields: [
-                    { name: "📦 Packages Found", value: $packages, inline: true },
-                    { name: "✨ Processed", value: $processed, inline: true },
-                    { name: "⏭️ Skipped", value: $skipped, inline: true },
-                    { name: "❌ Errors", value: $errors, inline: true },
-                    { name: "⏱️ Duration", value: $duration, inline: true },
-                    { name: "🔗 Run", value: ("[View Logs](" + $url + ")"), inline: true }
-                  ],
-                  timestamp: $timestamp
-                }]
-              }')
+          if [ -f /tmp/error_summary.txt ] && [ ${{ steps.sync.outputs.errors }} -gt 0 ]; then
+            error_text=$(cat /tmp/error_summary.txt | head -c 800)
           fi
+
+          if [ -f /tmp/skipped_packages.txt ] && [ ${{ steps.sync.outputs.skipped }} -gt 0 ]; then
+            skipped_text=$(cat /tmp/skipped_packages.txt)
+          fi
+
+          # Build fields array dynamically
+          base_fields='[
+            { "name": "📦 Packages Found", "value": "${{ steps.sync.outputs.packagesFound }}", "inline": true },
+            { "name": "✨ Processed", "value": "${{ steps.sync.outputs.processed }}", "inline": true },
+            { "name": "⏭️ Skipped", "value": "${{ steps.sync.outputs.skipped }}", "inline": true },
+            { "name": "❌ Errors", "value": "${{ steps.sync.outputs.errors }}", "inline": true },
+            { "name": "⏱️ Duration", "value": "'"${duration_sec}s"'", "inline": true },
+            { "name": "🔗 Run", "value": "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": true }
+          ]'
+
+          # Create payload with dynamic fields
+          payload=$(jq -n \
+            --arg title "${{ steps.sync.outputs.status_emoji }} NPM Keyword Search Sync" \
+            --argjson color ${{ steps.sync.outputs.status_color }} \
+            --argjson baseFields "$base_fields" \
+            --arg error_text "$error_text" \
+            --arg skipped_text "$skipped_text" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
+            '
+            {
+              embeds: [{
+                title: $title,
+                color: $color,
+                fields: (
+                  $baseFields +
+                  (if $skipped_text != "" then [{ name: "📋 Skipped Packages", value: $skipped_text, inline: false }] else [] end) +
+                  (if $error_text != "" then [{ name: "🔍 Error Details", value: ("```\n" + $error_text + "\n```"), inline: false }] else [] end)
+                ),
+                timestamp: $timestamp
+              }]
+            }')
 
           # Send to Discord
           curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \

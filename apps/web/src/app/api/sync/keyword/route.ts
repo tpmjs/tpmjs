@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
   let skipped = 0;
   let errors = 0;
   const errorMessages: string[] = [];
+  const skippedPackages: string[] = [];
 
   try {
     // Search for packages with 'tpmjs-tool' keyword
@@ -47,12 +48,14 @@ export async function POST(request: NextRequest) {
         // Skip if package not found
         if (!pkg) {
           skipped++;
+          skippedPackages.push(result.package.name);
           continue;
         }
 
         // Check if package has tpmjs field
         if (!pkg.tpmjs) {
           skipped++;
+          skippedPackages.push(pkg.name);
           continue;
         }
 
@@ -60,6 +63,7 @@ export async function POST(request: NextRequest) {
         const validation = validateTpmjsField(pkg.tpmjs);
         if (!validation.valid || !validation.data) {
           skipped++;
+          skippedPackages.push(pkg.name);
           continue;
         }
 
@@ -179,6 +183,7 @@ export async function POST(request: NextRequest) {
         packagesFound: searchResults.length,
         durationMs: Date.now() - startTime,
         errorMessages: errorMessages.slice(0, 5), // Include first 5 error messages
+        skippedPackages: skippedPackages, // Include all skipped package names
       },
     });
   } catch (error) {
