@@ -2,8 +2,8 @@
 
 import { useChat as useAISDKChat } from '@ai-sdk/react';
 import { DefaultChatTransport } from 'ai';
-import { useState } from 'react';
 import { nanoid } from 'nanoid';
+import { useState } from 'react';
 
 /**
  * Custom chat hook that wraps the official @ai-sdk/react useChat
@@ -24,14 +24,17 @@ export function useChat() {
     onResponse: (response: Response) => {
       // Handle "tools loaded" response
       if (response.headers.get('content-type')?.includes('application/json')) {
-        response.json().then((data: any) => {
-          if (data.type === 'tools_loaded') {
-            console.log('🔧 Tools loaded:', data.loaded);
-            // Optionally show toast/notification
-          }
-        }).catch(() => {
-          // Ignore JSON parsing errors for non-JSON responses
-        });
+        response
+          .json()
+          .then((data: any) => {
+            if (data.type === 'tools_loaded') {
+              console.log('🔧 Tools loaded:', data.loaded);
+              // Optionally show toast/notification
+            }
+          })
+          .catch(() => {
+            // Ignore JSON parsing errors for non-JSON responses
+          });
       }
     },
   });

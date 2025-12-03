@@ -12,7 +12,15 @@ export interface ManualTool {
   // Package metadata
   npmPackageName: string;
   npmVersion?: string; // Optional - will fetch latest if not specified
-  category: 'text-analysis' | 'code-generation' | 'data-processing' | 'image-generation' | 'audio-processing' | 'search' | 'integration' | 'other';
+  category:
+    | 'text-analysis'
+    | 'code-generation'
+    | 'data-processing'
+    | 'image-generation'
+    | 'audio-processing'
+    | 'search'
+    | 'integration'
+    | 'other';
   frameworks: Array<'vercel-ai' | 'langchain' | 'llamaindex' | 'other'>;
 
   // Tool definition
@@ -59,7 +67,8 @@ export const manualTools: ManualTool[] = [
     category: 'code-generation',
     frameworks: ['vercel-ai'],
     exportName: 'executeCode',
-    description: 'Execute Python code in a sandboxed environment using Vercel Sandbox. Run calculations, data processing, and other computational tasks safely in an isolated environment with Python 3.13.',
+    description:
+      'Execute Python code in a sandboxed environment using Vercel Sandbox. Run calculations, data processing, and other computational tasks safely in an isolated environment with Python 3.13.',
     tags: ['code-execution', 'sandbox'],
     env: [
       {
@@ -81,7 +90,8 @@ export const manualTools: ManualTool[] = [
       description: 'Execution result with stdout, stderr, and return value',
     },
     aiAgent: {
-      useCase: 'Use when you need to perform calculations, data processing, or execute Python code safely',
+      useCase:
+        'Use when you need to perform calculations, data processing, or execute Python code safely',
       limitations: 'Python 3.13 only. No network access. 30 second execution timeout.',
       examples: [
         'Perform complex mathematical calculations',
@@ -98,7 +108,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'webSearch',
-    description: 'Search the web for current information using Exa\'s AI-powered search API. Returns high-quality, relevant results optimized for LLM consumption.',
+    description:
+      "Search the web for current information using Exa's AI-powered search API. Returns high-quality, relevant results optimized for LLM consumption.",
     tags: ['search', 'web', 'extraction'],
     env: [
       {
@@ -144,7 +155,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'searchTool',
-    description: 'Search and extract context from the web with token-optimized results. Parallel compresses web results for optimal inference efficiency.',
+    description:
+      'Search and extract context from the web with token-optimized results. Parallel compresses web results for optimal inference efficiency.',
     tags: ['search', 'web', 'extraction'],
     env: [
       {
@@ -155,10 +167,7 @@ export const manualTools: ManualTool[] = [
     ],
     aiAgent: {
       useCase: 'Use when you need web search with minimal token usage',
-      examples: [
-        'Search for current information',
-        'Extract structured data from websites',
-      ],
+      examples: ['Search for current information', 'Extract structured data from websites'],
     },
     apiKeyUrl: 'https://platform.parallel.ai',
     websiteUrl: 'https://parallel.ai',
@@ -191,10 +200,7 @@ export const manualTools: ManualTool[] = [
     },
     aiAgent: {
       useCase: 'Use to extract clean content from specific URLs',
-      examples: [
-        'Extract article content',
-        'Parse documentation pages',
-      ],
+      examples: ['Extract article content', 'Parse documentation pages'],
     },
     websiteUrl: 'https://parallel.ai',
   },
@@ -203,7 +209,8 @@ export const manualTools: ManualTool[] = [
     category: 'code-generation',
     frameworks: ['vercel-ai'],
     exportName: 'createVercelSandboxCodeMode',
-    description: 'Transform MCP tools and AI SDK tools into code, write to Vercel sandbox filesystem, and execute in isolated environment.',
+    description:
+      'Transform MCP tools and AI SDK tools into code, write to Vercel sandbox filesystem, and execute in isolated environment.',
     tags: ['code-execution', 'sandbox', 'mcp', 'code-mode'],
     env: [
       {
@@ -215,10 +222,7 @@ export const manualTools: ManualTool[] = [
     aiAgent: {
       useCase: 'Use when you need to combine MCP tools with code execution in a sandbox',
       limitations: 'Requires Vercel Sandbox access',
-      examples: [
-        'Execute code using MCP server tools',
-        'Combine multiple tool sources',
-      ],
+      examples: ['Execute code using MCP server tools', 'Combine multiple tool sources'],
     },
     docsUrl: 'https://github.com/karthikscale3/ctx-zip/blob/main/README.md',
     apiKeyUrl: 'https://vercel.com/docs/vercel-sandbox#authentication',
@@ -229,7 +233,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'perplexitySearch',
-    description: 'Search the web with real-time results and advanced filtering powered by Perplexity Search API. Supports ranked results with domain, language, date range, and recency filters.',
+    description:
+      'Search the web with real-time results and advanced filtering powered by Perplexity Search API. Supports ranked results with domain, language, date range, and recency filters.',
     tags: ['search', 'web'],
     env: [
       {
@@ -273,7 +278,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'tavilySearch',
-    description: 'Real-time web search optimized for AI applications. Provides comprehensive web research including search, content extraction, website crawling, and site mapping.',
+    description:
+      'Real-time web search optimized for AI applications. Provides comprehensive web research including search, content extraction, website crawling, and site mapping.',
     tags: ['search', 'extract', 'crawl'],
     env: [
       {
@@ -299,7 +305,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'scrapeTool',
-    description: 'Scrape any website into clean markdown format. Convert web pages to LLM-friendly markdown with automatic cleaning and formatting.',
+    description:
+      'Scrape any website into clean markdown format. Convert web pages to LLM-friendly markdown with automatic cleaning and formatting.',
     tags: ['scraping', 'web', 'extraction'],
     env: [
       {
@@ -337,7 +344,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'searchTool',
-    description: 'Search the web and get results in clean markdown format optimized for AI consumption.',
+    description:
+      'Search the web and get results in clean markdown format optimized for AI consumption.',
     tags: ['search', 'web'],
     env: [
       {
@@ -353,7 +361,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'crawlTool',
-    description: 'Crawl entire websites and extract structured data. Automatically discover and process multiple pages.',
+    description:
+      'Crawl entire websites and extract structured data. Automatically discover and process multiple pages.',
     tags: ['crawling', 'web', 'extraction'],
     env: [
       {
@@ -392,7 +401,8 @@ export const manualTools: ManualTool[] = [
     category: 'code-generation',
     frameworks: ['vercel-ai'],
     exportName: 'CodeInterpreterTools',
-    description: 'Isolated sandbox for executing Python, JavaScript, and TypeScript code to solve complex tasks. Fully managed by Amazon Bedrock.',
+    description:
+      'Isolated sandbox for executing Python, JavaScript, and TypeScript code to solve complex tasks. Fully managed by Amazon Bedrock.',
     tags: ['code-execution', 'sandbox'],
     env: [
       {
@@ -419,7 +429,8 @@ export const manualTools: ManualTool[] = [
     category: 'integration',
     frameworks: ['vercel-ai'],
     exportName: 'BrowserTools',
-    description: 'Fast and secure cloud-based browser runtime for web automation. Fill forms, navigate websites, and extract information in managed environment.',
+    description:
+      'Fast and secure cloud-based browser runtime for web automation. Fill forms, navigate websites, and extract information in managed environment.',
     tags: ['browser-automation', 'web'],
     env: [
       {
@@ -430,11 +441,7 @@ export const manualTools: ManualTool[] = [
     ],
     aiAgent: {
       useCase: 'Use for browser automation and web interaction tasks',
-      examples: [
-        'Fill web forms',
-        'Navigate websites',
-        'Extract dynamic content',
-      ],
+      examples: ['Fill web forms', 'Navigate websites', 'Extract dynamic content'],
     },
     websiteUrl: 'https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/built-in-tools.html',
   },
@@ -443,7 +450,8 @@ export const manualTools: ManualTool[] = [
     category: 'other',
     frameworks: ['vercel-ai'],
     exportName: 'guard',
-    description: 'Protect AI apps from prompt injection and security threats. Detect and block malicious inputs before they reach your LLM.',
+    description:
+      'Protect AI apps from prompt injection and security threats. Detect and block malicious inputs before they reach your LLM.',
     tags: ['security', 'guardrails', 'prompt-injection'],
     env: [
       {
@@ -481,7 +489,8 @@ export const manualTools: ManualTool[] = [
     category: 'other',
     frameworks: ['vercel-ai'],
     exportName: 'redact',
-    description: 'Redact PII/PHI from text including SSNs, emails, phone numbers, and other sensitive information.',
+    description:
+      'Redact PII/PHI from text including SSNs, emails, phone numbers, and other sensitive information.',
     tags: ['security', 'pii', 'redaction'],
     env: [
       {
@@ -504,11 +513,7 @@ export const manualTools: ManualTool[] = [
     },
     aiAgent: {
       useCase: 'Use to remove sensitive information from text before processing',
-      examples: [
-        'Redact SSNs from documents',
-        'Remove email addresses',
-        'Mask phone numbers',
-      ],
+      examples: ['Redact SSNs from documents', 'Remove email addresses', 'Mask phone numbers'],
     },
     websiteUrl: 'https://superagent.sh',
   },
@@ -517,7 +522,8 @@ export const manualTools: ManualTool[] = [
     category: 'other',
     frameworks: ['vercel-ai'],
     exportName: 'verify',
-    description: 'Verify AI-generated claims against source materials. Fact-check and validate LLM outputs for accuracy.',
+    description:
+      'Verify AI-generated claims against source materials. Fact-check and validate LLM outputs for accuracy.',
     tags: ['verification', 'fact-checking'],
     env: [
       {
@@ -546,11 +552,7 @@ export const manualTools: ManualTool[] = [
     },
     aiAgent: {
       useCase: 'Use to fact-check LLM outputs against trusted sources',
-      examples: [
-        'Verify factual claims',
-        'Check citations',
-        'Validate information accuracy',
-      ],
+      examples: ['Verify factual claims', 'Check citations', 'Validate information accuracy'],
     },
     websiteUrl: 'https://superagent.sh',
   },
@@ -570,10 +572,7 @@ export const manualTools: ManualTool[] = [
     ],
     aiAgent: {
       useCase: 'Use for general web search and current information',
-      examples: [
-        'Find latest news',
-        'Search for current events',
-      ],
+      examples: ['Find latest news', 'Search for current events'],
     },
     docsUrl: 'https://docs.valyu.ai/integrations/vercel-ai-sdk',
     apiKeyUrl: 'https://platform.valyu.ai',
@@ -584,7 +583,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'financeSearch',
-    description: 'Search financial data including stock prices, earnings, income statements, cash flows, and market data.',
+    description:
+      'Search financial data including stock prices, earnings, income statements, cash flows, and market data.',
     tags: ['search', 'finance', 'domain-search'],
     env: [
       {
@@ -595,11 +595,7 @@ export const manualTools: ManualTool[] = [
     ],
     aiAgent: {
       useCase: 'Use for financial data and market research',
-      examples: [
-        'Get stock prices',
-        'Find earnings reports',
-        'Search financial statements',
-      ],
+      examples: ['Get stock prices', 'Find earnings reports', 'Search financial statements'],
     },
     websiteUrl: 'https://valyu.ai',
   },
@@ -619,11 +615,7 @@ export const manualTools: ManualTool[] = [
     ],
     aiAgent: {
       useCase: 'Use to search academic and research papers',
-      examples: [
-        'Find medical research',
-        'Search arXiv papers',
-        'Look up scientific publications',
-      ],
+      examples: ['Find medical research', 'Search arXiv papers', 'Look up scientific publications'],
     },
     websiteUrl: 'https://valyu.ai',
   },
@@ -632,7 +624,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'bioSearch',
-    description: 'Search biomedical information including clinical trials, FDA drug labels, PubMed, medRxiv, and bioRxiv.',
+    description:
+      'Search biomedical information including clinical trials, FDA drug labels, PubMed, medRxiv, and bioRxiv.',
     tags: ['search', 'biomedical', 'domain-search'],
     env: [
       {
@@ -643,11 +636,7 @@ export const manualTools: ManualTool[] = [
     ],
     aiAgent: {
       useCase: 'Use for biomedical and clinical research',
-      examples: [
-        'Search clinical trials',
-        'Find FDA drug information',
-        'Research medical studies',
-      ],
+      examples: ['Search clinical trials', 'Find FDA drug information', 'Research medical studies'],
     },
     websiteUrl: 'https://valyu.ai',
   },
@@ -667,11 +656,7 @@ export const manualTools: ManualTool[] = [
     ],
     aiAgent: {
       useCase: 'Use to search and research patents',
-      examples: [
-        'Find existing patents',
-        'Research patent applications',
-        'Prior art search',
-      ],
+      examples: ['Find existing patents', 'Research patent applications', 'Prior art search'],
     },
     websiteUrl: 'https://valyu.ai',
   },
@@ -715,11 +700,7 @@ export const manualTools: ManualTool[] = [
     ],
     aiAgent: {
       useCase: 'Use to search economic indicators and statistics',
-      examples: [
-        'Find employment data',
-        'Search GDP statistics',
-        'Research economic indicators',
-      ],
+      examples: ['Find employment data', 'Search GDP statistics', 'Research economic indicators'],
     },
     websiteUrl: 'https://valyu.ai',
   },
@@ -728,7 +709,8 @@ export const manualTools: ManualTool[] = [
     category: 'search',
     frameworks: ['vercel-ai'],
     exportName: 'companyResearch',
-    description: 'Generate comprehensive company research reports with financial data, news, and analysis.',
+    description:
+      'Generate comprehensive company research reports with financial data, news, and analysis.',
     tags: ['search', 'research', 'company-analysis'],
     env: [
       {
@@ -751,11 +733,7 @@ export const manualTools: ManualTool[] = [
     },
     aiAgent: {
       useCase: 'Use to generate detailed company research and analysis',
-      examples: [
-        'Company financial analysis',
-        'Competitive research',
-        'Market position analysis',
-      ],
+      examples: ['Company financial analysis', 'Competitive research', 'Market position analysis'],
     },
     websiteUrl: 'https://valyu.ai',
   },
@@ -764,7 +742,8 @@ export const manualTools: ManualTool[] = [
     category: 'integration',
     frameworks: ['vercel-ai'],
     exportName: 'searchTpmjsToolsTool',
-    description: 'Search the TPMJS tool registry to find AI SDK tools by keyword, category, or description. Returns tool metadata for dynamic loading.',
+    description:
+      'Search the TPMJS tool registry to find AI SDK tools by keyword, category, or description. Returns tool metadata for dynamic loading.',
     parameters: [
       {
         name: 'query',
@@ -787,10 +766,12 @@ export const manualTools: ManualTool[] = [
     ],
     returns: {
       type: 'object',
-      description: 'Search results with tool metadata including packageName, exportName, version, importUrl',
+      description:
+        'Search results with tool metadata including packageName, exportName, version, importUrl',
     },
     aiAgent: {
-      useCase: "Use when you need a tool that isn't currently available. Search for tools by keyword or domain.",
+      useCase:
+        "Use when you need a tool that isn't currently available. Search for tools by keyword or domain.",
       examples: [
         'Search for "weather" when asked about weather',
         'Search for "wikipedia" when asked to search Wikipedia',
