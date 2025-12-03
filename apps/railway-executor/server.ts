@@ -75,20 +75,58 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       console.log(`✅ Cached: ${cacheKey}`);
     }
 
-    // Extract tool definition
-    // AI SDK v6 tools use jsonSchema() which wraps a plain JSON Schema object
-    // Extract the raw JSON Schema from toolModule.inputSchema.schema
+    // Extract tool definition - try multiple schema formats
+    let rawJsonSchema = null;
 
-    // Debug: Log the inputSchema structure
-    console.log(`🔍 InputSchema structure for ${cacheKey}:`, {
-      hasInputSchema: !!toolModule.inputSchema,
-      inputSchemaType: typeof toolModule.inputSchema,
-      hasSchema: !!toolModule.inputSchema?.schema,
-      hasParameters: !!toolModule.inputSchema?.parameters,
-      keys: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
-    });
+    if (toolModule.inputSchema) {
+      // Strategy 1: Try Zod v4 native JSON Schema export
+      if (typeof toolModule.inputSchema.toJSONSchema === 'function') {
+        console.log(`📋 Using Zod v4 toJSONSchema() for ${cacheKey}`);
+        try {
+          rawJsonSchema = toolModule.inputSchema.toJSONSchema();
+        } catch (error) {
+          console.warn(`⚠️  Zod toJSONSchema() failed for ${cacheKey}:`, error);
+        }
+      } else if (typeof toolModule.inputSchema.jsonSchema === 'function') {
+        console.log(`📋 Using Zod v4 jsonSchema() for ${cacheKey}`);
+        try {
+          rawJsonSchema = toolModule.inputSchema.jsonSchema();
+        } catch (error) {
+          console.warn(`⚠️  Zod jsonSchema() failed for ${cacheKey}:`, error);
+        }
+      }
 
-    const rawJsonSchema = toolModule.inputSchema?.schema ?? null;
+      // Strategy 2: Try AI SDK v6 jsonSchema() wrapper (has .schema property)
+      if (!rawJsonSchema && toolModule.inputSchema.schema) {
+        console.log(`📋 Using AI SDK jsonSchema.schema for ${cacheKey}`);
+        rawJsonSchema = toolModule.inputSchema.schema;
+      }
+    }
+
+    // If no schema found, fail with helpful error
+    if (!rawJsonSchema) {
+      console.error(`❌ No valid schema found for ${cacheKey}`, {
+        hasInputSchema: !!toolModule.inputSchema,
+        inputSchemaType: typeof toolModule.inputSchema,
+        hasToJSONSchema: typeof toolModule.inputSchema?.toJSONSchema === 'function',
+        hasJsonSchema: typeof toolModule.inputSchema?.jsonSchema === 'function',
+        hasSchema: !!toolModule.inputSchema?.schema,
+        keys: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
+      });
+      return Response.json(
+        {
+          success: false,
+          error: `Tool "${exportName}" has no valid inputSchema. Tools must use AI SDK jsonSchema() or Zod v4 with toJSONSchema().`,
+          debug: {
+            hasInputSchema: !!toolModule.inputSchema,
+            availableMethods: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log(`✅ Extracted schema for ${cacheKey}`);
 
     return Response.json({
       success: true,
