@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["deno"]
+
+[start]
+cmd = "deno run --allow-net --allow-env server.ts"
