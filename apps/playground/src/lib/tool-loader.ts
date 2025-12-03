@@ -1,6 +1,5 @@
 // Static imports for tools (required for Next.js/webpack)
 import { helloNameTool, helloWorldTool } from '@tpmjs/hello';
-import { crawlTool, scrapeTool, searchTool } from 'firecrawl-aisdk';
 
 /**
  * Tool registry mapping package names + export names to actual tool functions
@@ -10,11 +9,6 @@ const TOOL_REGISTRY: Record<string, Record<string, any>> = {
   '@tpmjs/hello': {
     helloWorldTool,
     helloNameTool,
-  },
-  'firecrawl-aisdk': {
-    scrapeTool,
-    crawlTool,
-    searchTool,
   },
 };
 
@@ -72,7 +66,7 @@ function isCoreTool(obj: unknown): obj is Record<string, any> {
  * Sanitize tool name to match OpenAI's requirements
  * Pattern: ^[a-zA-Z0-9_-]+$ (only letters, numbers, underscores, hyphens)
  */
-function sanitizeToolName(name: string): string {
+export function sanitizeToolName(name: string): string {
   return name
     .replace(/@/g, '') // Remove @ symbols
     .replace(/\//g, '_') // Replace / with _

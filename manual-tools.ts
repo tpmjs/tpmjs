@@ -759,4 +759,46 @@ export const manualTools: ManualTool[] = [
     },
     websiteUrl: 'https://valyu.ai',
   },
+  {
+    npmPackageName: '@tpmjs/search-registry',
+    category: 'integration',
+    frameworks: ['vercel-ai'],
+    exportName: 'searchTpmjsToolsTool',
+    description: 'Search the TPMJS tool registry to find AI SDK tools by keyword, category, or description. Returns tool metadata for dynamic loading.',
+    parameters: [
+      {
+        name: 'query',
+        type: 'string',
+        description: 'Search query (keywords, tool names, descriptions)',
+        required: true,
+      },
+      {
+        name: 'category',
+        type: 'string',
+        description: 'Filter by category (optional)',
+        required: false,
+      },
+      {
+        name: 'limit',
+        type: 'number',
+        description: 'Maximum results (1-20, default 10)',
+        required: false,
+      },
+    ],
+    returns: {
+      type: 'object',
+      description: 'Search results with tool metadata including packageName, exportName, version, importUrl',
+    },
+    aiAgent: {
+      useCase: "Use when you need a tool that isn't currently available. Search for tools by keyword or domain.",
+      examples: [
+        'Search for "weather" when asked about weather',
+        'Search for "wikipedia" when asked to search Wikipedia',
+        'Search for "database" when working with SQL',
+      ],
+    },
+    tags: ['search', 'tool-discovery', 'registry'],
+    websiteUrl: 'https://tpmjs.com',
+    docsUrl: 'https://tpmjs.com/spec',
+  },
 ];
