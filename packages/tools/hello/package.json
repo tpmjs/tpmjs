@@ -1,0 +1,27 @@
+{
+  "name": "@tpmjs/hello",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Example TPMJS tools - Hello World and Hello Name",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["tpmjs-tool", "ai-sdk", "hello", "example"],
+  "tpmjs": {
+    "category": "text-analysis",
+    "description": "Simple greeting tools - Hello World and personalized Hello Name greetings"
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "files": ["dist", "README.md"]
+}

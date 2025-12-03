@@ -1,0 +1,23 @@
+{
+  "name": "@tpmjs/tools",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Example TPMJS tools for AI SDK v6",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["tpmjs-tool", "ai-sdk", "example"],
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}
