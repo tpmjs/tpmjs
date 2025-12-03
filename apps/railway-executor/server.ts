@@ -3,6 +3,9 @@
  * Uses Deno's native HTTP import support
  */
 
+// Import zod-to-json-schema for Zod v3 support
+import { zodToJsonSchema } from 'https://esm.sh/zod-to-json-schema@3.25.0';
+
 // Cache for imported tool modules
 const moduleCache = new Map<string, any>();
 
@@ -101,6 +104,17 @@ async function loadAndDescribe(req: Request): Promise<Response> {
         console.log(`📋 Using AI SDK jsonSchema.schema for ${cacheKey}`);
         rawJsonSchema = toolModule.inputSchema.schema;
       }
+
+      // Strategy 3: Try Zod v3 schema (detect via _def property and convert)
+      if (!rawJsonSchema && toolModule.inputSchema._def) {
+        console.log(`📋 Detected Zod schema (v3), converting with zod-to-json-schema for ${cacheKey}`);
+        try {
+          rawJsonSchema = zodToJsonSchema(toolModule.inputSchema);
+          console.log(`✅ Successfully converted Zod schema for ${cacheKey}`);
+        } catch (error) {
+          console.warn(`⚠️  zod-to-json-schema conversion failed for ${cacheKey}:`, error);
+        }
+      }
     }
 
     // If no schema found, fail with helpful error
@@ -116,10 +130,11 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       return Response.json(
         {
           success: false,
-          error: `Tool "${exportName}" has no valid inputSchema. Tools must use AI SDK jsonSchema() or Zod v4 with toJSONSchema().`,
+          error: `Tool "${exportName}" has no valid inputSchema. Tools must use AI SDK jsonSchema(), Zod v4 toJSONSchema(), or Zod v3 schemas.`,
           debug: {
             hasInputSchema: !!toolModule.inputSchema,
             availableMethods: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
+            hasZodDef: !!toolModule.inputSchema?._def,
           },
         },
         { status: 400 }
