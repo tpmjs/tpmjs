@@ -3,36 +3,49 @@ import { helloNameTool, helloWorldTool } from '@tpmjs/hello';
 import { crawlTool, scrapeTool, searchTool } from 'firecrawl-aisdk';
 
 /**
- * Load a specific TPMJS tool by package name
+ * Tool registry mapping package names + export names to actual tool functions
+ * This is a static mapping required for Next.js/webpack bundling
+ */
+const TOOL_REGISTRY: Record<string, Record<string, any>> = {
+  '@tpmjs/hello': {
+    helloWorldTool,
+    helloNameTool,
+  },
+  'firecrawl-aisdk': {
+    scrapeTool,
+    crawlTool,
+    searchTool,
+  },
+};
+
+/**
+ * Load a specific TPMJS tool by package name and export name
+ * Uses static imports to work with Next.js/webpack bundling
  */
 // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
-export async function loadTpmjsTool(packageName: string): Promise<Record<string, any>> {
+export async function loadTpmjsTool(packageName: string, exportName: string): Promise<any | null> {
   try {
-    // Map package names to their tool functions
-    switch (packageName) {
-      case '@tpmjs/hello':
-        // Hello has multiple tools, return all of them
-        return {
-          helloWorld: helloWorldTool,
-          helloName: helloNameTool,
-        };
-
-      case 'firecrawl-aisdk':
-        // Firecrawl has multiple tools, return all of them
-        return {
-          scrapeTool,
-          crawlTool,
-          searchTool,
-        };
-
-      default:
-        throw new Error(`Unknown tool package: ${packageName}`);
+    // Look up the package in the registry
+    const packageTools = TOOL_REGISTRY[packageName];
+    if (!packageTools) {
+      console.warn(`Package not found in registry: ${packageName}`);
+      return null;
     }
+
+    // Look up the specific tool export
+    const tool = packageTools[exportName];
+    if (!tool) {
+      console.warn(
+        `Export '${exportName}' not found in package ${packageName}. Available exports:`,
+        Object.keys(packageTools)
+      );
+      return null;
+    }
+
+    return tool;
   } catch (error) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to load tool from package ${packageName}: ${error.message}`);
-    }
-    throw new Error(`Failed to load tool from package ${packageName}: Unknown error`);
+    console.error(`Failed to load tool ${packageName}/${exportName}:`, error);
+    return null;
   }
 }
 
@@ -56,37 +69,51 @@ function isCoreTool(obj: unknown): obj is Record<string, any> {
 }
 
 /**
+ * Sanitize tool name to match OpenAI's requirements
+ * Pattern: ^[a-zA-Z0-9_-]+$ (only letters, numbers, underscores, hyphens)
+ */
+function sanitizeToolName(name: string): string {
+  return name
+    .replace(/@/g, '') // Remove @ symbols
+    .replace(/\//g, '_') // Replace / with _
+    .replace(/[^a-zA-Z0-9_-]/g, '_'); // Replace any other invalid chars with _
+}
+
+/**
  * Load all installed TPMJS tools
- *
- * For now, this is a manual list. In the future, we can scan node_modules
- * for packages with the "tpmjs-tool" keyword.
+ * Returns a flat object with all tools keyed by sanitized packageName-exportName
  */
 // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
 export async function loadAllTools(): Promise<Record<string, any>> {
-  const installedTools = ['@tpmjs/hello', 'firecrawl-aisdk'];
-
   // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
   const tools: Record<string, any> = {};
 
-  for (const packageName of installedTools) {
-    try {
-      const tool = await loadTpmjsTool(packageName);
-
-      // If the tool returns an object with multiple tools (like firecrawl), spread them
-      if (tool && typeof tool === 'object' && !tool.description) {
-        Object.assign(tools, tool);
-      } else {
-        // Single tool - use a cleaned name (remove hyphens, camelCase)
-        const toolName = packageName
-          .replace(/-([a-z])/g, (_match, letter) => letter.toUpperCase())
-          .replace(/-/g, '');
-        tools[toolName] = tool;
-      }
-    } catch (error) {
-      console.error(`Failed to load tool ${packageName}:`, error);
-      // Continue loading other tools even if one fails
+  // Iterate through all registered packages
+  for (const [packageName, packageTools] of Object.entries(TOOL_REGISTRY)) {
+    for (const [exportName, tool] of Object.entries(packageTools)) {
+      // Create a unique, sanitized key for this tool
+      const toolKey = sanitizeToolName(`${packageName}-${exportName}`);
+      tools[toolKey] = tool;
     }
   }
 
   return tools;
+}
+
+/**
+ * Get list of all available package names
+ */
+export function getAvailablePackages(): string[] {
+  return Object.keys(TOOL_REGISTRY);
+}
+
+/**
+ * Get list of all export names for a given package
+ */
+export function getPackageExports(packageName: string): string[] {
+  const packageTools = TOOL_REGISTRY[packageName];
+  if (!packageTools) {
+    return [];
+  }
+  return Object.keys(packageTools);
 }
