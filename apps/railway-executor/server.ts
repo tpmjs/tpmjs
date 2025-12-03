@@ -78,6 +78,16 @@ async function loadAndDescribe(req: Request): Promise<Response> {
     // Extract tool definition
     // AI SDK v6 tools use jsonSchema() which wraps a plain JSON Schema object
     // Extract the raw JSON Schema from toolModule.inputSchema.schema
+
+    // Debug: Log the inputSchema structure
+    console.log(`🔍 InputSchema structure for ${cacheKey}:`, {
+      hasInputSchema: !!toolModule.inputSchema,
+      inputSchemaType: typeof toolModule.inputSchema,
+      hasSchema: !!toolModule.inputSchema?.schema,
+      hasParameters: !!toolModule.inputSchema?.parameters,
+      keys: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
+    });
+
     const rawJsonSchema = toolModule.inputSchema?.schema ?? null;
 
     return Response.json({
