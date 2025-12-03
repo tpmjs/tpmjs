@@ -76,15 +76,16 @@ async function loadAndDescribe(req: Request): Promise<Response> {
     }
 
     // Extract tool definition
-    // Note: We don't send inputSchema because Zod schemas can't be serialized over JSON
-    // The playground will use the actual tool's inputSchema when creating the wrapper
+    // AI SDK v6 tools use jsonSchema() which wraps a plain JSON Schema object
+    // Extract the raw JSON Schema from toolModule.inputSchema.schema
+    const rawJsonSchema = toolModule.inputSchema?.schema ?? null;
+
     return Response.json({
       success: true,
       tool: {
         exportName,
         description: toolModule.description,
-        // Store reference that inputSchema exists (for validation)
-        hasInputSchema: !!toolModule.inputSchema,
+        inputSchema: rawJsonSchema, // Plain JSON Schema - fully serializable
       },
     });
   } catch (error) {
