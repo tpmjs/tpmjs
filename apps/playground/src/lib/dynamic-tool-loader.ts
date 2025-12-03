@@ -1,3 +1,5 @@
+import { tool, jsonSchema } from 'ai';
+
 // Cache for tool wrappers (process-level)
 const moduleCache = new Map<string, any>();
 
@@ -66,13 +68,13 @@ export async function loadToolDynamically(
     console.log(`✅ Tool loaded from Railway: ${cacheKey}`);
     console.log(`📋 Description: ${data.tool.description}`);
 
-    // Create a tool wrapper that executes remotely
-    // Railway returns plain JSON Schema - wrap it in the AI SDK jsonSchema format
-    const tool = {
+    // Create a proper AI SDK tool wrapper that executes remotely
+    // Railway returns plain JSON Schema - wrap it with jsonSchema() for AI SDK
+    const toolWrapper = tool({
       description: data.tool.description,
       inputSchema: data.tool.inputSchema
-        ? { type: 'json_schema' as const, schema: data.tool.inputSchema }
-        : undefined,
+        ? jsonSchema(data.tool.inputSchema)
+        : jsonSchema({ type: 'object', properties: {}, additionalProperties: false }),
       // biome-ignore lint/suspicious/noExplicitAny: Tool params are dynamic
       execute: async (params: any) => {
         console.log(`🚀 Executing ${packageName}/${exportName} remotely with params:`, params);
@@ -99,13 +101,13 @@ export async function loadToolDynamically(
         console.log(`✅ Tool executed successfully in ${result.executionTimeMs}ms`);
         return result.output;
       },
-    };
+    });
 
     // Cache the wrapper
-    moduleCache.set(cacheKey, tool);
+    moduleCache.set(cacheKey, toolWrapper);
     console.log(`✅ Cached tool wrapper: ${cacheKey}`);
 
-    return tool;
+    return toolWrapper;
   } catch (error) {
     console.error(`❌ Failed to load ${packageName}#${exportName}:`, error);
     console.error(`   Stack:`, error instanceof Error ? error.stack : 'No stack trace');
