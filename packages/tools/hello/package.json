@@ -1,7 +1,6 @@
 {
   "name": "@tpmjs/hello",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.0.2",
   "description": "Example TPMJS tools - Hello World and Hello Name",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,17 +10,68 @@
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs-tool", "ai-sdk", "hello", "example"],
+  "keywords": [
+    "tpmjs-tool",
+    "ai-sdk",
+    "hello",
+    "example"
+  ],
   "tpmjs": {
     "category": "text-analysis",
-    "description": "Simple greeting tools - Hello World and personalized Hello Name greetings"
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "exportName": "helloWorldTool",
+        "description": "Returns a simple 'Hello, World!' greeting with optional timestamp and customizable message",
+        "parameters": [
+          {
+            "name": "includeTimestamp",
+            "type": "boolean",
+            "description": "Whether to include the current timestamp in the greeting",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "A greeting message, optionally with timestamp"
+        }
+      },
+      {
+        "exportName": "helloNameTool",
+        "description": "Returns a personalized greeting with the provided name",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "The name to greet",
+            "required": true
+          },
+          {
+            "name": "formal",
+            "type": "boolean",
+            "description": "Whether to use formal greeting (Mr./Ms.)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "string",
+          "description": "A personalized greeting message"
+        }
+      }
+    ]
   },
   "dependencies": {
     "ai": "6.0.0-beta.124"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
-  "files": ["dist", "README.md"]
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }

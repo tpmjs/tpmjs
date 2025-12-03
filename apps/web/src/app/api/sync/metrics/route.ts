@@ -9,7 +9,7 @@ export const maxDuration = 300; // 5 minutes max for cron jobs
 
 /**
  * POST /api/sync/metrics
- * Update download stats and quality scores for all tools
+ * Update download stats and quality scores for all packages and tools
  *
  * This endpoint is called by Vercel Cron (every hour)
  * Requires Authorization: Bearer <CRON_SECRET>
@@ -31,43 +31,51 @@ export async function POST(request: NextRequest) {
   const errorMessages: string[] = [];
 
   try {
-    // Get all tools from database
-    const tools = await prisma.tool.findMany({
-      select: {
-        id: true,
-        npmPackageName: true,
-        tier: true,
-        npmDownloadsLastMonth: true,
-        githubStars: true,
+    // Get all packages with their tools from database
+    const packages = await prisma.package.findMany({
+      include: {
+        tools: true,
       },
     });
 
-    // Process each tool
-    for (const tool of tools) {
+    // Process each package
+    for (const pkg of packages) {
       try {
-        // Fetch download stats from NPM
-        const downloads = await fetchDownloadStats(tool.npmPackageName);
+        // Fetch download stats from NPM (package-level metric)
+        const downloads = await fetchDownloadStats(pkg.npmPackageName);
 
-        // Calculate quality score (0.00 to 1.00)
-        const qualityScore = calculateQualityScore({
-          tier: tool.tier,
-          downloads,
-          githubStars: tool.githubStars || 0,
-        });
-
-        // Update tool metrics
-        await prisma.tool.update({
-          where: { id: tool.id },
+        // Update package metrics
+        await prisma.package.update({
+          where: { id: pkg.id },
           data: {
             npmDownloadsLastMonth: downloads,
-            qualityScore,
+            // githubStars would be updated here if we had GitHub API integration
           },
         });
+
+        // Calculate and update quality score for each tool in this package
+        for (const tool of pkg.tools) {
+          const qualityScore = calculateQualityScore({
+            tier: pkg.tier, // Tier is at package level
+            downloads, // Package downloads
+            githubStars: pkg.githubStars || 0, // Package stars
+            hasParameters: !!tool.parameters,
+            hasReturns: !!tool.returns,
+            hasAiAgent: !!tool.aiAgent,
+          });
+
+          await prisma.tool.update({
+            where: { id: tool.id },
+            data: {
+              qualityScore,
+            },
+          });
+        }
 
         processed++;
       } catch (error) {
         errors++;
-        const errorMsg = `Failed to process ${tool.npmPackageName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
+        const errorMsg = `Failed to process ${pkg.npmPackageName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
         errorMessages.push(errorMsg);
         console.error(errorMsg);
       }
@@ -80,13 +88,15 @@ export async function POST(request: NextRequest) {
         source: 'metrics',
         checkpoint: {
           lastRun: new Date().toISOString(),
-          totalTools: tools.length,
+          totalPackages: packages.length,
+          totalTools: packages.reduce((sum, pkg) => sum + pkg.tools.length, 0),
         },
       },
       update: {
         checkpoint: {
           lastRun: new Date().toISOString(),
-          totalTools: tools.length,
+          totalPackages: packages.length,
+          totalTools: packages.reduce((sum, pkg) => sum + pkg.tools.length, 0),
         },
       },
     });
@@ -102,10 +112,11 @@ export async function POST(request: NextRequest) {
         message:
           errors > 0
             ? `Processed with errors: ${errorMessages.slice(0, 3).join('; ')}`
-            : `Successfully updated metrics for ${processed} tools`,
+            : `Successfully updated metrics for ${processed} packages`,
         metadata: {
           durationMs: Date.now() - startTime,
-          totalTools: tools.length,
+          totalPackages: packages.length,
+          totalTools: packages.reduce((sum, pkg) => sum + pkg.tools.length, 0),
         },
       },
     });
@@ -116,7 +127,8 @@ export async function POST(request: NextRequest) {
         processed,
         skipped,
         errors,
-        totalTools: tools.length,
+        totalPackages: packages.length,
+        totalTools: packages.reduce((sum, pkg) => sum + pkg.tools.length, 0),
         durationMs: Date.now() - startTime,
       },
     });
@@ -152,25 +164,40 @@ export async function POST(request: NextRequest) {
 /**
  * Calculate quality score based on multiple factors
  * Returns a value between 0.00 and 1.00
+ *
+ * Score components:
+ * - Tier (0.4 minimal, 0.6 rich)
+ * - Downloads (logarithmic, max 0.2)
+ * - GitHub stars (logarithmic, max 0.1)
+ * - Tool metadata richness (0.1 for each: parameters, returns, aiAgent)
  */
 function calculateQualityScore(params: {
   tier: string;
   downloads: number;
   githubStars: number;
+  hasParameters: boolean;
+  hasReturns: boolean;
+  hasAiAgent: boolean;
 }): number {
-  const { tier, downloads, githubStars } = params;
+  const { tier, downloads, githubStars, hasParameters, hasReturns, hasAiAgent } = params;
 
   // Base score from tier
   const tierScore = tier === 'rich' ? 0.6 : 0.4;
 
-  // Downloads score (logarithmic scale, max 0.3)
-  const downloadsScore = Math.min(0.3, Math.log10(downloads + 1) / 10);
+  // Downloads score (logarithmic scale, max 0.2)
+  const downloadsScore = Math.min(0.2, Math.log10(downloads + 1) / 15);
 
   // GitHub stars score (logarithmic scale, max 0.1)
   const starsScore = Math.min(0.1, Math.log10(githubStars + 1) / 10);
 
+  // Tool metadata richness score (max 0.1)
+  let richnessScore = 0;
+  if (hasParameters) richnessScore += 0.04;
+  if (hasReturns) richnessScore += 0.03;
+  if (hasAiAgent) richnessScore += 0.03;
+
   // Total score (capped at 1.00)
-  const totalScore = Math.min(1.0, tierScore + downloadsScore + starsScore);
+  const totalScore = Math.min(1.0, tierScore + downloadsScore + starsScore + richnessScore);
 
   // Round to 2 decimal places
   return Math.round(totalScore * 100) / 100;

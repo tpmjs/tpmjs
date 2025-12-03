@@ -6,14 +6,14 @@
  */
 
 import type { TokenBreakdown as TokenData } from '@/lib/ai-agent/tool-executor-agent';
-import type { Tool } from '@tpmjs/db';
+import type { Package, Tool } from '@tpmjs/db';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { TokenBreakdown } from './TokenBreakdown';
 
 interface ToolPlaygroundProps {
-  tool: Tool;
+  tool: Tool & { package: Package };
 }
 
 type Tab = 'input' | 'output' | 'logs' | 'tokens';
@@ -47,7 +47,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
 
     try {
       const response = await fetch(
-        `/api/tools/execute/${encodeURIComponent(tool.npmPackageName)}`,
+        `/api/tools/execute/${encodeURIComponent(tool.package.npmPackageName)}/${encodeURIComponent(tool.exportName)}`,
         {
           method: 'POST',
           headers: {
@@ -194,7 +194,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
           <div>
             <h2 className="text-xl font-semibold text-foreground">Interactive Playground</h2>
             <p className="text-sm text-foreground-secondary mt-1">
-              Test {tool.npmPackageName} with AI-powered execution
+              Test {tool.package.npmPackageName} ({tool.exportName}) with AI-powered execution
             </p>
           </div>
           {rateLimitInfo && (

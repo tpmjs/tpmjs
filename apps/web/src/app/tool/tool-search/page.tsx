@@ -23,15 +23,17 @@ import { AppHeader } from '~/components/AppHeader';
 
 interface Tool {
   id: string;
-  npmPackageName: string;
-  npmVersion: string;
+  exportName: string;
   description: string;
-  category: string;
-  tags: string[];
-  npmRepository: { url: string; type: string } | null;
   qualityScore: string;
-  isOfficial: boolean;
-  npmDownloadsLastMonth: number;
+  package: {
+    npmPackageName: string;
+    npmVersion: string;
+    category: string;
+    npmRepository: { url: string; type: string } | null;
+    isOfficial: boolean;
+    npmDownloadsLastMonth: number;
+  };
 }
 
 /**
@@ -43,12 +45,10 @@ export default function ToolSearchPage(): React.ReactElement {
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   // Fetch tools from API
   useEffect(() => {
@@ -77,21 +77,16 @@ export default function ToolSearchPage(): React.ReactElement {
           setTools(fetchedTools);
           setError(null);
 
-          // Extract unique categories and tags from all tools
+          // Extract unique categories from all tools
           const categories = new Set<string>();
-          const tags = new Set<string>();
 
           for (const tool of fetchedTools) {
-            if (tool.category) {
-              categories.add(tool.category);
-            }
-            for (const tag of tool.tags) {
-              tags.add(tag);
+            if (tool.package.category) {
+              categories.add(tool.package.category);
             }
           }
 
           setAvailableCategories(Array.from(categories).sort());
-          setAvailableTags(Array.from(tags).sort());
         } else {
           setError(data.error || 'Failed to fetch tools');
         }
@@ -104,12 +99,6 @@ export default function ToolSearchPage(): React.ReactElement {
 
     fetchTools();
   }, [searchQuery, activeTab, categoryFilter]);
-
-  // Filter tools by selected tags (client-side)
-  const displayedTools =
-    selectedTags.length > 0
-      ? tools.filter((tool) => selectedTags.some((tag) => tool.tags.includes(tag)))
-      : tools;
 
   return (
     <div className="min-h-screen bg-background">
@@ -154,43 +143,18 @@ export default function ToolSearchPage(): React.ReactElement {
             </div>
 
             {/* Clear filters button */}
-            {(categoryFilter !== 'all' || selectedTags.length > 0) && (
+            {categoryFilter !== 'all' && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
                   setCategoryFilter('all');
-                  setSelectedTags([]);
                 }}
               >
                 Clear Filters
               </Button>
             )}
           </div>
-
-          {/* Popular tags */}
-          {availableTags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              <span className="text-sm font-medium text-foreground-secondary mr-2">
-                Filter by tag:
-              </span>
-              {availableTags.slice(0, 10).map((tag) => (
-                <Badge
-                  key={tag}
-                  variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                  size="sm"
-                  className="cursor-pointer hover:bg-foreground/10 transition-colors"
-                  onClick={() => {
-                    setSelectedTags((prev) =>
-                      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-                    );
-                  }}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Tabs */}
@@ -200,7 +164,7 @@ export default function ToolSearchPage(): React.ReactElement {
             {
               id: 'featured',
               label: 'Official',
-              count: tools.filter((t) => t.isOfficial).length,
+              count: tools.filter((t) => t.package.isOfficial).length,
             },
           ]}
           activeTab={activeTab}
@@ -220,15 +184,22 @@ export default function ToolSearchPage(): React.ReactElement {
         {/* Tool grid */}
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayedTools.length > 0 ? (
-              displayedTools.map((tool) => (
+            {tools.length > 0 ? (
+              tools.map((tool) => (
                 <Card key={tool.id} className="flex flex-col">
                   <CardHeader>
                     <div className="flex items-start justify-between gap-2">
-                      <CardTitle>{tool.npmPackageName}</CardTitle>
-                      {tool.npmRepository && (
+                      <div className="flex-1">
+                        <CardTitle>
+                          {tool.exportName !== 'default' ? tool.exportName : tool.package.npmPackageName}
+                        </CardTitle>
+                        <div className="text-sm text-foreground-secondary mt-1">
+                          {tool.package.npmPackageName}
+                        </div>
+                      </div>
+                      {tool.package.npmRepository && (
                         <a
-                          href={tool.npmRepository.url.replace('git+', '').replace('.git', '')}
+                          href={tool.package.npmRepository.url.replace('git+', '').replace('.git', '')}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-foreground-secondary hover:text-foreground transition-colors"
@@ -244,33 +215,22 @@ export default function ToolSearchPage(): React.ReactElement {
                     {/* Category badge and version */}
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge variant="secondary" size="sm">
-                        {tool.category}
+                        {tool.package.category}
                       </Badge>
-                      <span className="text-xs text-foreground-tertiary">v{tool.npmVersion}</span>
-                      {tool.isOfficial && (
+                      <span className="text-xs text-foreground-tertiary">v{tool.package.npmVersion}</span>
+                      {tool.package.isOfficial && (
                         <Badge variant="default" size="sm">
                           Official
                         </Badge>
                       )}
                     </div>
 
-                    {/* Tags */}
-                    {tool.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {tool.tags.slice(0, 5).map((tag) => (
-                          <Badge key={tag} variant="outline" size="sm">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-
                     {/* Quality score and downloads */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-foreground-secondary">Quality Score</span>
                         <span className="text-foreground-tertiary">
-                          {tool.npmDownloadsLastMonth.toLocaleString()} downloads/mo
+                          {tool.package.npmDownloadsLastMonth.toLocaleString()} downloads/mo
                         </span>
                       </div>
                       <ProgressBar
@@ -289,7 +249,7 @@ export default function ToolSearchPage(): React.ReactElement {
 
                     {/* Install command */}
                     <CodeBlock
-                      code={`npm install ${tool.npmPackageName}`}
+                      code={`npm install ${tool.package.npmPackageName}`}
                       language="bash"
                       size="sm"
                       showCopy={true}
@@ -297,7 +257,7 @@ export default function ToolSearchPage(): React.ReactElement {
                   </CardContent>
 
                   <CardFooter>
-                    <Link href={`/tool/${tool.npmPackageName}`}>
+                    <Link href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}>
                       <Button variant="outline" size="sm" className="w-full">
                         View Details
                       </Button>

@@ -163,7 +163,13 @@ export default function SpecPage(): React.ReactElement {
                       code={`{
   "tpmjs": {
     "category": "text-analysis",
-    "description": "Analyzes sentiment in text and returns positive/negative/neutral classification"
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "sentimentAnalysisTool",
+        "description": "Analyzes sentiment in text and returns positive/negative/neutral classification"
+      }
+    ]
   }
 }`}
                     />
@@ -237,26 +243,32 @@ export default function SpecPage(): React.ReactElement {
                       code={`{
   "tpmjs": {
     "category": "text-analysis",
-    "description": "Analyzes sentiment in text",
-    "parameters": [
+    "frameworks": ["vercel-ai"],
+    "tools": [
       {
-        "name": "text",
-        "type": "string",
-        "description": "The text to analyze",
-        "required": true
-      },
-      {
-        "name": "language",
-        "type": "string",
-        "description": "Language code (e.g., 'en', 'es')",
-        "required": false,
-        "default": "en"
+        "exportName": "sentimentAnalysisTool",
+        "description": "Analyzes sentiment in text",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to analyze",
+            "required": true
+          },
+          {
+            "name": "language",
+            "type": "string",
+            "description": "Language code (e.g., 'en', 'es')",
+            "required": false,
+            "default": "en"
+          }
+        ],
+        "returns": {
+          "type": "SentimentResult",
+          "description": "Object with score (-1 to 1) and label (positive/negative/neutral)"
+        }
       }
-    ],
-    "returns": {
-      "type": "SentimentResult",
-      "description": "Object with score (-1 to 1) and label (positive/negative/neutral)"
-    }
+    ]
   }
 }`}
                     />
@@ -361,9 +373,7 @@ export default function SpecPage(): React.ReactElement {
                       code={`{
   "tpmjs": {
     "category": "text-analysis",
-    "description": "Advanced sentiment analysis with emotion detection",
-    "parameters": [...],
-    "returns": {...},
+    "frameworks": ["vercel-ai", "langchain"],
     "env": [
       {
         "name": "SENTIMENT_API_KEY",
@@ -371,15 +381,22 @@ export default function SpecPage(): React.ReactElement {
         "required": true
       }
     ],
-    "frameworks": ["vercel-ai", "langchain"],
-    "aiAgent": {
-      "useCase": "Use when users need to analyze sentiment or detect emotions in text",
-      "limitations": "English and Spanish only. Max 10,000 characters per request.",
-      "examples": [
-        "Analyze customer review sentiment",
-        "Detect emotions in user feedback"
-      ]
-    }
+    "tools": [
+      {
+        "exportName": "sentimentAnalysisTool",
+        "description": "Advanced sentiment analysis with emotion detection",
+        "parameters": [...],
+        "returns": {...},
+        "aiAgent": {
+          "useCase": "Use when users need to analyze sentiment or detect emotions in text",
+          "limitations": "English and Spanish only. Max 10,000 characters per request.",
+          "examples": [
+            "Analyze customer review sentiment",
+            "Detect emotions in user feedback"
+          ]
+        }
+      }
+    ]
   }
 }`}
                     />

@@ -20,24 +20,33 @@ async function getHomePageData() {
 
       // Top 6 featured tools by quality score
       prisma.tool.findMany({
-        orderBy: [{ qualityScore: 'desc' }, { npmDownloadsLastMonth: 'desc' }],
+        orderBy: [
+          { qualityScore: 'desc' },
+          { package: { npmDownloadsLastMonth: 'desc' } },
+        ],
         take: 6,
         select: {
           id: true,
-          npmPackageName: true,
+          exportName: true,
           description: true,
-          category: true,
-          tags: true,
           qualityScore: true,
-          npmDownloadsLastMonth: true,
-          isOfficial: true,
+          package: {
+            select: {
+              npmPackageName: true,
+              category: true,
+              npmDownloadsLastMonth: true,
+              isOfficial: true,
+            },
+          },
         },
       }),
 
-      // Category distribution for stats
-      prisma.tool.groupBy({
+      // Category distribution for stats (group by package category)
+      prisma.package.groupBy({
         by: ['category'],
-        _count: true,
+        _count: {
+          _all: true,
+        },
       }),
     ]);
 
@@ -70,7 +79,7 @@ async function getHomePageData() {
       featuredTools,
       categories: categoryStats.slice(0, 5).map((c) => ({
         name: c.category,
-        count: c._count,
+        count: c._count._all,
       })),
     };
   } catch (error) {
@@ -113,13 +122,20 @@ export default async function HomePage(): Promise<React.ReactElement> {
             {data.featuredTools.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                 {data.featuredTools.map((tool) => (
-                  <Link key={tool.id} href={`/tool/${tool.npmPackageName}`} className="group">
+                  <Link
+                    key={tool.id}
+                    href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}
+                    className="group"
+                  >
                     <div className="p-6 border border-border rounded-lg bg-surface hover:border-foreground transition-colors h-full flex flex-col">
                       <div className="flex items-start justify-between mb-3">
                         <h3 className="text-lg font-semibold text-foreground group-hover:text-brutalist-accent transition-colors">
-                          {tool.npmPackageName}
+                          {tool.package.npmPackageName}
+                          <span className="text-xs text-foreground-tertiary ml-2">
+                            ({tool.exportName})
+                          </span>
                         </h3>
-                        {tool.isOfficial && (
+                        {tool.package.isOfficial && (
                           <Badge variant="default" size="sm">
                             Official
                           </Badge>
@@ -132,13 +148,8 @@ export default async function HomePage(): Promise<React.ReactElement> {
 
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge variant="outline" size="sm">
-                          {tool.category}
+                          {tool.package.category}
                         </Badge>
-                        {tool.tags.slice(0, 2).map((tag) => (
-                          <Badge key={tag} variant="secondary" size="sm">
-                            {tag}
-                          </Badge>
-                        ))}
                       </div>
 
                       <div className="mt-4 pt-4 border-t border-border flex items-center justify-between text-xs text-foreground-tertiary">
@@ -147,7 +158,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
                           {tool.qualityScore ? Number(tool.qualityScore).toFixed(2) : 'N/A'}
                         </span>
                         <span>
-                          {tool.npmDownloadsLastMonth?.toLocaleString() || '0'} downloads/mo
+                          {tool.package.npmDownloadsLastMonth?.toLocaleString() || '0'} downloads/mo
                         </span>
                       </div>
                     </div>

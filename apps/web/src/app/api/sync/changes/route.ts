@@ -66,73 +66,118 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Validate tpmjs field
+        // Validate tpmjs field (supports both new multi-tool and legacy formats)
         const validation = validateTpmjsField(pkg.tpmjs);
-        if (!validation.valid || !validation.data) {
+        if (!validation.valid || !validation.packageData || !validation.tools) {
           skipped++;
           continue;
+        }
+
+        // Log auto-migration from legacy format
+        if (validation.wasLegacyFormat) {
+          console.log(`Auto-migrated legacy package: ${pkg.name}`);
         }
 
         // Extract repository URL and GitHub stars
         const githubStars: number | null = null;
 
-        // Cast to TpmjsRich to access optional fields (they'll be undefined if not present)
-        const tpmjsData = validation.data as {
-          category: string;
-          description: string;
-          example: string;
-          parameters?: unknown;
-          returns?: unknown;
-          authentication?: unknown;
-          pricing?: unknown;
-          frameworks?: string[];
-          links?: unknown;
-          tags?: string[];
-          status?: string;
-          aiAgent?: unknown;
-        };
-
-        // Prepare data for upsert
-        const toolData = {
-          npmVersion: pkg.version,
-          npmPublishedAt: pkg.publishedAt ? new Date(pkg.publishedAt) : new Date(),
-          npmDescription: pkg.description ?? undefined,
-          npmRepository: pkg.repository ?? undefined,
-          npmHomepage: pkg.homepage ?? undefined,
-          npmLicense: pkg.license ?? undefined,
-          npmKeywords: pkg.topLevelKeywords || pkg.keywords || [],
-          npmReadme: pkg.readme ?? undefined,
-          npmAuthor: pkg.author ?? undefined,
-          npmMaintainers: pkg.maintainers ?? undefined,
-          category: tpmjsData.category,
-          description: tpmjsData.description,
-          example: tpmjsData.example,
-          parameters: tpmjsData.parameters ?? undefined,
-          returns: tpmjsData.returns ?? undefined,
-          authentication: tpmjsData.authentication ?? undefined,
-          pricing: tpmjsData.pricing ?? undefined,
-          frameworks: tpmjsData.frameworks || [],
-          links: tpmjsData.links ?? undefined,
-          tags: tpmjsData.tags || [],
-          status: tpmjsData.status ?? undefined,
-          aiAgent: tpmjsData.aiAgent ?? undefined,
-          isOfficial: pkg.keywords?.includes('tpmjs-tool') || false,
-          tier: validation.tier || 'minimal',
-        };
-
-        // Upsert tool to database
-        await prisma.tool.upsert({
+        // Upsert Package record
+        const packageRecord = await prisma.package.upsert({
           where: { npmPackageName: pkg.name },
           create: {
             npmPackageName: pkg.name,
-            ...toolData,
+            npmVersion: pkg.version,
+            npmPublishedAt: pkg.publishedAt ? new Date(pkg.publishedAt) : new Date(),
+            npmDescription: pkg.description ?? undefined,
+            npmRepository: pkg.repository ?? undefined,
+            npmHomepage: pkg.homepage ?? undefined,
+            npmLicense: pkg.license ?? undefined,
+            npmKeywords: pkg.topLevelKeywords || pkg.keywords || [],
+            npmReadme: pkg.readme ?? undefined,
+            npmAuthor: pkg.author ?? undefined,
+            npmMaintainers: pkg.maintainers ?? undefined,
+            category: validation.packageData.category,
+            env: validation.packageData.env ?? undefined,
+            frameworks: validation.packageData.frameworks || [],
+            tier: validation.tier || 'minimal',
             discoveryMethod: 'changes-feed',
+            isOfficial: pkg.keywords?.includes('tpmjs-tool') || false,
             npmDownloadsLastMonth: 0, // Will be updated by metrics sync
             githubStars: githubStars,
-            qualityScore: null, // Will be calculated by metrics sync
           },
-          update: toolData,
+          update: {
+            npmVersion: pkg.version,
+            npmPublishedAt: pkg.publishedAt ? new Date(pkg.publishedAt) : new Date(),
+            npmDescription: pkg.description ?? undefined,
+            npmRepository: pkg.repository ?? undefined,
+            npmHomepage: pkg.homepage ?? undefined,
+            npmLicense: pkg.license ?? undefined,
+            npmKeywords: pkg.topLevelKeywords || pkg.keywords || [],
+            npmReadme: pkg.readme ?? undefined,
+            npmAuthor: pkg.author ?? undefined,
+            npmMaintainers: pkg.maintainers ?? undefined,
+            category: validation.packageData.category,
+            env: validation.packageData.env ?? undefined,
+            frameworks: validation.packageData.frameworks || [],
+            tier: validation.tier || 'minimal',
+            isOfficial: pkg.keywords?.includes('tpmjs-tool') || false,
+          },
         });
+
+        // Get existing tools for this package
+        const existingTools = await prisma.tool.findMany({
+          where: { packageId: packageRecord.id },
+        });
+
+        // Upsert each tool in the tools array
+        for (const toolDef of validation.tools) {
+          await prisma.tool.upsert({
+            where: {
+              packageId_exportName: {
+                packageId: packageRecord.id,
+                exportName: toolDef.exportName,
+              },
+            },
+            create: {
+              packageId: packageRecord.id,
+              exportName: toolDef.exportName,
+              description: toolDef.description,
+              // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
+              parameters: toolDef.parameters ? (toolDef.parameters as any) : undefined,
+              // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
+              returns: toolDef.returns ? (toolDef.returns as any) : undefined,
+              // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
+              aiAgent: toolDef.aiAgent ? (toolDef.aiAgent as any) : undefined,
+              qualityScore: null, // Will be calculated by metrics sync
+            },
+            update: {
+              description: toolDef.description,
+              // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
+              parameters: toolDef.parameters ? (toolDef.parameters as any) : undefined,
+              // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
+              returns: toolDef.returns ? (toolDef.returns as any) : undefined,
+              // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
+              aiAgent: toolDef.aiAgent ? (toolDef.aiAgent as any) : undefined,
+            },
+          });
+        }
+
+        // Delete orphaned tools (tools removed from package.json)
+        const orphanedTools = existingTools.filter(
+          (existingTool) =>
+            !validation.tools?.some((toolDef) => toolDef.exportName === existingTool.exportName)
+        );
+
+        if (orphanedTools.length > 0) {
+          await prisma.tool.deleteMany({
+            where: {
+              id: { in: orphanedTools.map((t) => t.id) },
+            },
+          });
+          console.log(
+            `Deleted ${orphanedTools.length} orphaned tools from package: ${pkg.name}`
+          );
+        }
 
         processed++;
       } catch (error) {

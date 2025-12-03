@@ -10,10 +10,10 @@ export const maxDuration = 60;
  * Search and list tools with filtering, sorting, and pagination
  *
  * Query params:
- * - q: Search query (searches name, description, tags)
+ * - q: Search query (searches package name, tool description)
  * - category: Filter by category
  * - official: Filter by official status (true/false)
- * - limit: Results per page (default: 20, max: 100)
+ * - limit: Results per page (default: 20, max: 50)
  * - offset: Pagination offset (default: 0)
  */
 export async function GET(request: NextRequest) {
@@ -27,44 +27,52 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
 
-    // Validate and set defaults (reduced max from 100 to 50 for faster queries)
+    // Validate and set defaults
     const limit = Math.min(
       Number.parseInt(limitParam || '20', 10),
-      50 // Reduced from 100 for better performance
+      50 // Max 50 for better performance
     );
     const offset = Math.max(Number.parseInt(offsetParam || '0', 10), 0);
 
-    // Build where clause
+    // Build where clause for Tool table
     const where: Prisma.ToolWhereInput = {};
 
-    // Search filter (case-insensitive partial match)
+    // Build package filter separately
+    const packageFilter: Prisma.PackageWhereInput = {};
+
+    // Category filter (category is at package level)
+    if (category) {
+      packageFilter.category = category;
+    }
+
+    // Official filter (isOfficial is at package level)
+    if (officialParam !== null) {
+      packageFilter.isOfficial = officialParam === 'true';
+    }
+
+    // Search filter (searches tool description and package name)
     if (query) {
       where.OR = [
-        { npmPackageName: { contains: query, mode: 'insensitive' } },
         { description: { contains: query, mode: 'insensitive' } },
-        {
-          tags: {
-            hasSome: [query],
-          },
-        },
+        { package: { npmPackageName: { contains: query, mode: 'insensitive' }, ...packageFilter } },
       ];
+    } else if (Object.keys(packageFilter).length > 0) {
+      // Apply package filter if no search query
+      where.package = packageFilter;
     }
 
-    // Category filter
-    if (category) {
-      where.category = category;
-    }
-
-    // Official filter
-    if (officialParam !== null) {
-      where.isOfficial = officialParam === 'true';
-    }
-
-    // Execute queries - run count separately only if needed for pagination
-    // For first page, we can skip count if we don't need total pages
+    // Execute query - fetch tools with package relation
+    // We fetch limit+1 to check if there are more results (avoid expensive count)
     const tools = await prisma.tool.findMany({
       where,
-      orderBy: [{ qualityScore: 'desc' }, { npmDownloadsLastMonth: 'desc' }, { createdAt: 'desc' }],
+      include: {
+        package: true, // Include package data for each tool
+      },
+      orderBy: [
+        { qualityScore: 'desc' }, // Tool quality score
+        { package: { npmDownloadsLastMonth: 'desc' } }, // Package downloads
+        { createdAt: 'desc' }, // Tool creation time
+      ],
       take: limit + 1, // Fetch one extra to check if there are more
       skip: offset,
     });
@@ -81,7 +89,6 @@ export async function GET(request: NextRequest) {
         offset,
         hasMore,
         // Note: total count omitted for performance (can be expensive)
-        // Only return count if explicitly requested
       },
     });
   } catch (error) {

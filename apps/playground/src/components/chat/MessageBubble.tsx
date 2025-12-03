@@ -2,6 +2,7 @@
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Card, CardContent } from '@tpmjs/ui/Card/Card';
+import { Streamdown } from 'streamdown';
 
 interface MessagePart {
   type: string; // Can be 'text', 'tool-{toolName}', 'step-start', etc.
@@ -23,9 +24,13 @@ interface Message {
 
 interface MessageBubbleProps {
   message: Message;
+  isStreaming?: boolean;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps): React.ReactElement {
+export function MessageBubble({
+  message,
+  isStreaming = false,
+}: MessageBubbleProps): React.ReactElement {
   const isUser = message.role === 'user';
 
   // Debug: Log message structure
@@ -59,11 +64,13 @@ export function MessageBubble({ message }: MessageBubbleProps): React.ReactEleme
                   return null;
                 }
 
-                // Render text parts
+                // Render text parts with markdown support
                 if (part.type === 'text') {
                   return (
-                    <div key={`text-${message.id}-${idx}`} className="whitespace-pre-wrap text-sm">
-                      {part.text}
+                    <div key={`text-${message.id}-${idx}`} className="text-sm">
+                      <Streamdown isAnimating={isStreaming && !isUser}>
+                        {part.text || ''}
+                      </Streamdown>
                     </div>
                   );
                 }
@@ -116,7 +123,11 @@ export function MessageBubble({ message }: MessageBubbleProps): React.ReactEleme
             </div>
           ) : (
             // Fallback to content if no parts
-            <div className="whitespace-pre-wrap text-sm">{message.content || '...'}</div>
+            <div className="text-sm">
+              <Streamdown isAnimating={isStreaming && !isUser}>
+                {message.content || '...'}
+              </Streamdown>
+            </div>
           )}
         </CardContent>
       </Card>

@@ -17,9 +17,13 @@ interface Message {
 
 interface ChatMessagesProps {
   messages: Message[];
+  isStreaming?: boolean;
 }
 
-export function ChatMessages({ messages }: ChatMessagesProps): React.ReactElement {
+export function ChatMessages({
+  messages,
+  isStreaming = false,
+}: ChatMessagesProps): React.ReactElement {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
@@ -41,9 +45,17 @@ export function ChatMessages({ messages }: ChatMessagesProps): React.ReactElemen
 
   return (
     <div className="flex-1 space-y-4 overflow-y-auto p-4">
-      {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
-      ))}
+      {messages.map((message, idx) => {
+        // Only animate the last message if it's streaming
+        const isLastMessage = idx === messages.length - 1;
+        return (
+          <MessageBubble
+            key={message.id}
+            message={message}
+            isStreaming={isStreaming && isLastMessage}
+          />
+        );
+      })}
       <div ref={messagesEndRef} />
     </div>
   );

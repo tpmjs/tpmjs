@@ -1,0 +1,97 @@
+name: Sync Manual Tools
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+  # Run on pushes to main that modify manual-tools.ts
+  push:
+    branches:
+      - main
+    paths:
+      - 'manual-tools.ts'
+      - 'sync-manual-tools.ts'
+
+jobs:
+  sync-manual:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm --filter=@tpmjs/db db:generate
+
+      - name: Run manual tools sync
+        id: sync
+        run: |
+          # Run the sync script and capture output
+          output=$(pnpm tsx sync-manual-tools.ts 2>&1)
+          echo "$output"
+
+          # Extract statistics from output
+          processed=$(echo "$output" | grep "Processed:" | awk '{print $2}')
+          skipped=$(echo "$output" | grep "Skipped:" | awk '{print $2}')
+          errors=$(echo "$output" | grep "Errors:" | awk '{print $2}')
+          total=$(echo "$output" | grep "Total manual tools:" | awk '{print $4}')
+
+          # Set outputs for Discord notification
+          echo "processed=${processed:-0}" >> $GITHUB_OUTPUT
+          echo "skipped=${skipped:-0}" >> $GITHUB_OUTPUT
+          echo "errors=${errors:-0}" >> $GITHUB_OUTPUT
+          echo "total=${total:-0}" >> $GITHUB_OUTPUT
+
+          # Determine status
+          if [ "${errors:-0}" -gt 0 ]; then
+            echo "status_emoji=⚠️" >> $GITHUB_OUTPUT
+            echo "status_color=16776960" >> $GITHUB_OUTPUT  # Yellow
+          else
+            echo "status_emoji=✅" >> $GITHUB_OUTPUT
+            echo "status_color=5763719" >> $GITHUB_OUTPUT   # Green
+          fi
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Send Discord notification
+        if: always()
+        run: |
+          # Build Discord payload
+          payload=$(jq -n \
+            --arg title "${{ steps.sync.outputs.status_emoji }} Manual Tools Sync" \
+            --argjson color ${{ steps.sync.outputs.status_color }} \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
+            '
+            {
+              embeds: [{
+                title: $title,
+                color: $color,
+                fields: [
+                  { name: "📦 Total Tools", value: "${{ steps.sync.outputs.total }}", inline: true },
+                  { name: "✨ Processed", value: "${{ steps.sync.outputs.processed }}", inline: true },
+                  { name: "⏭️ Skipped", value: "${{ steps.sync.outputs.skipped }}", inline: true },
+                  { name: "❌ Errors", value: "${{ steps.sync.outputs.errors }}", inline: true },
+                  { name: "🔗 Run", value: "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})", inline: true }
+                ],
+                timestamp: $timestamp
+              }]
+            }')
+
+          # Send to Discord
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d "$payload"

@@ -67,23 +67,53 @@ export const TpmjsAiAgentSchema = z.object({
 export type TpmjsAiAgent = z.infer<typeof TpmjsAiAgentSchema>;
 
 /**
- * Minimal tier schema - required fields only
- * This is the minimum required to publish a tool to TPMJS
+ * Individual tool definition within a multi-tool package
  */
-export const TpmjsMinimalSchema = z.object({
+export const TpmjsToolDefinitionSchema = z.object({
+  exportName: z.string().min(1, 'Export name is required'),
+  description: z.string().min(20, 'Description must be at least 20 characters').max(500),
+  parameters: z.array(TpmjsParameterSchema).optional(),
+  returns: TpmjsReturnsSchema.optional(),
+  aiAgent: TpmjsAiAgentSchema.optional(),
+});
+
+export type TpmjsToolDefinition = z.infer<typeof TpmjsToolDefinitionSchema>;
+
+/**
+ * Multi-tool format - NEW SCHEMA
+ * Package-level metadata with array of tools
+ */
+export const TpmjsMultiToolSchema = z.object({
+  category: z.enum(TPMJS_CATEGORIES, {
+    message: `Category must be one of: ${TPMJS_CATEGORIES.join(', ')}`,
+  }),
+  tools: z.array(TpmjsToolDefinitionSchema).min(1, 'At least one tool is required'),
+  env: z.array(TpmjsEnvSchema).optional(),
+  frameworks: z
+    .array(z.enum(['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel']))
+    .optional(),
+});
+
+export type TpmjsMultiTool = z.infer<typeof TpmjsMultiToolSchema>;
+
+/**
+ * Legacy minimal tier schema - DEPRECATED
+ * Kept for backward compatibility with auto-migration
+ */
+export const TpmjsLegacyMinimalSchema = z.object({
   category: z.enum(TPMJS_CATEGORIES, {
     message: `Category must be one of: ${TPMJS_CATEGORIES.join(', ')}`,
   }),
   description: z.string().min(20, 'Description must be at least 20 characters').max(500),
 });
 
-export type TpmjsMinimal = z.infer<typeof TpmjsMinimalSchema>;
+export type TpmjsLegacyMinimal = z.infer<typeof TpmjsLegacyMinimalSchema>;
 
 /**
- * Rich tier schema - includes optional enhanced metadata
- * Tools with these fields get better visibility and quality scores
+ * Legacy rich tier schema - DEPRECATED
+ * Kept for backward compatibility with auto-migration
  */
-export const TpmjsRichSchema = TpmjsMinimalSchema.extend({
+export const TpmjsLegacyRichSchema = TpmjsLegacyMinimalSchema.extend({
   parameters: z.array(TpmjsParameterSchema).optional(),
   returns: TpmjsReturnsSchema.optional(),
   env: z.array(TpmjsEnvSchema).optional(),
@@ -93,57 +123,129 @@ export const TpmjsRichSchema = TpmjsMinimalSchema.extend({
   aiAgent: TpmjsAiAgentSchema.optional(),
 });
 
-export type TpmjsRich = z.infer<typeof TpmjsRichSchema>;
+export type TpmjsLegacyRich = z.infer<typeof TpmjsLegacyRichSchema>;
 
 /**
- * Union type for either tier
+ * Union type for legacy formats
  */
-export type TpmjsField = TpmjsMinimal | TpmjsRich;
+export type TpmjsLegacy = TpmjsLegacyMinimal | TpmjsLegacyRich;
 
 /**
- * Validation result type
+ * Union type for all formats (new multi-tool + legacy)
+ */
+export type TpmjsField = TpmjsMultiTool | TpmjsLegacy;
+
+// Backward compatibility aliases
+export type TpmjsMinimal = TpmjsLegacyMinimal;
+export type TpmjsRich = TpmjsLegacyRich;
+export const TpmjsMinimalSchema = TpmjsLegacyMinimalSchema;
+export const TpmjsRichSchema = TpmjsLegacyRichSchema;
+
+/**
+ * Extended validation result type for multi-tool support
  */
 export interface ValidationResult {
   valid: boolean;
   tier: 'minimal' | 'rich' | null;
   data?: TpmjsField;
   errors?: z.ZodError;
+  // New fields for multi-tool support
+  packageData?: {
+    category: TpmjsCategory;
+    env?: TpmjsEnv[];
+    frameworks?: string[];
+  };
+  tools?: TpmjsToolDefinition[];
+  wasLegacyFormat?: boolean;
 }
 
 /**
  * Validates a tpmjs field and determines its tier
+ * Supports both new multi-tool format and legacy single-tool format with auto-migration
  */
 export function validateTpmjsField(tpmjs: unknown): ValidationResult {
-  // Try rich tier first
-  const richResult = TpmjsRichSchema.safeParse(tpmjs);
-  if (richResult.success) {
-    // Check if it has any rich-tier fields
-    const data = richResult.data;
-    const hasRichFields =
-      data.parameters || data.returns || data.env || data.frameworks || data.aiAgent;
+  // Try new multi-tool format first
+  const multiResult = TpmjsMultiToolSchema.safeParse(tpmjs);
+  if (multiResult.success) {
+    const data = multiResult.data;
+
+    // Determine tier based on tool richness
+    const hasRichFields = data.tools.some(
+      (tool) => tool.parameters || tool.returns || tool.aiAgent
+    ) || data.env || data.frameworks;
 
     return {
       valid: true,
       tier: hasRichFields ? 'rich' : 'minimal',
-      data: richResult.data,
+      data: data,
+      packageData: {
+        category: data.category,
+        env: data.env,
+        frameworks: data.frameworks,
+      },
+      tools: data.tools,
+      wasLegacyFormat: false,
     };
   }
 
-  // Try minimal tier
-  const minimalResult = TpmjsMinimalSchema.safeParse(tpmjs);
+  // Try legacy rich tier format with auto-migration
+  const richResult = TpmjsLegacyRichSchema.safeParse(tpmjs);
+  if (richResult.success) {
+    const legacyData = richResult.data;
+
+    // Auto-migrate to multi-tool format
+    const tool: TpmjsToolDefinition = {
+      exportName: 'default',
+      description: legacyData.description,
+      parameters: legacyData.parameters,
+      returns: legacyData.returns,
+      aiAgent: legacyData.aiAgent,
+    };
+
+    const hasRichFields =
+      legacyData.parameters || legacyData.returns || legacyData.env ||
+      legacyData.frameworks || legacyData.aiAgent;
+
+    return {
+      valid: true,
+      tier: hasRichFields ? 'rich' : 'minimal',
+      data: legacyData,
+      packageData: {
+        category: legacyData.category,
+        env: legacyData.env,
+        frameworks: legacyData.frameworks,
+      },
+      tools: [tool],
+      wasLegacyFormat: true,
+    };
+  }
+
+  // Try legacy minimal tier format with auto-migration
+  const minimalResult = TpmjsLegacyMinimalSchema.safeParse(tpmjs);
   if (minimalResult.success) {
+    // Auto-migrate to multi-tool format
+    const tool: TpmjsToolDefinition = {
+      exportName: 'default',
+      description: minimalResult.data.description,
+    };
+
     return {
       valid: true,
       tier: 'minimal',
       data: minimalResult.data,
+      packageData: {
+        category: minimalResult.data.category,
+      },
+      tools: [tool],
+      wasLegacyFormat: true,
     };
   }
 
-  // Invalid
+  // Invalid - return error from multi-tool schema (most informative)
   return {
     valid: false,
     tier: null,
-    errors: minimalResult.error,
+    errors: multiResult.error,
   };
 }
 

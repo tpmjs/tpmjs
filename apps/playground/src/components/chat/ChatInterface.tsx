@@ -25,7 +25,7 @@ export function ChatInterface(): React.ReactElement {
 
   return (
     <div className="flex flex-1 flex-col">
-      <ChatMessages messages={messages} />
+      <ChatMessages messages={messages} isStreaming={isLoading} />
       <ChatInput
         input={input}
         isLoading={isLoading}

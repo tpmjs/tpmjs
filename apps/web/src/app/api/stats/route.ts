@@ -18,25 +18,14 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     // Run all aggregations in parallel
-    const [totalTools, officialTools, categoryStats, recentCount, downloadSum] = await Promise.all([
+    const [totalTools, officialTools, recentCount, packages] = await Promise.all([
       // Total tools count
       prisma.tool.count(),
 
-      // Official tools count
+      // Official tools count (isOfficial is at package level)
       prisma.tool.count({
-        where: { isOfficial: true },
-      }),
-
-      // Group by category
-      prisma.tool.groupBy({
-        by: ['category'],
-        _count: {
-          id: true,
-        },
-        orderBy: {
-          _count: {
-            id: 'desc',
-          },
+        where: {
+          package: { isOfficial: true }
         },
       }),
 
@@ -49,21 +38,31 @@ export async function GET() {
         },
       }),
 
-      // Sum of all downloads
-      prisma.tool.aggregate({
-        _sum: {
+      // Get all packages with their tool counts and download stats
+      prisma.package.findMany({
+        select: {
+          category: true,
           npmDownloadsLastMonth: true,
+          _count: {
+            select: { tools: true },
+          },
         },
       }),
     ]);
 
-    // Format category stats
-    const categories = categoryStats.reduce<Record<string, number>>((acc, stat) => {
-      if (stat.category) {
-        acc[stat.category] = stat._count.id;
+    // Calculate stats from packages
+    const categories: Record<string, number> = {};
+    let totalDownloads = 0;
+
+    for (const pkg of packages) {
+      // Count tools by category
+      if (pkg.category) {
+        categories[pkg.category] = (categories[pkg.category] || 0) + pkg._count.tools;
       }
-      return acc;
-    }, {});
+
+      // Sum downloads
+      totalDownloads += pkg.npmDownloadsLastMonth || 0;
+    }
 
     return NextResponse.json({
       success: true,
@@ -72,7 +71,7 @@ export async function GET() {
         officialTools,
         categories,
         recentTools: recentCount,
-        totalDownloads: downloadSum._sum.npmDownloadsLastMonth || 0,
+        totalDownloads,
       },
     });
   } catch (error) {

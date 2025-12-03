@@ -96,7 +96,13 @@ export default function PublishPage(): React.ReactElement {
                 code={`{
   "tpmjs": {
     "category": "text-analysis",
-    "description": "A concise description of what your tool does"
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "myTool",
+        "description": "A concise description of what your tool does"
+      }
+    ]
   }
 }`}
               />
@@ -118,26 +124,32 @@ export default function PublishPage(): React.ReactElement {
                 code={`{
   "tpmjs": {
     "category": "text-analysis",
-    "description": "Analyzes sentiment in text",
-    "parameters": [
+    "frameworks": ["vercel-ai"],
+    "tools": [
       {
-        "name": "text",
-        "type": "string",
-        "description": "The text to analyze",
-        "required": true
-      },
-      {
-        "name": "language",
-        "type": "string",
-        "description": "Language code (e.g., 'en')",
-        "required": false,
-        "default": "en"
+        "exportName": "sentimentAnalysisTool",
+        "description": "Analyzes sentiment in text",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to analyze",
+            "required": true
+          },
+          {
+            "name": "language",
+            "type": "string",
+            "description": "Language code (e.g., 'en')",
+            "required": false,
+            "default": "en"
+          }
+        ],
+        "returns": {
+          "type": "SentimentResult",
+          "description": "Object with score and label"
+        }
       }
-    ],
-    "returns": {
-      "type": "SentimentResult",
-      "description": "Object with score and label"
-    }
+    ]
   }
 }`}
               />
@@ -159,9 +171,7 @@ export default function PublishPage(): React.ReactElement {
                 code={`{
   "tpmjs": {
     "category": "text-analysis",
-    "description": "Advanced sentiment analysis with emotion detection",
-    "parameters": [...],
-    "returns": {...},
+    "frameworks": ["vercel-ai", "langchain"],
     "env": [
       {
         "name": "SENTIMENT_API_KEY",
@@ -169,15 +179,22 @@ export default function PublishPage(): React.ReactElement {
         "required": true
       }
     ],
-    "frameworks": ["vercel-ai", "langchain"],
-    "aiAgent": {
-      "useCase": "Use when users need to analyze sentiment or detect emotions",
-      "limitations": "English and Spanish only. Max 10,000 characters",
-      "examples": [
-        "Analyze customer review sentiment",
-        "Detect emotions in feedback"
-      ]
-    }
+    "tools": [
+      {
+        "exportName": "sentimentAnalysisTool",
+        "description": "Advanced sentiment analysis with emotion detection",
+        "parameters": [...],
+        "returns": {...},
+        "aiAgent": {
+          "useCase": "Use when users need to analyze sentiment or detect emotions",
+          "limitations": "English and Spanish only. Max 10,000 characters",
+          "examples": [
+            "Analyze customer review sentiment",
+            "Detect emotions in feedback"
+          ]
+        }
+      }
+    ]
   }
 }`}
               />
@@ -279,26 +296,31 @@ npm publish --access public
   "keywords": ["tpmjs-tool", "blog", "content"],
   "tpmjs": {
     "category": "text-analysis",
-    "description": "Creates structured blog posts with frontmatter and SEO metadata",
-    "parameters": [
+    "frameworks": ["vercel-ai", "langchain"],
+    "tools": [
       {
-        "name": "title",
-        "type": "string",
-        "description": "The title of the blog post",
-        "required": true
-      },
-      {
-        "name": "content",
-        "type": "string",
-        "description": "The main content",
-        "required": true
+        "exportName": "createBlogPostTool",
+        "description": "Creates structured blog posts with frontmatter and SEO metadata",
+        "parameters": [
+          {
+            "name": "title",
+            "type": "string",
+            "description": "The title of the blog post",
+            "required": true
+          },
+          {
+            "name": "content",
+            "type": "string",
+            "description": "The main content",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "BlogPost",
+          "description": "Structured blog post with frontmatter"
+        }
       }
-    ],
-    "returns": {
-      "type": "BlogPost",
-      "description": "Structured blog post with frontmatter"
-    },
-    "frameworks": ["vercel-ai", "langchain"]
+    ]
   }
 }`}
             />

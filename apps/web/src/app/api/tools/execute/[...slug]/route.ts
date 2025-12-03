@@ -18,15 +18,19 @@ interface ExecuteRequest {
 }
 
 /**
- * POST /api/tools/[...slug]/execute
+ * POST /api/tools/execute/[...slug]
  * Executes a tool with an AI agent and streams the response via SSE
+ *
+ * Slug format: [toolId] or [packageName, exportName]
+ * Examples:
+ *   /api/tools/execute/clx123abc (by tool ID)
+ *   /api/tools/execute/@tpmjs/hello/helloWorldTool (by package and export name)
  */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string[] }> }
 ) {
   const { slug } = await params;
-  const packageName = decodeURIComponent(slug.join('/'));
 
   try {
     // Parse request body
@@ -63,10 +67,29 @@ export async function POST(
       );
     }
 
-    // Fetch tool from database
-    const tool = await prisma.tool.findUnique({
-      where: { npmPackageName: packageName },
-    });
+    // Fetch tool from database with package relation
+    // Support both ID-based lookup and packageName/exportName lookup
+    let tool;
+
+    if (slug.length === 1) {
+      // Single slug - treat as tool ID
+      tool = await prisma.tool.findUnique({
+        where: { id: slug[0] || '' },
+        include: { package: true },
+      });
+    } else {
+      // Multiple slugs - treat as packageName/exportName
+      const packageName = decodeURIComponent(slug.slice(0, -1).join('/'));
+      const exportName = decodeURIComponent(slug[slug.length - 1] || '');
+
+      tool = await prisma.tool.findFirst({
+        where: {
+          package: { npmPackageName: packageName },
+          exportName: exportName,
+        },
+        include: { package: true },
+      });
+    }
 
     if (!tool) {
       return NextResponse.json({ error: 'Tool not found' }, { status: 404 });

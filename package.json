@@ -34,6 +34,7 @@
     "dependency-cruiser": "^17.3.1",
     "knip": "^5.70.2",
     "lefthook": "^1.10.1",
+    "tsx": "^4.21.0",
     "turbo": "^2.6.1",
     "type-coverage": "^2.29.7",
     "typescript": "^5.9.3"

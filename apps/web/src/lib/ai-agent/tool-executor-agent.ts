@@ -4,7 +4,7 @@
  */
 
 import { openai } from '@ai-sdk/openai';
-import type { Tool } from '@tpmjs/db';
+import type { Package, Tool } from '@tpmjs/db';
 import { executePackage } from '@tpmjs/package-executor';
 import { type CoreMessage, generateText } from 'ai';
 import { z } from 'zod';
@@ -90,13 +90,14 @@ export function tpmjsParamsToZodSchema(parameters: TPMJSParameter[]): z.ZodObjec
 
 /**
  * Create AI SDK v6 tool definition from TPMJS Tool
+ * Requires Tool with Package relation
  */
-export function createToolDefinition(tool: Tool) {
+export function createToolDefinition(tool: Tool & { package: Package }) {
   const parameters = Array.isArray(tool.parameters)
     ? (tool.parameters as unknown as TPMJSParameter[])
     : [];
 
-  console.log('[createToolDefinition] Tool:', tool.npmPackageName);
+  console.log('[createToolDefinition] Tool:', tool.package.npmPackageName, '/', tool.exportName);
   console.log('[createToolDefinition] Parameters array:', JSON.stringify(parameters));
   console.log('[createToolDefinition] Parameters length:', parameters.length);
 
@@ -108,7 +109,9 @@ export function createToolDefinition(tool: Tool) {
 
   console.log('[createToolDefinition] Created Zod schema:', inputSchema);
 
-  const sanitizedName = sanitizeToolName(tool.npmPackageName);
+  const sanitizedName = sanitizeToolName(
+    `${tool.package.npmPackageName}-${tool.exportName}`
+  );
 
   // AI SDK v6 tool definition
   return {
@@ -118,9 +121,10 @@ export function createToolDefinition(tool: Tool) {
       console.log('[Tool execute] Running:', sanitizedName, params);
 
       // Execute the actual npm package in a sandbox
+      // Use the actual export name from the Tool record
       const result = await executePackage(
-        tool.npmPackageName,
-        'default', // Most TPMJS packages export a default function
+        tool.package.npmPackageName,
+        tool.exportName, // Use actual export name (e.g., "helloWorldTool", "default")
         params,
         { timeout: 5000 }
       );
@@ -186,15 +190,18 @@ function sanitizeToolName(npmPackageName: string): string {
 
 /**
  * Execute tool with AI agent using AI SDK v6
+ * Requires Tool with Package relation
  */
 export async function executeToolWithAgent(
-  tool: Tool,
+  tool: Tool & { package: Package },
   userPrompt: string,
   onChunk?: (chunk: string) => void,
   onTokenUpdate?: (tokens: Partial<TokenBreakdown>) => void
 ) {
   const toolDef = createToolDefinition(tool);
-  const sanitizedToolName = sanitizeToolName(tool.npmPackageName);
+  const sanitizedToolName = sanitizeToolName(
+    `${tool.package.npmPackageName}-${tool.exportName}`
+  );
 
   console.log('[executeToolWithAgent] Tool name:', sanitizedToolName);
 

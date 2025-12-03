@@ -20,12 +20,12 @@
     "@tpmjs/utils": "workspace:*",
     "ai": "6.0.0-beta.124",
     "firecrawl-aisdk": "^0.7.2",
-    "fish-joke-generator": "^1.1.0",
     "next": "^16.0.4",
     "next-themes": "^0.4.6",
     "openai": "^6.9.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "streamdown": "^1.6.9",
     "zod": "^4.0.0"
   },
   "devDependencies": {
