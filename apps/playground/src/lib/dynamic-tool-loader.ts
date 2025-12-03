@@ -67,9 +67,10 @@ export async function loadToolDynamically(
     console.log(`📋 Description: ${data.tool.description}`);
 
     // Create a tool wrapper that executes remotely
+    // Note: We don't include inputSchema because Zod schemas can't be serialized over HTTP
+    // The AI SDK will infer parameters from the description
     const tool = {
       description: data.tool.description,
-      inputSchema: data.tool.inputSchema,
       // biome-ignore lint/suspicious/noExplicitAny: Tool params are dynamic
       execute: async (params: any) => {
         console.log(`🚀 Executing ${packageName}/${exportName} remotely with params:`, params);

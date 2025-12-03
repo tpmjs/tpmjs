@@ -76,12 +76,15 @@ async function loadAndDescribe(req: Request): Promise<Response> {
     }
 
     // Extract tool definition
+    // Note: We don't send inputSchema because Zod schemas can't be serialized over JSON
+    // The playground will use the actual tool's inputSchema when creating the wrapper
     return Response.json({
       success: true,
       tool: {
         exportName,
         description: toolModule.description,
-        inputSchema: toolModule.inputSchema || toolModule.parameters?.shape || {},
+        // Store reference that inputSchema exists (for validation)
+        hasInputSchema: !!toolModule.inputSchema,
       },
     });
   } catch (error) {
