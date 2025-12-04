@@ -11,6 +11,70 @@ import { zodToJsonSchema } from 'https://esm.sh/zod-to-json-schema@3.25.0';
 const moduleCache = new Map<string, any>();
 
 /**
+ * Sanitize JSON Schema to fix common issues
+ * - Replaces invalid type "None" with "object"
+ * - Ensures type is always set
+ * - Ensures object schemas have properties
+ */
+// biome-ignore lint/suspicious/noExplicitAny: JSON Schema can have any structure
+function sanitizeJsonSchema(schema: any): any {
+  if (!schema || typeof schema !== 'object') {
+    console.warn('⚠️  Invalid schema (not an object), returning default object schema');
+    return { type: 'object', properties: {}, additionalProperties: false };
+  }
+
+  // Clone the schema to avoid mutating the original
+  const sanitized = { ...schema };
+
+  // Fix invalid type "None" (common in Python-based tools)
+  if (sanitized.type === 'None' || sanitized.type === 'none' || sanitized.type === null) {
+    console.warn(`⚠️  Invalid schema type "${sanitized.type}", replacing with "object"`);
+    sanitized.type = 'object';
+    if (!sanitized.properties) {
+      sanitized.properties = {};
+    }
+    if (sanitized.additionalProperties === undefined) {
+      sanitized.additionalProperties = false;
+    }
+  }
+
+  // Ensure type is set
+  if (!sanitized.type) {
+    console.warn('⚠️  Schema missing type, defaulting to "object"');
+    sanitized.type = 'object';
+    if (!sanitized.properties) {
+      sanitized.properties = {};
+    }
+    if (sanitized.additionalProperties === undefined) {
+      sanitized.additionalProperties = false;
+    }
+  }
+
+  // Recursively sanitize nested schemas
+  if (sanitized.properties && typeof sanitized.properties === 'object') {
+    for (const [key, value] of Object.entries(sanitized.properties)) {
+      if (value && typeof value === 'object') {
+        sanitized.properties[key] = sanitizeJsonSchema(value);
+      }
+    }
+  }
+
+  // Sanitize array items
+  if (sanitized.items && typeof sanitized.items === 'object') {
+    sanitized.items = sanitizeJsonSchema(sanitized.items);
+  }
+
+  // Sanitize anyOf/oneOf/allOf
+  for (const key of ['anyOf', 'oneOf', 'allOf']) {
+    if (Array.isArray(sanitized[key])) {
+      sanitized[key] = sanitized[key].map((s: any) => sanitizeJsonSchema(s));
+    }
+  }
+
+  return sanitized;
+}
+
+/**
  * Load and describe a tool from esm.sh
  */
 async function loadAndDescribe(req: Request): Promise<Response> {
@@ -249,12 +313,15 @@ async function loadAndDescribe(req: Request): Promise<Response> {
 
     console.log(`✅ Extracted schema for ${cacheKey}`);
 
+    // Sanitize schema - fix common issues with invalid schemas
+    const sanitizedSchema = sanitizeJsonSchema(rawJsonSchema);
+
     return Response.json({
       success: true,
       tool: {
         exportName,
         description: toolModule.description,
-        inputSchema: rawJsonSchema, // Plain JSON Schema - fully serializable
+        inputSchema: sanitizedSchema, // Plain JSON Schema - fully serializable
       },
     });
   } catch (error) {
