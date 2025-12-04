@@ -446,7 +446,7 @@ export default function ToolDetailPage({
             </Card>
 
             {/* NPM Keywords */}
-            {tool.npmKeywords.length > 0 && (
+            {tool.npmKeywords && tool.npmKeywords.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>NPM Keywords</CardTitle>
