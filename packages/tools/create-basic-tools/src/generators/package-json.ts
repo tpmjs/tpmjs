@@ -38,7 +38,7 @@ export function generatePackageJson(config: GeneratorConfig): string {
       }),
     },
     dependencies: {
-      ai: '^6.0.0',
+      ai: '6.0.0-beta.131',
       zod: '^4.1.13',
     },
     devDependencies: {

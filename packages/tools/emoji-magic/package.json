@@ -1,0 +1,35 @@
+{
+  "name": "@tpmjs/emoji-magic",
+  "version": "0.2.0",
+  "description": "AI SDK tools for emoji-magic - convert text to emojis and back!",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["tpmjs-tool", "emoji", "ai", "text-processing"],
+  "tpmjs": {
+    "category": "text-analysis",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "textToEmoji",
+        "description": "Convert text into emoji representations - perfect for making messages more expressive!"
+      },
+      {
+        "exportName": "emojiMood",
+        "description": "Detect the mood/sentiment and suggest appropriate emojis for the text"
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.131",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}
