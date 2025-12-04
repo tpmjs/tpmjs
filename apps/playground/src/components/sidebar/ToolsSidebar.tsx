@@ -102,10 +102,13 @@ export function ToolsSidebar(): React.ReactElement {
 
       {/* Tool Details Modal */}
       {selectedTool && (
-        {/* biome-ignore lint/a11y/useSemanticElements: Modal backdrop - standard pattern for modal overlays with role=button */}
+        // biome-ignore lint/a11y/useSemanticElements: Modal backdrop - standard pattern for modal overlays with role=button
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-          onClick={() => setSelectedTool(null)}
+          onClick={(e) => {
+            // Only close if clicking the backdrop itself, not the content
+            if (e.target === e.currentTarget) setSelectedTool(null);
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Escape') setSelectedTool(null);
           }}
@@ -113,13 +116,10 @@ export function ToolsSidebar(): React.ReactElement {
           tabIndex={0}
           aria-label="Close modal"
         >
-          {/* biome-ignore lint/a11y/useKeyWithClickEvents: Modal content - prevents click-through to backdrop */}
-          <div
-            className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-6 shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-6 shadow-xl">
             {/* Close button */}
             <button
+              type="button"
               onClick={() => setSelectedTool(null)}
               className="absolute right-4 top-4 text-foreground-tertiary hover:text-foreground"
               aria-label="Close modal"
