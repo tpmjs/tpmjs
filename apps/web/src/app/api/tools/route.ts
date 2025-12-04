@@ -6,6 +6,85 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 /**
+ * Build health filters from query parameters
+ */
+function buildHealthFilters(
+  brokenParam: string | null,
+  importHealth: string | null,
+  executionHealth: string | null
+): Prisma.ToolWhereInput[] {
+  const healthFilters: Prisma.ToolWhereInput[] = [];
+
+  if (brokenParam === 'true') {
+    // Shorthand: at least one health check failed
+    healthFilters.push({
+      OR: [{ importHealth: 'BROKEN' }, { executionHealth: 'BROKEN' }],
+    });
+  } else {
+    // Individual health status filters
+    if (importHealth && ['HEALTHY', 'BROKEN', 'UNKNOWN'].includes(importHealth)) {
+      healthFilters.push({ importHealth: importHealth as 'HEALTHY' | 'BROKEN' | 'UNKNOWN' });
+    }
+    if (executionHealth && ['HEALTHY', 'BROKEN', 'UNKNOWN'].includes(executionHealth)) {
+      healthFilters.push({
+        executionHealth: executionHealth as 'HEALTHY' | 'BROKEN' | 'UNKNOWN',
+      });
+    }
+  }
+
+  return healthFilters;
+}
+
+/**
+ * Build package filters from query parameters
+ */
+function buildPackageFilter(
+  category: string | null,
+  officialParam: string | null
+): Prisma.PackageWhereInput {
+  const packageFilter: Prisma.PackageWhereInput = {};
+
+  if (category) {
+    packageFilter.category = category;
+  }
+
+  if (officialParam !== null) {
+    packageFilter.isOfficial = officialParam === 'true';
+  }
+
+  return packageFilter;
+}
+
+/**
+ * Build where clause for tool query
+ */
+function buildWhereClause(
+  query: string | null,
+  packageFilter: Prisma.PackageWhereInput,
+  healthFilters: Prisma.ToolWhereInput[]
+): Prisma.ToolWhereInput {
+  const where: Prisma.ToolWhereInput = {};
+
+  // Search filter (searches tool description and package name)
+  if (query) {
+    where.OR = [
+      { description: { contains: query, mode: 'insensitive' } },
+      { package: { npmPackageName: { contains: query, mode: 'insensitive' }, ...packageFilter } },
+    ];
+  } else if (Object.keys(packageFilter).length > 0) {
+    // Apply package filter if no search query
+    where.package = packageFilter;
+  }
+
+  // Apply health filters as AND conditions
+  if (healthFilters.length > 0) {
+    where.AND = healthFilters;
+  }
+
+  return where;
+}
+
+/**
  * GET /api/tools
  * Search and list tools with filtering, sorting, and pagination
  *
@@ -13,6 +92,9 @@ export const maxDuration = 60;
  * - q: Search query (searches package name, tool description)
  * - category: Filter by category
  * - official: Filter by official status (true/false)
+ * - importHealth: Filter by import health (HEALTHY, BROKEN, UNKNOWN)
+ * - executionHealth: Filter by execution health (HEALTHY, BROKEN, UNKNOWN)
+ * - broken: Shorthand for "at least one health check failed" (true/false)
  * - limit: Results per page (default: 20, max: 50)
  * - offset: Pagination offset (default: 0)
  */
@@ -24,42 +106,20 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q');
     const category = searchParams.get('category');
     const officialParam = searchParams.get('official');
+    const importHealth = searchParams.get('importHealth');
+    const executionHealth = searchParams.get('executionHealth');
+    const brokenParam = searchParams.get('broken');
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
 
     // Validate and set defaults
-    const limit = Math.min(
-      Number.parseInt(limitParam || '20', 10),
-      50 // Max 50 for better performance
-    );
+    const limit = Math.min(Number.parseInt(limitParam || '20', 10), 50);
     const offset = Math.max(Number.parseInt(offsetParam || '0', 10), 0);
 
-    // Build where clause for Tool table
-    const where: Prisma.ToolWhereInput = {};
-
-    // Build package filter separately
-    const packageFilter: Prisma.PackageWhereInput = {};
-
-    // Category filter (category is at package level)
-    if (category) {
-      packageFilter.category = category;
-    }
-
-    // Official filter (isOfficial is at package level)
-    if (officialParam !== null) {
-      packageFilter.isOfficial = officialParam === 'true';
-    }
-
-    // Search filter (searches tool description and package name)
-    if (query) {
-      where.OR = [
-        { description: { contains: query, mode: 'insensitive' } },
-        { package: { npmPackageName: { contains: query, mode: 'insensitive' }, ...packageFilter } },
-      ];
-    } else if (Object.keys(packageFilter).length > 0) {
-      // Apply package filter if no search query
-      where.package = packageFilter;
-    }
+    // Build filters
+    const packageFilter = buildPackageFilter(category, officialParam);
+    const healthFilters = buildHealthFilters(brokenParam, importHealth, executionHealth);
+    const where = buildWhereClause(query, packageFilter, healthFilters);
 
     // Execute query - fetch tools with package relation
     // We fetch limit+1 to check if there are more results (avoid expensive count)
