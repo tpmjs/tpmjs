@@ -31,8 +31,10 @@ export async function POST(request: NextRequest) {
 
     const messages: UIMessage[] = body.messages || [];
     const conversationId: string = body.conversationId || 'default';
+    const clientEnv: Record<string, string> = body.env || {};
 
     console.log(`🔑 Conversation ID: ${conversationId}`);
+    console.log(`🔐 Client env vars: ${Object.keys(clientEnv).length} keys`);
 
     // Get or create conversation state
     if (!conversationStates.has(conversationId)) {
@@ -106,7 +108,7 @@ export async function POST(request: NextRequest) {
           }));
 
           try {
-            const loadedTools = await loadToolsBatch(toolsToLoad);
+            const loadedTools = await loadToolsBatch(toolsToLoad, clientEnv);
             console.log(`✅ Successfully loaded ${Object.keys(loadedTools).length} tools`);
 
             // Add sanitized tools to conversation state

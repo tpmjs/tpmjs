@@ -2,6 +2,7 @@
 
 import { ChatHeader } from '~/components/chat/ChatHeader';
 import { ChatInterface } from '~/components/chat/ChatInterface';
+import { SettingsSidebar } from '~/components/sidebar/SettingsSidebar';
 import { ToolsSidebar } from '~/components/sidebar/ToolsSidebar';
 
 export default function PlaygroundPage(): React.ReactElement {
@@ -16,6 +17,7 @@ export default function PlaygroundPage(): React.ReactElement {
       <div className="flex flex-1 overflow-hidden">
         <ToolsSidebar />
         <ChatInterface />
+        <SettingsSidebar />
       </div>
     </div>
   );

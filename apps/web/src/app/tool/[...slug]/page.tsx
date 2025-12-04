@@ -339,7 +339,7 @@ export default function ToolDetailPage({
                 <div>
                   <p className="text-sm text-foreground-secondary mb-1">Downloads/month</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {tool.npmDownloadsLastMonth.toLocaleString()}
+                    {tool.npmDownloadsLastMonth?.toLocaleString() || '0'}
                   </p>
                 </div>
                 {tool.githubStars !== null && (
@@ -353,11 +353,11 @@ export default function ToolDetailPage({
                 <div>
                   <p className="text-sm text-foreground-secondary mb-2">Quality Score</p>
                   <ProgressBar
-                    value={Number.parseFloat(tool.qualityScore) * 100}
+                    value={(tool.qualityScore ? Number.parseFloat(tool.qualityScore) : 0) * 100}
                     variant={
-                      Number.parseFloat(tool.qualityScore) >= 0.7
+                      tool.qualityScore && Number.parseFloat(tool.qualityScore) >= 0.7
                         ? 'success'
-                        : Number.parseFloat(tool.qualityScore) >= 0.5
+                        : tool.qualityScore && Number.parseFloat(tool.qualityScore) >= 0.5
                           ? 'primary'
                           : 'warning'
                     }

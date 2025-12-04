@@ -169,7 +169,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
 async function executeTool(req: Request): Promise<Response> {
   try {
     const body = await req.json();
-    const { packageName, exportName, version, importUrl, params } = body;
+    const { packageName, exportName, version, importUrl, params, env } = body;
 
     if (!packageName || !exportName || !version) {
       return Response.json(
@@ -209,6 +209,17 @@ async function executeTool(req: Request): Promise<Response> {
       }
 
       moduleCache.set(cacheKey, toolModule);
+    }
+
+    // Inject environment variables from client
+    if (env && typeof env === 'object') {
+      const envKeys = Object.keys(env);
+      if (envKeys.length > 0) {
+        console.log(`🔐 Injecting ${envKeys.length} environment variables:`, envKeys);
+        for (const [key, value] of Object.entries(env)) {
+          Deno.env.set(key, String(value));
+        }
+      }
     }
 
     // Execute the tool

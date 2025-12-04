@@ -26,7 +26,8 @@ export async function loadToolDynamically(
   packageName: string,
   exportName: string,
   version: string,
-  importUrl?: string
+  importUrl?: string,
+  env?: Record<string, string>
 ): Promise<any | null> {
   const cacheKey = getCacheKey(packageName, exportName);
 
@@ -49,6 +50,7 @@ export async function loadToolDynamically(
         exportName,
         version,
         importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
+        env: env || {},
       }),
     });
 
@@ -88,6 +90,7 @@ export async function loadToolDynamically(
             version,
             importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
             params,
+            env: env || {},
           }),
         });
 
@@ -125,10 +128,11 @@ export async function loadToolsBatch(
     exportName: string;
     version: string;
     importUrl?: string;
-  }>
+  }>,
+  env?: Record<string, string>
 ): Promise<Record<string, any>> {
   const promises = toolMetadata.map((meta) =>
-    loadToolDynamically(meta.packageName, meta.exportName, meta.version, meta.importUrl).then(
+    loadToolDynamically(meta.packageName, meta.exportName, meta.version, meta.importUrl, env).then(
       (tool) => ({
         key: getCacheKey(meta.packageName, meta.exportName),
         tool,
