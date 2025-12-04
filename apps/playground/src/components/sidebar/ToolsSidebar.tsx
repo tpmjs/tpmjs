@@ -14,7 +14,7 @@ interface Tool {
   version: string;
   qualityScore?: number;
   frameworks?: string[];
-  env?: Record<string, { description: string; required?: boolean }>;
+  env?: Array<{ name: string; description: string; required?: boolean; default?: string }>;
   importUrl?: string;
 }
 
@@ -177,23 +177,28 @@ export function ToolsSidebar(): React.ReactElement {
             )}
 
             {/* Environment Variables */}
-            {selectedTool.env && Object.keys(selectedTool.env).length > 0 && (
+            {selectedTool.env && selectedTool.env.length > 0 && (
               <div className="mb-6">
                 <h3 className="mb-2 text-lg font-semibold text-foreground">
                   Environment Variables
                 </h3>
                 <div className="space-y-2">
-                  {Object.entries(selectedTool.env).map(([key, config]) => (
-                    <div key={key} className="rounded border border-border bg-surface p-3">
+                  {selectedTool.env.map((envVar) => (
+                    <div key={envVar.name} className="rounded border border-border bg-surface p-3">
                       <div className="mb-1 flex items-center gap-2">
-                        <code className="text-sm font-mono text-foreground">{key}</code>
-                        {config.required && (
+                        <code className="text-sm font-mono text-foreground">{envVar.name}</code>
+                        {envVar.required && (
                           <Badge variant="error" size="sm">
                             Required
                           </Badge>
                         )}
                       </div>
-                      <p className="text-xs text-foreground-secondary">{config.description}</p>
+                      <p className="text-xs text-foreground-secondary">{envVar.description}</p>
+                      {envVar.default && (
+                        <p className="mt-1 text-xs text-foreground-tertiary">
+                          Default: <code className="font-mono">{envVar.default}</code>
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
