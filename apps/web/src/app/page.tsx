@@ -213,14 +213,14 @@ export default async function HomePage(): Promise<React.ReactElement> {
             <p className="text-sm text-foreground-secondary">© 2025 TPMJS. All rights reserved.</p>
             <div className="flex items-center gap-4 text-sm">
               <a
-                href="mailto:hello@tpmjs.com"
+                href="mailto:thomasalwyndavis@gmail.com"
                 className="text-foreground-secondary hover:text-foreground transition-colors"
               >
                 Contact
               </a>
               <span className="text-border">·</span>
               <a
-                href="https://github.com/your-org/tpmjs"
+                href="https://github.com/tpmjs/tpmjs"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-foreground-secondary hover:text-foreground transition-colors"
