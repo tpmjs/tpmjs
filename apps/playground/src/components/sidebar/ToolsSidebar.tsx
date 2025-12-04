@@ -116,7 +116,7 @@ export function ToolsSidebar(): React.ReactElement {
           tabIndex={0}
           aria-label="Close modal"
         >
-          <div className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-background p-6 shadow-xl">
+          <div className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-white dark:bg-gray-900 p-6 shadow-xl">
             {/* Close button */}
             <button
               type="button"
