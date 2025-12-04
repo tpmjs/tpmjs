@@ -23,6 +23,15 @@ export const ${exportName} = tool({
   description: '${description}',
   inputSchema: ${schemaName},
   async execute(input: z.infer<typeof ${schemaName}>) {
+    // Defensive check: Validate required parameters
+    if (!input.text || input.text.trim().length === 0) {
+      return {
+        success: false,
+        error: 'Missing required parameter: text',
+        message: 'The "text" parameter is required and cannot be empty.',
+      };
+    }
+
     // TODO: Implement the tool logic here
     console.log('${exportName} called with:', input);
 

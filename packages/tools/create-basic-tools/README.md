@@ -102,6 +102,16 @@ export const exampleTool = tool({
   description: 'An example tool - customize this for your use case',
   inputSchema: ExampleToolSchema,
   async execute(input: z.infer<typeof ExampleToolSchema>) {
+    // Defensive check: Validate required parameters
+    // This prevents crashes when tools are called with missing/empty params
+    if (!input.text || input.text.trim().length === 0) {
+      return {
+        success: false,
+        error: 'Missing required parameter: text',
+        message: 'The "text" parameter is required and cannot be empty.',
+      };
+    }
+
     // TODO: Implement the tool logic here
     console.log('exampleTool called with:', input);
 
@@ -113,6 +123,21 @@ export const exampleTool = tool({
   },
 });
 ```
+
+### Why Defensive Parameter Validation?
+
+Generated tools include defensive checks for required parameters. While Zod validates the schema, these checks prevent crashes in edge cases where:
+
+- Tools are called with empty/missing parameters during AI exploration
+- Parameters are undefined due to serialization issues
+- The LLM makes initial "probe" calls to understand tool capabilities
+
+**Best Practice**: Always validate critical required parameters before using them, especially when:
+- The parameter is used in string operations (`.toLowerCase()`, `.trim()`, etc.)
+- The parameter is required for the tool's core functionality
+- Missing the parameter would cause a runtime error
+
+This defensive approach ensures tools return helpful error messages instead of crashing.
 
 ## After Generation
 
