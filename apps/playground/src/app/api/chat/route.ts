@@ -2,7 +2,6 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { searchTpmjsToolsTool } from '@tpmjs/search-registry';
 import { type UIMessage, convertToModelMessages, stepCountIs, streamText } from 'ai';
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
 import { env } from '~/env';
 import { addConversationTools, loadToolsBatch } from '~/lib/dynamic-tool-loader';
 import { loadAllTools, sanitizeToolName } from '~/lib/tool-loader';
@@ -41,6 +40,7 @@ export async function POST(request: NextRequest) {
       console.log('✨ Creating new conversation state');
       conversationStates.set(conversationId, { loadedTools: {} });
     }
+    // biome-ignore lint/style/noNonNullAssertion: We just ensured the value exists above
     const state = conversationStates.get(conversationId)!;
     console.log(
       `📊 Current loaded tools in conversation: ${Object.keys(state.loadedTools).length}`
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
         if (searchResult.tools && searchResult.tools.length > 0) {
           console.log(
-            `🔧 Tools found:`,
+            '🔧 Tools found:',
             searchResult.tools.map((t: any) => `${t.packageName}/${t.exportName}`)
           );
 
