@@ -436,7 +436,7 @@ describe('Select', () => {
     it('should include border and background classes', () => {
       render(<Select options={simpleOptions} />);
       const select = screen.getByRole('combobox');
-      expect(select).toHaveClass('rounded-md', 'border', 'bg-background');
+      expect(select).toHaveClass('rounded-md', 'border', 'bg-surface');
     });
 
     it('should remove native appearance', () => {

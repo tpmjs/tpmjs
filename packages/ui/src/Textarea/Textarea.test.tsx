@@ -437,7 +437,7 @@ describe('Textarea', () => {
     it('always includes background color class', () => {
       render(<Textarea data-testid="textarea" />);
       const textarea = screen.getByTestId('textarea');
-      expect(textarea.className).toContain('bg-background');
+      expect(textarea.className).toContain('bg-surface');
     });
 
     it('always includes transition classes', () => {

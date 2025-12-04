@@ -342,7 +342,7 @@ describe('Input', () => {
       expect(input.className).toContain('font-sans');
       expect(input.className).toContain('rounded-md');
       expect(input.className).toContain('border');
-      expect(input.className).toContain('bg-background');
+      expect(input.className).toContain('bg-surface');
     });
 
     it('includes transition classes', () => {

@@ -26,7 +26,7 @@ export function ChatMessages({
         <div className="text-center text-foreground-secondary">
           <div className="mb-2 text-4xl">🐟</div>
           <p className="text-lg">Start chatting to test TPMJS tools</p>
-          <p className="mt-2 text-sm">Try asking: "Tell me a fish joke"</p>
+          <p className="mt-2 text-sm">Try asking: &ldquo;Tell me a fish joke&rdquo;</p>
         </div>
       </div>
     );
