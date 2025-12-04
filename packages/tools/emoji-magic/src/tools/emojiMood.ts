@@ -15,6 +15,18 @@ export const emojiMood = tool({
   async execute(input: z.infer<typeof EmojiMoodSchema>) {
     const { text, count } = input;
 
+    // Validate required parameters (defensive check)
+    if (!text) {
+      return {
+        success: false,
+        error: 'Missing required parameter: text',
+        mood: 'unknown',
+        suggestions: [],
+        text_length: 0,
+        analysis: 'Cannot analyze mood without text input',
+      };
+    }
+
     // Simple sentiment analysis based on keywords
     const positiveWords = [
       'happy',

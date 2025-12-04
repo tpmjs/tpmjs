@@ -18,6 +18,18 @@ export const textToEmoji = tool({
   async execute(input: z.infer<typeof TextToEmojiSchema>) {
     const { text, style } = input;
 
+    // Validate required parameters (defensive check)
+    if (!text) {
+      return {
+        success: false,
+        error: 'Missing required parameter: text',
+        original: '',
+        converted: '',
+        style,
+        emoji_count: 0,
+      };
+    }
+
     // Simple word-to-emoji mappings
     const emojiMap: Record<string, string> = {
       // Emotions

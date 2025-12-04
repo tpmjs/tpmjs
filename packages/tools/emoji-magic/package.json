@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/emoji-magic",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "AI SDK tools for emoji-magic - convert text to emojis and back!",
   "type": "module",
   "main": "dist/index.js",
