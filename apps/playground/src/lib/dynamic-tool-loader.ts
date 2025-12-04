@@ -111,47 +111,78 @@ export async function loadToolDynamically(
     console.log(`🔗 Railway URL: ${RAILWAY_SERVICE_URL}`);
 
     // Call Railway service to load and describe tool
-    const response = await fetch(`${RAILWAY_SERVICE_URL}/load-and-describe`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        packageName,
-        exportName,
-        version,
-        importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
-        env: env || {},
-      }),
-    });
+    // 120 second timeout per tool to handle large dependency downloads
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 120000);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ Railway service error (${response.status}): ${errorText}`);
+    let response;
+    let data;
 
-      // Trigger health check update in background (non-blocking)
-      reportToolFailure(
-        packageName,
-        exportName,
-        `Railway service error (${response.status}): ${errorText}`,
-        'import'
-      ).catch((err) =>
-        console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
-      );
+    try {
+      response = await fetch(`${RAILWAY_SERVICE_URL}/load-and-describe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageName,
+          exportName,
+          version,
+          importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
+          env: env || {},
+        }),
+        signal: controller.signal,
+      });
 
-      return null;
-    }
+      clearTimeout(timeout);
 
-    const data = await response.json();
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ Railway service error (${response.status}): ${errorText}`);
 
-    if (!data.success) {
-      console.error(`❌ Failed to load tool: ${data.error}`);
-
-      // Trigger health check update in background (non-blocking)
-      reportToolFailure(packageName, exportName, data.error || 'Unknown error', 'import').catch(
-        (err) =>
+        // Trigger health check update in background (non-blocking)
+        reportToolFailure(
+          packageName,
+          exportName,
+          `Railway service error (${response.status}): ${errorText}`,
+          'import'
+        ).catch((err) =>
           console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
-      );
+        );
 
-      return null;
+        return null;
+      }
+
+      data = await response.json();
+
+      if (!data.success) {
+        console.error(`❌ Failed to load tool: ${data.error}`);
+
+        // Trigger health check update in background (non-blocking)
+        reportToolFailure(packageName, exportName, data.error || 'Unknown error', 'import').catch(
+          (err) =>
+            console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
+        );
+
+        return null;
+      }
+    } catch (fetchError) {
+      clearTimeout(timeout);
+
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        console.error(`❌ Railway request timeout after 120s for ${packageName}/${exportName}`);
+
+        reportToolFailure(
+          packageName,
+          exportName,
+          'Railway service timeout (120s) - tool dependencies may be too large',
+          'import'
+        ).catch((err) =>
+          console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
+        );
+
+        return null;
+      }
+
+      throw fetchError;
     }
 
     console.log(`✅ Tool loaded from Railway: ${cacheKey}`);

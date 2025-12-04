@@ -12,7 +12,7 @@ import { loadAllTools, sanitizeToolName } from '~/lib/tool-loader';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 60;
+export const maxDuration = 300; // 5 minutes for complex tool loading
 
 // Add conversation state tracking (in-memory for MVP)
 // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
