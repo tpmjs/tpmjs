@@ -104,7 +104,14 @@ async function loadAndDescribe(req: Request): Promise<Response> {
     } else {
       // Dynamic import from esm.sh (Deno supports this natively!)
       const url = importUrl || `https://esm.sh/${packageName}@${version}`;
-      console.log(`📦 Importing: ${url}`);
+
+      // Log cache status for visibility
+      const isFirstImport = !moduleCache.has(cacheKey);
+      if (isFirstImport) {
+        console.log(`📦 Importing from network (will be cached by Deno): ${url}`);
+      } else {
+        console.log(`✅ Using in-memory cache: ${url}`);
+      }
 
       const module = await import(url);
       let rawExport = module[exportName];
