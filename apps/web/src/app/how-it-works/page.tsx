@@ -497,6 +497,175 @@ const result = await streamText({
             </div>
           </section>
 
+          {/* Beta: Dynamic Tool Loading */}
+          <section className="mb-16">
+            <div className="inline-flex items-center gap-2 mb-6">
+              <span className="px-3 py-1 text-sm font-semibold bg-primary/10 text-primary rounded-full">
+                🧪 Beta
+              </span>
+              <h2 className="text-3xl font-bold text-foreground">Dynamic Tool Loading</h2>
+            </div>
+
+            <div className="space-y-6">
+              <p className="text-lg text-foreground-secondary">
+                Our playground demonstrates the future of AI agents: tools that discover and load
+                themselves dynamically based on conversation context.
+              </p>
+
+              {/* How It Works */}
+              <div className="p-6 border border-border rounded-lg bg-surface space-y-6">
+                <div>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">
+                    🔍 BM25 Search + Context Awareness
+                  </h3>
+                  <p className="text-foreground-secondary mb-4">
+                    When you chat in the playground, your messages are analyzed using the{' '}
+                    <strong className="text-foreground">BM25 ranking algorithm</strong> to find the
+                    most relevant tools from the entire registry.
+                  </p>
+                  <CodeBlock
+                    language="typescript"
+                    code={`// The playground automatically searches for relevant tools
+const relevantTools = await searchTpmjsTools({
+  query: userMessage,
+  limit: 5,
+  recentMessages: lastThreeMessages  // Context matters!
+});
+
+// Tools are ranked by:
+// - BM25 relevance score (keyword matching)
+// - Quality score (documentation, downloads)
+// - Download popularity (logarithmic boost)
+// Result: The right tools, at the right time`}
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">
+                    ⚡ Zero-Config Dynamic Loading
+                  </h3>
+                  <p className="text-foreground-secondary mb-4">
+                    Found tools are loaded on-demand from esm.sh and executed in a sandboxed Deno
+                    environment on Railway.
+                  </p>
+                  <CodeBlock
+                    language="typescript"
+                    code={`// Traditional approach: Static tool imports
+import { weatherTool } from '@acme/weather';
+import { searchTool } from '@acme/search';
+// Problem: Must know tools ahead of time ❌
+
+// TPMJS approach: Dynamic tool loading
+import { streamText } from 'ai';
+import { searchTpmjsToolsTool } from '@tpmjs/search-registry';
+
+const result = await streamText({
+  model: openai('gpt-4'),
+  messages,
+  tools: {
+    // This meta-tool lets the AI discover its own tools!
+    searchTpmjsTools: searchTpmjsToolsTool,
+  },
+});
+
+// Agent decides: "I need weather data"
+//   → Searches registry → Finds @acme/weather
+//   → Loads from esm.sh → Executes in Deno sandbox ✅`}
+                  />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">
+                    🏝️ Sandboxed Execution
+                  </h3>
+                  <p className="text-foreground-secondary mb-4">
+                    All dynamically loaded tools execute in an isolated Deno runtime on Railway,
+                    ensuring security and reliability.
+                  </p>
+                  <div className="grid md:grid-cols-3 gap-4 mt-4">
+                    <div className="p-4 border border-border rounded bg-background">
+                      <h4 className="font-semibold mb-2 text-foreground text-sm">
+                        Network Imports
+                      </h4>
+                      <p className="text-xs text-foreground-secondary">
+                        Deno loads packages directly from esm.sh with{' '}
+                        <code className="text-xs">--experimental-network-imports</code>
+                      </p>
+                    </div>
+                    <div className="p-4 border border-border rounded bg-background">
+                      <h4 className="font-semibold mb-2 text-foreground text-sm">
+                        Automatic Health Checks
+                      </h4>
+                      <p className="text-xs text-foreground-secondary">
+                        Failed imports or executions trigger health status updates in the registry
+                      </p>
+                    </div>
+                    <div className="p-4 border border-border rounded bg-background">
+                      <h4 className="font-semibold mb-2 text-foreground text-sm">
+                        Process-Level Caching
+                      </h4>
+                      <p className="text-xs text-foreground-secondary">
+                        Tools are cached per conversation to avoid redundant network requests
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">
+                    🎯 Coming Soon: Collections
+                  </h3>
+                  <p className="text-foreground-secondary mb-4">
+                    Imagine pre-configured tool bundles (mini sub-agents) that you can reference by
+                    name:
+                  </p>
+                  <CodeBlock
+                    language="typescript"
+                    code={`// Future API concept (not yet implemented)
+const result = await streamText({
+  model: openai('gpt-4'),
+  messages,
+  tools: await tpmjs.loadToolsFor(messages, {
+    collections: ['web-scraping', 'data-analysis'],
+    // Loads curated tool sets optimized for specific tasks
+    // Collections can be public (official) or private (your own)
+  }),
+});
+
+// Example collections:
+// - 'web-scraping': puppeteer, cheerio, readability tools
+// - 'data-analysis': pandas-like tools, plotting, statistics
+// - 'ecommerce': payment, inventory, shipping tools
+// - Or build your own custom collections!`}
+                  />
+                  <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded">
+                    <p className="text-sm text-foreground-secondary">
+                      <strong className="text-foreground">Why collections?</strong> They let you
+                      compose specialized sub-agents without manually curating tool lists. Think of
+                      them as "skill packs" for your AI.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Try It */}
+              <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5">
+                <h3 className="text-xl font-semibold mb-3 text-foreground">
+                  Try It in the Playground
+                </h3>
+                <p className="text-foreground-secondary mb-4">
+                  Ask the playground agent to "search for tools about X" and watch it discover,
+                  load, and execute tools dynamically!
+                </p>
+                <Link href="/playground">
+                  <Button size="lg" variant="default">
+                    Open Playground
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </section>
+
           {/* CTA */}
           <section className="text-center py-12 border border-border rounded-lg bg-surface">
             <h2 className="text-3xl font-bold mb-4 text-foreground">Ready to Get Started?</h2>
