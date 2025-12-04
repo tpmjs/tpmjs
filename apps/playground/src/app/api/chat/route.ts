@@ -10,11 +10,6 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-// Initialize OpenAI provider
-const openai = createOpenAI({
-  apiKey: env.OPENAI_API_KEY,
-});
-
 // Add conversation state tracking (in-memory for MVP)
 // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
 const conversationStates = new Map<string, { loadedTools: Record<string, any> }>();
@@ -34,6 +29,25 @@ export async function POST(request: NextRequest) {
 
     console.log(`🔑 Conversation ID: ${conversationId}`);
     console.log(`🔐 Client env vars: ${Object.keys(clientEnv).length} keys`);
+
+    // Initialize OpenAI with client-provided or server API key
+    const apiKey = clientEnv.OPENAI_API_KEY || env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'OPENAI_API_KEY is required. Please add it in the Settings sidebar.',
+        }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    const openai = createOpenAI({
+      apiKey,
+    });
 
     // Get or create conversation state
     if (!conversationStates.has(conversationId)) {
