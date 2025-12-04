@@ -1,6 +1,8 @@
+import { prisma } from '@tpmjs/db';
 import { jsonSchema, tool } from 'ai';
 
 // Cache for tool wrappers (process-level)
+// biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
 const moduleCache = new Map<string, any>();
 
 // Cache for per-conversation active tools
@@ -34,6 +36,51 @@ export function setConversationEnv(conversationId: string, env: Record<string, s
  */
 function getConversationEnv(conversationId: string): Record<string, string> {
   return conversationEnv.get(conversationId) || {};
+}
+
+/**
+ * Report tool failure and trigger async health check
+ * Non-blocking - logs error and triggers health check in background
+ */
+async function reportToolFailure(
+  packageName: string,
+  exportName: string,
+  error: string,
+  phase: 'import' | 'execution'
+): Promise<void> {
+  try {
+    // Find the tool in the database
+    const tool = await prisma.tool.findFirst({
+      where: {
+        exportName,
+        package: {
+          npmPackageName: packageName,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!tool) {
+      console.warn(`⚠️  Tool not found in database for health check: ${packageName}/${exportName}`);
+      return;
+    }
+
+    console.log(`🏥 Triggering health check for ${packageName}/${exportName} (${tool.id})`);
+
+    // Update health status immediately (optimistic)
+    await prisma.tool.update({
+      where: { id: tool.id },
+      data: {
+        [phase === 'import' ? 'importHealth' : 'executionHealth']: 'BROKEN',
+        healthCheckError: error,
+        lastHealthCheck: new Date(),
+      },
+    });
+
+    console.log(`✅ Health status updated for ${packageName}/${exportName}`);
+  } catch (err) {
+    console.error('❌ Failed to report tool failure:', err);
+  }
 }
 
 /**
@@ -77,6 +124,17 @@ export async function loadToolDynamically(
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`❌ Railway service error (${response.status}): ${errorText}`);
+
+      // Trigger health check update in background (non-blocking)
+      reportToolFailure(
+        packageName,
+        exportName,
+        `Railway service error (${response.status}): ${errorText}`,
+        'import'
+      ).catch((err) =>
+        console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
+      );
+
       return null;
     }
 
@@ -84,6 +142,13 @@ export async function loadToolDynamically(
 
     if (!data.success) {
       console.error(`❌ Failed to load tool: ${data.error}`);
+
+      // Trigger health check update in background (non-blocking)
+      reportToolFailure(packageName, exportName, data.error || 'Unknown error', 'import').catch(
+        (err) =>
+          console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
+      );
+
       return null;
     }
 
@@ -125,6 +190,17 @@ export async function loadToolDynamically(
 
         if (!result.success) {
           console.error(`❌ Tool execution failed: ${result.error}`);
+
+          // Trigger health check update in background (non-blocking)
+          reportToolFailure(
+            packageName,
+            exportName,
+            result.error || 'Tool execution failed',
+            'execution'
+          ).catch((err) =>
+            console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
+          );
+
           throw new Error(result.error || 'Tool execution failed');
         }
 
