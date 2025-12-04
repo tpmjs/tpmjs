@@ -116,7 +116,7 @@ export function ToolsSidebar(): React.ReactElement {
           tabIndex={0}
           aria-label="Close modal"
         >
-          <div className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-surface p-6 shadow-xl">
+          <div className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-background p-6 shadow-xl">
             {/* Close button */}
             <button
               type="button"
@@ -184,7 +184,7 @@ export function ToolsSidebar(): React.ReactElement {
                 </h3>
                 <div className="space-y-2">
                   {Object.entries(selectedTool.env).map(([key, config]) => (
-                    <div key={key} className="rounded border border-border bg-background p-3">
+                    <div key={key} className="rounded border border-border bg-surface p-3">
                       <div className="mb-1 flex items-center gap-2">
                         <code className="text-sm font-mono text-foreground">{key}</code>
                         {config.required && (
@@ -204,7 +204,7 @@ export function ToolsSidebar(): React.ReactElement {
             {selectedTool.importUrl && (
               <div className="mb-6">
                 <h3 className="mb-2 text-lg font-semibold text-foreground">Import URL</h3>
-                <code className="block rounded bg-background p-3 text-xs font-mono text-foreground-secondary break-all">
+                <code className="block rounded bg-surface p-3 text-xs font-mono text-foreground-secondary break-all">
                   {selectedTool.importUrl}
                 </code>
               </div>
@@ -214,7 +214,7 @@ export function ToolsSidebar(): React.ReactElement {
             {selectedTool.toolId && (
               <div>
                 <h3 className="mb-2 text-lg font-semibold text-foreground">Tool ID</h3>
-                <code className="block rounded bg-background p-3 text-xs font-mono text-foreground-secondary">
+                <code className="block rounded bg-surface p-3 text-xs font-mono text-foreground-secondary">
                   {selectedTool.toolId}
                 </code>
               </div>
