@@ -38,48 +38,11 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       console.log(`✅ Cache hit: ${cacheKey}`);
       toolModule = moduleCache.get(cacheKey);
     } else {
-      // Try multiple import strategies for maximum compatibility
-      // biome-ignore lint/suspicious/noImplicitAnyLet: Module type is dynamic
-      let module;
-      // biome-ignore lint/suspicious/noImplicitAnyLet: Error type is dynamic
-      let importError;
+      // Dynamic import from esm.sh (Deno supports this natively!)
+      const url = importUrl || `https://esm.sh/${packageName}@${version}`;
+      console.log(`📦 Importing: ${url}`);
 
-      // Strategy 1: Use Deno's npm: specifier (Node.js compatibility mode)
-      try {
-        const npmUrl = `npm:${packageName}@${version}`;
-        console.log(`📦 Trying npm: specifier (Node.js compat): ${npmUrl}`);
-        module = await import(npmUrl);
-        console.log('✅ Successfully imported via npm: specifier');
-      } catch (error) {
-        console.log('❌ npm: import failed:', error.message);
-        importError = error;
-
-        // Strategy 2: Fall back to esm.sh with explicit Node target
-        try {
-          const url = importUrl || `https://esm.sh/${packageName}@${version}`;
-          // Force esm.sh to use Node.js target instead of Deno target
-          const esmUrl = url.includes('?') ? `${url}&target=esnext` : `${url}?target=esnext`;
-          console.log(`📦 Trying esm.sh with Node target: ${esmUrl}`);
-          module = await import(esmUrl);
-          console.log('✅ Successfully imported via esm.sh');
-        } catch (esmError) {
-          console.error('❌ Both import strategies failed');
-          console.error('  npm: error:', error.message);
-          console.error('  esm.sh error:', esmError.message);
-          return Response.json(
-            {
-              success: false,
-              error: `Failed to import package: ${esmError.message}`,
-              details: {
-                npmError: error.message,
-                esmError: esmError.message,
-              },
-            },
-            { status: 500 }
-          );
-        }
-      }
-
+      const module = await import(url);
       let rawExport = module[exportName];
 
       if (!rawExport) {
@@ -343,49 +306,10 @@ async function executeTool(req: Request): Promise<Response> {
       console.log(`✅ Using cached tool: ${cacheKey}`);
       toolModule = moduleCache.get(cacheKey);
     } else {
-      // Try multiple import strategies for maximum compatibility
-      // biome-ignore lint/suspicious/noImplicitAnyLet: Module type is dynamic
-      let module;
-      // biome-ignore lint/suspicious/noImplicitAnyLet: Error type is dynamic
-      let importError;
+      const url = importUrl || `https://esm.sh/${packageName}@${version}`;
+      console.log(`📦 Importing for execution: ${url}`);
 
-      // Strategy 1: Use Deno's npm: specifier (Node.js compatibility mode)
-      try {
-        const npmUrl = `npm:${packageName}@${version}`;
-        console.log(`📦 Trying npm: specifier (Node.js compat): ${npmUrl}`);
-        module = await import(npmUrl);
-        console.log('✅ Successfully imported via npm: specifier');
-      } catch (error) {
-        console.log('❌ npm: import failed:', error.message);
-        importError = error;
-
-        // Strategy 2: Fall back to esm.sh with explicit Node target
-        try {
-          const url = importUrl || `https://esm.sh/${packageName}@${version}`;
-          // Force esm.sh to use Node.js target instead of Deno target
-          const esmUrl = url.includes('?') ? `${url}&target=esnext` : `${url}?target=esnext`;
-          console.log(`📦 Trying esm.sh with Node target: ${esmUrl}`);
-          module = await import(esmUrl);
-          console.log('✅ Successfully imported via esm.sh');
-        } catch (esmError) {
-          console.error('❌ Both import strategies failed');
-          console.error('  npm: error:', error.message);
-          console.error('  esm.sh error:', esmError.message);
-          return Response.json(
-            {
-              success: false,
-              error: `Failed to import package: ${esmError.message}`,
-              details: {
-                npmError: error.message,
-                esmError: esmError.message,
-              },
-              executionTimeMs: Date.now() - startTime,
-            },
-            { status: 500 }
-          );
-        }
-      }
-
+      const module = await import(url);
       let rawExport = module[exportName];
 
       if (!rawExport) {
