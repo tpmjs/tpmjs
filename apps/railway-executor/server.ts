@@ -491,14 +491,33 @@ async function executeTool(req: Request): Promise<Response> {
       if (envKeys.length > 0) {
         console.log(`🔐 Injecting ${envKeys.length} environment variables:`, envKeys);
         for (const [key, value] of Object.entries(env)) {
-          Deno.env.set(key, String(value));
-          console.log(`  ✅ Set ${key} = ${String(value).substring(0, 10)}...`);
+          const stringValue = String(value);
+
+          // Set in Deno environment (for esm.sh imports)
+          Deno.env.set(key, stringValue);
+
+          // ALSO set in Node.js process.env (for npm: imports)
+          // @ts-ignore - process is available in Node.js compatibility mode
+          if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
+            // @ts-ignore - process.env exists in Node compat mode
+            globalThis.process.env[key] = stringValue;
+          }
+
+          console.log(`  ✅ Set ${key} = ${stringValue.substring(0, 10)}...`);
         }
-        // Verify they're set
+        // Verify they're set in both places
         console.log(
           '🔍 Verification - Deno.env has:',
           envKeys.map((k) => `${k}=${Deno.env.get(k)?.substring(0, 10)}...`)
         );
+        // @ts-ignore - process is available in Node.js compatibility mode
+        if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
+          console.log(
+            '🔍 Verification - process.env has:',
+            // @ts-ignore - process.env exists in Node compat mode
+            envKeys.map((k) => `${k}=${globalThis.process.env[k]?.substring(0, 10)}...`)
+          );
+        }
       } else {
         console.log('⚠️  No env vars provided in request');
       }
