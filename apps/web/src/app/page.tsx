@@ -173,6 +173,37 @@ export default async function HomePage(): Promise<React.ReactElement> {
                 Share your tool with the AI community. Automatic discovery, quality scoring, and
                 seamless integration with popular AI frameworks.
               </p>
+
+              {/* Generator Highlight Box */}
+              <div className="mb-12 p-6 border-2 border-primary/50 rounded-lg bg-primary/5 text-left">
+                <div className="flex items-start gap-4">
+                  <div className="text-4xl">✨</div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-2 text-foreground">
+                      Start with Our Package Generator
+                    </h3>
+                    <p className="text-sm text-foreground-secondary mb-4">
+                      Create a production-ready TPMJS tool package in seconds with our CLI
+                      generator. Includes 2-3 tools, complete setup, and best practices.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <code className="text-sm bg-surface px-4 py-2 rounded text-foreground border border-border">
+                        npx @tpmjs/create-basic-tools
+                      </code>
+                      <a
+                        href="https://github.com/tpmjs/tpmjs/tree/main/packages/tools/create-basic-tools#readme"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button size="sm" variant="outline">
+                          View Docs →
+                        </Button>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="p-4">
                   <div className="text-3xl mb-2">🚀</div>

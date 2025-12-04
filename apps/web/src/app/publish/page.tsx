@@ -27,9 +27,50 @@ export default function PublishPage(): React.ReactElement {
             </p>
           </div>
 
+          {/* Generator Callout */}
+          <section className="mb-16 p-8 border-2 border-primary/50 rounded-lg bg-primary/5">
+            <div className="flex items-start gap-6">
+              <div className="text-6xl">🚀</div>
+              <div className="flex-1">
+                <h2 className="text-3xl font-bold mb-4 text-foreground">
+                  Use Our Package Generator
+                </h2>
+                <p className="text-lg text-foreground-secondary mb-6">
+                  The fastest way to create a TPMJS tool package! Our CLI generator scaffolds a
+                  production-ready package with 2-3 tools, complete setup, and best practices
+                  built-in.
+                </p>
+                <CodeBlock language="bash" code="npx @tpmjs/create-basic-tools" size="md" />
+                <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                  <a
+                    href="https://github.com/tpmjs/tpmjs/tree/main/packages/tools/create-basic-tools#readme"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button size="lg" variant="default">
+                      View Full Documentation
+                    </Button>
+                  </a>
+                  <a
+                    href="https://www.npmjs.com/package/@tpmjs/create-basic-tools"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button size="lg" variant="outline">
+                      View on NPM
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Quick Start */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Quick Start</h2>
+            <h2 className="text-3xl font-bold mb-6 text-foreground">Manual Setup</h2>
+            <p className="text-lg text-foreground-secondary mb-6">
+              Prefer to set up manually? Follow these steps:
+            </p>
             <div className="prose prose-invert max-w-none">
               <ol className="space-y-4 text-foreground-secondary">
                 <li className="text-lg">Create a new NPM package</li>
