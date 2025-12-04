@@ -4,7 +4,14 @@ import { CodeBlock } from './CodeBlock';
 
 // Mock react-syntax-highlighter to avoid ESM compatibility issues
 vi.mock('react-syntax-highlighter', () => ({
-  Prism: ({ children, ...props }: any) => <code {...props}>{children}</code>,
+  Prism: ({
+    children,
+    codeTagProps,
+  }: {
+    children: React.ReactNode;
+    codeTagProps?: { style?: React.CSSProperties; className?: string };
+    [key: string]: unknown;
+  }) => <code {...(codeTagProps || {})}>{children}</code>,
 }));
 
 vi.mock('react-syntax-highlighter/dist/esm/styles/prism', () => ({

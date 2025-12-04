@@ -168,22 +168,15 @@ GET /api/tools?official=true`}
                 <h3 className="text-xl font-semibold mb-4 text-foreground">Execute Tools</h3>
                 <CodeBlock
                   language="typescript"
-                  code={`import { generateText } from 'ai';
+                  code={`import { streamText } from 'ai';
+import { analyzeSentiment } from '@yourname/awesome-tool';
 
-const result = await generateText({
+const result = await streamText({
   model: openai('gpt-4'),
   prompt: 'Analyze the sentiment of: I love this product!',
   tools: {
-    analyzeSentiment: {
-      description: 'Analyze sentiment of text',
-      parameters: z.object({
-        text: z.string().describe('Text to analyze'),
-      }),
-      execute: async ({ text }) => {
-        // Tool execution handled by TPMJS
-        return await executeTpmjsTool('@yourname/awesome-tool', 'analyzeSentiment', { text });
-      },
-    },
+    analyzeSentiment,  // Just import and use alongside your other tools
+    // ... your other tools
   },
 });`}
                 />
