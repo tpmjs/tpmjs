@@ -2,6 +2,16 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CodeBlock } from './CodeBlock';
 
+// Mock react-syntax-highlighter to avoid ESM compatibility issues
+vi.mock('react-syntax-highlighter', () => ({
+  Prism: ({ children, ...props }: any) => <code {...props}>{children}</code>,
+}));
+
+vi.mock('react-syntax-highlighter/dist/esm/styles/prism', () => ({
+  prism: {},
+  vscDarkPlus: {},
+}));
+
 // Mock clipboard API
 const mockClipboard = {
   writeText: vi.fn(),
