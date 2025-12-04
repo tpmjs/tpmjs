@@ -5,23 +5,51 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-// Simple text-based search scoring (fallback until BM25 is fixed)
-function calculateTextScore(query: string, document: string): number {
-  const queryTokens = query.toLowerCase().split(/\s+/);
-  const docLower = document.toLowerCase();
+// BM25 parameters
+const k1 = 1.5; // term frequency saturation parameter
+const b = 0.75; // length normalization parameter
+
+// Tokenize text into words
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter((t) => t.length > 0);
+}
+
+// Calculate term frequency
+function termFrequency(term: string, tokens: string[]): number {
+  return tokens.filter((t) => t === term).length;
+}
+
+// Calculate BM25 score
+function calculateBM25(
+  query: string,
+  document: string,
+  avgDocLength: number,
+  totalDocs: number,
+  docFrequencies: Map<string, number>
+): number {
+  const queryTokens = tokenize(query);
+  const docTokens = tokenize(document);
+  const docLength = docTokens.length;
 
   let score = 0;
 
-  for (const token of queryTokens) {
-    // Exact match in document
-    if (docLower.includes(token)) {
-      score += 1;
-    }
+  for (const term of queryTokens) {
+    const tf = termFrequency(term, docTokens);
+    if (tf === 0) continue;
 
-    // Boost if token appears in beginning (likely more relevant)
-    if (docLower.startsWith(token)) {
-      score += 0.5;
-    }
+    // IDF calculation
+    const docFreq = docFrequencies.get(term) || 0;
+    const idf = Math.log((totalDocs - docFreq + 0.5) / (docFreq + 0.5) + 1);
+
+    // BM25 formula
+    const numerator = tf * (k1 + 1);
+    const denominator = tf + k1 * (1 - b + b * (docLength / avgDocLength));
+
+    score += idf * (numerator / denominator);
   }
 
   return score;
@@ -36,7 +64,13 @@ export async function GET(request: Request) {
     const category = searchParams.get('category');
     const limit = Math.min(Number.parseInt(searchParams.get('limit') || '10'), 50);
 
-    console.log(`🔎 [SEARCH API] Query: "${query}", Category: ${category}, Limit: ${limit}`);
+    // Get recent messages for context (passed as JSON in 'messages' param)
+    const messagesParam = searchParams.get('messages');
+    const recentMessages = messagesParam ? JSON.parse(messagesParam) : [];
+
+    console.log(
+      `🔎 [SEARCH API] Query: "${query}", Category: ${category}, Limit: ${limit}, Messages: ${recentMessages.length}`
+    );
 
     // Fetch all tools with package info
     const tools = await prisma.tool.findMany({
@@ -50,20 +84,47 @@ export async function GET(request: Request) {
 
     console.log(`📊 [SEARCH API] Found ${tools.length} tools in database`);
 
-    // Build searchable documents and calculate scores
-    const scoredResults = tools.map((tool) => {
-      const document = [
+    // Combine query with recent messages for better context
+    const fullQuery = [query, ...recentMessages].filter(Boolean).join(' ');
+    console.log(`🔍 [SEARCH API] Full search context: "${fullQuery.slice(0, 100)}..."`);
+
+    // Build all documents first
+    const documents = tools.map((tool) => ({
+      tool,
+      text: [
         tool.description,
         tool.exportName,
         tool.package.npmPackageName,
         tool.package.npmDescription || '',
         ...(tool.package.npmKeywords || []),
-      ].join(' ');
+      ].join(' '),
+    }));
 
-      const textScore = calculateTextScore(query, document);
-      const qualityBoost = Number.parseFloat(tool.qualityScore || '0') * 0.5;
+    // Calculate document frequencies (IDF)
+    const docFrequencies = new Map<string, number>();
+    const queryTokens = tokenize(fullQuery);
+
+    for (const term of queryTokens) {
+      let count = 0;
+      for (const doc of documents) {
+        const docTokens = tokenize(doc.text);
+        if (docTokens.includes(term)) {
+          count++;
+        }
+      }
+      docFrequencies.set(term, count);
+    }
+
+    // Calculate average document length
+    const totalTokens = documents.reduce((sum, doc) => sum + tokenize(doc.text).length, 0);
+    const avgDocLength = totalTokens / documents.length;
+
+    // Calculate BM25 scores
+    const scoredResults = documents.map(({ tool, text }) => {
+      const bm25Score = calculateBM25(fullQuery, text, avgDocLength, tools.length, docFrequencies);
+      const qualityBoost = Number(tool.qualityScore ?? 0) * 0.5;
       const downloadBoost = Math.log10((tool.package.npmDownloadsLastMonth || 0) + 1) * 0.1;
-      const finalScore = textScore + qualityBoost + downloadBoost;
+      const finalScore = bm25Score + qualityBoost + downloadBoost;
 
       return { tool, score: finalScore };
     });

@@ -7,6 +7,7 @@ type SearchTpmjsToolsInput = {
   query: string;
   category?: string;
   limit?: number;
+  recentMessages?: string[];
 };
 
 /**
@@ -51,17 +52,30 @@ export const searchTpmjsToolsTool = tool({
         minimum: 1,
         maximum: 20,
       },
+      recentMessages: {
+        type: 'array',
+        description: 'Recent user messages for context (optional)',
+        items: {
+          type: 'string',
+        },
+      },
     },
     required: ['query'],
     additionalProperties: false,
   }),
-  async execute({ query, category, limit = 10 }) {
-    console.log('🔍 searchTpmjsTools.execute() called with:', { query, category, limit });
+  async execute({ query, category, limit = 10, recentMessages = [] }) {
+    console.log('🔍 searchTpmjsTools.execute() called with:', {
+      query,
+      category,
+      limit,
+      recentMessages: recentMessages.length,
+    });
 
     const params = new URLSearchParams({
       q: query,
       limit: String(limit),
       ...(category && { category }),
+      ...(recentMessages.length > 0 && { messages: JSON.stringify(recentMessages) }),
     });
 
     // Use environment variable, or default to production API (falls back to localhost in dev)
@@ -69,9 +83,8 @@ export const searchTpmjsToolsTool = tool({
       process.env.TPMJS_API_URL ||
       (process.env.NODE_ENV === 'production' ? 'https://tpmjs.com' : 'http://localhost:3000');
 
-    // Note: /api/tools/search endpoint exists in local dev but not deployed yet
-    // Using /api/tools as fallback with client-side filtering for now
-    const url = `${baseUrl}/api/tools?${params}`;
+    // Use the /api/tools/search endpoint for BM25 scoring with context
+    const url = `${baseUrl}/api/tools/search?${params}`;
 
     console.log(`🌐 Fetching: ${url}`);
 
@@ -83,37 +96,18 @@ export const searchTpmjsToolsTool = tool({
       throw new Error(`Search failed: ${response.statusText}`);
     }
 
+    // biome-ignore lint/suspicious/noExplicitAny: API response types vary
     const data = (await response.json()) as any;
     console.log('📦 Search response data:', JSON.stringify(data, null, 2));
 
-    // Handle both /api/tools (deployed) and /api/tools/search (local dev) responses
-    const toolsArray = data.results?.tools || data.data || [];
-
-    // Client-side filtering if query is provided (since deployed /api/tools doesn't support search yet)
-    let filteredTools = toolsArray;
-    if (query?.trim()) {
-      const queryLower = query.toLowerCase();
-      filteredTools = toolsArray.filter((tool: any) => {
-        const searchableText = [
-          tool.description,
-          tool.exportName,
-          tool.package?.npmPackageName,
-          tool.package?.npmDescription,
-          ...(tool.package?.npmKeywords || []),
-        ]
-          .join(' ')
-          .toLowerCase();
-        return searchableText.includes(queryLower);
-      });
-    }
-
-    // Apply limit
-    const limitedTools = filteredTools.slice(0, limit);
+    // Handle /api/tools/search response structure
+    const toolsArray = data.results?.tools || [];
 
     return {
       query,
-      matchCount: filteredTools.length,
-      tools: limitedTools.map((tool: any) => ({
+      matchCount: toolsArray.length,
+      // biome-ignore lint/suspicious/noExplicitAny: Tool types from API vary
+      tools: toolsArray.map((tool: any) => ({
         toolId: tool.id,
         packageName: tool.package.npmPackageName,
         exportName: tool.exportName,

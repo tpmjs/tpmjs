@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       execute: typeof searchTpmjsToolsTool.execute,
     });
 
-    // 2. Extract user query from last message for tool search
+    // 2. Extract user query and last 3 user messages for tool search
     const lastMessage = messages[messages.length - 1];
     let userQuery = '';
     if (lastMessage?.role === 'user') {
@@ -88,7 +88,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Get last 3 user messages for context
+    const recentUserMessages = messages
+      .filter((msg) => msg.role === 'user')
+      .slice(-3)
+      .map((msg) => {
+        // Extract text from parts
+        const parts = (msg as any).parts || [];
+        for (const part of parts) {
+          if (part.type === 'text') {
+            return part.text;
+          }
+        }
+        return '';
+      })
+      .filter(Boolean);
+
     console.log(`💬 User query: "${userQuery}"`);
+    console.log(`📝 Recent messages: ${recentUserMessages.length}`);
 
     // 3. Automatically search for relevant tools based on the user's message
     if (userQuery && userQuery.trim().length > 0) {
@@ -100,6 +117,7 @@ export async function POST(request: NextRequest) {
           {
             query: userQuery,
             limit: 5, // Get top 5 relevant tools
+            recentMessages: recentUserMessages,
           },
           {} as any
         );
