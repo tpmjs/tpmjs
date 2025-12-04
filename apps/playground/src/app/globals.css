@@ -1,3 +1,30 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Light mode (default) */
+  :root {
+    /* Status Colors */
+    --error: 0 65% 51%; /* Red */
+    --error-foreground: 0 0% 100%; /* White text */
+    --warning: 36 100% 50%; /* Amber */
+    --warning-foreground: 0 0% 100%;
+    --success: 152 57% 45%; /* Green */
+    --success-foreground: 0 0% 100%;
+    --info: 210 100% 56%; /* Blue */
+    --info-foreground: 0 0% 100%;
+  }
+
+  /* Dark mode */
+  .dark {
+    --error: 0 65% 58%; /* Brighter red for dark mode */
+    --error-foreground: 0 0% 100%;
+    --warning: 36 100% 55%;
+    --warning-foreground: 0 0% 100%;
+    --success: 152 57% 50%;
+    --success-foreground: 0 0% 100%;
+    --info: 210 100% 60%;
+    --info-foreground: 0 0% 100%;
+  }
+}
