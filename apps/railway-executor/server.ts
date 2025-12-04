@@ -232,6 +232,17 @@ async function loadAndDescribe(req: Request): Promise<Response> {
         rawJsonSchema = toolModule.inputSchema.schema;
       }
 
+      // Strategy 2.5: Try AI SDK jsonSchema() wrapper (has .jsonSchema property)
+      // Note: Some versions use .jsonSchema instead of .schema
+      if (
+        !rawJsonSchema &&
+        toolModule.inputSchema.jsonSchema &&
+        typeof toolModule.inputSchema.jsonSchema === 'object'
+      ) {
+        console.log(`📋 Using AI SDK jsonSchema.jsonSchema for ${cacheKey}`);
+        rawJsonSchema = toolModule.inputSchema.jsonSchema;
+      }
+
       // Strategy 3: Try Zod v3 schema (detect via _def property and convert)
       if (!rawJsonSchema && toolModule.inputSchema._def) {
         console.log(
@@ -252,7 +263,10 @@ async function loadAndDescribe(req: Request): Promise<Response> {
         hasInputSchema: !!toolModule.inputSchema,
         inputSchemaType: typeof toolModule.inputSchema,
         hasToJSONSchema: typeof toolModule.inputSchema?.toJSONSchema === 'function',
-        hasJsonSchema: typeof toolModule.inputSchema?.jsonSchema === 'function',
+        hasJsonSchemaFunction: typeof toolModule.inputSchema?.jsonSchema === 'function',
+        hasJsonSchemaProperty:
+          !!toolModule.inputSchema?.jsonSchema &&
+          typeof toolModule.inputSchema?.jsonSchema === 'object',
         hasSchema: !!toolModule.inputSchema?.schema,
         keys: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
       });
