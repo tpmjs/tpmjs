@@ -21,10 +21,6 @@
     {
       "path": "/api/sync/metrics",
       "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/sync/health-check",
-      "schedule": "0 2 * * *"
     }
   ]
 }
