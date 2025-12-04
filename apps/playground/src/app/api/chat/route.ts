@@ -81,7 +81,8 @@ export async function POST(request: NextRequest) {
       console.log('🔎 Searching for relevant tools...');
 
       try {
-        const searchResult = await searchTpmjsToolsTool.execute(
+        // biome-ignore lint/style/noNonNullAssertion: Tool created with tool() always has execute
+        const searchResult = await searchTpmjsToolsTool.execute!(
           {
             query: userQuery,
             limit: 5, // Get top 5 relevant tools
