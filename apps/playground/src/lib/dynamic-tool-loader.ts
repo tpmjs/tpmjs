@@ -87,7 +87,6 @@ async function reportToolFailure(
  * Dynamically load a tool via Railway service
  * Railway service runs with --experimental-network-imports and can import from esm.sh
  */
-// biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
 export async function loadToolDynamically(
   packageName: string,
   exportName: string,
@@ -95,6 +94,7 @@ export async function loadToolDynamically(
   conversationId: string,
   importUrl?: string,
   env?: Record<string, string>
+  // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
 ): Promise<any | null> {
   const cacheKey = getCacheKey(packageName, exportName);
 
@@ -216,15 +216,14 @@ export async function loadToolDynamically(
     return toolWrapper;
   } catch (error) {
     console.error(`❌ Failed to load ${packageName}#${exportName}:`, error);
-    console.error(`   Stack:`, error instanceof Error ? error.stack : 'No stack trace');
+    console.error('   Stack:', error instanceof Error ? error.stack : 'No stack trace');
     return null;
   }
 }
 
 /**
- * Load multiple tools in parallel
+ * Load multiple tools in parallel with collated error reporting
  */
-// biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
 export async function loadToolsBatch(
   toolMetadata: Array<{
     packageName: string;
@@ -234,9 +233,10 @@ export async function loadToolsBatch(
   }>,
   conversationId: string,
   env?: Record<string, string>
+  // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
 ): Promise<Record<string, any>> {
   console.log(`📦 Loading ${toolMetadata.length} tools for conversation ${conversationId}`);
-  console.log(`🔑 Env vars being passed:`, Object.keys(env || {}));
+  console.log('🔑 Env vars being passed:', Object.keys(env || {}));
 
   const promises = toolMetadata.map((meta) =>
     loadToolDynamically(
@@ -247,19 +247,40 @@ export async function loadToolsBatch(
       meta.importUrl,
       env
     ).then((tool) => ({
+      packageName: meta.packageName,
+      exportName: meta.exportName,
       key: getCacheKey(meta.packageName, meta.exportName),
       tool,
+      success: tool !== null,
     }))
   );
 
   const results = await Promise.all(promises);
 
+  // Separate successful and failed tools
+  const successful = results.filter((r) => r.success);
+  const failed = results.filter((r) => !r.success);
+
+  // Build tools object
   // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
   const tools: Record<string, any> = {};
-  for (const { key, tool } of results) {
-    if (tool) {
-      tools[key] = tool;
+  for (const result of successful) {
+    tools[result.key] = result.tool;
+  }
+
+  // Log collated error summary
+  console.log('\n📊 Batch Load Summary:');
+  console.log(`   ✅ Successful: ${successful.length}/${toolMetadata.length}`);
+  console.log(`   ❌ Failed: ${failed.length}/${toolMetadata.length}`);
+
+  if (failed.length > 0) {
+    console.log('\n❌ Failed Tools:');
+    for (const result of failed) {
+      console.log(`   - ${result.packageName}/${result.exportName}`);
+      console.log('     (Health check triggered automatically)');
     }
+    console.log('\n💡 Note: Failed tools have been marked as broken in the database.');
+    console.log('   Check individual error logs above for detailed failure reasons.');
   }
 
   return tools;
@@ -272,7 +293,8 @@ export function addConversationTools(conversationId: string, toolKeys: string[])
   if (!conversationTools.has(conversationId)) {
     conversationTools.set(conversationId, new Set());
   }
-  const tools = conversationTools.get(conversationId)!;
+  const tools = conversationTools.get(conversationId);
+  if (!tools) return; // Should never happen after the check above
   for (const key of toolKeys) {
     tools.add(key);
   }
