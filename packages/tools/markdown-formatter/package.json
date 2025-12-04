@@ -1,0 +1,35 @@
+{
+  "name": "@tpmjs/markdown-formatter",
+  "version": "0.2.0",
+  "description": "AI SDK tools for formatting and manipulating markdown text",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["tpmjs-tool", "markdown", "formatter", "text-processing"],
+  "tpmjs": {
+    "category": "text-analysis",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "markdownToPlainText",
+        "description": "Convert markdown to plain text by removing all formatting"
+      },
+      {
+        "exportName": "formatMarkdownTable",
+        "description": "Format and align markdown table columns for better readability"
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.131",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "^5.9.3"
+  }
+}
