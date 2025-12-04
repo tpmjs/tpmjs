@@ -7,6 +7,7 @@
 import { zodToJsonSchema } from 'https://esm.sh/zod-to-json-schema@3.25.0';
 
 // Cache for imported tool modules
+// biome-ignore lint/suspicious/noExplicitAny: Tool types are dynamic and vary by package
 const moduleCache = new Map<string, any>();
 
 /**
@@ -15,7 +16,7 @@ const moduleCache = new Map<string, any>();
 async function loadAndDescribe(req: Request): Promise<Response> {
   try {
     const body = await req.json();
-    const { packageName, exportName, version, importUrl } = body;
+    const { packageName, exportName, version, importUrl, env } = body;
 
     if (!packageName || !exportName || !version) {
       return Response.json(
@@ -29,6 +30,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
 
     const cacheKey = `${packageName}::${exportName}`;
 
+    // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
 
     // Check cache first
@@ -41,9 +43,9 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       console.log(`📦 Importing: ${url}`);
 
       const module = await import(url);
-      toolModule = module[exportName];
+      let rawExport = module[exportName];
 
-      if (!toolModule) {
+      if (!rawExport) {
         console.error(`❌ Export "${exportName}" not found. Available:`, Object.keys(module));
         return Response.json(
           {
@@ -55,9 +57,97 @@ async function loadAndDescribe(req: Request): Promise<Response> {
         );
       }
 
+      // Check if it's a factory function (not a direct tool)
+      if (typeof rawExport === 'function' && !rawExport.description && !rawExport.execute) {
+        console.log(`🏭 Detected factory function for ${cacheKey}, attempting to call...`);
+
+        let factoryResult = null;
+
+        // Strategy 1: Try calling with no arguments
+        try {
+          console.log(`  Trying: ${exportName}()`);
+          factoryResult = rawExport();
+          if (factoryResult?.description && factoryResult?.execute) {
+            console.log('  ✅ Success with no-args factory');
+            rawExport = factoryResult;
+          }
+        } catch (error) {
+          console.log('  ❌ No-args failed:', error.message);
+        }
+
+        // Strategy 2: Try calling with env vars as config object
+        if (!factoryResult && env && typeof env === 'object') {
+          // Build multiple config variations to try
+          const configVariations = [];
+
+          // Variation 1: Raw env vars (e.g., { VALYU_API_KEY: 'xxx' })
+          configVariations.push({ ...env });
+
+          // Variation 2: Normalized to camelCase apiKey (e.g., { apiKey: 'xxx' })
+          const apiKeyValue = Object.entries(env).find(([key]) =>
+            key.toUpperCase().includes('API_KEY')
+          )?.[1];
+          if (apiKeyValue) {
+            configVariations.push({ apiKey: apiKeyValue });
+          }
+
+          // Variation 3: Normalized to key (e.g., { key: 'xxx' })
+          if (apiKeyValue) {
+            configVariations.push({ key: apiKeyValue });
+          }
+
+          // Try each config variation
+          for (const config of configVariations) {
+            try {
+              console.log(`  Trying: ${exportName}(`, Object.keys(config), ')');
+              factoryResult = rawExport(config);
+              if (factoryResult?.description && factoryResult?.execute) {
+                console.log('  ✅ Success with config:', Object.keys(config));
+                rawExport = factoryResult;
+                break;
+              }
+            } catch (error) {
+              console.log('  ❌ Config', Object.keys(config), 'failed:', error.message);
+            }
+          }
+        }
+
+        // Strategy 3: Try calling with first env var value (single-arg pattern)
+        if (!factoryResult && env && typeof env === 'object') {
+          try {
+            const firstValue = Object.values(env)[0];
+            if (firstValue) {
+              console.log(`  Trying: ${exportName}(firstEnvValue)`);
+              factoryResult = rawExport(firstValue);
+              if (factoryResult?.description && factoryResult?.execute) {
+                console.log('  ✅ Success with single-arg factory');
+                rawExport = factoryResult;
+              }
+            }
+          } catch (error) {
+            console.log('  ❌ Single-arg failed:', error.message);
+          }
+        }
+
+        // If all factory strategies failed, return error
+        if (!factoryResult) {
+          console.error('❌ Factory function detected but all call strategies failed');
+          return Response.json(
+            {
+              success: false,
+              error: `Tool "${exportName}" is a factory function but couldn't be initialized. Tried: no-args, config object, and single-arg patterns.`,
+              hint: 'This tool may require specific configuration. Check package documentation.',
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      toolModule = rawExport;
+
       // Validate it's an AI SDK tool
       if (!toolModule.description || !toolModule.execute) {
-        console.error(`❌ Invalid AI SDK tool structure:`, {
+        console.error('❌ Invalid AI SDK tool structure:', {
           hasDescription: !!toolModule.description,
           hasExecute: !!toolModule.execute,
           hasInputSchema: !!toolModule.inputSchema,
@@ -173,7 +263,7 @@ async function executeTool(req: Request): Promise<Response> {
     const body = await req.json();
     const { packageName, exportName, version, importUrl, params, env } = body;
 
-    console.log(`📥 Execute request:`, {
+    console.log('📥 Execute request:', {
       packageName,
       exportName,
       version,
@@ -194,6 +284,7 @@ async function executeTool(req: Request): Promise<Response> {
     const cacheKey = `${packageName}::${exportName}`;
     const startTime = Date.now();
 
+    // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
 
     // Check cache or import
@@ -205,16 +296,113 @@ async function executeTool(req: Request): Promise<Response> {
       console.log(`📦 Importing for execution: ${url}`);
 
       const module = await import(url);
-      toolModule = module[exportName];
+      let rawExport = module[exportName];
 
-      if (!toolModule || !toolModule.execute) {
+      if (!rawExport) {
         return Response.json(
           {
             success: false,
-            error: 'Tool not found or invalid',
+            error: 'Tool not found',
             executionTimeMs: Date.now() - startTime,
           },
           { status: 404 }
+        );
+      }
+
+      // Check if it's a factory function (not a direct tool)
+      if (typeof rawExport === 'function' && !rawExport.description && !rawExport.execute) {
+        console.log(`🏭 Detected factory function for ${cacheKey}, attempting to call...`);
+
+        let factoryResult = null;
+
+        // Strategy 1: Try calling with no arguments
+        try {
+          console.log(`  Trying: ${exportName}()`);
+          factoryResult = rawExport();
+          if (factoryResult?.execute) {
+            console.log('  ✅ Success with no-args factory');
+            rawExport = factoryResult;
+          }
+        } catch (error) {
+          console.log('  ❌ No-args failed:', error.message);
+        }
+
+        // Strategy 2: Try calling with env vars as config object
+        if (!factoryResult && env && typeof env === 'object') {
+          // Build multiple config variations to try
+          const configVariations = [];
+
+          // Variation 1: Raw env vars (e.g., { VALYU_API_KEY: 'xxx' })
+          configVariations.push({ ...env });
+
+          // Variation 2: Normalized to camelCase apiKey (e.g., { apiKey: 'xxx' })
+          const apiKeyValue = Object.entries(env).find(([key]) =>
+            key.toUpperCase().includes('API_KEY')
+          )?.[1];
+          if (apiKeyValue) {
+            configVariations.push({ apiKey: apiKeyValue });
+          }
+
+          // Variation 3: Normalized to key (e.g., { key: 'xxx' })
+          if (apiKeyValue) {
+            configVariations.push({ key: apiKeyValue });
+          }
+
+          // Try each config variation
+          for (const config of configVariations) {
+            try {
+              console.log(`  Trying: ${exportName}(`, Object.keys(config), ')');
+              factoryResult = rawExport(config);
+              if (factoryResult?.execute) {
+                console.log('  ✅ Success with config:', Object.keys(config));
+                rawExport = factoryResult;
+                break;
+              }
+            } catch (error) {
+              console.log('  ❌ Config', Object.keys(config), 'failed:', error.message);
+            }
+          }
+        }
+
+        // Strategy 3: Try calling with first env var value (single-arg pattern)
+        if (!factoryResult && env && typeof env === 'object') {
+          try {
+            const firstValue = Object.values(env)[0];
+            if (firstValue) {
+              console.log(`  Trying: ${exportName}(firstEnvValue)`);
+              factoryResult = rawExport(firstValue);
+              if (factoryResult?.execute) {
+                console.log('  ✅ Success with single-arg factory');
+                rawExport = factoryResult;
+              }
+            }
+          } catch (error) {
+            console.log('  ❌ Single-arg failed:', error.message);
+          }
+        }
+
+        if (!factoryResult) {
+          return Response.json(
+            {
+              success: false,
+              error: `Tool "${exportName}" is a factory function but couldn't be initialized`,
+              executionTimeMs: Date.now() - startTime,
+            },
+            { status: 400 }
+          );
+        }
+      }
+
+      toolModule = rawExport;
+
+      if (!toolModule.execute) {
+        return Response.json(
+          {
+            success: false,
+            error: 'Tool missing execute function',
+            executionTimeMs: Date.now() - startTime,
+          },
+          { status: 400 }
         );
       }
 
@@ -232,14 +420,14 @@ async function executeTool(req: Request): Promise<Response> {
         }
         // Verify they're set
         console.log(
-          `🔍 Verification - Deno.env has:`,
+          '🔍 Verification - Deno.env has:',
           envKeys.map((k) => `${k}=${Deno.env.get(k)?.substring(0, 10)}...`)
         );
       } else {
-        console.log(`⚠️  No env vars provided in request`);
+        console.log('⚠️  No env vars provided in request');
       }
     } else {
-      console.log(`⚠️  No env object in request body`);
+      console.log('⚠️  No env object in request body');
     }
 
     // Execute the tool
@@ -366,12 +554,12 @@ async function handler(req: Request): Promise<Response> {
 const port = Number.parseInt(Deno.env.get('PORT') || '3002');
 
 console.log(`🚀 Railway Tool Executor (Deno) running on port ${port}`);
-console.log(`📦 HTTP imports: ENABLED`);
+console.log('📦 HTTP imports: ENABLED');
 console.log(`🔗 Health check: http://localhost:${port}/health`);
-console.log(`🛠️  Endpoints:`);
-console.log(`   POST /load-and-describe - Load tool and get schema`);
-console.log(`   POST /execute-tool - Execute a tool with params`);
-console.log(`   POST /cache/clear - Clear module cache`);
-console.log(`   GET /cache/stats - Get cache statistics`);
+console.log('🛠️  Endpoints:');
+console.log('   POST /load-and-describe - Load tool and get schema');
+console.log('   POST /execute-tool - Execute a tool with params');
+console.log('   POST /cache/clear - Clear module cache');
+console.log('   GET /cache/stats - Get cache statistics');
 
 Deno.serve({ port }, handler);
