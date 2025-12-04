@@ -4,9 +4,6 @@ import { generateTsConfig, generateTsupConfig } from './generators/config-files.
 import { generatePackageJson } from './generators/package-json.js';
 import { generateReadme } from './generators/readme.js';
 import { generateIndexFile, generateToolFile } from './generators/source-code.js';
-import { promptCategoryAndMode, promptConfirmation, promptOutputPath } from './prompts/advanced.js';
-import { promptBasicInfo } from './prompts/basic.js';
-import { promptTools } from './prompts/tools.js';
 import type { GenerationResult, GeneratorConfig } from './types.js';
 import {
   copyTemplate,
@@ -23,41 +20,25 @@ import * as logger from './utils/logger.js';
 export async function runInteractiveCLI(): Promise<GenerationResult> {
   clack.intro(logger.bold('create-tpmjs-tool'));
 
-  // Step 1: Get basic package info
-  const packageInfo = await promptBasicInfo();
-  if (!packageInfo) {
+  // Only ask for package name
+  const name = await clack.text({
+    message: 'Package name',
+    placeholder: '@yourname/my-tools',
+    validate: (value) => {
+      if (!value) return 'Package name is required';
+      if (!value.includes('/')) return 'Package name should be scoped (e.g., @yourname/my-tools)';
+    },
+  });
+
+  if (clack.isCancel(name)) {
     clack.cancel('Operation cancelled');
     process.exit(0);
   }
 
-  // Step 2: Get tool definitions (minimum 2)
-  const tools = await promptTools();
-  if (!tools || tools.length < 2) {
-    clack.cancel('Operation cancelled');
-    process.exit(0);
-  }
-
-  // Step 3: Get category and mode
-  const categoryAndMode = await promptCategoryAndMode();
-
-  if (!categoryAndMode) {
-    clack.cancel('Operation cancelled');
-    process.exit(0);
-  }
-
-  packageInfo.category = categoryAndMode.category;
-
-  // Step 4: Get output path
-  const packageNameWithoutScope = packageInfo.name.split('/').pop() || packageInfo.name;
+  // Use defaults for everything else
+  const packageNameWithoutScope = (name as string).split('/').pop() || (name as string);
   const defaultPath = `./${packageNameWithoutScope}`;
-
-  const outputPath = await promptOutputPath(defaultPath);
-  if (!outputPath) {
-    clack.cancel('Operation cancelled');
-    process.exit(0);
-  }
-
-  const absoluteOutputPath = getAbsolutePath(outputPath);
+  const absoluteOutputPath = getAbsolutePath(defaultPath);
 
   // Check if directory exists
   if (await pathExists(absoluteOutputPath)) {
@@ -66,22 +47,34 @@ export async function runInteractiveCLI(): Promise<GenerationResult> {
     process.exit(1);
   }
 
-  // Step 5: Confirm generation
-  const confirmed = await promptConfirmation(packageInfo.name, tools.length, outputPath);
-  if (!confirmed) {
-    clack.cancel('Operation cancelled');
-    process.exit(0);
-  }
-
-  // Step 6: Generate the package
+  // Generate with sensible defaults
   const spinner = clack.spinner();
   spinner.start('Generating package...');
+
+  const packageInfo = {
+    name: name as string,
+    description: `AI SDK tools for ${packageNameWithoutScope}`,
+    author: '',
+    license: 'MIT',
+    category: 'ai-ml',
+  };
+
+  const tools = [
+    {
+      exportName: 'exampleTool',
+      description: 'An example tool - customize this for your use case',
+    },
+    {
+      exportName: 'anotherTool',
+      description: 'Another example tool - add your implementation here',
+    },
+  ];
 
   const config: GeneratorConfig = {
     packageInfo,
     tools,
     outputPath: absoluteOutputPath,
-    mode: categoryAndMode.mode,
+    mode: 'simple',
   };
 
   try {
@@ -90,13 +83,13 @@ export async function runInteractiveCLI(): Promise<GenerationResult> {
     spinner.stop('Package generated successfully!');
 
     clack.outro(`
-${logger.green('✓')} Success! Created ${logger.bold(packageInfo.name)} at ${logger.cyan(outputPath)}
+${logger.green('✓')} Success! Created ${logger.bold(packageInfo.name)} at ${logger.cyan(defaultPath)}
 
    Files created:
 ${result.filesCreated.map((f) => `     ${f}`).join('\n')}
 
    Next steps:
-     ${logger.cyan(`cd ${outputPath}`)}
+     ${logger.cyan(`cd ${defaultPath}`)}
      ${logger.cyan('pnpm install')}
      ${logger.cyan('pnpm build')}
      ${logger.cyan('pnpm type-check')}
