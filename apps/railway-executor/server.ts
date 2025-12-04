@@ -231,7 +231,10 @@ async function executeTool(req: Request): Promise<Response> {
           console.log(`  ✅ Set ${key} = ${String(value).substring(0, 10)}...`);
         }
         // Verify they're set
-        console.log(`🔍 Verification - Deno.env has:`, envKeys.map(k => `${k}=${Deno.env.get(k)?.substring(0, 10)}...`));
+        console.log(
+          `🔍 Verification - Deno.env has:`,
+          envKeys.map((k) => `${k}=${Deno.env.get(k)?.substring(0, 10)}...`)
+        );
       } else {
         console.log(`⚠️  No env vars provided in request`);
       }

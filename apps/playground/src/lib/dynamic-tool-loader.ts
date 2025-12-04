@@ -103,7 +103,10 @@ export async function loadToolDynamically(
 
         // Get the latest env vars for this conversation (not from closure!)
         const currentEnv = getConversationEnv(conversationId);
-        console.log(`🔐 Using env vars for conversation ${conversationId}:`, Object.keys(currentEnv));
+        console.log(
+          `🔐 Using env vars for conversation ${conversationId}:`,
+          Object.keys(currentEnv)
+        );
 
         const execResponse = await fetch(`${RAILWAY_SERVICE_URL}/execute-tool`, {
           method: 'POST',

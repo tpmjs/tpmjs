@@ -32,7 +32,10 @@ export async function POST(request: NextRequest) {
     const clientEnv: Record<string, string> = body.env || {};
 
     console.log(`🔑 Conversation ID: ${conversationId}`);
-    console.log(`🔐 Client env vars: ${Object.keys(clientEnv).length} keys`, Object.keys(clientEnv));
+    console.log(
+      `🔐 Client env vars: ${Object.keys(clientEnv).length} keys`,
+      Object.keys(clientEnv)
+    );
 
     // Store env vars for this conversation (so cached tools can access them)
     setConversationEnv(conversationId, clientEnv);
