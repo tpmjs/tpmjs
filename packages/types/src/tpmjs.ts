@@ -170,9 +170,10 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
     const data = multiResult.data;
 
     // Determine tier based on tool richness
-    const hasRichFields = data.tools.some(
-      (tool) => tool.parameters || tool.returns || tool.aiAgent
-    ) || data.env || data.frameworks;
+    const hasRichFields =
+      data.tools.some((tool) => tool.parameters || tool.returns || tool.aiAgent) ||
+      data.env ||
+      data.frameworks;
 
     return {
       valid: true,
@@ -203,8 +204,11 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
     };
 
     const hasRichFields =
-      legacyData.parameters || legacyData.returns || legacyData.env ||
-      legacyData.frameworks || legacyData.aiAgent;
+      legacyData.parameters ||
+      legacyData.returns ||
+      legacyData.env ||
+      legacyData.frameworks ||
+      legacyData.aiAgent;
 
     return {
       valid: true,

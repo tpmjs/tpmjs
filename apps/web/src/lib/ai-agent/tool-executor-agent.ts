@@ -109,9 +109,7 @@ export function createToolDefinition(tool: Tool & { package: Package }) {
 
   console.log('[createToolDefinition] Created Zod schema:', inputSchema);
 
-  const sanitizedName = sanitizeToolName(
-    `${tool.package.npmPackageName}-${tool.exportName}`
-  );
+  const sanitizedName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.exportName}`);
 
   // AI SDK v6 tool definition
   return {
@@ -199,9 +197,7 @@ export async function executeToolWithAgent(
   onTokenUpdate?: (tokens: Partial<TokenBreakdown>) => void
 ) {
   const toolDef = createToolDefinition(tool);
-  const sanitizedToolName = sanitizeToolName(
-    `${tool.package.npmPackageName}-${tool.exportName}`
-  );
+  const sanitizedToolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.exportName}`);
 
   console.log('[executeToolWithAgent] Tool name:', sanitizedToolName);
 

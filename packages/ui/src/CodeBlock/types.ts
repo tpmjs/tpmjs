@@ -10,7 +10,7 @@ export interface CodeBlockProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
   code: string;
 
   /**
-   * Programming language (for display/metadata only)
+   * Programming language for syntax highlighting
    * @default 'text'
    */
   language?: string;
@@ -26,6 +26,12 @@ export interface CodeBlockProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
    * @default true
    */
   showCopy?: boolean;
+
+  /**
+   * Color theme for syntax highlighting
+   * @default 'light'
+   */
+  theme?: 'light' | 'dark';
 }
 
 /**

@@ -134,6 +134,14 @@
     "./ActivityStream/ActivityStream": {
       "types": "./dist/ActivityStream/ActivityStream.d.ts",
       "default": "./dist/ActivityStream/ActivityStream.js"
+    },
+    "./ToolHealthBadge/ToolHealthBadge": {
+      "types": "./dist/ToolHealthBadge/ToolHealthBadge.d.ts",
+      "default": "./dist/ToolHealthBadge/ToolHealthBadge.js"
+    },
+    "./ToolHealthBanner/ToolHealthBanner": {
+      "types": "./dist/ToolHealthBanner/ToolHealthBanner.d.ts",
+      "default": "./dist/ToolHealthBanner/ToolHealthBanner.js"
     }
   },
   "files": ["dist"],
@@ -152,6 +160,7 @@
   },
   "dependencies": {
     "@tpmjs/utils": "workspace:*",
+    "react-syntax-highlighter": "^16.1.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {
@@ -163,6 +172,7 @@
     "@tpmjs/tsconfig": "workspace:*",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^9.39.1",
     "glob": "^13.0.0",
     "happy-dom": "^15.11.7",

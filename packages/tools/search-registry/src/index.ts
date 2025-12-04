@@ -118,6 +118,10 @@ export const searchTpmjsToolsTool = tool({
         env: tool.package.env,
         version: tool.package.npmVersion,
         importUrl: `https://esm.sh/${tool.package.npmPackageName}@${tool.package.npmVersion}`,
+        importHealth: tool.importHealth,
+        executionHealth: tool.executionHealth,
+        healthCheckError: tool.healthCheckError,
+        lastHealthCheck: tool.lastHealthCheck,
       })),
     };
   },

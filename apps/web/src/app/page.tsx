@@ -9,21 +9,16 @@ import { HeroSection } from '../components/home/HeroSection';
 async function getHomePageData() {
   try {
     // Fetch stats in parallel
-    const [toolCount, simulationCount, featuredTools, categoryStats] = await Promise.all([
+    const [packageCount, toolCount, featuredTools, categoryStats] = await Promise.all([
+      // Total package count
+      prisma.package.count(),
+
       // Total tool count
       prisma.tool.count(),
 
-      // Total successful simulations (as proxy for invocations)
-      prisma.simulation.count({
-        where: { status: 'success' },
-      }),
-
       // Top 6 featured tools by quality score
       prisma.tool.findMany({
-        orderBy: [
-          { qualityScore: 'desc' },
-          { package: { npmDownloadsLastMonth: 'desc' } },
-        ],
+        orderBy: [{ qualityScore: 'desc' }, { package: { npmDownloadsLastMonth: 'desc' } }],
         take: 6,
         select: {
           id: true,
@@ -50,30 +45,10 @@ async function getHomePageData() {
       }),
     ]);
 
-    // Calculate average latency from recent successful simulations
-    const recentSimulations = await prisma.simulation.findMany({
-      where: {
-        status: 'success',
-        executionTimeMs: { not: null },
-      },
-      select: { executionTimeMs: true },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    });
-
-    const avgLatency =
-      recentSimulations.length > 0
-        ? Math.round(
-            recentSimulations.reduce((sum, s) => sum + (s.executionTimeMs || 0), 0) /
-              recentSimulations.length
-          )
-        : 0;
-
     return {
       stats: {
+        packageCount,
         toolCount,
-        invocations: simulationCount,
-        avgLatency,
         categoryCount: categoryStats.length,
       },
       featuredTools,
@@ -86,9 +61,8 @@ async function getHomePageData() {
     console.error('Failed to fetch homepage data:', error);
     return {
       stats: {
+        packageCount: 0,
         toolCount: 0,
-        invocations: 0,
-        avgLatency: 0,
         categoryCount: 0,
       },
       featuredTools: [],
@@ -238,17 +212,30 @@ export default async function HomePage(): Promise<React.ReactElement> {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-foreground-secondary">© 2025 TPMJS. All rights reserved.</p>
             <div className="flex items-center gap-4 text-sm">
-              <button type="button" className="text-foreground-secondary hover:text-foreground">
-                Privacy
-              </button>
-              <span className="text-border">·</span>
-              <button type="button" className="text-foreground-secondary hover:text-foreground">
-                Terms
-              </button>
-              <span className="text-border">·</span>
-              <button type="button" className="text-foreground-secondary hover:text-foreground">
+              <a
+                href="mailto:hello@tpmjs.com"
+                className="text-foreground-secondary hover:text-foreground transition-colors"
+              >
                 Contact
-              </button>
+              </a>
+              <span className="text-border">·</span>
+              <a
+                href="https://github.com/your-org/tpmjs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground-secondary hover:text-foreground transition-colors"
+              >
+                GitHub
+              </a>
+              <span className="text-border">·</span>
+              <a
+                href="https://twitter.com/tpmjs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground-secondary hover:text-foreground transition-colors"
+              >
+                Twitter
+              </a>
             </div>
           </div>
         </Container>

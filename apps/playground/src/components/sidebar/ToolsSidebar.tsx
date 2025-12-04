@@ -3,6 +3,8 @@
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { ToolHealthBadge } from '@tpmjs/ui/ToolHealthBadge/ToolHealthBadge';
+import { ToolHealthBanner } from '@tpmjs/ui/ToolHealthBanner/ToolHealthBanner';
 import { useEffect, useState } from 'react';
 
 interface Tool {
@@ -16,6 +18,10 @@ interface Tool {
   frameworks?: string[];
   env?: Array<{ name: string; description: string; required?: boolean; default?: string }>;
   importUrl?: string;
+  importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
+  executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
+  healthCheckError?: string | null;
+  lastHealthCheck?: string | null;
 }
 
 export function ToolsSidebar(): React.ReactElement {
@@ -86,11 +92,16 @@ export function ToolsSidebar(): React.ReactElement {
                     <p className="text-xs text-foreground-secondary line-clamp-2">
                       {tool.description}
                     </p>
-                    <div className="mt-2 flex items-center gap-2">
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
                       <Badge variant="secondary" size="sm">
                         {tool.category}
                       </Badge>
                       <span className="text-xs text-foreground-tertiary">v{tool.version}</span>
+                      <ToolHealthBadge
+                        importHealth={tool.importHealth}
+                        executionHealth={tool.executionHealth}
+                        size="sm"
+                      />
                     </div>
                   </CardContent>
                 </Card>
@@ -155,6 +166,15 @@ export function ToolsSidebar(): React.ReactElement {
                 )}
               </div>
             </div>
+
+            {/* Health warning banner */}
+            <ToolHealthBanner
+              importHealth={selectedTool.importHealth}
+              executionHealth={selectedTool.executionHealth}
+              healthCheckError={selectedTool.healthCheckError}
+              lastHealthCheck={selectedTool.lastHealthCheck}
+              className="mb-6"
+            />
 
             {/* Description */}
             <div className="mb-6">

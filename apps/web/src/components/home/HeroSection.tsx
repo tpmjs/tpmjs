@@ -7,9 +7,8 @@ import { useState } from 'react';
 
 interface HeroSectionProps {
   stats: {
+    packageCount: number;
     toolCount: number;
-    invocations: number;
-    avgLatency: number;
     categoryCount: number;
   };
 }
@@ -72,21 +71,13 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
           {/* Live Metrics Strip */}
           <div className="mb-12 flex flex-wrap items-center gap-3 border-l-[6px] border-brutalist-accent pl-6 font-mono text-base md:text-lg font-bold uppercase tracking-wider">
             <div className="flex items-center gap-2">
+              <span className="text-foreground">{formatNumber(stats.packageCount)}</span>
+              <span className="text-foreground-secondary">PACKAGES</span>
+            </div>
+            <span className="text-foreground-tertiary">/</span>
+            <div className="flex items-center gap-2">
               <span className="text-foreground">{formatNumber(stats.toolCount)}</span>
               <span className="text-foreground-secondary">TOOLS</span>
-            </div>
-            <span className="text-foreground-tertiary">/</span>
-            <div className="flex items-center gap-2">
-              <span className="text-foreground">
-                {formatNumber(stats.invocations)}
-                {stats.invocations >= 1000 ? '+' : ''}
-              </span>
-              <span className="text-foreground-secondary">INVOCATIONS</span>
-            </div>
-            <span className="text-foreground-tertiary">/</span>
-            <div className="flex items-center gap-2">
-              <span className="text-foreground">{stats.avgLatency || '--'}ms</span>
-              <span className="text-foreground-secondary">AVG LATENCY</span>
             </div>
           </div>
 

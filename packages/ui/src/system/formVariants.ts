@@ -14,8 +14,8 @@ export const formInputBase = [
   'font-sans text-base',
   // Borders and radius
   'rounded-md border border-border',
-  // Colors
-  'bg-background text-foreground',
+  // Colors - Pure white background to stand out
+  'bg-surface text-foreground',
   // Placeholder
   'placeholder:text-foreground-tertiary',
   // Transitions

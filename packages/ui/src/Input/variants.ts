@@ -12,8 +12,8 @@ export const inputVariants = createVariants({
     'font-sans',
     // Borders & Radius
     'rounded-md border',
-    // Background
-    'bg-background',
+    // Background - Pure white to stand out
+    'bg-surface',
     // Transitions
     'transition-base',
     // Focus

@@ -464,7 +464,7 @@ export default function ToolDetailPage({
             )}
 
             {/* Tags */}
-            {tool.tags.length > 0 && (
+            {tool.tags && tool.tags.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Tags</CardTitle>

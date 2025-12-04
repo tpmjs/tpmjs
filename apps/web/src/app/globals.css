@@ -5,46 +5,46 @@
 @layer base {
   /* Light mode (default) */
   :root {
-    /* Backgrounds & Surfaces */
-    --background: 0 0% 100%; /* Pure white */
-    --surface: 210 20% 98%; /* Off-white */
+    /* Backgrounds & Surfaces - DRAMATIC CONTRAST */
+    --background: 220 15% 96%; /* Light blue-gray background */
+    --surface: 0 0% 100%; /* Pure white - cards really pop! */
     --surface-elevated: 0 0% 100%; /* White (elevated) */
-    --surface-overlay: 0 0% 98%; /* Light gray */
+    --surface-overlay: 0 0% 100%; /* White overlays */
 
     /* Foreground (Text) */
     --foreground: 222 47% 11%; /* Almost black */
-    --foreground-secondary: 215 16% 47%; /* Medium gray */
-    --foreground-tertiary: 215 16% 65%; /* Light gray */
-    --foreground-muted: 215 16% 75%; /* Very light gray */
+    --foreground-secondary: 215 25% 35%; /* Much darker for readability */
+    --foreground-tertiary: 215 20% 50%; /* Medium gray */
+    --foreground-muted: 215 16% 65%; /* Light gray */
 
-    /* Borders */
-    --border: 214 32% 91%; /* Light gray */
-    --border-strong: 214 32% 80%; /* Medium gray */
-    --border-subtle: 214 20% 95%; /* Very light gray */
+    /* Borders - MUCH MORE VISIBLE */
+    --border: 214 25% 80%; /* Strong medium gray */
+    --border-strong: 214 30% 60%; /* Dark gray for emphasis */
+    --border-subtle: 214 20% 88%; /* Subtle but visible */
 
-    /* Interactive States */
-    --primary: 222 47% 11%; /* Dark for light mode */
-    --primary-foreground: 210 40% 98%; /* Light text */
-    --secondary: 210 40% 96%; /* Light secondary */
+    /* Interactive States - MODERN & REFINED */
+    --primary: 221 83% 53%; /* Sophisticated blue */
+    --primary-foreground: 0 0% 100%; /* White text */
+    --secondary: 220 15% 90%; /* Subtle gray-blue bg */
     --secondary-foreground: 222 47% 11%; /* Dark text */
-    --accent: 210 40% 96%; /* Accent bg */
-    --accent-foreground: 222 47% 11%; /* Accent text */
-    --muted: 210 40% 96%; /* Muted bg */
-    --muted-foreground: 215 16% 47%; /* Muted text */
+    --accent: 221 75% 95%; /* Soft blue tint */
+    --accent-foreground: 221 70% 35%; /* Rich blue text */
+    --muted: 220 15% 92%; /* Subtle muted bg */
+    --muted-foreground: 215 25% 40%; /* Darker muted text */
 
-    /* Status Colors */
-    --success: 142 71% 45%;
-    --success-foreground: 142 76% 15%;
-    --error: 0 72% 51%;
-    --error-foreground: 0 86% 17%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 48 96% 19%;
-    --info: 217 91% 60%;
-    --info-foreground: 214 95% 23%;
+    /* Status Colors - Modern Editorial Palette */
+    --success: 152 57% 45%; /* Refined emerald green */
+    --success-foreground: 0 0% 100%; /* White text on success */
+    --error: 0 65% 51%; /* Sophisticated red, less harsh */
+    --error-foreground: 0 0% 100%; /* White text on error */
+    --warning: 36 100% 50%; /* Warm sophisticated amber */
+    --warning-foreground: 0 0% 100%; /* White text on warning */
+    --info: 210 100% 56%; /* Cool modern blue */
+    --info-foreground: 0 0% 100%; /* White text on info */
 
     /* Destructive (legacy) */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 65% 51%; /* Match error color */
+    --destructive-foreground: 0 0% 100%;
 
     /* Form Elements */
     --input: 214 32% 91%;
@@ -52,11 +52,11 @@
     --ring-offset: 0 0% 100%;
 
     /* Grid/Blueprint Pattern */
-    --grid-color: 214 32% 95%;
+    --grid-color: 214 32% 90%;
     --grid-size: 24px; /* Grid cell size */
 
     /* Card */
-    --card: 0 0% 100%;
+    --card: 0 0% 100%; /* Pure white - stands out dramatically on blue-gray background */
     --card-foreground: 222 47% 11%;
 
     /* Border Radii */
@@ -93,9 +93,9 @@
     --tracking-wider: 0.05em;
     --tracking-widest: 0.1em;
 
-    /* Brutalist Accent Colors */
-    --brutalist-accent: 221 83% 53%; /* #0066ff - Electric blue for light mode */
-    --brutalist-accent-hover: 221 83% 43%;
+    /* Brutalist Accent Colors - Modern Editorial */
+    --brutalist-accent: 221 83% 53%; /* Sophisticated blue */
+    --brutalist-accent-hover: 221 83% 45%; /* Slightly deeper on hover */
   }
 
   /* Dark mode (opt-in) - Vercel/Cursor/Perplexity aesthetic */
@@ -127,19 +127,19 @@
     --muted: 210 10% 12%; /* Muted background */
     --muted-foreground: 210 8% 60%; /* Muted text */
 
-    /* Status Colors (desaturated for dark mode) */
-    --success: 142 71% 45%; /* #10b981 - Green */
-    --success-foreground: 142 76% 95%; /* Light green text */
-    --error: 0 72% 51%; /* #ef4444 - Red */
-    --error-foreground: 0 86% 97%; /* Light red text */
-    --warning: 38 92% 50%; /* #f59e0b - Amber */
-    --warning-foreground: 48 96% 89%; /* Light amber text */
-    --info: 217 91% 60%; /* #3b82f6 - Blue */
-    --info-foreground: 214 95% 93%; /* Light blue text */
+    /* Status Colors - Modern Editorial (Dark Mode) */
+    --success: 152 57% 50%; /* Refined emerald - slightly brighter for dark */
+    --success-foreground: 0 0% 100%; /* White text */
+    --error: 0 65% 58%; /* Sophisticated red - brighter for dark */
+    --error-foreground: 0 0% 100%; /* White text */
+    --warning: 36 100% 55%; /* Warm amber - brighter for dark */
+    --warning-foreground: 0 0% 100%; /* White text */
+    --info: 210 100% 60%; /* Cool blue - brighter for dark */
+    --info-foreground: 0 0% 100%; /* White text */
 
     /* Destructive (legacy support) */
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 86% 97%;
+    --destructive: 0 65% 58%;
+    --destructive-foreground: 0 0% 100%;
 
     /* Form Elements */
     --input: 210 10% 20%; /* Input border */
@@ -153,9 +153,9 @@
     --card: 210 10% 8%;
     --card-foreground: 210 10% 90%;
 
-    /* Brutalist Accent Colors */
-    --brutalist-accent: 158 100% 50%; /* #00ff88 - Neon green for dark mode */
-    --brutalist-accent-hover: 158 100% 40%;
+    /* Brutalist Accent Colors - Modern Editorial */
+    --brutalist-accent: 210 100% 60%; /* Cool sophisticated blue for dark mode */
+    --brutalist-accent-hover: 210 100% 65%; /* Slightly brighter on hover */
   }
 
   /* Base element styles */

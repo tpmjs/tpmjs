@@ -10,17 +10,10 @@
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit"
   },
-  "keywords": [
-    "tpmjs-tool",
-    "ai-sdk",
-    "hello",
-    "example"
-  ],
+  "keywords": ["tpmjs-tool", "ai-sdk", "hello", "example"],
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": [
-      "vercel-ai"
-    ],
+    "frameworks": ["vercel-ai"],
     "tools": [
       {
         "exportName": "helloWorldTool",
@@ -70,8 +63,5 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ]
+  "files": ["dist", "README.md"]
 }

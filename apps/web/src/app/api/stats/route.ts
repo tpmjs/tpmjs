@@ -25,7 +25,7 @@ export async function GET() {
       // Official tools count (isOfficial is at package level)
       prisma.tool.count({
         where: {
-          package: { isOfficial: true }
+          package: { isOfficial: true },
         },
       }),
 

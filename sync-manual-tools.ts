@@ -1,12 +1,12 @@
-import { prisma } from './packages/db/src/index.js';
 import { manualTools } from './manual-tools.js';
+import { prisma } from './packages/db/src/index.js';
 import { fetchLatestPackageWithMetadata } from './packages/npm-client/src/package.js';
 
 async function syncManualTools() {
   console.log('\n🔧 Starting manual tools sync...\n');
 
   let processed = 0;
-  let skipped = 0;
+  const skipped = 0;
   let errors = 0;
 
   for (const manualTool of manualTools) {
@@ -26,7 +26,8 @@ async function syncManualTools() {
       const version = manualTool.npmVersion || npmData.version;
 
       // Get published date
-      const publishedAt = npmData.time?.[version] || npmData.time?.modified || new Date().toISOString();
+      const publishedAt =
+        npmData.time?.[version] || npmData.time?.modified || new Date().toISOString();
 
       // Upsert Package record
       const packageRecord = await prisma.package.upsert({
@@ -119,7 +120,7 @@ async function syncManualTools() {
   console.log(`  Total manual tools: ${manualTools.length}\n`);
 }
 
-function calculateTier(tool: typeof manualTools[0]): 'minimal' | 'rich' {
+function calculateTier(tool: (typeof manualTools)[0]): 'minimal' | 'rich' {
   // Tier is 'rich' if tool has parameters OR returns OR aiAgent
   if (tool.parameters || tool.returns || tool.aiAgent) {
     return 'rich';

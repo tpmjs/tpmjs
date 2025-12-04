@@ -52,6 +52,8 @@ export default function ToolSearchPage(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [officialCount, setOfficialCount] = useState(0);
 
   // Fetch tools from API
   useEffect(() => {
@@ -79,13 +81,31 @@ export default function ToolSearchPage(): React.ReactElement {
           params.set('broken', 'true');
         }
 
-        const response = await fetch(`/api/tools?${params.toString()}`);
-        const data = await response.json();
+        // Fetch tools and counts in parallel
+        const [toolsResponse, allCountResponse, officialCountResponse] = await Promise.all([
+          fetch(`/api/tools?${params.toString()}`),
+          fetch('/api/tools'),
+          fetch('/api/tools?official=true'),
+        ]);
 
-        if (data.success) {
-          const fetchedTools = data.data;
+        const [toolsData, allCountData, officialCountData] = await Promise.all([
+          toolsResponse.json(),
+          allCountResponse.json(),
+          officialCountResponse.json(),
+        ]);
+
+        if (toolsData.success) {
+          const fetchedTools = toolsData.data;
           setTools(fetchedTools);
           setError(null);
+
+          // Update counts
+          if (allCountData.success) {
+            setTotalCount(allCountData.data.length);
+          }
+          if (officialCountData.success) {
+            setOfficialCount(officialCountData.data.length);
+          }
 
           // Extract unique categories from all tools
           const categories = new Set<string>();
@@ -98,7 +118,7 @@ export default function ToolSearchPage(): React.ReactElement {
 
           setAvailableCategories(Array.from(categories).sort());
         } else {
-          setError(data.error || 'Failed to fetch tools');
+          setError(toolsData.error || 'Failed to fetch tools');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -186,11 +206,11 @@ export default function ToolSearchPage(): React.ReactElement {
         {/* Tabs */}
         <Tabs
           tabs={[
-            { id: 'all', label: 'All Tools', count: tools.length },
+            { id: 'all', label: 'All Tools', count: totalCount },
             {
               id: 'featured',
               label: 'Official',
-              count: tools.filter((t) => t.package.isOfficial).length,
+              count: officialCount,
             },
           ]}
           activeTab={activeTab}
