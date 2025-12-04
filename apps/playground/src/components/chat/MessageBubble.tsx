@@ -94,13 +94,13 @@ export function MessageBubble({
                       )}
 
                       {/* Tool Error */}
-                      {toolPart.error && (
+                      {(toolPart.errorText || toolPart.error) && (
                         <div>
                           <div className="mb-1 text-xs font-semibold text-red-500">Error:</div>
                           <pre className="overflow-x-auto rounded bg-red-500/10 p-2 text-xs text-red-400">
-                            {typeof toolPart.error === 'string'
-                              ? toolPart.error
-                              : JSON.stringify(toolPart.error, null, 2)}
+                            {typeof (toolPart.errorText || toolPart.error) === 'string'
+                              ? toolPart.errorText || toolPart.error
+                              : JSON.stringify(toolPart.errorText || toolPart.error, null, 2)}
                           </pre>
                         </div>
                       )}
