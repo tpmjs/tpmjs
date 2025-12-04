@@ -3,6 +3,7 @@ import { fetchChanges, fetchLatestPackageWithMetadata } from '@tpmjs/npm-client'
 import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '~/env';
+import { performHealthCheck } from '~/lib/health-check/health-check-service';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
 
         // Upsert each tool in the tools array
         for (const toolDef of validation.tools) {
-          await prisma.tool.upsert({
+          const upsertedTool = await prisma.tool.upsert({
             where: {
               packageId_exportName: {
                 packageId: packageRecord.id,
@@ -160,6 +161,14 @@ export async function POST(request: NextRequest) {
               aiAgent: toolDef.aiAgent ? (toolDef.aiAgent as any) : undefined,
             },
           });
+
+          // Trigger immediate health check (non-blocking)
+          performHealthCheck(upsertedTool.id, 'sync').catch((err) => {
+            console.error(
+              `Health check failed for ${pkg.name}/${toolDef.exportName} (${upsertedTool.id}):`,
+              err
+            );
+          });
         }
 
         // Delete orphaned tools (tools removed from package.json)
@@ -174,9 +183,7 @@ export async function POST(request: NextRequest) {
               id: { in: orphanedTools.map((t) => t.id) },
             },
           });
-          console.log(
-            `Deleted ${orphanedTools.length} orphaned tools from package: ${pkg.name}`
-          );
+          console.log(`Deleted ${orphanedTools.length} orphaned tools from package: ${pkg.name}`);
         }
 
         processed++;
