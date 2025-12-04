@@ -29,6 +29,10 @@ interface Tool {
   npmReadme: string | null;
   npmAuthor: { name: string; email?: string; url?: string } | string | null;
   npmMaintainers: Array<{ name: string; email?: string }> | null;
+  importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
+  executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
+  healthCheckError?: string | null;
+  lastHealthCheck?: string | null;
   tpmjsMetadata: {
     example?: string;
     parameters?: Array<{
@@ -77,6 +81,7 @@ export default function ToolDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [slug, setSlug] = useState<string>('');
+  const [recheckLoading, setRecheckLoading] = useState(false);
 
   useEffect(() => {
     // Join slug array to reconstruct package name (e.g., ['@tpmjs', 'text-transformer'] -> '@tpmjs/text-transformer')
@@ -137,6 +142,28 @@ export default function ToolDetailPage({
 
   const authorName = typeof tool.npmAuthor === 'string' ? tool.npmAuthor : tool.npmAuthor?.name;
 
+  const recheckHealth = async () => {
+    setRecheckLoading(true);
+    try {
+      const response = await fetch(`/api/tools/${slug}`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        alert(data.error || 'Recheck failed');
+        return;
+      }
+
+      // Refresh page to show updated health
+      window.location.reload();
+    } catch {
+      alert('Failed to recheck health');
+    } finally {
+      setRecheckLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
@@ -180,6 +207,56 @@ export default function ToolDetailPage({
             {tool.npmLicense && <Badge variant="outline">{tool.npmLicense}</Badge>}
           </div>
         </div>
+
+        {/* Health warning banner */}
+        {(tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN') && (
+          <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900">
+            <div className="flex items-start gap-3">
+              <span className="text-xl mt-0.5">⚠️</span>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
+                  This tool is currently broken
+                </h3>
+                <div className="space-y-1 text-sm text-red-700 dark:text-red-400">
+                  {tool.importHealth === 'BROKEN' && (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="error" size="sm">
+                        Import Failed
+                      </Badge>
+                      <span className="text-xs">Cannot load from Railway service</span>
+                    </div>
+                  )}
+                  {tool.executionHealth === 'BROKEN' && (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="error" size="sm">
+                        Execution Failed
+                      </Badge>
+                      <span className="text-xs">Runtime error with test parameters</span>
+                    </div>
+                  )}
+                </div>
+                {tool.healthCheckError && (
+                  <pre className="mt-2 p-2 rounded bg-red-100 dark:bg-red-900/30 text-xs font-mono text-red-800 dark:text-red-300 overflow-x-auto whitespace-pre-wrap">
+                    {tool.healthCheckError}
+                  </pre>
+                )}
+                {tool.lastHealthCheck && (
+                  <p className="text-xs text-red-600 dark:text-red-500 mt-2">
+                    Last checked: {new Date(tool.lastHealthCheck).toLocaleString()}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={recheckHealth}
+                  disabled={recheckLoading}
+                  className="mt-3 text-sm font-medium text-red-700 dark:text-red-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {recheckLoading ? 'Rechecking...' : 'Recheck health →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

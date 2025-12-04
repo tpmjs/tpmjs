@@ -26,6 +26,8 @@ interface Tool {
   exportName: string;
   description: string;
   qualityScore: string;
+  importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
+  executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   package: {
     npmPackageName: string;
     npmVersion: string;
@@ -45,6 +47,7 @@ export default function ToolSearchPage(): React.ReactElement {
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [healthFilter, setHealthFilter] = useState('all');
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +70,13 @@ export default function ToolSearchPage(): React.ReactElement {
 
         if (categoryFilter !== 'all') {
           params.set('category', categoryFilter);
+        }
+
+        if (healthFilter === 'healthy') {
+          params.set('importHealth', 'HEALTHY');
+          params.set('executionHealth', 'HEALTHY');
+        } else if (healthFilter === 'broken') {
+          params.set('broken', 'true');
         }
 
         const response = await fetch(`/api/tools?${params.toString()}`);
@@ -98,7 +108,7 @@ export default function ToolSearchPage(): React.ReactElement {
     };
 
     fetchTools();
-  }, [searchQuery, activeTab, categoryFilter]);
+  }, [searchQuery, activeTab, categoryFilter, healthFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -142,13 +152,29 @@ export default function ToolSearchPage(): React.ReactElement {
               />
             </div>
 
+            {/* Health filter */}
+            <div className="flex items-center gap-2 min-w-[200px]">
+              <span className="text-sm font-medium text-foreground-secondary">Health:</span>
+              <Select
+                value={healthFilter}
+                onChange={(e) => setHealthFilter(e.target.value)}
+                size="sm"
+                options={[
+                  { value: 'all', label: 'All Tools' },
+                  { value: 'healthy', label: 'Healthy Only' },
+                  { value: 'broken', label: 'Broken Only' },
+                ]}
+              />
+            </div>
+
             {/* Clear filters button */}
-            {categoryFilter !== 'all' && (
+            {(categoryFilter !== 'all' || healthFilter !== 'all') && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
                   setCategoryFilter('all');
+                  setHealthFilter('all');
                 }}
               >
                 Clear Filters
@@ -191,7 +217,9 @@ export default function ToolSearchPage(): React.ReactElement {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
                         <CardTitle>
-                          {tool.exportName !== 'default' ? tool.exportName : tool.package.npmPackageName}
+                          {tool.exportName !== 'default'
+                            ? tool.exportName
+                            : tool.package.npmPackageName}
                         </CardTitle>
                         <div className="text-sm text-foreground-secondary mt-1">
                           {tool.package.npmPackageName}
@@ -199,7 +227,9 @@ export default function ToolSearchPage(): React.ReactElement {
                       </div>
                       {tool.package.npmRepository && (
                         <a
-                          href={tool.package.npmRepository.url.replace('git+', '').replace('.git', '')}
+                          href={tool.package.npmRepository.url
+                            .replace('git+', '')
+                            .replace('.git', '')}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-foreground-secondary hover:text-foreground transition-colors"
@@ -217,10 +247,18 @@ export default function ToolSearchPage(): React.ReactElement {
                       <Badge variant="secondary" size="sm">
                         {tool.package.category}
                       </Badge>
-                      <span className="text-xs text-foreground-tertiary">v{tool.package.npmVersion}</span>
+                      <span className="text-xs text-foreground-tertiary">
+                        v{tool.package.npmVersion}
+                      </span>
                       {tool.package.isOfficial && (
                         <Badge variant="default" size="sm">
                           Official
+                        </Badge>
+                      )}
+                      {(tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN') && (
+                        <Badge variant="error" size="sm">
+                          <Icon icon="x" size="sm" className="mr-1" />
+                          Broken
                         </Badge>
                       )}
                     </div>
