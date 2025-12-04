@@ -245,18 +245,34 @@ export default function ToolSearchPage(): React.ReactElement {
                           {tool.package.npmPackageName}
                         </div>
                       </div>
-                      {tool.package.npmRepository && (
-                        <a
-                          href={tool.package.npmRepository.url
-                            .replace('git+', '')
-                            .replace('.git', '')}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-foreground-secondary hover:text-foreground transition-colors"
-                        >
-                          <Icon icon="externalLink" size="sm" />
-                        </a>
-                      )}
+                      {tool.package.npmRepository &&
+                        (() => {
+                          // Clean up repository URL
+                          let repoUrl = tool.package.npmRepository.url;
+
+                          // Remove git+ prefix
+                          repoUrl = repoUrl.replace(/^git\+/, '');
+
+                          // Remove .git suffix
+                          repoUrl = repoUrl.replace(/\.git$/, '');
+
+                          // Convert git:// to https://
+                          repoUrl = repoUrl.replace(/^git:\/\//, 'https://');
+
+                          // Convert ssh URLs to https
+                          repoUrl = repoUrl.replace(/^git@github\.com:/, 'https://github.com/');
+
+                          return (
+                            <a
+                              href={repoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-foreground-secondary hover:text-foreground transition-colors"
+                            >
+                              <Icon icon="externalLink" size="sm" />
+                            </a>
+                          );
+                        })()}
                     </div>
                     <CardDescription>{tool.description}</CardDescription>
                   </CardHeader>

@@ -153,6 +153,10 @@ export async function GET(request: Request) {
           exportName: tool.exportName,
           description: tool.description,
           qualityScore: tool.qualityScore,
+          importHealth: tool.importHealth,
+          executionHealth: tool.executionHealth,
+          healthCheckError: tool.healthCheckError,
+          lastHealthCheck: tool.lastHealthCheck,
           package: {
             npmPackageName: tool.package.npmPackageName,
             npmVersion: tool.package.npmVersion,

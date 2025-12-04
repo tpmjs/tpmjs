@@ -74,10 +74,10 @@ async function getHomePageData() {
 export default async function HomePage(): Promise<React.ReactElement> {
   const data = await getHomePageData();
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <AppHeader />
 
-      <main className="flex-1">
+      <main>
         {/* Hero Section - Dithered Design */}
         <HeroSection stats={data.stats} />
 
@@ -205,41 +205,6 @@ export default async function HomePage(): Promise<React.ReactElement> {
           </Container>
         </section>
       </main>
-
-      {/* Footer */}
-      <footer className="py-8 border-t border-border bg-surface">
-        <Container size="xl" padding="lg">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-foreground-secondary">© 2025 TPMJS. All rights reserved.</p>
-            <div className="flex items-center gap-4 text-sm">
-              <a
-                href="mailto:thomasalwyndavis@gmail.com"
-                className="text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                Contact
-              </a>
-              <span className="text-border">·</span>
-              <a
-                href="https://github.com/tpmjs/tpmjs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                GitHub
-              </a>
-              <span className="text-border">·</span>
-              <a
-                href="https://twitter.com/tpmjs"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground-secondary hover:text-foreground transition-colors"
-              >
-                Twitter
-              </a>
-            </div>
-          </div>
-        </Container>
-      </footer>
-    </div>
+    </>
   );
 }
