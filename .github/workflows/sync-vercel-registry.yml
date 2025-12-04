@@ -1,0 +1,263 @@
+name: Sync Vercel AI Registry
+
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+  # Run on pushes to main that modify the sync script
+  push:
+    branches:
+      - main
+    paths:
+      - 'sync-vercel-registry.ts'
+
+jobs:
+  sync-vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: |
+          echo "📦 Installing dependencies..."
+          pnpm install --frozen-lockfile
+          echo "✅ Dependencies installed"
+
+      - name: Run Vercel registry sync
+        id: sync
+        run: |
+          echo "════════════════════════════════════════"
+          echo "🚀 Starting Vercel AI Registry Sync"
+          echo "════════════════════════════════════════"
+          echo ""
+          echo "📅 Time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo "🔑 OpenAI API Key: ${OPENAI_API_KEY:0:8}..."
+          echo ""
+
+          # Run the sync script and capture output
+          output=$(pnpm tsx sync-vercel-registry.ts 2>&1)
+          exit_code=$?
+
+          echo "$output"
+          echo ""
+
+          # Extract statistics from output
+          processed=$(echo "$output" | grep "Processed:" | tail -1 | awk '{print $2}')
+          skipped=$(echo "$output" | grep "Skipped:" | tail -1 | awk '{print $2}')
+          errors=$(echo "$output" | grep "Errors:" | tail -1 | awk '{print $2}')
+          total=$(echo "$output" | grep "Total:" | tail -1 | awk '{print $2}')
+
+          # Set default values if extraction failed
+          processed=${processed:-0}
+          skipped=${skipped:-0}
+          errors=${errors:-0}
+          total=${total:-0}
+
+          echo "════════════════════════════════════════"
+          echo "📊 Sync Statistics"
+          echo "════════════════════════════════════════"
+          echo "✨ Processed: $processed"
+          echo "⏭️  Skipped: $skipped"
+          echo "❌ Errors: $errors"
+          echo "📦 Total: $total"
+          echo "════════════════════════════════════════"
+          echo ""
+
+          # Set outputs for later steps
+          echo "processed=$processed" >> $GITHUB_OUTPUT
+          echo "skipped=$skipped" >> $GITHUB_OUTPUT
+          echo "errors=$errors" >> $GITHUB_OUTPUT
+          echo "total=$total" >> $GITHUB_OUTPUT
+          echo "exit_code=$exit_code" >> $GITHUB_OUTPUT
+
+          # Check if manual-tools.ts was modified
+          if git diff --quiet manual-tools.ts; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No changes to manual-tools.ts"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "✅ manual-tools.ts was modified"
+            echo ""
+            echo "📝 Changes preview:"
+            git diff --stat manual-tools.ts
+            echo ""
+            git diff manual-tools.ts | head -50
+          fi
+
+          # Determine status for notifications
+          if [ "$exit_code" -ne 0 ]; then
+            echo "status_emoji=❌" >> $GITHUB_OUTPUT
+            echo "status_color=15158332" >> $GITHUB_OUTPUT  # Red
+            echo "status_text=Failed" >> $GITHUB_OUTPUT
+          elif [ "$errors" -gt 0 ]; then
+            echo "status_emoji=⚠️" >> $GITHUB_OUTPUT
+            echo "status_color=16776960" >> $GITHUB_OUTPUT  # Yellow
+            echo "status_text=Completed with errors" >> $GITHUB_OUTPUT
+          else
+            echo "status_emoji=✅" >> $GITHUB_OUTPUT
+            echo "status_color=5763719" >> $GITHUB_OUTPUT   # Green
+            echo "status_text=Success" >> $GITHUB_OUTPUT
+          fi
+
+          # Exit with the original exit code
+          exit $exit_code
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Commit and push changes
+        if: steps.sync.outputs.has_changes == 'true'
+        run: |
+          echo "════════════════════════════════════════"
+          echo "📝 Committing changes to manual-tools.ts"
+          echo "════════════════════════════════════════"
+          echo ""
+
+          # Configure git
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Show what's being committed
+          echo "📋 Files to commit:"
+          git status --short
+          echo ""
+
+          # Commit changes
+          git add manual-tools.ts
+
+          commit_message="chore: sync ${{ steps.sync.outputs.processed }} new tools from Vercel AI registry
+
+Added ${{ steps.sync.outputs.processed }} tools from Vercel AI SDK registry:
+- Total tools in registry: ${{ steps.sync.outputs.total }}
+- Already synced: ${{ steps.sync.outputs.skipped }}
+- Newly added: ${{ steps.sync.outputs.processed }}
+- Errors: ${{ steps.sync.outputs.errors }}
+
+🤖 Automated by GitHub Actions
+Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          git commit -m "$commit_message"
+
+          echo "✅ Changes committed"
+          echo ""
+
+          # Push changes
+          echo "📤 Pushing to remote..."
+          git push
+
+          echo "✅ Changes pushed successfully"
+          echo "════════════════════════════════════════"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Send Discord notification
+        if: always()
+        run: |
+          echo "════════════════════════════════════════"
+          echo "📢 Sending Discord notification"
+          echo "════════════════════════════════════════"
+
+          # Build fields array
+          base_fields='[
+            { "name": "📦 Total Tools", "value": "${{ steps.sync.outputs.total }}", "inline": true },
+            { "name": "✨ Processed", "value": "${{ steps.sync.outputs.processed }}", "inline": true },
+            { "name": "⏭️ Skipped", "value": "${{ steps.sync.outputs.skipped }}", "inline": true },
+            { "name": "❌ Errors", "value": "${{ steps.sync.outputs.errors }}", "inline": true },
+            { "name": "📝 Changes", "value": "${{ steps.sync.outputs.has_changes }}", "inline": true },
+            { "name": "🔗 Run", "value": "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": true }
+          ]'
+
+          # Add commit info if changes were made
+          if [ "${{ steps.sync.outputs.has_changes }}" = "true" ]; then
+            commit_sha=$(git rev-parse HEAD)
+            commit_url="https://github.com/${{ github.repository }}/commit/${commit_sha}"
+            additional_fields='[
+              { "name": "💾 Commit", "value": "['"${commit_sha:0:7}"']('"$commit_url"')", "inline": false }
+            ]'
+
+            # Merge fields
+            all_fields=$(jq -n --argjson base "$base_fields" --argjson additional "$additional_fields" '$base + $additional')
+          else
+            all_fields="$base_fields"
+          fi
+
+          # Create Discord embed
+          payload=$(jq -n \
+            --arg title "${{ steps.sync.outputs.status_emoji }} Vercel AI Registry Sync - ${{ steps.sync.outputs.status_text }}" \
+            --argjson color ${{ steps.sync.outputs.status_color }} \
+            --argjson fields "$all_fields" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
+            --arg description "Synced Vercel AI SDK tools registry with TPMJS manual tools" \
+            '
+            {
+              embeds: [{
+                title: $title,
+                description: $description,
+                color: $color,
+                fields: $fields,
+                timestamp: $timestamp,
+                footer: {
+                  text: "Vercel AI Registry Sync"
+                }
+              }]
+            }')
+
+          echo "📤 Sending payload to Discord..."
+
+          # Send to Discord
+          response=$(curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            -w "\nHTTP Status: %{http_code}\n" \
+            -s)
+
+          echo "$response"
+
+          if echo "$response" | grep -q "HTTP Status: 2"; then
+            echo "✅ Discord notification sent successfully"
+          else
+            echo "⚠️  Discord notification may have failed"
+          fi
+
+          echo "════════════════════════════════════════"
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "════════════════════════════════════════"
+          echo "📊 Workflow Summary"
+          echo "════════════════════════════════════════"
+          echo ""
+          echo "Status: ${{ steps.sync.outputs.status_text }}"
+          echo "Tools Processed: ${{ steps.sync.outputs.processed }}"
+          echo "Tools Skipped: ${{ steps.sync.outputs.skipped }}"
+          echo "Errors: ${{ steps.sync.outputs.errors }}"
+          echo "Total in Registry: ${{ steps.sync.outputs.total }}"
+          echo "Changes Made: ${{ steps.sync.outputs.has_changes }}"
+          echo ""
+
+          if [ "${{ steps.sync.outputs.has_changes }}" = "true" ]; then
+            echo "✅ New tools added to manual-tools.ts and committed"
+          else
+            echo "ℹ️  No new tools found - manual-tools.ts is up to date"
+          fi
+
+          echo ""
+          echo "════════════════════════════════════════"
