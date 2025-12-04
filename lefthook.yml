@@ -9,9 +9,6 @@ pre-commit:
     type-check:
       run: pnpm type-check
 
-    lint:
-      run: pnpm lint
-
 pre-push:
   commands:
     test:

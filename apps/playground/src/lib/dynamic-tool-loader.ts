@@ -1,4 +1,4 @@
-import { tool, jsonSchema } from 'ai';
+import { jsonSchema, tool } from 'ai';
 
 // Cache for tool wrappers (process-level)
 const moduleCache = new Map<string, any>();

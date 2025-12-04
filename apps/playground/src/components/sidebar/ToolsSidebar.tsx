@@ -65,7 +65,11 @@ export function ToolsSidebar(): React.ReactElement {
             <p className="text-sm text-foreground-secondary">No tools found</p>
           ) : (
             filteredTools.map((tool) => (
-              <Card key={`${tool.packageName}-${tool.exportName}`} variant="outline" className="cursor-pointer hover:bg-background">
+              <Card
+                key={`${tool.packageName}-${tool.exportName}`}
+                variant="outline"
+                className="cursor-pointer hover:bg-background"
+              >
                 <CardHeader>
                   <CardTitle className="text-sm">{tool.exportName}</CardTitle>
                 </CardHeader>

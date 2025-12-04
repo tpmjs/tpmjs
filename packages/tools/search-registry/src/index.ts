@@ -68,7 +68,10 @@ export const searchTpmjsToolsTool = tool({
     const baseUrl =
       process.env.TPMJS_API_URL ||
       (process.env.NODE_ENV === 'production' ? 'https://tpmjs.com' : 'http://localhost:3000');
-    const url = `${baseUrl}/api/tools/search?${params}`;
+
+    // Note: /api/tools/search endpoint exists in local dev but not deployed yet
+    // Using /api/tools as fallback with client-side filtering for now
+    const url = `${baseUrl}/api/tools?${params}`;
 
     console.log(`🌐 Fetching: ${url}`);
 
@@ -83,10 +86,34 @@ export const searchTpmjsToolsTool = tool({
     const data = (await response.json()) as any;
     console.log('📦 Search response data:', JSON.stringify(data, null, 2));
 
+    // Handle both /api/tools (deployed) and /api/tools/search (local dev) responses
+    const toolsArray = data.results?.tools || data.data || [];
+
+    // Client-side filtering if query is provided (since deployed /api/tools doesn't support search yet)
+    let filteredTools = toolsArray;
+    if (query?.trim()) {
+      const queryLower = query.toLowerCase();
+      filteredTools = toolsArray.filter((tool: any) => {
+        const searchableText = [
+          tool.description,
+          tool.exportName,
+          tool.package?.npmPackageName,
+          tool.package?.npmDescription,
+          ...(tool.package?.npmKeywords || []),
+        ]
+          .join(' ')
+          .toLowerCase();
+        return searchableText.includes(queryLower);
+      });
+    }
+
+    // Apply limit
+    const limitedTools = filteredTools.slice(0, limit);
+
     return {
       query,
-      matchCount: data.results?.total || data.data?.length || 0,
-      tools: (data.results?.tools || data.data || []).map((tool: any) => ({
+      matchCount: filteredTools.length,
+      tools: limitedTools.map((tool: any) => ({
         toolId: tool.id,
         packageName: tool.package.npmPackageName,
         exportName: tool.exportName,

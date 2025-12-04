@@ -107,7 +107,9 @@ async function loadAndDescribe(req: Request): Promise<Response> {
 
       // Strategy 3: Try Zod v3 schema (detect via _def property and convert)
       if (!rawJsonSchema && toolModule.inputSchema._def) {
-        console.log(`📋 Detected Zod schema (v3), converting with zod-to-json-schema for ${cacheKey}`);
+        console.log(
+          `📋 Detected Zod schema (v3), converting with zod-to-json-schema for ${cacheKey}`
+        );
         try {
           rawJsonSchema = zodToJsonSchema(toolModule.inputSchema);
           console.log(`✅ Successfully converted Zod schema for ${cacheKey}`);
