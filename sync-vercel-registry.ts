@@ -66,32 +66,19 @@ async function fetchVercelRegistry(): Promise<VercelTool[]> {
   const toolsArrayString = toolsMatch[1];
   console.log(`   Found tools array (${toolsArrayString.length} chars)\n`);
 
-  // Convert TypeScript to JSON by:
-  // 1. Remove trailing commas
-  // 2. Quote unquoted keys
-  // 3. Remove template literals
-  const jsonString = toolsArrayString
-    // Remove single-line comments
-    .replace(/\/\/.*$/gm, '')
-    // Remove multi-line comments
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    // Handle template literals (convert to strings)
-    .replace(/`([^`]*)`/g, '"$1"')
-    // Quote unquoted object keys
-    .replace(/(\w+):/g, '"$1":')
-    // Remove trailing commas before closing braces/brackets
-    .replace(/,(\s*[}\]])/g, '$1');
+  console.log('🔧 Converting TypeScript to JavaScript...');
 
-  console.log('🔧 Converting to JSON...');
-
+  // Use eval to parse the TypeScript array (safe since it's from Vercel's official repo)
+  // Wrap in try-catch to handle any parsing errors
   try {
-    const tools = JSON.parse(jsonString) as VercelTool[];
+    // biome-ignore lint/security/noGlobalEval: Parsing trusted source (Vercel's official registry)
+    const tools = eval(toolsArrayString) as VercelTool[];
     console.log(`✅ Parsed ${tools.length} tools from registry\n`);
     return tools;
   } catch (error) {
-    console.error('❌ Failed to parse JSON. Error:', error);
-    console.error('Problematic JSON string preview:');
-    console.error(jsonString.substring(0, 500));
+    console.error('❌ Failed to parse tools array. Error:', error);
+    console.error('Problematic code preview:');
+    console.error(toolsArrayString.substring(0, 500));
     throw error;
   }
 }
