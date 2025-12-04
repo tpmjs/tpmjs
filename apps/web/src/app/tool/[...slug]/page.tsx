@@ -419,7 +419,7 @@ export default function ToolDetailPage({
                     {tool.npmDownloadsLastMonth?.toLocaleString() || '0'}
                   </p>
                 </div>
-                {tool.githubStars !== null && (
+                {tool.githubStars != null && (
                   <div>
                     <p className="text-sm text-foreground-secondary mb-1">GitHub Stars</p>
                     <p className="text-2xl font-bold text-foreground">
