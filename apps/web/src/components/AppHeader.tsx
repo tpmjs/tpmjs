@@ -28,6 +28,11 @@ export function AppHeader(): React.ReactElement {
               Tools
             </Button>
           </Link>
+          <Link href="/how-it-works">
+            <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+              How It Works
+            </Button>
+          </Link>
           <Link href="/playground">
             <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
               Playground

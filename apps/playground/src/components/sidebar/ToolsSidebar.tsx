@@ -35,6 +35,16 @@ export function ToolsSidebar(): React.ReactElement {
       try {
         const response = await fetch('/api/tools');
         const data = await response.json();
+        console.log('🔍 [ToolsSidebar] Fetched tools:', data.tools?.length, 'tools');
+        console.log('🔍 [ToolsSidebar] First tool sample:', data.tools?.[0]);
+        console.log('🔍 [ToolsSidebar] Health fields check:', {
+          hasImportHealth: 'importHealth' in (data.tools?.[0] || {}),
+          hasExecutionHealth: 'executionHealth' in (data.tools?.[0] || {}),
+          firstToolHealth: {
+            importHealth: data.tools?.[0]?.importHealth,
+            executionHealth: data.tools?.[0]?.executionHealth,
+          },
+        });
         if (data.success) {
           setTools(data.tools);
         }
