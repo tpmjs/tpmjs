@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Debug: Check the search tool structure
     console.log('🔍 Search tool structure:', {
       description: searchTpmjsToolsTool.description,
-      parameters: typeof searchTpmjsToolsTool.parameters,
+      inputSchema: typeof searchTpmjsToolsTool.inputSchema,
       execute: typeof searchTpmjsToolsTool.execute,
     });
 
