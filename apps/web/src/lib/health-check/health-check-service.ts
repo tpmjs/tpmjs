@@ -46,9 +46,20 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
     const data = await response.json();
 
     if (!response.ok || !data.success) {
+      const error = data.error || `HTTP ${response.status}`;
+
+      // If error is just missing env vars, tool is not broken
+      if (isEnvironmentConfigError(error)) {
+        return {
+          status: 'HEALTHY',
+          error: null,
+          timeMs,
+        };
+      }
+
       return {
         status: 'BROKEN',
-        error: data.error || `HTTP ${response.status}`,
+        error,
         timeMs,
       };
     }
@@ -64,9 +75,20 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
 
     return { status: 'HEALTHY', error: null, timeMs };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    // If error is just missing env vars, tool is not broken
+    if (isEnvironmentConfigError(errorMessage)) {
+      return {
+        status: 'HEALTHY',
+        error: null,
+        timeMs: Date.now() - startTime,
+      };
+    }
+
     return {
       status: 'BROKEN',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
       timeMs: Date.now() - startTime,
     };
   }
@@ -104,9 +126,21 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
     const data = await response.json();
 
     if (!response.ok || !data.success) {
+      const error = data.error || `HTTP ${response.status}`;
+
+      // If error is just missing env vars, tool is not broken - just needs configuration
+      if (isEnvironmentConfigError(error)) {
+        return {
+          status: 'HEALTHY',
+          error: null, // Clear the error since it's just a config issue
+          timeMs,
+          testParams,
+        };
+      }
+
       return {
         status: 'BROKEN',
-        error: data.error || `HTTP ${response.status}`,
+        error,
         timeMs,
         testParams,
       };
@@ -114,13 +148,50 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
 
     return { status: 'HEALTHY', error: null, timeMs, testParams };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    // If error is just missing env vars, tool is not broken
+    if (isEnvironmentConfigError(errorMessage)) {
+      return {
+        status: 'HEALTHY',
+        error: null,
+        timeMs: Date.now() - startTime,
+        testParams,
+      };
+    }
+
     return {
       status: 'BROKEN',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
       timeMs: Date.now() - startTime,
       testParams,
     };
   }
+}
+
+/**
+ * Check if an error is due to missing environment variables (configuration issue)
+ * rather than a broken tool (code issue)
+ */
+function isEnvironmentConfigError(error: string | null): boolean {
+  if (!error) return false;
+
+  const envErrorPatterns = [
+    /is required/i,
+    /is not set/i,
+    /missing.*environment/i,
+    /environment.*missing/i,
+    /api key.*required/i,
+    /api key.*not provided/i,
+    /missing.*api key/i,
+    /must be set/i,
+    /not found.*environment/i,
+    /please set/i,
+    /please provide/i,
+    /configure.*environment/i,
+  ];
+
+  return envErrorPatterns.some((pattern) => pattern.test(error));
 }
 
 /**
