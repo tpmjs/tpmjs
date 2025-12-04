@@ -1,4 +1,3 @@
-import { prisma } from '@tpmjs/db';
 import { jsonSchema, tool } from 'ai';
 
 // Cache for tool wrappers (process-level)
@@ -49,6 +48,9 @@ async function reportToolFailure(
   phase: 'import' | 'execution'
 ): Promise<void> {
   try {
+    // Lazy load Prisma to avoid module initialization failures
+    const { prisma } = await import('@tpmjs/db');
+
     // Find the tool in the database
     const tool = await prisma.tool.findFirst({
       where: {
