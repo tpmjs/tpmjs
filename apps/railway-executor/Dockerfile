@@ -7,9 +7,8 @@ WORKDIR /app
 # Set Deno cache directory to use mounted volume
 ENV DENO_DIR=/data
 
-# Copy files
+# Copy server file
 COPY server.ts .
-COPY deno.json .
 
 # Expose port (Railway will set PORT env var)
 EXPOSE 3002
