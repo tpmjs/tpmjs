@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "nodeModulesDir": true,
+  "unstable": ["byonm"],
+  "imports": {
+    "zod-to-json-schema": "https://esm.sh/zod-to-json-schema@3.25.0"
+  }
+}
