@@ -1,0 +1,32 @@
+{
+  "name": "@tpmjs/create-basic-tools",
+  "version": "1.0.0",
+  "description": "CLI generator for scaffolding production-ready TPMJS tool packages",
+  "type": "module",
+  "bin": {
+    "create-basic-tools": "./dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["tpmjs", "ai-sdk", "generator", "cli", "scaffold", "boilerplate"],
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "commander": "^14.0.0",
+    "picocolors": "^1.0.0",
+    "validate-npm-package-name": "^5.0.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@tpmjs/types": "workspace:*",
+    "@types/validate-npm-package-name": "^4.0.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "files": ["dist", "templates", "README.md"]
+}

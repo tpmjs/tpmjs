@@ -22,9 +22,13 @@ export function ToolHealthBadge({
 }: ToolHealthBadgeProps): React.ReactElement | null {
   const isBroken = importHealth === 'BROKEN' || executionHealth === 'BROKEN';
 
+  console.log('🏥 [ToolHealthBadge] Render:', { importHealth, executionHealth, isBroken });
+
   if (!isBroken) {
     return null;
   }
+
+  console.log('🚨 [ToolHealthBadge] Showing BROKEN badge!');
 
   return (
     <Badge variant="error" size={size} className={className}>
