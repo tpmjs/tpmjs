@@ -139,19 +139,19 @@ jobs:
           # Commit changes
           git add manual-tools.ts
 
-          git commit -m "$(cat <<'EOF'
-chore: sync ${{ steps.sync.outputs.processed }} new tools from Vercel AI registry
+          # Create commit message
+          COMMIT_MSG="chore: sync ${{ steps.sync.outputs.processed }} new tools from Vercel AI registry
 
-Added ${{ steps.sync.outputs.processed }} tools from Vercel AI SDK registry:
-- Total tools in registry: ${{ steps.sync.outputs.total }}
-- Already synced: ${{ steps.sync.outputs.skipped }}
-- Newly added: ${{ steps.sync.outputs.processed }}
-- Errors: ${{ steps.sync.outputs.errors }}
+          Added ${{ steps.sync.outputs.processed }} tools from Vercel AI SDK registry:
+          - Total tools in registry: ${{ steps.sync.outputs.total }}
+          - Already synced: ${{ steps.sync.outputs.skipped }}
+          - Newly added: ${{ steps.sync.outputs.processed }}
+          - Errors: ${{ steps.sync.outputs.errors }}
 
-🤖 Automated by GitHub Actions
-Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-EOF
-)"
+          🤖 Automated by GitHub Actions
+          Run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          git commit -m "$COMMIT_MSG"
 
           echo "✅ Changes committed"
           echo ""
