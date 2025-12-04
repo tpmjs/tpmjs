@@ -64,8 +64,10 @@ export const searchTpmjsToolsTool = tool({
       ...(category && { category }),
     });
 
-    // Use environment variable or default to localhost for development
-    const baseUrl = process.env.TPMJS_API_URL || 'http://localhost:3000';
+    // Use environment variable, or default to production API (falls back to localhost in dev)
+    const baseUrl =
+      process.env.TPMJS_API_URL ||
+      (process.env.NODE_ENV === 'production' ? 'https://tpmjs.com' : 'http://localhost:3000');
     const url = `${baseUrl}/api/tools/search?${params}`;
 
     console.log(`🌐 Fetching: ${url}`);
