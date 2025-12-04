@@ -73,15 +73,25 @@ model Tool {
   // Tool Metrics
   qualityScore Decimal? @map("quality_score") @db.Decimal(3, 2) // 0.00 to 1.00
 
+  // Health Status Fields
+  importHealth     HealthStatus? @default(UNKNOWN) @map("import_health")
+  executionHealth  HealthStatus? @default(UNKNOWN) @map("execution_health")
+  lastHealthCheck  DateTime?     @map("last_health_check")
+  healthCheckError String?       @map("health_check_error") @db.Text
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  simulations Simulation[]
+  simulations  Simulation[]
+  healthChecks HealthCheck[]
 
   @@unique([packageId, exportName])
   @@index([qualityScore])
+  @@index([importHealth])
+  @@index([executionHealth])
+  @@index([lastHealthCheck])
   @@map("tools")
 }
 
@@ -185,4 +195,54 @@ model ExecutionLog {
 
   @@index([simulationId])
   @@map("execution_logs")
+}
+
+/// HealthCheck table - tracks full audit history of health checks
+model HealthCheck {
+  id String @id @default(cuid())
+
+  // Relations
+  toolId String @map("tool_id")
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Check metadata
+  checkType     HealthCheckType @map("check_type")
+  triggerSource String          @map("trigger_source") @db.VarChar(50) // 'sync' | 'manual' | 'daily-cron'
+
+  // Import check results
+  importStatus HealthStatus @map("import_status")
+  importError  String?      @map("import_error") @db.Text
+  importTimeMs Int?         @map("import_time_ms")
+
+  // Execution check results
+  executionStatus HealthStatus @map("execution_status")
+  executionError  String?      @map("execution_error") @db.Text
+  executionTimeMs Int?         @map("execution_time_ms")
+  testParameters  Json?        @map("test_parameters") @db.JsonB
+
+  // Overall status
+  overallStatus HealthStatus @map("overall_status")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([toolId])
+  @@index([checkType])
+  @@index([overallStatus])
+  @@index([createdAt])
+  @@map("health_checks")
+}
+
+/// Health status enum - tracks health check results
+enum HealthStatus {
+  UNKNOWN // Not yet checked
+  HEALTHY // Passed health check
+  BROKEN  // Failed health check
+}
+
+/// Health check type enum - types of health checks performed
+enum HealthCheckType {
+  IMPORT    // Only import check
+  EXECUTION // Only execution check
+  FULL      // Both import and execution
 }
