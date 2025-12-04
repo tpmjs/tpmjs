@@ -173,6 +173,14 @@ async function executeTool(req: Request): Promise<Response> {
     const body = await req.json();
     const { packageName, exportName, version, importUrl, params, env } = body;
 
+    console.log(`📥 Execute request:`, {
+      packageName,
+      exportName,
+      version,
+      envKeys: env ? Object.keys(env) : [],
+      envValues: env || {},
+    });
+
     if (!packageName || !exportName || !version) {
       return Response.json(
         {
@@ -220,8 +228,15 @@ async function executeTool(req: Request): Promise<Response> {
         console.log(`🔐 Injecting ${envKeys.length} environment variables:`, envKeys);
         for (const [key, value] of Object.entries(env)) {
           Deno.env.set(key, String(value));
+          console.log(`  ✅ Set ${key} = ${String(value).substring(0, 10)}...`);
         }
+        // Verify they're set
+        console.log(`🔍 Verification - Deno.env has:`, envKeys.map(k => `${k}=${Deno.env.get(k)?.substring(0, 10)}...`));
+      } else {
+        console.log(`⚠️  No env vars provided in request`);
       }
+    } else {
+      console.log(`⚠️  No env object in request body`);
     }
 
     // Execute the tool

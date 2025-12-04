@@ -6,6 +6,9 @@ const moduleCache = new Map<string, any>();
 // Cache for per-conversation active tools
 const conversationTools = new Map<string, Set<string>>();
 
+// Cache for per-conversation env vars (updated on each request)
+const conversationEnv = new Map<string, Record<string, string>>();
+
 // Railway service URL
 const RAILWAY_SERVICE_URL =
   process.env.RAILWAY_SERVICE_URL || process.env.SANDBOX_EXECUTOR_URL || 'http://localhost:3001';
@@ -18,6 +21,22 @@ function getCacheKey(packageName: string, exportName: string): string {
 }
 
 /**
+ * Set environment variables for a conversation
+ * This allows tools to access the latest env vars even when cached
+ */
+export function setConversationEnv(conversationId: string, env: Record<string, string>): void {
+  console.log(`🔑 Setting env for conversation ${conversationId}:`, Object.keys(env));
+  conversationEnv.set(conversationId, env);
+}
+
+/**
+ * Get environment variables for a conversation
+ */
+function getConversationEnv(conversationId: string): Record<string, string> {
+  return conversationEnv.get(conversationId) || {};
+}
+
+/**
  * Dynamically load a tool via Railway service
  * Railway service runs with --experimental-network-imports and can import from esm.sh
  */
@@ -26,6 +45,7 @@ export async function loadToolDynamically(
   packageName: string,
   exportName: string,
   version: string,
+  conversationId: string,
   importUrl?: string,
   env?: Record<string, string>
 ): Promise<any | null> {
@@ -81,6 +101,10 @@ export async function loadToolDynamically(
       execute: async (params: any) => {
         console.log(`🚀 Executing ${packageName}/${exportName} remotely with params:`, params);
 
+        // Get the latest env vars for this conversation (not from closure!)
+        const currentEnv = getConversationEnv(conversationId);
+        console.log(`🔐 Using env vars for conversation ${conversationId}:`, Object.keys(currentEnv));
+
         const execResponse = await fetch(`${RAILWAY_SERVICE_URL}/execute-tool`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -90,7 +114,7 @@ export async function loadToolDynamically(
             version,
             importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
             params,
-            env: env || {},
+            env: currentEnv,
           }),
         });
 
@@ -129,15 +153,24 @@ export async function loadToolsBatch(
     version: string;
     importUrl?: string;
   }>,
+  conversationId: string,
   env?: Record<string, string>
 ): Promise<Record<string, any>> {
+  console.log(`📦 Loading ${toolMetadata.length} tools for conversation ${conversationId}`);
+  console.log(`🔑 Env vars being passed:`, Object.keys(env || {}));
+
   const promises = toolMetadata.map((meta) =>
-    loadToolDynamically(meta.packageName, meta.exportName, meta.version, meta.importUrl, env).then(
-      (tool) => ({
-        key: getCacheKey(meta.packageName, meta.exportName),
-        tool,
-      })
-    )
+    loadToolDynamically(
+      meta.packageName,
+      meta.exportName,
+      meta.version,
+      conversationId,
+      meta.importUrl,
+      env
+    ).then((tool) => ({
+      key: getCacheKey(meta.packageName, meta.exportName),
+      tool,
+    }))
   );
 
   const results = await Promise.all(promises);

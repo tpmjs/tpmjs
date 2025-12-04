@@ -3,7 +3,11 @@ import { searchTpmjsToolsTool } from '@tpmjs/search-registry';
 import { type UIMessage, convertToModelMessages, stepCountIs, streamText } from 'ai';
 import type { NextRequest } from 'next/server';
 import { env } from '~/env';
-import { addConversationTools, loadToolsBatch } from '~/lib/dynamic-tool-loader';
+import {
+  addConversationTools,
+  loadToolsBatch,
+  setConversationEnv,
+} from '~/lib/dynamic-tool-loader';
 import { loadAllTools, sanitizeToolName } from '~/lib/tool-loader';
 
 export const runtime = 'nodejs';
@@ -28,7 +32,10 @@ export async function POST(request: NextRequest) {
     const clientEnv: Record<string, string> = body.env || {};
 
     console.log(`🔑 Conversation ID: ${conversationId}`);
-    console.log(`🔐 Client env vars: ${Object.keys(clientEnv).length} keys`);
+    console.log(`🔐 Client env vars: ${Object.keys(clientEnv).length} keys`, Object.keys(clientEnv));
+
+    // Store env vars for this conversation (so cached tools can access them)
+    setConversationEnv(conversationId, clientEnv);
 
     // Initialize OpenAI with client-provided or server API key
     const apiKey = clientEnv.OPENAI_API_KEY || env.OPENAI_API_KEY;
@@ -148,7 +155,7 @@ export async function POST(request: NextRequest) {
           }));
 
           try {
-            const loadedTools = await loadToolsBatch(toolsToLoad, clientEnv);
+            const loadedTools = await loadToolsBatch(toolsToLoad, conversationId, clientEnv);
             console.log(`✅ Successfully loaded ${Object.keys(loadedTools).length} tools`);
 
             // Add sanitized tools to conversation state
