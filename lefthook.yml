@@ -7,7 +7,8 @@ pre-commit:
       stage_fixed: true
 
     type-check:
-      run: pnpm type-check
+      # Only type-check packages with staged changes
+      run: pnpm turbo type-check --filter='...[HEAD]'
 
 pre-push:
   commands:
