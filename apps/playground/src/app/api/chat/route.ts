@@ -82,13 +82,20 @@ export async function POST(request: NextRequest) {
 
       try {
         // biome-ignore lint/style/noNonNullAssertion: Tool created with tool() always has execute
-        const searchResult = await searchTpmjsToolsTool.execute!(
+        const result = await searchTpmjsToolsTool.execute!(
           {
             query: userQuery,
             limit: 5, // Get top 5 relevant tools
           },
           {} as any
         );
+
+        // Type assertion: searchTpmjsToolsTool returns direct result, not AsyncIterable
+        const searchResult = result as {
+          query: string;
+          matchCount: number;
+          tools: any[];
+        };
 
         console.log(`📦 Found ${searchResult.matchCount} matching tools`);
 

@@ -44,25 +44,6 @@ export async function loadTpmjsTool(packageName: string, exportName: string): Pr
 }
 
 /**
- * Type guard to check if an object is a valid AI SDK tool
- */
-// biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
-function isCoreTool(obj: unknown): obj is Record<string, any> {
-  if (typeof obj !== 'object' || obj === null) {
-    return false;
-  }
-
-  const tool = obj as Record<string, unknown>;
-
-  // Check for required AI SDK tool properties
-  return (
-    typeof tool.description === 'string' &&
-    typeof tool.parameters === 'object' &&
-    typeof tool.execute === 'function'
-  );
-}
-
-/**
  * Sanitize tool name to match OpenAI's requirements
  * Pattern: ^[a-zA-Z0-9_-]+$ (only letters, numbers, underscores, hyphens)
  */

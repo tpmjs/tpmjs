@@ -1,22 +1,11 @@
 'use client';
 
+import type { UIMessage } from 'ai';
 import { useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBubble';
 
-interface Message {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  createdAt?: Date;
-  toolInvocations?: Array<{
-    toolName: string;
-    args: unknown;
-    result?: unknown;
-  }>;
-}
-
 interface ChatMessagesProps {
-  messages: Message[];
+  messages: UIMessage[];
   isStreaming?: boolean;
 }
 

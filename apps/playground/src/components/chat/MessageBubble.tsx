@@ -2,28 +2,11 @@
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Card, CardContent } from '@tpmjs/ui/Card/Card';
+import type { UIMessage } from 'ai';
 import { Streamdown } from 'streamdown';
 
-interface MessagePart {
-  type: string; // Can be 'text', 'tool-{toolName}', 'step-start', etc.
-  text?: string;
-  toolCallId?: string;
-  input?: unknown;
-  output?: unknown;
-  state?: string;
-  providerMetadata?: unknown;
-}
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  parts?: MessagePart[];
-  createdAt?: Date;
-}
-
 interface MessageBubbleProps {
-  message: Message;
+  message: UIMessage;
   isStreaming?: boolean;
 }
 
@@ -32,15 +15,6 @@ export function MessageBubble({
   isStreaming = false,
 }: MessageBubbleProps): React.ReactElement {
   const isUser = message.role === 'user';
-
-  // Debug: Log message structure
-  console.log('Message:', {
-    id: message.id,
-    role: message.role,
-    content: message.content,
-    parts: message.parts,
-    fullMessage: message,
-  });
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -51,7 +25,7 @@ export function MessageBubble({
               {isUser ? 'You' : 'AI'}
             </Badge>
             <span className="text-xs text-foreground-tertiary">
-              {new Date(message.createdAt || Date.now()).toLocaleTimeString()}
+              {new Date().toLocaleTimeString()}
             </span>
           </div>
 
@@ -78,39 +52,43 @@ export function MessageBubble({
                 // Render tool calls (type starts with 'tool-')
                 if (part.type.startsWith('tool-')) {
                   const toolName = part.type.replace('tool-', '');
+                  // Type assertion for tool parts
+                  const toolPart = part as any;
                   return (
                     <div
-                      key={part.toolCallId || idx}
+                      key={toolPart.toolCallId || idx}
                       className="rounded border border-amber-500/20 bg-amber-500/5 p-3"
                     >
                       <div className="mb-3 flex items-center gap-2 border-b border-amber-500/20 pb-2">
                         <span className="text-base">🔧</span>
                         <strong className="font-mono text-sm text-foreground">{toolName}</strong>
-                        {part.state && (
+                        {toolPart.state && (
                           <Badge variant="secondary" size="sm">
-                            {part.state}
+                            {toolPart.state}
                           </Badge>
                         )}
                       </div>
 
                       {/* Tool Input */}
-                      <div className="mb-3">
-                        <div className="mb-1 text-xs font-semibold text-foreground-secondary">
-                          Input:
+                      {toolPart.input && (
+                        <div className="mb-3">
+                          <div className="mb-1 text-xs font-semibold text-foreground-secondary">
+                            Input:
+                          </div>
+                          <pre className="overflow-x-auto rounded bg-surface p-2 text-xs text-foreground-secondary">
+                            {JSON.stringify(toolPart.input, null, 2)}
+                          </pre>
                         </div>
-                        <pre className="overflow-x-auto rounded bg-surface p-2 text-xs text-foreground-secondary">
-                          {JSON.stringify(part.input, null, 2)}
-                        </pre>
-                      </div>
+                      )}
 
                       {/* Tool Output */}
-                      {part.output && (
+                      {toolPart.output && (
                         <div>
                           <div className="mb-1 text-xs font-semibold text-foreground-secondary">
                             Output:
                           </div>
                           <pre className="overflow-x-auto rounded bg-surface p-2 text-xs text-foreground-secondary">
-                            {JSON.stringify(part.output, null, 2)}
+                            {JSON.stringify(toolPart.output, null, 2)}
                           </pre>
                         </div>
                       )}
@@ -122,11 +100,9 @@ export function MessageBubble({
               })}
             </div>
           ) : (
-            // Fallback to content if no parts
+            // Fallback if no parts
             <div className="text-sm">
-              <Streamdown isAnimating={isStreaming && !isUser}>
-                {message.content || '...'}
-              </Streamdown>
+              <Streamdown isAnimating={isStreaming && !isUser}>...</Streamdown>
             </div>
           )}
         </CardContent>

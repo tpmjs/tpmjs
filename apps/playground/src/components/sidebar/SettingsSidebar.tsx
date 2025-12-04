@@ -48,7 +48,9 @@ export function SettingsSidebar(): React.ReactElement {
     const exists = envVars.some((env) => env.key === newKey);
     if (exists) {
       // Update existing
-      setEnvVars(envVars.map((env) => (env.key === newKey ? { key: newKey, value: newValue } : env)));
+      setEnvVars(
+        envVars.map((env) => (env.key === newKey ? { key: newKey, value: newValue } : env))
+      );
     } else {
       // Add new
       setEnvVars([...envVars, { key: newKey, value: newValue }]);
@@ -71,12 +73,16 @@ export function SettingsSidebar(): React.ReactElement {
         <Card variant="outline" className="mb-4">
           <CardHeader>
             <CardTitle className="text-sm">
-              Environment Variables <Badge variant="secondary" size="sm">{envVars.length}</Badge>
+              Environment Variables{' '}
+              <Badge variant="secondary" size="sm">
+                {envVars.length}
+              </Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="mb-4 text-xs text-foreground-secondary">
-              Add API keys and other environment variables. They will be forwarded to tool executions.
+              Add API keys and other environment variables. They will be forwarded to tool
+              executions.
             </p>
 
             {/* Add new env var form */}
@@ -95,7 +101,7 @@ export function SettingsSidebar(): React.ReactElement {
                 onChange={(e) => setNewValue(e.target.value)}
                 className="font-mono text-xs"
               />
-              <Button onClick={handleAddEnvVar} size="sm" variant="primary" className="w-full">
+              <Button onClick={handleAddEnvVar} size="sm" variant="default" className="w-full">
                 Add Variable
               </Button>
             </div>
@@ -106,14 +112,22 @@ export function SettingsSidebar(): React.ReactElement {
                 <p className="text-xs text-foreground-tertiary">No environment variables set</p>
               ) : (
                 envVars.map((env) => (
-                  <div key={env.key} className="flex items-center justify-between rounded border border-border bg-background p-2">
+                  <div
+                    key={env.key}
+                    className="flex items-center justify-between rounded border border-border bg-background p-2"
+                  >
                     <div className="flex-1 overflow-hidden">
                       <p className="truncate font-mono text-xs font-semibold">{env.key}</p>
                       <p className="truncate font-mono text-xs text-foreground-tertiary">
                         {env.value ? '•'.repeat(Math.min(env.value.length, 20)) : '(empty)'}
                       </p>
                     </div>
-                    <Button onClick={() => handleRemoveEnvVar(env.key)} size="sm" variant="ghost" className="ml-2">
+                    <Button
+                      onClick={() => handleRemoveEnvVar(env.key)}
+                      size="sm"
+                      variant="ghost"
+                      className="ml-2"
+                    >
                       ×
                     </Button>
                   </div>
@@ -126,8 +140,8 @@ export function SettingsSidebar(): React.ReactElement {
         {/* Info Section */}
         <div className="mt-auto rounded border border-border bg-background p-3">
           <p className="text-xs text-foreground-secondary">
-            <strong>Note:</strong> Environment variables are stored locally in your browser and sent with each tool
-            execution request.
+            <strong>Note:</strong> Environment variables are stored locally in your browser and sent
+            with each tool execution request.
           </p>
         </div>
       </div>

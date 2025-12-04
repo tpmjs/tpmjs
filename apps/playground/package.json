@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "3.0.0-beta.74",
-    "@ai-sdk/react": "^2.0.106",
+    "@ai-sdk/react": "3.0.0-beta.131",
     "@tpmjs/env": "workspace:*",
     "@tpmjs/hello": "workspace:*",
     "@tpmjs/search-registry": "workspace:*",
