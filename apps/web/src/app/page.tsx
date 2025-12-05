@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { AppHeader } from '../components/AppHeader';
 import { HeroSection } from '../components/home/HeroSection';
 
+export const dynamic = 'force-dynamic';
+
 async function getHomePageData() {
   try {
     // Fetch stats in parallel
