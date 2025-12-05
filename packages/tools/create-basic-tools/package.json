@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/create-basic-tools",
-  "version": "1.0.6",
+  "version": "1.0.5",
   "description": "CLI generator for scaffolding production-ready TPMJS tool packages",
   "type": "module",
   "bin": {

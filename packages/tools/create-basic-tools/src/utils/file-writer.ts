@@ -27,9 +27,7 @@ export async function copyTemplate(
   destPath: string,
   replacements?: Record<string, string>
 ): Promise<void> {
-  // After tsup compilation, __dirname points to dist/
-  // Templates are at package root, so we only need to go up one level
-  const templatePath = path.join(__dirname, '../templates', templateName);
+  const templatePath = path.join(__dirname, '../../templates', templateName);
   let content = await fs.readFile(templatePath, 'utf-8');
 
   // Apply replacements if provided

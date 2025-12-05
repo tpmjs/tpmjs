@@ -1,13 +1,5 @@
 # @tpmjs/create-basic-tools
 
-## 1.0.6
-
-### Patch Changes
-
-- fix: correct template path resolution for npx execution
-
-  Fixed template path resolution from `../../templates` to `../templates` to work correctly when the package is run via npx. After tsup compilation, the bundle is in `dist/` and only needs to go up one level to reach the package root where templates are located.
-
 ## 1.0.0
 
 ### Major Changes
