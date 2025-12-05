@@ -3,11 +3,25 @@
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Card, CardContent } from '@tpmjs/ui/Card/Card';
 import type { UIMessage } from 'ai';
+import { useEffect, useRef, useState } from 'react';
 import { Streamdown } from 'streamdown';
+
+interface PartTiming {
+  startTime: number;
+  endTime?: number;
+  duration?: number;
+}
 
 interface MessageBubbleProps {
   message: UIMessage;
   isStreaming?: boolean;
+}
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) {
+    return `${ms}ms`;
+  }
+  return `${(ms / 1000).toFixed(2)}s`;
 }
 
 export function MessageBubble({
@@ -15,6 +29,67 @@ export function MessageBubble({
   isStreaming = false,
 }: MessageBubbleProps): React.ReactElement {
   const isUser = message.role === 'user';
+
+  // Track timing for each part by index
+  const [partTimings, setPartTimings] = useState<Map<string, PartTiming>>(new Map());
+  const prevPartsRef = useRef<string>('');
+
+  // Track part appearances and completions
+  useEffect(() => {
+    if (!message.parts || isUser) return;
+
+    const currentPartsKey = JSON.stringify(
+      message.parts.map((p: any) => ({
+        type: p.type,
+        id: p.toolCallId || p.type,
+        state: p.state,
+        textLen: p.text?.length,
+      }))
+    );
+
+    // Only process if parts changed
+    if (currentPartsKey === prevPartsRef.current) return;
+    prevPartsRef.current = currentPartsKey;
+
+    const now = Date.now();
+
+    setPartTimings((prev) => {
+      const updated = new Map(prev);
+
+      message.parts?.forEach((part: any, idx: number) => {
+        const partKey = part.toolCallId || `${part.type}-${idx}`;
+        const existing = updated.get(partKey);
+
+        // Skip step-start markers
+        if (part.type === 'step-start') return;
+
+        if (!existing) {
+          // New part - record start time
+          updated.set(partKey, { startTime: now });
+        } else if (!existing.endTime) {
+          // Check if part is complete
+          const isToolComplete = part.type.startsWith('tool-') && part.state === 'result';
+          const isTextComplete = part.type === 'text' && !isStreaming;
+
+          if (isToolComplete || isTextComplete) {
+            updated.set(partKey, {
+              ...existing,
+              endTime: now,
+              duration: now - existing.startTime,
+            });
+          }
+        }
+      });
+
+      return updated;
+    });
+  }, [message.parts, isStreaming, isUser]);
+
+  // Get timing for a specific part
+  const getPartTiming = (part: any, idx: number): PartTiming | undefined => {
+    const partKey = part.toolCallId || `${part.type}-${idx}`;
+    return partTimings.get(partKey);
+  };
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -40,11 +115,17 @@ export function MessageBubble({
 
                 // Render text parts with markdown support
                 if (part.type === 'text') {
+                  const timing = getPartTiming(part, idx);
                   return (
                     <div key={`text-${message.id}-${idx}`} className="text-sm">
                       <Streamdown isAnimating={isStreaming && !isUser}>
                         {part.text || ''}
                       </Streamdown>
+                      {timing?.duration && (
+                        <div className="mt-1 text-xs text-foreground-tertiary">
+                          ⏱ {formatDuration(timing.duration)}
+                        </div>
+                      )}
                     </div>
                   );
                 }
@@ -54,6 +135,7 @@ export function MessageBubble({
                   const toolName = part.type.replace('tool-', '');
                   // Type assertion for tool parts
                   const toolPart = part as any;
+                  const timing = getPartTiming(part, idx);
                   return (
                     <div
                       key={toolPart.toolCallId || idx}
@@ -66,6 +148,11 @@ export function MessageBubble({
                           <Badge variant="secondary" size="sm">
                             {toolPart.state}
                           </Badge>
+                        )}
+                        {timing?.duration && (
+                          <span className="ml-auto text-xs text-foreground-tertiary">
+                            ⏱ {formatDuration(timing.duration)}
+                          </span>
                         )}
                       </div>
 
