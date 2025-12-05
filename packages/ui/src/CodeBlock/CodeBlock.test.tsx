@@ -69,15 +69,15 @@ describe('CodeBlock', () => {
     it('sets data-language attribute', () => {
       render(<CodeBlock code="const x = 5" language="javascript" data-testid="codeblock" />);
       const codeblock = screen.getByTestId('codeblock');
-      const code = codeblock.querySelector('code');
-      expect(code).toHaveAttribute('data-language', 'javascript');
+      const codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper).toHaveAttribute('data-language', 'javascript');
     });
 
     it('defaults to text language', () => {
       render(<CodeBlock code="plain text" data-testid="codeblock" />);
       const codeblock = screen.getByTestId('codeblock');
-      const code = codeblock.querySelector('code');
-      expect(code).toHaveAttribute('data-language', 'text');
+      const codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper).toHaveAttribute('data-language', 'text');
     });
 
     it('supports different languages', () => {
@@ -85,13 +85,13 @@ describe('CodeBlock', () => {
         <CodeBlock code="code" language="python" data-testid="codeblock" />
       );
       let codeblock = screen.getByTestId('codeblock');
-      let code = codeblock.querySelector('code');
-      expect(code).toHaveAttribute('data-language', 'python');
+      let codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper).toHaveAttribute('data-language', 'python');
 
       rerender(<CodeBlock code="code" language="bash" data-testid="codeblock" />);
       codeblock = screen.getByTestId('codeblock');
-      code = codeblock.querySelector('code');
-      expect(code).toHaveAttribute('data-language', 'bash');
+      codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper).toHaveAttribute('data-language', 'bash');
     });
   });
 
@@ -99,33 +99,33 @@ describe('CodeBlock', () => {
     it('applies small size', () => {
       render(<CodeBlock code="code" size="sm" data-testid="codeblock" />);
       const codeblock = screen.getByTestId('codeblock');
-      const code = codeblock.querySelector('code');
-      expect(code?.className).toContain('text-xs');
-      expect(code?.className).toContain('p-3');
+      const codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper?.className).toContain('text-xs');
+      expect(codeWrapper?.className).toContain('p-3');
     });
 
     it('applies medium size', () => {
       render(<CodeBlock code="code" size="md" data-testid="codeblock" />);
       const codeblock = screen.getByTestId('codeblock');
-      const code = codeblock.querySelector('code');
-      expect(code?.className).toContain('text-sm');
-      expect(code?.className).toContain('p-4');
+      const codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper?.className).toContain('text-sm');
+      expect(codeWrapper?.className).toContain('p-4');
     });
 
     it('applies large size', () => {
       render(<CodeBlock code="code" size="lg" data-testid="codeblock" />);
       const codeblock = screen.getByTestId('codeblock');
-      const code = codeblock.querySelector('code');
-      expect(code?.className).toContain('text-base');
-      expect(code?.className).toContain('p-6');
+      const codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper?.className).toContain('text-base');
+      expect(codeWrapper?.className).toContain('p-6');
     });
 
     it('uses md size by default', () => {
       render(<CodeBlock code="code" data-testid="codeblock" />);
       const codeblock = screen.getByTestId('codeblock');
-      const code = codeblock.querySelector('code');
-      expect(code?.className).toContain('text-sm');
-      expect(code?.className).toContain('p-4');
+      const codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper?.className).toContain('text-sm');
+      expect(codeWrapper?.className).toContain('p-4');
     });
   });
 
@@ -302,15 +302,15 @@ describe('CodeBlock', () => {
       expect(codeblock.className).toContain('overflow-hidden');
     });
 
-    it('code element includes base classes', () => {
+    it('code wrapper includes base classes', () => {
       render(<CodeBlock code="code" data-testid="codeblock" />);
       const codeblock = screen.getByTestId('codeblock');
-      const code = codeblock.querySelector('code');
-      expect(code?.className).toContain('block');
-      expect(code?.className).toContain('font-mono');
-      expect(code?.className).toContain('text-foreground-secondary');
-      expect(code?.className).toContain('overflow-x-auto');
-      expect(code?.className).toContain('whitespace-pre');
+      const codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper?.className).toContain('block');
+      expect(codeWrapper?.className).toContain('font-mono');
+      expect(codeWrapper?.className).toContain('text-foreground-secondary');
+      expect(codeWrapper?.className).toContain('overflow-x-auto');
+      expect(codeWrapper?.className).toContain('whitespace-pre');
     });
   });
 
@@ -325,10 +325,10 @@ describe('CodeBlock', () => {
         />
       );
       const codeblock = screen.getByTestId('codeblock');
-      const code = codeblock.querySelector('code');
-      expect(code?.className).toContain('text-base');
-      expect(code?.className).toContain('p-6');
-      expect(code).toHaveAttribute('data-language', 'python');
+      const codeWrapper = codeblock.querySelector('[data-language]');
+      expect(codeWrapper?.className).toContain('text-base');
+      expect(codeWrapper?.className).toContain('p-6');
+      expect(codeWrapper).toHaveAttribute('data-language', 'python');
     });
 
     it('works correctly with no copy button and custom className', () => {
