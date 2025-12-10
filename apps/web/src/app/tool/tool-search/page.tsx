@@ -21,6 +21,7 @@ interface Tool {
   qualityScore: string;
   importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
+  createdAt: string;
   package: {
     npmPackageName: string;
     npmVersion: string;
@@ -31,6 +32,8 @@ interface Tool {
   };
 }
 
+type SortOption = 'downloads' | 'recent';
+
 /**
  * Tool Registry Search Page
  *
@@ -40,6 +43,7 @@ export default function ToolSearchPage(): React.ReactElement {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [healthFilter, setHealthFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<SortOption>('downloads');
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,13 +79,19 @@ export default function ToolSearchPage(): React.ReactElement {
 
         if (toolsData.success) {
           const fetchedTools = toolsData.data;
-          // Sort broken tools to the bottom
-          const sortedTools = [...fetchedTools].sort((a, b) => {
+          // Sort by selected criterion, then push broken tools to bottom
+          const sortedTools = [...fetchedTools].sort((a: Tool, b: Tool) => {
             const aIsBroken = a.importHealth === 'BROKEN' || a.executionHealth === 'BROKEN';
             const bIsBroken = b.importHealth === 'BROKEN' || b.executionHealth === 'BROKEN';
+            // Always push broken tools to bottom
             if (aIsBroken && !bIsBroken) return 1;
             if (!aIsBroken && bIsBroken) return -1;
-            return 0;
+            // Within same broken status, sort by selected criterion
+            if (sortBy === 'downloads') {
+              return b.package.npmDownloadsLastMonth - a.package.npmDownloadsLastMonth;
+            }
+            // Sort by recent (createdAt descending)
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
           });
           setTools(sortedTools);
           setError(null);
@@ -107,7 +117,7 @@ export default function ToolSearchPage(): React.ReactElement {
     };
 
     fetchTools();
-  }, [searchQuery, categoryFilter, healthFilter]);
+  }, [searchQuery, categoryFilter, healthFilter, sortBy]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -162,6 +172,20 @@ export default function ToolSearchPage(): React.ReactElement {
                   { value: 'all', label: 'All Tools' },
                   { value: 'healthy', label: 'Healthy Only' },
                   { value: 'broken', label: 'Broken Only' },
+                ]}
+              />
+            </div>
+
+            {/* Sort dropdown */}
+            <div className="flex items-center gap-2 min-w-[200px]">
+              <span className="text-sm font-medium text-foreground-secondary">Sort:</span>
+              <Select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortOption)}
+                size="sm"
+                options={[
+                  { value: 'downloads', label: 'Most Downloaded' },
+                  { value: 'recent', label: 'Recent' },
                 ]}
               />
             </div>
