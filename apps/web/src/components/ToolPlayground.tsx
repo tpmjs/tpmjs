@@ -245,7 +245,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Enter your prompt here... (e.g., 'Create a blog post about TypeScript best practices')"
-                className="w-full h-32 px-4 py-3 rounded-lg border border-input bg-background text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                className="w-full h-32 px-4 py-3 rounded-lg border border-input bg-white text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                 disabled={isExecuting}
               />
               <p className="text-xs text-foreground-tertiary mt-2">
