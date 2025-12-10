@@ -14,60 +14,54 @@ import { AppHeader } from '~/components/AppHeader';
 import { Markdown } from '~/components/Markdown';
 import { ToolPlayground } from '~/components/ToolPlayground';
 
-interface Tool {
+interface Package {
   id: string;
   npmPackageName: string;
   npmVersion: string;
-  description: string;
+  npmDescription: string | null;
+  npmHomepage: string | null;
   category: string;
-  tags: string[];
   npmRepository: { url: string; type: string } | null;
-  qualityScore: string;
   isOfficial: boolean;
-  npmDownloadsLastMonth: number;
-  npmDownloadsLastWeek: number;
+  npmDownloadsLastMonth: number | null;
   npmKeywords: string[];
   npmReadme: string | null;
   npmAuthor: { name: string; email?: string; url?: string } | string | null;
   npmMaintainers: Array<{ name: string; email?: string }> | null;
+  npmLicense: string | null;
+  githubStars: number | null;
+  frameworks: string[];
+  tier: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Tool {
+  id: string;
+  exportName: string;
+  description: string;
+  parameters: Array<{
+    name: string;
+    type: string;
+    description: string;
+    required: boolean;
+    default?: unknown;
+  }> | null;
+  returns: {
+    type: string;
+    description: string;
+  } | null;
+  aiAgent: {
+    useCase?: string;
+    limitations?: string;
+    examples?: string[];
+  } | null;
+  qualityScore: string | null;
   importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   healthCheckError?: string | null;
   lastHealthCheck?: string | null;
-  tpmjsMetadata: {
-    example?: string;
-    parameters?: Array<{
-      name: string;
-      type: string;
-      description: string;
-      required: boolean;
-      default?: unknown;
-    }>;
-    returns?: {
-      type: string;
-      description: string;
-    };
-    authentication?: {
-      required: boolean;
-      type?: string;
-    };
-    pricing?: {
-      model: string;
-    };
-    frameworks?: string[];
-    links?: {
-      documentation?: string;
-      repository?: string;
-      homepage?: string;
-    };
-    aiAgent?: {
-      useCase?: string;
-      limitations?: string;
-      examples?: string[];
-    };
-  } | null;
-  githubStars: number | null;
-  npmLicense: string | null;
+  package: Package;
   createdAt: string;
   updatedAt: string;
 }
@@ -146,7 +140,8 @@ export default function ToolDetailPage({
     );
   }
 
-  const authorName = typeof tool.npmAuthor === 'string' ? tool.npmAuthor : tool.npmAuthor?.name;
+  const pkg = tool.package;
+  const authorName = typeof pkg.npmAuthor === 'string' ? pkg.npmAuthor : pkg.npmAuthor?.name;
 
   const recheckHealth = async () => {
     setRecheckLoading(true);
@@ -186,14 +181,17 @@ export default function ToolDetailPage({
             Tools
           </Link>
           <span>/</span>
-          <span className="text-foreground">{tool.npmPackageName}</span>
+          <span className="text-foreground">{pkg.npmPackageName}</span>
         </div>
 
         {/* Title section */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">{tool.npmPackageName}</h1>
+              <h1 className="text-4xl font-bold text-foreground mb-2">{tool.exportName}</h1>
+              <p className="text-sm text-foreground-tertiary font-mono mb-2">
+                {pkg.npmPackageName}
+              </p>
               <p className="text-lg text-foreground-secondary">{tool.description}</p>
               {authorName && (
                 <p className="text-sm text-foreground-tertiary mt-2">
@@ -201,16 +199,16 @@ export default function ToolDetailPage({
                 </p>
               )}
             </div>
-            {tool.isOfficial && (
+            {pkg.isOfficial && (
               <Badge variant="default" size="lg">
                 Official
               </Badge>
             )}
           </div>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">{tool.category}</Badge>
-            <Badge variant="outline">v{tool.npmVersion}</Badge>
-            {tool.npmLicense && <Badge variant="outline">{tool.npmLicense}</Badge>}
+            <Badge variant="secondary">{pkg.category}</Badge>
+            <Badge variant="outline">v{pkg.npmVersion}</Badge>
+            {pkg.npmLicense && <Badge variant="outline">{pkg.npmLicense}</Badge>}
           </div>
         </div>
 
@@ -272,105 +270,113 @@ export default function ToolDetailPage({
             {/* biome-ignore lint/suspicious/noExplicitAny: Prisma Tool type compatibility with component props */}
             <ToolPlayground tool={tool as any} />
 
-            {/* Installation */}
+            {/* Installation & Usage */}
             <Card>
               <CardHeader>
-                <CardTitle>Installation</CardTitle>
-                <CardDescription>
-                  Install this tool using your preferred package manager
-                </CardDescription>
+                <CardTitle>Installation & Usage</CardTitle>
+                <CardDescription>Install this tool and use it with the AI SDK</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <CodeBlock
-                  code={`npm install ${tool.npmPackageName}`}
-                  language="bash"
-                  showCopy={true}
-                />
-                <CodeBlock
-                  code={`yarn add ${tool.npmPackageName}`}
-                  language="bash"
-                  showCopy={true}
-                />
-                <CodeBlock
-                  code={`pnpm add ${tool.npmPackageName}`}
-                  language="bash"
-                  showCopy={true}
-                />
+              <CardContent className="space-y-6">
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-3">
+                    1. Install the package
+                  </h4>
+                  <div className="space-y-2">
+                    <CodeBlock
+                      code={`npm install ${pkg.npmPackageName}`}
+                      language="bash"
+                      showCopy={true}
+                    />
+                    <CodeBlock
+                      code={`pnpm add ${pkg.npmPackageName}`}
+                      language="bash"
+                      showCopy={true}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-3">2. Import the tool</h4>
+                  <CodeBlock
+                    code={`import { ${tool.exportName} } from '${pkg.npmPackageName}';`}
+                    language="typescript"
+                    showCopy={true}
+                  />
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-3">3. Use with AI SDK</h4>
+                  <CodeBlock
+                    code={`import { generateText } from 'ai';
+import { openai } from '@ai-sdk/openai';
+import { ${tool.exportName} } from '${pkg.npmPackageName}';
+
+const result = await generateText({
+  model: openai('gpt-4o'),
+  tools: { ${tool.exportName} },
+  prompt: 'Your prompt here...',
+});
+
+console.log(result.text);`}
+                    language="typescript"
+                    showCopy={true}
+                  />
+                </div>
               </CardContent>
             </Card>
 
             {/* README */}
-            {tool.npmReadme && (
+            {pkg.npmReadme && (
               <Card>
                 <CardHeader>
                   <CardTitle>README</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Markdown content={tool.npmReadme} />
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Usage Example */}
-            {tool.tpmjsMetadata?.example && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Usage Example</CardTitle>
-                  <CardDescription>Quick start example</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <CodeBlock
-                    code={tool.tpmjsMetadata.example}
-                    language="typescript"
-                    showCopy={true}
-                  />
+                  <Markdown content={pkg.npmReadme} />
                 </CardContent>
               </Card>
             )}
 
             {/* AI Agent Information */}
-            {tool.tpmjsMetadata?.aiAgent && (
+            {tool.aiAgent && (
               <Card>
                 <CardHeader>
                   <CardTitle>AI Agent Integration</CardTitle>
                   <CardDescription>How AI agents can use this tool</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {tool.tpmjsMetadata.aiAgent.useCase && (
+                  {tool.aiAgent.useCase && (
                     <div>
                       <h4 className="text-sm font-semibold text-foreground mb-2">Use Case</h4>
-                      <p className="text-sm text-foreground-secondary">
-                        {tool.tpmjsMetadata.aiAgent.useCase}
-                      </p>
+                      <p className="text-sm text-foreground-secondary">{tool.aiAgent.useCase}</p>
                     </div>
                   )}
-                  {tool.tpmjsMetadata.aiAgent.limitations && (
+                  {tool.aiAgent.limitations && (
                     <div>
                       <h4 className="text-sm font-semibold text-foreground mb-2">Limitations</h4>
                       <p className="text-sm text-foreground-secondary">
-                        {tool.tpmjsMetadata.aiAgent.limitations}
+                        {tool.aiAgent.limitations}
                       </p>
                     </div>
                   )}
-                  {tool.tpmjsMetadata.aiAgent.examples &&
-                    tool.tpmjsMetadata.aiAgent.examples.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-semibold text-foreground mb-2">Examples</h4>
-                        <ul className="list-disc list-inside space-y-1">
-                          {tool.tpmjsMetadata.aiAgent.examples.map((example) => (
-                            <li key={example} className="text-sm text-foreground-secondary">
-                              {example}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
+                  {tool.aiAgent.examples && tool.aiAgent.examples.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Examples</h4>
+                      <ul className="list-disc list-inside space-y-1">
+                        {tool.aiAgent.examples.map((example) => (
+                          <li key={example} className="text-sm text-foreground-secondary">
+                            {example}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
 
             {/* Parameters */}
-            {tool.tpmjsMetadata?.parameters && tool.tpmjsMetadata.parameters.length > 0 && (
+            {tool.parameters && tool.parameters.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Parameters</CardTitle>
@@ -378,7 +384,7 @@ export default function ToolDetailPage({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {tool.tpmjsMetadata.parameters.map((param) => (
+                    {tool.parameters.map((param) => (
                       <div key={param.name} className="border-b border-border pb-4 last:border-0">
                         <div className="flex items-start justify-between mb-2">
                           <code className="text-sm font-mono text-foreground">{param.name}</code>
@@ -422,14 +428,14 @@ export default function ToolDetailPage({
                 <div>
                   <p className="text-sm text-foreground-secondary mb-1">Downloads/month</p>
                   <p className="text-2xl font-bold text-foreground">
-                    {tool.npmDownloadsLastMonth?.toLocaleString() || '0'}
+                    {pkg.npmDownloadsLastMonth?.toLocaleString() || '0'}
                   </p>
                 </div>
-                {tool.githubStars != null && (
+                {pkg.githubStars != null && (
                   <div>
                     <p className="text-sm text-foreground-secondary mb-1">GitHub Stars</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {tool.githubStars.toLocaleString()}
+                      {pkg.githubStars.toLocaleString()}
                     </p>
                   </div>
                 )}
@@ -452,14 +458,14 @@ export default function ToolDetailPage({
             </Card>
 
             {/* NPM Keywords */}
-            {tool.npmKeywords && tool.npmKeywords.length > 0 && (
+            {pkg.npmKeywords && pkg.npmKeywords.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>NPM Keywords</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {tool.npmKeywords.map((keyword) => (
+                    {pkg.npmKeywords.map((keyword) => (
                       <Badge key={keyword} variant="outline" size="sm">
                         {keyword}
                       </Badge>
@@ -469,33 +475,15 @@ export default function ToolDetailPage({
               </Card>
             )}
 
-            {/* Tags */}
-            {tool.tags && tool.tags.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tags</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {tool.tags.map((tag) => (
-                      <Badge key={tag} variant="outline" size="sm">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             {/* Maintainers */}
-            {tool.npmMaintainers && tool.npmMaintainers.length > 0 && (
+            {pkg.npmMaintainers && pkg.npmMaintainers.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Maintainers</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    {tool.npmMaintainers.map((maintainer) => (
+                    {pkg.npmMaintainers.map((maintainer) => (
                       <div key={maintainer.name} className="text-sm">
                         <span className="text-foreground font-medium">{maintainer.name}</span>
                         {maintainer.email && (
@@ -517,7 +505,7 @@ export default function ToolDetailPage({
               </CardHeader>
               <CardContent className="space-y-2">
                 <a
-                  href={`https://www.npmjs.com/package/${tool.npmPackageName}`}
+                  href={`https://www.npmjs.com/package/${pkg.npmPackageName}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground"
@@ -525,31 +513,9 @@ export default function ToolDetailPage({
                   <Icon icon="externalLink" size="sm" />
                   <span>View on NPM</span>
                 </a>
-                {tool.tpmjsMetadata?.links?.documentation && (
+                {pkg.npmHomepage && (
                   <a
-                    href={tool.tpmjsMetadata.links.documentation}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground"
-                  >
-                    <Icon icon="externalLink" size="sm" />
-                    <span>Documentation</span>
-                  </a>
-                )}
-                {tool.tpmjsMetadata?.links?.repository && (
-                  <a
-                    href={tool.tpmjsMetadata.links.repository}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground"
-                  >
-                    <Icon icon="github" size="sm" />
-                    <span>Repository</span>
-                  </a>
-                )}
-                {tool.tpmjsMetadata?.links?.homepage && (
-                  <a
-                    href={tool.tpmjsMetadata.links.homepage}
+                    href={pkg.npmHomepage}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground"
@@ -558,18 +524,31 @@ export default function ToolDetailPage({
                     <span>Homepage</span>
                   </a>
                 )}
+                {pkg.npmRepository &&
+                  typeof pkg.npmRepository === 'object' &&
+                  pkg.npmRepository.url && (
+                    <a
+                      href={pkg.npmRepository.url.replace(/^git\+/, '').replace(/\.git$/, '')}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-foreground-secondary hover:text-foreground"
+                    >
+                      <Icon icon="github" size="sm" />
+                      <span>Repository</span>
+                    </a>
+                  )}
               </CardContent>
             </Card>
 
             {/* Frameworks */}
-            {tool.tpmjsMetadata?.frameworks && tool.tpmjsMetadata.frameworks.length > 0 && (
+            {pkg.frameworks && pkg.frameworks.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Frameworks</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
-                    {tool.tpmjsMetadata.frameworks.map((framework) => (
+                    {pkg.frameworks.map((framework) => (
                       <Badge key={framework} variant="secondary" size="sm">
                         {framework}
                       </Badge>
