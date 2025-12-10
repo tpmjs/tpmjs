@@ -16,7 +16,6 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import { Select } from '@tpmjs/ui/Select/Select';
-import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
@@ -44,7 +43,6 @@ interface Tool {
  * Fetches tools from the /api/tools endpoint and displays them in a searchable grid.
  */
 export default function ToolSearchPage(): React.ReactElement {
-  const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [healthFilter, setHealthFilter] = useState('all');
@@ -52,8 +50,6 @@ export default function ToolSearchPage(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
-  const [officialCount, setOfficialCount] = useState(0);
 
   // Fetch tools from API
   useEffect(() => {
@@ -64,10 +60,6 @@ export default function ToolSearchPage(): React.ReactElement {
 
         if (searchQuery) {
           params.set('q', searchQuery);
-        }
-
-        if (activeTab === 'featured') {
-          params.set('official', 'true');
         }
 
         if (categoryFilter !== 'all') {
@@ -81,31 +73,13 @@ export default function ToolSearchPage(): React.ReactElement {
           params.set('broken', 'true');
         }
 
-        // Fetch tools and counts in parallel
-        const [toolsResponse, allCountResponse, officialCountResponse] = await Promise.all([
-          fetch(`/api/tools?${params.toString()}`),
-          fetch('/api/tools'),
-          fetch('/api/tools?official=true'),
-        ]);
-
-        const [toolsData, allCountData, officialCountData] = await Promise.all([
-          toolsResponse.json(),
-          allCountResponse.json(),
-          officialCountResponse.json(),
-        ]);
+        const toolsResponse = await fetch(`/api/tools?${params.toString()}`);
+        const toolsData = await toolsResponse.json();
 
         if (toolsData.success) {
           const fetchedTools = toolsData.data;
           setTools(fetchedTools);
           setError(null);
-
-          // Update counts
-          if (allCountData.success) {
-            setTotalCount(allCountData.data.length);
-          }
-          if (officialCountData.success) {
-            setOfficialCount(officialCountData.data.length);
-          }
 
           // Extract unique categories from all tools
           const categories = new Set<string>();
@@ -128,7 +102,7 @@ export default function ToolSearchPage(): React.ReactElement {
     };
 
     fetchTools();
-  }, [searchQuery, activeTab, categoryFilter, healthFilter]);
+  }, [searchQuery, categoryFilter, healthFilter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -202,22 +176,6 @@ export default function ToolSearchPage(): React.ReactElement {
             )}
           </div>
         </div>
-
-        {/* Tabs */}
-        <Tabs
-          tabs={[
-            { id: 'all', label: 'All Tools', count: totalCount },
-            {
-              id: 'featured',
-              label: 'Official',
-              count: officialCount,
-            },
-          ]}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          size="md"
-          className="mb-8"
-        />
 
         {/* Loading state */}
         {loading && (

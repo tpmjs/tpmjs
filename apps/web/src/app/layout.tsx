@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk, Space_Mono } from 'next/font/google';
+import Script from 'next/script';
 import { AppFooter } from '../components/AppFooter';
 import { ThemeProvider } from '../components/providers/ThemeProvider';
 import './globals.css';
@@ -34,6 +35,20 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${spaceGrotesk.variable} ${spaceMono.variable}`}
     >
+      <head>
+        {process.env.NODE_ENV === 'development' && (
+          <>
+            <Script
+              src="//unpkg.com/react-grab/dist/index.global.js"
+              strategy="beforeInteractive"
+            />
+            <Script
+              src="//unpkg.com/@react-grab/claude-code/dist/client.global.js"
+              strategy="lazyOnload"
+            />
+          </>
+        )}
+      </head>
       <body className={spaceGrotesk.className}>
         <ThemeProvider
           attribute="class"
