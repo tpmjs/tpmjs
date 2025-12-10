@@ -7,6 +7,7 @@ import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
+import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
@@ -118,7 +119,10 @@ export default function ToolDetailPage({
       <div className="min-h-screen bg-background">
         <AppHeader />
         <Container size="xl" padding="md" className="py-12">
-          <div className="text-center text-foreground-secondary">Loading tool...</div>
+          <div className="flex flex-col items-center justify-center py-24 gap-6">
+            <Spinner size="xl" />
+            <span className="text-foreground-secondary text-lg">Loading tool...</span>
+          </div>
         </Container>
       </div>
     );

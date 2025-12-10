@@ -165,6 +165,19 @@ export default {
           '0%, 100%': { opacity: '0.4' },
           '50%': { opacity: '0.6' },
         },
+        orbit: {
+          '0%': {
+            transform: 'rotate(0deg) translateX(150%) rotate(0deg)',
+            opacity: '1',
+          },
+          '50%': {
+            opacity: '0.6',
+          },
+          '100%': {
+            transform: 'rotate(360deg) translateX(150%) rotate(-360deg)',
+            opacity: '1',
+          },
+        },
       },
 
       animation: {
@@ -177,6 +190,7 @@ export default {
         shimmer: 'shimmer 2s infinite linear',
         pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'grid-pulse': 'grid-pulse 8s ease-in-out infinite',
+        orbit: 'orbit 1.2s ease-in-out infinite',
       },
     },
   },

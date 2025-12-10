@@ -2,20 +2,14 @@
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@tpmjs/ui/Card/Card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import { Select } from '@tpmjs/ui/Select/Select';
+import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
@@ -53,6 +47,7 @@ export default function ToolSearchPage(): React.ReactElement {
 
   // Fetch tools from API
   useEffect(() => {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Tool search page requires complex filtering logic
     const fetchTools = async () => {
       try {
         setLoading(true);
@@ -73,12 +68,22 @@ export default function ToolSearchPage(): React.ReactElement {
           params.set('broken', 'true');
         }
 
+        // Fetch all tools (no pagination limit)
+        params.set('limit', '1000');
         const toolsResponse = await fetch(`/api/tools?${params.toString()}`);
         const toolsData = await toolsResponse.json();
 
         if (toolsData.success) {
           const fetchedTools = toolsData.data;
-          setTools(fetchedTools);
+          // Sort broken tools to the bottom
+          const sortedTools = [...fetchedTools].sort((a, b) => {
+            const aIsBroken = a.importHealth === 'BROKEN' || a.executionHealth === 'BROKEN';
+            const bIsBroken = b.importHealth === 'BROKEN' || b.executionHealth === 'BROKEN';
+            if (aIsBroken && !bIsBroken) return 1;
+            if (!aIsBroken && bIsBroken) return -1;
+            return 0;
+          });
+          setTools(sortedTools);
           setError(null);
 
           // Extract unique categories from all tools
@@ -179,7 +184,10 @@ export default function ToolSearchPage(): React.ReactElement {
 
         {/* Loading state */}
         {loading && (
-          <div className="text-center py-12 text-foreground-secondary">Loading tools...</div>
+          <div className="flex flex-col items-center justify-center py-24 gap-6">
+            <Spinner size="xl" />
+            <span className="text-foreground-secondary text-lg">Loading tools...</span>
+          </div>
         )}
 
         {/* Error state */}
@@ -189,114 +197,116 @@ export default function ToolSearchPage(): React.ReactElement {
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {tools.length > 0 ? (
-              tools.map((tool) => (
-                <Card key={tool.id} className="flex flex-col">
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <CardTitle>
-                          {tool.exportName !== 'default'
-                            ? tool.exportName
-                            : tool.package.npmPackageName}
-                        </CardTitle>
-                        <div className="text-sm text-foreground-secondary mt-1">
-                          {tool.package.npmPackageName}
+              // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Tool card rendering requires complex conditional UI
+              tools.map((tool) => {
+                const isBroken =
+                  tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN';
+                const qualityPercent = Math.round(Number.parseFloat(tool.qualityScore) * 100);
+
+                // Clean up repository URL
+                let repoUrl = tool.package.npmRepository?.url || '';
+                repoUrl = repoUrl.replace(/^git\+/, '');
+                repoUrl = repoUrl.replace(/\.git$/, '');
+                repoUrl = repoUrl.replace(/^git:\/\//, 'https://');
+                repoUrl = repoUrl.replace(/^git@github\.com:/, 'https://github.com/');
+
+                return (
+                  <Link
+                    key={tool.id}
+                    href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}
+                    className="block"
+                  >
+                    <Card className="flex flex-col h-full hover:border-foreground-tertiary transition-colors cursor-pointer">
+                      <CardHeader className="flex-none">
+                        {/* Top row: Title + metadata */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="truncate">
+                              {tool.exportName !== 'default'
+                                ? tool.exportName
+                                : tool.package.npmPackageName}
+                            </CardTitle>
+                            <div className="text-sm text-foreground-secondary mt-1 truncate">
+                              {tool.package.npmPackageName}
+                            </div>
+                          </div>
+                          {/* Right side: downloads, version, link */}
+                          <div className="flex items-center gap-2 flex-shrink-0 text-xs text-foreground-tertiary">
+                            <span>{tool.package.npmDownloadsLastMonth.toLocaleString()}/mo</span>
+                            <span>v{tool.package.npmVersion}</span>
+                            {repoUrl && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  window.open(repoUrl, '_blank', 'noopener,noreferrer');
+                                }}
+                                className="text-foreground-secondary hover:text-foreground transition-colors cursor-pointer"
+                              >
+                                <Icon icon="externalLink" size="sm" />
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      {tool.package.npmRepository &&
-                        (() => {
-                          // Clean up repository URL
-                          let repoUrl = tool.package.npmRepository.url;
+                        {/* Description */}
+                        <CardDescription className="line-clamp-2 min-h-[2.5rem]">
+                          {tool.description}
+                        </CardDescription>
+                      </CardHeader>
 
-                          // Remove git+ prefix
-                          repoUrl = repoUrl.replace(/^git\+/, '');
+                      <CardContent className="flex-1 flex flex-col gap-4">
+                        {/* Category badge */}
+                        <div className="flex items-center">
+                          <Badge variant="secondary" size="sm">
+                            {tool.package.category}
+                          </Badge>
+                        </div>
 
-                          // Remove .git suffix
-                          repoUrl = repoUrl.replace(/\.git$/, '');
+                        {/* Quality + Broken status row */}
+                        <div className="flex items-center gap-3">
+                          <div className="flex-1 flex items-center gap-2">
+                            <ProgressBar
+                              value={qualityPercent}
+                              variant={
+                                isBroken
+                                  ? 'danger'
+                                  : qualityPercent >= 70
+                                    ? 'success'
+                                    : qualityPercent >= 50
+                                      ? 'primary'
+                                      : 'warning'
+                              }
+                              size="sm"
+                              showLabel={false}
+                              className="flex-1"
+                            />
+                            <span className="text-xs font-medium text-foreground-secondary w-8">
+                              {qualityPercent}%
+                            </span>
+                          </div>
+                          {isBroken && (
+                            <Badge variant="error" size="sm">
+                              Broken
+                            </Badge>
+                          )}
+                        </div>
 
-                          // Convert git:// to https://
-                          repoUrl = repoUrl.replace(/^git:\/\//, 'https://');
-
-                          // Convert ssh URLs to https
-                          repoUrl = repoUrl.replace(/^git@github\.com:/, 'https://github.com/');
-
-                          return (
-                            <a
-                              href={repoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-foreground-secondary hover:text-foreground transition-colors"
-                            >
-                              <Icon icon="externalLink" size="sm" />
-                            </a>
-                          );
-                        })()}
-                    </div>
-                    <CardDescription>{tool.description}</CardDescription>
-                  </CardHeader>
-
-                  <CardContent className="flex-1 space-y-4">
-                    {/* Category badge and version */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="secondary" size="sm">
-                        {tool.package.category}
-                      </Badge>
-                      <span className="text-xs text-foreground-tertiary">
-                        v{tool.package.npmVersion}
-                      </span>
-                      {tool.package.isOfficial && (
-                        <Badge variant="default" size="sm">
-                          Official
-                        </Badge>
-                      )}
-                      {(tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN') && (
-                        <Badge variant="error" size="sm">
-                          <Icon icon="x" size="sm" className="mr-1" />
-                          Broken
-                        </Badge>
-                      )}
-                    </div>
-
-                    {/* Quality score and downloads */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-foreground-secondary">Quality Score</span>
-                        <span className="text-foreground-tertiary">
-                          {tool.package.npmDownloadsLastMonth.toLocaleString()} downloads/mo
-                        </span>
-                      </div>
-                      <ProgressBar
-                        value={Number.parseFloat(tool.qualityScore) * 100}
-                        variant={
-                          Number.parseFloat(tool.qualityScore) >= 0.7
-                            ? 'success'
-                            : Number.parseFloat(tool.qualityScore) >= 0.5
-                              ? 'primary'
-                              : 'warning'
-                        }
-                        size="sm"
-                        showLabel={true}
-                      />
-                    </div>
-
-                    {/* Install command */}
-                    <CodeBlock
-                      code={`npm install ${tool.package.npmPackageName}`}
-                      language="bash"
-                      size="sm"
-                      showCopy={true}
-                    />
-                  </CardContent>
-
-                  <CardFooter>
-                    <Link href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}>
-                      <Button variant="outline" size="sm" className="w-full">
-                        View Details
-                      </Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))
+                        {/* Install command */}
+                        {/* biome-ignore lint/a11y/useKeyWithClickEvents: onClick only prevents propagation, not an interactive element */}
+                        <div className="mt-auto" onClick={(e) => e.stopPropagation()}>
+                          <CodeBlock
+                            code={`npm install ${tool.package.npmPackageName}`}
+                            language="bash"
+                            size="sm"
+                            showCopy={true}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })
             ) : (
               <div className="col-span-full text-center py-12 text-foreground-tertiary">
                 {searchQuery

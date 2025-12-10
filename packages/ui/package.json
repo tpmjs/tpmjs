@@ -83,6 +83,10 @@
       "types": "./dist/Slider/Slider.d.ts",
       "default": "./dist/Slider/Slider.js"
     },
+    "./Spinner/Spinner": {
+      "types": "./dist/Spinner/Spinner.d.ts",
+      "default": "./dist/Spinner/Spinner.js"
+    },
     "./FormField/FormField": {
       "types": "./dist/FormField/FormField.d.ts",
       "default": "./dist/FormField/FormField.js"

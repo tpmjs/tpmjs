@@ -7,6 +7,7 @@
 
 import type { TokenBreakdown as TokenData } from '@/lib/ai-agent/tool-executor-agent';
 import type { Package, Tool } from '@tpmjs/db';
+import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -24,6 +25,7 @@ interface ExecutionLog {
   timestamp: Date;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Playground component has many tabs with different content
 export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElement {
   const [activeTab, setActiveTab] = useState<Tab>('input');
   const [prompt, setPrompt] = useState('');
@@ -258,28 +260,8 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
               className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isExecuting ? (
-                <span className="flex items-center">
-                  {/* biome-ignore lint/a11y/noSvgWithoutTitle: decorative loading spinner */}
-                  <svg
-                    className="animate-spin -ml-1 mr-3 h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
+                <span className="flex items-center gap-2">
+                  <Spinner size="sm" />
                   Executing...
                 </span>
               ) : (
@@ -341,31 +323,9 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                 })()}
               </div>
             ) : isExecuting ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center">
-                  {/* biome-ignore lint/a11y/noSvgWithoutTitle: decorative loading spinner */}
-                  <svg
-                    className="animate-spin h-8 w-8 text-primary mx-auto mb-4"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <p className="text-sm text-foreground-secondary">Executing...</p>
-                </div>
+              <div className="flex flex-col items-center justify-center py-12 gap-6">
+                <Spinner size="xl" />
+                <p className="text-foreground-secondary">Executing...</p>
               </div>
             ) : (
               <div className="text-center py-12">
@@ -382,6 +342,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
             {logs.length > 0 ? (
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {logs.map((log, index) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: Logs don't have unique IDs, index is appropriate
                   <div key={index} className="flex items-start space-x-3 text-sm">
                     <span
                       className={`px-2 py-0.5 rounded text-xs font-medium uppercase ${getLevelBadgeColor(log.level)}`}

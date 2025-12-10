@@ -13,6 +13,7 @@ import {
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
@@ -87,7 +88,10 @@ export default function BrokenToolsPage(): React.ReactElement {
 
         {/* Loading state */}
         {loading && (
-          <div className="text-center py-12 text-foreground-secondary">Loading broken tools...</div>
+          <div className="flex flex-col items-center justify-center py-24 gap-6">
+            <Spinner size="xl" />
+            <span className="text-foreground-secondary text-lg">Loading broken tools...</span>
+          </div>
         )}
 
         {/* Error state */}
@@ -134,6 +138,7 @@ export default function BrokenToolsPage(): React.ReactElement {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Broken tools page requires conditional rendering for health status */}
               {tools.map((tool) => {
                 const toolUrl = `/tool/${tool.package.npmPackageName}/${tool.exportName}`;
                 const lastCheckedDate = tool.lastHealthCheck
