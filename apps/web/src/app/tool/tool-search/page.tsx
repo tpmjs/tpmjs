@@ -34,6 +34,25 @@ interface Tool {
 
 type SortOption = 'downloads' | 'recent';
 
+/** Sort tools by criterion, pushing broken tools to the bottom */
+function sortTools(tools: Tool[], sortBy: SortOption): Tool[] {
+  return [...tools].sort((a, b) => {
+    const aIsBroken = a.importHealth === 'BROKEN' || a.executionHealth === 'BROKEN';
+    const bIsBroken = b.importHealth === 'BROKEN' || b.executionHealth === 'BROKEN';
+    // Always push broken tools to bottom
+    if (aIsBroken && !bIsBroken) return 1;
+    if (!aIsBroken && bIsBroken) return -1;
+    // Within same broken status, sort by selected criterion
+    if (sortBy === 'downloads') {
+      const aDownloads = a.package.npmDownloadsLastMonth ?? 0;
+      const bDownloads = b.package.npmDownloadsLastMonth ?? 0;
+      return bDownloads - aDownloads;
+    }
+    // Sort by recent (createdAt descending)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+}
+
 /**
  * Tool Registry Search Page
  *
@@ -79,23 +98,7 @@ export default function ToolSearchPage(): React.ReactElement {
 
         if (toolsData.success) {
           const fetchedTools = toolsData.data;
-          // Sort by selected criterion, then push broken tools to bottom
-          const sortedTools = [...fetchedTools].sort((a: Tool, b: Tool) => {
-            const aIsBroken = a.importHealth === 'BROKEN' || a.executionHealth === 'BROKEN';
-            const bIsBroken = b.importHealth === 'BROKEN' || b.executionHealth === 'BROKEN';
-            // Always push broken tools to bottom
-            if (aIsBroken && !bIsBroken) return 1;
-            if (!aIsBroken && bIsBroken) return -1;
-            // Within same broken status, sort by selected criterion
-            if (sortBy === 'downloads') {
-              const aDownloads = a.package.npmDownloadsLastMonth ?? 0;
-              const bDownloads = b.package.npmDownloadsLastMonth ?? 0;
-              return bDownloads - aDownloads;
-            }
-            // Sort by recent (createdAt descending)
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          });
-          setTools(sortedTools);
+          setTools(sortTools(fetchedTools, sortBy));
           setError(null);
 
           // Extract unique categories from all tools
@@ -321,7 +324,8 @@ export default function ToolSearchPage(): React.ReactElement {
                         </div>
 
                         {/* Install command */}
-                        {/* biome-ignore lint/a11y/useKeyWithClickEvents: onClick only prevents propagation, not an interactive element */}
+                        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+                        {/* biome-ignore lint/a11y/useKeyWithClickEvents: onClick only prevents propagation */}
                         <div className="mt-auto" onClick={(e) => e.stopPropagation()}>
                           <CodeBlock
                             code={`npm install ${tool.package.npmPackageName}`}

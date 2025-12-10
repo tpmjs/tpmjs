@@ -143,6 +143,10 @@ export default {
     doNotFollow: {
       path: ['node_modules', '\\.next', 'dist', '\\.turbo', 'storybook-static'],
     },
+    exclude: {
+      // Exclude railway-executor - it's a Deno app with HTTP imports that can't be resolved
+      path: '^apps/railway-executor',
+    },
     tsPreCompilationDeps: true,
     tsConfig: {
       fileName: './tsconfig.json',

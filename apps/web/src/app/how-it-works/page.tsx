@@ -642,7 +642,7 @@ const result = await streamText({
                     <p className="text-sm text-foreground-secondary">
                       <strong className="text-foreground">Why collections?</strong> They let you
                       compose specialized sub-agents without manually curating tool lists. Think of
-                      them as "skill packs" for your AI.
+                      them as &ldquo;skill packs&rdquo; for your AI.
                     </p>
                   </div>
                 </div>
@@ -654,8 +654,8 @@ const result = await streamText({
                   Try It in the Playground
                 </h3>
                 <p className="text-foreground-secondary mb-4">
-                  Ask the playground agent to "search for tools about X" and watch it discover,
-                  load, and execute tools dynamically!
+                  Ask the playground agent to &ldquo;search for tools about X&rdquo; and watch it
+                  discover, load, and execute tools dynamically!
                 </p>
                 <Link href="/playground">
                   <Button size="lg" variant="default">
