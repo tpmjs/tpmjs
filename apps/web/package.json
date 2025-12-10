@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "npx @react-grab/claude-code@latest && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

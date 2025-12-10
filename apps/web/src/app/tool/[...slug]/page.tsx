@@ -119,9 +119,11 @@ export default function ToolDetailPage({
       <div className="min-h-screen bg-background">
         <AppHeader />
         <Container size="xl" padding="md" className="py-12">
-          <div className="flex flex-col items-center justify-center py-24 gap-6">
-            <Spinner size="xl" />
-            <span className="text-foreground-secondary text-lg">Loading tool...</span>
+          <div className="flex items-center justify-center py-24 gap-4">
+            <Spinner size="lg" />
+            <span className="text-foreground-secondary font-mono text-sm tracking-wide">
+              Loading tool...
+            </span>
           </div>
         </Container>
       </div>

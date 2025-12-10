@@ -323,9 +323,11 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                 })()}
               </div>
             ) : isExecuting ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-6">
-                <Spinner size="xl" />
-                <p className="text-foreground-secondary">Executing...</p>
+              <div className="flex items-center justify-center py-12 gap-4">
+                <Spinner size="lg" />
+                <p className="text-foreground-secondary font-mono text-sm tracking-wide">
+                  Executing...
+                </p>
               </div>
             ) : (
               <div className="text-center py-12">

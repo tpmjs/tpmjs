@@ -2,25 +2,17 @@
 
 import { cn } from '@tpmjs/utils/cn';
 
-const sizeClasses = {
-  xs: 'w-5 h-5',
-  sm: 'w-8 h-8',
-  md: 'w-12 h-12',
-  lg: 'w-16 h-16',
-  xl: 'w-24 h-24',
-} as const;
-
-const dotSizeClasses = {
-  xs: 'w-1 h-1',
-  sm: 'w-1.5 h-1.5',
-  md: 'w-2 h-2',
-  lg: 'w-3 h-3',
-  xl: 'w-4 h-4',
+const sizeConfig = {
+  xs: { container: 'w-4 h-4', block: 3, gap: 1 },
+  sm: { container: 'w-6 h-6', block: 4, gap: 2 },
+  md: { container: 'w-8 h-8', block: 6, gap: 2 },
+  lg: { container: 'w-12 h-12', block: 8, gap: 3 },
+  xl: { container: 'w-16 h-16', block: 12, gap: 4 },
 } as const;
 
 export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Size variant */
-  size?: keyof typeof sizeClasses;
+  size?: keyof typeof sizeConfig;
   /** Optional label for accessibility */
   label?: string;
 }
@@ -28,8 +20,9 @@ export interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
 /**
  * Spinner component
  *
- * An elegant orbital loading spinner with three dots rotating
- * in a synchronized dance pattern.
+ * A brutalist grid-based loader that evokes the feeling of
+ * tools being constructed, block by block. Matches the TPMJS
+ * dithering aesthetic with sharp squares and wave animations.
  */
 export function Spinner({
   className,
@@ -37,68 +30,73 @@ export function Spinner({
   label = 'Loading...',
   ...props
 }: SpinnerProps): React.ReactElement {
-  const sizeClass = sizeClasses[size];
-  const dotSize = dotSizeClasses[size];
+  const config = sizeConfig[size];
+  const blockSize = config.block;
+  const gap = config.gap;
+
+  // 3x3 grid positions with staggered delays (diagonal wave)
+  const blocks = [
+    { id: 'b00', row: 0, col: 0, delay: 0 },
+    { id: 'b01', row: 0, col: 1, delay: 0.1 },
+    { id: 'b02', row: 0, col: 2, delay: 0.2 },
+    { id: 'b10', row: 1, col: 0, delay: 0.1 },
+    { id: 'b11', row: 1, col: 1, delay: 0.2 },
+    { id: 'b12', row: 1, col: 2, delay: 0.3 },
+    { id: 'b20', row: 2, col: 0, delay: 0.2 },
+    { id: 'b21', row: 2, col: 1, delay: 0.3 },
+    { id: 'b22', row: 2, col: 2, delay: 0.4 },
+  ];
 
   return (
-    // biome-ignore lint/a11y/useSemanticElements: Spinner requires role="status" for screen reader announcements, <output> is not semantically appropriate
+    // biome-ignore lint/a11y/useSemanticElements: Spinner requires role="status" for screen reader announcements
     <div
       role="status"
       aria-label={label}
-      className={cn('relative', sizeClass, className)}
+      className={cn(
+        'relative inline-flex items-center justify-center',
+        config.container,
+        className
+      )}
       {...props}
     >
       <style>
         {`
-          @keyframes spinnerOrbit {
-            0% {
-              transform: rotate(0deg) translateX(140%) rotate(0deg);
+          @keyframes blockPulse {
+            0%, 100% {
+              opacity: 0.15;
+              transform: scale(0.85);
             }
-            100% {
-              transform: rotate(360deg) translateX(140%) rotate(-360deg);
+            50% {
+              opacity: 1;
+              transform: scale(1);
             }
           }
         `}
       </style>
 
-      {/* Orbital ring hint */}
-      <div className="absolute inset-[15%] rounded-full border border-foreground/10" />
+      <div
+        className="relative"
+        style={{
+          width: blockSize * 3 + gap * 2,
+          height: blockSize * 3 + gap * 2,
+        }}
+      >
+        {blocks.map((block) => (
+          <div
+            key={block.id}
+            className="absolute bg-foreground"
+            style={{
+              width: blockSize,
+              height: blockSize,
+              left: block.col * (blockSize + gap),
+              top: block.row * (blockSize + gap),
+              animation: 'blockPulse 1.2s ease-in-out infinite',
+              animationDelay: `${block.delay}s`,
+            }}
+          />
+        ))}
+      </div>
 
-      {/* Three orbiting dots with staggered animations */}
-      <div
-        className={cn('absolute rounded-full bg-foreground', dotSize)}
-        style={{
-          top: '50%',
-          left: '50%',
-          marginTop: '-0.25rem',
-          marginLeft: '-0.25rem',
-          animation: 'spinnerOrbit 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite',
-        }}
-      />
-      <div
-        className={cn('absolute rounded-full bg-foreground/50', dotSize)}
-        style={{
-          top: '50%',
-          left: '50%',
-          marginTop: '-0.25rem',
-          marginLeft: '-0.25rem',
-          animation: 'spinnerOrbit 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite',
-          animationDelay: '-0.45s',
-        }}
-      />
-      <div
-        className={cn('absolute rounded-full bg-foreground/25', dotSize)}
-        style={{
-          top: '50%',
-          left: '50%',
-          marginTop: '-0.25rem',
-          marginLeft: '-0.25rem',
-          animation: 'spinnerOrbit 1.4s cubic-bezier(0.5, 0, 0.5, 1) infinite',
-          animationDelay: '-0.9s',
-        }}
-      />
-
-      {/* Screen reader text */}
       <span className="sr-only">{label}</span>
     </div>
   );

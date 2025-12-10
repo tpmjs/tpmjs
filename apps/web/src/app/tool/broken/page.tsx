@@ -88,9 +88,11 @@ export default function BrokenToolsPage(): React.ReactElement {
 
         {/* Loading state */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-24 gap-6">
-            <Spinner size="xl" />
-            <span className="text-foreground-secondary text-lg">Loading broken tools...</span>
+          <div className="flex items-center justify-center py-24 gap-4">
+            <Spinner size="lg" />
+            <span className="text-foreground-secondary font-mono text-sm tracking-wide">
+              Loading broken tools...
+            </span>
           </div>
         )}
 
