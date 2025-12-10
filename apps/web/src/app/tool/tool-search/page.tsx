@@ -323,10 +323,13 @@ export default function ToolSearchPage(): React.ReactElement {
                           )}
                         </div>
 
-                        {/* Install command */}
-                        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-                        {/* biome-ignore lint/a11y/useKeyWithClickEvents: onClick only prevents propagation */}
-                        <div className="mt-auto" onClick={(e) => e.stopPropagation()}>
+                        {/* Install command - onClick prevents propagation to parent Link */}
+                        <div
+                          className="mt-auto"
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          role="presentation"
+                        >
                           <CodeBlock
                             code={`npm install ${tool.package.npmPackageName}`}
                             language="bash"
