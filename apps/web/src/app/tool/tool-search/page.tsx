@@ -88,7 +88,9 @@ export default function ToolSearchPage(): React.ReactElement {
             if (!aIsBroken && bIsBroken) return -1;
             // Within same broken status, sort by selected criterion
             if (sortBy === 'downloads') {
-              return b.package.npmDownloadsLastMonth - a.package.npmDownloadsLastMonth;
+              const aDownloads = a.package.npmDownloadsLastMonth ?? 0;
+              const bDownloads = b.package.npmDownloadsLastMonth ?? 0;
+              return bDownloads - aDownloads;
             }
             // Sort by recent (createdAt descending)
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
@@ -240,9 +242,9 @@ export default function ToolSearchPage(): React.ReactElement {
                   <Link
                     key={tool.id}
                     href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}
-                    className="block"
+                    className="block select-text"
                   >
-                    <Card className="flex flex-col h-full hover:border-foreground-tertiary transition-colors cursor-pointer">
+                    <Card className="flex flex-col h-full hover:border-foreground-tertiary transition-colors cursor-pointer select-text">
                       <CardHeader className="flex-none">
                         {/* Top row: Title + metadata */}
                         <div className="flex items-start justify-between gap-2">
