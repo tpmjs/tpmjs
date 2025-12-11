@@ -10,6 +10,7 @@ import { Input } from '@tpmjs/ui/Input/Input';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import { Select } from '@tpmjs/ui/Select/Select';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
+import { formatTimeAgo } from '@tpmjs/utils/format';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
@@ -25,6 +26,7 @@ interface Tool {
   package: {
     npmPackageName: string;
     npmVersion: string;
+    npmPublishedAt: string;
     category: string;
     npmRepository: { url: string; type: string } | null;
     isOfficial: boolean;
@@ -323,19 +325,23 @@ export default function ToolSearchPage(): React.ReactElement {
                           )}
                         </div>
 
-                        {/* Install command - onClick prevents propagation to parent Link */}
-                        <div
-                          className="mt-auto"
-                          onClick={(e) => e.stopPropagation()}
-                          onKeyDown={(e) => e.stopPropagation()}
-                          role="presentation"
-                        >
-                          <CodeBlock
-                            code={`npm install ${tool.package.npmPackageName}`}
-                            language="bash"
-                            size="sm"
-                            showCopy={true}
-                          />
+                        {/* Bottom section with install command and published date */}
+                        <div className="mt-auto space-y-2">
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => e.stopPropagation()}
+                            role="presentation"
+                          >
+                            <CodeBlock
+                              code={`npm install ${tool.package.npmPackageName}`}
+                              language="bash"
+                              size="sm"
+                              showCopy={true}
+                            />
+                          </div>
+                          <div className="text-xs text-foreground-tertiary">
+                            Published {formatTimeAgo(tool.package.npmPublishedAt)}
+                          </div>
                         </div>
                       </CardContent>
                     </Card>

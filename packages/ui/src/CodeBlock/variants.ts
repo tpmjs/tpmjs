@@ -59,12 +59,12 @@ export const codeBlockCodeVariants = createVariants({
  */
 export const codeBlockCopyButtonVariants = createVariants({
   base: [
-    // Position
-    'absolute top-2 right-2',
+    // Position - vertically centered on right side
+    'absolute right-2 top-1/2 -translate-y-1/2',
     // Display
     'flex items-center justify-center',
     // Size
-    'w-8 h-8',
+    'w-7 h-7',
     // Background
     'bg-surface-elevated hover:bg-accent',
     // Border
