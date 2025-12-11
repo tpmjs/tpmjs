@@ -37,41 +37,6 @@ function getConversationEnv(conversationId: string): Record<string, string> {
   return conversationEnv.get(conversationId) || {};
 }
 
-// Web app API URL for health status updates
-const TPMJS_API_URL = process.env.TPMJS_API_URL || 'https://tpmjs.com';
-
-/**
- * Report tool execution result to centralized health service
- * Non-blocking - calls web app API which has all the health logic
- */
-async function reportToolResult(
-  packageName: string,
-  exportName: string,
-  success: boolean,
-  error?: string
-): Promise<void> {
-  try {
-    // Call the web app's centralized health report endpoint
-    const response = await fetch(`${TPMJS_API_URL}/api/tools/report-health`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        packageName,
-        exportName,
-        success,
-        error,
-      }),
-    });
-
-    if (!response.ok) {
-      console.warn(`⚠️  Failed to report health status: ${response.status}`);
-    }
-  } catch (err) {
-    // Non-blocking - just log the error
-    console.error('❌ Failed to report tool result:', err);
-  }
-}
-
 /**
  * Dynamically load a tool via Railway service
  * Railway service runs with --experimental-network-imports and can import from esm.sh
@@ -126,15 +91,6 @@ export async function loadToolDynamically(
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`❌ Railway service error (${response.status}): ${errorText}`);
-
-        // Report failure to centralized health service (non-blocking)
-        reportToolResult(
-          packageName,
-          exportName,
-          false,
-          `Railway service error (${response.status}): ${errorText}`
-        );
-
         return null;
       }
 
@@ -143,10 +99,6 @@ export async function loadToolDynamically(
       if (!data || !data.success) {
         const errorMsg = data?.error || 'Unknown error';
         console.error(`❌ Failed to load tool: ${errorMsg}`);
-
-        // Report failure to centralized health service (non-blocking)
-        reportToolResult(packageName, exportName, false, errorMsg);
-
         return null;
       }
     } catch (fetchError) {
@@ -154,14 +106,6 @@ export async function loadToolDynamically(
 
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         console.error(`❌ Railway request timeout after 120s for ${packageName}/${exportName}`);
-
-        reportToolResult(
-          packageName,
-          exportName,
-          false,
-          'Railway service timeout (120s) - tool dependencies may be too large'
-        );
-
         return null;
       }
 
@@ -212,18 +156,11 @@ export async function loadToolDynamically(
 
         if (!result.success) {
           console.error(`❌ Tool execution failed: ${result.error}`);
-
-          // Report failure to centralized health service (non-blocking)
-          reportToolResult(packageName, exportName, false, result.error || 'Tool execution failed');
-
           throw new Error(result.error || 'Tool execution failed');
         }
 
+        // Health status is reported by the Railway executor
         console.log(`✅ Tool executed successfully in ${result.executionTimeMs}ms`);
-
-        // Report success to centralized health service (non-blocking)
-        reportToolResult(packageName, exportName, true);
-
         return result.output;
       },
     });

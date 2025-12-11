@@ -10,6 +10,44 @@ import { zodToJsonSchema } from 'https://esm.sh/zod-to-json-schema@3.25.0';
 // biome-ignore lint/suspicious/noExplicitAny: Tool types are dynamic and vary by package
 const moduleCache = new Map<string, any>();
 
+// Web app API URL for health status reporting
+const TPMJS_API_URL = Deno.env.get('TPMJS_API_URL') || 'https://tpmjs.com';
+
+/**
+ * Report tool execution result to centralized health service
+ * Non-blocking - fires and forgets to avoid slowing down execution
+ */
+async function reportToolHealth(
+  packageName: string,
+  exportName: string,
+  success: boolean,
+  error?: string
+): Promise<void> {
+  try {
+    const response = await fetch(`${TPMJS_API_URL}/api/tools/report-health`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageName,
+        exportName,
+        success,
+        error,
+      }),
+    });
+
+    if (response.ok) {
+      console.log(
+        `📊 Health reported for ${packageName}/${exportName}: ${success ? 'SUCCESS' : 'FAILURE'}`
+      );
+    } else {
+      console.warn(`⚠️  Failed to report health: ${response.status}`);
+    }
+  } catch (err) {
+    // Non-blocking - just log
+    console.error('❌ Failed to report tool health:', err);
+  }
+}
+
 /**
  * Sanitize JSON Schema to fix common issues
  * - Replaces invalid type "None" with "object"
@@ -546,14 +584,20 @@ async function executeTool(req: Request): Promise<Response> {
     const executionTimeMs = Date.now() - startTime;
     console.log(`✅ Execution complete in ${executionTimeMs}ms`);
 
+    // Report successful execution to health service (non-blocking)
+    reportToolHealth(packageName, exportName, true).catch(() => {});
+
     return Response.json({
       success: true,
       output: result,
       executionTimeMs,
     });
   } catch (error) {
-    const executionTimeMs = Date.now() - Date.now();
+    const executionTimeMs = Date.now() - startTime;
     console.error('❌ Tool execution failed:', error);
+
+    // Report failed execution to health service (non-blocking)
+    reportToolHealth(packageName, exportName, false, error.message).catch(() => {});
 
     return Response.json(
       {
