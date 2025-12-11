@@ -195,9 +195,33 @@ curl -X POST 'https://tpmjs.com/api/tools/report-health' \
 
 ### 1. Executor Bugs Masking Tool Errors
 
-**Problem:** Our executor had `startTime` declared inside a try block but referenced in the catch block. When the tool threw an error, our catch block crashed first, showing "startTime is not defined" instead of the actual tool error.
+**Problem:** Our executor had variables like `startTime`, `packageName`, and `exportName` declared inside try blocks but referenced in catch blocks. When errors occurred early (like during JSON parsing), the catch block crashed first, showing errors like "startTime is not defined" or "packageName is not defined" instead of the actual tool error.
 
-**Lesson:** Always ensure executor error handling is bulletproof. Variables used in catch blocks must be declared before the try block.
+**Lesson:** Always ensure executor error handling is bulletproof. Any variable used in a catch block MUST be declared before the try block with sensible defaults:
+
+```typescript
+async function executeTool(req: Request): Promise<Response> {
+  const startTime = Date.now();
+  // Declare with defaults BEFORE try
+  let packageName = 'unknown';
+  let exportName = 'unknown';
+  try {
+    const body = await req.json();
+    const { packageName: pkg, exportName: exp, ... } = body;
+    packageName = pkg || 'unknown';
+    exportName = exp || 'unknown';
+    // ... rest of execution
+  } catch (error) {
+    // Now these are always in scope
+    reportToolHealth(packageName, exportName, false, error.message);
+    return Response.json({
+      success: false,
+      error: error.message,
+      executionTimeMs: Date.now() - startTime,
+    });
+  }
+}
+```
 
 ### 2. Factory Functions Without API Keys
 
