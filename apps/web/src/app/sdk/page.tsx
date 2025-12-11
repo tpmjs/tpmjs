@@ -103,14 +103,13 @@ export default function SDKPage(): React.ReactElement {
                 </div>
                 <CodeBlock
                   language="typescript"
-                  code={`import { Agent } from 'ai';
+                  code={`import { streamText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
 import { registrySearchTool } from '@tpmjs/registrySearch';
 import { registryExecuteTool } from '@tpmjs/registryExecute';
 
-const agent = new Agent({
-  model: 'anthropic/claude-sonnet-4-20250514',
-  instructions: \`You have access to thousands of tools via the TPMJS registry.
-Use registrySearch to find tools, then registryExecute to run them.\`,
+const result = streamText({
+  model: anthropic('claude-sonnet-4-20250514'),
   tools: {
     // Your existing tools
     weather: weatherTool,
@@ -120,6 +119,9 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
     registrySearch: registrySearchTool,
     registryExecute: registryExecuteTool,
   },
+  system: \`You have access to thousands of tools via the TPMJS registry.
+Use registrySearch to find tools, then registryExecute to run them.\`,
+  prompt: 'Search for web scraping tools and scrape https://example.com',
 });`}
                 />
               </div>
