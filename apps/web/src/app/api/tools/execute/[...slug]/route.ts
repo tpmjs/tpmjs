@@ -69,27 +69,21 @@ export async function POST(
 
     // Fetch tool from database with package relation
     // Support both ID-based lookup and packageName/exportName lookup
-    let tool;
-
-    if (slug.length === 1) {
-      // Single slug - treat as tool ID
-      tool = await prisma.tool.findUnique({
-        where: { id: slug[0] || '' },
-        include: { package: true },
-      });
-    } else {
-      // Multiple slugs - treat as packageName/exportName
-      const packageName = decodeURIComponent(slug.slice(0, -1).join('/'));
-      const exportName = decodeURIComponent(slug[slug.length - 1] || '');
-
-      tool = await prisma.tool.findFirst({
-        where: {
-          package: { npmPackageName: packageName },
-          exportName: exportName,
-        },
-        include: { package: true },
-      });
-    }
+    const tool =
+      slug.length === 1
+        ? // Single slug - treat as tool ID
+          await prisma.tool.findUnique({
+            where: { id: slug[0] || '' },
+            include: { package: true },
+          })
+        : // Multiple slugs - treat as packageName/exportName
+          await prisma.tool.findFirst({
+            where: {
+              package: { npmPackageName: decodeURIComponent(slug.slice(0, -1).join('/')) },
+              exportName: decodeURIComponent(slug[slug.length - 1] || ''),
+            },
+            include: { package: true },
+          });
 
     if (!tool) {
       return NextResponse.json({ error: 'Tool not found' }, { status: 404 });
@@ -152,6 +146,20 @@ export async function POST(
               completedAt: new Date(),
             },
           });
+
+          // Update tool health status on successful execution
+          // This ensures tools marked as BROKEN get updated when they actually work
+          if (tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN') {
+            await prisma.tool.update({
+              where: { id: tool.id },
+              data: {
+                importHealth: 'HEALTHY',
+                executionHealth: 'HEALTHY',
+                healthCheckError: null,
+                lastHealthCheck: new Date(),
+              },
+            });
+          }
 
           // Create token usage record
           await prisma.tokenUsage.create({

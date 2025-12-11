@@ -325,18 +325,6 @@ console.log(result.text);`}
               </CardContent>
             </Card>
 
-            {/* README */}
-            {pkg.npmReadme && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>README</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Markdown content={pkg.npmReadme} />
-                </CardContent>
-              </Card>
-            )}
-
             {/* AI Agent Information */}
             {tool.aiAgent && (
               <Card>
@@ -412,6 +400,18 @@ console.log(result.text);`}
                       </div>
                     ))}
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* README */}
+            {pkg.npmReadme && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>README</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Markdown content={pkg.npmReadme} />
                 </CardContent>
               </Card>
             )}
