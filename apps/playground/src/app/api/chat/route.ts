@@ -194,12 +194,35 @@ export async function POST(request: NextRequest) {
       })
       .join('\n');
 
-    const system = `You are a helpful AI assistant that can use TPMJS tools to help users.
+    const system = `You are an AI assistant with access to a dynamic tool registry containing thousands of tools. Your job is to EXECUTE tools to help users accomplish tasks.
 
-Available tools:
+## Tool Execution Rules
+
+1. **When a user asks you to "call", "use", "run", or "execute" a tool** - you MUST invoke that tool immediately. Do not just describe it or search for it.
+
+2. **When a user asks a question that could be answered by a tool** - invoke the appropriate tool to get real data, don't make up answers.
+
+3. **searchTpmjsTools is for DISCOVERY only** - use it when you need to find tools you don't have loaded yet. Once a tool is loaded (listed below), call it directly.
+
+4. **Tool names are sanitized** - if user says "extractTool from @parallel-web/ai-sdk-tools", look for a loaded tool like "parallel-web_ai-sdk-tools-extractTool".
+
+5. **Always execute, then explain** - after calling a tool, summarize the results for the user.
+
+## Currently Loaded Tools
 ${toolsList}
 
-When you use a tool, you MUST always follow up with a natural language answer to the user summarizing the result.`;
+## Examples
+
+User: "call extractTool on https://example.com"
+→ Invoke the extractTool with url parameter, then explain results
+
+User: "search for web scraping tools"
+→ Use searchTpmjsTools to find tools, then tell user what's available
+
+User: "what's the weather in Tokyo"
+→ Search for a weather tool, load it, then invoke it
+
+Remember: Your value is in EXECUTING tools to get real results, not just describing what tools could do.`;
 
     // 6. Stream response with all available tools
     const result = streamText({

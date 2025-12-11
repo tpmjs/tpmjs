@@ -530,9 +530,18 @@ async function executeTool(req: Request): Promise<Response> {
       console.log('⚠️  No env object in request body');
     }
 
-    // Execute the tool
+    // Execute the tool with AI SDK execution context
+    // Some tools expect a second argument with { abortSignal, ... }
+    const abortController = new AbortController();
+    const executionContext = {
+      abortSignal: abortController.signal,
+      // Add other context properties that AI SDK tools might expect
+      messages: [],
+      toolCallId: `exec_${Date.now()}`,
+    };
+
     console.log(`🚀 Executing ${cacheKey} with params:`, params);
-    const result = await toolModule.execute(params || {});
+    const result = await toolModule.execute(params || {}, executionContext);
 
     const executionTimeMs = Date.now() - startTime;
     console.log(`✅ Execution complete in ${executionTimeMs}ms`);
