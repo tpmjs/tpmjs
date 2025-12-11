@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/registryExecute",
+  "version": "0.1.0",
+  "description": "Execute tools from the TPMJS registry in any AI SDK agent",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["tpmjs-tool", "ai-sdk", "vercel-ai", "registry", "execute"],
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "^5.7.2"
+  },
+  "files": ["dist", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/registryExecute"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "api-integration",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "registryExecuteTool",
+        "description": "Execute a tool from the TPMJS registry by toolId. Use registrySearchTool first to find toolIds.",
+        "parameters": [
+          {
+            "name": "toolId",
+            "type": "string",
+            "description": "Tool identifier from registrySearchTool (format: 'package::exportName')",
+            "required": true
+          },
+          {
+            "name": "params",
+            "type": "object",
+            "description": "Parameters to pass to the tool",
+            "required": true
+          },
+          {
+            "name": "env",
+            "type": "object",
+            "description": "Environment variables (API keys) if required by the tool",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Tool execution result with output and timing"
+        },
+        "aiAgent": {
+          "useCase": "Use after finding a tool with registrySearchTool. Execute the tool by its toolId with the required parameters.",
+          "examples": [
+            "Execute '@exalabs/ai-sdk::webSearch' with query parameter",
+            "Execute '@firecrawl/ai-sdk::scrapeTool' with url parameter"
+          ]
+        }
+      }
+    ]
+  }
+}

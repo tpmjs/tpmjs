@@ -43,6 +43,11 @@ export function AppHeader(): React.ReactElement {
               Spec
             </Button>
           </Link>
+          <Link href="/sdk">
+            <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+              SDK
+            </Button>
+          </Link>
           <a
             href="https://github.com/tpmjs/tpmjs"
             target="_blank"

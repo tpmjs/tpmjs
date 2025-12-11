@@ -1,0 +1,73 @@
+{
+  "name": "@tpmjs/registrySearch",
+  "version": "0.1.0",
+  "description": "Search the TPMJS tool registry from any AI SDK agent",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["tpmjs-tool", "ai-sdk", "vercel-ai", "registry", "search"],
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "^5.7.2"
+  },
+  "files": ["dist", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/registrySearch"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "api-integration",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "registrySearchTool",
+        "description": "Search the TPMJS tool registry to find AI SDK tools. Returns tool metadata including toolId for use with registryExecuteTool.",
+        "parameters": [
+          {
+            "name": "query",
+            "type": "string",
+            "description": "Search query (keywords, tool names, descriptions)",
+            "required": true
+          },
+          {
+            "name": "category",
+            "type": "string",
+            "description": "Filter by category (optional)",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "type": "number",
+            "description": "Maximum results (1-20, default 5)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Search results with tool metadata including toolId, packageName, exportName, description, requiredEnvVars"
+        },
+        "aiAgent": {
+          "useCase": "Use when you need to find a tool for a specific task. Search returns toolIds that can be executed with registryExecuteTool.",
+          "examples": [
+            "Search for 'web scraping' to find scraping tools",
+            "Search for 'weather' to find weather API tools",
+            "Search for 'database' to find database tools"
+          ]
+        }
+      }
+    ]
+  }
+}
