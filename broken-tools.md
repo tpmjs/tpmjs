@@ -54,8 +54,8 @@ AI SDK tools expect `execute(params, { abortSignal, ... })` but executor only pa
 
 ## Resolution Status
 
-- [ ] Invalid structure - Health check marks as BROKEN ✓
-- [ ] Module not found - Health check marks as BROKEN ✓
+- [x] Invalid structure - Health check marks as BROKEN ✓
+- [x] Module not found - Health check marks as BROKEN ✓
 - [ ] Factory function - Partial support (tries common patterns)
-- [ ] Missing env var - Shows clear error message ✓
-- [x] Missing execution context - **Fixed in executor**
+- [x] Missing env var - Import: HEALTHY, Execution: HEALTHY (config issue, not broken)
+- [x] Missing execution context - **Fixed in executor** (commit 0804f1b)
