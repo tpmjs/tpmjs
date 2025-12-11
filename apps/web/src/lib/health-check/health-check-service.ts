@@ -136,13 +136,17 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
       return { status: 'HEALTHY', error: null, timeMs, testParams };
     }
 
-    // HTTP error from executor itself (not from tool)
-    // This could be executor down, rate limited, etc.
+    // HTTP error from executor - could be tool-level or infrastructure
     const data = await response.json().catch(() => ({}));
     const error = data.error || `HTTP ${response.status}`;
 
-    // Even HTTP errors might be tool-level errors returned through executor
-    // Only mark as BROKEN for true infrastructure failures
+    // Check if this is a config/validation error (tool is working, just missing setup)
+    // The executor returns 500 for all tool errors, so we need to inspect the message
+    if (isNonBreakingError(error)) {
+      return { status: 'HEALTHY', error: null, timeMs, testParams };
+    }
+
+    // True infrastructure failures (executor down, rate limited, etc.)
     if (response.status >= 500) {
       return { status: 'BROKEN', error, timeMs, testParams };
     }
