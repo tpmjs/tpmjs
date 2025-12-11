@@ -48,8 +48,8 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
     if (!response.ok || !data.success) {
       const error = data.error || `HTTP ${response.status}`;
 
-      // If error is just missing env vars, tool is not broken
-      if (isEnvironmentConfigError(error)) {
+      // If error is config/input issue, tool is not broken
+      if (isNonBreakingError(error)) {
         return {
           status: 'HEALTHY',
           error: null,
@@ -77,8 +77,8 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // If error is just missing env vars, tool is not broken
-    if (isEnvironmentConfigError(errorMessage)) {
+    // If error is config/input issue, tool is not broken
+    if (isNonBreakingError(errorMessage)) {
       return {
         status: 'HEALTHY',
         error: null,
@@ -128,11 +128,11 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
     if (!response.ok || !data.success) {
       const error = data.error || `HTTP ${response.status}`;
 
-      // If error is just missing env vars, tool is not broken - just needs configuration
-      if (isEnvironmentConfigError(error)) {
+      // If error is config/input issue, tool is not broken - just needs proper input
+      if (isNonBreakingError(error)) {
         return {
           status: 'HEALTHY',
-          error: null, // Clear the error since it's just a config issue
+          error: null, // Clear the error since it's not a code issue
           timeMs,
           testParams,
         };
@@ -150,8 +150,8 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // If error is just missing env vars, tool is not broken
-    if (isEnvironmentConfigError(errorMessage)) {
+    // If error is config/input issue, tool is not broken
+    if (isNonBreakingError(errorMessage)) {
       return {
         status: 'HEALTHY',
         error: null,
@@ -192,6 +192,42 @@ function isEnvironmentConfigError(error: string | null): boolean {
   ];
 
   return envErrorPatterns.some((pattern) => pattern.test(error));
+}
+
+/**
+ * Check if an error is due to input validation (Zod validation, URL format, etc.)
+ * These errors mean the tool is working correctly - it's validating input as expected
+ */
+function isInputValidationError(error: string | null): boolean {
+  if (!error) return false;
+
+  const validationErrorPatterns = [
+    /must have a valid.*domain/i, // URL validation
+    /valid.*path/i, // Path validation
+    /invalid.*url/i, // URL format
+    /invalid.*format/i, // General format validation
+    /expected.*received/i, // Zod type errors
+    /must be.*string/i, // Type validation
+    /must be.*number/i,
+    /must be.*boolean/i,
+    /must be.*array/i,
+    /must be.*object/i,
+    /validation.*failed/i, // General validation
+    /does not match/i, // Pattern/regex validation
+    /too short/i, // Length validation
+    /too long/i,
+    /minimum.*length/i,
+    /maximum.*length/i,
+  ];
+
+  return validationErrorPatterns.some((pattern) => pattern.test(error));
+}
+
+/**
+ * Check if an error is a configuration or input issue (not a broken tool)
+ */
+function isNonBreakingError(error: string | null): boolean {
+  return isEnvironmentConfigError(error) || isInputValidationError(error);
 }
 
 /**
