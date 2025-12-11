@@ -3,6 +3,7 @@ import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
 import Link from 'next/link';
 import { AppHeader } from '~/components/AppHeader';
+import { SDKFlowDiagram } from '~/components/SDKFlowDiagram';
 
 export const metadata = {
   title: 'SDK - Registry Tools | TPMJS',
@@ -168,28 +169,7 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
           {/* How It Works */}
           <section className="mb-16">
             <h2 className="text-3xl font-bold mb-6 text-foreground">How It Works</h2>
-            <div className="p-8 border border-border rounded-lg bg-surface font-mono text-sm overflow-x-auto">
-              <pre className="text-foreground-secondary whitespace-pre">
-                {`┌─────────────────────────────────────────────────────────────────┐
-│                      Your AI Agent                               │
-│  ┌─────────────┐  ┌────────────────┐  ┌─────────────────────┐   │
-│  │ Your Tools  │  │ registrySearch │  │   registryExecute   │   │
-│  └─────────────┘  └───────┬────────┘  └──────────┬──────────┘   │
-└───────────────────────────┼──────────────────────┼──────────────┘
-                            │                      │
-                            ▼                      ▼
-                  ┌─────────────────┐   ┌─────────────────────────┐
-                  │  TPMJS Registry │   │   Sandbox Executor      │
-                  │  tpmjs.com/api  │   │  executor.tpmjs.com     │
-                  └─────────────────┘   └─────────────────────────┘
-                            │                      │
-                            ▼                      ▼
-                  ┌─────────────────┐   ┌─────────────────────────┐
-                  │  Tool Metadata  │   │   Secure Deno Runtime   │
-                  │  1000+ tools    │   │   Isolated execution    │
-                  └─────────────────┘   └─────────────────────────┘`}
-              </pre>
-            </div>
+            <SDKFlowDiagram />
           </section>
 
           {/* registrySearchTool */}
