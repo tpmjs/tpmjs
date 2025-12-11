@@ -1,21 +1,21 @@
-# @tpmjs/registrySearch
+# @tpmjs/registry-search
 
 Search the TPMJS tool registry from any AI SDK agent. Discover thousands of tools dynamically.
 
 ## Installation
 
 ```bash
-npm install @tpmjs/registrySearch
+npm install @tpmjs/registry-search
 # or
-pnpm add @tpmjs/registrySearch
+pnpm add @tpmjs/registry-search
 ```
 
 ## Usage
 
 ```typescript
 import { Agent } from 'ai';
-import { registrySearchTool } from '@tpmjs/registrySearch';
-import { registryExecuteTool } from '@tpmjs/registryExecute';
+import { registrySearchTool } from '@tpmjs/registry-search';
+import { registryExecuteTool } from '@tpmjs/registry-execute';
 
 const agent = new Agent({
   model: 'anthropic/claude-sonnet-4-20250514',
@@ -94,7 +94,7 @@ export TPMJS_API_URL=https://registry.mycompany.com
 
 ## Related
 
-- [@tpmjs/registryExecute](https://www.npmjs.com/package/@tpmjs/registryExecute) - Execute tools found with this package
+- [@tpmjs/registry-execute](https://www.npmjs.com/package/@tpmjs/registry-execute) - Execute tools found with this package
 - [TPMJS Registry](https://tpmjs.com) - Browse all available tools
 
 ## License

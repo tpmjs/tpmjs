@@ -1,21 +1,21 @@
-# @tpmjs/registryExecute
+# @tpmjs/registry-execute
 
 Execute tools from the TPMJS registry in any AI SDK agent. Tools run in a secure sandbox - no local installation required.
 
 ## Installation
 
 ```bash
-npm install @tpmjs/registryExecute
+npm install @tpmjs/registry-execute
 # or
-pnpm add @tpmjs/registryExecute
+pnpm add @tpmjs/registry-execute
 ```
 
 ## Usage
 
 ```typescript
 import { Agent } from 'ai';
-import { registrySearchTool } from '@tpmjs/registrySearch';
-import { registryExecuteTool } from '@tpmjs/registryExecute';
+import { registrySearchTool } from '@tpmjs/registry-search';
+import { registryExecuteTool } from '@tpmjs/registry-execute';
 
 const agent = new Agent({
   model: 'anthropic/claude-sonnet-4-20250514',
@@ -94,7 +94,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com
 
 ## Related
 
-- [@tpmjs/registrySearch](https://www.npmjs.com/package/@tpmjs/registrySearch) - Find tools to execute
+- [@tpmjs/registry-search](https://www.npmjs.com/package/@tpmjs/registry-search) - Find tools to execute
 - [TPMJS Registry](https://tpmjs.com) - Browse all available tools
 
 ## License

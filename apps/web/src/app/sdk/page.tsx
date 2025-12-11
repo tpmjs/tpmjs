@@ -35,7 +35,7 @@ export default function SDKPage(): React.ReactElement {
             </p>
             <div className="flex flex-wrap gap-4 justify-center items-center">
               <a
-                href="https://www.npmjs.com/package/@tpmjs/registrySearch"
+                href="https://www.npmjs.com/package/@tpmjs/registry-search"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-500/10 text-red-500 rounded-md hover:bg-red-500/20 transition-colors"
@@ -43,10 +43,10 @@ export default function SDKPage(): React.ReactElement {
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331zM10.665 10H12v2.667h-1.335V10z" />
                 </svg>
-                @tpmjs/registrySearch
+                @tpmjs/registry-search
               </a>
               <a
-                href="https://www.npmjs.com/package/@tpmjs/registryExecute"
+                href="https://www.npmjs.com/package/@tpmjs/registry-execute"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-red-500/10 text-red-500 rounded-md hover:bg-red-500/20 transition-colors"
@@ -54,7 +54,7 @@ export default function SDKPage(): React.ReactElement {
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331zM10.665 10H12v2.667h-1.335V10z" />
                 </svg>
-                @tpmjs/registryExecute
+                @tpmjs/registry-execute
               </a>
               <a
                 href="https://github.com/tpmjs/tpmjs/tree/main/packages/tools"
@@ -85,11 +85,11 @@ export default function SDKPage(): React.ReactElement {
                 <div className="space-y-3">
                   <CodeBlock
                     language="bash"
-                    code="npm install @tpmjs/registrySearch @tpmjs/registryExecute"
+                    code="npm install @tpmjs/registry-search @tpmjs/registry-execute"
                   />
                   <CodeBlock
                     language="bash"
-                    code="pnpm add @tpmjs/registrySearch @tpmjs/registryExecute"
+                    code="pnpm add @tpmjs/registry-search @tpmjs/registry-execute"
                   />
                 </div>
               </div>
@@ -106,8 +106,8 @@ export default function SDKPage(): React.ReactElement {
                   language="typescript"
                   code={`import { streamText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { registrySearchTool } from '@tpmjs/registrySearch';
-import { registryExecuteTool } from '@tpmjs/registryExecute';
+import { registrySearchTool } from '@tpmjs/registry-search';
+import { registryExecuteTool } from '@tpmjs/registry-execute';
 
 const result = streamText({
   model: anthropic('claude-sonnet-4-20250514'),
@@ -178,7 +178,7 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
               <h2 className="text-3xl font-bold text-foreground">registrySearchTool</h2>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://www.npmjs.com/package/@tpmjs/registrySearch"
+                  href="https://www.npmjs.com/package/@tpmjs/registry-search"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-red-500/10 text-red-500 rounded-md hover:bg-red-500/20 transition-colors"
@@ -304,7 +304,7 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
               <h2 className="text-3xl font-bold text-foreground">registryExecuteTool</h2>
               <div className="flex items-center gap-3">
                 <a
-                  href="https://www.npmjs.com/package/@tpmjs/registryExecute"
+                  href="https://www.npmjs.com/package/@tpmjs/registry-execute"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium bg-red-500/10 text-red-500 rounded-md hover:bg-red-500/20 transition-colors"
@@ -616,7 +616,7 @@ const tools = await tpmjs.loadCollection('my-company/internal-tools');`}
             </div>
             <div className="flex flex-wrap gap-4 justify-center items-center text-sm">
               <a
-                href="https://www.npmjs.com/package/@tpmjs/registrySearch"
+                href="https://www.npmjs.com/package/@tpmjs/registry-search"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-3 py-1.5 font-medium bg-red-500/10 text-red-500 rounded-md hover:bg-red-500/20 transition-colors"
@@ -624,10 +624,10 @@ const tools = await tpmjs.loadCollection('my-company/internal-tools');`}
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331zM10.665 10H12v2.667h-1.335V10z" />
                 </svg>
-                @tpmjs/registrySearch
+                @tpmjs/registry-search
               </a>
               <a
-                href="https://www.npmjs.com/package/@tpmjs/registryExecute"
+                href="https://www.npmjs.com/package/@tpmjs/registry-execute"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-3 py-1.5 font-medium bg-red-500/10 text-red-500 rounded-md hover:bg-red-500/20 transition-colors"
@@ -635,7 +635,7 @@ const tools = await tpmjs.loadCollection('my-company/internal-tools');`}
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M0 7.334v8h6.666v1.332H12v-1.332h12v-8H0zm6.666 6.664H5.334v-4H3.999v4H1.335V8.667h5.331v5.331zm4 0v1.336H8.001V8.667h5.334v5.332h-2.669v-.001zm12.001 0h-1.33v-4h-1.336v4h-1.335v-4h-1.33v4h-2.671V8.667h8.002v5.331zM10.665 10H12v2.667h-1.335V10z" />
                 </svg>
-                @tpmjs/registryExecute
+                @tpmjs/registry-execute
               </a>
               <a
                 href="https://github.com/tpmjs/tpmjs/tree/main/packages/tools"
