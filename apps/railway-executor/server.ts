@@ -378,6 +378,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
  * Execute a tool with parameters
  */
 async function executeTool(req: Request): Promise<Response> {
+  const startTime = Date.now();
   try {
     const body = await req.json();
     const { packageName, exportName, version, importUrl, params, env } = body;
@@ -401,7 +402,6 @@ async function executeTool(req: Request): Promise<Response> {
     }
 
     const cacheKey = `${packageName}::${exportName}`;
-    const startTime = Date.now();
 
     // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
