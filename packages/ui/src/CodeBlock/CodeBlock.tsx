@@ -1,6 +1,7 @@
 import { cn } from '@tpmjs/utils/cn';
 import { forwardRef, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+// eslint-disable-next-line import/no-internal-modules -- react-syntax-highlighter requires deep import for styles
 import { prism, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Icon } from '../Icon/Icon';
 import type { CodeBlockProps } from './types';
