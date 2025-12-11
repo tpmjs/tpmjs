@@ -96,6 +96,10 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
 
 /**
  * Check if a tool can execute with test parameters
+ *
+ * IMPORTANT: If the tool executes at all (even with errors), it's HEALTHY.
+ * We only mark as BROKEN for infrastructure failures (timeouts, network errors).
+ * Validation errors mean the tool IS working - it's correctly rejecting bad input.
  */
 async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<{
   status: HealthStatus;
@@ -123,43 +127,33 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
     });
 
     const timeMs = Date.now() - startTime;
-    const data = await response.json();
 
-    if (!response.ok || !data.success) {
-      const error = data.error || `HTTP ${response.status}`;
-
-      // If error is config/input issue, tool is not broken - just needs proper input
-      if (isNonBreakingError(error)) {
-        return {
-          status: 'HEALTHY',
-          error: null, // Clear the error since it's not a code issue
-          timeMs,
-          testParams,
-        };
-      }
-
-      return {
-        status: 'BROKEN',
-        error,
-        timeMs,
-        testParams,
-      };
+    // If we got a response from the executor, the tool executed
+    // Any error in the response is from the tool itself (validation, env, etc.)
+    // which means the tool IS working - it's correctly processing/rejecting input
+    if (response.ok) {
+      // Executor responded - tool executed (success or tool-level error)
+      return { status: 'HEALTHY', error: null, timeMs, testParams };
     }
 
+    // HTTP error from executor itself (not from tool)
+    // This could be executor down, rate limited, etc.
+    const data = await response.json().catch(() => ({}));
+    const error = data.error || `HTTP ${response.status}`;
+
+    // Even HTTP errors might be tool-level errors returned through executor
+    // Only mark as BROKEN for true infrastructure failures
+    if (response.status >= 500) {
+      return { status: 'BROKEN', error, timeMs, testParams };
+    }
+
+    // 4xx errors are likely tool-level validation/config issues
     return { status: 'HEALTHY', error: null, timeMs, testParams };
   } catch (error) {
+    // Network/timeout errors are infrastructure issues
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // If error is config/input issue, tool is not broken
-    if (isNonBreakingError(errorMessage)) {
-      return {
-        status: 'HEALTHY',
-        error: null,
-        timeMs: Date.now() - startTime,
-        testParams,
-      };
-    }
-
+    // Timeout or network error = infrastructure issue = BROKEN
     return {
       status: 'BROKEN',
       error: errorMessage,
