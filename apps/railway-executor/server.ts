@@ -379,9 +379,14 @@ async function loadAndDescribe(req: Request): Promise<Response> {
  */
 async function executeTool(req: Request): Promise<Response> {
   const startTime = Date.now();
+  // Declare these before try block so they're available in catch for error reporting
+  let packageName = 'unknown';
+  let exportName = 'unknown';
   try {
     const body = await req.json();
-    const { packageName, exportName, version, importUrl, params, env } = body;
+    const { packageName: pkg, exportName: exp, version, importUrl, params, env } = body;
+    packageName = pkg || 'unknown';
+    exportName = exp || 'unknown';
 
     console.log('📥 Execute request:', {
       packageName,
