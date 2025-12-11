@@ -37,51 +37,38 @@ function getConversationEnv(conversationId: string): Record<string, string> {
   return conversationEnv.get(conversationId) || {};
 }
 
+// Web app API URL for health status updates
+const TPMJS_API_URL = process.env.TPMJS_API_URL || 'https://tpmjs.com';
+
 /**
- * Report tool failure and trigger async health check
- * Non-blocking - logs error and triggers health check in background
+ * Report tool execution result to centralized health service
+ * Non-blocking - calls web app API which has all the health logic
  */
-async function reportToolFailure(
+async function reportToolResult(
   packageName: string,
   exportName: string,
-  error: string,
-  phase: 'import' | 'execution'
+  success: boolean,
+  error?: string
 ): Promise<void> {
   try {
-    // Lazy load Prisma to avoid module initialization failures
-    const { prisma } = await import('@tpmjs/db');
-
-    // Find the tool in the database
-    const tool = await prisma.tool.findFirst({
-      where: {
+    // Call the web app's centralized health report endpoint
+    const response = await fetch(`${TPMJS_API_URL}/api/tools/report-health`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageName,
         exportName,
-        package: {
-          npmPackageName: packageName,
-        },
-      },
-      select: { id: true },
+        success,
+        error,
+      }),
     });
 
-    if (!tool) {
-      console.warn(`⚠️  Tool not found in database for health check: ${packageName}/${exportName}`);
-      return;
+    if (!response.ok) {
+      console.warn(`⚠️  Failed to report health status: ${response.status}`);
     }
-
-    console.log(`🏥 Triggering health check for ${packageName}/${exportName} (${tool.id})`);
-
-    // Update health status immediately (optimistic)
-    await prisma.tool.update({
-      where: { id: tool.id },
-      data: {
-        [phase === 'import' ? 'importHealth' : 'executionHealth']: 'BROKEN',
-        healthCheckError: error,
-        lastHealthCheck: new Date(),
-      },
-    });
-
-    console.log(`✅ Health status updated for ${packageName}/${exportName}`);
   } catch (err) {
-    console.error('❌ Failed to report tool failure:', err);
+    // Non-blocking - just log the error
+    console.error('❌ Failed to report tool result:', err);
   }
 }
 
@@ -115,8 +102,10 @@ export async function loadToolDynamically(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 120000);
 
-    let response;
-    let data;
+    let response: Response | undefined;
+    let data:
+      | { success: boolean; tool?: { description: string; inputSchema?: unknown }; error?: string }
+      | undefined;
 
     try {
       response = await fetch(`${RAILWAY_SERVICE_URL}/load-and-describe`, {
@@ -138,14 +127,12 @@ export async function loadToolDynamically(
         const errorText = await response.text();
         console.error(`❌ Railway service error (${response.status}): ${errorText}`);
 
-        // Trigger health check update in background (non-blocking)
-        reportToolFailure(
+        // Report failure to centralized health service (non-blocking)
+        reportToolResult(
           packageName,
           exportName,
-          `Railway service error (${response.status}): ${errorText}`,
-          'import'
-        ).catch((err) =>
-          console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
+          false,
+          `Railway service error (${response.status}): ${errorText}`
         );
 
         return null;
@@ -153,14 +140,12 @@ export async function loadToolDynamically(
 
       data = await response.json();
 
-      if (!data.success) {
-        console.error(`❌ Failed to load tool: ${data.error}`);
+      if (!data || !data.success) {
+        const errorMsg = data?.error || 'Unknown error';
+        console.error(`❌ Failed to load tool: ${errorMsg}`);
 
-        // Trigger health check update in background (non-blocking)
-        reportToolFailure(packageName, exportName, data.error || 'Unknown error', 'import').catch(
-          (err) =>
-            console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
-        );
+        // Report failure to centralized health service (non-blocking)
+        reportToolResult(packageName, exportName, false, errorMsg);
 
         return null;
       }
@@ -170,19 +155,23 @@ export async function loadToolDynamically(
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
         console.error(`❌ Railway request timeout after 120s for ${packageName}/${exportName}`);
 
-        reportToolFailure(
+        reportToolResult(
           packageName,
           exportName,
-          'Railway service timeout (120s) - tool dependencies may be too large',
-          'import'
-        ).catch((err) =>
-          console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
+          false,
+          'Railway service timeout (120s) - tool dependencies may be too large'
         );
 
         return null;
       }
 
       throw fetchError;
+    }
+
+    // Type guard - data and data.tool are guaranteed after successful response
+    if (!data?.tool) {
+      console.error('❌ Invalid response from Railway: missing tool data');
+      return null;
     }
 
     console.log(`✅ Tool loaded from Railway: ${cacheKey}`);
@@ -224,20 +213,17 @@ export async function loadToolDynamically(
         if (!result.success) {
           console.error(`❌ Tool execution failed: ${result.error}`);
 
-          // Trigger health check update in background (non-blocking)
-          reportToolFailure(
-            packageName,
-            exportName,
-            result.error || 'Tool execution failed',
-            'execution'
-          ).catch((err) =>
-            console.error(`Failed to report tool failure for ${packageName}/${exportName}:`, err)
-          );
+          // Report failure to centralized health service (non-blocking)
+          reportToolResult(packageName, exportName, false, result.error || 'Tool execution failed');
 
           throw new Error(result.error || 'Tool execution failed');
         }
 
         console.log(`✅ Tool executed successfully in ${result.executionTimeMs}ms`);
+
+        // Report success to centralized health service (non-blocking)
+        reportToolResult(packageName, exportName, true);
+
         return result.output;
       },
     });
@@ -310,10 +296,8 @@ export async function loadToolsBatch(
     console.log('\n❌ Failed Tools:');
     for (const result of failed) {
       console.log(`   - ${result.packageName}/${result.exportName}`);
-      console.log('     (Health check triggered automatically)');
     }
-    console.log('\n💡 Note: Failed tools have been marked as broken in the database.');
-    console.log('   Check individual error logs above for detailed failure reasons.');
+    console.log('\n💡 Note: Tool failures have been reported to the health service.');
   }
 
   return tools;
