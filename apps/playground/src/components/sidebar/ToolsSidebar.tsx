@@ -2,6 +2,7 @@
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
+import { Checkbox } from '@tpmjs/ui/Checkbox/Checkbox';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { ToolHealthBadge } from '@tpmjs/ui/ToolHealthBadge/ToolHealthBadge';
 import { ToolHealthBanner } from '@tpmjs/ui/ToolHealthBanner/ToolHealthBanner';
@@ -28,6 +29,7 @@ export function ToolsSidebar(): React.ReactElement {
   const [tools, setTools] = useState<Tool[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const [hideBroken, setHideBroken] = useState(true);
   const [selectedTool, setSelectedTool] = useState<Tool | null>(null);
 
   useEffect(() => {
@@ -57,13 +59,20 @@ export function ToolsSidebar(): React.ReactElement {
     fetchTools();
   }, []);
 
-  const filteredTools = tools.filter(
-    (tool) =>
+  const filteredTools = tools.filter((tool) => {
+    // Filter by search text
+    const matchesFilter =
       tool.packageName?.toLowerCase().includes(filter.toLowerCase()) ||
       tool.exportName?.toLowerCase().includes(filter.toLowerCase()) ||
       tool.description?.toLowerCase().includes(filter.toLowerCase()) ||
-      tool.category?.toLowerCase().includes(filter.toLowerCase())
-  );
+      tool.category?.toLowerCase().includes(filter.toLowerCase());
+
+    // Filter out broken tools if hideBroken is true
+    const isBroken = tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN';
+    const matchesHealth = !hideBroken || !isBroken;
+
+    return matchesFilter && matchesHealth;
+  });
 
   return (
     <>
@@ -78,8 +87,21 @@ export function ToolsSidebar(): React.ReactElement {
             placeholder="Filter tools..."
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="mb-4"
+            className="mb-3"
           />
+
+          <div className="mb-4 flex items-center gap-2 text-sm text-foreground-secondary">
+            <Checkbox
+              id="hide-broken"
+              checked={hideBroken}
+              onChange={(e) => setHideBroken(e.target.checked)}
+              size="sm"
+            />
+            {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is associated via htmlFor */}
+            <label htmlFor="hide-broken" className="cursor-pointer">
+              Hide broken tools
+            </label>
+          </div>
 
           <div className="flex-1 space-y-2 overflow-y-auto">
             {loading ? (
