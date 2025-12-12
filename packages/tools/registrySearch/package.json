@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/registry-search",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Search the TPMJS tool registry from any AI SDK agent",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,13 +9,7 @@
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
-  "keywords": [
-    "tpmjs-tool",
-    "ai-sdk",
-    "vercel-ai",
-    "registry",
-    "search"
-  ],
+  "keywords": ["tpmjs-tool", "ai-sdk", "vercel-ai", "registry", "search"],
   "dependencies": {
     "ai": "6.0.0-beta.124"
   },
@@ -23,10 +17,7 @@
     "@tpmjs/tsconfig": "workspace:*",
     "typescript": "^5.7.2"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "publishConfig": {
     "access": "public"
   },
@@ -39,9 +30,7 @@
   "license": "MIT",
   "tpmjs": {
     "category": "api-integration",
-    "frameworks": [
-      "vercel-ai"
-    ],
+    "frameworks": ["vercel-ai"],
     "tools": [
       {
         "exportName": "registrySearchTool",
