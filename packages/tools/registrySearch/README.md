@@ -13,16 +13,20 @@ pnpm add @tpmjs/registry-search
 ## Usage
 
 ```typescript
-import { Agent } from 'ai';
+import { streamText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
 import { registrySearchTool } from '@tpmjs/registry-search';
 import { registryExecuteTool } from '@tpmjs/registry-execute';
 
-const agent = new Agent({
-  model: 'anthropic/claude-sonnet-4-20250514',
+const result = streamText({
+  model: anthropic('claude-sonnet-4-20250514'),
   tools: {
     registrySearch: registrySearchTool,
     registryExecute: registryExecuteTool,
   },
+  system: `You have access to the TPMJS tool registry.
+Use registrySearch to find tools, then registryExecute to run them.`,
+  prompt: 'Search for web scraping tools and scrape https://example.com',
 });
 
 // The agent can now:
