@@ -2,7 +2,6 @@
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { useEffect, useState } from 'react';
 
@@ -65,24 +64,32 @@ export function SettingsSidebar(): React.ReactElement {
   };
 
   return (
-    <aside className="hidden w-80 border-l border-border bg-surface md:block">
-      <div className="flex h-full flex-col p-4">
-        <h2 className="mb-4 text-lg font-bold">Settings</h2>
+    <aside className="hidden w-72 border-l border-border bg-surface md:block">
+      <div className="flex h-full flex-col">
+        {/* Header */}
+        <div className="border-b border-border p-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
+              Settings
+            </h2>
+          </div>
+        </div>
 
-        {/* Environment Variables Section */}
-        <Card variant="outline" className="mb-4">
-          <CardHeader>
-            <CardTitle className="text-sm">
-              Environment Variables{' '}
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {/* Environment Variables Section */}
+          <div className="mb-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-foreground-tertiary">
+                Environment Variables
+              </h3>
               <Badge variant="secondary" size="sm">
                 {envVars.length}
               </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4 text-xs text-foreground-secondary">
-              Add API keys and other environment variables. They will be forwarded to tool
-              executions.
+            </div>
+
+            <p className="mb-4 text-xs text-foreground-tertiary">
+              Add API keys for tools that require authentication.
             </p>
 
             {/* Add new env var form */}
@@ -109,24 +116,26 @@ export function SettingsSidebar(): React.ReactElement {
             {/* List of env vars */}
             <div className="space-y-2">
               {envVars.length === 0 ? (
-                <p className="text-xs text-foreground-tertiary">No environment variables set</p>
+                <div className="rounded-lg border border-dashed border-border p-4 text-center">
+                  <p className="text-xs text-foreground-tertiary">No variables configured</p>
+                </div>
               ) : (
                 envVars.map((env) => (
                   <div
                     key={env.key}
-                    className="flex items-center justify-between rounded border border-border bg-background p-2"
+                    className="flex items-center justify-between rounded-lg border border-border bg-background p-3"
                   >
                     <div className="flex-1 overflow-hidden">
-                      <p className="truncate font-mono text-xs font-semibold">{env.key}</p>
+                      <p className="truncate font-mono text-xs font-medium">{env.key}</p>
                       <p className="truncate font-mono text-xs text-foreground-tertiary">
-                        {env.value ? '•'.repeat(Math.min(env.value.length, 20)) : '(empty)'}
+                        {env.value ? '•'.repeat(Math.min(env.value.length, 16)) : '(empty)'}
                       </p>
                     </div>
                     <Button
                       onClick={() => handleRemoveEnvVar(env.key)}
                       size="sm"
                       variant="ghost"
-                      className="ml-2"
+                      className="ml-2 h-6 w-6 p-0 text-foreground-tertiary hover:text-foreground"
                     >
                       ×
                     </Button>
@@ -134,14 +143,13 @@ export function SettingsSidebar(): React.ReactElement {
                 ))
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Info Section */}
-        <div className="mt-auto rounded border border-border bg-background p-3">
-          <p className="text-xs text-foreground-secondary">
-            <strong>Note:</strong> Environment variables are stored locally in your browser and sent
-            with each tool execution request.
+        {/* Footer Info */}
+        <div className="border-t border-border p-4">
+          <p className="text-xs text-foreground-tertiary">
+            Variables are stored in your browser and sent with each tool execution.
           </p>
         </div>
       </div>

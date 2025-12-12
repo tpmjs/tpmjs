@@ -1,7 +1,6 @@
 'use client';
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
 import { Checkbox } from '@tpmjs/ui/Checkbox/Checkbox';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { ToolHealthBadge } from '@tpmjs/ui/ToolHealthBadge/ToolHealthBadge';
@@ -76,69 +75,84 @@ export function ToolsSidebar(): React.ReactElement {
 
   return (
     <>
-      <aside className="hidden w-64 border-r border-border bg-surface md:block">
-        <div className="flex h-full flex-col p-4">
-          <h2 className="mb-4 text-lg font-bold">
-            Available Tools <Badge variant="secondary">{filteredTools.length}</Badge>
-          </h2>
+      <aside className="hidden w-72 border-r border-border bg-surface md:block">
+        <div className="flex h-full flex-col">
+          {/* Header */}
+          <div className="border-b border-border p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-foreground-secondary">
+                Tools
+              </h2>
+              <Badge variant="secondary" size="sm">
+                {filteredTools.length}
+              </Badge>
+            </div>
 
-          <Input
-            type="text"
-            placeholder="Filter tools..."
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="mb-3"
-          />
-
-          <div className="mb-4 flex items-center gap-2 text-sm text-foreground-secondary">
-            <Checkbox
-              id="hide-broken"
-              checked={hideBroken}
-              onChange={(e) => setHideBroken(e.target.checked)}
-              size="sm"
+            <Input
+              type="text"
+              placeholder="Search tools..."
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              className="mb-3"
             />
-            {/* biome-ignore lint/a11y/noLabelWithoutControl: Checkbox is associated via htmlFor */}
-            <label htmlFor="hide-broken" className="cursor-pointer">
-              Hide broken tools
-            </label>
+
+            <div className="flex items-center gap-2 text-xs text-foreground-secondary">
+              <Checkbox
+                id="hide-broken"
+                checked={hideBroken}
+                onChange={(e) => setHideBroken(e.target.checked)}
+                size="sm"
+              />
+              <label htmlFor="hide-broken" className="cursor-pointer select-none">
+                Hide broken tools
+              </label>
+            </div>
           </div>
 
-          <div className="flex-1 space-y-2 overflow-y-auto">
-            {loading ? (
-              <p className="text-sm text-foreground-secondary">Loading tools...</p>
-            ) : filteredTools.length === 0 ? (
-              <p className="text-sm text-foreground-secondary">No tools found</p>
-            ) : (
-              filteredTools.map((tool) => (
-                <Card
-                  key={`${tool.packageName}-${tool.exportName}`}
-                  variant="outline"
-                  className="cursor-pointer transition-all hover:bg-background hover:shadow-md"
-                  onClick={() => setSelectedTool(tool)}
-                >
-                  <CardHeader>
-                    <CardTitle className="text-sm">{tool.exportName}</CardTitle>
-                    <p className="text-xs text-foreground-tertiary mt-0.5">{tool.packageName}</p>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-xs text-foreground-secondary line-clamp-2">
-                      {tool.description}
-                    </p>
-                    <div className="mt-2 flex items-center gap-2 flex-wrap">
-                      <Badge variant="secondary" size="sm">
-                        {tool.category}
-                      </Badge>
-                      <span className="text-xs text-foreground-tertiary">v{tool.version}</span>
+          {/* Tools List */}
+          <div className="flex-1 overflow-y-auto p-3">
+            <div className="space-y-2">
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <p className="text-sm text-foreground-tertiary">Loading tools...</p>
+                </div>
+              ) : filteredTools.length === 0 ? (
+                <div className="flex items-center justify-center py-8">
+                  <p className="text-sm text-foreground-tertiary">No tools found</p>
+                </div>
+              ) : (
+                filteredTools.map((tool) => (
+                  // biome-ignore lint/a11y/useSemanticElements: Custom styled card with complex layout
+                  <div
+                    key={`${tool.packageName}-${tool.exportName}`}
+                    className="cursor-pointer rounded-lg border border-border bg-background p-3 transition-all hover:border-foreground-tertiary hover:shadow-sm"
+                    onClick={() => setSelectedTool(tool)}
+                    onKeyDown={(e) => e.key === 'Enter' && setSelectedTool(tool)}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div className="mb-1 flex items-start justify-between gap-2">
+                      <h3 className="text-sm font-medium leading-tight">{tool.exportName}</h3>
                       <ToolHealthBadge
                         importHealth={tool.importHealth}
                         executionHealth={tool.executionHealth}
                         size="sm"
                       />
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+                    <p className="mb-2 text-xs text-foreground-tertiary">{tool.packageName}</p>
+                    <p className="text-xs text-foreground-secondary line-clamp-2">
+                      {tool.description}
+                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Badge variant="secondary" size="sm">
+                        {tool.category}
+                      </Badge>
+                      <span className="text-xs text-foreground-tertiary">v{tool.version}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       </aside>
@@ -159,7 +173,7 @@ export function ToolsSidebar(): React.ReactElement {
           tabIndex={0}
           aria-label="Close modal"
         >
-          <div className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-white dark:bg-gray-900 p-6 shadow-xl">
+          <div className="relative mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl border border-border bg-background p-6 shadow-xl">
             {/* Close button */}
             <button
               type="button"

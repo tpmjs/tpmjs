@@ -22,11 +22,20 @@ export function ChatMessages({
 
   if (messages.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center text-foreground-secondary">
-          <div className="mb-2 text-4xl">🐟</div>
-          <p className="text-lg">Start chatting to test TPMJS tools</p>
-          <p className="mt-2 text-sm">Try asking: &ldquo;Tell me a fish joke&rdquo;</p>
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="max-w-md text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-surface">
+            <span className="text-3xl">🐟</span>
+          </div>
+          <h2 className="mb-2 text-lg font-semibold text-foreground">Test TPMJS Tools</h2>
+          <p className="mb-4 text-sm text-foreground-secondary">
+            Select tools from the sidebar and start chatting to test them.
+          </p>
+          <div className="rounded-lg border border-dashed border-border bg-surface/50 p-4">
+            <p className="text-xs text-foreground-tertiary">
+              Try: &ldquo;Tell me a fish joke&rdquo; or &ldquo;What tools are available?&rdquo;
+            </p>
+          </div>
         </div>
       </div>
     );

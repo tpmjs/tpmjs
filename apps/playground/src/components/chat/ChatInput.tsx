@@ -32,20 +32,31 @@ export function ChatInput({
   };
 
   return (
-    <form onSubmit={onSubmit} className="border-t border-border bg-background p-4">
-      <div className="mx-auto flex max-w-4xl gap-2">
-        <Textarea
-          value={input}
-          onChange={onInputChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Ask me to tell you a fish joke..."
-          className="min-h-[60px] flex-1 resize-none"
-          disabled={isLoading}
-          rows={3}
-        />
-        <Button type="submit" disabled={!input.trim() || isLoading} loading={isLoading} size="lg">
-          Send
-        </Button>
+    <form onSubmit={onSubmit} className="border-t border-border bg-surface p-4">
+      <div className="mx-auto max-w-3xl">
+        <div className="flex items-end gap-3 rounded-xl border border-border bg-background p-3 shadow-sm">
+          <Textarea
+            value={input}
+            onChange={onInputChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask me to tell you a fish joke..."
+            className="min-h-[44px] max-h-[200px] flex-1 resize-none border-0 bg-transparent p-0 focus:ring-0"
+            disabled={isLoading}
+            rows={1}
+          />
+          <Button
+            type="submit"
+            disabled={!input.trim() || isLoading}
+            loading={isLoading}
+            size="md"
+            className="shrink-0"
+          >
+            Send
+          </Button>
+        </div>
+        <p className="mt-2 text-center text-xs text-foreground-tertiary">
+          Press Enter to send, Shift+Enter for new line
+        </p>
       </div>
     </form>
   );
