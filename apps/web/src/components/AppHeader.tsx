@@ -33,11 +33,11 @@ export function AppHeader(): React.ReactElement {
               How It Works
             </Button>
           </Link>
-          <Link href="/playground">
+          <a href="https://playground.tpmjs.com" target="_blank" rel="noopener noreferrer">
             <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
               Playground
             </Button>
-          </Link>
+          </a>
           <Link href="/spec">
             <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
               Spec
