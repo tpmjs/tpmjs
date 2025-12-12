@@ -525,34 +525,56 @@ export function SDKFlowDiagram(): React.ReactElement {
 
         {/* Tooltip for hovered node */}
         {hoveredNode && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-background border border-border rounded-lg shadow-lg text-sm">
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-3 bg-background border border-border rounded-lg shadow-lg text-sm max-w-md">
+            {hoveredNode === 'your-tools' && (
+              <div className="text-foreground-secondary">
+                <span className="font-semibold text-foreground">Your existing tools</span> — Any AI
+                SDK tools you've already built or installed. These work alongside the registry tools
+                seamlessly.
+              </div>
+            )}
             {hoveredNode === 'registry-search' && (
-              <span className="text-foreground-secondary">
-                Search the registry for tools matching your needs
-              </span>
+              <div className="text-foreground-secondary">
+                <span className="font-semibold text-foreground">registrySearchTool</span> — Query
+                the TPMJS registry by keyword, category, or description. Returns tool metadata
+                including the toolId needed for execution.
+              </div>
             )}
             {hoveredNode === 'registry-execute' && (
-              <span className="text-foreground-secondary">
-                Execute any tool in a secure sandbox
-              </span>
+              <div className="text-foreground-secondary">
+                <span className="font-semibold text-foreground">registryExecuteTool</span> — Execute
+                any tool from the registry by its toolId. Pass parameters and API keys per-request.
+                Results are returned directly to your agent.
+              </div>
             )}
             {hoveredNode === 'registry' && (
-              <span className="text-foreground-secondary">1000+ verified AI SDK tools</span>
+              <div className="text-foreground-secondary">
+                <span className="font-semibold text-foreground">TPMJS Registry API</span> — Central
+                repository of 1000+ AI SDK tools. Each tool is validated, health-checked, and
+                includes schema definitions for type-safe execution.
+              </div>
             )}
             {hoveredNode === 'executor' && (
-              <span className="text-foreground-secondary">
-                Isolated Deno runtime for safe execution
-              </span>
+              <div className="text-foreground-secondary">
+                <span className="font-semibold text-foreground">Sandbox Executor</span> — Remote
+                execution environment hosted on Railway. Tools run in isolated Deno containers with
+                no access to your local system.
+              </div>
             )}
             {hoveredNode === 'metadata' && (
-              <span className="text-foreground-secondary">
-                Tool schemas, descriptions, and health status
-              </span>
+              <div className="text-foreground-secondary">
+                <span className="font-semibold text-foreground">Tool Metadata</span> — Complete tool
+                information including name, description, parameter schemas, required environment
+                variables, health status, and quality scores.
+              </div>
             )}
             {hoveredNode === 'runtime' && (
-              <span className="text-foreground-secondary">
-                Sandboxed execution with API key isolation
-              </span>
+              <div className="text-foreground-secondary">
+                <span className="font-semibold text-foreground">Secure Deno Runtime</span> — Each
+                tool execution runs in a fresh, isolated Deno sandbox. API keys are passed
+                per-request and never stored. Network access is restricted to the tool's
+                requirements.
+              </div>
             )}
           </div>
         )}
