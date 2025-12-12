@@ -92,7 +92,49 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com
 
 ## Passing API Keys to Tools
 
-Many tools require API keys to function (e.g., web scraping tools need a Firecrawl key, search tools need an Exa key). The `env` parameter lets you pass these securely.
+Many tools require API keys to function (e.g., web scraping tools need a Firecrawl key, search tools need an Exa key). The recommended approach is to wrap `registryExecuteTool` with your pre-configured keys.
+
+### Recommended: Create a Wrapper
+
+```typescript
+import { tool } from 'ai';
+import { registryExecuteTool } from '@tpmjs/registry-execute';
+
+// Pre-configure your API keys
+const API_KEYS: Record<string, string> = {
+  FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY!,
+  EXA_API_KEY: process.env.EXA_API_KEY!,
+};
+
+// Create a wrapped version that auto-injects keys
+export const registryExecute = tool({
+  description: registryExecuteTool.description,
+  parameters: registryExecuteTool.parameters,
+  execute: async ({ toolId, params }) => {
+    return registryExecuteTool.execute({ toolId, params, env: API_KEYS });
+  },
+});
+```
+
+Now use the wrapped tool in your agent:
+
+```typescript
+import { streamText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { registrySearchTool } from '@tpmjs/registry-search';
+import { registryExecute } from './tools';  // Your wrapped version
+
+const result = streamText({
+  model: anthropic('claude-sonnet-4-20250514'),
+  tools: {
+    registrySearch: registrySearchTool,
+    registryExecute,  // Keys are auto-injected
+  },
+  system: `You have access to the TPMJS tool registry.
+Use registrySearch to find tools, then registryExecute to run them.`,
+  prompt: 'Scrape https://example.com and summarize the content',
+});
+```
 
 ### How It Works
 
@@ -104,61 +146,13 @@ Many tools require API keys to function (e.g., web scraping tools need a Firecra
    }
    ```
 
-2. **Pass keys when executing**: Include the required keys in the `env` parameter:
-   ```typescript
-   registryExecute({
-     toolId: '@firecrawl/ai-sdk::scrapeTool',
-     params: { url: 'https://example.com' },
-     env: { FIRECRAWL_API_KEY: 'fc-xxx' }
-   })
-   ```
+2. **Your wrapper injects keys**: The wrapped tool automatically passes your configured keys to the executor.
 
 3. **Keys are injected into sandbox**: The executor injects these as environment variables in the isolated Deno runtime where the tool runs.
 
-### Example: Agent with Pre-configured Keys
-
-```typescript
-import { streamText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
-import { registrySearchTool } from '@tpmjs/registry-search';
-import { registryExecuteTool } from '@tpmjs/registry-execute';
-
-// Pre-configure API keys your agent can use
-const API_KEYS = {
-  FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
-  EXA_API_KEY: process.env.EXA_API_KEY,
-};
-
-const result = streamText({
-  model: anthropic('claude-sonnet-4-20250514'),
-  tools: {
-    registrySearch: registrySearchTool,
-    registryExecute: registryExecuteTool,
-  },
-  system: `You have access to the TPMJS tool registry.
-When executing tools, use these API keys in the env parameter:
-${JSON.stringify(API_KEYS, null, 2)}
-
-If a tool requires a key you don't have, tell the user.`,
-  prompt: 'Scrape https://example.com and summarize the content',
-});
-```
-
 ### Tools Without Required Keys
 
-Some tools don't require any API keys (like `@tpmjs/createblogpost`). For these, you can omit the `env` parameter entirely:
-
-```typescript
-registryExecute({
-  toolId: '@tpmjs/createblogpost::createBlogPostTool',
-  params: {
-    title: 'My Post',
-    author: 'Jane Doe',
-    content: 'Hello world...'
-  }
-  // No env needed
-})
-```
+Some tools don't require any API keys (like `@tpmjs/createblogpost`). They work with or without the wrapper.
 
 ## Security
 
