@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/registry-execute",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Execute tools from the TPMJS registry in any AI SDK agent",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

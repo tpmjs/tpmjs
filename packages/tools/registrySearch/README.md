@@ -82,6 +82,25 @@ Search the TPMJS registry to find AI SDK tools.
 }
 ```
 
+### Understanding `requiredEnvVars`
+
+The `requiredEnvVars` field tells you which API keys a tool needs to function. When executing a tool with `@tpmjs/registry-execute`, pass these keys in the `env` parameter:
+
+```typescript
+// 1. Search finds a tool that needs FIRECRAWL_API_KEY
+const searchResult = await registrySearchTool.execute({ query: 'web scraping' });
+// searchResult.tools[0].requiredEnvVars = ["FIRECRAWL_API_KEY"]
+
+// 2. Execute the tool with the required key
+const result = await registryExecuteTool.execute({
+  toolId: '@firecrawl/ai-sdk::scrapeTool',
+  params: { url: 'https://example.com' },
+  env: { FIRECRAWL_API_KEY: 'fc-xxx' }  // Pass required keys here
+});
+```
+
+Tools with an empty `requiredEnvVars` array don't need any API keys.
+
 ## Environment Variables
 
 | Variable | Default | Description |

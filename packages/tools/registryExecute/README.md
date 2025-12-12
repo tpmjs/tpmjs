@@ -90,10 +90,81 @@ export TPMJS_API_URL=https://registry.mycompany.com
 export TPMJS_EXECUTOR_URL=https://executor.mycompany.com
 ```
 
+## Passing API Keys to Tools
+
+Many tools require API keys to function (e.g., web scraping tools need a Firecrawl key, search tools need an Exa key). The `env` parameter lets you pass these securely.
+
+### How It Works
+
+1. **Search returns required keys**: When you search for a tool, the response includes `requiredEnvVars`:
+   ```json
+   {
+     "toolId": "@firecrawl/ai-sdk::scrapeTool",
+     "requiredEnvVars": ["FIRECRAWL_API_KEY"]
+   }
+   ```
+
+2. **Pass keys when executing**: Include the required keys in the `env` parameter:
+   ```typescript
+   registryExecute({
+     toolId: '@firecrawl/ai-sdk::scrapeTool',
+     params: { url: 'https://example.com' },
+     env: { FIRECRAWL_API_KEY: 'fc-xxx' }
+   })
+   ```
+
+3. **Keys are injected into sandbox**: The executor injects these as environment variables in the isolated Deno runtime where the tool runs.
+
+### Example: Agent with Pre-configured Keys
+
+```typescript
+import { streamText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { registrySearchTool } from '@tpmjs/registry-search';
+import { registryExecuteTool } from '@tpmjs/registry-execute';
+
+// Pre-configure API keys your agent can use
+const API_KEYS = {
+  FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+  EXA_API_KEY: process.env.EXA_API_KEY,
+};
+
+const result = streamText({
+  model: anthropic('claude-sonnet-4-20250514'),
+  tools: {
+    registrySearch: registrySearchTool,
+    registryExecute: registryExecuteTool,
+  },
+  system: `You have access to the TPMJS tool registry.
+When executing tools, use these API keys in the env parameter:
+${JSON.stringify(API_KEYS, null, 2)}
+
+If a tool requires a key you don't have, tell the user.`,
+  prompt: 'Scrape https://example.com and summarize the content',
+});
+```
+
+### Tools Without Required Keys
+
+Some tools don't require any API keys (like `@tpmjs/createblogpost`). For these, you can omit the `env` parameter entirely:
+
+```typescript
+registryExecute({
+  toolId: '@tpmjs/createblogpost::createBlogPostTool',
+  params: {
+    title: 'My Post',
+    author: 'Jane Doe',
+    content: 'Hello world...'
+  }
+  // No env needed
+})
+```
+
 ## Security
 
 - All tools run in a sandboxed Deno environment on Railway
 - API keys are passed per-request, never stored
+- Keys are isolated to the specific tool execution
 - Only registered tools can be executed (no arbitrary code)
 
 ## Related
