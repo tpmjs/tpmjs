@@ -453,6 +453,85 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
             </div>
           </section>
 
+          {/* Passing API Keys */}
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold mb-6 text-foreground">Passing API Keys</h2>
+            <p className="text-lg text-foreground-secondary mb-6">
+              Many tools require API keys (e.g., Firecrawl, Exa). The recommended approach is to
+              wrap <code className="text-primary">registryExecuteTool</code> with your
+              pre-configured keys.
+            </p>
+
+            <div className="space-y-6">
+              {/* Wrapper */}
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="text-xl font-semibold mb-4 text-foreground">
+                  Create a Wrapper (Recommended)
+                </h3>
+                <CodeBlock
+                  language="typescript"
+                  code={`import { tool } from 'ai';
+import { registryExecuteTool } from '@tpmjs/registry-execute';
+
+// Pre-configure your API keys
+const API_KEYS: Record<string, string> = {
+  FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY!,
+  EXA_API_KEY: process.env.EXA_API_KEY!,
+};
+
+// Create a wrapped version that auto-injects keys
+export const registryExecute = tool({
+  description: registryExecuteTool.description,
+  parameters: registryExecuteTool.parameters,
+  execute: async ({ toolId, params }) => {
+    return registryExecuteTool.execute({ toolId, params, env: API_KEYS });
+  },
+});`}
+                />
+              </div>
+
+              {/* Usage */}
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="text-xl font-semibold mb-4 text-foreground">Use the Wrapped Tool</h3>
+                <CodeBlock
+                  language="typescript"
+                  code={`import { streamText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { registrySearchTool } from '@tpmjs/registry-search';
+import { registryExecute } from './tools';  // Your wrapped version
+
+const result = streamText({
+  model: anthropic('claude-sonnet-4-20250514'),
+  tools: {
+    registrySearch: registrySearchTool,
+    registryExecute,  // Keys are auto-injected
+  },
+  system: \`You have access to the TPMJS tool registry.
+Use registrySearch to find tools, then registryExecute to run them.\`,
+  prompt: 'Scrape https://example.com and summarize the content',
+});`}
+                />
+              </div>
+
+              {/* How it works */}
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="text-xl font-semibold mb-4 text-foreground">How It Works</h3>
+                <ol className="list-decimal list-inside space-y-2 text-foreground-secondary">
+                  <li>
+                    <code className="text-primary">registrySearch</code> returns{' '}
+                    <code className="text-primary">requiredEnvVars</code> for each tool (e.g.,{' '}
+                    <code>[&quot;FIRECRAWL_API_KEY&quot;]</code>)
+                  </li>
+                  <li>Your wrapper automatically passes all configured keys to the executor</li>
+                  <li>
+                    The executor injects matching keys as environment variables in the sandbox
+                  </li>
+                  <li>Tools without required keys work with or without the wrapper</li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
           {/* Security */}
           <section className="mb-16">
             <h2 className="text-3xl font-bold mb-6 text-foreground">Security</h2>
