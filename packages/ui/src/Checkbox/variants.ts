@@ -1,5 +1,5 @@
-import { createVariants } from '../system/variants';
 import { formControlBase } from '../system/formVariants';
+import { createVariants } from '../system/variants';
 
 /**
  * Checkbox variant definitions
@@ -100,17 +100,17 @@ export const checkboxUIVariants = createVariants({
 
 /**
  * Checkmark icon variants
+ * Note: Uses group-[] selectors because the SVG is nested inside the checkboxUI span,
+ * not a direct sibling of the input. The checkboxUI span has peer-checked classes.
  */
 export const checkmarkVariants = createVariants({
   base: [
     // Positioning
     'absolute inset-0',
-    // Hidden by default
+    // Hidden by default, visible when parent has peer-checked state
     'opacity-0 scale-0',
     // Transitions
     'transition-all duration-200',
-    // Visible when checked
-    'peer-checked:opacity-100 peer-checked:scale-100',
     // Color
     'text-primary-foreground',
   ].join(' '),

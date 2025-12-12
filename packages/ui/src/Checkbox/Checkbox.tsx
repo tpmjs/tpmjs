@@ -1,13 +1,7 @@
 import { cn } from '@tpmjs/utils/cn';
 import { forwardRef, useEffect, useRef } from 'react';
 import type { CheckboxProps } from './types';
-import {
-  checkboxLabelVariants,
-  checkboxUIVariants,
-  checkboxVariants,
-  checkmarkVariants,
-  indeterminateVariants,
-} from './variants';
+import { checkboxLabelVariants, checkboxUIVariants, checkboxVariants } from './variants';
 
 /**
  * Checkbox component
@@ -93,37 +87,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
       />
     );
 
-    const checkboxUI = (
-      <span className={cn(checkboxUIVariants({ state, size }))}>
-        {/* Checkmark icon */}
-        <svg
-          className={cn(checkmarkVariants({ size }))}
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <path
-            d="M13.5 4.5L6 12L2.5 8.5"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-
-        {/* Indeterminate line */}
-        <svg
-          className={cn(indeterminateVariants({ size }))}
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <path d="M4 8H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        </svg>
-      </span>
-    );
+    // Visual checkbox box (background, border, etc.) - no icons inside
+    const checkboxUI = <span className={cn(checkboxUIVariants({ state, size }))} />;
 
     const labelElement = label ? (
       <label
@@ -137,9 +102,48 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     return (
       <div className={cn('inline-flex items-center', disabled && 'cursor-not-allowed')}>
         {labelPosition === 'left' && labelElement}
-        <div className="relative inline-flex">
+        <div className="relative inline-flex items-center justify-center">
           {checkboxInput}
           {checkboxUI}
+          {/* Checkmark icon - sibling of input so peer-checked works */}
+          <svg
+            className={cn(
+              'pointer-events-none absolute inset-0 opacity-0 scale-0 transition-all duration-200 text-primary-foreground',
+              'peer-checked:opacity-100 peer-checked:scale-100',
+              size === 'sm' && 'h-4 w-4',
+              size === 'md' && 'h-5 w-5',
+              size === 'lg' && 'h-6 w-6'
+            )}
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M13.5 4.5L6 12L2.5 8.5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          {/* Indeterminate line - sibling of input so peer selectors work */}
+          <svg
+            className={cn(
+              'pointer-events-none absolute inset-0 opacity-0 scale-0 transition-all duration-200 text-primary-foreground',
+              'peer-data-[indeterminate=true]:opacity-100 peer-data-[indeterminate=true]:scale-100',
+              'peer-checked:opacity-0 peer-checked:scale-0',
+              size === 'sm' && 'h-4 w-4',
+              size === 'md' && 'h-5 w-5',
+              size === 'lg' && 'h-6 w-6'
+            )}
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path d="M4 8H12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
         </div>
         {labelPosition === 'right' && labelElement}
       </div>
