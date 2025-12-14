@@ -1,6 +1,7 @@
 'use client';
 
 import { Container } from '@tpmjs/ui/Container/Container';
+import Link from 'next/link';
 
 export function AppFooter(): React.ReactElement {
   return (
@@ -15,6 +16,20 @@ export function AppFooter(): React.ReactElement {
             >
               Contact
             </a>
+            <span className="text-border">·</span>
+            <Link
+              href="/privacy"
+              className="text-foreground-secondary hover:text-foreground transition-colors"
+            >
+              Privacy
+            </Link>
+            <span className="text-border">·</span>
+            <Link
+              href="/terms"
+              className="text-foreground-secondary hover:text-foreground transition-colors"
+            >
+              Terms
+            </Link>
             <span className="text-border">·</span>
             <a
               href="https://github.com/tpmjs/tpmjs"

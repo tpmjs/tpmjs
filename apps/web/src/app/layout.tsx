@@ -19,9 +19,65 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'TPMJS - Tool Package Manager for AI Agents',
+  metadataBase: new URL('https://tpmjs.com'),
+  title: {
+    default: 'TPMJS - Tool Package Manager for AI Agents',
+    template: '%s | TPMJS',
+  },
   description:
     'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+  keywords: [
+    'AI tools',
+    'AI agents',
+    'tool registry',
+    'TPMJS',
+    'agent tools',
+    'AI SDK',
+    'Vercel AI',
+    'Claude',
+    'OpenAI',
+    'npm tools',
+  ],
+  authors: [{ name: 'TPMJS' }],
+  creator: 'TPMJS',
+  publisher: 'TPMJS',
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://tpmjs.com',
+    siteName: 'TPMJS',
+    title: 'TPMJS - Tool Package Manager for AI Agents',
+    description:
+      'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'TPMJS - Tool Package Manager for AI Agents',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    site: '@tpmjs_registry',
+    creator: '@tpmjs_registry',
+    title: 'TPMJS - Tool Package Manager for AI Agents',
+    description:
+      'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({
@@ -29,6 +85,34 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }): React.ReactElement {
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'TPMJS',
+    url: 'https://tpmjs.com',
+    logo: 'https://tpmjs.com/logo.png',
+    description:
+      'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+    sameAs: ['https://github.com/tpmjs/tpmjs', 'https://x.com/tpmjs'],
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'TPMJS',
+    url: 'https://tpmjs.com',
+    description:
+      'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://tpmjs.com/tool/tool-search?q={search_term_string}',
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   return (
     <html
       lang="en"
@@ -48,6 +132,14 @@ export default function RootLayout({
             />
           </>
         )}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
       </head>
       <body className={spaceGrotesk.className}>
         <ThemeProvider

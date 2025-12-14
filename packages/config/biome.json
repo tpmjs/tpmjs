@@ -66,6 +66,16 @@
           }
         }
       }
+    },
+    {
+      "include": ["**/layout.tsx", "**/page.tsx"],
+      "linter": {
+        "rules": {
+          "security": {
+            "noDangerouslySetInnerHtml": "off"
+          }
+        }
+      }
     }
   ]
 }

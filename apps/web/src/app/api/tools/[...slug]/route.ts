@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { performHealthCheck } from '~/lib/health-check/health-check-service';
+import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,9 +43,15 @@ function parseSlug(slug: string[]): { packageName: string; exportName: string | 
  * Supports catch-all routing for scoped packages like @tpmjs/text-transformer
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string[] }> }
 ): Promise<NextResponse> {
+  // Check rate limit
+  const rateLimitResponse = checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const { slug } = await params;
     const { packageName, exportName } = parseSlug(slug);
@@ -120,9 +127,15 @@ export async function GET(
  * - POST /api/tools/my-package/myTool
  */
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ slug: string[] }> }
 ): Promise<NextResponse> {
+  // Check rate limit
+  const rateLimitResponse = checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const { slug } = await params;
     const { packageName, exportName } = parseSlug(slug);

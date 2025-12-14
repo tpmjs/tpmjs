@@ -1,5 +1,6 @@
 import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 
@@ -16,6 +17,12 @@ export const runtime = 'nodejs';
  * - errors: validation errors if invalid
  */
 export async function POST(request: NextRequest) {
+  // Check rate limit
+  const rateLimitResponse = checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body = await request.json();
 

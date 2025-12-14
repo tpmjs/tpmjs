@@ -143,6 +143,49 @@ export default function ToolDetailPage({
   const pkg = tool.package;
   const authorName = typeof pkg.npmAuthor === 'string' ? pkg.npmAuthor : pkg.npmAuthor?.name;
 
+  // Generate JSON-LD structured data for SEO
+  const softwareApplicationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: tool.exportName,
+    description: tool.description,
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Any',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    author: {
+      '@type': authorName ? 'Person' : 'Organization',
+      name: authorName || 'Unknown',
+    },
+    url: `https://tpmjs.com/tool/${pkg.npmPackageName}/${tool.exportName}`,
+    softwareVersion: pkg.npmVersion,
+    ...(pkg.npmHomepage && { mainEntityOfPage: pkg.npmHomepage }),
+    ...(pkg.npmRepository &&
+      typeof pkg.npmRepository === 'object' &&
+      pkg.npmRepository.url && {
+        codeRepository: pkg.npmRepository.url.replace(/^git\+/, '').replace(/\.git$/, ''),
+      }),
+    ...(pkg.npmLicense && { license: pkg.npmLicense }),
+    ...(pkg.npmDownloadsLastMonth && {
+      interactionStatistic: {
+        '@type': 'InteractionCounter',
+        interactionType: 'https://schema.org/DownloadAction',
+        userInteractionCount: pkg.npmDownloadsLastMonth,
+      },
+    }),
+    ...(pkg.githubStars && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: Math.min(5, (pkg.githubStars / 1000) * 5),
+        bestRating: 5,
+        worstRating: 0,
+      },
+    }),
+  };
+
   const recheckHealth = async () => {
     setRecheckLoading(true);
     try {
@@ -167,6 +210,10 @@ export default function ToolDetailPage({
 
   return (
     <div className="min-h-screen bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+      />
       <AppHeader />
 
       {/* Main content */}

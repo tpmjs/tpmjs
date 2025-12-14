@@ -227,134 +227,278 @@ export default function ToolSearchPage(): React.ReactElement {
         {error && <div className="text-center py-12 text-red-500">Error: {error}</div>}
 
         {/* Tool grid */}
-        {!loading && !error && (
+        {!loading && !error && tools.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tools.length > 0 ? (
-              // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Tool card rendering requires complex conditional UI
-              tools.map((tool) => {
-                const isBroken =
-                  tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN';
-                const qualityPercent = Math.round(Number.parseFloat(tool.qualityScore) * 100);
+            {tools.map((tool) => {
+              const isBroken = tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN';
+              const qualityPercent = Math.round(Number.parseFloat(tool.qualityScore) * 100);
 
-                // Clean up repository URL
-                let repoUrl = tool.package.npmRepository?.url || '';
-                repoUrl = repoUrl.replace(/^git\+/, '');
-                repoUrl = repoUrl.replace(/\.git$/, '');
-                repoUrl = repoUrl.replace(/^git:\/\//, 'https://');
-                repoUrl = repoUrl.replace(/^git@github\.com:/, 'https://github.com/');
+              // Clean up repository URL
+              let repoUrl = tool.package.npmRepository?.url || '';
+              repoUrl = repoUrl.replace(/^git\+/, '');
+              repoUrl = repoUrl.replace(/\.git$/, '');
+              repoUrl = repoUrl.replace(/^git:\/\//, 'https://');
+              repoUrl = repoUrl.replace(/^git@github\.com:/, 'https://github.com/');
 
-                return (
-                  <Link
-                    key={tool.id}
-                    href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}
-                    className="block select-text"
-                  >
-                    <Card className="flex flex-col h-full hover:border-foreground-tertiary transition-colors cursor-pointer select-text">
-                      <CardHeader className="flex-none">
-                        {/* Top row: Title + metadata */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <CardTitle className="truncate">
-                              {tool.exportName !== 'default'
-                                ? tool.exportName
-                                : tool.package.npmPackageName}
-                            </CardTitle>
-                            <div className="text-sm text-foreground-secondary mt-1 truncate">
-                              {tool.package.npmPackageName}
-                            </div>
-                          </div>
-                          {/* Right side: downloads, version, link */}
-                          <div className="flex items-center gap-2 flex-shrink-0 text-xs text-foreground-tertiary">
-                            <span>{tool.package.npmDownloadsLastMonth.toLocaleString()}/mo</span>
-                            <span>v{tool.package.npmVersion}</span>
-                            {repoUrl && (
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  window.open(repoUrl, '_blank', 'noopener,noreferrer');
-                                }}
-                                className="text-foreground-secondary hover:text-foreground transition-colors cursor-pointer"
-                              >
-                                <Icon icon="externalLink" size="sm" />
-                              </button>
-                            )}
+              return (
+                <Link
+                  key={tool.id}
+                  href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}
+                  className="block select-text"
+                >
+                  <Card className="flex flex-col h-full hover:border-foreground-tertiary transition-colors cursor-pointer select-text">
+                    <CardHeader className="flex-none">
+                      {/* Top row: Title + metadata */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="truncate">
+                            {tool.exportName !== 'default'
+                              ? tool.exportName
+                              : tool.package.npmPackageName}
+                          </CardTitle>
+                          <div className="text-sm text-foreground-secondary mt-1 truncate">
+                            {tool.package.npmPackageName}
                           </div>
                         </div>
-                        {/* Description */}
-                        <CardDescription className="line-clamp-2 min-h-[2.5rem]">
-                          {tool.description}
-                        </CardDescription>
-                      </CardHeader>
-
-                      <CardContent className="flex-1 flex flex-col gap-4">
-                        {/* Category badge */}
-                        <div className="flex items-center">
-                          <Badge variant="secondary" size="sm">
-                            {tool.package.category}
-                          </Badge>
-                        </div>
-
-                        {/* Quality + Broken status row */}
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 flex items-center gap-2">
-                            <ProgressBar
-                              value={qualityPercent}
-                              variant={
-                                isBroken
-                                  ? 'danger'
-                                  : qualityPercent >= 70
-                                    ? 'success'
-                                    : qualityPercent >= 50
-                                      ? 'primary'
-                                      : 'warning'
-                              }
-                              size="sm"
-                              showLabel={false}
-                              className="flex-1"
-                            />
-                            <span className="text-xs font-medium text-foreground-secondary w-8">
-                              {qualityPercent}%
-                            </span>
-                          </div>
-                          {isBroken && (
-                            <Badge variant="error" size="sm">
-                              Broken
-                            </Badge>
+                        {/* Right side: downloads, version, link */}
+                        <div className="flex items-center gap-2 flex-shrink-0 text-xs text-foreground-tertiary">
+                          <span>{tool.package.npmDownloadsLastMonth.toLocaleString()}/mo</span>
+                          <span>v{tool.package.npmVersion}</span>
+                          {repoUrl && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                window.open(repoUrl, '_blank', 'noopener,noreferrer');
+                              }}
+                              className="text-foreground-secondary hover:text-foreground transition-colors cursor-pointer"
+                            >
+                              <Icon icon="externalLink" size="sm" />
+                            </button>
                           )}
                         </div>
+                      </div>
+                      {/* Description */}
+                      <CardDescription className="line-clamp-2 min-h-[2.5rem]">
+                        {tool.description}
+                      </CardDescription>
+                    </CardHeader>
 
-                        {/* Bottom section with install command and published date */}
-                        <div className="mt-auto space-y-2">
-                          <div
-                            onClick={(e) => e.stopPropagation()}
-                            onKeyDown={(e) => e.stopPropagation()}
-                            role="presentation"
-                          >
-                            <CodeBlock
-                              code={`npm install ${tool.package.npmPackageName}`}
-                              language="bash"
-                              size="sm"
-                              showCopy={true}
-                            />
-                          </div>
-                          <div className="text-xs text-foreground-tertiary">
-                            Published {formatTimeAgo(tool.package.npmPublishedAt)}
-                          </div>
+                    <CardContent className="flex-1 flex flex-col gap-4">
+                      {/* Category badge */}
+                      <div className="flex items-center">
+                        <Badge variant="secondary" size="sm">
+                          {tool.package.category}
+                        </Badge>
+                      </div>
+
+                      {/* Quality + Broken status row */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1 flex items-center gap-2">
+                          <ProgressBar
+                            value={qualityPercent}
+                            variant={
+                              isBroken
+                                ? 'danger'
+                                : qualityPercent >= 70
+                                  ? 'success'
+                                  : qualityPercent >= 50
+                                    ? 'primary'
+                                    : 'warning'
+                            }
+                            size="sm"
+                            showLabel={false}
+                            className="flex-1"
+                          />
+                          <span className="text-xs font-medium text-foreground-secondary w-8">
+                            {qualityPercent}%
+                          </span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                );
-              })
-            ) : (
-              <div className="col-span-full text-center py-12 text-foreground-tertiary">
-                {searchQuery
-                  ? `No tools found matching "${searchQuery}"`
-                  : 'No tools available yet'}
-              </div>
-            )}
+                        {isBroken && (
+                          <Badge variant="error" size="sm">
+                            Broken
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Bottom section with install command and published date */}
+                      <div className="mt-auto space-y-2">
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          onKeyDown={(e) => e.stopPropagation()}
+                          role="presentation"
+                        >
+                          <CodeBlock
+                            code={`npm install ${tool.package.npmPackageName}`}
+                            language="bash"
+                            size="sm"
+                            showCopy={true}
+                          />
+                        </div>
+                        <div className="text-xs text-foreground-tertiary">
+                          Published {formatTimeAgo(tool.package.npmPublishedAt)}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Empty States */}
+        {!loading && !error && tools.length === 0 && (
+          <div className="flex items-center justify-center py-24">
+            <Card className="max-w-2xl w-full">
+              <CardContent className="pt-6 pb-6 text-center space-y-6">
+                {/* Icon/Visual Element */}
+                <div className="flex justify-center">
+                  <div className="w-16 h-16 rounded-full bg-foreground-quaternary/50 flex items-center justify-center">
+                    <Icon icon="x" size="lg" className="text-foreground-tertiary" />
+                  </div>
+                </div>
+
+                {/* Search query with no results */}
+                {searchQuery && (
+                  <>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold text-foreground">
+                        No tools found matching &ldquo;{searchQuery}&rdquo;
+                      </h3>
+                      <p className="text-foreground-secondary">
+                        We couldn&apos;t find any tools matching your search. Try adjusting your
+                        search terms or filters.
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button variant="default" onClick={() => setSearchQuery('')}>
+                        Clear Search
+                      </Button>
+                      {(categoryFilter !== 'all' || healthFilter !== 'all') && (
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setCategoryFilter('all');
+                            setHealthFilter('all');
+                          }}
+                        >
+                          Clear All Filters
+                        </Button>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Filters active but no search query */}
+                {!searchQuery && (categoryFilter !== 'all' || healthFilter !== 'all') && (
+                  <>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold text-foreground">
+                        No tools match your filters
+                      </h3>
+                      <p className="text-foreground-secondary">
+                        Try adjusting or clearing your filters to see more tools.
+                      </p>
+                      {categoryFilter !== 'all' && (
+                        <p className="text-sm text-foreground-tertiary">
+                          Current filter: Category = {categoryFilter}
+                        </p>
+                      )}
+                      {healthFilter !== 'all' && (
+                        <p className="text-sm text-foreground-tertiary">
+                          Current filter: Health = {healthFilter}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button
+                        variant="default"
+                        onClick={() => {
+                          setCategoryFilter('all');
+                          setHealthFilter('all');
+                        }}
+                      >
+                        Clear All Filters
+                      </Button>
+                    </div>
+                  </>
+                )}
+
+                {/* No tools at all (edge case) */}
+                {!searchQuery && categoryFilter === 'all' && healthFilter === 'all' && (
+                  <>
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-semibold text-foreground">No tools yet</h3>
+                      <p className="text-foreground-secondary">
+                        Be the first to publish a tool and help AI agents gain new capabilities.
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Button
+                        variant="default"
+                        onClick={() =>
+                          window.open('https://github.com/tpmjs/tpmjs', '_blank', 'noopener')
+                        }
+                      >
+                        <Icon icon="github" size="sm" className="mr-2" />
+                        View Documentation
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          window.open(
+                            'https://www.npmjs.com/search?q=keywords:tpmjs-tool',
+                            '_blank',
+                            'noopener'
+                          )
+                        }
+                      >
+                        Browse on npm
+                      </Button>
+                    </div>
+                    <div className="pt-4 border-t border-border mt-6">
+                      <p className="text-sm text-foreground-tertiary mb-4">
+                        Publishing a tool is easy:
+                      </p>
+                      <div className="space-y-3 text-left max-w-md mx-auto">
+                        <div className="flex gap-3">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                            1
+                          </div>
+                          <p className="text-sm text-foreground-secondary">
+                            Add{' '}
+                            <code className="px-1.5 py-0.5 bg-muted rounded text-xs">
+                              tpmjs-tool
+                            </code>{' '}
+                            keyword to your package.json
+                          </p>
+                        </div>
+                        <div className="flex gap-3">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                            2
+                          </div>
+                          <p className="text-sm text-foreground-secondary">
+                            Include a{' '}
+                            <code className="px-1.5 py-0.5 bg-muted rounded text-xs">tpmjs</code>{' '}
+                            field with tool metadata
+                          </p>
+                        </div>
+                        <div className="flex gap-3">
+                          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                            3
+                          </div>
+                          <p className="text-sm text-foreground-secondary">
+                            Publish to npm and your tool appears here automatically
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
       </Container>

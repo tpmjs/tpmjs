@@ -1,5 +1,6 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -78,6 +79,12 @@ interface ReportHealthRequest {
  * based on the error type (env vars, validation = HEALTHY, infrastructure = BROKEN).
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  // Check rate limit
+  const rateLimitResponse = checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const body: ReportHealthRequest = await request.json();
     const { packageName, exportName, success, error } = body;

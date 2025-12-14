@@ -1,5 +1,6 @@
 import { type Prisma, prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -99,6 +100,12 @@ function buildWhereClause(
  * - offset: Pagination offset (default: 0)
  */
 export async function GET(request: NextRequest) {
+  // Check rate limit
+  const rateLimitResponse = checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
 

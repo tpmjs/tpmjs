@@ -1,5 +1,6 @@
 import { prisma } from '@tpmjs/db';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,7 +13,13 @@ export const maxDuration = 60;
  * Returns tools where importHealth='BROKEN' OR executionHealth='BROKEN'
  * Includes package relation with npmPackageName and npmVersion
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Check rate limit
+  const rateLimitResponse = checkRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   try {
     const brokenTools = await prisma.tool.findMany({
       where: {

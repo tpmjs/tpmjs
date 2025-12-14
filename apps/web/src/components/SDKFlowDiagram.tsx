@@ -529,8 +529,8 @@ export function SDKFlowDiagram(): React.ReactElement {
             {hoveredNode === 'your-tools' && (
               <div className="text-foreground-secondary">
                 <span className="font-semibold text-foreground">Your existing tools</span> — Any AI
-                SDK tools you've already built or installed. These work alongside the registry tools
-                seamlessly.
+                SDK tools you&apos;ve already built or installed. These work alongside the registry
+                tools seamlessly.
               </div>
             )}
             {hoveredNode === 'registry-search' && (
@@ -572,7 +572,7 @@ export function SDKFlowDiagram(): React.ReactElement {
               <div className="text-foreground-secondary">
                 <span className="font-semibold text-foreground">Secure Deno Runtime</span> — Each
                 tool execution runs in a fresh, isolated Deno sandbox. API keys are passed
-                per-request and never stored. Network access is restricted to the tool's
+                per-request and never stored. Network access is restricted to the tool&apos;s
                 requirements.
               </div>
             )}

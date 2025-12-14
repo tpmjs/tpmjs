@@ -1,5 +1,6 @@
 import { prisma } from '@tpmjs/db';
-import { NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { STRICT_RATE_LIMIT, checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -55,8 +56,14 @@ function calculateBM25(
   return score;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   console.log('🔎 [SEARCH API] Request received');
+
+  // Check rate limit (stricter limit for expensive search operations)
+  const rateLimitResponse = checkRateLimit(request, STRICT_RATE_LIMIT);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
 
   try {
     const { searchParams } = new URL(request.url);
