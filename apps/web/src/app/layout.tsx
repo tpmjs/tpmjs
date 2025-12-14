@@ -100,7 +100,7 @@ export default function RootLayout({
     logo: 'https://tpmjs.com/logo.png',
     description:
       'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
-    sameAs: ['https://github.com/tpmjs/tpmjs', 'https://x.com/tpmjs'],
+    sameAs: ['https://github.com/tpmjs/tpmjs', 'https://x.com/tpmjs_registry'],
   };
 
   const websiteSchema = {
