@@ -33,6 +33,7 @@ const NAV_SECTIONS = [
       { id: 'api-tools', label: 'GET /api/tools' },
       { id: 'api-tools-search', label: 'GET /api/tools/search' },
       { id: 'api-tool-detail', label: 'GET /api/tools/[id]' },
+      { id: 'api-execute', label: 'POST /api/tools/execute' },
     ],
   },
   {
@@ -679,6 +680,125 @@ const result = streamText({
               </DocSubSection>
               <DocSubSection title="Example Request">
                 <CodeBlock language="bash" code="curl https://tpmjs.com/api/tools/@tpmjs/hello" />
+              </DocSubSection>
+            </DocSection>
+
+            <DocSection id="api-execute" title="POST /api/tools/execute/[...slug]">
+              <p className="text-foreground-secondary mb-6">
+                Execute a tool with an AI agent and receive streaming results via Server-Sent Events
+                (SSE). This endpoint allows you to run any TPMJS tool remotely without installing
+                it.
+              </p>
+              <DocSubSection title="URL Formats">
+                <div className="space-y-2 text-foreground-secondary text-sm mb-4">
+                  <p>
+                    <strong className="text-foreground">By tool ID:</strong>{' '}
+                    <code className="text-primary">/api/tools/execute/clx123abc</code>
+                  </p>
+                  <p>
+                    <strong className="text-foreground">By package and export:</strong>{' '}
+                    <code className="text-primary">
+                      /api/tools/execute/@tpmjs/hello/helloWorldTool
+                    </code>
+                  </p>
+                </div>
+              </DocSubSection>
+              <DocSubSection title="Request Body">
+                <ParamTable
+                  params={[
+                    {
+                      name: 'prompt',
+                      type: 'string',
+                      required: true,
+                      description: 'Natural language prompt for the AI agent (max 2000 chars)',
+                    },
+                    {
+                      name: 'parameters',
+                      type: 'object',
+                      required: false,
+                      description: 'Optional tool parameters to pass directly',
+                    },
+                  ]}
+                />
+              </DocSubSection>
+              <DocSubSection title="SSE Events">
+                <div className="space-y-4">
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <code className="text-primary font-mono">chunk</code>
+                    <p className="text-sm text-foreground-secondary mt-1">
+                      Streaming text chunks from the AI agent response
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <code className="text-primary font-mono">tokens</code>
+                    <p className="text-sm text-foreground-secondary mt-1">
+                      Token usage updates during execution
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <code className="text-primary font-mono">complete</code>
+                    <p className="text-sm text-foreground-secondary mt-1">
+                      Final result with output, token breakdown, and execution time
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <code className="text-primary font-mono">error</code>
+                    <p className="text-sm text-foreground-secondary mt-1">
+                      Error message if execution fails
+                    </p>
+                  </div>
+                </div>
+              </DocSubSection>
+              <DocSubSection title="Example Request">
+                <CodeBlock
+                  language="bash"
+                  code={`curl -X POST https://tpmjs.com/api/tools/execute/@tpmjs/hello/helloWorldTool \\
+  -H "Content-Type: application/json" \\
+  -d '{"prompt": "Say hello to the world"}'`}
+                />
+              </DocSubSection>
+              <DocSubSection title="JavaScript Example">
+                <CodeBlock
+                  language="typescript"
+                  code={`const response = await fetch(
+  'https://tpmjs.com/api/tools/execute/@tpmjs/hello/helloWorldTool',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: 'Say hello to the world' }),
+  }
+);
+
+const reader = response.body?.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+
+  const chunk = decoder.decode(value);
+  const lines = chunk.split('\\n');
+
+  for (const line of lines) {
+    if (line.startsWith('event: ')) {
+      const event = line.slice(7);
+      console.log('Event:', event);
+    }
+    if (line.startsWith('data: ')) {
+      const data = JSON.parse(line.slice(6));
+      console.log('Data:', data);
+    }
+  }
+}`}
+                />
+              </DocSubSection>
+              <DocSubSection title="Rate Limiting">
+                <InfoCard icon="clock" title="Rate Limits">
+                  The execute endpoint is rate limited to 10 requests per minute per IP address.
+                  Rate limit headers are included in the response:
+                  <code className="block mt-2 text-sm">X-RateLimit-Limit: 10</code>
+                  <code className="block text-sm">X-RateLimit-Remaining: 9</code>
+                </InfoCard>
               </DocSubSection>
             </DocSection>
 
