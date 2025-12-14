@@ -721,7 +721,7 @@ const result = streamText({
             <DocSection id="tpmjs-spec" title="TPMJS Specification">
               <p className="text-foreground-secondary mb-6">
                 The <code className="text-primary">tpmjs</code> field in package.json describes your
-                tool's capabilities.
+                tool&apos;s capabilities.
               </p>
               <CodeBlock
                 language="json"
@@ -1012,7 +1012,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                   <ul className="list-disc list-inside space-y-2 text-foreground-secondary">
                     <li>Check that required environment variables are passed</li>
                     <li>Verify the toolId format is correct (package::exportName)</li>
-                    <li>Check the tool's health status on tpmjs.com</li>
+                    <li>Check the tool&apos;s health status on tpmjs.com</li>
                   </ul>
                 </DocSubSection>
               </div>

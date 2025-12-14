@@ -58,6 +58,11 @@ export function AppHeader(): React.ReactElement {
               FAQ
             </Button>
           </Link>
+          <Link href="/changelog">
+            <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+              Changelog
+            </Button>
+          </Link>
           <a
             href="https://github.com/tpmjs/tpmjs"
             target="_blank"
