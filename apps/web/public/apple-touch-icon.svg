@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <!-- Background with rounded corners for iOS -->
+  <rect width="180" height="180" rx="40" fill="#0A0A0A"/>
+
+  <!-- T letter stylized as a tool shape - scaled up -->
+  <path d="M40 45h100v22H101v68H79V67H40V45z" fill="#3B82F6"/>
+
+  <!-- Accent dots representing package/registry -->
+  <circle cx="135" cy="112" r="11" fill="#60A5FA"/>
+  <circle cx="135" cy="146" r="11" fill="#60A5FA"/>
+</svg>

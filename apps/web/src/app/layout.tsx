@@ -26,6 +26,13 @@ export const metadata: Metadata = {
   },
   description:
     'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: '/apple-touch-icon.svg',
+  },
   keywords: [
     'AI tools',
     'AI agents',
