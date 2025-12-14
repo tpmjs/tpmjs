@@ -682,11 +682,11 @@ const tools = await tpmjs.loadCollection('my-company/internal-tools');`}
               Give your AI agent access to thousands of tools in minutes.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-              <Link href="/playground">
+              <a href="https://playground.tpmjs.com" target="_blank" rel="noopener noreferrer">
                 <Button size="lg" variant="default">
                   Try in Playground
                 </Button>
-              </Link>
+              </a>
               <Link href="/tool/tool-search">
                 <Button size="lg" variant="outline">
                   Browse Tools
