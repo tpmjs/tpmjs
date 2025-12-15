@@ -408,6 +408,34 @@ async function executeTool(req: Request): Promise<Response> {
 
     const cacheKey = `${packageName}::${exportName}`;
 
+    // Inject environment variables FIRST - before cache check and factory calls
+    // This ensures process.env is set when factory functions read from it
+    if (env && typeof env === 'object') {
+      const envKeys = Object.keys(env);
+      if (envKeys.length > 0) {
+        console.log(`🔐 Injecting ${envKeys.length} environment variables:`, envKeys);
+        for (const [key, value] of Object.entries(env)) {
+          const stringValue = String(value);
+
+          // Set in Deno environment (for esm.sh imports)
+          Deno.env.set(key, stringValue);
+
+          // ALSO set in Node.js process.env (for npm: imports)
+          // @ts-ignore - process is available in Node.js compatibility mode
+          if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
+            // @ts-ignore - process.env exists in Node compat mode
+            globalThis.process.env[key] = stringValue;
+          }
+
+          console.log(`  ✅ Set ${key} = ${stringValue.substring(0, 10)}...`);
+        }
+      } else {
+        console.log('⚠️  No env vars provided in request');
+      }
+    } else {
+      console.log('⚠️  No env object in request body');
+    }
+
     // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
 
@@ -433,9 +461,14 @@ async function executeTool(req: Request): Promise<Response> {
         );
       }
 
+      // Track if this is a factory function - we won't cache factory-created tools
+      // because they may read env vars at creation time
+      let isFactoryFunction = false;
+
       // Check if it's a factory function (not a direct tool)
       if (typeof rawExport === 'function' && !rawExport.description && !rawExport.execute) {
         console.log(`🏭 Detected factory function for ${cacheKey}, attempting to call...`);
+        isFactoryFunction = true;
 
         let factoryResult = null;
 
@@ -530,48 +563,18 @@ async function executeTool(req: Request): Promise<Response> {
         );
       }
 
-      moduleCache.set(cacheKey, toolModule);
-    }
-
-    // Inject environment variables from client
-    if (env && typeof env === 'object') {
-      const envKeys = Object.keys(env);
-      if (envKeys.length > 0) {
-        console.log(`🔐 Injecting ${envKeys.length} environment variables:`, envKeys);
-        for (const [key, value] of Object.entries(env)) {
-          const stringValue = String(value);
-
-          // Set in Deno environment (for esm.sh imports)
-          Deno.env.set(key, stringValue);
-
-          // ALSO set in Node.js process.env (for npm: imports)
-          // @ts-ignore - process is available in Node.js compatibility mode
-          if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
-            // @ts-ignore - process.env exists in Node compat mode
-            globalThis.process.env[key] = stringValue;
-          }
-
-          console.log(`  ✅ Set ${key} = ${stringValue.substring(0, 10)}...`);
-        }
-        // Verify they're set in both places
-        console.log(
-          '🔍 Verification - Deno.env has:',
-          envKeys.map((k) => `${k}=${Deno.env.get(k)?.substring(0, 10)}...`)
-        );
-        // @ts-ignore - process is available in Node.js compatibility mode
-        if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
-          console.log(
-            '🔍 Verification - process.env has:',
-            // @ts-ignore - process.env exists in Node compat mode
-            envKeys.map((k) => `${k}=${globalThis.process.env[k]?.substring(0, 10)}...`)
-          );
-        }
+      // Only cache non-factory tools - factory tools need to be re-created each time
+      // because they may read env vars at creation time (e.g., Valyu SDK reads process.env.VALYU_API_KEY)
+      if (!isFactoryFunction) {
+        moduleCache.set(cacheKey, toolModule);
+        console.log(`📦 Cached tool: ${cacheKey}`);
       } else {
-        console.log('⚠️  No env vars provided in request');
+        console.log(`🏭 Skipping cache for factory tool: ${cacheKey} (env-dependent)`);
       }
-    } else {
-      console.log('⚠️  No env object in request body');
     }
+
+    // Note: Environment variables are already injected at the start of this function
+    // before cache check and factory calls, so they're available when tools read process.env
 
     // Execute the tool with AI SDK execution context
     // Some tools expect a second argument with { abortSignal, ... }
