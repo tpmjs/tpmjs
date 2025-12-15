@@ -49,6 +49,45 @@ async function reportToolHealth(
 }
 
 /**
+ * Update tool schema in TPM.js database
+ * Non-blocking - fires and forgets to keep schemas up to date
+ */
+async function updateToolSchema(
+  packageName: string,
+  exportName: string,
+  description: string,
+  // biome-ignore lint/suspicious/noExplicitAny: JSON Schema can have any structure
+  inputSchema: any
+): Promise<void> {
+  try {
+    const response = await fetch(`${TPMJS_API_URL}/api/tools/update-schema`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageName,
+        exportName,
+        description,
+        inputSchema,
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log(
+        `📋 Schema updated for ${packageName}/${exportName}:`,
+        data.updated ? 'UPDATED' : 'NO CHANGE'
+      );
+    } else {
+      const errorText = await response.text();
+      console.warn(`⚠️  Failed to update schema: ${response.status}`, errorText);
+    }
+  } catch (err) {
+    // Non-blocking - just log
+    console.error('❌ Failed to update tool schema:', err);
+  }
+}
+
+/**
  * Sanitize JSON Schema to fix common issues
  * - Replaces invalid type "None" with "object"
  * - Ensures type is always set
@@ -353,6 +392,13 @@ async function loadAndDescribe(req: Request): Promise<Response> {
 
     // Sanitize schema - fix common issues with invalid schemas
     const sanitizedSchema = sanitizeJsonSchema(rawJsonSchema);
+
+    // Update TPM.js database with the schema (async, non-blocking)
+    updateToolSchema(packageName, exportName, toolModule.description, sanitizedSchema).catch(
+      (err) => {
+        console.warn('⚠️  Failed to update schema in database:', err);
+      }
+    );
 
     return Response.json({
       success: true,
