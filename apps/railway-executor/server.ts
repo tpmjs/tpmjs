@@ -439,8 +439,10 @@ async function executeTool(req: Request): Promise<Response> {
     // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
 
-    // Check cache or import
-    if (moduleCache.has(cacheKey)) {
+    // CACHE DISABLED - always re-import tools to ensure fresh env vars
+    // TODO: Re-enable caching with smarter invalidation based on env vars
+    const CACHE_ENABLED = false;
+    if (CACHE_ENABLED && moduleCache.has(cacheKey)) {
       console.log(`✅ Using cached tool: ${cacheKey}`);
       toolModule = moduleCache.get(cacheKey);
     } else {
