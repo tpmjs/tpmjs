@@ -96,7 +96,7 @@ function buildWhereClause(
  * - importHealth: Filter by import health (HEALTHY, BROKEN, UNKNOWN)
  * - executionHealth: Filter by execution health (HEALTHY, BROKEN, UNKNOWN)
  * - broken: Shorthand for "at least one health check failed" (true/false)
- * - limit: Results per page (default: 20, max: 50)
+ * - limit: Results per page (default: 20, max: 1000)
  * - offset: Pagination offset (default: 0)
  */
 export async function GET(request: NextRequest) {
@@ -119,8 +119,8 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
 
-    // Validate and set defaults
-    const limit = Math.min(Number.parseInt(limitParam || '20', 10), 50);
+    // Validate and set defaults - max limit of 1000 for bulk fetching
+    const limit = Math.min(Number.parseInt(limitParam || '20', 10), 1000);
     const offset = Math.max(Number.parseInt(offsetParam || '0', 10), 0);
 
     // Build filters
@@ -133,7 +133,26 @@ export async function GET(request: NextRequest) {
     const tools = await prisma.tool.findMany({
       where,
       include: {
-        package: true, // Include package data for each tool
+        package: {
+          select: {
+            id: true,
+            npmPackageName: true,
+            npmVersion: true,
+            npmDescription: true,
+            npmRepository: true,
+            npmHomepage: true,
+            npmLicense: true,
+            npmKeywords: true,
+            category: true,
+            env: true,
+            frameworks: true,
+            tier: true,
+            isOfficial: true,
+            npmDownloadsLastMonth: true,
+            githubStars: true,
+            // Explicitly exclude npmReadme, npmAuthor, npmMaintainers to reduce payload
+          },
+        },
       },
       orderBy: [
         { qualityScore: 'desc' }, // Tool quality score
