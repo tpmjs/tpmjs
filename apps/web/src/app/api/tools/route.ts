@@ -6,6 +6,60 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
+// Constants
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 1000;
+const MIN_LIMIT = 1;
+const API_VERSION = '1.0.0';
+
+// Valid enum values
+const VALID_HEALTH_STATUSES = ['HEALTHY', 'BROKEN', 'UNKNOWN'] as const;
+type HealthStatus = (typeof VALID_HEALTH_STATUSES)[number];
+
+/**
+ * Standard API response structure
+ */
+interface ApiResponse<T = unknown> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: Record<string, unknown>;
+  };
+  meta: {
+    version: string;
+    timestamp: string;
+    requestId?: string;
+  };
+  pagination?: {
+    limit: number;
+    offset: number;
+    count: number;
+    hasMore: boolean;
+  };
+}
+
+/**
+ * Validation error details
+ */
+interface ValidationError {
+  field: string;
+  message: string;
+  received?: unknown;
+}
+
+/**
+ * Validate health status parameter
+ */
+function validateHealthStatus(value: string | null, fieldName: string): HealthStatus | null {
+  if (!value) return null;
+  if (VALID_HEALTH_STATUSES.includes(value as HealthStatus)) {
+    return value as HealthStatus;
+  }
+  throw new Error(`Invalid ${fieldName}: must be one of ${VALID_HEALTH_STATUSES.join(', ')}`);
+}
+
 /**
  * Build health filters from query parameters
  */
@@ -17,19 +71,18 @@ function buildHealthFilters(
   const healthFilters: Prisma.ToolWhereInput[] = [];
 
   if (brokenParam === 'true') {
-    // Shorthand: at least one health check failed
     healthFilters.push({
       OR: [{ importHealth: 'BROKEN' }, { executionHealth: 'BROKEN' }],
     });
   } else {
-    // Individual health status filters
-    if (importHealth && ['HEALTHY', 'BROKEN', 'UNKNOWN'].includes(importHealth)) {
-      healthFilters.push({ importHealth: importHealth as 'HEALTHY' | 'BROKEN' | 'UNKNOWN' });
+    const validImportHealth = validateHealthStatus(importHealth, 'importHealth');
+    const validExecutionHealth = validateHealthStatus(executionHealth, 'executionHealth');
+
+    if (validImportHealth) {
+      healthFilters.push({ importHealth: validImportHealth });
     }
-    if (executionHealth && ['HEALTHY', 'BROKEN', 'UNKNOWN'].includes(executionHealth)) {
-      healthFilters.push({
-        executionHealth: executionHealth as 'HEALTHY' | 'BROKEN' | 'UNKNOWN',
-      });
+    if (validExecutionHealth) {
+      healthFilters.push({ executionHealth: validExecutionHealth });
     }
   }
 
@@ -86,6 +139,84 @@ function buildWhereClause(
 }
 
 /**
+ * Create standardized error response
+ */
+function createErrorResponse(
+  code: string,
+  message: string,
+  status: number,
+  details?: Record<string, unknown>
+): NextResponse<ApiResponse> {
+  return NextResponse.json(
+    {
+      success: false,
+      error: {
+        code,
+        message,
+        details,
+      },
+      meta: {
+        version: API_VERSION,
+        timestamp: new Date().toISOString(),
+      },
+    },
+    { status }
+  );
+}
+
+/**
+ * Validate and parse pagination parameters
+ */
+function validatePagination(
+  limitParam: string | null,
+  offsetParam: string | null
+): { limit: number; offset: number } {
+  const limit = limitParam ? Number.parseInt(limitParam, 10) : DEFAULT_LIMIT;
+  const offset = offsetParam ? Number.parseInt(offsetParam, 10) : 0;
+
+  const validationErrors: ValidationError[] = [];
+
+  if (Number.isNaN(limit)) {
+    validationErrors.push({
+      field: 'limit',
+      message: 'Must be a valid number',
+      received: limitParam,
+    });
+  } else if (limit < MIN_LIMIT) {
+    validationErrors.push({
+      field: 'limit',
+      message: `Must be at least ${MIN_LIMIT}`,
+      received: limit,
+    });
+  } else if (limit > MAX_LIMIT) {
+    validationErrors.push({
+      field: 'limit',
+      message: `Must not exceed ${MAX_LIMIT}`,
+      received: limit,
+    });
+  }
+
+  if (Number.isNaN(offset)) {
+    validationErrors.push({
+      field: 'offset',
+      message: 'Must be a valid number',
+      received: offsetParam,
+    });
+  } else if (offset < 0) {
+    validationErrors.push({ field: 'offset', message: 'Must be non-negative', received: offset });
+  }
+
+  if (validationErrors.length > 0) {
+    throw new Error(JSON.stringify(validationErrors));
+  }
+
+  return {
+    limit: Math.min(Math.max(limit, MIN_LIMIT), MAX_LIMIT),
+    offset: Math.max(offset, 0),
+  };
+}
+
+/**
  * GET /api/tools
  * Search and list tools with filtering, sorting, and pagination
  *
@@ -96,10 +227,15 @@ function buildWhereClause(
  * - importHealth: Filter by import health (HEALTHY, BROKEN, UNKNOWN)
  * - executionHealth: Filter by execution health (HEALTHY, BROKEN, UNKNOWN)
  * - broken: Shorthand for "at least one health check failed" (true/false)
- * - limit: Results per page (default: 20, max: 1000)
- * - offset: Pagination offset (default: 0)
+ * - limit: Results per page (default: 20, max: 1000, min: 1)
+ * - offset: Pagination offset (default: 0, min: 0)
+ *
+ * @returns {ApiResponse} Standardized API response with tools data
  */
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = crypto.randomUUID();
+
   // Check rate limit
   const rateLimitResponse = checkRateLimit(request);
   if (rateLimitResponse) {
@@ -119,14 +255,36 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
 
-    // Validate and set defaults - max limit of 1000 for bulk fetching
-    const limit = Math.min(Number.parseInt(limitParam || '20', 10), 1000);
-    const offset = Math.max(Number.parseInt(offsetParam || '0', 10), 0);
+    // Validate pagination parameters
+    let limit: number;
+    let offset: number;
+    try {
+      const pagination = validatePagination(limitParam, offsetParam);
+      limit = pagination.limit;
+      offset = pagination.offset;
+    } catch (error) {
+      const validationErrors = JSON.parse(error instanceof Error ? error.message : '[]');
+      return createErrorResponse('VALIDATION_ERROR', 'Invalid request parameters', 400, {
+        validationErrors,
+      });
+    }
 
-    // Build filters
-    const packageFilter = buildPackageFilter(category, officialParam);
-    const healthFilters = buildHealthFilters(brokenParam, importHealth, executionHealth);
-    const where = buildWhereClause(query, packageFilter, healthFilters);
+    // Build filters with validation
+    let packageFilter: Prisma.PackageWhereInput;
+    let healthFilters: Prisma.ToolWhereInput[];
+    let where: Prisma.ToolWhereInput;
+
+    try {
+      packageFilter = buildPackageFilter(category, officialParam);
+      healthFilters = buildHealthFilters(brokenParam, importHealth, executionHealth);
+      where = buildWhereClause(query, packageFilter, healthFilters);
+    } catch (error) {
+      return createErrorResponse(
+        'VALIDATION_ERROR',
+        error instanceof Error ? error.message : 'Invalid filter parameters',
+        400
+      );
+    }
 
     // Execute query - fetch tools with package relation
     // We fetch limit+1 to check if there are more results (avoid expensive count)
@@ -166,27 +324,48 @@ export async function GET(request: NextRequest) {
     // Check if there are more results
     const hasMore = tools.length > limit;
     const actualTools = hasMore ? tools.slice(0, limit) : tools;
+    const processingTime = Date.now() - startTime;
 
-    return NextResponse.json({
+    // Build standardized response
+    const response: ApiResponse = {
       success: true,
       data: actualTools,
+      meta: {
+        version: API_VERSION,
+        timestamp: new Date().toISOString(),
+        requestId,
+      },
       pagination: {
         limit,
         offset,
+        count: actualTools.length,
         hasMore,
-        // Note: total count omitted for performance (can be expensive)
+      },
+    };
+
+    return NextResponse.json(response, {
+      status: 200,
+      headers: {
+        'X-Request-ID': requestId,
+        'X-Processing-Time': `${processingTime}ms`,
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
     });
   } catch (error) {
-    console.error('Error fetching tools:', error);
+    console.error('[API Error] /api/tools:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      requestId,
+    });
 
-    return NextResponse.json(
+    return createErrorResponse(
+      'INTERNAL_SERVER_ERROR',
+      'An unexpected error occurred while fetching tools',
+      500,
       {
-        success: false,
-        error: 'Failed to fetch tools',
         message: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
+        requestId,
+      }
     );
   }
 }
