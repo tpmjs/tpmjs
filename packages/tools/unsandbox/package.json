@@ -1,0 +1,230 @@
+{
+  "name": "@tpmjs/unsandbox",
+  "version": "0.0.1",
+  "description": "AI SDK tools for secure code execution in 42+ programming languages via unsandbox.com",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": ["tpmjs-tool", "ai-sdk", "code-execution", "sandbox", "unsandbox"],
+  "dependencies": {
+    "@thomasdavis/unsandbox": "^0.0.3"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "^5.7.2"
+  },
+  "files": ["dist", "README.md"],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/unsandbox"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ai-ml",
+    "frameworks": ["vercel-ai"],
+    "env": [
+      {
+        "name": "UNSANDBOX_API_KEY",
+        "description": "API key for the Unsandbox code execution service (get one at https://unsandbox.com/api-keys)",
+        "required": true
+      }
+    ],
+    "tools": [
+      {
+        "exportName": "executeCode",
+        "description": "Execute code synchronously in a secure sandbox. Supports 42+ languages including Python, JavaScript, TypeScript, Go, Rust, and more.",
+        "parameters": [
+          {
+            "name": "language",
+            "type": "string",
+            "description": "Programming language to execute (python, javascript, typescript, go, rust, c, cpp, java, ruby, etc.)",
+            "required": true
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "description": "The source code to execute",
+            "required": true
+          },
+          {
+            "name": "input_files",
+            "type": "array",
+            "description": "Optional array of input files to make available in /tmp/input/",
+            "required": false
+          },
+          {
+            "name": "network_mode",
+            "type": "string",
+            "description": "Network isolation mode: 'zerotrust' (default, blocks all) or 'semitrusted' (allows outbound)",
+            "required": false
+          },
+          {
+            "name": "ttl",
+            "type": "number",
+            "description": "Execution timeout in seconds (1-900, default 60)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Execution result with stdout, stderr, and exit code"
+        },
+        "aiAgent": {
+          "useCase": "Use when you need to execute code in a secure sandbox environment. Great for running untrusted code, testing snippets, or executing code in languages not available locally.",
+          "examples": [
+            "Execute Python code to analyze data",
+            "Run JavaScript to test a function",
+            "Compile and run Rust code"
+          ]
+        }
+      },
+      {
+        "exportName": "executeCodeAsync",
+        "description": "Execute code asynchronously in a secure sandbox. Returns a job_id immediately for tracking.",
+        "parameters": [
+          {
+            "name": "language",
+            "type": "string",
+            "description": "Programming language to execute",
+            "required": true
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "description": "The source code to execute",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Job info with job_id for tracking"
+        },
+        "aiAgent": {
+          "useCase": "Use for long-running code that may take time to complete. Check status with getJob.",
+          "examples": [
+            "Run a long computation asynchronously",
+            "Execute code that may take several minutes"
+          ]
+        }
+      },
+      {
+        "exportName": "runCode",
+        "description": "Execute code with automatic language detection from shebang line (e.g., #!/usr/bin/env python3).",
+        "parameters": [
+          {
+            "name": "code",
+            "type": "string",
+            "description": "Source code with shebang line for language detection",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Execution result with stdout, stderr, and detected language"
+        },
+        "aiAgent": {
+          "useCase": "Simpler alternative to executeCode when your code has a shebang line.",
+          "examples": [
+            "Run a script with #!/usr/bin/env python3",
+            "Execute bash script with #!/bin/bash"
+          ]
+        }
+      },
+      {
+        "exportName": "runCodeAsync",
+        "description": "Execute code asynchronously with automatic language detection from shebang.",
+        "parameters": [
+          {
+            "name": "code",
+            "type": "string",
+            "description": "Source code with shebang line",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Job info with job_id"
+        },
+        "aiAgent": {
+          "useCase": "Async version of runCode for long-running scripts.",
+          "examples": ["Run a long Python script asynchronously"]
+        }
+      },
+      {
+        "exportName": "listJobs",
+        "description": "List all active jobs for your API key. Jobs are retained for 3 minutes after completion.",
+        "parameters": [],
+        "returns": {
+          "type": "object",
+          "description": "List of jobs with IDs, statuses, and timestamps"
+        },
+        "aiAgent": {
+          "useCase": "Check what async jobs are currently running or recently completed.",
+          "examples": ["List all my running code executions"]
+        }
+      },
+      {
+        "exportName": "getJob",
+        "description": "Get status and results of a specific async job.",
+        "parameters": [
+          {
+            "name": "job_id",
+            "type": "string",
+            "description": "The job ID from executeCodeAsync or runCodeAsync",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Job status (pending, running, completed, cancelled, timeout) with stdout/stderr"
+        },
+        "aiAgent": {
+          "useCase": "Check if an async job has completed and get its output.",
+          "examples": ["Get results of job abc123"]
+        }
+      },
+      {
+        "exportName": "cancelJob",
+        "description": "Cancel a running or pending async job.",
+        "parameters": [
+          {
+            "name": "job_id",
+            "type": "string",
+            "description": "The job ID to cancel",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Cancellation confirmation with partial output collected"
+        },
+        "aiAgent": {
+          "useCase": "Stop a long-running job that's no longer needed.",
+          "examples": ["Cancel job abc123"]
+        }
+      },
+      {
+        "exportName": "listLanguages",
+        "description": "List all 42+ supported programming languages and their aliases.",
+        "parameters": [],
+        "returns": {
+          "type": "object",
+          "description": "List of supported languages with aliases"
+        },
+        "aiAgent": {
+          "useCase": "Discover what languages are available before executing code.",
+          "examples": ["What languages can I execute?"]
+        }
+      }
+    ]
+  }
+}

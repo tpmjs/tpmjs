@@ -648,6 +648,19 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
+  packages/tools/unsandbox:
+    dependencies:
+      '@thomasdavis/unsandbox':
+        specifier: ^0.0.3
+        version: 0.0.3(zod@4.1.13)
+    devDependencies:
+      '@tpmjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../config/tsconfig
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/types:
     dependencies:
       zod:
@@ -2415,6 +2428,9 @@ packages:
     engines: {node: '>=12', npm: '>=6'}
     peerDependencies:
       '@testing-library/dom': '>=7.21.4'
+
+  '@thomasdavis/unsandbox@0.0.3':
+    resolution: {integrity: sha512-7Bmql6ykkpd+S3foMKGjnnNQhfh0iUriE0f9YAhyx7C+4qicsb5oGJ0rkOBI8Pk5VXx/PPUm36+VNNKqqPzozg==}
 
   '@total-typescript/ts-reset@0.6.1':
     resolution: {integrity: sha512-cka47fVSo6lfQDIATYqb/vO1nvFfbPw7uWLayIXIhGETj0wcOOlrlkobOMDNQOFr9QOafegUPq13V2+6vtD7yg==}
@@ -7902,6 +7918,15 @@ snapshots:
   '@testing-library/user-event@14.6.1(@testing-library/dom@10.4.0)':
     dependencies:
       '@testing-library/dom': 10.4.0
+
+  '@thomasdavis/unsandbox@0.0.3(zod@4.1.13)':
+    dependencies:
+      ai: 6.0.0-beta.131(effect@3.18.4)(zod@4.1.13)
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
+      - zod
 
   '@total-typescript/ts-reset@0.6.1': {}
 
