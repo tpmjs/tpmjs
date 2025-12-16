@@ -51,7 +51,9 @@ function sortTools(tools: Tool[], sortBy: SortOption): Tool[] {
       return bDownloads - aDownloads;
     }
     // Sort by recent (createdAt descending)
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    const aTime = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const bTime = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return bTime - aTime;
   });
 }
 
@@ -336,9 +338,11 @@ export default function ToolSearchPage(): React.ReactElement {
                             showCopy={true}
                           />
                         </div>
-                        <div className="text-xs text-foreground-tertiary">
-                          Published {formatTimeAgo(tool.package.npmPublishedAt)}
-                        </div>
+                        {tool.package.npmPublishedAt && (
+                          <div className="text-xs text-foreground-tertiary">
+                            Published {formatTimeAgo(tool.package.npmPublishedAt)}
+                          </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

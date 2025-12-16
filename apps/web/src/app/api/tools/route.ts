@@ -301,6 +301,7 @@ export async function GET(request: NextRequest) {
             npmHomepage: true,
             npmLicense: true,
             npmKeywords: true,
+            npmPublishedAt: true,
             category: true,
             env: true,
             frameworks: true,
