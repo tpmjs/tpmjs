@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/unsandbox",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "AI SDK tools for secure code execution in 42+ programming languages via unsandbox.com",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
