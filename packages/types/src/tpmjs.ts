@@ -80,8 +80,10 @@ export type TpmjsAiAgent = z.infer<typeof TpmjsAiAgentSchema>;
  * Individual tool definition within a multi-tool package
  *
  * Required fields:
- * - exportName: The export name of the tool from the package
- * - description: A description of what the tool does (20-500 chars)
+ * - name: The export name of the tool from the package
+ *
+ * Optional fields (auto-extracted if not provided):
+ * - description: A description of what the tool does (20-500 chars) - auto-extracted from tool
  *
  * @deprecated fields (now auto-extracted, kept for backward compatibility):
  * - parameters: Tool input parameters - auto-extracted from inputSchema
@@ -89,8 +91,9 @@ export type TpmjsAiAgent = z.infer<typeof TpmjsAiAgentSchema>;
  * - aiAgent: AI agent guidance - auto-extracted from tool
  */
 export const TpmjsToolDefinitionSchema = z.object({
-  exportName: z.string().min(1, 'Export name is required'),
-  description: z.string().min(20, 'Description must be at least 20 characters').max(500),
+  name: z.string().min(1, 'Tool name is required'),
+  // Optional - auto-extracted from tool if not provided
+  description: z.string().min(20, 'Description must be at least 20 characters').max(500).optional(),
   // @deprecated - now auto-extracted from tool's inputSchema
   parameters: z.array(TpmjsParameterSchema).optional(),
   // @deprecated - now auto-extracted from tool
@@ -103,13 +106,17 @@ export type TpmjsToolDefinition = z.infer<typeof TpmjsToolDefinitionSchema>;
 
 /**
  * Multi-tool format - NEW SCHEMA
- * Package-level metadata with array of tools
+ * Package-level metadata with optional array of tools
+ *
+ * If tools is not provided, TPMJS will auto-discover exports from the package.
+ * Authors can override auto-discovery by providing explicit tool definitions.
  */
 export const TpmjsMultiToolSchema = z.object({
   category: z.enum(TPMJS_CATEGORIES, {
     message: `Category must be one of: ${TPMJS_CATEGORIES.join(', ')}`,
   }),
-  tools: z.array(TpmjsToolDefinitionSchema).min(1, 'At least one tool is required'),
+  // Optional - if not provided, tools are auto-discovered from package exports
+  tools: z.array(TpmjsToolDefinitionSchema).optional(),
   env: z.array(TpmjsEnvSchema).optional(),
   frameworks: z
     .array(z.enum(['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel']))
@@ -179,6 +186,8 @@ export interface ValidationResult {
   };
   tools?: TpmjsToolDefinition[];
   wasLegacyFormat?: boolean;
+  // When true, tools need to be auto-discovered from package exports
+  needsAutoDiscovery?: boolean;
 }
 
 /**
@@ -191,9 +200,12 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
   if (multiResult.success) {
     const data = multiResult.data;
 
+    // Check if tools need auto-discovery
+    const needsAutoDiscovery = !data.tools || data.tools.length === 0;
+
     // Determine tier based on tool richness
     const hasRichFields =
-      data.tools.some((tool) => tool.parameters || tool.returns || tool.aiAgent) ||
+      (data.tools?.some((tool) => tool.parameters || tool.returns || tool.aiAgent) ?? false) ||
       data.env ||
       data.frameworks;
 
@@ -208,6 +220,7 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
       },
       tools: data.tools,
       wasLegacyFormat: false,
+      needsAutoDiscovery,
     };
   }
 
@@ -218,7 +231,7 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
 
     // Auto-migrate to multi-tool format
     const tool: TpmjsToolDefinition = {
-      exportName: 'default',
+      name: 'default',
       description: legacyData.description,
       parameters: legacyData.parameters,
       returns: legacyData.returns,
@@ -243,6 +256,7 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
       },
       tools: [tool],
       wasLegacyFormat: true,
+      needsAutoDiscovery: false,
     };
   }
 
@@ -251,7 +265,7 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
   if (minimalResult.success) {
     // Auto-migrate to multi-tool format
     const tool: TpmjsToolDefinition = {
-      exportName: 'default',
+      name: 'default',
       description: minimalResult.data.description,
     };
 
@@ -264,6 +278,7 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
       },
       tools: [tool],
       wasLegacyFormat: true,
+      needsAutoDiscovery: false,
     };
   }
 

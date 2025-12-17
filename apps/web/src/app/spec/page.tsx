@@ -181,52 +181,61 @@ export default function SpecPage(): React.ReactElement {
                         ))}
                       </div>
                     </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>tools</code> <span className="text-red-500">*</span>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-3">
-                        Array of tools exported by your package. Each tool needs:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
-                        <li>
-                          <code className="text-foreground">exportName</code> - The exported
-                          function name (required)
-                        </li>
-                        <li>
-                          <code className="text-foreground">description</code> - What the tool does,
-                          20-500 chars (required)
-                        </li>
-                      </ul>
-                    </div>
                   </div>
 
                   <div className="mt-6">
-                    <h5 className="text-sm font-semibold text-foreground mb-3">Minimal Example:</h5>
+                    <h5 className="text-sm font-semibold text-foreground mb-3">
+                      Minimal Example (auto-discovery):
+                    </h5>
                     <CodeBlock
                       language="json"
                       code={`{
   "name": "@yourname/my-tool",
   "keywords": ["tpmjs-tool"],
   "tpmjs": {
-    "category": "text-analysis",
-    "tools": [
-      {
-        "exportName": "sentimentAnalysisTool",
-        "description": "Analyzes sentiment in text and returns positive/negative/neutral classification"
-      }
-    ]
+    "category": "text-analysis"
   }
 }`}
                     />
                     <p className="text-sm text-foreground-secondary mt-4">
-                      That&apos;s it! TPMJS will automatically extract the inputSchema from your
-                      tool when it syncs.
+                      That&apos;s it! TPMJS will automatically discover your exported tools and
+                      extract their schemas.
                     </p>
                   </div>
                 </CardContent>
               </Card>
+            </div>
+
+            {/* Auto-Discovery */}
+            <div className="mb-12 p-6 border-2 border-amber-500/30 rounded-lg bg-amber-500/5">
+              <div className="flex items-start gap-4">
+                <div className="text-3xl">🔍</div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">
+                    Auto-Discovery of Tools
+                  </h3>
+                  <p className="text-foreground-secondary mb-4">
+                    When you omit the <code className="text-foreground">tools</code> array, TPMJS
+                    automatically scans your package exports and registers any export that looks
+                    like an AI SDK tool (has <code className="text-foreground">description</code>{' '}
+                    and <code className="text-foreground">execute</code> properties).
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4 text-sm">
+                    <div className="p-3 bg-background rounded border border-border">
+                      <strong className="text-foreground">Automatic</strong>
+                      <p className="text-foreground-secondary mt-1">
+                        Works with any AI SDK compatible tool
+                      </p>
+                    </div>
+                    <div className="p-3 bg-background rounded border border-border">
+                      <strong className="text-foreground">Override</strong>
+                      <p className="text-foreground-secondary mt-1">
+                        Add explicit <code>tools</code> to control what gets registered
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Optional Fields */}
@@ -242,6 +251,26 @@ export default function SpecPage(): React.ReactElement {
               <Card>
                 <CardContent className="pt-6">
                   <div className="space-y-6">
+                    <div>
+                      <h4 className="text-lg font-semibold text-foreground mb-2">
+                        <code>tools</code>
+                      </h4>
+                      <p className="text-sm text-foreground-secondary mb-2">
+                        Array of tools to register. If omitted, tools are auto-discovered. Each tool
+                        has:
+                      </p>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
+                        <li>
+                          <code className="text-foreground">name</code> - The exported function name
+                          (required)
+                        </li>
+                        <li>
+                          <code className="text-foreground">description</code> - What the tool does
+                          (optional, auto-extracted if omitted)
+                        </li>
+                      </ul>
+                    </div>
+
                     <div>
                       <h4 className="text-lg font-semibold text-foreground mb-2">
                         <code>env</code>
@@ -290,7 +319,7 @@ export default function SpecPage(): React.ReactElement {
 
                   <div className="mt-6">
                     <h5 className="text-sm font-semibold text-foreground mb-3">
-                      Complete Example with Optional Fields:
+                      Example with explicit tools:
                     </h5>
                     <CodeBlock
                       language="json"
@@ -309,7 +338,7 @@ export default function SpecPage(): React.ReactElement {
     ],
     "tools": [
       {
-        "exportName": "sentimentAnalysisTool",
+        "name": "sentimentAnalysisTool",
         "description": "Advanced sentiment analysis with emotion detection"
       }
     ]
@@ -321,23 +350,29 @@ export default function SpecPage(): React.ReactElement {
               </Card>
             </div>
 
-            {/* Deprecated Fields */}
+            {/* Auto-Extracted Fields */}
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-4">
                 <Badge variant="outline" size="lg">
-                  Deprecated
+                  Auto-Extracted
                 </Badge>
                 <span className="text-foreground-secondary">
-                  Now auto-extracted (kept for backward compatibility)
+                  No need to specify (kept for backward compatibility)
                 </span>
               </div>
               <Card>
                 <CardContent className="pt-6">
                   <p className="text-foreground-secondary mb-4">
-                    The following fields are now automatically extracted from your tool code. You no
-                    longer need to specify them manually:
+                    The following fields are automatically extracted from your tool code. You can
+                    optionally provide them to override the extracted values:
                   </p>
                   <ul className="space-y-3 text-sm text-foreground-secondary">
+                    <li className="flex items-start gap-2">
+                      <code className="text-foreground bg-surface px-2 py-1 rounded">
+                        description
+                      </code>
+                      <span>→ Auto-extracted from tool&apos;s description property</span>
+                    </li>
                     <li className="flex items-start gap-2">
                       <code className="text-foreground bg-surface px-2 py-1 rounded">
                         parameters
@@ -453,11 +488,10 @@ export default function SpecPage(): React.ReactElement {
                           <code className="text-foreground">tools</code>
                         </td>
                         <td className="py-3 px-4">array</td>
+                        <td className="py-3 px-4">No</td>
                         <td className="py-3 px-4">
-                          <span className="text-red-500">Yes</span>
-                        </td>
-                        <td className="py-3 px-4">
-                          Array of tool definitions (exportName + description)
+                          Array of tool definitions (name + description). Auto-discovered if
+                          omitted.
                         </td>
                       </tr>
                       <tr className="border-b border-border">

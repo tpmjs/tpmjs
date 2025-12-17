@@ -7,6 +7,89 @@ import { env } from '~/env';
 
 const RAILWAY_EXECUTOR_URL = env.RAILWAY_EXECUTOR_URL;
 
+/**
+ * Result from listing exports
+ */
+export interface ListExportsSuccess {
+  success: true;
+  packageName: string;
+  version: string;
+  exports: string[];
+  tools: Array<{
+    name: string;
+    isValidTool: boolean;
+    description?: string;
+    error?: string;
+  }>;
+}
+
+export interface ListExportsFailure {
+  success: false;
+  error: string;
+}
+
+export type ListExportsResult = ListExportsSuccess | ListExportsFailure;
+
+/**
+ * List all exports from a package and identify valid tools
+ * Calls the executor's /list-exports endpoint
+ *
+ * @param packageName - NPM package name
+ * @param version - Package version
+ * @param packageEnv - Package-level environment variables (optional)
+ * @returns List of exports with tool validation info
+ */
+export async function listToolExports(
+  packageName: string,
+  version: string,
+  packageEnv?: Record<string, unknown> | null
+): Promise<ListExportsResult> {
+  try {
+    const response = await fetch(`${RAILWAY_EXECUTOR_URL}/list-exports`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageName,
+        version,
+        env: packageEnv || {},
+      }),
+      signal: AbortSignal.timeout(15000), // 15 second timeout
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      return { success: false, error: `HTTP ${response.status}: ${errorText || 'Request failed'}` };
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      return { success: false, error: data.error || 'Failed to list exports' };
+    }
+
+    return {
+      success: true,
+      packageName: data.packageName,
+      version: data.version,
+      exports: data.exports,
+      tools: data.tools,
+    };
+  } catch (error) {
+    // Handle timeout specifically
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      return {
+        success: false,
+        error: 'Listing exports timed out after 15 seconds',
+      };
+    }
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error listing exports',
+    };
+  }
+}
+
 export interface SchemaExtractionSuccess {
   success: true;
   inputSchema: Record<string, unknown>;

@@ -50,6 +50,7 @@ interface Tool {
   inputSchema: Record<string, unknown> | null;
   schemaSource: 'extracted' | 'author' | null;
   schemaExtractedAt: string | null;
+  toolDiscoverySource: 'auto' | 'manual' | null;
   returns: {
     type: string;
     description: string;
@@ -294,8 +295,33 @@ export default function ToolDetailPage({
             <Badge variant="secondary">{pkg.category}</Badge>
             <Badge variant="outline">v{pkg.npmVersion}</Badge>
             {pkg.npmLicense && <Badge variant="outline">{pkg.npmLicense}</Badge>}
+            {tool.toolDiscoverySource === 'auto' && (
+              <Badge variant="warning" size="sm">
+                Auto-discovered
+              </Badge>
+            )}
           </div>
         </div>
+
+        {/* Auto-discovery info banner */}
+        {tool.toolDiscoverySource === 'auto' && (
+          <div className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
+            <div className="flex items-start gap-3">
+              <span className="text-xl mt-0.5">🔍</span>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                  Auto-discovered tool
+                </h3>
+                <p className="text-sm text-amber-700 dark:text-amber-400">
+                  This tool was automatically discovered from the package exports. The author did
+                  not explicitly register it in their{' '}
+                  <code className="font-mono">package.json</code>. Schema and description were
+                  auto-extracted.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Health warning banner */}
         {(tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN') && (

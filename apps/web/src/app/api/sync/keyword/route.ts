@@ -1,10 +1,15 @@
 import { prisma } from '@tpmjs/db';
 import { fetchLatestPackageWithMetadata, searchByKeyword } from '@tpmjs/npm-client';
 import { validateTpmjsField } from '@tpmjs/types/tpmjs';
+import type { TpmjsToolDefinition } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '~/env';
 import { performHealthCheck } from '~/lib/health-check/health-check-service';
-import { convertJsonSchemaToParameters, extractToolSchema } from '~/lib/schema-extraction';
+import {
+  convertJsonSchemaToParameters,
+  extractToolSchema,
+  listToolExports,
+} from '~/lib/schema-extraction';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -145,19 +150,60 @@ export async function POST(request: NextRequest) {
           where: { packageId: packageRecord.id },
         });
 
-        // Upsert each tool in the tools array
-        for (const toolDef of validation.tools) {
+        // Determine the tools to process
+        let toolsToProcess: TpmjsToolDefinition[] = validation.tools || [];
+        let toolDiscoverySource: 'auto' | 'manual' = 'manual';
+
+        // If tools need auto-discovery, call the executor to list exports
+        if (validation.needsAutoDiscovery) {
+          console.log(`Auto-discovering tools for ${pkg.name}...`);
+          const exportsResult = await listToolExports(pkg.name, pkg.version, null);
+
+          if (exportsResult.success) {
+            // Convert discovered tools to TpmjsToolDefinition format
+            toolsToProcess = exportsResult.tools
+              .filter((t) => t.isValidTool)
+              .map((t) => ({
+                name: t.name,
+                description: t.description,
+              }));
+            toolDiscoverySource = 'auto';
+            console.log(
+              `Auto-discovered ${toolsToProcess.length} tools for ${pkg.name}: ${toolsToProcess.map((t) => t.name).join(', ')}`
+            );
+          } else {
+            console.log(`Failed to auto-discover tools for ${pkg.name}: ${exportsResult.error}`);
+            // Skip this package if we can't discover tools
+            skipped++;
+            skippedPackages.push({
+              name: pkg.name,
+              author: authorName,
+              reason: `auto-discovery failed: ${exportsResult.error}`,
+            });
+            continue;
+          }
+        }
+
+        // Upsert each tool
+        for (const toolDef of toolsToProcess) {
+          // Use 'name' field (new) or fall back to 'exportName' (legacy support)
+          const toolName = toolDef.name || (toolDef as { exportName?: string }).exportName;
+          if (!toolName) {
+            console.warn(`Skipping tool without name in ${pkg.name}`);
+            continue;
+          }
+
           const upsertedTool = await prisma.tool.upsert({
             where: {
               packageId_exportName: {
                 packageId: packageRecord.id,
-                exportName: toolDef.exportName,
+                exportName: toolName,
               },
             },
             create: {
               packageId: packageRecord.id,
-              exportName: toolDef.exportName,
-              description: toolDef.description,
+              exportName: toolName,
+              description: toolDef.description || 'No description provided',
               // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
               parameters: toolDef.parameters ? (toolDef.parameters as any) : undefined,
               // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
@@ -167,29 +213,25 @@ export async function POST(request: NextRequest) {
               qualityScore: null, // Will be calculated by metrics sync
               // Schema will be extracted below
               schemaSource: toolDef.parameters ? 'author' : null,
+              toolDiscoverySource,
             },
             update: {
-              description: toolDef.description,
+              description: toolDef.description || undefined,
               // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
               parameters: toolDef.parameters ? (toolDef.parameters as any) : undefined,
               // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
               returns: toolDef.returns ? (toolDef.returns as any) : undefined,
               // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
               aiAgent: toolDef.aiAgent ? (toolDef.aiAgent as any) : undefined,
+              toolDiscoverySource,
             },
           });
 
           // Extract schema synchronously from executor
-          // Note: We pass null for env as schema extraction doesn't need env values
-          const schemaResult = await extractToolSchema(
-            pkg.name,
-            toolDef.exportName,
-            pkg.version,
-            null
-          );
+          const schemaResult = await extractToolSchema(pkg.name, toolName, pkg.version, null);
 
           if (schemaResult.success) {
-            // Update tool with extracted schema
+            // Update tool with extracted schema (and description if not provided)
             await prisma.tool.update({
               where: { id: upsertedTool.id },
               data: {
@@ -200,13 +242,17 @@ export async function POST(request: NextRequest) {
                 parameters: convertJsonSchemaToParameters(schemaResult.inputSchema) as any,
                 schemaSource: 'extracted',
                 schemaExtractedAt: new Date(),
+                // Update description if not provided by author
+                ...(!toolDef.description && schemaResult.description
+                  ? { description: schemaResult.description }
+                  : {}),
               },
             });
-            console.log(`Schema extracted for ${pkg.name}/${toolDef.exportName}`);
+            console.log(`Schema extracted for ${pkg.name}/${toolName}`);
           } else {
             // Extraction failed - mark schema source appropriately
             console.log(
-              `Schema extraction failed for ${pkg.name}/${toolDef.exportName}: ${schemaResult.error}`
+              `Schema extraction failed for ${pkg.name}/${toolName}: ${schemaResult.error}`
             );
             await prisma.tool.update({
               where: { id: upsertedTool.id },
@@ -219,7 +265,7 @@ export async function POST(request: NextRequest) {
           // Trigger health check (non-blocking) for execution testing
           performHealthCheck(upsertedTool.id, 'sync').catch((err) => {
             console.error(
-              `Health check failed for ${pkg.name}/${toolDef.exportName} (${upsertedTool.id}):`,
+              `Health check failed for ${pkg.name}/${toolName} (${upsertedTool.id}):`,
               err
             );
           });
@@ -228,7 +274,10 @@ export async function POST(request: NextRequest) {
         // Delete orphaned tools (tools removed from package.json)
         const orphanedTools = existingTools.filter(
           (existingTool) =>
-            !validation.tools?.some((toolDef) => toolDef.exportName === existingTool.exportName)
+            !toolsToProcess.some((toolDef) => {
+              const toolName = toolDef.name || (toolDef as { exportName?: string }).exportName;
+              return toolName === existingTool.exportName;
+            })
         );
 
         if (orphanedTools.length > 0) {

@@ -726,6 +726,102 @@ async function executeTool(req: Request): Promise<Response> {
 }
 
 /**
+ * List all exports from a package and identify which are valid AI SDK tools
+ */
+async function listExports(req: Request): Promise<Response> {
+  try {
+    const body = await req.json();
+    const { packageName, version, importUrl, env } = body;
+
+    if (!packageName || !version) {
+      return Response.json(
+        {
+          success: false,
+          error: 'Missing required fields: packageName, version',
+        },
+        { status: 400 }
+      );
+    }
+
+    // Dynamic import from esm.sh
+    const url = importUrl || `https://esm.sh/${packageName}@${version}`;
+    console.log(`📦 Listing exports from: ${url}`);
+
+    const module = await import(url);
+    const allExports = Object.keys(module);
+
+    // Filter out 'default' and identify which exports are valid tools
+    const tools: Array<{
+      name: string;
+      isValidTool: boolean;
+      description?: string;
+      error?: string;
+    }> = [];
+
+    for (const exportName of allExports) {
+      if (exportName === 'default') continue;
+
+      let rawExport = module[exportName];
+
+      // Check if it's a factory function
+      if (typeof rawExport === 'function' && !rawExport.description && !rawExport.execute) {
+        // Try to call factory with no args
+        try {
+          const factoryResult = rawExport();
+          if (factoryResult?.description && factoryResult?.execute) {
+            rawExport = factoryResult;
+          } else if (env && typeof env === 'object') {
+            // Try with env config
+            const configResult = rawExport({ ...env });
+            if (configResult?.description && configResult?.execute) {
+              rawExport = configResult;
+            }
+          }
+        } catch {
+          // Factory call failed, continue checking
+        }
+      }
+
+      // Check if it's a valid AI SDK tool
+      if (rawExport?.description && rawExport?.execute) {
+        tools.push({
+          name: exportName,
+          isValidTool: true,
+          description: rawExport.description,
+        });
+      } else if (typeof rawExport === 'object' && rawExport !== null) {
+        // It's an object but not a valid tool - might be a factory that needs specific config
+        tools.push({
+          name: exportName,
+          isValidTool: false,
+          error: 'Not a valid AI SDK tool (missing description or execute)',
+        });
+      }
+      // Skip non-object exports (they're definitely not tools)
+    }
+
+    console.log(`✅ Found ${tools.length} potential tool exports in ${packageName}`);
+
+    return Response.json({
+      success: true,
+      packageName,
+      version,
+      exports: allExports,
+      tools,
+    });
+  } catch (error) {
+    console.error('❌ Failed to list exports:', error);
+    return Response.json(
+      {
+        success: false,
+        error: error.message,
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * Health check
  */
 function health(): Response {
@@ -796,6 +892,8 @@ async function handler(req: Request): Promise<Response> {
       response = health();
     } else if (url.pathname === '/load-and-describe' && req.method === 'POST') {
       response = await loadAndDescribe(req);
+    } else if (url.pathname === '/list-exports' && req.method === 'POST') {
+      response = await listExports(req);
     } else if (url.pathname === '/execute-tool' && req.method === 'POST') {
       response = await executeTool(req);
     } else if (url.pathname === '/cache/stats' && req.method === 'GET') {
@@ -832,6 +930,7 @@ console.log('📦 HTTP imports: ENABLED');
 console.log(`🔗 Health check: http://localhost:${port}/health`);
 console.log('🛠️  Endpoints:');
 console.log('   POST /load-and-describe - Load tool and get schema');
+console.log('   POST /list-exports - List all exports and identify valid tools');
 console.log('   POST /execute-tool - Execute a tool with params');
 console.log('   POST /cache/clear - Clear module cache');
 console.log('   GET /cache/stats - Get cache statistics');

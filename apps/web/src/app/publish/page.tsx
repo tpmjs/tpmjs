@@ -142,13 +142,32 @@ export default function PublishPage(): React.ReactElement {
               </div>
             </div>
 
+            {/* Auto-discovery callout */}
+            <div className="mb-8 p-6 border-2 border-amber-500/30 rounded-lg bg-amber-500/5">
+              <div className="flex items-start gap-4">
+                <div className="text-3xl">🔍</div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">
+                    Auto-Discovery of Tools
+                  </h3>
+                  <p className="text-foreground-secondary">
+                    You can omit the <code className="text-foreground">tools</code> array entirely!
+                    TPMJS will automatically scan your package exports and register any export that
+                    has <code className="text-foreground">description</code> and{' '}
+                    <code className="text-foreground">execute</code> properties (standard AI SDK
+                    tool format).
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Minimal Example */}
             <div className="mb-8 p-6 border border-border rounded-lg bg-surface">
               <div className="flex items-center gap-3 mb-4">
                 <span className="px-3 py-1 bg-primary/20 rounded text-sm font-medium text-foreground">
-                  Required Fields
+                  Minimal (Auto-Discovery)
                 </span>
-                <span className="text-foreground-secondary">All you need to provide</span>
+                <span className="text-foreground-secondary">Let TPMJS find your tools</span>
               </div>
               <CodeBlock
                 language="json"
@@ -156,18 +175,12 @@ export default function PublishPage(): React.ReactElement {
   "name": "@yourname/my-awesome-tool",
   "keywords": ["tpmjs-tool"],
   "tpmjs": {
-    "category": "text-analysis",
-    "tools": [
-      {
-        "exportName": "myTool",
-        "description": "A concise description of what your tool does (20-500 chars)"
-      }
-    ]
+    "category": "text-analysis"
   }
 }`}
               />
               <p className="mt-4 text-sm text-foreground-secondary">
-                That&apos;s it! Parameters are automatically extracted from your tool code.
+                That&apos;s it! Tools and parameters are automatically discovered and extracted.
               </p>
             </div>
 
@@ -175,10 +188,10 @@ export default function PublishPage(): React.ReactElement {
             <div className="mb-8 p-6 border border-border rounded-lg bg-surface">
               <div className="flex items-center gap-3 mb-4">
                 <span className="px-3 py-1 bg-success/20 rounded text-sm font-medium text-foreground">
-                  With Optional Fields
+                  With Explicit Tools
                 </span>
                 <span className="text-foreground-secondary">
-                  Add env vars and framework compatibility
+                  Override auto-discovery with explicit tools
                 </span>
               </div>
               <CodeBlock
@@ -198,7 +211,7 @@ export default function PublishPage(): React.ReactElement {
     ],
     "tools": [
       {
-        "exportName": "sentimentAnalysisTool",
+        "name": "sentimentAnalysisTool",
         "description": "Advanced sentiment analysis with emotion detection"
       }
     ]
@@ -206,7 +219,8 @@ export default function PublishPage(): React.ReactElement {
 }`}
               />
               <p className="mt-4 text-sm text-foreground-secondary">
-                Add <code className="text-foreground">env</code> for API keys and{' '}
+                Add <code className="text-foreground">tools</code> to explicitly register specific
+                tools. Add <code className="text-foreground">env</code> for API keys and{' '}
                 <code className="text-foreground">frameworks</code> for compatibility info.
               </p>
             </div>
@@ -307,7 +321,7 @@ npm publish --access public
     "frameworks": ["vercel-ai", "langchain"],
     "tools": [
       {
-        "exportName": "createBlogPostTool",
+        "name": "createBlogPostTool",
         "description": "Creates structured blog posts with frontmatter and SEO metadata"
       }
     ]
@@ -316,7 +330,7 @@ npm publish --access public
             />
             <p className="mt-4 text-sm text-foreground-secondary">
               Note: Parameters are automatically extracted from the tool code - no need to list them
-              in package.json!
+              in package.json! You can also omit the tools array entirely for auto-discovery.
             </p>
           </section>
 

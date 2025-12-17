@@ -75,6 +75,9 @@ model Tool {
   schemaSource      String?   @map("schema_source") @db.VarChar(20) // 'extracted' | 'author' | null
   schemaExtractedAt DateTime? @map("schema_extracted_at")
 
+  // Tool Discovery Fields
+  toolDiscoverySource String? @map("tool_discovery_source") @db.VarChar(20) // 'auto' | 'manual' | null
+
   // Tool Metrics
   qualityScore Decimal? @map("quality_score") @db.Decimal(3, 2) // 0.00 to 1.00
 

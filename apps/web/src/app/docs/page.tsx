@@ -862,13 +862,22 @@ while (true) {
     "frameworks": ["vercel-ai"],
     "tools": [
       {
-        "exportName": "myTool",
+        "name": "myTool",
         "description": "What your tool does (20-500 chars)"
       }
     ]
   }
 }`}
               />
+              <div className="mt-6 p-4 border border-primary/30 rounded-lg bg-primary/5">
+                <p className="text-sm text-foreground-secondary">
+                  <strong className="text-foreground">🔍 Auto-Discovery:</strong> The{' '}
+                  <code className="text-primary">tools</code> array is optional! If you omit it,
+                  TPMJS will automatically discover all exported tools from your package. Each
+                  export that has a <code className="text-primary">description</code> and{' '}
+                  <code className="text-primary">execute</code> property is treated as a valid tool.
+                </p>
+              </div>
               <div className="mt-6">
                 <Link href="/spec">
                   <Button variant="outline">View Full Specification</Button>
@@ -878,7 +887,8 @@ while (true) {
 
             <DocSection id="metadata-tiers" title="Metadata Fields">
               <p className="text-foreground-secondary mb-6">
-                TPMJS now auto-extracts parameter schemas, simplifying what you need to provide.
+                TPMJS auto-extracts parameter schemas and can auto-discover your tools, simplifying
+                what you need to provide.
               </p>
               <div className="space-y-4">
                 <div className="p-4 border border-border rounded-lg bg-surface">
@@ -886,10 +896,7 @@ while (true) {
                     <Badge variant="default">Required</Badge>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    <code className="text-primary">category</code>,{' '}
-                    <code className="text-primary">tools</code> (with{' '}
-                    <code className="text-primary">exportName</code> +{' '}
-                    <code className="text-primary">description</code>)
+                    <code className="text-primary">category</code> - The only truly required field!
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-surface">
@@ -897,6 +904,7 @@ while (true) {
                     <Badge variant="success">Optional</Badge>
                   </div>
                   <p className="text-sm text-foreground-secondary">
+                    <code className="text-primary">tools</code> (auto-discovered if omitted),{' '}
                     <code className="text-primary">env</code> (API keys),{' '}
                     <code className="text-primary">frameworks</code> (compatibility)
                   </p>
@@ -906,9 +914,19 @@ while (true) {
                     <Badge variant="outline">Auto-extracted</Badge>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    <code className="text-primary">parameters</code>,{' '}
-                    <code className="text-primary">returns</code>,{' '}
-                    <code className="text-primary">aiAgent</code> - extracted from your tool code
+                    <code className="text-primary">description</code>,{' '}
+                    <code className="text-primary">parameters</code> - extracted from your tool code
+                  </p>
+                </div>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="warning">Auto-discovered</Badge>
+                  </div>
+                  <p className="text-sm text-foreground-secondary">
+                    If you omit <code className="text-primary">tools</code>, TPMJS scans your
+                    package exports and registers any export with{' '}
+                    <code className="text-primary">description</code> +{' '}
+                    <code className="text-primary">execute</code> properties as a tool.
                   </p>
                 </div>
               </div>
@@ -1079,6 +1097,10 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                   {
                     q: 'How long does it take for my tool to appear?',
                     a: 'Tools are discovered within 2-15 minutes of publishing to npm. Make sure you have the "tpmjs-tool" keyword in your package.json.',
+                  },
+                  {
+                    q: 'What is auto-discovery?',
+                    a: 'If you omit the "tools" array from your tpmjs field, TPMJS will automatically scan your package exports and register any export that looks like an AI SDK tool (has description and execute properties). You can override this by explicitly listing tools.',
                   },
                   {
                     q: 'How does schema extraction work?',
