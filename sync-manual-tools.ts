@@ -1,6 +1,91 @@
 import { manualTools } from './manual-tools.js';
 import { prisma } from './packages/db/src/index.js';
 import { fetchLatestPackageWithMetadata } from './packages/npm-client/src/package.js';
+// Schema extraction is done via HTTP call to Railway executor
+const RAILWAY_EXECUTOR_URL =
+  process.env.RAILWAY_SERVICE_URL || 'https://endearing-commitment-production.up.railway.app';
+
+async function extractToolSchema(
+  packageName: string,
+  toolName: string,
+  version: string,
+  _importUrl: string | null
+): Promise<
+  | { success: true; inputSchema: Record<string, unknown>; description?: string }
+  | { success: false; error: string }
+> {
+  try {
+    const response = await fetch(`${RAILWAY_EXECUTOR_URL}/load-and-describe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ packageName, name: toolName, version, env: {} }),
+    });
+    const data = await response.json();
+    if (!response.ok || !data.success) {
+      return { success: false, error: data.error || 'Failed to extract schema' };
+    }
+    if (!data.tool?.inputSchema) {
+      return { success: false, error: 'No inputSchema returned from executor' };
+    }
+    return {
+      success: true,
+      inputSchema: data.tool.inputSchema,
+      description: data.tool.description,
+    };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+}
+
+function convertJsonSchemaToParameters(inputSchema: Record<string, unknown>): Array<{
+  name: string;
+  type: string;
+  description: string;
+  required: boolean;
+}> {
+  const properties =
+    (inputSchema.properties as Record<string, { type?: string; description?: string }>) || {};
+  const required = (inputSchema.required as string[]) || [];
+  return Object.entries(properties).map(([name, prop]) => ({
+    name,
+    type: prop.type || 'unknown',
+    description: prop.description || '',
+    required: required.includes(name),
+  }));
+}
+
+function convertParametersToJsonSchema(
+  parameters: Array<{
+    name: string;
+    type: string;
+    description: string;
+    required: boolean;
+    default?: string;
+  }>
+): Record<string, unknown> {
+  const properties: Record<string, { type: string; description: string; default?: string }> = {};
+  const required: string[] = [];
+
+  for (const param of parameters) {
+    properties[param.name] = {
+      type: param.type || 'string',
+      description: param.description || '',
+    };
+    if (param.default !== undefined) {
+      properties[param.name].default = param.default;
+    }
+    if (param.required) {
+      required.push(param.name);
+    }
+  }
+
+  return {
+    type: 'object',
+    properties,
+    required,
+    additionalProperties: false,
+  };
+}
 
 async function syncManualTools() {
   console.log('\n🔧 Starting manual tools sync...\n');
@@ -111,6 +196,49 @@ async function syncManualTools() {
       });
 
       console.log(`  ✅ Tool upserted: ${tool.name} (${tool.id})`);
+
+      // Try to extract schema from the Railway executor first
+      const schemaResult = await extractToolSchema(
+        manualTool.npmPackageName,
+        manualTool.name,
+        version,
+        null
+      );
+
+      if (schemaResult.success) {
+        await prisma.tool.update({
+          where: { id: tool.id },
+          data: {
+            // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+            inputSchema: schemaResult.inputSchema as any,
+            // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+            parameters: convertJsonSchemaToParameters(schemaResult.inputSchema) as any,
+            schemaSource: 'extracted',
+            schemaExtractedAt: new Date(),
+            // Update description if not provided manually
+            ...(!manualTool.description && schemaResult.description
+              ? { description: schemaResult.description }
+              : {}),
+          },
+        });
+        console.log(`  ✅ Schema extracted for ${manualTool.name}`);
+      } else if (manualTool.parameters && manualTool.parameters.length > 0) {
+        // Fallback: Convert parameters from manual-tools.ts to inputSchema format
+        const inputSchema = convertParametersToJsonSchema(manualTool.parameters);
+        await prisma.tool.update({
+          where: { id: tool.id },
+          data: {
+            // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+            inputSchema: inputSchema as any,
+            schemaSource: 'author',
+            schemaExtractedAt: new Date(),
+          },
+        });
+        console.log(`  ✅ Schema generated from parameters for ${manualTool.name}`);
+      } else {
+        console.log(`  ⚠️  No schema available for ${manualTool.name}`);
+      }
+
       processed++;
     } catch (error) {
       console.error(
