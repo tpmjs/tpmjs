@@ -30,7 +30,7 @@ export const registryExecuteTool = tool({
     properties: {
       toolId: {
         type: 'string',
-        description: "Tool identifier from registrySearchTool (format: 'package::exportName')",
+        description: "Tool identifier from registrySearchTool (format: 'package::name')",
       },
       params: {
         type: 'object',
@@ -49,22 +49,22 @@ export const registryExecuteTool = tool({
     additionalProperties: false,
   }),
   async execute({ toolId, params, env }) {
-    // Parse toolId format: "package::exportName"
+    // Parse toolId format: "package::name"
     const separatorIndex = toolId.lastIndexOf('::');
     if (separatorIndex === -1) {
-      throw new Error(`Invalid toolId format. Expected "package::exportName", got "${toolId}"`);
+      throw new Error(`Invalid toolId format. Expected "package::name", got "${toolId}"`);
     }
 
     const packageName = toolId.substring(0, separatorIndex);
-    const exportName = toolId.substring(separatorIndex + 2);
+    const name = toolId.substring(separatorIndex + 2);
 
-    if (!packageName || !exportName) {
-      throw new Error(`Invalid toolId format. Expected "package::exportName", got "${toolId}"`);
+    if (!packageName || !name) {
+      throw new Error(`Invalid toolId format. Expected "package::name", got "${toolId}"`);
     }
 
     // Fetch tool metadata to get version and importUrl
     const metaParams = new URLSearchParams({
-      q: exportName,
+      q: name,
       limit: '10',
     });
     const metaResponse = await fetch(`${TPMJS_API_URL}/api/tools/search?${metaParams}`);
@@ -80,7 +80,7 @@ export const registryExecuteTool = tool({
     // Find the exact tool match
     // biome-ignore lint/suspicious/noExplicitAny: API response types vary
     const toolMeta = toolsArray.find(
-      (t: any) => t.package.npmPackageName === packageName && t.exportName === exportName
+      (t: any) => t.package.npmPackageName === packageName && t.name === name
     );
 
     if (!toolMeta) {
@@ -96,7 +96,7 @@ export const registryExecuteTool = tool({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageName,
-        exportName,
+        name,
         version,
         importUrl,
         params,

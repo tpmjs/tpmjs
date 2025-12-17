@@ -17,7 +17,7 @@ import { AppHeader } from '~/components/AppHeader';
 
 interface Tool {
   id: string;
-  exportName: string;
+  name: string;
   description: string;
   qualityScore: string;
   importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
@@ -245,7 +245,7 @@ export default function ToolSearchPage(): React.ReactElement {
               return (
                 <Link
                   key={tool.id}
-                  href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}
+                  href={`/tool/${tool.package.npmPackageName}/${tool.name}`}
                   className="block select-text"
                 >
                   <Card className="flex flex-col h-full hover:border-foreground-tertiary transition-colors cursor-pointer select-text">
@@ -254,9 +254,7 @@ export default function ToolSearchPage(): React.ReactElement {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <CardTitle className="truncate">
-                            {tool.exportName !== 'default'
-                              ? tool.exportName
-                              : tool.package.npmPackageName}
+                            {tool.name !== 'default' ? tool.name : tool.package.npmPackageName}
                           </CardTitle>
                           <div className="text-sm text-foreground-secondary mt-1 truncate">
                             {tool.package.npmPackageName}

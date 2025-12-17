@@ -61,11 +61,11 @@ export async function runInteractiveCLI(): Promise<GenerationResult> {
 
   const tools = [
     {
-      exportName: 'exampleTool',
+      name: 'exampleTool',
       description: 'An example tool - customize this for your use case',
     },
     {
-      exportName: 'anotherTool',
+      name: 'anotherTool',
       description: 'Another example tool - add your implementation here',
     },
   ];
@@ -124,9 +124,9 @@ async function generatePackage(config: GeneratorConfig): Promise<GenerationResul
 
   // Generate tool files
   for (const tool of tools) {
-    const toolPath = path.join(outputPath, 'src', 'tools', `${tool.exportName}.ts`);
+    const toolPath = path.join(outputPath, 'src', 'tools', `${tool.name}.ts`);
     await writeFile(toolPath, generateToolFile(tool));
-    filesCreated.push(`src/tools/${tool.exportName}.ts`);
+    filesCreated.push(`src/tools/${tool.name}.ts`);
   }
 
   // Generate index.ts

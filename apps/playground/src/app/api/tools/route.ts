@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 interface RawTool {
   id: string;
-  exportName: string;
+  name: string;
   description: string;
   qualityScore: number;
   importHealth: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
@@ -25,7 +25,7 @@ function transformTool(tool: RawTool) {
   return {
     toolId: tool.id,
     packageName: tool.package?.npmPackageName,
-    exportName: tool.exportName,
+    name: tool.name,
     description: tool.description,
     category: tool.package?.category,
     version: tool.package?.npmVersion,

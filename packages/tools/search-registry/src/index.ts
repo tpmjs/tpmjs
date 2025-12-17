@@ -110,7 +110,7 @@ export const searchTpmjsToolsTool = tool({
       tools: toolsArray.map((tool: any) => ({
         toolId: tool.id,
         packageName: tool.package.npmPackageName,
-        exportName: tool.exportName,
+        name: tool.name,
         description: tool.description,
         category: tool.package.category,
         qualityScore: tool.qualityScore,

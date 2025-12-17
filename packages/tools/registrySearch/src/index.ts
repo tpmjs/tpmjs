@@ -81,10 +81,10 @@ export const registrySearchTool = tool({
       // biome-ignore lint/suspicious/noExplicitAny: Tool types from API vary
       tools: toolsArray.map((t: any) => ({
         // Unique identifier for registryExecuteTool
-        toolId: `${t.package.npmPackageName}::${t.exportName}`,
+        toolId: `${t.package.npmPackageName}::${t.name}`,
 
         // Human-readable info
-        name: t.exportName,
+        name: t.name,
         package: t.package.npmPackageName,
         description: t.description,
         category: t.package.category,

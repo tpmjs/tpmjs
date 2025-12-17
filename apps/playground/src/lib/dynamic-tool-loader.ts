@@ -17,8 +17,8 @@ const RAILWAY_SERVICE_URL =
 /**
  * Generate cache key for a tool
  */
-function getCacheKey(packageName: string, exportName: string): string {
-  return `${packageName}::${exportName}`;
+function getCacheKey(packageName: string, name: string): string {
+  return `${packageName}::${name}`;
 }
 
 /**
@@ -43,14 +43,14 @@ function getConversationEnv(conversationId: string): Record<string, string> {
  */
 export async function loadToolDynamically(
   packageName: string,
-  exportName: string,
+  name: string,
   version: string,
   conversationId: string,
   importUrl?: string,
   env?: Record<string, string>
   // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
 ): Promise<any | null> {
-  const cacheKey = getCacheKey(packageName, exportName);
+  const cacheKey = getCacheKey(packageName, name);
 
   // Check cache first
   if (moduleCache.has(cacheKey)) {
@@ -59,7 +59,7 @@ export async function loadToolDynamically(
   }
 
   try {
-    console.log(`📦 Loading from Railway: ${packageName}/${exportName}`);
+    console.log(`📦 Loading from Railway: ${packageName}/${name}`);
     console.log(`🔗 Railway URL: ${RAILWAY_SERVICE_URL}`);
 
     // Call Railway service to load and describe tool
@@ -78,7 +78,7 @@ export async function loadToolDynamically(
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           packageName,
-          exportName,
+          name,
           version,
           importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
           env: env || {},
@@ -105,7 +105,7 @@ export async function loadToolDynamically(
       clearTimeout(timeout);
 
       if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-        console.error(`❌ Railway request timeout after 120s for ${packageName}/${exportName}`);
+        console.error(`❌ Railway request timeout after 120s for ${packageName}/${name}`);
         return null;
       }
 
@@ -130,7 +130,7 @@ export async function loadToolDynamically(
         : jsonSchema({ type: 'object', properties: {}, additionalProperties: false }),
       // biome-ignore lint/suspicious/noExplicitAny: Tool params are dynamic
       execute: async (params: any) => {
-        console.log(`🚀 Executing ${packageName}/${exportName} remotely with params:`, params);
+        console.log(`🚀 Executing ${packageName}/${name} remotely with params:`, params);
 
         // Get the latest env vars for this conversation (not from closure!)
         const currentEnv = getConversationEnv(conversationId);
@@ -144,7 +144,7 @@ export async function loadToolDynamically(
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             packageName,
-            exportName,
+            name,
             version,
             importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
             params,
@@ -171,7 +171,7 @@ export async function loadToolDynamically(
 
     return toolWrapper;
   } catch (error) {
-    console.error(`❌ Failed to load ${packageName}#${exportName}:`, error);
+    console.error(`❌ Failed to load ${packageName}#${name}:`, error);
     console.error('   Stack:', error instanceof Error ? error.stack : 'No stack trace');
     return null;
   }
@@ -183,7 +183,7 @@ export async function loadToolDynamically(
 export async function loadToolsBatch(
   toolMetadata: Array<{
     packageName: string;
-    exportName: string;
+    name: string;
     version: string;
     importUrl?: string;
   }>,
@@ -197,15 +197,15 @@ export async function loadToolsBatch(
   const promises = toolMetadata.map((meta) =>
     loadToolDynamically(
       meta.packageName,
-      meta.exportName,
+      meta.name,
       meta.version,
       conversationId,
       meta.importUrl,
       env
     ).then((tool) => ({
       packageName: meta.packageName,
-      exportName: meta.exportName,
-      key: getCacheKey(meta.packageName, meta.exportName),
+      name: meta.name,
+      key: getCacheKey(meta.packageName, meta.name),
       tool,
       success: tool !== null,
     }))
@@ -232,7 +232,7 @@ export async function loadToolsBatch(
   if (failed.length > 0) {
     console.log('\n❌ Failed Tools:');
     for (const result of failed) {
-      console.log(`   - ${result.packageName}/${result.exportName}`);
+      console.log(`   - ${result.packageName}/${result.name}`);
     }
     console.log('\n💡 Note: Tool failures have been reported to the health service.');
   }

@@ -62,7 +62,7 @@ model Tool {
   package   Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
 
   // Tool Identity
-  exportName String @map("export_name") @db.VarChar(100) // e.g., "helloWorldTool", "default"
+  name String @db.VarChar(100) // e.g., "helloWorldTool", "default"
 
   // Tool Metadata
   description String @db.Text
@@ -95,7 +95,7 @@ model Tool {
   simulations  Simulation[]
   healthChecks HealthCheck[]
 
-  @@unique([packageId, exportName])
+  @@unique([packageId, name])
   @@index([qualityScore])
   @@index([importHealth])
   @@index([executionHealth])

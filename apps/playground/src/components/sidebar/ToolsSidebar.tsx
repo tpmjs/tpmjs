@@ -10,7 +10,7 @@ import { useEffect, useState } from 'react';
 interface Tool {
   toolId?: string;
   packageName: string;
-  exportName: string;
+  name: string;
   description: string;
   category: string;
   version: string;
@@ -62,7 +62,7 @@ export function ToolsSidebar(): React.ReactElement {
     // Filter by search text
     const matchesFilter =
       tool.packageName?.toLowerCase().includes(filter.toLowerCase()) ||
-      tool.exportName?.toLowerCase().includes(filter.toLowerCase()) ||
+      tool.name?.toLowerCase().includes(filter.toLowerCase()) ||
       tool.description?.toLowerCase().includes(filter.toLowerCase()) ||
       tool.category?.toLowerCase().includes(filter.toLowerCase());
 
@@ -124,7 +124,7 @@ export function ToolsSidebar(): React.ReactElement {
                 filteredTools.map((tool) => (
                   // biome-ignore lint/a11y/useSemanticElements: Custom styled card with complex layout
                   <div
-                    key={`${tool.packageName}-${tool.exportName}`}
+                    key={`${tool.packageName}-${tool.name}`}
                     className="cursor-pointer rounded-lg border border-border bg-background p-3 transition-all hover:border-foreground-tertiary hover:shadow-sm"
                     onClick={() => setSelectedTool(tool)}
                     onKeyDown={(e) => e.key === 'Enter' && setSelectedTool(tool)}
@@ -132,7 +132,7 @@ export function ToolsSidebar(): React.ReactElement {
                     tabIndex={0}
                   >
                     <div className="mb-1 flex items-start justify-between gap-2">
-                      <h3 className="text-sm font-medium leading-tight">{tool.exportName}</h3>
+                      <h3 className="text-sm font-medium leading-tight">{tool.name}</h3>
                       <ToolHealthBadge
                         importHealth={tool.importHealth}
                         executionHealth={tool.executionHealth}
@@ -200,7 +200,7 @@ export function ToolsSidebar(): React.ReactElement {
 
             {/* Tool header */}
             <div className="mb-6 border-b border-border pb-4">
-              <h2 className="mb-2 text-2xl font-bold text-foreground">{selectedTool.exportName}</h2>
+              <h2 className="mb-2 text-2xl font-bold text-foreground">{selectedTool.name}</h2>
               <p className="mb-2 text-sm text-foreground-secondary">{selectedTool.packageName}</p>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary">{selectedTool.category}</Badge>

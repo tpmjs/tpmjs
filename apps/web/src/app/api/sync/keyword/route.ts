@@ -195,14 +195,14 @@ export async function POST(request: NextRequest) {
 
           const upsertedTool = await prisma.tool.upsert({
             where: {
-              packageId_exportName: {
+              packageId_name: {
                 packageId: packageRecord.id,
-                exportName: toolName,
+                name: toolName,
               },
             },
             create: {
               packageId: packageRecord.id,
-              exportName: toolName,
+              name: toolName,
               description: toolDef.description || 'No description provided',
               // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
               parameters: toolDef.parameters ? (toolDef.parameters as any) : undefined,
@@ -273,8 +273,7 @@ export async function POST(request: NextRequest) {
 
         // Delete orphaned tools (tools removed from package.json)
         const orphanedTools = existingTools.filter(
-          (existingTool) =>
-            !toolsToProcess.some((toolDef) => toolDef.name === existingTool.exportName)
+          (existingTool) => !toolsToProcess.some((toolDef) => toolDef.name === existingTool.name)
         );
 
         if (orphanedTools.length > 0) {

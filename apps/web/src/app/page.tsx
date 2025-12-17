@@ -24,7 +24,7 @@ async function getHomePageData() {
         take: 6,
         select: {
           id: true,
-          exportName: true,
+          name: true,
           description: true,
           qualityScore: true,
           package: {
@@ -100,7 +100,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
                 {data.featuredTools.map((tool) => (
                   <Link
                     key={tool.id}
-                    href={`/tool/${tool.package.npmPackageName}/${tool.exportName}`}
+                    href={`/tool/${tool.package.npmPackageName}/${tool.name}`}
                     className="group"
                   >
                     <div className="p-6 border border-border rounded-lg bg-surface hover:border-foreground transition-colors h-full flex flex-col">
@@ -108,7 +108,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
                         <h3 className="text-lg font-semibold text-foreground group-hover:text-brutalist-accent transition-colors">
                           {tool.package.npmPackageName}
                           <span className="text-xs text-foreground-tertiary ml-2">
-                            ({tool.exportName})
+                            ({tool.name})
                           </span>
                         </h3>
                         {tool.package.isOfficial && (

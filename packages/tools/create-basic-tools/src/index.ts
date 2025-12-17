@@ -10,7 +10,7 @@ program
   .option('--name <name>', 'Package name (e.g., @myorg/content-tools)')
   .option('--description <description>', 'Package description')
   .option('--category <category>', 'Tool category')
-  .option('--tool <tool...>', 'Tool definition (format: "exportName:description")')
+  .option('--tool <tool...>', 'Tool definition (format: "name:description")')
   .option('--output <path>', 'Output path')
   .option('--yes', 'Skip confirmation prompt')
   .action(async (options) => {

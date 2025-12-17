@@ -138,7 +138,7 @@ export default function FAQPage(): React.ReactElement {
               </ul>
               <p>
                 This simplifies publishing - you only need to provide category, description, and
-                exportName. See our{' '}
+                name. See our{' '}
                 <Link href="/spec" className="text-primary hover:underline font-medium">
                   specification
                 </Link>{' '}

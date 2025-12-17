@@ -21,7 +21,7 @@ interface ExecuteRequest {
  * POST /api/tools/execute/[...slug]
  * Executes a tool with an AI agent and streams the response via SSE
  *
- * Slug format: [toolId] or [packageName, exportName]
+ * Slug format: [toolId] or [packageName, name]
  * Examples:
  *   /api/tools/execute/clx123abc (by tool ID)
  *   /api/tools/execute/@tpmjs/hello/helloWorldTool (by package and export name)
@@ -68,7 +68,7 @@ export async function POST(
     }
 
     // Fetch tool from database with package relation
-    // Support both ID-based lookup and packageName/exportName lookup
+    // Support both ID-based lookup and packageName/name lookup
     const tool =
       slug.length === 1
         ? // Single slug - treat as tool ID
@@ -76,11 +76,11 @@ export async function POST(
             where: { id: slug[0] || '' },
             include: { package: true },
           })
-        : // Multiple slugs - treat as packageName/exportName
+        : // Multiple slugs - treat as packageName/name
           await prisma.tool.findFirst({
             where: {
               package: { npmPackageName: decodeURIComponent(slug.slice(0, -1).join('/')) },
-              exportName: decodeURIComponent(slug[slug.length - 1] || ''),
+              name: decodeURIComponent(slug[slug.length - 1] || ''),
             },
             include: { package: true },
           });

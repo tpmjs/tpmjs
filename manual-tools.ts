@@ -767,7 +767,7 @@ export const manualTools: ManualTool[] = [
     returns: {
       type: 'object',
       description:
-        'Search results with tool metadata including packageName, exportName, version, importUrl',
+        'Search results with tool metadata including packageName, name, version, importUrl',
     },
     aiAgent: {
       useCase:
@@ -786,7 +786,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@airweave/vercel-ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'airweaveSearch',
+    name: 'airweaveSearch',
     description: 'Provides unified search across all connected data sources using semantic search.',
     tags: ['search', 'rag', 'data-sources', 'semantic-search'],
     env: [
@@ -794,7 +794,7 @@ export const manualTools: ManualTool[] = [
         name: 'AIRWEAVE_API_KEY',
         description: 'API key for authenticating with Airweave services.',
         required: true,
-      }
+      },
     ],
     parameters: [
       {
@@ -802,7 +802,7 @@ export const manualTools: ManualTool[] = [
         type: 'string',
         description: 'The default collection to search within.',
         required: true,
-      }
+      },
     ],
     returns: {
       type: 'object',

@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
         if (searchResult.tools && searchResult.tools.length > 0) {
           console.log(
             '🔧 Tools found:',
-            searchResult.tools.map((t: any) => `${t.packageName}/${t.exportName}`)
+            searchResult.tools.map((t: any) => `${t.packageName}/${t.name}`)
           );
 
           // Dynamically load tools from esm.sh
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
 
           const toolsToLoad = searchResult.tools.map((meta: any) => ({
             packageName: meta.packageName,
-            exportName: meta.exportName,
+            name: meta.name,
             version: meta.version,
             importUrl: meta.importUrl,
           }));

@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
       tool,
       text: [
         tool.description,
-        tool.exportName,
+        tool.name,
         tool.package.npmPackageName,
         tool.package.npmDescription || '',
         ...(tool.package.npmKeywords || []),
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
         returned: results.length,
         tools: results.map(({ tool }) => ({
           id: tool.id,
-          exportName: tool.exportName,
+          name: tool.name,
           description: tool.description,
           qualityScore: tool.qualityScore,
           importHealth: tool.importHealth,

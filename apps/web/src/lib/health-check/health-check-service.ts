@@ -35,7 +35,7 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageName: tool.package.npmPackageName,
-        exportName: tool.exportName,
+        name: tool.name,
         version: tool.package.npmVersion,
         env: tool.package.env || {},
       }),
@@ -118,7 +118,7 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageName: tool.package.npmPackageName,
-        exportName: tool.exportName,
+        name: tool.name,
         version: tool.package.npmVersion,
         params: testParams,
         env: tool.package.env || {},
@@ -284,7 +284,7 @@ export async function performHealthCheck(
     throw new Error(`Tool not found: ${toolId}`);
   }
 
-  console.log(`🏥 Health check starting for ${tool.package.npmPackageName}/${tool.exportName}`);
+  console.log(`🏥 Health check starting for ${tool.package.npmPackageName}/${tool.name}`);
 
   // Check import health
   const importResult = await checkImportHealth(tool);

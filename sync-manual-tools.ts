@@ -83,14 +83,14 @@ async function syncManualTools() {
       // Upsert the tool
       const tool = await prisma.tool.upsert({
         where: {
-          packageId_exportName: {
+          packageId_name: {
             packageId: packageRecord.id,
-            exportName: manualTool.name,
+            name: manualTool.name,
           },
         },
         create: {
           packageId: packageRecord.id,
-          exportName: manualTool.name,
+          name: manualTool.name,
           description: manualTool.description,
           // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           parameters: manualTool.parameters ? (manualTool.parameters as any) : null,
@@ -110,7 +110,7 @@ async function syncManualTools() {
         },
       });
 
-      console.log(`  ✅ Tool upserted: ${tool.exportName} (${tool.id})`);
+      console.log(`  ✅ Tool upserted: ${tool.name} (${tool.id})`);
       processed++;
     } catch (error) {
       console.error(

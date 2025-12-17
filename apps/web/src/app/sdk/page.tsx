@@ -352,7 +352,7 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
                         <td className="py-2 pr-4">string</td>
                         <td className="py-2 pr-4">Yes</td>
                         <td className="py-2">
-                          Tool identifier (format: <code>package::exportName</code>)
+                          Tool identifier (format: <code>package::name</code>)
                         </td>
                       </tr>
                       <tr className="border-b border-border/50">

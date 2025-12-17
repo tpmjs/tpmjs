@@ -6,7 +6,7 @@ import type { GeneratorConfig } from '../types.js';
 export function generateReadme(config: GeneratorConfig): string {
   const { packageInfo, tools } = config;
 
-  const toolsList = tools.map((tool) => `- **${tool.exportName}**: ${tool.description}`).join('\n');
+  const toolsList = tools.map((tool) => `- **${tool.name}**: ${tool.description}`).join('\n');
 
   const usageExample = tools[0];
   if (!usageExample) {
@@ -32,7 +32,7 @@ ${toolsList}
 ## Usage
 
 \`\`\`typescript
-import { ${usageExample.exportName} } from '${packageInfo.name}';
+import { ${usageExample.name} } from '${packageInfo.name}';
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 
@@ -40,7 +40,7 @@ const result = await generateText({
   model: openai('gpt-4'),
   prompt: 'Process this text for me',
   tools: {
-    ${usageExample.exportName},
+    ${usageExample.name},
   },
 });
 

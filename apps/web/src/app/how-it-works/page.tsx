@@ -97,7 +97,7 @@ export default function HowItWorksPage(): React.ReactElement {
     "category": "text-analysis",
     "frameworks": ["vercel-ai"],
     "tools": [{
-      "exportName": "analyzeSentiment",
+      "name": "analyzeSentiment",
       "description": "Analyze sentiment of text and return positive/negative/neutral"
     }]
   }

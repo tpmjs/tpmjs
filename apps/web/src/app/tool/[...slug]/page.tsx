@@ -38,7 +38,7 @@ interface Package {
 
 interface Tool {
   id: string;
-  exportName: string;
+  name: string;
   description: string;
   parameters: Array<{
     name: string;
@@ -152,7 +152,7 @@ export default function ToolDetailPage({
   const softwareApplicationSchema = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: tool.exportName,
+    name: tool.name,
     description: tool.description,
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Any',
@@ -165,7 +165,7 @@ export default function ToolDetailPage({
       '@type': authorName ? 'Person' : 'Organization',
       name: authorName || 'Unknown',
     },
-    url: `https://tpmjs.com/tool/${pkg.npmPackageName}/${tool.exportName}`,
+    url: `https://tpmjs.com/tool/${pkg.npmPackageName}/${tool.name}`,
     softwareVersion: pkg.npmVersion,
     ...(pkg.npmHomepage && { mainEntityOfPage: pkg.npmHomepage }),
     ...(pkg.npmRepository &&
@@ -223,7 +223,7 @@ export default function ToolDetailPage({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           packageName: tool.package.npmPackageName,
-          exportName: tool.exportName,
+          name: tool.name,
         }),
       });
 
@@ -274,7 +274,7 @@ export default function ToolDetailPage({
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">{tool.exportName}</h1>
+              <h1 className="text-4xl font-bold text-foreground mb-2">{tool.name}</h1>
               <p className="text-sm text-foreground-tertiary font-mono mb-2">
                 {pkg.npmPackageName}
               </p>
@@ -409,7 +409,7 @@ export default function ToolDetailPage({
                 <div>
                   <h4 className="text-sm font-semibold text-foreground mb-3">2. Import the tool</h4>
                   <CodeBlock
-                    code={`import { ${tool.exportName} } from '${pkg.npmPackageName}';`}
+                    code={`import { ${tool.name} } from '${pkg.npmPackageName}';`}
                     language="typescript"
                     showCopy={true}
                   />
@@ -420,11 +420,11 @@ export default function ToolDetailPage({
                   <CodeBlock
                     code={`import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { ${tool.exportName} } from '${pkg.npmPackageName}';
+import { ${tool.name} } from '${pkg.npmPackageName}';
 
 const result = await generateText({
   model: openai('gpt-4o'),
-  tools: { ${tool.exportName} },
+  tools: { ${tool.name} },
   prompt: 'Your prompt here...',
 });
 

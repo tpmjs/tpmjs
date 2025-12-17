@@ -30,14 +30,14 @@ export async function GET(
         select: { id: true },
       });
     } else {
-      // Multiple slugs - treat as packageName/exportName
+      // Multiple slugs - treat as packageName/name
       const packageName = decodeURIComponent(slug.slice(0, -1).join('/'));
-      const exportName = decodeURIComponent(slug[slug.length - 1] || '');
+      const name = decodeURIComponent(slug[slug.length - 1] || '');
 
       tool = await prisma.tool.findFirst({
         where: {
           package: { npmPackageName: packageName },
-          exportName: exportName,
+          name: name,
         },
         select: { id: true },
       });

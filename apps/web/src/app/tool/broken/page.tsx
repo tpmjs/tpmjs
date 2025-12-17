@@ -20,7 +20,7 @@ import { AppHeader } from '~/components/AppHeader';
 
 interface BrokenTool {
   id: string;
-  exportName: string;
+  name: string;
   description: string;
   importHealth: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   executionHealth: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
@@ -142,7 +142,7 @@ export default function BrokenToolsPage(): React.ReactElement {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Broken tools page requires conditional rendering for health status */}
               {tools.map((tool) => {
-                const toolUrl = `/tool/${tool.package.npmPackageName}/${tool.exportName}`;
+                const toolUrl = `/tool/${tool.package.npmPackageName}/${tool.name}`;
                 const lastCheckedDate = tool.lastHealthCheck
                   ? new Date(tool.lastHealthCheck)
                   : null;
@@ -153,9 +153,7 @@ export default function BrokenToolsPage(): React.ReactElement {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">
                           <CardTitle>
-                            {tool.exportName !== 'default'
-                              ? tool.exportName
-                              : tool.package.npmPackageName}
+                            {tool.name !== 'default' ? tool.name : tool.package.npmPackageName}
                           </CardTitle>
                           <div className="text-sm text-foreground-secondary mt-1">
                             {tool.package.npmPackageName}

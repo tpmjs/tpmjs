@@ -67,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           updatedAt: true,
         },
       },
-      exportName: true,
+      name: true,
       updatedAt: true,
     },
     orderBy: {
@@ -83,7 +83,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       tool.updatedAt > tool.package.updatedAt ? tool.updatedAt : tool.package.updatedAt;
 
     return {
-      url: `${baseUrl}/tool/${tool.package.npmPackageName}/${tool.exportName}`,
+      url: `${baseUrl}/tool/${tool.package.npmPackageName}/${tool.name}`,
       lastModified,
       changeFrequency: 'weekly' as const,
       priority: 0.7,

@@ -10,23 +10,23 @@ export const dynamic = 'force-dynamic';
  * Update a tool's input schema
  *
  * Called by the executor when it loads a tool and discovers its schema.
- * Looks up tool by packageName + exportName (unique constraint).
+ * Looks up tool by packageName + name (unique constraint).
  * Stores the full JSON Schema and also converts to parameters array for backward compatibility.
  *
  * Body:
  * - packageName: npm package name
- * - exportName: exported function name
+ * - name: exported function name
  * - inputSchema: The JSON Schema for the tool's input parameters
  * - description: Optional updated description from the tool
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { packageName, exportName, inputSchema, description } = body;
+    const { packageName, name, inputSchema, description } = body;
 
-    if (!packageName || !exportName) {
+    if (!packageName || !name) {
       return NextResponse.json(
-        { success: false, error: 'packageName and exportName are required' },
+        { success: false, error: 'packageName and name are required' },
         { status: 400 }
       );
     }
@@ -38,12 +38,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('[Update Schema] Looking up tool:', { packageName, exportName });
+    console.log('[Update Schema] Looking up tool:', { packageName, name });
 
-    // Find the tool by package name and export name
+    // Find the tool by package name and name
     const tool = await prisma.tool.findFirst({
       where: {
-        exportName,
+        name,
         package: {
           npmPackageName: packageName,
         },
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!tool) {
-      console.log('[Update Schema] Tool not found:', { packageName, exportName });
+      console.log('[Update Schema] Tool not found:', { packageName, name });
       return NextResponse.json(
         { success: false, error: 'Tool not found', updated: false },
         { status: 404 }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       tool.schemaSource === 'extracted' &&
       JSON.stringify(existingSchema) === JSON.stringify(inputSchema)
     ) {
-      console.log('[Update Schema] Schema already up to date:', { packageName, exportName });
+      console.log('[Update Schema] Schema already up to date:', { packageName, name });
       return NextResponse.json({
         success: true,
         updated: false,
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       data: updateData,
       select: {
         id: true,
-        exportName: true,
+        name: true,
         description: true,
         parameters: true,
         inputSchema: true,
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
 
     console.log('[Update Schema] Tool updated:', {
       id: updatedTool.id,
-      exportName: updatedTool.exportName,
+      name: updatedTool.name,
       parameterCount: parameters.length,
       parameterNames: parameters.map((p) => p.name),
       schemaSource: updatedTool.schemaSource,

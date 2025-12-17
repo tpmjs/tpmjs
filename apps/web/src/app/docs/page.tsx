@@ -492,7 +492,7 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
                       name: 'toolId',
                       type: 'string',
                       required: true,
-                      description: 'Tool identifier (format: package::exportName)',
+                      description: 'Tool identifier (format: package::name)',
                     },
                     {
                       name: 'params',
@@ -1146,7 +1146,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                 <DocSubSection title="Execution failing">
                   <ul className="list-disc list-inside space-y-2 text-foreground-secondary">
                     <li>Check that required environment variables are passed</li>
-                    <li>Verify the toolId format is correct (package::exportName)</li>
+                    <li>Verify the toolId format is correct (package::name)</li>
                     <li>Check the tool&apos;s health status on tpmjs.com</li>
                   </ul>
                 </DocSubSection>

@@ -3,7 +3,7 @@
  */
 
 export interface ToolDefinition {
-  exportName: string;
+  name: string;
   description: string;
   parameters?: ParameterDefinition[];
   returns?: ReturnDefinition;

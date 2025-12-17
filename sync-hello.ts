@@ -66,14 +66,14 @@ async function syncHello() {
     for (const toolDef of validation.tools || []) {
       const tool = await prisma.tool.upsert({
         where: {
-          packageId_exportName: {
+          packageId_name: {
             packageId: packageRecord.id,
-            exportName: toolDef.exportName,
+            name: toolDef.name,
           },
         },
         create: {
           packageId: packageRecord.id,
-          exportName: toolDef.exportName,
+          name: toolDef.name,
           description: toolDef.description,
           parameters: toolDef.parameters ? (toolDef.parameters as any) : undefined,
           returns: toolDef.returns ? (toolDef.returns as any) : undefined,
@@ -88,13 +88,12 @@ async function syncHello() {
         },
       });
 
-      console.log(`✅ Tool upserted: ${tool.exportName} (${tool.id})`);
+      console.log(`✅ Tool upserted: ${tool.name} (${tool.id})`);
     }
 
     // Delete orphaned tools
     const orphanedTools = existingTools.filter(
-      (existingTool) =>
-        !validation.tools?.some((toolDef) => toolDef.exportName === existingTool.exportName)
+      (existingTool) => !validation.tools?.some((toolDef) => toolDef.name === existingTool.name)
     );
 
     if (orphanedTools.length > 0) {

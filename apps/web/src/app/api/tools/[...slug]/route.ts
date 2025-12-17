@@ -10,30 +10,30 @@ export const maxDuration = 60;
 /**
  * Parse tool slug to extract package name and export name
  */
-function parseSlug(slug: string[]): { packageName: string; exportName: string | undefined } {
+function parseSlug(slug: string[]): { packageName: string; name: string | undefined } {
   let packageName: string;
-  let exportName: string | undefined;
+  let name: string | undefined;
 
   if (slug.length === 1) {
     // Single slug - package name without scope
     packageName = slug[0] || '';
   } else if (slug.length === 2) {
-    // Could be: @scope/package OR package/exportName
+    // Could be: @scope/package OR package/name
     if (slug[0]?.startsWith('@')) {
       // @scope/package
       packageName = slug.join('/');
     } else {
-      // package + exportName
+      // package + name
       packageName = slug[0] || '';
-      exportName = slug[1];
+      name = slug[1];
     }
   } else {
-    // 3+ slugs: @scope/package/exportName
+    // 3+ slugs: @scope/package/name
     packageName = slug.slice(0, slug[0]?.startsWith('@') ? 2 : 1).join('/');
-    exportName = slug[slug.length - 1];
+    name = slug[slug.length - 1];
   }
 
-  return { packageName, exportName };
+  return { packageName, name };
 }
 
 /**
@@ -54,14 +54,14 @@ export async function GET(
 
   try {
     const { slug } = await params;
-    const { packageName, exportName } = parseSlug(slug);
+    const { packageName, name } = parseSlug(slug);
 
-    if (exportName) {
+    if (name) {
       // Find specific tool by package name and export name
       const tool = await prisma.tool.findFirst({
         where: {
           package: { npmPackageName: packageName },
-          exportName: exportName,
+          name: name,
         },
         include: { package: true },
       });
@@ -138,10 +138,10 @@ export async function POST(
 
   try {
     const { slug } = await params;
-    const { packageName, exportName } = parseSlug(slug);
+    const { packageName, name } = parseSlug(slug);
 
     // Health checks require export name
-    if (!exportName) {
+    if (!name) {
       return NextResponse.json(
         {
           success: false,
@@ -155,7 +155,7 @@ export async function POST(
     const tool = await prisma.tool.findFirst({
       where: {
         package: { npmPackageName: packageName },
-        exportName: exportName,
+        name: name,
       },
       select: {
         id: true,
@@ -190,7 +190,7 @@ export async function POST(
     }
 
     // Perform health check
-    console.log(`🏥 Manual health check triggered for ${packageName}/${exportName}`);
+    console.log(`🏥 Manual health check triggered for ${packageName}/${name}`);
     const result = await performHealthCheck(tool.id, 'manual');
 
     return NextResponse.json({
@@ -198,7 +198,7 @@ export async function POST(
       data: {
         toolId: result.toolId,
         packageName: packageName,
-        exportName: exportName,
+        name: name,
         importStatus: result.importStatus,
         importError: result.importError,
         importTimeMs: result.importTimeMs,

@@ -55,7 +55,7 @@ export async function promptTools(): Promise<ToolDefinition[] | null> {
  * Prompts for a single tool definition
  */
 async function promptSingleTool(number: number): Promise<ToolDefinition | null> {
-  const exportName = await clack.text({
+  const name = await clack.text({
     message: `Tool #${number} export name`,
     placeholder: number === 1 ? 'summarizeText' : number === 2 ? 'extractKeywords' : 'myTool',
     validate: (value) => {
@@ -67,7 +67,7 @@ async function promptSingleTool(number: number): Promise<ToolDefinition | null> 
     },
   });
 
-  if (clack.isCancel(exportName)) {
+  if (clack.isCancel(name)) {
     return null;
   }
 
@@ -93,7 +93,7 @@ async function promptSingleTool(number: number): Promise<ToolDefinition | null> 
   }
 
   return {
-    exportName: exportName as string,
+    name: name as string,
     description: description as string,
   };
 }

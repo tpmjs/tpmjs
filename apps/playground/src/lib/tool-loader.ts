@@ -17,7 +17,7 @@ const TOOL_REGISTRY: Record<string, Record<string, any>> = {
  * Uses static imports to work with Next.js/webpack bundling
  */
 // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
-export async function loadTpmjsTool(packageName: string, exportName: string): Promise<any | null> {
+export async function loadTpmjsTool(packageName: string, name: string): Promise<any | null> {
   try {
     // Look up the package in the registry
     const packageTools = TOOL_REGISTRY[packageName];
@@ -27,10 +27,10 @@ export async function loadTpmjsTool(packageName: string, exportName: string): Pr
     }
 
     // Look up the specific tool export
-    const tool = packageTools[exportName];
+    const tool = packageTools[name];
     if (!tool) {
       console.warn(
-        `Export '${exportName}' not found in package ${packageName}. Available exports:`,
+        `Export '${name}' not found in package ${packageName}. Available exports:`,
         Object.keys(packageTools)
       );
       return null;
@@ -38,7 +38,7 @@ export async function loadTpmjsTool(packageName: string, exportName: string): Pr
 
     return tool;
   } catch (error) {
-    console.error(`Failed to load tool ${packageName}/${exportName}:`, error);
+    console.error(`Failed to load tool ${packageName}/${name}:`, error);
     return null;
   }
 }
@@ -56,7 +56,7 @@ export function sanitizeToolName(name: string): string {
 
 /**
  * Load all installed TPMJS tools
- * Returns a flat object with all tools keyed by sanitized packageName-exportName
+ * Returns a flat object with all tools keyed by sanitized packageName-name
  */
 // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
 export async function loadAllTools(): Promise<Record<string, any>> {
@@ -65,9 +65,9 @@ export async function loadAllTools(): Promise<Record<string, any>> {
 
   // Iterate through all registered packages
   for (const [packageName, packageTools] of Object.entries(TOOL_REGISTRY)) {
-    for (const [exportName, tool] of Object.entries(packageTools)) {
+    for (const [name, tool] of Object.entries(packageTools)) {
       // Create a unique, sanitized key for this tool
-      const toolKey = sanitizeToolName(`${packageName}-${exportName}`);
+      const toolKey = sanitizeToolName(`${packageName}-${name}`);
       tools[toolKey] = tool;
     }
   }

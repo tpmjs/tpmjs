@@ -26,20 +26,20 @@ async function testSchema() {
   const tool1 = await prisma.tool.create({
     data: {
       packageId: pkg.id,
-      exportName: 'helloWorldTool',
+      name: 'helloWorldTool',
       description: 'Returns a simple Hello World greeting',
     },
   });
-  console.log(`✅ Tool 1 created: ${tool1.exportName}`);
+  console.log(`✅ Tool 1 created: ${tool1.name}`);
 
   const tool2 = await prisma.tool.create({
     data: {
       packageId: pkg.id,
-      exportName: 'helloNameTool',
+      name: 'helloNameTool',
       description: 'Returns a personalized greeting with name',
     },
   });
-  console.log(`✅ Tool 2 created: ${tool2.exportName}\n`);
+  console.log(`✅ Tool 2 created: ${tool2.name}\n`);
 
   // Test 3: Query package with tools
   console.log('3. Querying package with tools...');
@@ -49,7 +49,7 @@ async function testSchema() {
   });
   console.log(`✅ Found package with ${packageWithTools?.tools.length} tools:`);
   packageWithTools?.tools.forEach((t) => {
-    console.log(`   - ${t.exportName}: ${t.description}`);
+    console.log(`   - ${t.name}: ${t.description}`);
   });
   console.log();
 
@@ -58,11 +58,11 @@ async function testSchema() {
   const toolWithPackage = await prisma.tool.findFirst({
     where: {
       package: { npmPackageName: '@test/hello' },
-      exportName: 'helloWorldTool',
+      name: 'helloWorldTool',
     },
     include: { package: true },
   });
-  console.log(`✅ Found tool: ${toolWithPackage?.exportName}`);
+  console.log(`✅ Found tool: ${toolWithPackage?.name}`);
   console.log(`   Package: ${toolWithPackage?.package.npmPackageName}`);
   console.log(`   Category: ${toolWithPackage?.package.category}\n`);
 

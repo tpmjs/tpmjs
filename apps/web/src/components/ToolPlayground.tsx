@@ -49,7 +49,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
 
     try {
       const response = await fetch(
-        `/api/tools/execute/${encodeURIComponent(tool.package.npmPackageName)}/${encodeURIComponent(tool.exportName)}`,
+        `/api/tools/execute/${encodeURIComponent(tool.package.npmPackageName)}/${encodeURIComponent(tool.name)}`,
         {
           method: 'POST',
           headers: {
@@ -196,7 +196,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
           <div>
             <h2 className="text-xl font-semibold text-foreground">Interactive Playground</h2>
             <p className="text-sm text-foreground-secondary mt-1">
-              Test {tool.package.npmPackageName} ({tool.exportName}) with AI-powered execution
+              Test {tool.package.npmPackageName} ({tool.name}) with AI-powered execution
             </p>
           </div>
           {rateLimitInfo && (

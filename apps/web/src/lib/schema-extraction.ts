@@ -107,14 +107,14 @@ export type SchemaExtractionResult = SchemaExtractionSuccess | SchemaExtractionF
  * Extract inputSchema from a tool by calling the executor's /load-and-describe endpoint
  *
  * @param packageName - NPM package name (e.g., "@tpmjs/hello-world")
- * @param exportName - Export name (e.g., "helloWorldTool" or "default")
+ * @param name - Export name (e.g., "helloWorldTool" or "default")
  * @param version - Package version (e.g., "1.0.0")
  * @param packageEnv - Package-level environment variables (optional)
  * @returns Schema extraction result with inputSchema or error
  */
 export async function extractToolSchema(
   packageName: string,
-  exportName: string,
+  name: string,
   version: string,
   packageEnv?: Record<string, unknown> | null
 ): Promise<SchemaExtractionResult> {
@@ -124,7 +124,7 @@ export async function extractToolSchema(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageName,
-        exportName,
+        name,
         version,
         env: packageEnv || {},
       }),

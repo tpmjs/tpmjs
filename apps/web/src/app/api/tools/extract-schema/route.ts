@@ -11,28 +11,28 @@ export const dynamic = 'force-dynamic';
  *
  * Body:
  * - packageName: npm package name
- * - exportName: exported function name
+ * - name: exported function name
  *
  * Rate limited to 1 extraction per minute per tool
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { packageName, exportName } = body;
+    const { packageName, name } = body;
 
-    if (!packageName || !exportName) {
+    if (!packageName || !name) {
       return NextResponse.json(
-        { success: false, error: 'packageName and exportName are required' },
+        { success: false, error: 'packageName and name are required' },
         { status: 400 }
       );
     }
 
-    console.log('[Extract Schema] Looking up tool:', { packageName, exportName });
+    console.log('[Extract Schema] Looking up tool:', { packageName, name });
 
     // Find the tool by package name and export name
     const tool = await prisma.tool.findFirst({
       where: {
-        exportName,
+        name,
         package: {
           npmPackageName: packageName,
         },
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!tool) {
-      console.log('[Extract Schema] Tool not found:', { packageName, exportName });
+      console.log('[Extract Schema] Tool not found:', { packageName, name });
       return NextResponse.json({ success: false, error: 'Tool not found' }, { status: 404 });
     }
 
@@ -74,14 +74,14 @@ export async function POST(request: NextRequest) {
 
     console.log('[Extract Schema] Extracting schema for:', {
       packageName: tool.package.npmPackageName,
-      exportName: tool.exportName,
+      name: tool.name,
       version: tool.package.npmVersion,
     });
 
     // Extract schema from executor
     const schemaResult = await extractToolSchema(
       tool.package.npmPackageName,
-      tool.exportName,
+      tool.name,
       tool.package.npmVersion,
       tool.package.env as Record<string, unknown> | null
     );
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         },
         select: {
           id: true,
-          exportName: true,
+          name: true,
           inputSchema: true,
           parameters: true,
           schemaSource: true,
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
 
       console.log('[Extract Schema] Schema extracted successfully:', {
         toolId: updatedTool.id,
-        exportName: updatedTool.exportName,
+        name: updatedTool.name,
         schemaSource: updatedTool.schemaSource,
       });
 
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     // Extraction failed
     console.log('[Extract Schema] Extraction failed:', {
       packageName,
-      exportName,
+      name,
       error: schemaResult.error,
     });
 

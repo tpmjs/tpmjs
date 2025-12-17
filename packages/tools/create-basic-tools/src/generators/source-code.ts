@@ -4,10 +4,10 @@ import type { ToolDefinition } from '../types.js';
  * Generates a single tool file with Zod schema
  */
 export function generateToolFile(tool: ToolDefinition): string {
-  const { exportName, description } = tool;
+  const { name, description } = tool;
 
   // Generate schema name (capitalize first letter + "Schema")
-  const schemaName = `${exportName.charAt(0).toUpperCase()}${exportName.slice(1)}Schema`;
+  const schemaName = `${name.charAt(0).toUpperCase()}${name.slice(1)}Schema`;
 
   // Generate simple Zod schema (can be enhanced in advanced mode)
   const schemaContent = generateSimpleSchema();
@@ -19,7 +19,7 @@ const ${schemaName} = z.object({
 ${schemaContent}
 });
 
-export const ${exportName} = tool({
+export const ${name} = tool({
   description: '${description}',
   inputSchema: ${schemaName},
   async execute(input: z.infer<typeof ${schemaName}>) {
@@ -33,7 +33,7 @@ export const ${exportName} = tool({
     }
 
     // TODO: Implement the tool logic here
-    console.log('${exportName} called with:', input);
+    console.log('${name} called with:', input);
 
     return {
       success: true,
@@ -61,7 +61,7 @@ function generateSimpleSchema(): string {
  */
 export function generateIndexFile(tools: ToolDefinition[]): string {
   const exports = tools
-    .map((tool) => `export { ${tool.exportName} } from './tools/${tool.exportName}.js';`)
+    .map((tool) => `export { ${tool.name} } from './tools/${tool.name}.js';`)
     .join('\n');
 
   return `/**

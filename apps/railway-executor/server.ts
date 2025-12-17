@@ -78,7 +78,7 @@ const TPMJS_API_URL = Deno.env.get('TPMJS_API_URL') || 'https://tpmjs.com';
  */
 async function reportToolHealth(
   packageName: string,
-  exportName: string,
+  name: string,
   success: boolean,
   error?: string
 ): Promise<void> {
@@ -88,7 +88,7 @@ async function reportToolHealth(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageName,
-        exportName,
+        name,
         success,
         error,
       }),
@@ -96,7 +96,7 @@ async function reportToolHealth(
 
     if (response.ok) {
       console.log(
-        `📊 Health reported for ${packageName}/${exportName}: ${success ? 'SUCCESS' : 'FAILURE'}`
+        `📊 Health reported for ${packageName}/${name}: ${success ? 'SUCCESS' : 'FAILURE'}`
       );
     } else {
       console.warn(`⚠️  Failed to report health: ${response.status}`);
@@ -113,7 +113,7 @@ async function reportToolHealth(
  */
 async function updateToolSchema(
   packageName: string,
-  exportName: string,
+  name: string,
   description: string,
   // biome-ignore lint/suspicious/noExplicitAny: JSON Schema can have any structure
   inputSchema: any
@@ -124,7 +124,7 @@ async function updateToolSchema(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageName,
-        exportName,
+        name,
         description,
         inputSchema,
       }),
@@ -133,7 +133,7 @@ async function updateToolSchema(
     if (response.ok) {
       const data = await response.json();
       console.log(
-        `📋 Schema updated for ${packageName}/${exportName}:`,
+        `📋 Schema updated for ${packageName}/${name}:`,
         data.updated ? 'UPDATED' : 'NO CHANGE'
       );
     } else {
@@ -216,19 +216,19 @@ function sanitizeJsonSchema(schema: any): any {
 async function loadAndDescribe(req: Request): Promise<Response> {
   try {
     const body = await req.json();
-    const { packageName, exportName, version, importUrl, env } = body;
+    const { packageName, name, version, importUrl, env } = body;
 
-    if (!packageName || !exportName || !version) {
+    if (!packageName || !name || !version) {
       return Response.json(
         {
           success: false,
-          error: 'Missing required fields: packageName, exportName, version',
+          error: 'Missing required fields: packageName, name, version',
         },
         { status: 400 }
       );
     }
 
-    const cacheKey = `${packageName}::${exportName}`;
+    const cacheKey = `${packageName}::${name}`;
 
     // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
@@ -244,14 +244,14 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       console.log(`📦 Importing: ${url}`);
 
       const module = await import(url);
-      let rawExport = module[exportName];
+      let rawExport = module[name];
 
       if (!rawExport) {
-        console.error(`❌ Export "${exportName}" not found. Available:`, Object.keys(module));
+        console.error(`❌ Export "${name}" not found. Available:`, Object.keys(module));
         return Response.json(
           {
             success: false,
-            error: `Export "${exportName}" not found in module`,
+            error: `Export "${name}" not found in module`,
             availableExports: Object.keys(module),
           },
           { status: 404 }
@@ -266,7 +266,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
 
         // Strategy 1: Try calling with no arguments
         try {
-          console.log(`  Trying: ${exportName}()`);
+          console.log(`  Trying: ${name}()`);
           factoryResult = rawExport();
           if (factoryResult?.description && factoryResult?.execute) {
             console.log('  ✅ Success with no-args factory');
@@ -300,7 +300,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
           // Try each config variation
           for (const config of configVariations) {
             try {
-              console.log(`  Trying: ${exportName}(`, Object.keys(config), ')');
+              console.log(`  Trying: ${name}(`, Object.keys(config), ')');
               factoryResult = rawExport(config);
               if (factoryResult?.description && factoryResult?.execute) {
                 console.log('  ✅ Success with config:', Object.keys(config));
@@ -318,7 +318,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
           try {
             const firstValue = Object.values(env)[0];
             if (firstValue) {
-              console.log(`  Trying: ${exportName}(firstEnvValue)`);
+              console.log(`  Trying: ${name}(firstEnvValue)`);
               factoryResult = rawExport(firstValue);
               if (factoryResult?.description && factoryResult?.execute) {
                 console.log('  ✅ Success with single-arg factory');
@@ -336,7 +336,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
           return Response.json(
             {
               success: false,
-              error: `Tool "${exportName}" is a factory function but couldn't be initialized. Tried: no-args, config object, and single-arg patterns.`,
+              error: `Tool "${name}" is a factory function but couldn't be initialized. Tried: no-args, config object, and single-arg patterns.`,
               hint: 'This tool may require specific configuration. Check package documentation.',
             },
             { status: 400 }
@@ -436,7 +436,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       return Response.json(
         {
           success: false,
-          error: `Tool "${exportName}" has no valid inputSchema. Tools must use AI SDK jsonSchema(), Zod v4 toJSONSchema(), or Zod v3 schemas.`,
+          error: `Tool "${name}" has no valid inputSchema. Tools must use AI SDK jsonSchema(), Zod v4 toJSONSchema(), or Zod v3 schemas.`,
           debug: {
             hasInputSchema: !!toolModule.inputSchema,
             availableMethods: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
@@ -453,16 +453,14 @@ async function loadAndDescribe(req: Request): Promise<Response> {
     const sanitizedSchema = sanitizeJsonSchema(rawJsonSchema);
 
     // Update TPM.js database with the schema (async, non-blocking)
-    updateToolSchema(packageName, exportName, toolModule.description, sanitizedSchema).catch(
-      (err) => {
-        console.warn('⚠️  Failed to update schema in database:', err);
-      }
-    );
+    updateToolSchema(packageName, name, toolModule.description, sanitizedSchema).catch((err) => {
+      console.warn('⚠️  Failed to update schema in database:', err);
+    });
 
     return Response.json({
       success: true,
       tool: {
-        exportName,
+        name,
         description: toolModule.description,
         inputSchema: sanitizedSchema, // Plain JSON Schema - fully serializable
       },
@@ -486,32 +484,32 @@ async function executeTool(req: Request): Promise<Response> {
   const startTime = Date.now();
   // Declare these before try block so they're available in catch for error reporting
   let packageName = 'unknown';
-  let exportName = 'unknown';
+  let toolName = 'unknown';
   try {
     const body = await req.json();
-    const { packageName: pkg, exportName: exp, version, importUrl, params, env } = body;
+    const { packageName: pkg, name, version, importUrl, params, env } = body;
     packageName = pkg || 'unknown';
-    exportName = exp || 'unknown';
+    toolName = name || 'unknown';
 
     console.log('📥 Execute request:', {
       packageName,
-      exportName,
+      name: toolName,
       version,
       envKeys: env ? Object.keys(env) : [],
       envValues: env || {},
     });
 
-    if (!packageName || !exportName || !version) {
+    if (!packageName || !toolName || !version) {
       return Response.json(
         {
           success: false,
-          error: 'Missing required fields: packageName, exportName, version',
+          error: 'Missing required fields: packageName, name, version',
         },
         { status: 400 }
       );
     }
 
-    const cacheKey = `${packageName}::${exportName}`;
+    const cacheKey = `${packageName}::${toolName}`;
 
     // Inject environment variables FIRST - before cache check and factory calls
     // This ensures process.env is set when factory functions read from it
@@ -561,7 +559,7 @@ async function executeTool(req: Request): Promise<Response> {
       console.log(`📦 Importing for execution: ${url}`);
 
       const module = await import(url);
-      let rawExport = module[exportName];
+      let rawExport = module[toolName];
 
       if (!rawExport) {
         return Response.json(
@@ -587,7 +585,7 @@ async function executeTool(req: Request): Promise<Response> {
 
         // Strategy 1: Try calling with no arguments
         try {
-          console.log(`  Trying: ${exportName}()`);
+          console.log(`  Trying: ${toolName}()`);
           factoryResult = rawExport();
           if (factoryResult?.execute) {
             console.log('  ✅ Success with no-args factory');
@@ -621,7 +619,7 @@ async function executeTool(req: Request): Promise<Response> {
           // Try each config variation
           for (const config of configVariations) {
             try {
-              console.log(`  Trying: ${exportName}(`, Object.keys(config), ')');
+              console.log(`  Trying: ${toolName}(`, Object.keys(config), ')');
               factoryResult = rawExport(config);
               if (factoryResult?.execute) {
                 console.log('  ✅ Success with config:', Object.keys(config));
@@ -639,7 +637,7 @@ async function executeTool(req: Request): Promise<Response> {
           try {
             const firstValue = Object.values(env)[0];
             if (firstValue) {
-              console.log(`  Trying: ${exportName}(firstEnvValue)`);
+              console.log(`  Trying: ${toolName}(firstEnvValue)`);
               factoryResult = rawExport(firstValue);
               if (factoryResult?.execute) {
                 console.log('  ✅ Success with single-arg factory');
@@ -655,7 +653,7 @@ async function executeTool(req: Request): Promise<Response> {
           return Response.json(
             {
               success: false,
-              error: `Tool "${exportName}" is a factory function but couldn't be initialized`,
+              error: `Tool "${toolName}" is a factory function but couldn't be initialized`,
               executionTimeMs: Date.now() - startTime,
             },
             { status: 400 }
@@ -700,7 +698,7 @@ async function executeTool(req: Request): Promise<Response> {
     console.log(`✅ Execution complete in ${executionTimeMs}ms`);
 
     // Report successful execution to health service (non-blocking)
-    reportToolHealth(packageName, exportName, true).catch(() => {});
+    reportToolHealth(packageName, toolName, true).catch(() => {});
 
     return Response.json({
       success: true,
@@ -712,7 +710,7 @@ async function executeTool(req: Request): Promise<Response> {
     console.error('❌ Tool execution failed:', error);
 
     // Report failed execution to health service (non-blocking)
-    reportToolHealth(packageName, exportName, false, error.message).catch(() => {});
+    reportToolHealth(packageName, toolName, false, error.message).catch(() => {});
 
     return Response.json(
       {

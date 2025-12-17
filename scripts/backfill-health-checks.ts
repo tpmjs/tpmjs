@@ -27,7 +27,7 @@ async function main() {
     const tools = await prisma.tool.findMany({
       select: {
         id: true,
-        exportName: true,
+        name: true,
         package: {
           select: {
             npmPackageName: true,
@@ -97,7 +97,7 @@ async function main() {
         OR: [{ importHealth: 'BROKEN' }, { executionHealth: 'BROKEN' }],
       },
       select: {
-        exportName: true,
+        name: true,
         package: {
           select: {
             npmPackageName: true,
@@ -113,7 +113,7 @@ async function main() {
       console.log(`\n⚠️  Broken Tools (${brokenTools.length}):`);
       for (const tool of brokenTools) {
         console.log(
-          `   - ${tool.package.npmPackageName}/${tool.exportName} (Import: ${tool.importHealth}, Execution: ${tool.executionHealth})`
+          `   - ${tool.package.npmPackageName}/${tool.name} (Import: ${tool.importHealth}, Execution: ${tool.executionHealth})`
         );
         if (tool.healthCheckError) {
           console.log(`     Error: ${tool.healthCheckError.slice(0, 100)}...`);

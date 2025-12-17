@@ -64,7 +64,7 @@ function isNonBreakingError(error: string): boolean {
 
 interface ReportHealthRequest {
   packageName: string;
-  exportName: string;
+  name: string;
   success: boolean;
   error?: string;
 }
@@ -87,11 +87,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body: ReportHealthRequest = await request.json();
-    const { packageName, exportName, success, error } = body;
+    const { packageName, name, success, error } = body;
 
-    if (!packageName || !exportName) {
+    if (!packageName || !name) {
       return NextResponse.json(
-        { success: false, error: 'packageName and exportName are required' },
+        { success: false, error: 'packageName and name are required' },
         { status: 400 }
       );
     }
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Find the tool
     const tool = await prisma.tool.findFirst({
       where: {
-        exportName,
+        name,
         package: { npmPackageName: packageName },
       },
       select: { id: true },
@@ -119,9 +119,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     } else if (error && isNonBreakingError(error)) {
       // Failed due to config/validation = HEALTHY (tool works, just needs setup)
       healthStatus = 'HEALTHY';
-      console.log(
-        `ℹ️  ${packageName}/${exportName} failed due to config issue (not broken): ${error}`
-      );
+      console.log(`ℹ️  ${packageName}/${name} failed due to config issue (not broken): ${error}`);
     } else {
       // Real failure = BROKEN
       healthStatus = 'BROKEN';
@@ -138,7 +136,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
     });
 
-    console.log(`🏥 Health updated for ${packageName}/${exportName}: ${healthStatus}`);
+    console.log(`🏥 Health updated for ${packageName}/${name}: ${healthStatus}`);
 
     return NextResponse.json({
       success: true,
