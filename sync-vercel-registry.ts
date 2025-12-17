@@ -123,7 +123,7 @@ MANUALTOOLS INTERFACE:
   npmVersion?: string;               // Omit - will fetch latest
   category: string;                  // Choose from: 'text-analysis', 'code-generation', 'data-processing', 'image-generation', 'audio-processing', 'search', 'integration', 'other'
   frameworks: Array<'vercel-ai' | 'langchain' | 'llamaindex' | 'other'>;
-  exportName: string;                // The actual export name (e.g., 'webSearch', 'executeCode')
+  name: string;                      // The actual export name (e.g., 'webSearch', 'executeCode')
   description: string;               // Tool-specific description
   parameters?: Array<{               // Extract from codeExample if possible
     name: string;
@@ -160,8 +160,8 @@ import { webSearch, financeSearch } from '@valyu/ai-sdk';
 \`\`\`
 
 Create TWO ManualTool entries:
-1. { exportName: 'webSearch', ... }
-2. { exportName: 'financeSearch', ... }
+1. { name: 'webSearch', ... }
+2. { name: 'financeSearch', ... }
 
 RESPONSE FORMAT:
 Return ONLY a valid JSON array of ManualTool objects. No markdown, no explanation, just the JSON array.
@@ -172,7 +172,7 @@ Example response:
     "npmPackageName": "@example/sdk",
     "category": "search",
     "frameworks": ["vercel-ai"],
-    "exportName": "webSearch",
+    "name": "webSearch",
     "description": "...",
     "env": [{"name": "EXAMPLE_API_KEY", "description": "...", "required": true}],
     "tags": ["search"],
@@ -230,7 +230,7 @@ Example response:
 
     console.log(`   ✨ Converted to ${tools.length} ManualTool(s):`);
     tools.forEach((tool, idx) => {
-      console.log(`      ${idx + 1}. ${tool.exportName} - ${tool.description.substring(0, 60)}...`);
+      console.log(`      ${idx + 1}. ${tool.name} - ${tool.description.substring(0, 60)}...`);
     });
     console.log();
 
@@ -271,7 +271,7 @@ async function appendToManualTools(newTools: ManualTool[]): Promise<void> {
       lines.push(`    npmPackageName: '${tool.npmPackageName}',`);
       lines.push(`    category: '${tool.category}',`);
       lines.push(`    frameworks: [${tool.frameworks.map((f) => `'${f}'`).join(', ')}],`);
-      lines.push(`    exportName: '${tool.exportName}',`);
+      lines.push(`    name: '${tool.name}',`);
       lines.push(`    description: '${tool.description.replace(/'/g, "\\'")}',`);
 
       // Optional fields

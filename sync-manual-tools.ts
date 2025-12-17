@@ -11,7 +11,7 @@ async function syncManualTools() {
 
   for (const manualTool of manualTools) {
     try {
-      console.log(`Processing: ${manualTool.npmPackageName} (${manualTool.exportName})`);
+      console.log(`Processing: ${manualTool.npmPackageName} (${manualTool.name})`);
 
       // Fetch package metadata from npm
       const npmData = await fetchLatestPackageWithMetadata(manualTool.npmPackageName);
@@ -83,12 +83,12 @@ async function syncManualTools() {
         where: {
           packageId_exportName: {
             packageId: packageRecord.id,
-            exportName: manualTool.exportName,
+            exportName: manualTool.name,
           },
         },
         create: {
           packageId: packageRecord.id,
-          exportName: manualTool.exportName,
+          exportName: manualTool.name,
           description: manualTool.description,
           parameters: manualTool.parameters ? (manualTool.parameters as any) : null,
           returns: manualTool.returns ? (manualTool.returns as any) : null,
@@ -106,7 +106,7 @@ async function syncManualTools() {
       processed++;
     } catch (error) {
       console.error(
-        `  ❌ Error processing ${manualTool.npmPackageName} (${manualTool.exportName}):`,
+        `  ❌ Error processing ${manualTool.npmPackageName} (${manualTool.name}):`,
         error
       );
       errors++;

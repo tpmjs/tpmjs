@@ -24,7 +24,7 @@ export interface ManualTool {
   frameworks: Array<'vercel-ai' | 'langchain' | 'llamaindex' | 'other'>;
 
   // Tool definition
-  exportName: string;
+  name: string;
   description: string;
 
   // Optional rich metadata
@@ -66,7 +66,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: 'ai-sdk-tool-code-execution',
     category: 'code-generation',
     frameworks: ['vercel-ai'],
-    exportName: 'executeCode',
+    name: 'executeCode',
     description:
       'Execute Python code in a sandboxed environment using Vercel Sandbox. Run calculations, data processing, and other computational tasks safely in an isolated environment with Python 3.13.',
     tags: ['code-execution', 'sandbox'],
@@ -107,7 +107,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@exalabs/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'webSearch',
+    name: 'webSearch',
     description:
       "Search the web for current information using Exa's AI-powered search API. Returns high-quality, relevant results optimized for LLM consumption.",
     tags: ['search', 'web', 'extraction'],
@@ -154,7 +154,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@parallel-web/ai-sdk-tools',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'searchTool',
+    name: 'searchTool',
     description:
       'Search and extract context from the web with token-optimized results. Parallel compresses web results for optimal inference efficiency.',
     tags: ['search', 'web', 'extraction'],
@@ -176,7 +176,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@parallel-web/ai-sdk-tools',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'extractTool',
+    name: 'extractTool',
     description: 'Extract structured content from web pages with token-optimized compression.',
     tags: ['extraction', 'web'],
     env: [
@@ -208,7 +208,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: 'ctx-zip',
     category: 'code-generation',
     frameworks: ['vercel-ai'],
-    exportName: 'createVercelSandboxCodeMode',
+    name: 'createVercelSandboxCodeMode',
     description:
       'Transform MCP tools and AI SDK tools into code, write to Vercel sandbox filesystem, and execute in isolated environment.',
     tags: ['code-execution', 'sandbox', 'mcp', 'code-mode'],
@@ -232,7 +232,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@perplexity-ai/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'perplexitySearch',
+    name: 'perplexitySearch',
     description:
       'Search the web with real-time results and advanced filtering powered by Perplexity Search API. Supports ranked results with domain, language, date range, and recency filters.',
     tags: ['search', 'web'],
@@ -277,7 +277,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@tavily/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'tavilySearch',
+    name: 'tavilySearch',
     description:
       'Real-time web search optimized for AI applications. Provides comprehensive web research including search, content extraction, website crawling, and site mapping.',
     tags: ['search', 'extract', 'crawl'],
@@ -304,7 +304,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: 'firecrawl-aisdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'scrapeTool',
+    name: 'scrapeTool',
     description:
       'Scrape any website into clean markdown format. Convert web pages to LLM-friendly markdown with automatic cleaning and formatting.',
     tags: ['scraping', 'web', 'extraction'],
@@ -343,7 +343,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: 'firecrawl-aisdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'searchTool',
+    name: 'searchTool',
     description:
       'Search the web and get results in clean markdown format optimized for AI consumption.',
     tags: ['search', 'web'],
@@ -360,7 +360,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: 'firecrawl-aisdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'crawlTool',
+    name: 'crawlTool',
     description:
       'Crawl entire websites and extract structured data. Automatically discover and process multiple pages.',
     tags: ['crawling', 'web', 'extraction'],
@@ -400,7 +400,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: 'bedrock-agentcore',
     category: 'code-generation',
     frameworks: ['vercel-ai'],
-    exportName: 'CodeInterpreterTools',
+    name: 'CodeInterpreterTools',
     description:
       'Isolated sandbox for executing Python, JavaScript, and TypeScript code to solve complex tasks. Fully managed by Amazon Bedrock.',
     tags: ['code-execution', 'sandbox'],
@@ -428,7 +428,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: 'bedrock-agentcore',
     category: 'integration',
     frameworks: ['vercel-ai'],
-    exportName: 'BrowserTools',
+    name: 'BrowserTools',
     description:
       'Fast and secure cloud-based browser runtime for web automation. Fill forms, navigate websites, and extract information in managed environment.',
     tags: ['browser-automation', 'web'],
@@ -449,7 +449,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@superagent-ai/ai-sdk',
     category: 'other',
     frameworks: ['vercel-ai'],
-    exportName: 'guard',
+    name: 'guard',
     description:
       'Protect AI apps from prompt injection and security threats. Detect and block malicious inputs before they reach your LLM.',
     tags: ['security', 'guardrails', 'prompt-injection'],
@@ -488,7 +488,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@superagent-ai/ai-sdk',
     category: 'other',
     frameworks: ['vercel-ai'],
-    exportName: 'redact',
+    name: 'redact',
     description:
       'Redact PII/PHI from text including SSNs, emails, phone numbers, and other sensitive information.',
     tags: ['security', 'pii', 'redaction'],
@@ -521,7 +521,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@superagent-ai/ai-sdk',
     category: 'other',
     frameworks: ['vercel-ai'],
-    exportName: 'verify',
+    name: 'verify',
     description:
       'Verify AI-generated claims against source materials. Fact-check and validate LLM outputs for accuracy.',
     tags: ['verification', 'fact-checking'],
@@ -560,7 +560,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@valyu/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'webSearch',
+    name: 'webSearch',
     description: 'Real-time web search for current information and news.',
     tags: ['search', 'web'],
     env: [
@@ -582,7 +582,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@valyu/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'financeSearch',
+    name: 'financeSearch',
     description:
       'Search financial data including stock prices, earnings, income statements, cash flows, and market data.',
     tags: ['search', 'finance', 'domain-search'],
@@ -603,7 +603,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@valyu/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'paperSearch',
+    name: 'paperSearch',
     description: 'Full-text search across PubMed, arXiv, bioRxiv, and medRxiv research papers.',
     tags: ['search', 'research', 'domain-search'],
     env: [
@@ -623,7 +623,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@valyu/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'bioSearch',
+    name: 'bioSearch',
     description:
       'Search biomedical information including clinical trials, FDA drug labels, PubMed, medRxiv, and bioRxiv.',
     tags: ['search', 'biomedical', 'domain-search'],
@@ -644,7 +644,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@valyu/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'patentSearch',
+    name: 'patentSearch',
     description: 'Search USPTO patent database for patents and patent applications.',
     tags: ['search', 'patents', 'domain-search'],
     env: [
@@ -664,7 +664,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@valyu/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'secSearch',
+    name: 'secSearch',
     description: 'Search SEC filings including 10-K, 10-Q, and 8-K reports.',
     tags: ['search', 'sec', 'domain-search'],
     env: [
@@ -688,7 +688,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@valyu/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'economicsSearch',
+    name: 'economicsSearch',
     description: 'Search economic data from BLS, FRED, and World Bank databases.',
     tags: ['search', 'economics', 'domain-search'],
     env: [
@@ -708,7 +708,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@valyu/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
-    exportName: 'companyResearch',
+    name: 'companyResearch',
     description:
       'Generate comprehensive company research reports with financial data, news, and analysis.',
     tags: ['search', 'research', 'company-analysis'],
@@ -741,7 +741,7 @@ export const manualTools: ManualTool[] = [
     npmPackageName: '@tpmjs/search-registry',
     category: 'integration',
     frameworks: ['vercel-ai'],
-    exportName: 'searchTpmjsToolsTool',
+    name: 'searchTpmjsToolsTool',
     description:
       'Search the TPMJS tool registry to find AI SDK tools by keyword, category, or description. Returns tool metadata for dynamic loading.',
     parameters: [
