@@ -6,9 +6,68 @@
 // Import zod-to-json-schema for Zod v3 support
 import { zodToJsonSchema } from 'https://esm.sh/zod-to-json-schema@3.25.0';
 
-// Cache for imported tool modules
+// Cache TTL: 2 minutes
+const CACHE_TTL_MS = 2 * 60 * 1000;
+
+// Cache entry with expiration
+interface CacheEntry {
+  // biome-ignore lint/suspicious/noExplicitAny: Tool types are dynamic and vary by package
+  module: any;
+  expiresAt: number;
+  isFactory: boolean;
+}
+
+// Cache for imported tool modules with TTL
+const moduleCache = new Map<string, CacheEntry>();
+
+/**
+ * Get module from cache if not expired
+ */
+function getCachedModule(cacheKey: string): CacheEntry | null {
+  const entry = moduleCache.get(cacheKey);
+  if (!entry) return null;
+
+  if (Date.now() > entry.expiresAt) {
+    moduleCache.delete(cacheKey);
+    console.log(`🗑️  Cache expired: ${cacheKey}`);
+    return null;
+  }
+
+  return entry;
+}
+
+/**
+ * Store module in cache with TTL
+ */
 // biome-ignore lint/suspicious/noExplicitAny: Tool types are dynamic and vary by package
-const moduleCache = new Map<string, any>();
+function setCachedModule(cacheKey: string, module: any, isFactory: boolean): void {
+  moduleCache.set(cacheKey, {
+    module,
+    expiresAt: Date.now() + CACHE_TTL_MS,
+    isFactory,
+  });
+  console.log(`📦 Cached (TTL ${CACHE_TTL_MS / 1000}s): ${cacheKey}`);
+}
+
+/**
+ * Cleanup expired cache entries
+ */
+function cleanupExpiredCache(): void {
+  const now = Date.now();
+  let cleaned = 0;
+  for (const [key, entry] of moduleCache.entries()) {
+    if (now > entry.expiresAt) {
+      moduleCache.delete(key);
+      cleaned++;
+    }
+  }
+  if (cleaned > 0) {
+    console.log(`🗑️  Cleaned ${cleaned} expired cache entries`);
+  }
+}
+
+// Run cache cleanup every minute
+setInterval(cleanupExpiredCache, 60 * 1000);
 
 // Web app API URL for health status reporting
 const TPMJS_API_URL = Deno.env.get('TPMJS_API_URL') || 'https://tpmjs.com';
@@ -174,10 +233,11 @@ async function loadAndDescribe(req: Request): Promise<Response> {
     // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
 
-    // Check cache first
-    if (moduleCache.has(cacheKey)) {
+    // Check cache first (with TTL)
+    const cachedEntry = getCachedModule(cacheKey);
+    if (cachedEntry) {
       console.log(`✅ Cache hit: ${cacheKey}`);
-      toolModule = moduleCache.get(cacheKey);
+      toolModule = cachedEntry.module;
     } else {
       // Dynamic import from esm.sh (Deno supports this natively!)
       const url = importUrl || `https://esm.sh/${packageName}@${version}`;
@@ -304,9 +364,8 @@ async function loadAndDescribe(req: Request): Promise<Response> {
         );
       }
 
-      // Cache it
-      moduleCache.set(cacheKey, toolModule);
-      console.log(`✅ Cached: ${cacheKey}`);
+      // Cache it with TTL (mark as non-factory for loadAndDescribe)
+      setCachedModule(cacheKey, toolModule, false);
     }
 
     // Extract tool definition - try multiple schema formats
@@ -484,14 +543,20 @@ async function executeTool(req: Request): Promise<Response> {
 
     // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
+    let needsImport = true;
 
-    // CACHE DISABLED - always re-import tools to ensure fresh env vars
-    // TODO: Re-enable caching with smarter invalidation based on env vars
-    const CACHE_ENABLED = false;
-    if (CACHE_ENABLED && moduleCache.has(cacheKey)) {
-      console.log(`✅ Using cached tool: ${cacheKey}`);
-      toolModule = moduleCache.get(cacheKey);
-    } else {
+    // Check cache first (with TTL) - but skip cache for factory functions
+    // since they may read env vars at creation time
+    const cachedEntry = getCachedModule(cacheKey);
+    if (cachedEntry && !cachedEntry.isFactory) {
+      console.log(`✅ Cache hit (non-factory): ${cacheKey}`);
+      toolModule = cachedEntry.module;
+      needsImport = false;
+    } else if (cachedEntry?.isFactory) {
+      console.log(`🏭 Cache hit but factory - will re-import: ${cacheKey}`);
+    }
+
+    if (needsImport) {
       const url = importUrl || `https://esm.sh/${packageName}@${version}`;
       console.log(`📦 Importing for execution: ${url}`);
 
@@ -611,14 +676,8 @@ async function executeTool(req: Request): Promise<Response> {
         );
       }
 
-      // Only cache non-factory tools - factory tools need to be re-created each time
-      // because they may read env vars at creation time (e.g., Valyu SDK reads process.env.VALYU_API_KEY)
-      if (!isFactoryFunction) {
-        moduleCache.set(cacheKey, toolModule);
-        console.log(`📦 Cached tool: ${cacheKey}`);
-      } else {
-        console.log(`🏭 Skipping cache for factory tool: ${cacheKey} (env-dependent)`);
-      }
+      // Cache with TTL - mark factory functions so we know to re-import them
+      setCachedModule(cacheKey, toolModule, isFactoryFunction);
     }
 
     // Note: Environment variables are already injected at the start of this function
@@ -684,11 +743,17 @@ function health(): Response {
  * Cache stats
  */
 function cacheStats(): Response {
-  const entries = Array.from(moduleCache.keys());
+  const now = Date.now();
+  const entries = Array.from(moduleCache.entries()).map(([key, entry]) => ({
+    key,
+    isFactory: entry.isFactory,
+    expiresIn: Math.max(0, Math.round((entry.expiresAt - now) / 1000)),
+  }));
 
   return Response.json({
     success: true,
     cacheSize: moduleCache.size,
+    ttlSeconds: CACHE_TTL_MS / 1000,
     cachedTools: entries,
   });
 }
