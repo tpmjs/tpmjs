@@ -12,6 +12,9 @@ on:
     paths:
       - 'sync-vercel-registry.ts'
 
+permissions:
+  contents: write
+
 jobs:
   sync-vercel:
     runs-on: ubuntu-latest

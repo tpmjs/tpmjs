@@ -24,11 +24,8 @@ export function generatePackageJson(config: GeneratorConfig): string {
     tpmjs: {
       category: packageInfo.category,
       tools: tools.map((tool) => ({
-        exportName: tool.exportName,
+        name: tool.exportName,
         description: tool.description,
-        ...(tool.parameters && { parameters: tool.parameters }),
-        ...(tool.returns && { returns: tool.returns }),
-        ...(tool.aiAgent && { aiAgent: tool.aiAgent }),
       })),
       ...(tools.some((t) => t.env) && {
         env: tools.flatMap((t) => t.env || []),

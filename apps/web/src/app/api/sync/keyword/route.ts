@@ -186,8 +186,8 @@ export async function POST(request: NextRequest) {
 
         // Upsert each tool
         for (const toolDef of toolsToProcess) {
-          // Use 'name' field (new) or fall back to 'exportName' (legacy support)
-          const toolName = toolDef.name || (toolDef as { exportName?: string }).exportName;
+          // Get tool name from validated schema
+          const toolName = toolDef.name;
           if (!toolName) {
             console.warn(`Skipping tool without name in ${pkg.name}`);
             continue;
@@ -274,10 +274,7 @@ export async function POST(request: NextRequest) {
         // Delete orphaned tools (tools removed from package.json)
         const orphanedTools = existingTools.filter(
           (existingTool) =>
-            !toolsToProcess.some((toolDef) => {
-              const toolName = toolDef.name || (toolDef as { exportName?: string }).exportName;
-              return toolName === existingTool.exportName;
-            })
+            !toolsToProcess.some((toolDef) => toolDef.name === existingTool.exportName)
         );
 
         if (orphanedTools.length > 0) {

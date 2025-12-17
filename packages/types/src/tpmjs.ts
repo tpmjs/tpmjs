@@ -90,28 +90,18 @@ export type TpmjsAiAgent = z.infer<typeof TpmjsAiAgentSchema>;
  * - returns: Tool return type - auto-extracted from tool
  * - aiAgent: AI agent guidance - auto-extracted from tool
  */
-export const TpmjsToolDefinitionSchema = z
-  .object({
-    // New field name (preferred)
-    name: z.string().min(1).optional(),
-    // @deprecated - use 'name' instead. Kept for backward compatibility.
-    exportName: z.string().min(1).optional(),
-    // Optional - auto-extracted from tool if not provided
-    description: z
-      .string()
-      .min(20, 'Description must be at least 20 characters')
-      .max(500)
-      .optional(),
-    // @deprecated - now auto-extracted from tool's inputSchema
-    parameters: z.array(TpmjsParameterSchema).optional(),
-    // @deprecated - now auto-extracted from tool
-    returns: TpmjsReturnsSchema.optional(),
-    // @deprecated - now auto-extracted from tool
-    aiAgent: TpmjsAiAgentSchema.optional(),
-  })
-  .refine((data) => data.name || data.exportName, {
-    message: 'Either name or exportName is required',
-  });
+export const TpmjsToolDefinitionSchema = z.object({
+  // Required: The export name of the tool from the package
+  name: z.string().min(1),
+  // Optional - auto-extracted from tool if not provided
+  description: z.string().min(20, 'Description must be at least 20 characters').max(500).optional(),
+  // @deprecated - now auto-extracted from tool's inputSchema
+  parameters: z.array(TpmjsParameterSchema).optional(),
+  // @deprecated - now auto-extracted from tool
+  returns: TpmjsReturnsSchema.optional(),
+  // @deprecated - now auto-extracted from tool
+  aiAgent: TpmjsAiAgentSchema.optional(),
+});
 
 export type TpmjsToolDefinition = z.infer<typeof TpmjsToolDefinitionSchema>;
 
