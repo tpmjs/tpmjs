@@ -116,100 +116,76 @@ export default function PublishPage(): React.ReactElement {
             />
           </section>
 
-          {/* Step 2: Metadata Tiers */}
+          {/* Step 2: Metadata */}
           <section className="mb-16">
             <h2 className="text-3xl font-bold mb-6 text-foreground">Step 2: Add TPMJS Metadata</h2>
             <p className="text-lg text-foreground-secondary mb-6">
-              There are three tiers of metadata. Higher tiers get better visibility and quality
-              scores.
+              Add a <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
+              field to your package.json. TPMJS automatically extracts parameter schemas from your
+              tool code, so you only need to provide basic metadata.
             </p>
 
-            {/* Tier 1: Minimal */}
-            <div className="mb-8 p-6 border border-border rounded-lg bg-surface">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="px-3 py-1 bg-foreground/10 rounded text-sm font-medium text-foreground">
-                  Tier 1: Minimal
-                </span>
-                <span className="text-foreground-secondary">Required fields only</span>
+            {/* Auto-extraction callout */}
+            <div className="mb-8 p-6 border-2 border-primary/30 rounded-lg bg-primary/5">
+              <div className="flex items-start gap-4">
+                <div className="text-3xl">✨</div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">
+                    Automatic Schema Extraction
+                  </h3>
+                  <p className="text-foreground-secondary">
+                    TPMJS automatically extracts your tool&apos;s input schema by analyzing your
+                    code. You don&apos;t need to manually document parameters, returns, or AI agent
+                    guidance in package.json - we extract it from your Zod schema automatically.
+                  </p>
+                </div>
               </div>
-              <CodeBlock
-                language="json"
-                code={`{
-  "tpmjs": {
-    "category": "text-analysis",
-    "frameworks": ["vercel-ai"],
-    "tools": [
-      {
-        "exportName": "myTool",
-        "description": "A concise description of what your tool does"
-      }
-    ]
-  }
-}`}
-              />
-              <p className="mt-4 text-sm text-foreground-secondary">
-                Quality Score: <strong className="text-foreground">1x base multiplier</strong>
-              </p>
             </div>
 
-            {/* Tier 2: Basic */}
+            {/* Minimal Example */}
             <div className="mb-8 p-6 border border-border rounded-lg bg-surface">
               <div className="flex items-center gap-3 mb-4">
                 <span className="px-3 py-1 bg-primary/20 rounded text-sm font-medium text-foreground">
-                  Tier 2: Basic
+                  Required Fields
                 </span>
-                <span className="text-foreground-secondary">Add parameter & return info</span>
+                <span className="text-foreground-secondary">All you need to provide</span>
               </div>
               <CodeBlock
                 language="json"
                 code={`{
+  "name": "@yourname/my-awesome-tool",
+  "keywords": ["tpmjs-tool"],
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": ["vercel-ai"],
     "tools": [
       {
-        "exportName": "sentimentAnalysisTool",
-        "description": "Analyzes sentiment in text",
-        "parameters": [
-          {
-            "name": "text",
-            "type": "string",
-            "description": "The text to analyze",
-            "required": true
-          },
-          {
-            "name": "language",
-            "type": "string",
-            "description": "Language code (e.g., 'en')",
-            "required": false,
-            "default": "en"
-          }
-        ],
-        "returns": {
-          "type": "SentimentResult",
-          "description": "Object with score and label"
-        }
+        "exportName": "myTool",
+        "description": "A concise description of what your tool does (20-500 chars)"
       }
     ]
   }
 }`}
               />
               <p className="mt-4 text-sm text-foreground-secondary">
-                Quality Score: <strong className="text-foreground">2x base multiplier</strong>
+                That&apos;s it! Parameters are automatically extracted from your tool code.
               </p>
             </div>
 
-            {/* Tier 3: Rich */}
+            {/* With Optional Fields */}
             <div className="mb-8 p-6 border border-border rounded-lg bg-surface">
               <div className="flex items-center gap-3 mb-4">
                 <span className="px-3 py-1 bg-success/20 rounded text-sm font-medium text-foreground">
-                  Tier 3: Rich
+                  With Optional Fields
                 </span>
-                <span className="text-foreground-secondary">Full documentation</span>
+                <span className="text-foreground-secondary">
+                  Add env vars and framework compatibility
+                </span>
               </div>
               <CodeBlock
                 language="json"
                 code={`{
+  "name": "@yourname/sentiment-tool",
+  "keywords": ["tpmjs-tool"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai", "langchain"],
@@ -223,24 +199,15 @@ export default function PublishPage(): React.ReactElement {
     "tools": [
       {
         "exportName": "sentimentAnalysisTool",
-        "description": "Advanced sentiment analysis with emotion detection",
-        "parameters": [...],
-        "returns": {...},
-        "aiAgent": {
-          "useCase": "Use when users need to analyze sentiment or detect emotions",
-          "limitations": "English and Spanish only. Max 10,000 characters",
-          "examples": [
-            "Analyze customer review sentiment",
-            "Detect emotions in feedback"
-          ]
-        }
+        "description": "Advanced sentiment analysis with emotion detection"
       }
     ]
   }
 }`}
               />
               <p className="mt-4 text-sm text-foreground-secondary">
-                Quality Score: <strong className="text-foreground">4x base multiplier</strong> 🚀
+                Add <code className="text-foreground">env</code> for API keys and{' '}
+                <code className="text-foreground">frameworks</code> for compatibility info.
               </p>
             </div>
           </section>
@@ -341,30 +308,16 @@ npm publish --access public
     "tools": [
       {
         "exportName": "createBlogPostTool",
-        "description": "Creates structured blog posts with frontmatter and SEO metadata",
-        "parameters": [
-          {
-            "name": "title",
-            "type": "string",
-            "description": "The title of the blog post",
-            "required": true
-          },
-          {
-            "name": "content",
-            "type": "string",
-            "description": "The main content",
-            "required": true
-          }
-        ],
-        "returns": {
-          "type": "BlogPost",
-          "description": "Structured blog post with frontmatter"
-        }
+        "description": "Creates structured blog posts with frontmatter and SEO metadata"
       }
     ]
   }
 }`}
             />
+            <p className="mt-4 text-sm text-foreground-secondary">
+              Note: Parameters are automatically extracted from the tool code - no need to list them
+              in package.json!
+            </p>
           </section>
 
           {/* Tips */}
@@ -378,9 +331,9 @@ npm publish --access public
                   desc: 'Make your package name clear and searchable',
                 },
                 {
-                  icon: '📊',
-                  title: 'Complete metadata',
-                  desc: 'Rich tier tools get 4x better visibility',
+                  icon: '✨',
+                  title: 'Good Zod schemas',
+                  desc: 'Add descriptions to your Zod schema fields - they get auto-extracted',
                 },
                 {
                   icon: '📚',
@@ -393,9 +346,9 @@ npm publish --access public
                   desc: 'Regular updates boost download counts',
                 },
                 {
-                  icon: '🤖',
-                  title: 'AI-friendly descriptions',
-                  desc: 'Write aiAgent.useCase as guidance for AI agents',
+                  icon: '🔑',
+                  title: 'Document env vars',
+                  desc: 'List required API keys in the env field so users know what they need',
                 },
               ].map((tip) => (
                 <div

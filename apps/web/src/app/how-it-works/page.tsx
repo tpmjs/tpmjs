@@ -98,21 +98,15 @@ export default function HowItWorksPage(): React.ReactElement {
     "frameworks": ["vercel-ai"],
     "tools": [{
       "exportName": "analyzeSentiment",
-      "description": "Analyze sentiment of text",
-      "parameters": [{
-        "name": "text",
-        "type": "string",
-        "description": "Text to analyze",
-        "required": true
-      }],
-      "returns": {
-        "type": "string",
-        "description": "Sentiment score"
-      }
+      "description": "Analyze sentiment of text and return positive/negative/neutral"
     }]
   }
 }`}
                 />
+                <p className="text-sm text-foreground-secondary mt-4">
+                  Parameters are automatically extracted from your tool code - no need to list them
+                  manually!
+                </p>
               </div>
 
               {/* Step 2 */}
@@ -232,11 +226,13 @@ const result = await streamText({
                 </div>
               </div>
 
-              {/* 2. Validation */}
+              {/* 2. Validation & Schema Extraction */}
               <div>
-                <h3 className="text-2xl font-semibold mb-4 text-foreground">2. Validation</h3>
+                <h3 className="text-2xl font-semibold mb-4 text-foreground">
+                  2. Validation & Schema Extraction
+                </h3>
                 <p className="text-lg text-foreground-secondary mb-4">
-                  Every discovered package is validated against the TPMJS schema:
+                  Every discovered package is validated and its schema is automatically extracted:
                 </p>
                 <ul className="space-y-2 text-foreground-secondary">
                   <li className="flex items-start gap-2">
@@ -249,15 +245,18 @@ const result = await streamText({
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-success mt-1">✓</span>
-                    <span>Parameters follow type schema (string, number, boolean, etc.)</span>
+                    <span>
+                      <strong className="text-foreground">inputSchema auto-extracted</strong> from
+                      tool code via sandboxed executor
+                    </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-success mt-1">✓</span>
-                    <span>Environment variables properly documented</span>
+                    <span>Parameters derived from JSON Schema for display</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-success mt-1">✓</span>
-                    <span>Supports legacy single-tool and modern multi-tool formats</span>
+                    <span>Fallback to author-provided parameters if extraction fails</span>
                   </li>
                 </ul>
               </div>

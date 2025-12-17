@@ -114,17 +114,54 @@ export default function SpecPage(): React.ReactElement {
             <p className="text-lg text-foreground-secondary mb-8">
               The TPMJS specification defines a{' '}
               <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code> field in
-              package.json with three tiers of metadata. Higher tiers receive better visibility and
-              quality scores.
+              package.json. TPMJS automatically extracts parameter schemas from your tool code, so
+              you only need to provide basic metadata.
             </p>
 
-            {/* Tier 1: Minimal */}
+            {/* Auto-extraction callout */}
+            <div className="mb-12 p-6 border-2 border-primary/30 rounded-lg bg-primary/5">
+              <div className="flex items-start gap-4">
+                <div className="text-3xl">✨</div>
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-2">
+                    Automatic Schema Extraction
+                  </h3>
+                  <p className="text-foreground-secondary mb-4">
+                    TPMJS automatically extracts your tool&apos;s input schema (parameters) by
+                    analyzing your code when it syncs. You no longer need to manually document
+                    parameters, returns, or AI agent guidance in package.json.
+                  </p>
+                  <div className="grid md:grid-cols-3 gap-4 text-sm">
+                    <div className="p-3 bg-background rounded border border-border">
+                      <strong className="text-foreground">inputSchema</strong>
+                      <p className="text-foreground-secondary mt-1">
+                        Auto-extracted from your Zod schema
+                      </p>
+                    </div>
+                    <div className="p-3 bg-background rounded border border-border">
+                      <strong className="text-foreground">parameters</strong>
+                      <p className="text-foreground-secondary mt-1">
+                        Derived from inputSchema automatically
+                      </p>
+                    </div>
+                    <div className="p-3 bg-background rounded border border-border">
+                      <strong className="text-foreground">Tool page</strong>
+                      <p className="text-foreground-secondary mt-1">
+                        Shows extracted schema with source badge
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Required Fields */}
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-4">
-                <Badge variant="outline" size="lg">
-                  Tier 1: Minimal
+                <Badge variant="default" size="lg">
+                  Required Fields
                 </Badge>
-                <span className="text-foreground-secondary">Required fields only</span>
+                <span className="text-foreground-secondary">What you need to provide</span>
               </div>
               <Card>
                 <CardContent className="pt-6">
@@ -147,23 +184,33 @@ export default function SpecPage(): React.ReactElement {
 
                     <div>
                       <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>description</code> <span className="text-red-500">*</span>
+                        <code>tools</code> <span className="text-red-500">*</span>
                       </h4>
-                      <p className="text-sm text-foreground-secondary">
-                        Clear description of what the tool does. Must be 20-500 characters. This
-                        appears in search results and tool listings.
+                      <p className="text-sm text-foreground-secondary mb-3">
+                        Array of tools exported by your package. Each tool needs:
                       </p>
+                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
+                        <li>
+                          <code className="text-foreground">exportName</code> - The exported
+                          function name (required)
+                        </li>
+                        <li>
+                          <code className="text-foreground">description</code> - What the tool does,
+                          20-500 chars (required)
+                        </li>
+                      </ul>
                     </div>
                   </div>
 
                   <div className="mt-6">
-                    <h5 className="text-sm font-semibold text-foreground mb-3">Example:</h5>
+                    <h5 className="text-sm font-semibold text-foreground mb-3">Minimal Example:</h5>
                     <CodeBlock
                       language="json"
                       code={`{
+  "name": "@yourname/my-tool",
+  "keywords": ["tpmjs-tool"],
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": ["vercel-ai"],
     "tools": [
       {
         "exportName": "sentimentAnalysisTool",
@@ -173,118 +220,23 @@ export default function SpecPage(): React.ReactElement {
   }
 }`}
                     />
+                    <p className="text-sm text-foreground-secondary mt-4">
+                      That&apos;s it! TPMJS will automatically extract the inputSchema from your
+                      tool when it syncs.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Tier 2: Basic */}
-            <div className="mb-12">
-              <div className="flex items-center gap-3 mb-4">
-                <Badge variant="default" size="lg">
-                  Tier 2: Basic
-                </Badge>
-                <span className="text-foreground-secondary">
-                  + Parameter and return type documentation
-                </span>
-              </div>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>parameters</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-3">
-                        Array of parameter objects describing function inputs. Each parameter has:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
-                        <li>
-                          <code className="text-foreground">name</code> - Parameter name
-                        </li>
-                        <li>
-                          <code className="text-foreground">type</code> - TypeScript type
-                        </li>
-                        <li>
-                          <code className="text-foreground">description</code> - What it does
-                        </li>
-                        <li>
-                          <code className="text-foreground">required</code> - Boolean
-                        </li>
-                        <li>
-                          <code className="text-foreground">default</code> - Default value
-                          (optional)
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>returns</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-3">
-                        Object describing the return value:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
-                        <li>
-                          <code className="text-foreground">type</code> - Return type
-                        </li>
-                        <li>
-                          <code className="text-foreground">description</code> - What is returned
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <h5 className="text-sm font-semibold text-foreground mb-3">Example:</h5>
-                    <CodeBlock
-                      language="json"
-                      code={`{
-  "tpmjs": {
-    "category": "text-analysis",
-    "frameworks": ["vercel-ai"],
-    "tools": [
-      {
-        "exportName": "sentimentAnalysisTool",
-        "description": "Analyzes sentiment in text",
-        "parameters": [
-          {
-            "name": "text",
-            "type": "string",
-            "description": "The text to analyze",
-            "required": true
-          },
-          {
-            "name": "language",
-            "type": "string",
-            "description": "Language code (e.g., 'en', 'es')",
-            "required": false,
-            "default": "en"
-          }
-        ],
-        "returns": {
-          "type": "SentimentResult",
-          "description": "Object with score (-1 to 1) and label (positive/negative/neutral)"
-        }
-      }
-    ]
-  }
-}`}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Tier 3: Rich */}
+            {/* Optional Fields */}
             <div className="mb-12">
               <div className="flex items-center gap-3 mb-4">
                 <Badge variant="success" size="lg">
-                  Tier 3: Rich
+                  Optional Fields
                 </Badge>
                 <span className="text-foreground-secondary">
-                  + Complete metadata for maximum visibility
+                  Additional metadata for better visibility
                 </span>
               </div>
               <Card>
@@ -310,10 +262,6 @@ export default function SpecPage(): React.ReactElement {
                           <code className="text-foreground">required</code> - Boolean (defaults to
                           true)
                         </li>
-                        <li>
-                          <code className="text-foreground">default</code> - Default value if not
-                          provided (optional)
-                        </li>
                       </ul>
                     </div>
 
@@ -338,39 +286,17 @@ export default function SpecPage(): React.ReactElement {
                         ))}
                       </div>
                     </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>aiAgent</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-2">
-                        AI agent integration guidance. Helps LLMs understand when and how to use
-                        your tool:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
-                        <li>
-                          <code className="text-foreground">useCase</code> - When to use this tool
-                          (min 10 chars, required)
-                        </li>
-                        <li>
-                          <code className="text-foreground">limitations</code> - Known constraints
-                          (optional)
-                        </li>
-                        <li>
-                          <code className="text-foreground">examples</code> - Array of example use
-                          cases (optional)
-                        </li>
-                      </ul>
-                    </div>
                   </div>
 
                   <div className="mt-6">
                     <h5 className="text-sm font-semibold text-foreground mb-3">
-                      Complete Example:
+                      Complete Example with Optional Fields:
                     </h5>
                     <CodeBlock
                       language="json"
                       code={`{
+  "name": "@yourname/sentiment-tool",
+  "keywords": ["tpmjs-tool"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai", "langchain"],
@@ -384,17 +310,7 @@ export default function SpecPage(): React.ReactElement {
     "tools": [
       {
         "exportName": "sentimentAnalysisTool",
-        "description": "Advanced sentiment analysis with emotion detection",
-        "parameters": [...],
-        "returns": {...},
-        "aiAgent": {
-          "useCase": "Use when users need to analyze sentiment or detect emotions in text",
-          "limitations": "English and Spanish only. Max 10,000 characters per request.",
-          "examples": [
-            "Analyze customer review sentiment",
-            "Detect emotions in user feedback"
-          ]
-        }
+        "description": "Advanced sentiment analysis with emotion detection"
       }
     ]
   }
@@ -404,6 +320,106 @@ export default function SpecPage(): React.ReactElement {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Deprecated Fields */}
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-4">
+                <Badge variant="outline" size="lg">
+                  Deprecated
+                </Badge>
+                <span className="text-foreground-secondary">
+                  Now auto-extracted (kept for backward compatibility)
+                </span>
+              </div>
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-foreground-secondary mb-4">
+                    The following fields are now automatically extracted from your tool code. You no
+                    longer need to specify them manually:
+                  </p>
+                  <ul className="space-y-3 text-sm text-foreground-secondary">
+                    <li className="flex items-start gap-2">
+                      <code className="text-foreground bg-surface px-2 py-1 rounded">
+                        parameters
+                      </code>
+                      <span>→ Auto-extracted from tool&apos;s Zod inputSchema</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <code className="text-foreground bg-surface px-2 py-1 rounded">returns</code>
+                      <span>→ Auto-extracted from tool definition</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <code className="text-foreground bg-surface px-2 py-1 rounded">aiAgent</code>
+                      <span>→ Auto-extracted from tool metadata</span>
+                    </li>
+                  </ul>
+                  <p className="text-foreground-secondary mt-4 text-sm">
+                    If auto-extraction fails, TPMJS will fall back to any manually provided values.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
+          {/* Schema Extraction */}
+          <section className="mb-16">
+            <h2 className="text-3xl font-bold mb-6 text-foreground">Schema Extraction</h2>
+            <p className="text-lg text-foreground-secondary mb-6">
+              When TPMJS syncs your package, it automatically extracts your tool&apos;s inputSchema
+              by loading and inspecting your tool in a sandboxed environment.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <Card>
+                <CardHeader>
+                  <div className="text-3xl mb-2">🔄</div>
+                  <CardTitle>During Sync</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-foreground-secondary">
+                    Schema is extracted automatically when your package is discovered or updated
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="text-3xl mb-2">🏷️</div>
+                  <CardTitle>Source Badge</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-foreground-secondary">
+                    Tool pages show whether schema was &quot;Auto-extracted&quot; or
+                    &quot;Author-provided&quot;
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <div className="text-3xl mb-2">🔁</div>
+                  <CardTitle>Manual Re-extract</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-foreground-secondary">
+                    Users can trigger re-extraction from the tool page if needed
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            <Card>
+              <CardContent className="pt-6">
+                <h4 className="text-sm font-semibold text-foreground mb-3">How It Works:</h4>
+                <ol className="space-y-2 text-sm text-foreground-secondary list-decimal list-inside">
+                  <li>Your tool is loaded in a Deno sandbox via esm.sh</li>
+                  <li>
+                    The <code className="text-foreground">inputSchema</code> property is read from
+                    your exported tool
+                  </li>
+                  <li>The JSON Schema is stored in our database</li>
+                  <li>Parameters are derived from the schema for display</li>
+                </ol>
+              </CardContent>
+            </Card>
           </section>
 
           {/* Field Reference Table */}
@@ -417,7 +433,6 @@ export default function SpecPage(): React.ReactElement {
                       <tr className="border-b border-border">
                         <th className="text-left py-3 px-4 text-foreground">Field</th>
                         <th className="text-left py-3 px-4 text-foreground">Type</th>
-                        <th className="text-left py-3 px-4 text-foreground">Tier</th>
                         <th className="text-left py-3 px-4 text-foreground">Required</th>
                         <th className="text-left py-3 px-4 text-foreground">Description</th>
                       </tr>
@@ -429,66 +444,27 @@ export default function SpecPage(): React.ReactElement {
                         </td>
                         <td className="py-3 px-4">string</td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline" size="sm">
-                            Minimal
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">
                           <span className="text-red-500">Yes</span>
                         </td>
                         <td className="py-3 px-4">Tool category from predefined list</td>
                       </tr>
                       <tr className="border-b border-border">
                         <td className="py-3 px-4">
-                          <code className="text-foreground">description</code>
-                        </td>
-                        <td className="py-3 px-4">string</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="outline" size="sm">
-                            Minimal
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className="text-red-500">Yes</span>
-                        </td>
-                        <td className="py-3 px-4">Tool description (20-500 chars)</td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">parameters</code>
+                          <code className="text-foreground">tools</code>
                         </td>
                         <td className="py-3 px-4">array</td>
                         <td className="py-3 px-4">
-                          <Badge variant="default" size="sm">
-                            Basic
-                          </Badge>
+                          <span className="text-red-500">Yes</span>
                         </td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">Function parameter definitions</td>
-                      </tr>
-                      <tr className="border-b border-border">
                         <td className="py-3 px-4">
-                          <code className="text-foreground">returns</code>
+                          Array of tool definitions (exportName + description)
                         </td>
-                        <td className="py-3 px-4">object</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="default" size="sm">
-                            Basic
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">Return type definition</td>
                       </tr>
                       <tr className="border-b border-border">
                         <td className="py-3 px-4">
                           <code className="text-foreground">env</code>
                         </td>
                         <td className="py-3 px-4">array</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="success" size="sm">
-                            Rich
-                          </Badge>
-                        </td>
                         <td className="py-3 px-4">No</td>
                         <td className="py-3 px-4">Required environment variables</td>
                       </tr>
@@ -497,26 +473,50 @@ export default function SpecPage(): React.ReactElement {
                           <code className="text-foreground">frameworks</code>
                         </td>
                         <td className="py-3 px-4">array</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="success" size="sm">
-                            Rich
-                          </Badge>
-                        </td>
                         <td className="py-3 px-4">No</td>
                         <td className="py-3 px-4">Compatible AI frameworks</td>
                       </tr>
-                      <tr className="border-b border-border">
+                      <tr className="border-b border-border bg-surface/50">
                         <td className="py-3 px-4">
-                          <code className="text-foreground">aiAgent</code>
+                          <code className="text-foreground-tertiary">parameters</code>
                         </td>
-                        <td className="py-3 px-4">object</td>
+                        <td className="py-3 px-4 text-foreground-tertiary">array</td>
                         <td className="py-3 px-4">
-                          <Badge variant="success" size="sm">
-                            Rich
+                          <Badge variant="outline" size="sm">
+                            Deprecated
                           </Badge>
                         </td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">AI agent integration guidance</td>
+                        <td className="py-3 px-4 text-foreground-tertiary">
+                          Auto-extracted from tool
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border bg-surface/50">
+                        <td className="py-3 px-4">
+                          <code className="text-foreground-tertiary">returns</code>
+                        </td>
+                        <td className="py-3 px-4 text-foreground-tertiary">object</td>
+                        <td className="py-3 px-4">
+                          <Badge variant="outline" size="sm">
+                            Deprecated
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-foreground-tertiary">
+                          Auto-extracted from tool
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border bg-surface/50">
+                        <td className="py-3 px-4">
+                          <code className="text-foreground-tertiary">aiAgent</code>
+                        </td>
+                        <td className="py-3 px-4 text-foreground-tertiary">object</td>
+                        <td className="py-3 px-4">
+                          <Badge variant="outline" size="sm">
+                            Deprecated
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4 text-foreground-tertiary">
+                          Auto-extracted from tool
+                        </td>
                       </tr>
                     </tbody>
                   </table>

@@ -841,8 +841,16 @@ while (true) {
             <DocSection id="tpmjs-spec" title="TPMJS Specification">
               <p className="text-foreground-secondary mb-6">
                 The <code className="text-primary">tpmjs</code> field in package.json describes your
-                tool&apos;s capabilities.
+                tool. TPMJS automatically extracts parameter schemas from your tool code, so you
+                only need to provide basic metadata.
               </p>
+              <div className="p-4 border border-primary/30 rounded-lg bg-primary/5 mb-6">
+                <p className="text-sm text-foreground-secondary">
+                  <strong className="text-foreground">✨ Auto Schema Extraction:</strong> Parameters
+                  are automatically extracted from your tool&apos;s Zod inputSchema - no need to
+                  document them manually!
+                </p>
+              </div>
               <CodeBlock
                 language="json"
                 code={`{
@@ -855,19 +863,7 @@ while (true) {
     "tools": [
       {
         "exportName": "myTool",
-        "description": "What your tool does (20-500 chars)",
-        "parameters": [
-          {
-            "name": "input",
-            "type": "string",
-            "description": "The input to process",
-            "required": true
-          }
-        ],
-        "returns": {
-          "type": "string",
-          "description": "The processed output"
-        }
+        "description": "What your tool does (20-500 chars)"
       }
     ]
   }
@@ -880,42 +876,39 @@ while (true) {
               </div>
             </DocSection>
 
-            <DocSection id="metadata-tiers" title="Metadata Tiers">
+            <DocSection id="metadata-tiers" title="Metadata Fields">
               <p className="text-foreground-secondary mb-6">
-                There are three tiers of metadata. Higher tiers get better visibility and quality
-                scores.
+                TPMJS now auto-extracts parameter schemas, simplifying what you need to provide.
               </p>
               <div className="space-y-4">
                 <div className="p-4 border border-border rounded-lg bg-surface">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="outline">Tier 1: Minimal</Badge>
-                    <span className="text-sm text-foreground-tertiary">1x multiplier</span>
+                    <Badge variant="default">Required</Badge>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    Required fields only: <code className="text-primary">category</code>,{' '}
-                    <code className="text-primary">description</code>,{' '}
-                    <code className="text-primary">exportName</code>
+                    <code className="text-primary">category</code>,{' '}
+                    <code className="text-primary">tools</code> (with{' '}
+                    <code className="text-primary">exportName</code> +{' '}
+                    <code className="text-primary">description</code>)
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-surface">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="default">Tier 2: Basic</Badge>
-                    <span className="text-sm text-foreground-tertiary">2x multiplier</span>
+                    <Badge variant="success">Optional</Badge>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    + <code className="text-primary">parameters</code> and{' '}
-                    <code className="text-primary">returns</code> documentation
+                    <code className="text-primary">env</code> (API keys),{' '}
+                    <code className="text-primary">frameworks</code> (compatibility)
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-surface">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="success">Tier 3: Rich</Badge>
-                    <span className="text-sm text-foreground-tertiary">4x multiplier</span>
+                    <Badge variant="outline">Auto-extracted</Badge>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    + <code className="text-primary">env</code>,{' '}
-                    <code className="text-primary">frameworks</code>,{' '}
-                    <code className="text-primary">aiAgent</code> (useCase, limitations, examples)
+                    <code className="text-primary">parameters</code>,{' '}
+                    <code className="text-primary">returns</code>,{' '}
+                    <code className="text-primary">aiAgent</code> - extracted from your tool code
                   </p>
                 </div>
               </div>
@@ -1088,6 +1081,10 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                     a: 'Tools are discovered within 2-15 minutes of publishing to npm. Make sure you have the "tpmjs-tool" keyword in your package.json.',
                   },
                   {
+                    q: 'How does schema extraction work?',
+                    a: "TPMJS automatically loads your tool in a sandbox and extracts the inputSchema from your Zod definition. You don't need to manually document parameters.",
+                  },
+                  {
                     q: 'Is TPMJS free to use?',
                     a: 'Yes! TPMJS is free for public tools. We may introduce paid tiers for private registries and enterprise features in the future.',
                   },
@@ -1098,10 +1095,6 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                   {
                     q: 'How are tools executed?',
                     a: 'Tools are dynamically loaded from esm.sh and executed in a sandboxed Deno runtime on Railway. No local installation is required.',
-                  },
-                  {
-                    q: 'Can I run my own TPMJS registry?',
-                    a: 'Yes! Set the TPMJS_API_URL and TPMJS_EXECUTOR_URL environment variables to point to your own infrastructure.',
                   },
                 ].map((item) => (
                   <div key={item.q} className="p-4 border border-border rounded-lg bg-surface">

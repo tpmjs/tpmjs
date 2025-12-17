@@ -113,36 +113,36 @@ export default function FAQPage(): React.ReactElement {
               </code>
             </FAQItem>
 
-            {/* Question 3: What are the metadata tiers? */}
-            <FAQItem question="What are the metadata tiers (minimal, rich)?">
+            {/* Question 3: How does schema extraction work? */}
+            <FAQItem question="How does automatic schema extraction work?">
               <p>
-                TPMJS supports three metadata tiers, each providing different levels of detail and
-                affecting your tool&apos;s quality score:
+                TPMJS automatically extracts your tool&apos;s input schema (parameters) by loading
+                and analyzing your tool code in a sandboxed environment. This means you don&apos;t
+                need to manually document parameters in package.json.
               </p>
               <ul className="space-y-3">
                 <li>
-                  <strong className="text-foreground">Tier 1: Minimal (1x multiplier)</strong> -
-                  Basic metadata with category, frameworks, and simple tool descriptions. Quick to
-                  set up but lower visibility.
+                  <strong className="text-foreground">During sync</strong> - When your package is
+                  discovered or updated, TPMJS loads it via esm.sh and reads the inputSchema from
+                  your exported tool.
                 </li>
                 <li>
-                  <strong className="text-foreground">Tier 2: Basic (2x multiplier)</strong> - Adds
-                  parameter and return type information, helping AI agents understand how to use
-                  your tool.
+                  <strong className="text-foreground">Schema source badge</strong> - Tool pages show
+                  whether the schema was &quot;Auto-extracted&quot; or &quot;Author-provided&quot;
+                  (fallback).
                 </li>
                 <li>
-                  <strong className="text-foreground">Tier 3: Rich (4x multiplier)</strong> - Full
-                  documentation including AI agent guidance, use cases, limitations, examples, and
-                  environment variables. Gets the best visibility and quality score.
+                  <strong className="text-foreground">Manual re-extraction</strong> - Users can
+                  trigger re-extraction from the tool page if needed.
                 </li>
               </ul>
               <p>
-                Higher tiers get better quality scores and more visibility in search results. Learn
-                more on our{' '}
-                <Link href="/publish" className="text-primary hover:underline font-medium">
-                  publishing guide
-                </Link>
-                .
+                This simplifies publishing - you only need to provide category, description, and
+                exportName. See our{' '}
+                <Link href="/spec" className="text-primary hover:underline font-medium">
+                  specification
+                </Link>{' '}
+                for details.
               </p>
             </FAQItem>
 
