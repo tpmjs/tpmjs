@@ -21,6 +21,7 @@
     "@tpmjs/utils": "workspace:*",
     "@types/d3": "^7.4.3",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@vercel/analytics": "^1.6.1",
     "ai": "6.0.0-beta.124",
     "bm25": "^0.1.1",
     "d3": "^7.9.0",
