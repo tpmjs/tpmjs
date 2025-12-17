@@ -4,6 +4,7 @@ import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '~/env';
 import { performHealthCheck } from '~/lib/health-check/health-check-service';
+import { convertJsonSchemaToParameters, extractToolSchema } from '~/lib/schema-extraction';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,10 +43,10 @@ export async function POST(request: NextRequest) {
       ? String((checkpoint.checkpoint as { lastSeq?: string })?.lastSeq || '0')
       : '0';
 
-    // Fetch changes from NPM (limit to 100 per run to avoid timeouts)
+    // Fetch changes from NPM (limit to 30 per run to allow time for schema extraction)
     const changesResult = await fetchChanges({
       since: lastSeq,
-      limit: 100,
+      limit: 30,
       includeDocs: false,
     });
 
@@ -150,6 +151,8 @@ export async function POST(request: NextRequest) {
               // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
               aiAgent: toolDef.aiAgent ? (toolDef.aiAgent as any) : undefined,
               qualityScore: null, // Will be calculated by metrics sync
+              // Schema will be extracted below
+              schemaSource: toolDef.parameters ? 'author' : null,
             },
             update: {
               description: toolDef.description,
@@ -162,7 +165,44 @@ export async function POST(request: NextRequest) {
             },
           });
 
-          // Trigger immediate health check (non-blocking)
+          // Extract schema synchronously from executor
+          // Note: We pass null for env as schema extraction doesn't need env values
+          const schemaResult = await extractToolSchema(
+            pkg.name,
+            toolDef.exportName,
+            pkg.version,
+            null
+          );
+
+          if (schemaResult.success) {
+            // Update tool with extracted schema
+            await prisma.tool.update({
+              where: { id: upsertedTool.id },
+              data: {
+                // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
+                inputSchema: schemaResult.inputSchema as any,
+                // Also update parameters array for backward compatibility
+                // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
+                parameters: convertJsonSchemaToParameters(schemaResult.inputSchema) as any,
+                schemaSource: 'extracted',
+                schemaExtractedAt: new Date(),
+              },
+            });
+            console.log(`Schema extracted for ${pkg.name}/${toolDef.exportName}`);
+          } else {
+            // Extraction failed - mark schema source appropriately
+            console.log(
+              `Schema extraction failed for ${pkg.name}/${toolDef.exportName}: ${schemaResult.error}`
+            );
+            await prisma.tool.update({
+              where: { id: upsertedTool.id },
+              data: {
+                schemaSource: toolDef.parameters ? 'author' : null,
+              },
+            });
+          }
+
+          // Trigger health check (non-blocking) for execution testing
           performHealthCheck(upsertedTool.id, 'sync').catch((err) => {
             console.error(
               `Health check failed for ${pkg.name}/${toolDef.exportName} (${upsertedTool.id}):`,

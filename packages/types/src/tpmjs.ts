@@ -22,6 +22,10 @@ export type TpmjsCategory = (typeof TPMJS_CATEGORIES)[number];
 
 /**
  * Tool parameter schema
+ *
+ * @deprecated Parameters are now auto-extracted from the tool's inputSchema at runtime.
+ * You no longer need to manually specify parameters in your package.json.
+ * This schema is kept for backward compatibility as a fallback if auto-extraction fails.
  */
 export const TpmjsParameterSchema = z.object({
   name: z.string().min(1),
@@ -35,6 +39,9 @@ export type TpmjsParameter = z.infer<typeof TpmjsParameterSchema>;
 
 /**
  * Return value schema
+ *
+ * @deprecated Return type information is now auto-extracted from the tool at runtime.
+ * You no longer need to manually specify returns in your package.json.
  */
 export const TpmjsReturnsSchema = z.object({
   type: z.string().min(1),
@@ -57,6 +64,9 @@ export type TpmjsEnv = z.infer<typeof TpmjsEnvSchema>;
 
 /**
  * AI Agent guidance schema
+ *
+ * @deprecated AI agent guidance is now auto-extracted from the tool at runtime.
+ * You no longer need to manually specify aiAgent in your package.json.
  */
 export const TpmjsAiAgentSchema = z.object({
   useCase: z.string().min(10),
@@ -68,12 +78,24 @@ export type TpmjsAiAgent = z.infer<typeof TpmjsAiAgentSchema>;
 
 /**
  * Individual tool definition within a multi-tool package
+ *
+ * Required fields:
+ * - exportName: The export name of the tool from the package
+ * - description: A description of what the tool does (20-500 chars)
+ *
+ * @deprecated fields (now auto-extracted, kept for backward compatibility):
+ * - parameters: Tool input parameters - auto-extracted from inputSchema
+ * - returns: Tool return type - auto-extracted from tool
+ * - aiAgent: AI agent guidance - auto-extracted from tool
  */
 export const TpmjsToolDefinitionSchema = z.object({
   exportName: z.string().min(1, 'Export name is required'),
   description: z.string().min(20, 'Description must be at least 20 characters').max(500),
+  // @deprecated - now auto-extracted from tool's inputSchema
   parameters: z.array(TpmjsParameterSchema).optional(),
+  // @deprecated - now auto-extracted from tool
   returns: TpmjsReturnsSchema.optional(),
+  // @deprecated - now auto-extracted from tool
   aiAgent: TpmjsAiAgentSchema.optional(),
 });
 

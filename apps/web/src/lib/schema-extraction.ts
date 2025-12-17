@@ -1,0 +1,132 @@
+/**
+ * Schema Extraction Service
+ * Extracts inputSchema from tools via the Railway executor's /load-and-describe endpoint
+ */
+
+import { env } from '~/env';
+
+const RAILWAY_EXECUTOR_URL = env.RAILWAY_EXECUTOR_URL;
+
+export interface SchemaExtractionSuccess {
+  success: true;
+  inputSchema: Record<string, unknown>;
+  description?: string;
+}
+
+export interface SchemaExtractionFailure {
+  success: false;
+  error: string;
+}
+
+export type SchemaExtractionResult = SchemaExtractionSuccess | SchemaExtractionFailure;
+
+/**
+ * Extract inputSchema from a tool by calling the executor's /load-and-describe endpoint
+ *
+ * @param packageName - NPM package name (e.g., "@tpmjs/hello-world")
+ * @param exportName - Export name (e.g., "helloWorldTool" or "default")
+ * @param version - Package version (e.g., "1.0.0")
+ * @param packageEnv - Package-level environment variables (optional)
+ * @returns Schema extraction result with inputSchema or error
+ */
+export async function extractToolSchema(
+  packageName: string,
+  exportName: string,
+  version: string,
+  packageEnv?: Record<string, unknown> | null
+): Promise<SchemaExtractionResult> {
+  try {
+    const response = await fetch(`${RAILWAY_EXECUTOR_URL}/load-and-describe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageName,
+        exportName,
+        version,
+        env: packageEnv || {},
+      }),
+      signal: AbortSignal.timeout(10000), // 10 second timeout per extraction
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      return {
+        success: false,
+        error: `HTTP ${response.status}: ${errorText || 'Request failed'}`,
+      };
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      return {
+        success: false,
+        error: data.error || 'Extraction failed without error message',
+      };
+    }
+
+    if (!data.tool?.inputSchema) {
+      return {
+        success: false,
+        error: 'No inputSchema returned from executor',
+      };
+    }
+
+    return {
+      success: true,
+      inputSchema: data.tool.inputSchema,
+      description: data.tool.description,
+    };
+  } catch (error) {
+    // Handle timeout specifically
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      return {
+        success: false,
+        error: 'Schema extraction timed out after 10 seconds',
+      };
+    }
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error during extraction',
+    };
+  }
+}
+
+/**
+ * Convert JSON Schema to parameters array format (for backward compatibility)
+ *
+ * @param inputSchema - JSON Schema object from executor
+ * @returns Array of parameter objects in legacy format
+ */
+export function convertJsonSchemaToParameters(inputSchema: Record<string, unknown>): Array<{
+  name: string;
+  type: string;
+  required: boolean;
+  description: string;
+}> {
+  const parameters: Array<{
+    name: string;
+    type: string;
+    required: boolean;
+    description: string;
+  }> = [];
+
+  const properties = inputSchema.properties as
+    | Record<string, { type?: string; description?: string }>
+    | undefined;
+  const required = (inputSchema.required as string[]) || [];
+
+  if (properties) {
+    for (const [name, prop] of Object.entries(properties)) {
+      parameters.push({
+        name,
+        type: prop.type || 'string',
+        required: required.includes(name),
+        description: prop.description || '',
+      });
+    }
+  }
+
+  return parameters;
+}

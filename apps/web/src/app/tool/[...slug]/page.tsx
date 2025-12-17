@@ -47,6 +47,9 @@ interface Tool {
     required: boolean;
     default?: unknown;
   }> | null;
+  inputSchema: Record<string, unknown> | null;
+  schemaSource: 'extracted' | 'author' | null;
+  schemaExtractedAt: string | null;
   returns: {
     type: string;
     description: string;
@@ -77,6 +80,7 @@ export default function ToolDetailPage({
   const [error, setError] = useState<string | null>(null);
   const [slug, setSlug] = useState<string>('');
   const [recheckLoading, setRecheckLoading] = useState(false);
+  const [extractSchemaLoading, setExtractSchemaLoading] = useState(false);
 
   useEffect(() => {
     // Join slug array to reconstruct package name (e.g., ['@tpmjs', 'text-transformer'] -> '@tpmjs/text-transformer')
@@ -205,6 +209,40 @@ export default function ToolDetailPage({
       alert('Failed to recheck health');
     } finally {
       setRecheckLoading(false);
+    }
+  };
+
+  const extractSchema = async () => {
+    if (!tool) return;
+
+    setExtractSchemaLoading(true);
+    try {
+      const response = await fetch('/api/tools/extract-schema', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          packageName: tool.package.npmPackageName,
+          exportName: tool.exportName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || data.error || 'Schema extraction failed');
+        return;
+      }
+
+      if (data.success) {
+        // Refresh page to show updated schema
+        window.location.reload();
+      } else {
+        alert(data.message || 'Schema extraction failed');
+      }
+    } catch {
+      alert('Failed to extract schema');
+    } finally {
+      setExtractSchemaLoading(false);
     }
   };
 
@@ -410,14 +448,33 @@ console.log(result.text);`}
               </Card>
             )}
 
-            {/* Parameters */}
-            {tool.parameters && tool.parameters.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Parameters</CardTitle>
-                  <CardDescription>Available configuration options</CardDescription>
-                </CardHeader>
-                <CardContent>
+            {/* Parameters / Input Schema */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle>Parameters</CardTitle>
+                    <CardDescription>Available configuration options</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {tool.schemaSource === 'extracted' ? (
+                      <Badge variant="default" size="sm">
+                        Auto-extracted
+                      </Badge>
+                    ) : tool.schemaSource === 'author' ? (
+                      <Badge variant="secondary" size="sm">
+                        Author-provided
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" size="sm">
+                        No schema
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {tool.parameters && tool.parameters.length > 0 ? (
                   <div className="space-y-4">
                     {tool.parameters.map((param) => (
                       <div key={param.name} className="border-b border-border pb-4 last:border-0">
@@ -446,10 +503,60 @@ console.log(result.text);`}
                         )}
                       </div>
                     ))}
+                    {tool.schemaExtractedAt && (
+                      <p className="text-xs text-foreground-tertiary">
+                        Schema extracted: {new Date(tool.schemaExtractedAt).toLocaleString()}
+                      </p>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-sm text-foreground-secondary mb-4">
+                      No schema available for this tool.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={extractSchema}
+                      disabled={extractSchemaLoading}
+                    >
+                      {extractSchemaLoading ? (
+                        <>
+                          <Spinner size="sm" className="mr-2" />
+                          Extracting...
+                        </>
+                      ) : (
+                        'Extract Schema'
+                      )}
+                    </Button>
+                  </div>
+                )}
+                {tool.schemaSource !== 'extracted' &&
+                  tool.parameters &&
+                  tool.parameters.length > 0 && (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={extractSchema}
+                        disabled={extractSchemaLoading}
+                      >
+                        {extractSchemaLoading ? (
+                          <>
+                            <Spinner size="sm" className="mr-2" />
+                            Extracting...
+                          </>
+                        ) : (
+                          'Re-extract Schema'
+                        )}
+                      </Button>
+                      <p className="text-xs text-foreground-tertiary mt-2">
+                        Try to auto-extract schema from the package
+                      </p>
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
 
             {/* README */}
             {pkg.npmReadme && (

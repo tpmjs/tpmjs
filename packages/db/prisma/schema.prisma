@@ -66,9 +66,14 @@ model Tool {
 
   // Tool Metadata
   description String @db.Text
-  parameters  Json?  @db.JsonB
-  returns     Json?  @db.JsonB
-  aiAgent     Json?  @map("ai_agent") @db.JsonB
+  parameters  Json?  @db.JsonB // Legacy/fallback - author-provided parameters array
+  returns     Json?  @db.JsonB // @deprecated - will be auto-extracted in future
+  aiAgent     Json?  @map("ai_agent") @db.JsonB // @deprecated - will be auto-extracted in future
+
+  // Schema Extraction Fields
+  inputSchema       Json?     @map("input_schema") @db.JsonB // Full JSON Schema from executor
+  schemaSource      String?   @map("schema_source") @db.VarChar(20) // 'extracted' | 'author' | null
+  schemaExtractedAt DateTime? @map("schema_extracted_at")
 
   // Tool Metrics
   qualityScore Decimal? @map("quality_score") @db.Decimal(3, 2) // 0.00 to 1.00
