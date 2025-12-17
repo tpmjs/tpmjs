@@ -152,6 +152,9 @@ export async function POST(request: NextRequest) {
               .map((t) => ({
                 name: t.name,
                 description: t.description,
+                parameters: undefined,
+                returns: undefined,
+                aiAgent: undefined,
               }));
             toolDiscoverySource = 'auto';
             console.log(
