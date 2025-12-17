@@ -45,6 +45,7 @@ async function syncManualTools() {
           npmAuthor: npmData.author || null,
           npmMaintainers: npmData.maintainers || null,
           category: manualTool.category,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           env: manualTool.env ? (manualTool.env as any) : null,
           frameworks: manualTool.frameworks,
           tier: calculateTier(manualTool),
@@ -64,6 +65,7 @@ async function syncManualTools() {
           npmAuthor: npmData.author || null,
           npmMaintainers: npmData.maintainers || null,
           category: manualTool.category,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           env: manualTool.env ? (manualTool.env as any) : null,
           frameworks: manualTool.frameworks,
           tier: calculateTier(manualTool),
@@ -90,14 +92,20 @@ async function syncManualTools() {
           packageId: packageRecord.id,
           exportName: manualTool.name,
           description: manualTool.description,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           parameters: manualTool.parameters ? (manualTool.parameters as any) : null,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           returns: manualTool.returns ? (manualTool.returns as any) : null,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           aiAgent: manualTool.aiAgent ? (manualTool.aiAgent as any) : null,
         },
         update: {
           description: manualTool.description,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           parameters: manualTool.parameters ? (manualTool.parameters as any) : null,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           returns: manualTool.returns ? (manualTool.returns as any) : null,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           aiAgent: manualTool.aiAgent ? (manualTool.aiAgent as any) : null,
         },
       });
