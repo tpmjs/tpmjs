@@ -782,4 +782,38 @@ export const manualTools: ManualTool[] = [
     websiteUrl: 'https://tpmjs.com',
     docsUrl: 'https://tpmjs.com/spec',
   },
+  {
+    npmPackageName: '@airweave/vercel-ai-sdk',
+    category: 'search',
+    frameworks: ['vercel-ai'],
+    exportName: 'airweaveSearch',
+    description: 'Provides unified search across all connected data sources using semantic search.',
+    tags: ['search', 'rag', 'data-sources', 'semantic-search'],
+    env: [
+      {
+        name: 'AIRWEAVE_API_KEY',
+        description: 'API key for authenticating with Airweave services.',
+        required: true,
+      }
+    ],
+    parameters: [
+      {
+        name: 'defaultCollection',
+        type: 'string',
+        description: 'The default collection to search within.',
+        required: true,
+      }
+    ],
+    returns: {
+      type: 'object',
+      description: 'The search results from the specified data sources.',
+    },
+    aiAgent: {
+      useCase: 'Use this tool to perform semantic searches across multiple data sources.',
+      examples: ['Search for key decisions from last week in the knowledge base.'],
+    },
+    docsUrl: 'https://docs.airweave.ai',
+    apiKeyUrl: 'https://app.airweave.ai/settings/api-keys',
+    websiteUrl: 'https://airweave.ai',
+  },
 ];
