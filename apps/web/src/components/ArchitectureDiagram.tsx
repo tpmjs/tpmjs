@@ -1,535 +1,510 @@
 'use client';
 
-/**
- * ArchitectureDiagram Component
- *
- * SVG diagram showing TPMJS system architecture with animated flow paths.
- * Replaces ASCII art with a clean, themed visual.
- */
+import * as d3 from 'd3';
+import { useEffect, useRef, useState } from 'react';
+
+interface Node {
+  id: string;
+  label: string;
+  sublabel?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  type: 'source' | 'process' | 'storage' | 'api' | 'output';
+}
+
+interface Connection {
+  from: string;
+  to: string;
+  animated?: boolean;
+}
+
+const nodeDescriptions: Record<string, { title: string; description: string }> = {
+  npm: {
+    title: 'NPM Registry',
+    description:
+      'The public npm registry containing all JavaScript packages. TPMJS monitors packages with the tpmjs-tool keyword.',
+  },
+  'changes-feed': {
+    title: 'Changes Feed',
+    description:
+      "Real-time monitoring of npm's _changes endpoint. Catches new packages and updates within 2 minutes of publication.",
+  },
+  'keyword-search': {
+    title: 'Keyword Search',
+    description:
+      'Periodic search for packages with the tpmjs-tool keyword. Acts as a backup to ensure no packages are missed.',
+  },
+  validation: {
+    title: 'Schema Validation',
+    description:
+      'Validates the tpmjs field in package.json against the TPMJS specification. Invalid packages are rejected.',
+  },
+  database: {
+    title: 'PostgreSQL Database',
+    description:
+      'Stores tool metadata, health check results, sync logs, and quality scores. Hosted on Neon with connection pooling.',
+  },
+  'health-checks': {
+    title: 'Health Checks',
+    description:
+      'Verifies tools can be imported and executed. Checks for missing dependencies, runtime errors, and schema compliance.',
+  },
+  metrics: {
+    title: 'Metrics & Quality Score',
+    description:
+      'Hourly sync of npm download stats. Quality score calculated from tier (rich/minimal), downloads, and GitHub stars.',
+  },
+  'search-api': {
+    title: 'Search API',
+    description:
+      'REST endpoint for searching tools by keyword, category, or description. Returns paginated results with metadata.',
+  },
+  'execute-api': {
+    title: 'Execution API',
+    description:
+      'Executes tools in a sandboxed Deno runtime. API keys passed per-request, never stored. Results returned directly.',
+  },
+  frontend: {
+    title: 'Frontend UI',
+    description:
+      'Next.js application at tpmjs.com. Browse tools, view details, test in the playground, and read documentation.',
+  },
+};
 
 export function ArchitectureDiagram(): React.ReactElement {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const width = Math.min(containerRef.current.clientWidth, 900);
+        setDimensions({ width, height: 620 });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    const svg = d3.select(svgRef.current);
+    svg.selectAll('*').remove();
+
+    const { width } = dimensions;
+    const centerX = width / 2;
+    const scale = Math.min(1, width / 800);
+
+    const nodes: Node[] = [
+      // Top: NPM Registry
+      {
+        id: 'npm',
+        label: 'NPM Registry',
+        sublabel: 'registry.npmjs.org',
+        x: centerX,
+        y: 50,
+        width: 200 * scale,
+        height: 55,
+        type: 'source',
+      },
+      // Discovery sources
+      {
+        id: 'changes-feed',
+        label: 'Changes Feed',
+        sublabel: 'Every 2 min',
+        x: centerX - 150 * scale,
+        y: 150,
+        width: 140 * scale,
+        height: 55,
+        type: 'process',
+      },
+      {
+        id: 'keyword-search',
+        label: 'Keyword Search',
+        sublabel: 'Every 15 min',
+        x: centerX + 150 * scale,
+        y: 150,
+        width: 150 * scale,
+        height: 55,
+        type: 'process',
+      },
+      // Validation
+      {
+        id: 'validation',
+        label: 'Schema Validation',
+        sublabel: 'Zod + TPMJS Spec',
+        x: centerX,
+        y: 250,
+        width: 180 * scale,
+        height: 55,
+        type: 'process',
+      },
+      // Storage & Health
+      {
+        id: 'database',
+        label: 'PostgreSQL',
+        sublabel: 'Neon',
+        x: centerX - 130 * scale,
+        y: 350,
+        width: 130 * scale,
+        height: 55,
+        type: 'storage',
+      },
+      {
+        id: 'health-checks',
+        label: 'Health Checks',
+        sublabel: 'Import + Execute',
+        x: centerX + 130 * scale,
+        y: 350,
+        width: 145 * scale,
+        height: 55,
+        type: 'process',
+      },
+      // Metrics
+      {
+        id: 'metrics',
+        label: 'Quality Score',
+        sublabel: 'Hourly sync',
+        x: centerX,
+        y: 450,
+        width: 150 * scale,
+        height: 55,
+        type: 'process',
+      },
+      // APIs
+      {
+        id: 'search-api',
+        label: 'Search API',
+        sublabel: '/api/tools',
+        x: centerX - 120 * scale,
+        y: 530,
+        width: 120 * scale,
+        height: 50,
+        type: 'api',
+      },
+      {
+        id: 'execute-api',
+        label: 'Execute API',
+        sublabel: '/api/execute',
+        x: centerX + 120 * scale,
+        y: 530,
+        width: 130 * scale,
+        height: 50,
+        type: 'api',
+      },
+      // Frontend
+      {
+        id: 'frontend',
+        label: 'tpmjs.com',
+        sublabel: 'Search · Browse · Playground',
+        x: centerX,
+        y: 590,
+        width: 220 * scale,
+        height: 40,
+        type: 'output',
+      },
+    ];
+
+    const connections: Connection[] = [
+      { from: 'npm', to: 'changes-feed', animated: true },
+      { from: 'npm', to: 'keyword-search', animated: true },
+      { from: 'changes-feed', to: 'validation', animated: true },
+      { from: 'keyword-search', to: 'validation', animated: true },
+      { from: 'validation', to: 'database', animated: true },
+      { from: 'validation', to: 'health-checks', animated: true },
+      { from: 'database', to: 'metrics', animated: true },
+      { from: 'health-checks', to: 'metrics', animated: true },
+      { from: 'metrics', to: 'search-api', animated: true },
+      { from: 'metrics', to: 'execute-api', animated: true },
+      { from: 'search-api', to: 'frontend', animated: true },
+      { from: 'execute-api', to: 'frontend', animated: true },
+    ];
+
+    // Create defs
+    const defs = svg.append('defs');
+
+    // Glow filter
+    const glow = defs
+      .append('filter')
+      .attr('id', 'arch-glow')
+      .attr('x', '-50%')
+      .attr('y', '-50%')
+      .attr('width', '200%')
+      .attr('height', '200%');
+    glow.append('feGaussianBlur').attr('stdDeviation', '3').attr('result', 'coloredBlur');
+    const glowMerge = glow.append('feMerge');
+    glowMerge.append('feMergeNode').attr('in', 'coloredBlur');
+    glowMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+
+    // Shadow filter
+    const shadow = defs
+      .append('filter')
+      .attr('id', 'arch-shadow')
+      .attr('x', '-20%')
+      .attr('y', '-20%')
+      .attr('width', '140%')
+      .attr('height', '140%');
+    shadow
+      .append('feDropShadow')
+      .attr('dx', '0')
+      .attr('dy', '2')
+      .attr('stdDeviation', '4')
+      .attr('flood-color', 'currentColor')
+      .attr('flood-opacity', '0.15');
+
+    // Arrow marker
+    defs
+      .append('marker')
+      .attr('id', 'arch-arrowhead')
+      .attr('viewBox', '0 -5 10 10')
+      .attr('refX', 8)
+      .attr('refY', 0)
+      .attr('markerWidth', 6)
+      .attr('markerHeight', 6)
+      .attr('orient', 'auto')
+      .append('path')
+      .attr('d', 'M0,-5L10,0L0,5')
+      .attr('fill', 'currentColor')
+      .attr('class', 'text-foreground-tertiary');
+
+    const mainGroup = svg.append('g');
+
+    // Draw connections with animated flow
+    connections.forEach((conn, i) => {
+      const fromNode = nodes.find((n) => n.id === conn.from);
+      const toNode = nodes.find((n) => n.id === conn.to);
+      if (!fromNode || !toNode) return;
+
+      const startY = fromNode.y + fromNode.height / 2;
+      const endY = toNode.y - toNode.height / 2;
+      const midY = (startY + endY) / 2;
+
+      const pathData = `M ${fromNode.x} ${startY}
+                        C ${fromNode.x} ${midY},
+                          ${toNode.x} ${midY},
+                          ${toNode.x} ${endY - 8}`;
+
+      // Background path
+      mainGroup
+        .append('path')
+        .attr('d', pathData)
+        .attr('fill', 'none')
+        .attr('stroke', 'currentColor')
+        .attr('class', 'text-border')
+        .attr('stroke-width', 1.5)
+        .attr('opacity', 0.3);
+
+      // Animated path
+      const animatedPath = mainGroup
+        .append('path')
+        .attr('d', pathData)
+        .attr('fill', 'none')
+        .attr('stroke', 'currentColor')
+        .attr('class', 'text-foreground-tertiary')
+        .attr('stroke-width', 1.5)
+        .attr('stroke-dasharray', '6,10')
+        .attr('stroke-linecap', 'round')
+        .attr('marker-end', 'url(#arch-arrowhead)');
+
+      // Animate the dash offset
+      if (conn.animated) {
+        const animate = () => {
+          animatedPath
+            .attr('stroke-dashoffset', 0)
+            .transition()
+            .duration(2000)
+            .ease(d3.easeLinear)
+            .attr('stroke-dashoffset', -32)
+            .on('end', animate);
+        };
+        animate();
+      }
+
+      // Flowing particle
+      const particle = mainGroup
+        .append('circle')
+        .attr('r', 3)
+        .attr('fill', 'currentColor')
+        .attr('class', 'text-primary')
+        .attr('opacity', 0)
+        .attr('filter', 'url(#arch-glow)');
+
+      const animateParticle = () => {
+        const pathNode = animatedPath.node();
+        if (!pathNode) return;
+        const pathLength = (pathNode as SVGPathElement).getTotalLength();
+
+        particle
+          .attr('opacity', 0.9)
+          .transition()
+          .duration(1500 + Math.random() * 500)
+          .ease(d3.easeQuadInOut)
+          .attrTween('transform', () => {
+            return (t: number) => {
+              const point = (pathNode as SVGPathElement).getPointAtLength(t * pathLength);
+              return `translate(${point.x}, ${point.y})`;
+            };
+          })
+          .attr('opacity', 0)
+          .on('end', () => {
+            setTimeout(animateParticle, Math.random() * 2000 + 1000);
+          });
+      };
+      setTimeout(animateParticle, i * 200 + Math.random() * 1000);
+    });
+
+    // Draw nodes
+    nodes.forEach((node, i) => {
+      const nodeGroup = mainGroup
+        .append('g')
+        .attr('transform', `translate(${node.x}, ${node.y})`)
+        .style('cursor', 'pointer')
+        .on('mouseenter', function () {
+          setHoveredNode(node.id);
+          d3.select(this).select('.main-rect').transition().duration(200).attr('stroke-width', 2.5);
+          d3.select(this).select('.node-glow').transition().duration(200).attr('opacity', 0.25);
+        })
+        .on('mouseleave', function () {
+          setHoveredNode(null);
+          d3.select(this).select('.main-rect').transition().duration(200).attr('stroke-width', 1.5);
+          d3.select(this).select('.node-glow').transition().duration(200).attr('opacity', 0);
+        });
+
+      // Glow effect on hover
+      nodeGroup
+        .append('rect')
+        .attr('class', 'node-glow')
+        .attr('x', -node.width / 2 - 4)
+        .attr('y', -node.height / 2 - 4)
+        .attr('width', node.width + 8)
+        .attr('height', node.height + 8)
+        .attr('rx', 10)
+        .attr('fill', 'currentColor')
+        .attr('class', 'node-glow text-primary')
+        .attr('opacity', 0)
+        .attr('filter', 'url(#arch-glow)');
+
+      // Determine colors based on type
+      let strokeColor = 'var(--color-border)';
+      let fillOpacity = 0.5;
+      if (node.type === 'source') {
+        strokeColor = 'var(--color-foreground)';
+      } else if (node.type === 'process') {
+        strokeColor = 'var(--color-primary)';
+      } else if (node.type === 'storage') {
+        strokeColor = 'var(--color-foreground)';
+      } else if (node.type === 'api') {
+        strokeColor = 'var(--color-foreground-secondary)';
+      } else if (node.type === 'output') {
+        strokeColor = 'var(--color-foreground)';
+        fillOpacity = 1;
+      }
+
+      // Main rectangle
+      nodeGroup
+        .append('rect')
+        .attr('class', 'main-rect')
+        .attr('x', -node.width / 2)
+        .attr('y', -node.height / 2)
+        .attr('width', node.width)
+        .attr('height', node.height)
+        .attr('rx', node.type === 'output' ? 4 : 8)
+        .attr('fill', node.type === 'output' ? 'var(--color-foreground)' : 'var(--color-surface)')
+        .attr('fill-opacity', fillOpacity)
+        .attr('stroke', strokeColor)
+        .attr('stroke-width', 1.5)
+        .attr('filter', 'url(#arch-shadow)');
+
+      // Label
+      nodeGroup
+        .append('text')
+        .attr('x', 0)
+        .attr('y', node.sublabel ? -4 : 4)
+        .attr('text-anchor', 'middle')
+        .attr(
+          'fill',
+          node.type === 'output' ? 'var(--color-background)' : 'var(--color-foreground)'
+        )
+        .attr('font-size', '13px')
+        .attr('font-weight', '600')
+        .attr('font-family', 'ui-monospace, monospace')
+        .text(node.label);
+
+      // Sublabel
+      if (node.sublabel) {
+        nodeGroup
+          .append('text')
+          .attr('x', 0)
+          .attr('y', 14)
+          .attr('text-anchor', 'middle')
+          .attr(
+            'fill',
+            node.type === 'output' ? 'var(--color-background)' : 'var(--color-foreground-tertiary)'
+          )
+          .attr('font-size', '10px')
+          .attr('font-family', 'ui-monospace, monospace')
+          .attr('opacity', 0.8)
+          .text(node.sublabel);
+      }
+
+      // Entrance animation
+      nodeGroup
+        .attr('opacity', 0)
+        .attr('transform', `translate(${node.x}, ${node.y - 15})`)
+        .transition()
+        .delay(100 + i * 60)
+        .duration(400)
+        .ease(d3.easeCubicOut)
+        .attr('opacity', 1)
+        .attr('transform', `translate(${node.x}, ${node.y})`);
+    });
+  }, [dimensions]);
+
+  const hoveredInfo = hoveredNode ? nodeDescriptions[hoveredNode] : null;
+
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <svg
-        viewBox="0 0 800 680"
-        className="w-full h-auto"
-        role="img"
-        aria-label="TPMJS System Architecture diagram showing data flow from NPM Registry to Frontend UI"
-      >
-        {/* Definitions */}
-        <defs>
-          <marker
-            id="arch-arrow"
-            markerWidth="10"
-            markerHeight="10"
-            refX="9"
-            refY="3"
-            orient="auto"
-          >
-            <polygon points="0 0, 10 3, 0 6" fill="hsl(var(--brutalist-accent))" />
-          </marker>
-          <marker
-            id="arch-arrow-subtle"
-            markerWidth="8"
-            markerHeight="8"
-            refX="7"
-            refY="2.5"
-            orient="auto"
-          >
-            <polygon points="0 0, 8 2.5, 0 5" fill="hsl(var(--foreground-secondary))" />
-          </marker>
-        </defs>
-
-        {/* NPM Registry (Top) */}
-        <g id="npm-registry">
-          <rect
-            x="200"
-            y="20"
-            width="400"
-            height="50"
-            fill="hsl(var(--surface))"
-            stroke="hsl(var(--foreground))"
-            strokeWidth="2"
-            rx="0"
-          />
-          <text
-            x="400"
-            y="50"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="16"
-            fontFamily="monospace"
-            fontWeight="700"
-          >
-            NPM Registry
-          </text>
-        </g>
-
-        {/* Arrows from NPM to three sources */}
-        <path
-          d="M 300 70 L 150 120"
-          stroke="hsl(var(--foreground-secondary))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow-subtle)"
-        />
-        <path
-          d="M 400 70 L 400 120"
-          stroke="hsl(var(--foreground-secondary))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow-subtle)"
-        />
-        <path
-          d="M 500 70 L 650 120"
-          stroke="hsl(var(--foreground-secondary))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow-subtle)"
+    <div ref={containerRef} className="w-full">
+      <div className="relative p-4 md:p-6 border border-border rounded-xl bg-surface/50 backdrop-blur overflow-hidden">
+        {/* Subtle grid background */}
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, currentColor 1px, transparent 1px),
+              linear-gradient(to bottom, currentColor 1px, transparent 1px)
+            `,
+            backgroundSize: '32px 32px',
+          }}
         />
 
-        {/* Three Discovery Sources */}
-        <g id="changes-feed">
-          <rect
-            x="50"
-            y="120"
-            width="200"
-            height="60"
-            fill="hsl(var(--brutalist-accent) / 0.1)"
-            stroke="hsl(var(--brutalist-accent))"
-            strokeWidth="2"
-          />
-          <text
-            x="150"
-            y="145"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="14"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            Changes Feed
-          </text>
-          <text
-            x="150"
-            y="165"
-            fill="hsl(var(--foreground-secondary))"
-            textAnchor="middle"
-            fontSize="12"
-            fontFamily="monospace"
-          >
-            Every 2 min
-          </text>
-        </g>
-
-        <g id="keyword-search">
-          <rect
-            x="300"
-            y="120"
-            width="200"
-            height="60"
-            fill="hsl(var(--brutalist-accent) / 0.1)"
-            stroke="hsl(var(--brutalist-accent))"
-            strokeWidth="2"
-          />
-          <text
-            x="400"
-            y="145"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="14"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            Keyword Search
-          </text>
-          <text
-            x="400"
-            y="165"
-            fill="hsl(var(--foreground-secondary))"
-            textAnchor="middle"
-            fontSize="12"
-            fontFamily="monospace"
-          >
-            Every 15 min
-          </text>
-        </g>
-
-        <g id="manual-tools">
-          <rect
-            x="550"
-            y="120"
-            width="200"
-            height="60"
-            fill="hsl(var(--brutalist-accent) / 0.1)"
-            stroke="hsl(var(--brutalist-accent))"
-            strokeWidth="2"
-          />
-          <text
-            x="650"
-            y="145"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="14"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            Manual Tools
-          </text>
-          <text
-            x="650"
-            y="165"
-            fill="hsl(var(--foreground-secondary))"
-            textAnchor="middle"
-            fontSize="12"
-            fontFamily="monospace"
-          >
-            As needed
-          </text>
-        </g>
-
-        {/* Arrows converging to Validation */}
-        <path
-          d="M 150 180 L 150 210 L 400 210 L 400 240"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow)"
-          strokeDasharray="200"
-          strokeDashoffset="-200"
-          style={{ animation: 'archFlow 4s infinite' }}
-        />
-        <path
-          d="M 400 180 L 400 240"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow)"
-          strokeDasharray="60"
-          strokeDashoffset="-60"
-          style={{ animation: 'archFlow 4s 0.2s infinite' }}
-        />
-        <path
-          d="M 650 180 L 650 210 L 400 210 L 400 240"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          strokeDasharray="200"
-          strokeDashoffset="-200"
-          style={{ animation: 'archFlow 4s 0.4s infinite' }}
+        <svg
+          ref={svgRef}
+          width={dimensions.width}
+          height={dimensions.height}
+          viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+          className="mx-auto relative"
+          style={{ maxWidth: '100%', height: 'auto' }}
+          role="img"
+          aria-label="TPMJS System Architecture diagram"
         />
 
-        {/* Validation */}
-        <g id="validation">
-          <rect
-            x="300"
-            y="240"
-            width="200"
-            height="60"
-            fill="hsl(var(--surface))"
-            stroke="hsl(var(--foreground))"
-            strokeWidth="2"
-          />
-          <text
-            x="400"
-            y="265"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="14"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            Validation
-          </text>
-          <text
-            x="400"
-            y="285"
-            fill="hsl(var(--foreground-secondary))"
-            textAnchor="middle"
-            fontSize="12"
-            fontFamily="monospace"
-          >
-            Schema Check
-          </text>
-        </g>
-
-        {/* Arrow from Validation splitting */}
-        <path
-          d="M 400 300 L 400 330"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-        />
-        <path
-          d="M 400 330 L 250 330 L 250 360"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow)"
-        />
-        <path
-          d="M 400 330 L 550 330 L 550 360"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow)"
-        />
-
-        {/* Database and Health Checks */}
-        <g id="database">
-          <rect
-            x="150"
-            y="360"
-            width="200"
-            height="60"
-            fill="hsl(var(--surface))"
-            stroke="hsl(var(--foreground))"
-            strokeWidth="3"
-          />
-          <text
-            x="250"
-            y="385"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="14"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            PostgreSQL
-          </text>
-          <text
-            x="250"
-            y="405"
-            fill="hsl(var(--foreground-secondary))"
-            textAnchor="middle"
-            fontSize="12"
-            fontFamily="monospace"
-          >
-            Database
-          </text>
-        </g>
-
-        <g id="health-checks">
-          <rect
-            x="450"
-            y="360"
-            width="200"
-            height="60"
-            fill="hsl(var(--surface))"
-            stroke="hsl(var(--foreground))"
-            strokeWidth="2"
-          />
-          <text
-            x="550"
-            y="385"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="14"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            Health Checks
-          </text>
-          <text
-            x="550"
-            y="405"
-            fill="hsl(var(--foreground-secondary))"
-            textAnchor="middle"
-            fontSize="12"
-            fontFamily="monospace"
-          >
-            Import + Execution
-          </text>
-        </g>
-
-        {/* Arrows converging to Metrics */}
-        <path
-          d="M 250 420 L 250 450 L 400 450 L 400 470"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow)"
-        />
-        <path
-          d="M 550 420 L 550 450 L 400 450 L 400 470"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-        />
-
-        {/* Metrics Sync */}
-        <g id="metrics">
-          <rect
-            x="275"
-            y="470"
-            width="250"
-            height="60"
-            fill="hsl(var(--brutalist-accent) / 0.1)"
-            stroke="hsl(var(--brutalist-accent))"
-            strokeWidth="2"
-          />
-          <text
-            x="400"
-            y="495"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="14"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            Metrics Sync + Quality Score
-          </text>
-          <text
-            x="400"
-            y="515"
-            fill="hsl(var(--foreground-secondary))"
-            textAnchor="middle"
-            fontSize="12"
-            fontFamily="monospace"
-          >
-            Every hour
-          </text>
-        </g>
-
-        {/* Arrow from Metrics splitting to APIs */}
-        <path
-          d="M 400 530 L 400 550"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-        />
-        <path
-          d="M 400 550 L 250 550 L 250 570"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow)"
-        />
-        <path
-          d="M 400 550 L 550 550 L 550 570"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow)"
-        />
-
-        {/* API Endpoints */}
-        <g id="search-api">
-          <rect
-            x="150"
-            y="570"
-            width="200"
-            height="50"
-            fill="hsl(var(--surface))"
-            stroke="hsl(var(--foreground))"
-            strokeWidth="2"
-          />
-          <text
-            x="250"
-            y="592"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="13"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            Search API
-          </text>
-          <text
-            x="250"
-            y="610"
-            fill="hsl(var(--foreground-tertiary))"
-            textAnchor="middle"
-            fontSize="11"
-            fontFamily="monospace"
-          >
-            /api/tools
-          </text>
-        </g>
-
-        <g id="execution-api">
-          <rect
-            x="450"
-            y="570"
-            width="200"
-            height="50"
-            fill="hsl(var(--surface))"
-            stroke="hsl(var(--foreground))"
-            strokeWidth="2"
-          />
-          <text
-            x="550"
-            y="592"
-            fill="hsl(var(--foreground))"
-            textAnchor="middle"
-            fontSize="13"
-            fontFamily="monospace"
-            fontWeight="600"
-          >
-            Execution API
-          </text>
-          <text
-            x="550"
-            y="610"
-            fill="hsl(var(--foreground-tertiary))"
-            textAnchor="middle"
-            fontSize="11"
-            fontFamily="monospace"
-          >
-            /api/tools/execute
-          </text>
-        </g>
-
-        {/* Arrows to Frontend */}
-        <path
-          d="M 250 620 L 250 640 L 400 640 L 400 650"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-          markerEnd="url(#arch-arrow)"
-        />
-        <path
-          d="M 550 620 L 550 640 L 400 640"
-          stroke="hsl(var(--brutalist-accent))"
-          strokeWidth="2"
-          fill="none"
-        />
-
-        {/* Frontend UI */}
-        <g id="frontend">
-          <rect
-            x="250"
-            y="650"
-            width="300"
-            height="30"
-            fill="hsl(var(--foreground))"
-            stroke="hsl(var(--foreground))"
-            strokeWidth="2"
-          />
-          <text
-            x="400"
-            y="670"
-            fill="hsl(var(--background))"
-            textAnchor="middle"
-            fontSize="13"
-            fontFamily="monospace"
-            fontWeight="700"
-          >
-            Frontend UI: Search, Detail, Playground
-          </text>
-        </g>
-
-        {/* Animations */}
-        <style>
-          {`
-            @keyframes archFlow {
-              0% { stroke-dashoffset: 200; }
-              50% { stroke-dashoffset: 0; }
-              100% { stroke-dashoffset: 0; }
-            }
-          `}
-        </style>
-      </svg>
+        {/* Tooltip */}
+        {hoveredInfo && (
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-3 bg-background border border-border rounded-lg shadow-lg text-sm max-w-sm">
+            <div className="text-foreground-secondary">
+              <span className="font-semibold text-foreground">{hoveredInfo.title}</span> —{' '}
+              {hoveredInfo.description}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
