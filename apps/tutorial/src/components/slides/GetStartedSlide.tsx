@@ -6,22 +6,22 @@ const links = [
   {
     label: 'Browse Tools',
     href: 'https://tpmjs.com/tool-search',
-    description: 'Explore the registry',
+    description: 'Use as a discovery portal',
     icon: '🔍',
     gradient: 'from-cyan-500 to-blue-500',
   },
   {
-    label: 'Publish Your Tool',
-    href: 'https://tpmjs.com/publish',
-    description: 'Share with the community',
+    label: 'Publish a Tool',
+    href: 'https://tpmjs.com/docs/publishing',
+    description: 'Clean metadata + examples',
     icon: '📦',
     gradient: 'from-purple-500 to-pink-500',
   },
   {
-    label: 'Read the Docs',
-    href: 'https://tpmjs.com/docs',
-    description: 'Learn everything',
-    icon: '📚',
+    label: 'The Playground',
+    href: 'https://tpmjs.com/playground',
+    description: 'Try tools before adopting',
+    icon: '🎮',
     gradient: 'from-emerald-500 to-teal-500',
   },
 ];
@@ -61,8 +61,8 @@ export function GetStartedSlide(): React.ReactElement {
           🚀
         </motion.div>
 
-        <h2 className="text-5xl md:text-7xl font-bold text-white mb-4">Get Started</h2>
-        <p className="text-xl md:text-2xl text-white/40 mb-16">Join the future of AI tooling</p>
+        <h2 className="text-5xl md:text-7xl font-bold text-white mb-4">Try It</h2>
+        <p className="text-xl md:text-2xl text-white/40 mb-16">Discovery chaos is optional</p>
 
         {/* CTA buttons */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-6">
@@ -120,7 +120,7 @@ export function GetStartedSlide(): React.ReactElement {
           transition={{ delay: 1.2 }}
           className="mt-16 text-white/30 text-sm"
         >
-          Made with ❤️ for the AI community
+          Tools are inevitable. Discovery chaos isn&apos;t.
         </motion.div>
       </motion.div>
     </div>

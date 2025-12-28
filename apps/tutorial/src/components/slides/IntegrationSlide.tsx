@@ -4,15 +4,14 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 const codeLines = [
-  { text: "import { tool } from '@tpmjs/sdk';", delay: 0.5 },
-  { text: '', delay: 0.8 },
-  { text: '// Get any tool from the registry', delay: 1.0 },
-  { text: "const webSearch = await tool('web-search');", delay: 1.3 },
-  { text: '', delay: 1.6 },
-  { text: '// Use it with your AI agent', delay: 1.8 },
-  { text: 'const result = await webSearch.execute({', delay: 2.1 },
-  { text: "  query: 'latest AI news'", delay: 2.4 },
-  { text: '});', delay: 2.7 },
+  { text: '// Faster tool evaluation', delay: 0.5 },
+  { text: 'const tool = await tpmjs.find({', delay: 0.8 },
+  { text: "  capability: 'web-scraping',", delay: 1.1 },
+  { text: "  minQuality: 0.8", delay: 1.4 },
+  { text: '});', delay: 1.7 },
+  { text: '', delay: 2.0 },
+  { text: '// Schema + examples included', delay: 2.2 },
+  { text: 'console.log(tool.schema, tool.examples);', delay: 2.5 },
 ];
 
 function TypewriterLine({ text, delay }: { text: string; delay: number }) {
@@ -77,8 +76,8 @@ export function IntegrationSlide(): React.ReactElement {
           🔌
         </motion.div>
 
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Simple Integration</h2>
-        <p className="text-xl text-white/40 mb-12">Three lines of code. That&apos;s it.</p>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Immediate Benefits</h2>
+        <p className="text-xl text-white/40 mb-12">Even if you do nothing else</p>
 
         {/* Code block */}
         <motion.div
@@ -108,19 +107,19 @@ export function IntegrationSlide(): React.ReactElement {
           </div>
         </motion.div>
 
-        {/* Framework badges */}
+        {/* Benefits badges */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 3 }}
           className="mt-8 flex flex-wrap justify-center gap-3"
         >
-          {['Vercel AI SDK', 'LangChain', 'Claude', 'OpenAI'].map((framework) => (
+          {['Less spelunking', 'Schemas + examples', 'Shared vocabulary', 'Tool visibility'].map((benefit) => (
             <span
-              key={framework}
-              className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/50 text-sm"
+              key={benefit}
+              className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400/70 text-sm"
             >
-              Works with {framework}
+              {benefit}
             </span>
           ))}
         </motion.div>

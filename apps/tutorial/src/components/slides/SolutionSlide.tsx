@@ -29,12 +29,14 @@ export function SolutionSlide(): React.ReactElement {
           ✨
         </motion.div>
 
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">The Solution</h2>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">TPMJS</h2>
 
-        <p className="text-xl md:text-2xl text-white/60 leading-relaxed mb-12">
-          <span className="text-cyan-400 font-semibold">One registry</span>.
+        <p className="text-xl md:text-2xl text-white/60 leading-relaxed mb-12 max-w-2xl">
+          A registry that indexes AI-tool packages and exposes{' '}
+          <span className="text-cyan-400 font-semibold">normalized, enriched information</span>
           <br />
-          Curated tools. <span className="text-emerald-400 font-semibold">Quality guaranteed</span>.
+          so agents and engineers can{' '}
+          <span className="text-emerald-400 font-semibold">discover the right tool faster</span>.
         </p>
 
         {/* Organized grid of icons */}
@@ -68,7 +70,7 @@ export function SolutionSlide(): React.ReactElement {
           transition={{ delay: 1.5 }}
           className="mt-12 flex flex-wrap justify-center gap-4"
         >
-          {['Organized', 'Consistent', 'Verified', 'Unified'].map((word, i) => (
+          {['Catalog', 'Metadata layer', 'Search surface', 'Consistent contract'].map((word, i) => (
             <motion.span
               key={word}
               initial={{ opacity: 0, y: 20 }}

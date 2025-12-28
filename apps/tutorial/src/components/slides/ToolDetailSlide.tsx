@@ -14,8 +14,8 @@ export function ToolDetailSlide(): React.ReactElement {
         transition={{ duration: 0.8 }}
         className="relative z-10 max-w-4xl w-full"
       >
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Rich Tool Data</h2>
-        <p className="text-xl text-white/40 mb-12">Everything you need to know about each tool</p>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Tool-Shaped Results</h2>
+        <p className="text-xl text-white/40 mb-12">Remove guesswork before you integrate</p>
 
         {/* Mock tool card */}
         <motion.div

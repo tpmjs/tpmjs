@@ -73,12 +73,13 @@ export function ProblemSlide(): React.ReactElement {
           😵
         </motion.div>
 
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">The Problem</h2>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">Tool Sprawl</h2>
 
-        <p className="text-xl md:text-2xl text-white/60 leading-relaxed">
-          AI tools are <span className="text-red-400 font-semibold">everywhere</span>.
+        <p className="text-xl md:text-2xl text-white/60 leading-relaxed max-w-2xl">
+          In modern agent stacks, tools are the{' '}
+          <span className="text-red-400 font-semibold">real product surface area</span>.
           <br />
-          Finding and trusting them is <span className="text-orange-400 font-semibold">hard</span>.
+          But discovery is the <span className="text-orange-400 font-semibold">bottleneck</span>.
         </p>
 
         <motion.div
@@ -87,7 +88,7 @@ export function ProblemSlide(): React.ReactElement {
           transition={{ delay: 1 }}
           className="mt-12 flex flex-wrap justify-center gap-4"
         >
-          {['Scattered', 'Inconsistent', 'Unverified', 'Fragmented'].map((word, i) => (
+          {['Dozens of packages', 'Missing schemas', 'Vague READMEs', 'Unknown status'].map((word, i) => (
             <motion.span
               key={word}
               initial={{ opacity: 0, y: 20 }}

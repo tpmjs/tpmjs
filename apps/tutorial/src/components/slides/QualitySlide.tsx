@@ -58,10 +58,10 @@ function AnimatedGauge({ value, delay = 0 }: { value: number; delay?: number }) 
 }
 
 const qualityFactors = [
-  { name: 'Schema Completeness', icon: '📋', score: 95, color: 'cyan' },
-  { name: 'npm Downloads', icon: '📈', score: 78, color: 'purple' },
-  { name: 'Documentation', icon: '📚', score: 88, color: 'emerald' },
-  { name: 'Type Safety', icon: '🛡️', score: 100, color: 'yellow' },
+  { name: 'Quality Signals', icon: '📊', score: 95, color: 'cyan', desc: 'Docs, schema, adoption' },
+  { name: 'Health Checks', icon: '💚', score: 88, color: 'emerald', desc: 'Imports, exports, runs' },
+  { name: 'The Playground', icon: '🎮', score: 92, color: 'purple', desc: 'Try before you adopt' },
+  { name: 'Remote Execution', icon: '☁️', score: 85, color: 'yellow', desc: 'Optional sandbox' },
 ];
 
 export function QualitySlide(): React.ReactElement {
@@ -85,8 +85,8 @@ export function QualitySlide(): React.ReactElement {
           ⭐
         </motion.div>
 
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Quality Scoring</h2>
-        <p className="text-xl text-white/40 mb-12">Every tool is scored for reliability</p>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">The Multipliers</h2>
+        <p className="text-xl text-white/40 mb-12">Extra leverage when you&apos;re ready</p>
 
         {/* Main gauge */}
         <motion.div
@@ -109,7 +109,8 @@ export function QualitySlide(): React.ReactElement {
               className="p-4 rounded-xl bg-white/5 border border-white/10"
             >
               <div className="text-3xl mb-2">{factor.icon}</div>
-              <div className="text-sm text-white/60 mb-2">{factor.name}</div>
+              <div className="text-base font-semibold text-white mb-1">{factor.name}</div>
+              <div className="text-xs text-white/40 mb-3">{factor.desc}</div>
               <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                 <motion.div
                   initial={{ width: 0 }}

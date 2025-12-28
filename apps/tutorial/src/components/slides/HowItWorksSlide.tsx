@@ -3,10 +3,10 @@
 import { motion } from 'framer-motion';
 
 const steps = [
-  { icon: '📦', label: 'npm publish', description: 'Publish your tool to npm' },
-  { icon: '🔍', label: 'Discovery', description: 'Automatic detection' },
-  { icon: '📋', label: 'Registry', description: 'Added to TPMJS' },
-  { icon: '🤖', label: 'AI Agent', description: 'Ready to use' },
+  { icon: '📝', label: 'What it does', description: 'Description, category, tags' },
+  { icon: '⚙️', label: 'How to call it', description: 'Inputs, schema, examples' },
+  { icon: '🔑', label: 'What it needs', description: 'Env vars, auth hints' },
+  { icon: '📊', label: 'Signals', description: 'Downloads, health, freshness' },
 ];
 
 export function HowItWorksSlide(): React.ReactElement {
@@ -21,8 +21,8 @@ export function HowItWorksSlide(): React.ReactElement {
         transition={{ duration: 0.8 }}
         className="relative z-10 max-w-5xl w-full"
       >
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">How It Works</h2>
-        <p className="text-xl text-white/40 mb-16">From npm to AI in 4 simple steps</p>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">What TPMJS Stores</h2>
+        <p className="text-xl text-white/40 mb-16">For each tool, we expose the useful stuff</p>
 
         {/* Flow diagram */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">

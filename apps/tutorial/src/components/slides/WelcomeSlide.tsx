@@ -56,7 +56,7 @@ export function WelcomeSlide(): React.ReactElement {
         transition={{ duration: 0.8, delay: 0.5 }}
         className="mt-6 text-2xl md:text-3xl text-white/60 font-light max-w-2xl"
       >
-        Tool Package Manager for AI Agents
+        Tool Discovery for AI Agents
       </motion.p>
 
       {/* Decorative line */}
