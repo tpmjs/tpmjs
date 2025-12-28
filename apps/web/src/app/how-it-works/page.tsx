@@ -3,6 +3,7 @@ import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
 import Link from 'next/link';
 import { AppHeader } from '~/components/AppHeader';
+import { ArchitectureDiagram } from '~/components/ArchitectureDiagram';
 
 export const metadata = {
   title: 'How It Works | TPMJS',
@@ -357,54 +358,8 @@ const result = await streamText({
           {/* Architecture Diagram */}
           <section className="mb-16">
             <h2 className="text-3xl font-bold mb-6 text-foreground">System Architecture</h2>
-            <div className="p-8 border border-border rounded-lg bg-surface font-mono text-sm overflow-x-auto">
-              <pre className="text-foreground-secondary whitespace-pre">
-                {`┌─────────────────────────────────────────────────────────────────┐
-│                         NPM Registry                            │
-└────────────┬────────────────────────┬───────────────────────────┘
-             │                        │
-    ┌────────▼────────┐      ┌────────▼────────┐      ┌──────────────┐
-    │ Changes Feed    │      │ Keyword Search  │      │ Manual Tools │
-    │ Every 2 min     │      │ Every 15 min    │      │ As needed    │
-    └────────┬────────┘      └────────┬────────┘      └──────┬───────┘
-             │                        │                       │
-             └────────────────────────┴───────────────────────┘
-                                      │
-                              ┌───────▼────────┐
-                              │   Validation   │
-                              │ Schema Check   │
-                              └───────┬────────┘
-                                      │
-                    ┌─────────────────┴─────────────────┐
-                    │                                   │
-            ┌───────▼────────┐              ┌──────────▼──────────┐
-            │   PostgreSQL   │              │   Health Checks     │
-            │   Database     │              │ Import + Execution  │
-            └───────┬────────┘              └──────────┬──────────┘
-                    │                                   │
-                    └─────────────────┬─────────────────┘
-                                      │
-                              ┌───────▼────────┐
-                              │ Metrics Sync   │
-                              │ Quality Score  │
-                              │ Every hour     │
-                              └───────┬────────┘
-                                      │
-                    ┌─────────────────┴─────────────────┐
-                    │                                   │
-            ┌───────▼────────┐              ┌──────────▼──────────┐
-            │   Search API   │              │   Execution API     │
-            │  /api/tools    │              │ /api/tools/execute  │
-            └───────┬────────┘              └──────────┬──────────┘
-                    │                                   │
-                    └─────────────────┬─────────────────┘
-                                      │
-                              ┌───────▼────────┐
-                              │  Frontend UI   │
-                              │ Search, Detail │
-                              │  Playground    │
-                              └────────────────┘`}
-              </pre>
+            <div className="p-8 border border-border rounded-lg bg-surface">
+              <ArchitectureDiagram />
             </div>
           </section>
 
