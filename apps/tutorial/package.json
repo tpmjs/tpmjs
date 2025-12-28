@@ -1,0 +1,35 @@
+{
+  "name": "@tpmjs/tutorial",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf .next .turbo"
+  },
+  "dependencies": {
+    "@tpmjs/ui": "workspace:*",
+    "@tpmjs/utils": "workspace:*",
+    "framer-motion": "^11.15.0",
+    "next": "^16.0.8",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tpmjs/eslint-config": "workspace:*",
+    "@tpmjs/tailwind-config": "workspace:*",
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.0.4",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.3"
+  }
+}

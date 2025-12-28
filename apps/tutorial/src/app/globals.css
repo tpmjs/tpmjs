@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Dark mode by default for dramatic slideshow */
+    --background: 210 10% 5%;
+    --surface: 210 10% 8%;
+    --surface-elevated: 210 10% 12%;
+    --foreground: 210 10% 90%;
+    --foreground-secondary: 210 8% 60%;
+    --foreground-tertiary: 210 6% 40%;
+    --foreground-muted: 210 6% 30%;
+    --border: 210 10% 20%;
+    --border-strong: 210 12% 30%;
+    --border-subtle: 210 8% 15%;
+
+    /* Accent colors - cyan and purple */
+    --accent-cyan: 186 100% 50%;
+    --accent-purple: 260 80% 60%;
+    --accent-gradient: linear-gradient(135deg, hsl(186 100% 50%) 0%, hsl(260 80% 60%) 100%);
+
+    --primary: 210 10% 98%;
+    --primary-foreground: 210 10% 5%;
+
+    /* Radii and shadows */
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden;
+  }
+
+  html, body, #__next {
+    height: 100%;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-accent {
+    background: var(--accent-gradient);
+  }
+
+  .glow-cyan {
+    box-shadow: 0 0 20px hsl(var(--accent-cyan) / 0.3),
+                0 0 40px hsl(var(--accent-cyan) / 0.2),
+                0 0 60px hsl(var(--accent-cyan) / 0.1);
+  }
+
+  .glow-purple {
+    box-shadow: 0 0 20px hsl(var(--accent-purple) / 0.3),
+                0 0 40px hsl(var(--accent-purple) / 0.2),
+                0 0 60px hsl(var(--accent-purple) / 0.1);
+  }
+
+  /* Animated background gradient */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  /* Floating animation */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Pulse glow */
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Stagger delays */
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
+  .delay-500 { animation-delay: 500ms; }
+
+  /* Motion Preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
