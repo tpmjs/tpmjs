@@ -83,9 +83,7 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
 
           {/* Subheading */}
           <p className="mb-12 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
-            Discover, share, and integrate tools that give your agents superpowers.
-            <br />
-            The registry for AI tools.
+            The open registry for AI tools. Browse, publish, and integrate tools into your agents.
           </p>
 
           {/* Brutalist Search Interface */}
