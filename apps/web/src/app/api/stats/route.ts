@@ -212,14 +212,14 @@ export async function GET(request: NextRequest) {
             ELSE 'excellent'
           END
         ORDER BY
-          CASE
+          MIN(CASE
             WHEN quality_score IS NULL THEN 0
             WHEN quality_score < 0.3 THEN 1
             WHEN quality_score < 0.5 THEN 2
             WHEN quality_score < 0.7 THEN 3
             WHEN quality_score < 0.9 THEN 4
             ELSE 5
-          END
+          END)
       `,
     ]);
 
