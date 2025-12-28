@@ -65,6 +65,11 @@ export function AppHeader(): React.ReactElement {
                   FAQ
                 </Button>
               </Link>
+              <Link href="/stats">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Stats
+                </Button>
+              </Link>
               <Link href="/changelog">
                 <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
                   Changelog

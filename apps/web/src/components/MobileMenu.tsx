@@ -18,6 +18,7 @@ const navLinks = [
   { href: '/spec', label: 'Spec' },
   { href: '/sdk', label: 'SDK' },
   { href: '/faq', label: 'FAQ' },
+  { href: '/stats', label: 'Stats' },
   { href: '/changelog', label: 'Changelog' },
 ];
 
