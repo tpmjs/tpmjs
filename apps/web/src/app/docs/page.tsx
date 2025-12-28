@@ -195,6 +195,7 @@ function InfoCard({
 
 export default function DocsPage(): React.ReactElement {
   const [activeSection, setActiveSection] = useState('introduction');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -222,6 +223,7 @@ export default function DocsPage(): React.ReactElement {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+      setMobileNavOpen(false);
     }
   };
 
@@ -229,8 +231,26 @@ export default function DocsPage(): React.ReactElement {
     <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
 
-      <div className="flex-1 flex">
-        {/* Sidebar */}
+      <div className="flex-1 flex flex-col lg:flex-row">
+        {/* Mobile Navigation Toggle */}
+        <div className="lg:hidden sticky top-0 z-30 bg-background border-b border-border px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            className="flex items-center gap-2 text-sm font-medium text-foreground"
+          >
+            <span className="text-lg">{mobileNavOpen ? '✕' : '☰'}</span>
+            <span>Documentation Menu</span>
+          </button>
+          {/* Mobile Nav Dropdown */}
+          {mobileNavOpen && (
+            <div className="absolute left-0 right-0 top-full bg-background border-b border-border shadow-lg max-h-[70vh] overflow-y-auto px-4 py-4">
+              <SidebarNav activeSection={activeSection} onSectionClick={scrollToSection} />
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Sidebar */}
         <aside className="hidden lg:block w-64 flex-shrink-0 border-r border-border bg-surface/50">
           <div className="sticky top-0 h-screen overflow-y-auto py-8 px-4">
             <div className="mb-6">
@@ -243,10 +263,12 @@ export default function DocsPage(): React.ReactElement {
 
         {/* Main Content */}
         <main className="flex-1 min-w-0">
-          <div className="max-w-4xl mx-auto px-6 py-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
             {/* Hero */}
             <div className="mb-12">
-              <h1 className="text-4xl font-bold mb-4 text-foreground">TPMJS Documentation</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                TPMJS Documentation
+              </h1>
               <p className="text-xl text-foreground-secondary mb-6">
                 The complete guide to using TPMJS - the registry for AI tools.
               </p>
@@ -280,7 +302,7 @@ export default function DocsPage(): React.ReactElement {
                 AI tools. It enables AI agents to dynamically discover, load, and execute tools from
                 npm packages at runtime.
               </p>
-              <div className="grid md:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <InfoCard icon="🔍" title="Discover">
                   Search thousands of AI tools from the npm ecosystem
                 </InfoCard>
@@ -808,7 +830,7 @@ while (true) {
                 Publishing a tool to TPMJS is as simple as publishing to npm with standardized
                 metadata.
               </p>
-              <div className="grid md:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {[
                   { step: '1', label: 'Add tpmjs-tool keyword' },
                   { step: '2', label: 'Add tpmjs field' },
@@ -1070,7 +1092,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
               <p className="text-foreground-secondary mb-6">
                 TPMJS is designed with security in mind.
               </p>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InfoCard icon="🏝️" title="Sandboxed Execution">
                   All tools run in an isolated Deno runtime. They cannot access your local
                   filesystem or environment.

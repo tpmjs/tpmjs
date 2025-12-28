@@ -16,7 +16,9 @@ export default function PrivacyPage(): React.ReactElement {
         <Container size="lg" padding="lg">
           {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">Privacy Policy</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+              Privacy Policy
+            </h1>
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
               How we collect, use, and protect your data
             </p>
@@ -34,7 +36,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Data We Collect */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">What Data We Collect</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              What Data We Collect
+            </h2>
 
             <div className="space-y-6">
               {/* Public NPM Data */}
@@ -145,7 +149,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* What We Don't Collect */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">What We Don&apos;t Collect</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              What We Don&apos;t Collect
+            </h2>
             <div className="p-6 border border-success/20 rounded-lg bg-success/5">
               <ul className="space-y-3 text-foreground-secondary">
                 <li className="flex items-start gap-2">
@@ -184,7 +190,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* How We Use Data */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">How We Use Your Data</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              How We Use Your Data
+            </h2>
             <div className="space-y-4">
               <div className="p-6 border border-border rounded-lg bg-surface">
                 <h3 className="text-xl font-semibold mb-3 text-foreground">
@@ -252,7 +260,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Third-Party Services */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Third-Party Services</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Third-Party Services
+            </h2>
             <p className="text-foreground-secondary mb-6">
               TPMJS relies on the following third-party services to operate:
             </p>
@@ -354,7 +364,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Data Retention */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Data Retention</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Data Retention
+            </h2>
             <div className="space-y-4 text-foreground-secondary">
               <div className="p-6 border border-border rounded-lg bg-surface">
                 <h3 className="text-lg font-semibold mb-2 text-foreground">NPM Package Metadata</h3>
@@ -381,7 +393,7 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Your Rights (GDPR) */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
               Your Rights (GDPR Compliance)
             </h2>
             <p className="text-foreground-secondary mb-6">
@@ -441,7 +453,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Cookies */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Cookies & Local Storage</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Cookies & Local Storage
+            </h2>
             <p className="text-foreground-secondary mb-4">
               TPMJS uses minimal cookies and local storage:
             </p>
@@ -474,7 +488,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Data Security */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Data Security</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Data Security
+            </h2>
             <p className="text-foreground-secondary mb-4">
               We take reasonable measures to protect data from unauthorized access:
             </p>
@@ -509,7 +525,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Children's Privacy */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Children&apos;s Privacy</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Children&apos;s Privacy
+            </h2>
             <p className="text-foreground-secondary">
               TPMJS does not knowingly collect information from children under 13. The service is
               intended for developers and AI practitioners. If you believe we have inadvertently
@@ -519,7 +537,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Changes to Policy */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Changes to This Policy</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Changes to This Policy
+            </h2>
             <p className="text-foreground-secondary">
               We may update this Privacy Policy from time to time. Changes will be posted on this
               page with an updated &quot;Last updated&quot; date. Continued use of TPMJS after
@@ -529,7 +549,9 @@ export default function PrivacyPage(): React.ReactElement {
 
           {/* Contact */}
           <section className="mb-12">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Contact Us</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Contact Us
+            </h2>
             <p className="text-foreground-secondary mb-4">
               If you have questions or concerns about this Privacy Policy or how we handle your
               data, please contact us:

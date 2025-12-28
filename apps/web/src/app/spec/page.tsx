@@ -22,7 +22,7 @@ export default function SpecPage(): React.ReactElement {
         <Container size="lg" padding="lg">
           {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               TPMJS Specification
             </h1>
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
@@ -32,7 +32,9 @@ export default function SpecPage(): React.ReactElement {
 
           {/* What is TPMJS */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">What is TPMJS?</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              What is TPMJS?
+            </h2>
             <div className="prose prose-invert max-w-none">
               <p className="text-lg text-foreground-secondary mb-4">
                 TPMJS (Tool Package Manager for JavaScript) is an open standard and registry for AI
@@ -62,8 +64,10 @@ export default function SpecPage(): React.ReactElement {
 
           {/* How it Works */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">How it Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              How it Works
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <Card>
                 <CardHeader>
                   <div className="text-3xl mb-2">📦</div>
@@ -110,7 +114,9 @@ export default function SpecPage(): React.ReactElement {
 
           {/* The Specification */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">The Specification</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              The Specification
+            </h2>
             <p className="text-lg text-foreground-secondary mb-8">
               The TPMJS specification defines a{' '}
               <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code> field in
@@ -173,7 +179,7 @@ export default function SpecPage(): React.ReactElement {
                       <p className="text-sm text-foreground-secondary mb-3">
                         Tool category for organization. Must be one of the following:
                       </p>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                         {TPMJS_CATEGORIES.map((cat) => (
                           <Badge key={cat} variant="secondary" size="sm">
                             {cat}
@@ -398,7 +404,9 @@ export default function SpecPage(): React.ReactElement {
 
           {/* Schema Extraction */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Schema Extraction</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Schema Extraction
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               When TPMJS syncs your package, it automatically extracts your tool&apos;s inputSchema
               by loading and inspecting your tool in a sandboxed environment.
@@ -459,7 +467,9 @@ export default function SpecPage(): React.ReactElement {
 
           {/* Field Reference Table */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Field Reference</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Field Reference
+            </h2>
             <Card>
               <CardContent className="pt-6">
                 <div className="overflow-x-auto">
@@ -561,7 +571,9 @@ export default function SpecPage(): React.ReactElement {
 
           {/* Quality Score */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Quality Score</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Quality Score
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Tools are ranked by quality score, calculated from three factors:
             </p>
@@ -631,11 +643,13 @@ export default function SpecPage(): React.ReactElement {
 
           {/* Discovery & Sync */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Discovery & Sync</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Discovery & Sync
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               TPMJS automatically discovers and updates tools using three strategies:
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Changes Feed</CardTitle>
@@ -684,7 +698,9 @@ export default function SpecPage(): React.ReactElement {
 
           {/* Validation */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Validation</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Validation
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               The TPMJS specification is validated using Zod schemas. The validation logic is
               available in the{' '}
@@ -723,11 +739,13 @@ export default function SpecPage(): React.ReactElement {
 
           {/* Publishing Your Tool */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Publishing Your Tool</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Publishing Your Tool
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Publishing a tool to TPMJS is simple:
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
               <Card>
                 <CardContent className="pt-6 text-center">
                   <div className="text-3xl mb-2">1️⃣</div>
@@ -771,8 +789,10 @@ export default function SpecPage(): React.ReactElement {
 
           {/* Support & Resources */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Support & Resources</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Support & Resources
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Documentation</CardTitle>

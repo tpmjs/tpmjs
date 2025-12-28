@@ -2,38 +2,21 @@
 
 [![CI](https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml/badge.svg)](https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml)
 
-**TPMJS is a registry that lets AI agents discover and use npm packages as tools at runtime.**
+**TPMJS is a registry for discovering AI tools published to npm.**
 
-Instead of manually importing and configuring tools, agents search by description and load what they need on-demand. Publish your npm package with the `tpmjs-tool` keyword—it appears on [tpmjs.com](https://tpmjs.com) within 15 minutes.
+Browse, search, and find tools at [tpmjs.com](https://tpmjs.com). Publish your tool by adding the `tpmjs-tool` keyword to your package.json—it appears in the registry within 15 minutes.
 
 ## Why TPMJS?
 
-- **No config files** - Agents discover tools by describing what they need
-- **Always up-to-date** - Tools load from npm at runtime, no manual updates
-- **Works with any agent** - Compatible with Vercel AI SDK, LangChain, OpenAI, Claude, etc.
-- **Publish once** - Add one keyword to package.json, publish to npm, done
+- **Discover tools** - Search and browse AI tools by category, quality score, and popularity
+- **Publish easily** - Add one keyword to package.json, publish to npm, done
+- **Quality metrics** - Tools are scored based on documentation, downloads, and metadata completeness
+- **Agent integration** - Optional SDK for agents to search and execute tools at runtime
 
 ## Quick Start
 
-**For AI agent developers:**
-```bash
-npm install @tpmjs/sdk
-```
+### Publishing a Tool
 
-```typescript
-import { searchRegistry, executeRegistry } from '@tpmjs/sdk';
-
-// Find tools by description
-const tools = await searchRegistry({ query: 'parse PDF documents' });
-
-// Execute a tool
-const result = await executeRegistry({
-  toolId: 'pdf-parser/extractText',
-  input: { url: 'https://example.com/doc.pdf' }
-});
-```
-
-**For tool publishers:**
 ```bash
 npx @tpmjs/create-basic-tools
 ```
@@ -43,13 +26,30 @@ Or add manually to your package.json:
 {
   "keywords": ["tpmjs-tool"],
   "tpmjs": {
-    "category": "text-analysis",
-    "description": "What your tool does"
+    "category": "text-analysis"
   }
 }
 ```
 
+Publish to npm and your tool appears on [tpmjs.com](https://tpmjs.com) within 15 minutes.
+
 See [HOW_TO_PUBLISH_A_TOOL.md](./HOW_TO_PUBLISH_A_TOOL.md) for the full guide.
+
+### For AI Agents (Optional)
+
+Agents can search and execute tools from the registry:
+
+```bash
+npm install @tpmjs/registry-search @tpmjs/registry-execute
+```
+
+```typescript
+import { registrySearchTool } from '@tpmjs/registry-search';
+import { registryExecuteTool } from '@tpmjs/registry-execute';
+
+// Add to your agent's tools
+const tools = [registrySearchTool, registryExecuteTool];
+```
 
 ---
 

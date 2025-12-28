@@ -51,7 +51,7 @@ export default function FAQPage(): React.ReactElement {
         <Container size="lg" padding="lg">
           {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               Frequently Asked Questions
             </h1>
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">

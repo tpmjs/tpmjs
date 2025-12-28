@@ -56,7 +56,7 @@ export default function PlaygroundPage() {
           <div className="space-y-16">
             {/* Page Title */}
             <div className="text-center space-y-4">
-              <h1 className="text-4xl font-bold">Component Playground</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">Component Playground</h1>
               <p className="text-lg text-foreground-secondary">
                 Explore and test all TPMJS UI components in one place
               </p>
@@ -64,7 +64,9 @@ export default function PlaygroundPage() {
 
             {/* Buttons Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Buttons</h2>
+              <h2 className="text-xl sm:text-2xl md:text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Buttons
+              </h2>
               <div className="space-y-8">
                 {/* Button Variants */}
                 <div className="space-y-4">
@@ -103,7 +105,9 @@ export default function PlaygroundPage() {
 
             {/* Badges Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Badges</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Badges
+              </h2>
               <div className="space-y-8">
                 {/* Badge Variants */}
                 <div className="space-y-4">
@@ -133,7 +137,9 @@ export default function PlaygroundPage() {
 
             {/* Icons Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Icons</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Icons
+              </h2>
               <div className="space-y-8">
                 {/* Icon Sizes */}
                 <div className="space-y-4">
@@ -157,7 +163,7 @@ export default function PlaygroundPage() {
                 {/* Icon Gallery */}
                 <div className="space-y-4">
                   <h3 className="text-xl font-medium">Available Icons</h3>
-                  <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 md:gap-6">
                     {(
                       [
                         'check',
@@ -185,12 +191,14 @@ export default function PlaygroundPage() {
 
             {/* Cards Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Cards</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Cards
+              </h2>
               <div className="space-y-8">
                 {/* Card Variants */}
                 <div className="space-y-4">
                   <h3 className="text-xl font-medium">Variants</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                     <Card variant="default">
                       <CardHeader>
                         <CardTitle>Default Card</CardTitle>
@@ -236,7 +244,9 @@ export default function PlaygroundPage() {
 
             {/* Inputs Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Inputs</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Inputs
+              </h2>
               <div className="space-y-8">
                 {/* Input Sizes */}
                 <div className="space-y-4">
@@ -275,7 +285,9 @@ export default function PlaygroundPage() {
 
             {/* Progress Bars Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Progress Bars</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Progress Bars
+              </h2>
               <div className="space-y-8">
                 {/* Progress Bar Variants */}
                 <div className="space-y-4">
@@ -343,7 +355,9 @@ export default function PlaygroundPage() {
 
             {/* Tabs Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Tabs</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Tabs
+              </h2>
               <div className="space-y-8">
                 <div className="space-y-4">
                   <h3 className="text-xl font-medium">Interactive Tabs</h3>
@@ -372,7 +386,9 @@ export default function PlaygroundPage() {
 
             {/* Code Block Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Code Block</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Code Block
+              </h2>
               <div className="space-y-8">
                 <div className="space-y-4">
                   <h3 className="text-xl font-medium">Example Code</h3>
@@ -406,7 +422,9 @@ export default function Example() {
 
             {/* Containers Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Containers</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Containers
+              </h2>
               <div className="space-y-8">
                 <div className="space-y-4">
                   <h3 className="text-xl font-medium">Container Sizes</h3>
@@ -446,7 +464,7 @@ export default function Example() {
 
             {/* Forms Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
                 Form Components
               </h2>
 
@@ -683,7 +701,9 @@ export default function Example() {
 
             {/* Labels Section */}
             <section className="space-y-6">
-              <h2 className="text-3xl font-semibold border-b border-border pb-2">Labels</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold border-b border-border pb-2">
+                Labels
+              </h2>
               <div className="space-y-8">
                 <div className="space-y-4">
                   <h3 className="text-xl font-medium">Form Labels</h3>

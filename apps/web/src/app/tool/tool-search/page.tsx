@@ -136,7 +136,9 @@ export default function ToolSearchPage(): React.ReactElement {
       <Container size="xl" padding="md" className="py-8">
         {/* Page header */}
         <div className="space-y-4 mb-8">
-          <h1 className="text-4xl font-bold text-foreground">Tool Registry</h1>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
+            Tool Registry
+          </h1>
           <p className="text-lg text-foreground-secondary">
             Search npm packages indexed as AI agent tools. Filter by category, health status, or
             keyword.
@@ -153,14 +155,17 @@ export default function ToolSearchPage(): React.ReactElement {
           />
 
           {/* Filter row */}
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
             {/* Category filter */}
-            <div className="flex items-center gap-2 min-w-[200px]">
-              <span className="text-sm font-medium text-foreground-secondary">Category:</span>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium text-foreground-secondary whitespace-nowrap">
+                Category:
+              </span>
               <Select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 size="sm"
+                className="flex-1 sm:flex-none sm:min-w-[150px]"
                 options={[
                   { value: 'all', label: 'All Categories' },
                   ...availableCategories.map((cat) => ({
@@ -172,12 +177,15 @@ export default function ToolSearchPage(): React.ReactElement {
             </div>
 
             {/* Health filter */}
-            <div className="flex items-center gap-2 min-w-[200px]">
-              <span className="text-sm font-medium text-foreground-secondary">Health:</span>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium text-foreground-secondary whitespace-nowrap">
+                Health:
+              </span>
               <Select
                 value={healthFilter}
                 onChange={(e) => setHealthFilter(e.target.value)}
                 size="sm"
+                className="flex-1 sm:flex-none sm:min-w-[130px]"
                 options={[
                   { value: 'all', label: 'All Tools' },
                   { value: 'healthy', label: 'Healthy Only' },
@@ -187,12 +195,15 @@ export default function ToolSearchPage(): React.ReactElement {
             </div>
 
             {/* Sort dropdown */}
-            <div className="flex items-center gap-2 min-w-[200px]">
-              <span className="text-sm font-medium text-foreground-secondary">Sort:</span>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-sm font-medium text-foreground-secondary whitespace-nowrap">
+                Sort:
+              </span>
               <Select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 size="sm"
+                className="flex-1 sm:flex-none sm:min-w-[150px]"
                 options={[
                   { value: 'downloads', label: 'Most Downloaded' },
                   { value: 'recent', label: 'Recent' },
@@ -231,7 +242,7 @@ export default function ToolSearchPage(): React.ReactElement {
 
         {/* Tool grid */}
         {!loading && !error && tools.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {tools.map((tool) => {
               const isBroken = tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN';
               const qualityPercent = Math.round(Number.parseFloat(tool.qualityScore) * 100);

@@ -16,7 +16,7 @@ export default function TermsPage(): React.ReactElement {
         <Container size="lg" padding="lg">
           {/* Header */}
           <div className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               Terms of Service
             </h1>
             <p className="text-lg text-foreground-secondary">Last updated: December 2024</p>
@@ -26,7 +26,9 @@ export default function TermsPage(): React.ReactElement {
           <div className="prose prose-invert max-w-none">
             {/* 1. Introduction */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">1. Introduction</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                1. Introduction
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   Welcome to TPMJS (Tool Package Manager for JavaScript). By accessing or using
@@ -44,10 +46,12 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 2. Service Description */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">2. Service Description</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                2. Service Description
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>TPMJS provides the following services:</p>
-                <ul className="list-disc pl-6 space-y-2">
+                <ul className="list-disc pl-4 sm:pl-6 space-y-2">
                   <li>
                     Automatic discovery and indexing of npm packages with the{' '}
                     <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs-tool</code>{' '}
@@ -69,7 +73,7 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 3. User Responsibilities */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
                 3. User Responsibilities When Publishing Tools
               </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
@@ -77,7 +81,7 @@ export default function TermsPage(): React.ReactElement {
                   If you publish a tool package to npm with the intention of it being indexed by
                   TPMJS, you agree to:
                 </p>
-                <ul className="list-disc pl-6 space-y-2">
+                <ul className="list-disc pl-4 sm:pl-6 space-y-2">
                   <li>
                     Provide accurate and complete metadata in the{' '}
                     <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
@@ -111,7 +115,7 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 4. No Warranties on Third-Party Tools */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
                 4. No Warranties on Third-Party Tools
               </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
@@ -126,7 +130,7 @@ export default function TermsPage(): React.ReactElement {
                   of any kind.
                 </p>
                 <p>We make no representations or warranties regarding:</p>
-                <ul className="list-disc pl-6 space-y-2">
+                <ul className="list-disc pl-4 sm:pl-6 space-y-2">
                   <li>The functionality, quality, or reliability of third-party tools</li>
                   <li>The accuracy or completeness of tool descriptions and metadata</li>
                   <li>The security or safety of executing third-party tools</li>
@@ -149,7 +153,7 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 5. Limitation of Liability */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
                 5. Limitation of Liability
               </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
@@ -159,7 +163,7 @@ export default function TermsPage(): React.ReactElement {
                   THROUGH THE SERVICE.
                 </p>
                 <p>This includes, but is not limited to:</p>
-                <ul className="list-disc pl-6 space-y-2">
+                <ul className="list-disc pl-4 sm:pl-6 space-y-2">
                   <li>Direct, indirect, incidental, special, consequential, or punitive damages</li>
                   <li>Loss of profits, revenue, data, or business opportunities</li>
                   <li>
@@ -186,10 +190,12 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 6. Acceptable Use Policy */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">6. Acceptable Use Policy</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                6. Acceptable Use Policy
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>You agree not to use the Service to:</p>
-                <ul className="list-disc pl-6 space-y-2">
+                <ul className="list-disc pl-4 sm:pl-6 space-y-2">
                   <li>Violate any applicable laws, regulations, or third-party rights</li>
                   <li>Distribute malware, viruses, or other harmful code</li>
                   <li>
@@ -221,7 +227,9 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 7. Intellectual Property */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">7. Intellectual Property</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                7. Intellectual Property
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   The TPMJS Service, including its design, code, and documentation, is protected by
@@ -233,7 +241,7 @@ export default function TermsPage(): React.ReactElement {
                   <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs-tool</code>{' '}
                   keyword, you grant TPMJS a non-exclusive, worldwide, royalty-free license to:
                 </p>
-                <ul className="list-disc pl-6 space-y-2">
+                <ul className="list-disc pl-4 sm:pl-6 space-y-2">
                   <li>Index and display your tool&apos;s metadata on tpmjs.com</li>
                   <li>
                     Execute your tool in our sandbox environment for testing and demonstration
@@ -249,12 +257,14 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 8. Privacy and Data */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">8. Privacy and Data</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                8. Privacy and Data
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   TPMJS collects and processes data necessary to operate the Service, including:
                 </p>
-                <ul className="list-disc pl-6 space-y-2">
+                <ul className="list-disc pl-4 sm:pl-6 space-y-2">
                   <li>Package metadata from npm (names, versions, descriptions, etc.)</li>
                   <li>Download statistics and quality metrics from public npm registries</li>
                   <li>Tool execution results and health check data</li>
@@ -270,7 +280,7 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 9. Modifications to the Service */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
                 9. Modifications to the Service
               </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
@@ -289,7 +299,9 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 10. Termination */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">10. Termination</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                10. Termination
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   TPMJS reserves the right to terminate or suspend your access to the Service at any
@@ -308,7 +320,9 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 11. Governing Law */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">11. Governing Law</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                11. Governing Law
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   These Terms shall be governed by and construed in accordance with the laws of the
@@ -324,7 +338,9 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 12. Disclaimer */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">12. Disclaimer</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                12. Disclaimer
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p className="font-semibold text-foreground">
                   THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT
@@ -342,7 +358,9 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 13. Open Source */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">13. Open Source</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                13. Open Source
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   TPMJS is open source and available on{' '}
@@ -365,7 +383,9 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 14. Contact */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">14. Contact</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                14. Contact
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   If you have any questions about these Terms or the Service, please contact us at:
@@ -383,7 +403,9 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 15. Severability */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">15. Severability</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                15. Severability
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   If any provision of these Terms is found to be invalid or unenforceable, the
@@ -396,7 +418,9 @@ export default function TermsPage(): React.ReactElement {
 
             {/* 16. Entire Agreement */}
             <section className="mb-12">
-              <h2 className="text-3xl font-bold mb-4 text-foreground">16. Entire Agreement</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+                16. Entire Agreement
+              </h2>
               <div className="space-y-4 text-lg text-foreground-secondary">
                 <p>
                   These Terms constitute the entire agreement between you and TPMJS regarding your

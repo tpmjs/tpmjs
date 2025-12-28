@@ -19,7 +19,9 @@ export default function HowItWorksPage(): React.ReactElement {
         <Container size="lg" padding="lg">
           {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">How TPMJS Works</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
+              How TPMJS Works
+            </h1>
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
               The complete journey from npm package to AI-powered tool execution
             </p>
@@ -27,7 +29,9 @@ export default function HowItWorksPage(): React.ReactElement {
 
           {/* Overview */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">What is TPMJS?</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              What is TPMJS?
+            </h2>
             <div className="prose max-w-none text-foreground-secondary text-lg space-y-4">
               <p>
                 TPMJS (Tool Package Manager for JavaScript) is a{' '}
@@ -43,7 +47,7 @@ export default function HowItWorksPage(): React.ReactElement {
                 <span className="text-foreground font-semibold">reusable tool packages</span>{' '}
                 published to npm.
               </p>
-              <div className="grid md:grid-cols-3 gap-6 mt-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
                 <div className="p-6 border border-border rounded-lg bg-surface">
                   <div className="text-2xl mb-2">🔍</div>
                   <h3 className="font-semibold mb-2 text-foreground">Automatic Discovery</h3>
@@ -71,7 +75,9 @@ export default function HowItWorksPage(): React.ReactElement {
 
           {/* For Developers */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">For Tool Developers</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              For Tool Developers
+            </h2>
             <div className="space-y-6">
               <p className="text-lg text-foreground-secondary">
                 Publishing a tool to TPMJS is as simple as publishing to npm with a standardized
@@ -136,7 +142,9 @@ export default function HowItWorksPage(): React.ReactElement {
 
           {/* For AI Agents */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">For AI Agents</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              For AI Agents
+            </h2>
             <div className="space-y-6">
               <p className="text-lg text-foreground-secondary">
                 AI agents can search, discover, and execute tools through the TPMJS API.
@@ -192,7 +200,9 @@ const result = await streamText({
 
           {/* The Magic Behind the Scenes */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">The Magic Behind the Scenes</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              The Magic Behind the Scenes
+            </h2>
             <div className="space-y-8">
               {/* 1. Discovery */}
               <div>
@@ -202,7 +212,7 @@ const result = await streamText({
                 <p className="text-lg text-foreground-secondary mb-4">
                   TPMJS uses three parallel mechanisms to discover tools from npm:
                 </p>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   <div className="p-4 border border-border rounded-lg bg-surface">
                     <h4 className="font-semibold mb-2 text-foreground">Changes Feed</h4>
                     <p className="text-sm text-foreground-secondary">
@@ -302,7 +312,7 @@ const result = await streamText({
                 <p className="text-lg text-foreground-secondary mb-4">
                   Every tool is tested to ensure it works correctly:
                 </p>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="p-4 border border-border rounded-lg bg-surface">
                     <h4 className="font-semibold mb-2 text-foreground">Import Health</h4>
                     <ul className="text-sm text-foreground-secondary space-y-1">
@@ -357,7 +367,9 @@ const result = await streamText({
 
           {/* Architecture Diagram */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">System Architecture</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              System Architecture
+            </h2>
             <div className="p-8 border border-border rounded-lg bg-surface">
               <ArchitectureDiagram />
             </div>
@@ -365,7 +377,9 @@ const result = await streamText({
 
           {/* Data Flow */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">From Publish to Execution</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              From Publish to Execution
+            </h2>
             <div className="space-y-4">
               <div className="flex items-start gap-4 p-4 border border-border rounded-lg bg-surface">
                 <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold">
@@ -457,7 +471,9 @@ const result = await streamText({
               <span className="px-3 py-1 text-sm font-semibold bg-primary/10 text-primary rounded-full">
                 🧪 Beta
               </span>
-              <h2 className="text-3xl font-bold text-foreground">Dynamic Tool Loading</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                Dynamic Tool Loading
+              </h2>
             </div>
 
             <div className="space-y-6">
@@ -622,7 +638,9 @@ const result = await streamText({
 
           {/* CTA */}
           <section className="text-center py-12 border border-border rounded-lg bg-surface">
-            <h2 className="text-3xl font-bold mb-4 text-foreground">Ready to Get Started?</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+              Ready to Get Started?
+            </h2>
             <p className="text-lg text-foreground-secondary mb-8 max-w-2xl mx-auto">
               Whether you&apos;re building AI tools or integrating them into your agent, TPMJS makes
               it simple.

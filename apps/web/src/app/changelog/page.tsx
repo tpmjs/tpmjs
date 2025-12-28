@@ -198,7 +198,9 @@ export default function ChangelogPage() {
         <div className="max-w-4xl mx-auto px-4 py-16">
           {/* Header */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Changelog</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+              Changelog
+            </h1>
             <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
               Release history for all published TPMJS packages. Track new features, improvements,
               and fixes across our SDK and tools.
@@ -206,7 +208,7 @@ export default function ChangelogPage() {
           </div>
 
           {/* Legend */}
-          <div className="flex items-center justify-center gap-6 mb-12 p-4 bg-background-secondary rounded-lg border border-border-secondary">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mb-12 p-4 bg-background-secondary rounded-lg border border-border-secondary">
             <div className="flex items-center gap-2">
               <VersionBadge type="major" />
               <span className="text-sm text-foreground-secondary">Breaking changes</span>

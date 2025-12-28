@@ -18,7 +18,7 @@ export default function PublishPage(): React.ReactElement {
         <Container size="lg" padding="lg">
           {/* Hero */}
           <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               Publish Your AI Tool
             </h1>
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
@@ -29,10 +29,10 @@ export default function PublishPage(): React.ReactElement {
 
           {/* Generator Callout */}
           <section className="mb-16 p-8 border-2 border-primary/50 rounded-lg bg-primary/5">
-            <div className="flex items-start gap-6">
-              <div className="text-6xl">🚀</div>
+            <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+              <div className="text-4xl sm:text-6xl">🚀</div>
               <div className="flex-1">
-                <h2 className="text-3xl font-bold mb-4 text-foreground">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
                   Use Our Package Generator
                 </h2>
                 <p className="text-lg text-foreground-secondary mb-6">
@@ -67,7 +67,9 @@ export default function PublishPage(): React.ReactElement {
 
           {/* Quick Start */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Manual Setup</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Manual Setup
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Prefer to set up manually? Follow these steps:
             </p>
@@ -97,7 +99,7 @@ export default function PublishPage(): React.ReactElement {
 
           {/* Step 1: Package.json Setup */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
               Step 1: Add Required Keyword
             </h2>
             <p className="text-lg text-foreground-secondary mb-6">
@@ -118,7 +120,9 @@ export default function PublishPage(): React.ReactElement {
 
           {/* Step 2: Metadata */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Step 2: Add TPMJS Metadata</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Step 2: Add TPMJS Metadata
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Add a <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
               field to your package.json. TPMJS automatically extracts parameter schemas from your
@@ -228,8 +232,10 @@ export default function PublishPage(): React.ReactElement {
 
           {/* Categories */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Available Categories</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Available Categories
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               {[
                 { name: 'text-analysis', desc: 'NLP, sentiment, summarization' },
                 { name: 'code-generation', desc: 'Code generation and transformation' },
@@ -250,7 +256,9 @@ export default function PublishPage(): React.ReactElement {
 
           {/* Step 3: Publish */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Step 3: Publish to NPM</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Step 3: Publish to NPM
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Build your package and publish it to NPM. Your tool will be automatically discovered
               within 15 minutes.
@@ -269,11 +277,13 @@ npm publish --access public
 
           {/* Quality Score */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Quality Score</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Quality Score
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Your tool gets a quality score based on three factors:
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <div className="p-6 border border-border rounded-lg bg-surface">
                 <h3 className="text-xl font-semibold mb-3 text-foreground">Tier</h3>
                 <ul className="space-y-2 text-foreground-secondary">
@@ -299,7 +309,9 @@ npm publish --access public
 
           {/* Real Example */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Real Example</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Real Example
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Here is a complete example from{' '}
               <Link
@@ -336,7 +348,9 @@ npm publish --access public
 
           {/* Tips */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Tips for Success</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Tips for Success
+            </h2>
             <div className="space-y-4">
               {[
                 {
@@ -381,7 +395,9 @@ npm publish --access public
 
           {/* CTA */}
           <section className="text-center py-16 px-6 border border-border rounded-lg bg-surface">
-            <h2 className="text-3xl font-bold mb-4 text-foreground">Ready to Publish?</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+              Ready to Publish?
+            </h2>
             <p className="text-xl text-foreground-secondary mb-8 max-w-2xl mx-auto">
               Follow the steps above and your tool will be live on TPMJS within 15 minutes.
             </p>

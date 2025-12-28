@@ -25,7 +25,7 @@ export default function SDKPage(): React.ReactElement {
                 New
               </span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
               Give Your Agent Access to Every Tool
             </h1>
             <p className="text-xl text-foreground-secondary max-w-3xl mx-auto mb-8">
@@ -72,7 +72,9 @@ export default function SDKPage(): React.ReactElement {
 
           {/* Quick Start */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Quick Start</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Quick Start
+            </h2>
             <div className="space-y-6">
               {/* Install */}
               <div className="p-6 border border-border rounded-lg bg-surface">
@@ -168,14 +170,18 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
 
           {/* How It Works */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">How It Works</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              How It Works
+            </h2>
             <SDKFlowDiagram />
           </section>
 
           {/* registrySearchTool */}
           <section className="mb-16">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-              <h2 className="text-3xl font-bold text-foreground">registrySearchTool</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                registrySearchTool
+              </h2>
               <div className="flex items-center gap-3">
                 <a
                   href="https://www.npmjs.com/package/@tpmjs/registry-search"
@@ -301,7 +307,9 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
           {/* registryExecuteTool */}
           <section className="mb-16">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-              <h2 className="text-3xl font-bold text-foreground">registryExecuteTool</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                registryExecuteTool
+              </h2>
               <div className="flex items-center gap-3">
                 <a
                   href="https://www.npmjs.com/package/@tpmjs/registry-execute"
@@ -410,7 +418,9 @@ const result = await registryExecuteTool.execute({
 
           {/* Environment Variables */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Environment Variables</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Environment Variables
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Both packages support self-hosted registries via environment variables. This is useful
               for enterprise deployments or running your own tool registry.
@@ -455,7 +465,9 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
 
           {/* Passing API Keys */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Passing API Keys</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Passing API Keys
+            </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Many tools require API keys (e.g., Firecrawl, Exa). The recommended approach is to
               wrap <code className="text-primary">registryExecuteTool</code> with your
@@ -534,8 +546,10 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
 
           {/* Security */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">Security</h2>
-            <div className="grid md:grid-cols-2 gap-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              Security
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
               <div className="p-6 border border-border rounded-lg bg-surface">
                 <div className="text-2xl mb-2">🏝️</div>
                 <h3 className="font-semibold mb-2 text-foreground">Sandboxed Execution</h3>
@@ -573,7 +587,9 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
 
           {/* Vision & Future */}
           <section className="mb-16">
-            <h2 className="text-3xl font-bold mb-6 text-foreground">The Vision</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+              The Vision
+            </h2>
             <div className="prose max-w-none text-foreground-secondary text-lg space-y-4 mb-8">
               <p>
                 We&apos;re building the{' '}
@@ -677,7 +693,9 @@ const tools = await tpmjs.loadCollection('my-company/internal-tools');`}
 
           {/* CTA */}
           <section className="text-center py-12 border border-border rounded-lg bg-surface">
-            <h2 className="text-3xl font-bold mb-4 text-foreground">Ready to Get Started?</h2>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
+              Ready to Get Started?
+            </h2>
             <p className="text-lg text-foreground-secondary mb-8 max-w-2xl mx-auto">
               Give your AI agent access to thousands of tools in minutes.
             </p>

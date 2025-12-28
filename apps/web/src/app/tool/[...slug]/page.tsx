@@ -272,9 +272,11 @@ export default function ToolDetailPage({
 
         {/* Title section */}
         <div className="mb-8">
-          <div className="flex items-start justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-4xl font-bold text-foreground mb-2">{tool.name}</h1>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2">
+                {tool.name}
+              </h1>
               <p className="text-sm text-foreground-tertiary font-mono mb-2">
                 {pkg.npmPackageName}
               </p>
@@ -374,9 +376,9 @@ export default function ToolDetailPage({
         )}
 
         {/* Main grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Left column - Main content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             {/* Interactive Playground */}
             {/* biome-ignore lint/suspicious/noExplicitAny: Prisma Tool type compatibility with component props */}
             <ToolPlayground tool={tool as any} />
@@ -598,7 +600,7 @@ console.log(result.text);`}
           </div>
 
           {/* Right column - Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Stats */}
             <Card>
               <CardHeader>
