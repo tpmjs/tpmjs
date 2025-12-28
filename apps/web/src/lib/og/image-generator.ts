@@ -27,11 +27,11 @@ export async function generateOGImage(prompt: string): Promise<Buffer> {
     console.log('[OG] Calling OpenAI image generation...');
 
     const response = await client.images.generate({
-      model: 'gpt-image-1-mini',
+      model: 'gpt-image-1',
       prompt,
       n: 1,
-      size: '1536x1024', // Landscape format, closest to 1200x630 OG ratio
-      quality: 'medium',
+      size: '1536x1024', // Landscape format for OG images
+      quality: 'high',
     });
 
     console.log('[OG] OpenAI response received');

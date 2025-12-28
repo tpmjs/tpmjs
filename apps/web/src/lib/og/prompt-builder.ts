@@ -1,278 +1,389 @@
 /**
  * Build prompts for OpenAI image generation
+ * Creates comprehensive prompts for stunning OG images
  */
 
 import type { PageContent } from './types';
 
 /**
- * Category-specific visual hints for tool pages
- */
-const CATEGORY_VISUALS: Record<string, string> = {
-  'text-analysis':
-    'flowing text streams, linguistic wave patterns, word-like abstract shapes floating in space',
-  'code-generation':
-    'code bracket symbols, terminal-like geometric shapes, syntax highlighting color bands',
-  'data-processing':
-    'data pipeline flows, transformation arrows, structured grid patterns with glowing nodes',
-  'image-generation':
-    'abstract brush strokes, creative color gradients, artistic shape compositions',
-  'web-scraping': 'interconnected web-like node patterns, spider web motifs, document flow shapes',
-  search:
-    'magnifying glass energy radiating outward, discovery beam patterns, concentric search rings',
-  integration: 'puzzle pieces connecting, API endpoint symbols, synchronization arrows',
-  database: 'cylindrical storage shapes, connected data nodes, structured table patterns',
-  ai: 'neural network node patterns, brain-like abstract shapes, intelligence flowing streams',
-  automation: 'gear mechanisms, workflow arrows, robotic precision patterns',
-  communication: 'message bubble abstractions, signal wave patterns, connection lines',
-  file: 'folder shapes, document stacks, organized file grid patterns',
-  weather: 'cloud formations, sun ray patterns, atmospheric gradients',
-  location: 'map pin abstractions, geographic grid patterns, compass-like radial designs',
-  time: 'clock face abstractions, timeline flow patterns, temporal wave forms',
-  math: 'geometric shapes, equation-like line patterns, mathematical precision grids',
-  other: 'abstract tech patterns, geometric shapes, neural connection lines',
-};
-
-/**
- * Base style prompt for all OG images
- */
-const BASE_STYLE = `Create a 1536x1024 pixel Open Graph social media preview image.
-
-DESIGN STYLE:
-- Dark gradient background from #0a0a0a (left) to #1a1a2e (right)
-- Primary accent: vibrant cyan (#00d4ff) for highlights and glows
-- Secondary accent: electric purple (#8b5cf6) for depth
-- Modern tech aesthetic with subtle grid patterns in background
-- Soft glow effects and light rays emanating from focal points
-- Clean, professional composition suitable for social media sharing
-
-LAYOUT:
-- Left side (40%): Abstract visual elements and iconography
-- Right side (60%): Title and description text area
-- Visual balance with text clearly readable against dark background`;
-
-/**
- * Build page-specific context for the prompt
- */
-function buildPageContext(content: PageContent): string {
-  switch (content.pageType) {
-    case 'tool': {
-      const category = content.tool?.category || 'other';
-      const visualHint = CATEGORY_VISUALS[category] || CATEGORY_VISUALS.other;
-      const toolName = content.tool?.name || content.title;
-      const description = content.tool?.description || content.description;
-
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "${toolName}"
-- Subtitle (smaller, cyan): "${content.tool?.packageName || 'npm package'}"
-- Description (medium, gray): "${description.slice(0, 100)}${description.length > 100 ? '...' : ''}"
-
-LEFT SIDE VISUALS:
-${visualHint}
-- Category icon representing "${category}"
-
-BRANDING: Small "TPMJS" logo in bottom-right corner`;
-    }
-
-    case 'home':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "TPMJS"
-- Tagline (medium, cyan glow): "Tool Package Manager for AI Agents"
-- Subtitle (smaller, gray): "Discover, share, and integrate AI tools"
-
-LEFT SIDE VISUALS:
-- Interconnected glowing nodes forming a network
-- Neural network-inspired radiating patterns from center
-- Flowing data streams with particle effects
-- Multiple small tool icons orbiting a central hub`;
-
-    case 'docs':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Documentation"
-- Tagline (medium, cyan): "Complete Guide to TPMJS"
-- Subtitle (smaller, gray): "Learn how to discover, use, and publish AI tools"
-
-LEFT SIDE VISUALS:
-- Layered document pages in 3D perspective
-- Code snippet abstractions with syntax highlighting colors
-- Knowledge graph with connected nodes
-- Book/guide icon with glowing pages`;
-
-    case 'stats':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Registry Statistics"
-- Tagline (medium, cyan): "Real-time Metrics Dashboard"
-- Subtitle (smaller, gray): "Track tools, downloads, and community growth"
-
-LEFT SIDE VISUALS:
-- Rising bar charts with glowing tops
-- Upward trending line graphs
-- Circular progress gauges
-- Numbers floating with glow effects`;
-
-    case 'search':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Tool Search"
-- Tagline (medium, cyan): "Discover AI Tools"
-- Subtitle (smaller, gray): "Find the perfect tool for your AI agent"
-
-LEFT SIDE VISUALS:
-- Large magnifying glass with radiating search beams
-- Grid of small tool icons being highlighted
-- Filter/category chips floating
-- Discovery sparkle effects`;
-
-    case 'publish':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Publish Your Tool"
-- Tagline (medium, cyan): "Share with the Community"
-- Subtitle (smaller, gray): "Add your AI tool to the TPMJS registry"
-
-LEFT SIDE VISUALS:
-- Package box with upload arrow
-- npm logo abstraction
-- Publishing workflow with connected steps
-- Rocket launch effect`;
-
-    case 'faq':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "FAQ"
-- Tagline (medium, cyan): "Frequently Asked Questions"
-- Subtitle (smaller, gray): "Get answers to common questions about TPMJS"
-
-LEFT SIDE VISUALS:
-- Question marks transforming into lightbulbs
-- Branching Q&A tree structure
-- Speech bubbles with answer symbols
-- Help/support iconography`;
-
-    case 'playground':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Playground"
-- Tagline (medium, cyan): "Test AI Tools Live"
-- Subtitle (smaller, gray): "Experiment with tools in your browser"
-
-LEFT SIDE VISUALS:
-- Interactive terminal window with cursor
-- Flying code snippets
-- Play button with energy rings
-- Experimental beaker/flask with bubbles`;
-
-    case 'spec':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Specification"
-- Tagline (medium, cyan): "TPMJS Tool Format"
-- Subtitle (smaller, gray): "Technical specification for tool packages"
-
-LEFT SIDE VISUALS:
-- JSON/schema structure visualization
-- Blueprint grid patterns
-- Technical document with code blocks
-- Checkmark validation symbols`;
-
-    case 'sdk':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "SDK"
-- Tagline (medium, cyan): "Developer Integration Kit"
-- Subtitle (smaller, gray): "Integrate TPMJS tools into your applications"
-
-LEFT SIDE VISUALS:
-- API connection endpoints
-- Code library stack
-- Integration puzzle pieces connecting
-- Developer tools (wrench, code brackets)`;
-
-    case 'changelog':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Changelog"
-- Tagline (medium, cyan): "What's New"
-- Subtitle (smaller, gray): "Latest updates and release history"
-
-LEFT SIDE VISUALS:
-- Vertical timeline with glowing milestones
-- Version number badges
-- Git branch visualization
-- Update/refresh arrows`;
-
-    case 'how-it-works':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "How It Works"
-- Tagline (medium, cyan): "Under the Hood"
-- Subtitle (smaller, gray): "Learn how TPMJS connects AI agents with tools"
-
-LEFT SIDE VISUALS:
-- Process flowchart with 3-4 connected steps
-- Gear/cog mechanisms
-- Data flow arrows between components
-- Architecture diagram abstraction`;
-
-    case 'terms':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Terms of Service"
-- Tagline (medium, cyan): "Legal Agreement"
-- Subtitle (smaller, gray): "Terms and conditions for using TPMJS"
-
-LEFT SIDE VISUALS:
-- Legal document with seal
-- Handshake symbol
-- Checkmark/agreement icons
-- Professional shield`;
-
-    case 'privacy':
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "Privacy Policy"
-- Tagline (medium, cyan): "Your Data, Protected"
-- Subtitle (smaller, gray): "How we handle and protect your information"
-
-LEFT SIDE VISUALS:
-- Shield with lock symbol
-- Privacy/eye icon with protection
-- Secure data flow visualization
-- Trust badges`;
-
-    default:
-      return `
-TEXT TO DISPLAY:
-- Title (large, bold, white): "${content.title}"
-- Tagline (medium, cyan): "TPMJS"
-- Subtitle (smaller, gray): "${content.description.slice(0, 80)}"
-
-LEFT SIDE VISUALS:
-- Abstract tech patterns
-- Neural network connections
-- Modern geometric shapes`;
-  }
-}
-
-/**
- * Typography instructions for text rendering
- */
-const TYPOGRAPHY = `
-TYPOGRAPHY REQUIREMENTS:
-- Use clean, modern sans-serif font (like Inter, Helvetica, or system UI)
-- Title: Bold weight, large size, pure white (#ffffff)
-- Tagline: Regular weight, medium size, cyan (#00d4ff) with subtle glow
-- Subtitle: Light weight, smaller size, muted gray (#888888)
-- Ensure high contrast and readability against dark background
-- Text should be crisp and professional`;
-
-/**
  * Build the complete prompt for OpenAI image generation
  */
 export function buildOGPrompt(content: PageContent): string {
-  const pageContext = buildPageContext(content);
-  return `${BASE_STYLE}\n${pageContext}\n${TYPOGRAPHY}`;
+  const baseStyle = `You are creating a premium Open Graph social media preview image (1536x1024 pixels).
+
+CRITICAL DESIGN REQUIREMENTS:
+- Ultra-modern, sleek tech startup aesthetic
+- Deep black/charcoal background (#0a0a0a to #12121a gradient)
+- Vibrant neon accents: electric cyan (#00F0FF), vivid purple (#A855F7), hot pink (#EC4899)
+- Glassmorphism elements with subtle blur and transparency
+- Floating 3D geometric shapes with soft glow effects
+- Subtle grid or dot pattern in the background for depth
+- Professional typography: clean sans-serif fonts (like Inter or SF Pro)
+- High contrast for social media visibility
+- NO stock photo look - this should feel like premium SaaS branding`;
+
+  switch (content.pageType) {
+    case 'home':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Homepage - Tool Package Manager for AI Agents
+
+VISUAL CONCEPT:
+Create a stunning hero image showing an interconnected network of glowing nodes representing AI tools.
+- Central glowing orb/hub emanating connection lines to smaller tool nodes
+- Floating 3D hexagons, cubes, and spheres with glassmorphism effect
+- Particle effects and light trails connecting elements
+- Subtle code/terminal aesthetics in the background
+- Neural network patterns with pulsing energy
+
+TEXT TO RENDER (use elegant typography):
+- Large bold title: "TPMJS" in white with subtle cyan glow
+- Tagline below: "Tool Package Manager for AI Agents" in cyan (#00F0FF)
+- Small descriptor: "Discover • Share • Integrate" in muted gray
+
+COMPOSITION:
+- Title positioned in the right 60% of the image
+- Visual elements concentrated on the left 40%
+- Plenty of breathing room, not cluttered
+- Text must be crisp and highly readable`;
+
+    case 'docs':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Documentation Hub
+
+VISUAL CONCEPT:
+Create an elegant documentation/knowledge visualization.
+- Floating translucent document pages with code snippets visible
+- Layered cards showing different doc sections stacked in 3D perspective
+- Glowing bookmark/chapter markers
+- Flowing lines connecting knowledge nodes
+- Subtle syntax highlighting colors (cyan, purple, green) on code elements
+- Open book or guide icon with emanating light
+
+TEXT TO RENDER:
+- Large title: "Documentation" in bold white
+- Subtitle: "Complete Guide to TPMJS" in cyan
+- Small text: "Tutorials • API Reference • Examples" in gray
+
+COMPOSITION:
+- Clean, organized feel reflecting documentation structure
+- Visual hierarchy showing organized information`;
+
+    case 'stats':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Registry Statistics Dashboard
+
+VISUAL CONCEPT:
+Create a data visualization masterpiece.
+- Glowing 3D bar charts rising from the bottom
+- Floating holographic pie charts and line graphs
+- Real-time data streams represented as flowing particles
+- Dashboard-like grid layout with stat cards
+- Upward trending arrows with motion blur
+- Numbers and metrics floating with glow effects
+- Analytics iconography (charts, graphs, metrics)
+
+TEXT TO RENDER:
+- Large title: "Registry Statistics" in bold white
+- Subtitle: "Real-time Analytics Dashboard" in cyan
+- Small text: "Tools • Downloads • Growth Metrics" in gray
+
+COMPOSITION:
+- Dynamic upward energy suggesting growth
+- Data visualizations should feel alive and real-time`;
+
+    case 'search':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Tool Search & Discovery
+
+VISUAL CONCEPT:
+Create a discovery/exploration themed image.
+- Large glowing magnifying glass or search lens as focal point
+- Grid of floating tool cards being illuminated by search beam
+- Filter chips and category tags floating around
+- Spotlight effect highlighting discovered tools
+- Particle effects suggesting exploration
+- Search bar UI element with glowing cursor
+
+TEXT TO RENDER:
+- Large title: "Tool Search" in bold white
+- Subtitle: "Discover AI Tools" in cyan
+- Small text: "Search • Filter • Find the Perfect Tool" in gray
+
+COMPOSITION:
+- Search/discovery energy radiating outward
+- Sense of infinite possibilities being explored`;
+
+    case 'publish':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: Publish Your Tool to TPMJS
+
+VISUAL CONCEPT:
+Create an empowering, creative publishing visualization.
+- Package/box icon transforming into light particles uploading upward
+- Rocket launch trajectory with motion trails
+- npm logo subtly integrated
+- Code editor snippets showing package.json
+- Success checkmarks and completion badges floating
+- Community icons showing reach and distribution
+- Upload arrow with energy trail
+
+TEXT TO RENDER:
+- Large title: "Publish Your Tool" in bold white
+- Subtitle: "Share with the Community" in cyan
+- Small text: "npm publish • Instant Distribution • Global Reach" in gray
+
+COMPOSITION:
+- Upward, aspirational energy
+- Feeling of launching something into the world`;
+
+    case 'playground':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Interactive Playground
+
+VISUAL CONCEPT:
+Create an experimental, hands-on testing environment.
+- Terminal/console window with glowing cursor and code
+- Interactive sliders, buttons, and UI controls floating
+- Real-time output visualization with streaming text
+- Play button with pulsing energy rings
+- Beaker/flask icon suggesting experimentation
+- Live code execution sparkle effects
+- Split-pane editor aesthetic
+
+TEXT TO RENDER:
+- Large title: "Playground" in bold white
+- Subtitle: "Test AI Tools Live" in cyan
+- Small text: "Interactive • Real-time • Experiment Freely" in gray
+
+COMPOSITION:
+- Playful but professional energy
+- Feeling of hands-on experimentation`;
+
+    case 'faq':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS FAQ - Frequently Asked Questions
+
+VISUAL CONCEPT:
+Create a helpful, illuminating Q&A visualization.
+- Large question marks transforming into lightbulbs (answers)
+- Speech bubbles with Q and A floating
+- Knowledge tree with branching answers
+- Glowing "?" becoming "✓" transformation effect
+- Helpful assistant/guide iconography
+- Organized FAQ cards floating in space
+
+TEXT TO RENDER:
+- Large title: "FAQ" in bold white
+- Subtitle: "Frequently Asked Questions" in cyan
+- Small text: "Quick Answers • Common Questions • Help Center" in gray
+
+COMPOSITION:
+- Helpful, supportive energy
+- Transformation from confusion to clarity`;
+
+    case 'spec':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Technical Specification
+
+VISUAL CONCEPT:
+Create a precise, technical documentation aesthetic.
+- JSON/code structure visualization with syntax highlighting
+- Blueprint grid patterns with technical precision
+- Schema diagrams with connected nodes
+- Validation checkmarks and type indicators
+- Technical document with glowing sections
+- Bracket symbols { } floating with glow
+
+TEXT TO RENDER:
+- Large title: "Specification" in bold white
+- Subtitle: "TPMJS Tool Format" in cyan
+- Small text: "Schema • Types • Validation Rules" in gray
+
+COMPOSITION:
+- Precise, authoritative, technical feel
+- Clean structure reflecting specification clarity`;
+
+    case 'sdk':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS SDK - Developer Integration Kit
+
+VISUAL CONCEPT:
+Create a powerful developer toolkit visualization.
+- Code snippets floating showing SDK usage
+- API endpoint connections with glowing lines
+- Package/library stack with version badges
+- Integration puzzle pieces clicking together
+- Terminal windows showing npm install commands
+- SDK logo/badge with power emanation
+
+TEXT TO RENDER:
+- Large title: "SDK" in bold white
+- Subtitle: "Developer Integration Kit" in cyan
+- Small text: "TypeScript • Easy Integration • Full API Access" in gray
+
+COMPOSITION:
+- Powerful, developer-focused energy
+- Feeling of unlocking capabilities`;
+
+    case 'changelog':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Changelog - Release History
+
+VISUAL CONCEPT:
+Create a timeline/evolution visualization.
+- Vertical timeline with glowing milestone nodes
+- Version badges (v1.0, v2.0) floating along timeline
+- Git branch visualization with merge points
+- Release notes cards stacked chronologically
+- Progress/evolution arrows moving upward
+- "NEW" badges and update sparkles
+
+TEXT TO RENDER:
+- Large title: "Changelog" in bold white
+- Subtitle: "What's New" in cyan
+- Small text: "Updates • Releases • Version History" in gray
+
+COMPOSITION:
+- Sense of progress and continuous improvement
+- Timeline flowing upward showing growth`;
+
+    case 'how-it-works':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: How TPMJS Works - Architecture Overview
+
+VISUAL CONCEPT:
+Create an educational process flow visualization.
+- 3-4 step process flow with connected nodes
+- Gear/cog mechanisms showing system workings
+- Data flow arrows between components
+- AI agent icon connecting to tool registry
+- Pipeline visualization showing tool execution
+- "Under the hood" mechanical aesthetic with glow
+
+TEXT TO RENDER:
+- Large title: "How It Works" in bold white
+- Subtitle: "Under the Hood" in cyan
+- Small text: "Architecture • Process Flow • System Design" in gray
+
+COMPOSITION:
+- Clear process flow from left to right or top to bottom
+- Educational, explanatory energy`;
+
+    case 'terms':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Terms of Service
+
+VISUAL CONCEPT:
+Create a professional legal/trust visualization.
+- Elegant document with official seal/stamp
+- Handshake icon representing agreement
+- Shield with checkmark for trust
+- Balanced scales of fairness
+- Professional contract aesthetic
+- Subtle gavel or legal iconography
+
+TEXT TO RENDER:
+- Large title: "Terms of Service" in bold white
+- Subtitle: "Legal Agreement" in cyan
+- Small text: "Usage Terms • Guidelines • Agreement" in gray
+
+COMPOSITION:
+- Professional, trustworthy, serious but approachable
+- Clean and authoritative`;
+
+    case 'privacy':
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: TPMJS Privacy Policy
+
+VISUAL CONCEPT:
+Create a security/protection visualization.
+- Large shield icon with lock symbol, glowing
+- Privacy eye icon with protective barrier
+- Encrypted data streams (binary/hex patterns)
+- Secure vault/safe aesthetic
+- User silhouette protected by shield bubble
+- GDPR/security badge elements
+
+TEXT TO RENDER:
+- Large title: "Privacy Policy" in bold white
+- Subtitle: "Your Data, Protected" in cyan
+- Small text: "Data Security • Privacy First • Transparency" in gray
+
+COMPOSITION:
+- Protective, secure, trustworthy energy
+- Feeling of safety and care`;
+
+    case 'tool': {
+      const toolName = content.tool?.name || content.title;
+      const packageName = content.tool?.packageName || '';
+      const description = content.tool?.description || content.description;
+      const category = content.tool?.category || 'ai';
+
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: ${toolName} - AI Tool on TPMJS
+
+TOOL DETAILS:
+- Name: ${toolName}
+- Package: ${packageName}
+- Category: ${category}
+- Description: ${description.slice(0, 200)}
+
+VISUAL CONCEPT:
+Create a tool showcase/product card visualization.
+- Central glowing tool icon representing the "${category}" category
+- Package badge showing npm origin
+- Quality/rating indicators (stars, score badges)
+- Code snippet preview showing tool usage
+- Category-specific iconography (${category})
+- "Verified" or "Official" badge if applicable
+- Download/install indicators
+
+TEXT TO RENDER:
+- Large title: "${toolName}" in bold white
+- Subtitle: "${packageName}" in cyan (smaller, package name style)
+- Category badge: "${category}" as a pill/tag
+- Brief description excerpt in gray
+
+COMPOSITION:
+- Product showcase energy, like an app store feature
+- Professional tool presentation
+- TPMJS branding subtle in corner`;
+    }
+
+    default:
+      return `${baseStyle}
+
+CREATE AN IMAGE FOR: ${content.title} - TPMJS
+
+VISUAL CONCEPT:
+Create a professional tech/SaaS visualization.
+- Abstract geometric shapes with glassmorphism
+- Neural network connection patterns
+- Floating UI elements with glow effects
+- Modern developer aesthetic
+- Subtle code/terminal elements
+
+TEXT TO RENDER:
+- Large title: "${content.title}" in bold white
+- Subtitle: "TPMJS" in cyan
+- Description: "${content.description.slice(0, 80)}" in gray
+
+COMPOSITION:
+- Clean, professional, modern tech aesthetic
+- Balanced layout with clear hierarchy`;
+  }
 }
