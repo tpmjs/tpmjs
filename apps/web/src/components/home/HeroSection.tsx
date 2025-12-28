@@ -62,23 +62,14 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
         {/* Main Heading */}
         <div className="max-w-7xl">
           <h1
-            className="mb-6 font-bold leading-none tracking-tight text-foreground"
-            style={{ fontSize: 'clamp(42px, 8vw, 80px)' }}
+            className="mb-8 font-bold leading-none tracking-tight text-foreground"
+            style={{ fontSize: 'clamp(48px, 10vw, 96px)' }}
           >
-            NPM PACKAGES YOUR AI AGENT CAN DISCOVER
+            TOOL REGISTRY FOR AI AGENTS
           </h1>
 
-          {/* Clear value prop */}
-          <p className="mb-8 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
-            TPMJS indexes npm packages as tools that AI agents can find and use at runtime.
-            <br />
-            <span className="text-foreground">
-              No config files. No manual imports. Just describe what you need.
-            </span>
-          </p>
-
           {/* Live Metrics Strip */}
-          <div className="mb-10 flex flex-wrap items-center gap-3 border-l-[6px] border-brutalist-accent pl-6 font-mono text-base md:text-lg font-bold uppercase tracking-wider">
+          <div className="mb-12 flex flex-wrap items-center gap-3 border-l-[6px] border-brutalist-accent pl-6 font-mono text-base md:text-lg font-bold uppercase tracking-wider">
             <div className="flex items-center gap-2">
               <span className="text-foreground">{formatNumber(stats.packageCount)}</span>
               <span className="text-foreground-secondary">PACKAGES</span>
@@ -89,6 +80,13 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
               <span className="text-foreground-secondary">TOOLS</span>
             </div>
           </div>
+
+          {/* Subheading */}
+          <p className="mb-12 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
+            Discover, share, and integrate tools that give your agents superpowers.
+            <br />
+            The registry for AI tools.
+          </p>
 
           {/* Brutalist Search Interface */}
           <div className="max-w-3xl">
