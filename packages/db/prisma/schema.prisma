@@ -254,3 +254,61 @@ enum HealthCheckType {
   EXECUTION // Only execution check
   FULL      // Both import and execution
 }
+
+/// StatsSnapshot - daily snapshot of registry statistics for historical tracking
+model StatsSnapshot {
+  id String @id @default(cuid())
+
+  // Snapshot date (one per day)
+  date DateTime @unique @db.Date
+
+  // Registry Overview
+  totalTools      Int @default(0) @map("total_tools")
+  totalPackages   Int @default(0) @map("total_packages")
+  officialTools   Int @default(0) @map("official_tools")
+  officialPackages Int @default(0) @map("official_packages")
+  toolsWithSchema Int @default(0) @map("tools_with_schema")
+
+  // Downloads & Stars
+  totalNpmDownloads Int @default(0) @map("total_npm_downloads")
+  totalGithubStars  Int @default(0) @map("total_github_stars")
+
+  // Health Status Counts
+  importHealthy   Int @default(0) @map("import_healthy")
+  importBroken    Int @default(0) @map("import_broken")
+  importUnknown   Int @default(0) @map("import_unknown")
+  executionHealthy Int @default(0) @map("execution_healthy")
+  executionBroken  Int @default(0) @map("execution_broken")
+  executionUnknown Int @default(0) @map("execution_unknown")
+
+  // Quality Distribution (stored as JSON for flexibility)
+  qualityDistribution Json? @map("quality_distribution") @db.JsonB
+
+  // Package Tiers
+  tiersMinimal Int @default(0) @map("tiers_minimal")
+  tiersRich    Int @default(0) @map("tiers_rich")
+
+  // Execution Stats (daily)
+  executionsTotal      Int @default(0) @map("executions_total")
+  executionsSuccessful Int @default(0) @map("executions_successful")
+  executionsFailed     Int @default(0) @map("executions_failed")
+  executionsAvgTimeMs  Int? @map("executions_avg_time_ms")
+
+  // Token Usage (daily)
+  tokensInput    BigInt @default(0) @map("tokens_input")
+  tokensOutput   BigInt @default(0) @map("tokens_output")
+  tokensTotal    BigInt @default(0) @map("tokens_total")
+  tokensCostUsd  Decimal? @map("tokens_cost_usd") @db.Decimal(10, 4)
+
+  // Health Checks (daily)
+  healthChecksRun Int @default(0) @map("health_checks_run")
+
+  // Category Breakdown (stored as JSON)
+  categories Json? @db.JsonB
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([date])
+  @@map("stats_snapshots")
+}

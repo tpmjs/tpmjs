@@ -99,6 +99,23 @@ interface ExecutionsData {
   };
 }
 
+interface StatsSnapshot {
+  id: string;
+  date: string;
+  totalTools: number;
+  totalPackages: number;
+  totalNpmDownloads: number;
+  totalGithubStars: number;
+  importHealthy: number;
+  importBroken: number;
+  executionHealthy: number;
+  executionBroken: number;
+  executionsTotal: number;
+  executionsSuccessful: number;
+  executionsFailed: number;
+  tokensTotal: number;
+}
+
 const QUALITY_COLORS: Record<string, string> = {
   excellent: '#22c55e',
   high: '#84cc16',
@@ -122,15 +139,17 @@ const TIER_COLORS = {
 export default function StatsPage() {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [executions, setExecutions] = useState<ExecutionsData | null>(null);
+  const [history, setHistory] = useState<StatsSnapshot[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [statsRes, execRes] = await Promise.all([
+        const [statsRes, execRes, historyRes] = await Promise.all([
           fetch('/api/stats'),
           fetch('/api/stats/executions'),
+          fetch('/api/sync/stats-snapshot?days=90'),
         ]);
 
         if (!statsRes.ok || !execRes.ok) {
@@ -139,12 +158,16 @@ export default function StatsPage() {
 
         const statsJson = await statsRes.json();
         const execJson = await execRes.json();
+        const historyJson = await historyRes.json();
 
         if (statsJson.success) {
           setStats(statsJson.data);
         }
         if (execJson.success) {
           setExecutions(execJson.data);
+        }
+        if (historyJson.success && historyJson.data?.snapshots) {
+          setHistory(historyJson.data.snapshots);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -292,6 +315,72 @@ export default function StatsPage() {
             />
           </div>
         </section>
+
+        {/* Historical Trends */}
+        {history.length > 0 && (
+          <section>
+            <h2 className="text-xl font-semibold text-foreground mb-4">Historical Trends</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ChartCard title="Tools & Packages Over Time">
+                <AreaChart
+                  data={history.map((s) => ({
+                    date: s.date,
+                    value: s.totalTools,
+                    secondaryValue: s.totalPackages,
+                  }))}
+                  width={500}
+                  height={250}
+                  showSecondary
+                  labels={{ primary: 'Tools', secondary: 'Packages' }}
+                  color="#2563eb"
+                  secondaryColor="#22c55e"
+                />
+              </ChartCard>
+              <ChartCard title="Health Status Over Time">
+                <AreaChart
+                  data={history.map((s) => ({
+                    date: s.date,
+                    value: s.importHealthy + s.executionHealthy,
+                    secondaryValue: s.importBroken + s.executionBroken,
+                  }))}
+                  width={500}
+                  height={250}
+                  showSecondary
+                  labels={{ primary: 'Healthy', secondary: 'Broken' }}
+                  color="#22c55e"
+                  secondaryColor="#ef4444"
+                />
+              </ChartCard>
+              <ChartCard title="Daily Executions Over Time">
+                <AreaChart
+                  data={history.map((s) => ({
+                    date: s.date,
+                    value: s.executionsSuccessful,
+                    secondaryValue: s.executionsFailed,
+                  }))}
+                  width={500}
+                  height={250}
+                  showSecondary
+                  labels={{ primary: 'Successful', secondary: 'Failed' }}
+                  color="#22c55e"
+                  secondaryColor="#ef4444"
+                />
+              </ChartCard>
+              <ChartCard title="NPM Downloads Over Time">
+                <AreaChart
+                  data={history.map((s) => ({
+                    date: s.date,
+                    value: s.totalNpmDownloads,
+                  }))}
+                  width={500}
+                  height={250}
+                  color="#f97316"
+                  showArea
+                />
+              </ChartCard>
+            </div>
+          </section>
+        )}
 
         {/* Health & Quality Charts */}
         <section>

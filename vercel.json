@@ -48,6 +48,10 @@
     {
       "path": "/api/sync/metrics",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/sync/stats-snapshot",
+      "schedule": "0 0 * * *"
     }
   ]
 }
