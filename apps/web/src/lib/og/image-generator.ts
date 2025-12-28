@@ -25,7 +25,7 @@ export async function generateOGImage(prompt: string): Promise<Buffer> {
   try {
     const client = getOpenAIClient();
     const response = await client.images.generate({
-      model: 'gpt-image-1',
+      model: 'gpt-image-1-mini',
       prompt,
       n: 1,
       size: '1536x1024', // Closest aspect ratio to 1200x630, will serve as-is
