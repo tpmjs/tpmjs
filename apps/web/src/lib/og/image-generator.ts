@@ -30,8 +30,8 @@ export async function generateOGImage(prompt: string): Promise<Buffer> {
       model: 'gpt-image-1-mini',
       prompt,
       n: 1,
-      size: '1024x1024',
-      quality: 'low',
+      size: '1536x1024', // Landscape format, closest to 1200x630 OG ratio
+      quality: 'medium',
     });
 
     console.log('[OG] OpenAI response received');

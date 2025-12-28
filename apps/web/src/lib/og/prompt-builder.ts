@@ -35,18 +35,20 @@ const CATEGORY_VISUALS: Record<string, string> = {
 /**
  * Base style prompt for all OG images
  */
-const BASE_STYLE = `Create a 1200x630 pixel Open Graph image.
+const BASE_STYLE = `Create a 1536x1024 pixel Open Graph social media preview image.
 
-STRICT STYLE REQUIREMENTS:
-- Dark gradient background from #0a0a0a to #1a1a1a
-- Primary accent color: cyan (#00d4ff)
-- Secondary accent color: purple (#8b5cf6)
-- Modern, minimalist, professional tech aesthetic
-- Abstract geometric shapes or flowing patterns
-- Subtle depth and dimensionality with glow effects
-- Clean composition with balanced visual weight
+DESIGN STYLE:
+- Dark gradient background from #0a0a0a (left) to #1a1a2e (right)
+- Primary accent: vibrant cyan (#00d4ff) for highlights and glows
+- Secondary accent: electric purple (#8b5cf6) for depth
+- Modern tech aesthetic with subtle grid patterns in background
+- Soft glow effects and light rays emanating from focal points
+- Clean, professional composition suitable for social media sharing
 
-CRITICAL: Generate ONLY abstract visuals. Do NOT include any text, letters, numbers, words, or readable characters in the image.`;
+LAYOUT:
+- Left side (40%): Abstract visual elements and iconography
+- Right side (60%): Title and description text area
+- Visual balance with text clearly readable against dark background`;
 
 /**
  * Build page-specific context for the prompt
@@ -56,181 +58,221 @@ function buildPageContext(content: PageContent): string {
     case 'tool': {
       const category = content.tool?.category || 'other';
       const visualHint = CATEGORY_VISUALS[category] || CATEGORY_VISUALS.other;
+      const toolName = content.tool?.name || content.title;
+      const description = content.tool?.description || content.description;
 
       return `
-CONTEXT: Developer tool named "${content.tool?.name}"
-CATEGORY: ${category}
-PURPOSE: ${content.tool?.description?.slice(0, 150) || 'AI-powered developer tool'}
+TEXT TO DISPLAY:
+- Title (large, bold, white): "${toolName}"
+- Subtitle (smaller, cyan): "${content.tool?.packageName || 'npm package'}"
+- Description (medium, gray): "${description.slice(0, 100)}${description.length > 100 ? '...' : ''}"
 
-VISUAL ELEMENTS TO INCLUDE:
+LEFT SIDE VISUALS:
 ${visualHint}
+- Category icon representing "${category}"
 
-MOOD: Powerful, trustworthy, professional, cutting-edge developer tool`;
+BRANDING: Small "TPMJS" logo in bottom-right corner`;
     }
 
     case 'home':
       return `
-CONTEXT: Homepage for TPMJS - a registry of AI/LLM tools for developers
+TEXT TO DISPLAY:
+- Title (large, bold, white): "TPMJS"
+- Tagline (medium, cyan glow): "Tool Package Manager for AI Agents"
+- Subtitle (smaller, gray): "Discover, share, and integrate AI tools"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Interconnected glowing nodes forming a network pattern
+LEFT SIDE VISUALS:
+- Interconnected glowing nodes forming a network
+- Neural network-inspired radiating patterns from center
 - Flowing data streams with particle effects
-- Neural network-inspired radiating patterns
-- Central focal point with emanating connections
-
-MOOD: Cutting-edge, innovative, comprehensive, developer-focused`;
+- Multiple small tool icons orbiting a central hub`;
 
     case 'docs':
       return `
-CONTEXT: Documentation hub for a developer tool registry
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Documentation"
+- Tagline (medium, cyan): "Complete Guide to TPMJS"
+- Subtitle (smaller, gray): "Learn how to discover, use, and publish AI tools"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Layered page-like shapes stacked in 3D space
-- Knowledge structure visualization with connected nodes
-- Organized grid patterns suggesting structured information
-- Glowing connection lines between concept nodes
-
-MOOD: Organized, comprehensive, accessible, helpful`;
+LEFT SIDE VISUALS:
+- Layered document pages in 3D perspective
+- Code snippet abstractions with syntax highlighting colors
+- Knowledge graph with connected nodes
+- Book/guide icon with glowing pages`;
 
     case 'stats':
       return `
-CONTEXT: Statistics dashboard showing real-time registry metrics
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Registry Statistics"
+- Tagline (medium, cyan): "Real-time Metrics Dashboard"
+- Subtitle (smaller, gray): "Track tools, downloads, and community growth"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Abstract bar chart shapes rising upward
-- Trend lines with glowing data points
-- Circular gauge patterns
-- Growth-oriented upward visual flow
-
-MOOD: Data-driven, analytical, transparent, growth-focused`;
+LEFT SIDE VISUALS:
+- Rising bar charts with glowing tops
+- Upward trending line graphs
+- Circular progress gauges
+- Numbers floating with glow effects`;
 
     case 'search':
       return `
-CONTEXT: Search interface for discovering AI tools
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Tool Search"
+- Tagline (medium, cyan): "Discover AI Tools"
+- Subtitle (smaller, gray): "Find the perfect tool for your AI agent"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Magnifying glass shape radiating search beams
-- Grid of abstract tool icons
-- Discovery-oriented radiating patterns
-- Exploratory path visualizations
-
-MOOD: Discovery, exploration, finding solutions`;
+LEFT SIDE VISUALS:
+- Large magnifying glass with radiating search beams
+- Grid of small tool icons being highlighted
+- Filter/category chips floating
+- Discovery sparkle effects`;
 
     case 'publish':
       return `
-CONTEXT: Guide for publishing tools to the registry
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Publish Your Tool"
+- Tagline (medium, cyan): "Share with the Community"
+- Subtitle (smaller, gray): "Add your AI tool to the TPMJS registry"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Package box shapes with upload arrows
-- Publication flow visualization
-- Building block patterns coming together
-- Contribution-oriented upward movement
-
-MOOD: Creative, contributive, community-building`;
+LEFT SIDE VISUALS:
+- Package box with upload arrow
+- npm logo abstraction
+- Publishing workflow with connected steps
+- Rocket launch effect`;
 
     case 'faq':
       return `
-CONTEXT: FAQ page answering common questions
+TEXT TO DISPLAY:
+- Title (large, bold, white): "FAQ"
+- Tagline (medium, cyan): "Frequently Asked Questions"
+- Subtitle (smaller, gray): "Get answers to common questions about TPMJS"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Question mark abstract shapes with answer connections
-- Branching knowledge tree patterns
-- Illumination-like glowing effects
-- Organized information clusters
-
-MOOD: Helpful, clarifying, supportive`;
+LEFT SIDE VISUALS:
+- Question marks transforming into lightbulbs
+- Branching Q&A tree structure
+- Speech bubbles with answer symbols
+- Help/support iconography`;
 
     case 'playground':
       return `
-CONTEXT: Interactive playground for testing AI tools
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Playground"
+- Tagline (medium, cyan): "Test AI Tools Live"
+- Subtitle (smaller, gray): "Experiment with tools in your browser"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Interactive particle systems
-- Experimental visualization patterns
-- Dynamic energy flows
-- Testing-oriented active elements
-
-MOOD: Experimental, interactive, playful yet professional`;
+LEFT SIDE VISUALS:
+- Interactive terminal window with cursor
+- Flying code snippets
+- Play button with energy rings
+- Experimental beaker/flask with bubbles`;
 
     case 'spec':
       return `
-CONTEXT: Technical specification for TPMJS tools
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Specification"
+- Tagline (medium, cyan): "TPMJS Tool Format"
+- Subtitle (smaller, gray): "Technical specification for tool packages"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Schema-like structured patterns
-- Technical blueprint aesthetic
-- Precise geometric arrangements
-- Specification document abstractions
-
-MOOD: Technical, precise, authoritative`;
+LEFT SIDE VISUALS:
+- JSON/schema structure visualization
+- Blueprint grid patterns
+- Technical document with code blocks
+- Checkmark validation symbols`;
 
     case 'sdk':
       return `
-CONTEXT: SDK for integrating TPMJS tools
+TEXT TO DISPLAY:
+- Title (large, bold, white): "SDK"
+- Tagline (medium, cyan): "Developer Integration Kit"
+- Subtitle (smaller, gray): "Integrate TPMJS tools into your applications"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Integration connection patterns
-- API endpoint visualizations
-- Library-like stacked components
-- Developer toolkit arrangements
-
-MOOD: Technical, integrated, powerful`;
+LEFT SIDE VISUALS:
+- API connection endpoints
+- Code library stack
+- Integration puzzle pieces connecting
+- Developer tools (wrench, code brackets)`;
 
     case 'changelog':
       return `
-CONTEXT: Release history and updates
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Changelog"
+- Tagline (medium, cyan): "What's New"
+- Subtitle (smaller, gray): "Latest updates and release history"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Timeline flow patterns
-- Version milestone markers
-- Evolution and progression visualization
-- Update wave patterns
-
-MOOD: Progress, evolution, continuous improvement`;
+LEFT SIDE VISUALS:
+- Vertical timeline with glowing milestones
+- Version number badges
+- Git branch visualization
+- Update/refresh arrows`;
 
     case 'how-it-works':
       return `
-CONTEXT: Explanation of TPMJS architecture
+TEXT TO DISPLAY:
+- Title (large, bold, white): "How It Works"
+- Tagline (medium, cyan): "Under the Hood"
+- Subtitle (smaller, gray): "Learn how TPMJS connects AI agents with tools"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Process flow visualization
-- Architecture diagram abstractions
-- Step-by-step progression patterns
-- System component connections
-
-MOOD: Educational, clear, systematic`;
+LEFT SIDE VISUALS:
+- Process flowchart with 3-4 connected steps
+- Gear/cog mechanisms
+- Data flow arrows between components
+- Architecture diagram abstraction`;
 
     case 'terms':
+      return `
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Terms of Service"
+- Tagline (medium, cyan): "Legal Agreement"
+- Subtitle (smaller, gray): "Terms and conditions for using TPMJS"
+
+LEFT SIDE VISUALS:
+- Legal document with seal
+- Handshake symbol
+- Checkmark/agreement icons
+- Professional shield`;
+
     case 'privacy':
       return `
-CONTEXT: Legal document page
+TEXT TO DISPLAY:
+- Title (large, bold, white): "Privacy Policy"
+- Tagline (medium, cyan): "Your Data, Protected"
+- Subtitle (smaller, gray): "How we handle and protect your information"
 
-VISUAL ELEMENTS TO INCLUDE:
-- Shield and protection symbols abstracted
-- Secure lock patterns
-- Trust-oriented design elements
-- Professional document aesthetic
-
-MOOD: Trustworthy, secure, professional`;
+LEFT SIDE VISUALS:
+- Shield with lock symbol
+- Privacy/eye icon with protection
+- Secure data flow visualization
+- Trust badges`;
 
     default:
       return `
-CONTEXT: TPMJS - AI Tool Registry for developers
+TEXT TO DISPLAY:
+- Title (large, bold, white): "${content.title}"
+- Tagline (medium, cyan): "TPMJS"
+- Subtitle (smaller, gray): "${content.description.slice(0, 80)}"
 
-VISUAL ELEMENTS TO INCLUDE:
+LEFT SIDE VISUALS:
 - Abstract tech patterns
 - Neural network connections
-- Modern developer aesthetic
-- Professional geometric shapes
-
-MOOD: Professional, innovative, reliable`;
+- Modern geometric shapes`;
   }
 }
+
+/**
+ * Typography instructions for text rendering
+ */
+const TYPOGRAPHY = `
+TYPOGRAPHY REQUIREMENTS:
+- Use clean, modern sans-serif font (like Inter, Helvetica, or system UI)
+- Title: Bold weight, large size, pure white (#ffffff)
+- Tagline: Regular weight, medium size, cyan (#00d4ff) with subtle glow
+- Subtitle: Light weight, smaller size, muted gray (#888888)
+- Ensure high contrast and readability against dark background
+- Text should be crisp and professional`;
 
 /**
  * Build the complete prompt for OpenAI image generation
  */
 export function buildOGPrompt(content: PageContent): string {
   const pageContext = buildPageContext(content);
-  return `${BASE_STYLE}\n${pageContext}`;
+  return `${BASE_STYLE}\n${pageContext}\n${TYPOGRAPHY}`;
 }
