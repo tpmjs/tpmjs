@@ -73,6 +73,19 @@ const nodeDescriptions: Record<string, { title: string; description: string }> =
   },
 };
 
+function getThemeColors(element: HTMLElement) {
+  const styles = getComputedStyle(element);
+  return {
+    background: styles.getPropertyValue('--color-background').trim() || '#ffffff',
+    foreground: styles.getPropertyValue('--color-foreground').trim() || '#0a0a0a',
+    foregroundSecondary:
+      styles.getPropertyValue('--color-foreground-secondary').trim() || '#525252',
+    foregroundTertiary: styles.getPropertyValue('--color-foreground-tertiary').trim() || '#737373',
+    border: styles.getPropertyValue('--color-border').trim() || '#e5e5e5',
+    primary: styles.getPropertyValue('--color-primary').trim() || '#2563eb',
+  };
+}
+
 export function ArchitectureDiagram(): React.ReactElement {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -93,7 +106,10 @@ export function ArchitectureDiagram(): React.ReactElement {
   }, []);
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !containerRef.current) return;
+
+    // Get computed theme colors
+    const colors = getThemeColors(containerRef.current);
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
@@ -256,8 +272,8 @@ export function ArchitectureDiagram(): React.ReactElement {
       .attr('dx', '0')
       .attr('dy', '2')
       .attr('stdDeviation', '4')
-      .attr('flood-color', 'currentColor')
-      .attr('flood-opacity', '0.15');
+      .attr('flood-color', colors.foreground)
+      .attr('flood-opacity', '0.1');
 
     // Arrow marker
     defs
@@ -271,8 +287,7 @@ export function ArchitectureDiagram(): React.ReactElement {
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', 'currentColor')
-      .attr('class', 'text-foreground-tertiary');
+      .attr('fill', colors.foregroundTertiary);
 
     const mainGroup = svg.append('g');
 
@@ -296,18 +311,16 @@ export function ArchitectureDiagram(): React.ReactElement {
         .append('path')
         .attr('d', pathData)
         .attr('fill', 'none')
-        .attr('stroke', 'currentColor')
-        .attr('class', 'text-border')
+        .attr('stroke', colors.border)
         .attr('stroke-width', 1.5)
-        .attr('opacity', 0.3);
+        .attr('opacity', 0.5);
 
       // Animated path
       const animatedPath = mainGroup
         .append('path')
         .attr('d', pathData)
         .attr('fill', 'none')
-        .attr('stroke', 'currentColor')
-        .attr('class', 'text-foreground-tertiary')
+        .attr('stroke', colors.foregroundTertiary)
         .attr('stroke-width', 1.5)
         .attr('stroke-dasharray', '6,10')
         .attr('stroke-linecap', 'round')
@@ -331,8 +344,7 @@ export function ArchitectureDiagram(): React.ReactElement {
       const particle = mainGroup
         .append('circle')
         .attr('r', 3)
-        .attr('fill', 'currentColor')
-        .attr('class', 'text-primary')
+        .attr('fill', colors.primary)
         .attr('opacity', 0)
         .attr('filter', 'url(#arch-glow)');
 
@@ -386,25 +398,29 @@ export function ArchitectureDiagram(): React.ReactElement {
         .attr('width', node.width + 8)
         .attr('height', node.height + 8)
         .attr('rx', 10)
-        .attr('fill', 'currentColor')
-        .attr('class', 'node-glow text-primary')
+        .attr('fill', colors.primary)
         .attr('opacity', 0)
         .attr('filter', 'url(#arch-glow)');
 
       // Determine colors based on type
-      let strokeColor = 'var(--color-border)';
-      let fillColor = 'var(--color-background)';
+      let strokeColor = colors.border;
+      let fillColor = colors.background;
+      let textColor = colors.foreground;
+      let sublabelColor = colors.foregroundTertiary;
+
       if (node.type === 'source') {
-        strokeColor = 'var(--color-foreground)';
+        strokeColor = colors.foreground;
       } else if (node.type === 'process') {
-        strokeColor = 'var(--color-primary)';
+        strokeColor = colors.primary;
       } else if (node.type === 'storage') {
-        strokeColor = 'var(--color-foreground)';
+        strokeColor = colors.foreground;
       } else if (node.type === 'api') {
-        strokeColor = 'var(--color-foreground-secondary)';
+        strokeColor = colors.foregroundSecondary;
       } else if (node.type === 'output') {
-        strokeColor = 'var(--color-foreground)';
-        fillColor = 'var(--color-foreground)';
+        strokeColor = colors.foreground;
+        fillColor = colors.foreground;
+        textColor = colors.background;
+        sublabelColor = colors.background;
       }
 
       // Main rectangle
@@ -427,10 +443,7 @@ export function ArchitectureDiagram(): React.ReactElement {
         .attr('x', 0)
         .attr('y', node.sublabel ? -4 : 4)
         .attr('text-anchor', 'middle')
-        .attr(
-          'fill',
-          node.type === 'output' ? 'var(--color-background)' : 'var(--color-foreground)'
-        )
+        .attr('fill', textColor)
         .attr('font-size', '13px')
         .attr('font-weight', '600')
         .attr('font-family', 'ui-monospace, monospace')
@@ -443,13 +456,10 @@ export function ArchitectureDiagram(): React.ReactElement {
           .attr('x', 0)
           .attr('y', 14)
           .attr('text-anchor', 'middle')
-          .attr(
-            'fill',
-            node.type === 'output' ? 'var(--color-background)' : 'var(--color-foreground-tertiary)'
-          )
+          .attr('fill', sublabelColor)
           .attr('font-size', '10px')
           .attr('font-family', 'ui-monospace, monospace')
-          .attr('opacity', 0.8)
+          .attr('opacity', node.type === 'output' ? 0.7 : 0.8)
           .text(node.sublabel);
       }
 
@@ -493,17 +503,17 @@ export function ArchitectureDiagram(): React.ReactElement {
           role="img"
           aria-label="TPMJS System Architecture diagram"
         />
-
-        {/* Tooltip */}
-        {hoveredInfo && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-3 bg-background border border-border rounded-lg shadow-lg text-sm max-w-sm z-10">
-            <div className="text-foreground-secondary">
-              <span className="font-semibold text-foreground">{hoveredInfo.title}</span> —{' '}
-              {hoveredInfo.description}
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Tooltip - positioned outside diagram container */}
+      {hoveredInfo && (
+        <div className="mt-4 px-4 py-3 bg-background border border-border rounded-lg shadow-lg text-sm">
+          <div className="text-foreground-secondary">
+            <span className="font-semibold text-foreground">{hoveredInfo.title}</span> —{' '}
+            {hoveredInfo.description}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
