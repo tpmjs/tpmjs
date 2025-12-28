@@ -214,8 +214,8 @@ async function fetchTools(): Promise<
     category: string;
   }>
 > {
-  // Fetch tools from the API
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  // Fetch tools from production API
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://tpmjs.com';
 
   try {
     const response = await fetch(`${baseUrl}/api/tools?limit=100`);
@@ -224,8 +224,22 @@ async function fetchTools(): Promise<
       return [];
     }
 
-    const { data } = await response.json();
-    return data.tools || [];
+    const json = await response.json();
+    // API returns { data: [...tools] } where each tool has package.npmPackageName
+    const tools = json.data || [];
+    return tools.map(
+      (tool: {
+        name: string;
+        description: string;
+        package: { npmPackageName: string; category: string };
+      }) => ({
+        id: tool.name,
+        name: tool.name,
+        packageName: tool.package.npmPackageName,
+        description: tool.description || '',
+        category: tool.package.category || 'other',
+      })
+    );
   } catch (error) {
     console.warn('Could not fetch tools:', error);
     return [];
