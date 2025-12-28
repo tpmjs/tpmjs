@@ -1,0 +1,7 @@
+node_modules
+.turbo
+.next
+dist
+*.log
+.env*
+!.env.example
