@@ -8,6 +8,15 @@ import { ArchitectureDiagram } from '~/components/ArchitectureDiagram';
 export const metadata = {
   title: 'How It Works | TPMJS',
   description: 'Learn how TPMJS automatically discovers, indexes, and serves AI tools from npm',
+  openGraph: {
+    title: 'How It Works | TPMJS',
+    description: 'Learn how TPMJS automatically discovers, indexes, and serves AI tools from npm',
+    images: [{ url: '/api/og/how-it-works', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    images: ['/api/og/how-it-works'],
+  },
 };
 
 export default function HowItWorksPage(): React.ReactElement {

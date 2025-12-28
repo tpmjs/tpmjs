@@ -7,6 +7,15 @@ import { AppHeader } from '~/components/AppHeader';
 export const metadata = {
   title: 'Publish a Tool | TPMJS',
   description: 'Learn how to publish your AI tool to the TPMJS registry',
+  openGraph: {
+    title: 'Publish a Tool | TPMJS',
+    description: 'Learn how to publish your AI tool to the TPMJS registry',
+    images: [{ url: '/api/og/publish', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    images: ['/api/og/publish'],
+  },
 };
 
 export default function PublishPage(): React.ReactElement {

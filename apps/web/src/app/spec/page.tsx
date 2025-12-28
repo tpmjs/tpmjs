@@ -11,6 +11,16 @@ export const metadata = {
   title: 'TPMJS Specification | The Open Standard for AI Tool Discovery',
   description:
     'Complete technical reference for the TPMJS specification - field definitions, validation rules, and integration guide for AI tool developers.',
+  openGraph: {
+    title: 'TPMJS Specification | The Open Standard for AI Tool Discovery',
+    description:
+      'Complete technical reference for the TPMJS specification - field definitions, validation rules, and integration guide for AI tool developers.',
+    images: [{ url: '/api/og/spec', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    images: ['/api/og/spec'],
+  },
 };
 
 export default function SpecPage(): React.ReactElement {

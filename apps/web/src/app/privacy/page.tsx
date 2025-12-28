@@ -5,6 +5,15 @@ import { AppHeader } from '~/components/AppHeader';
 export const metadata = {
   title: 'Privacy Policy | TPMJS',
   description: 'Learn how TPMJS collects, uses, and protects your data',
+  openGraph: {
+    title: 'Privacy Policy | TPMJS',
+    description: 'Learn how TPMJS collects, uses, and protects your data',
+    images: [{ url: '/api/og/privacy', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    images: ['/api/og/privacy'],
+  },
 };
 
 export default function PrivacyPage(): React.ReactElement {

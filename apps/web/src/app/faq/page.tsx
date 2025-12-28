@@ -6,6 +6,16 @@ export const metadata = {
   title: 'FAQ | TPMJS',
   description:
     'Frequently asked questions about TPMJS - Tool Package Manager for AI agents. Learn how to publish tools, understand quality scores, and get help.',
+  openGraph: {
+    title: 'FAQ | TPMJS',
+    description:
+      'Frequently asked questions about TPMJS - Tool Package Manager for AI agents. Learn how to publish tools, understand quality scores, and get help.',
+    images: [{ url: '/api/og/faq', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    images: ['/api/og/faq'],
+  },
 };
 
 interface FAQItemProps {

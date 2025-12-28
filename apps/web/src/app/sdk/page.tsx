@@ -9,6 +9,16 @@ export const metadata = {
   title: 'SDK - Registry Tools | TPMJS',
   description:
     'Add two tools to your AI agent and instantly access thousands of tools from the TPMJS registry',
+  openGraph: {
+    title: 'SDK - Registry Tools | TPMJS',
+    description:
+      'Add two tools to your AI agent and instantly access thousands of tools from the TPMJS registry',
+    images: [{ url: '/api/og/sdk', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image' as const,
+    images: ['/api/og/sdk'],
+  },
 };
 
 export default function SDKPage(): React.ReactElement {

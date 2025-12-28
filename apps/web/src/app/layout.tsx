@@ -59,7 +59,7 @@ export const metadata: Metadata = {
       'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/api/og/home',
         width: 1200,
         height: 630,
         alt: 'TPMJS - Tool Package Manager for AI Agents',
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     title: 'TPMJS - Tool Package Manager for AI Agents',
     description:
       'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
-    images: ['/og-image.png'],
+    images: ['/api/og/home'],
   },
   robots: {
     index: true,
