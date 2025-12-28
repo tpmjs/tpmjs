@@ -10,7 +10,8 @@
     "type-check": "tsc --noEmit",
     "clean": "rm -rf .next .turbo",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "generate-og": "tsx scripts/generate-og-images.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "3.0.1",
@@ -54,6 +55,7 @@
     "eslint-config-next": "^16.0.4",
     "postcss": "^8.5.1",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^2.1.9"
   }
