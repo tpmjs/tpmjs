@@ -393,7 +393,7 @@ export function ArchitectureDiagram(): React.ReactElement {
 
       // Determine colors based on type
       let strokeColor = 'var(--color-border)';
-      let fillOpacity = 0.5;
+      let fillColor = 'var(--color-background)';
       if (node.type === 'source') {
         strokeColor = 'var(--color-foreground)';
       } else if (node.type === 'process') {
@@ -404,7 +404,7 @@ export function ArchitectureDiagram(): React.ReactElement {
         strokeColor = 'var(--color-foreground-secondary)';
       } else if (node.type === 'output') {
         strokeColor = 'var(--color-foreground)';
-        fillOpacity = 1;
+        fillColor = 'var(--color-foreground)';
       }
 
       // Main rectangle
@@ -416,8 +416,7 @@ export function ArchitectureDiagram(): React.ReactElement {
         .attr('width', node.width)
         .attr('height', node.height)
         .attr('rx', node.type === 'output' ? 4 : 8)
-        .attr('fill', node.type === 'output' ? 'var(--color-foreground)' : 'var(--color-surface)')
-        .attr('fill-opacity', fillOpacity)
+        .attr('fill', fillColor)
         .attr('stroke', strokeColor)
         .attr('stroke-width', 1.5)
         .attr('filter', 'url(#arch-shadow)');
@@ -497,7 +496,7 @@ export function ArchitectureDiagram(): React.ReactElement {
 
         {/* Tooltip */}
         {hoveredInfo && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-4 py-3 bg-background border border-border rounded-lg shadow-lg text-sm max-w-sm">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 px-4 py-3 bg-background border border-border rounded-lg shadow-lg text-sm max-w-sm z-10">
             <div className="text-foreground-secondary">
               <span className="font-semibold text-foreground">{hoveredInfo.title}</span> —{' '}
               {hoveredInfo.description}
