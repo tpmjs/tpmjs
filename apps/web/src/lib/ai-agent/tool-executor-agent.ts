@@ -6,7 +6,7 @@
 import { openai } from '@ai-sdk/openai';
 import type { Package, Tool } from '@tpmjs/db';
 import { executePackage } from '@tpmjs/package-executor';
-import { type CoreMessage, generateText } from 'ai';
+import { type ModelMessage, generateText } from 'ai';
 import { z } from 'zod';
 
 /**
@@ -201,7 +201,7 @@ export async function executeToolWithAgent(
 
   console.log('[executeToolWithAgent] Tool name:', sanitizedToolName);
 
-  const messages: CoreMessage[] = [
+  const messages: ModelMessage[] = [
     {
       role: 'user',
       content: userPrompt,

@@ -228,7 +228,7 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
     const result = streamText({
       model: openai('gpt-4o-mini'),
       system,
-      messages: convertToModelMessages(messages),
+      messages: await convertToModelMessages(messages),
       tools: allTools,
       stopWhen: stepCountIs(5), // Allow model to call tools AND generate text response
     });
