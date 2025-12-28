@@ -64,6 +64,14 @@ export function AppHeader(): React.ReactElement {
             </Button>
           </Link>
           <a
+            href="https://discord.gg/KuJRBCn89c"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground hover:text-foreground transition-colors"
+          >
+            <Icon icon="discord" size="md" />
+          </a>
+          <a
             href="https://github.com/tpmjs/tpmjs"
             target="_blank"
             rel="noopener noreferrer"
