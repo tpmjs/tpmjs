@@ -202,15 +202,23 @@ export async function GET(request: NextRequest) {
           END as bucket,
           COUNT(*) as count
         FROM tools
-        GROUP BY bucket
+        GROUP BY
+          CASE
+            WHEN quality_score IS NULL THEN 'unscored'
+            WHEN quality_score < 0.3 THEN 'low'
+            WHEN quality_score < 0.5 THEN 'medium-low'
+            WHEN quality_score < 0.7 THEN 'medium'
+            WHEN quality_score < 0.9 THEN 'high'
+            ELSE 'excellent'
+          END
         ORDER BY
-          CASE bucket
-            WHEN 'unscored' THEN 0
-            WHEN 'low' THEN 1
-            WHEN 'medium-low' THEN 2
-            WHEN 'medium' THEN 3
-            WHEN 'high' THEN 4
-            WHEN 'excellent' THEN 5
+          CASE
+            WHEN quality_score IS NULL THEN 0
+            WHEN quality_score < 0.3 THEN 1
+            WHEN quality_score < 0.5 THEN 2
+            WHEN quality_score < 0.7 THEN 3
+            WHEN quality_score < 0.9 THEN 4
+            ELSE 5
           END
       `,
     ]);
