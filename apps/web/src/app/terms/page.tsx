@@ -19,7 +19,7 @@ export default function TermsPage(): React.ReactElement {
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
               Terms of Service
             </h1>
-            <p className="text-lg text-foreground-secondary">Last updated: December 14, 2025</p>
+            <p className="text-lg text-foreground-secondary">Last updated: December 2024</p>
           </div>
 
           {/* Content */}
@@ -372,10 +372,10 @@ export default function TermsPage(): React.ReactElement {
                 </p>
                 <p>
                   <a
-                    href="mailto:thomasalwyndavis@gmail.com"
+                    href="mailto:hello@tpmjs.com"
                     className="text-primary hover:underline font-medium"
                   >
-                    thomasalwyndavis@gmail.com
+                    hello@tpmjs.com
                   </a>
                 </p>
               </div>
@@ -416,7 +416,7 @@ export default function TermsPage(): React.ReactElement {
               We&apos;re here to help. Reach out if you need clarification on anything.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="mailto:thomasalwyndavis@gmail.com">
+              <a href="mailto:hello@tpmjs.com">
                 <button
                   type="button"
                   className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"

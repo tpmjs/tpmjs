@@ -138,7 +138,8 @@ export default function ToolSearchPage(): React.ReactElement {
         <div className="space-y-4 mb-8">
           <h1 className="text-4xl font-bold text-foreground">Tool Registry</h1>
           <p className="text-lg text-foreground-secondary">
-            Discover, share, and integrate tools that give your AI agents superpowers.
+            Search npm packages indexed as AI agent tools. Filter by category, health status, or
+            keyword.
           </p>
         </div>
 

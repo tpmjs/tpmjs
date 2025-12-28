@@ -1,6 +1,16 @@
 {
   "name": "@tpmjs/env",
   "version": "0.1.1",
+  "description": "Environment variable validation with Zod for TPMJS",
+  "author": "TPMJS",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/env"
+  },
+  "homepage": "https://tpmjs.com",
+  "keywords": ["tpmjs", "typescript", "environment", "zod", "validation"],
   "type": "module",
   "exports": {
     ".": {

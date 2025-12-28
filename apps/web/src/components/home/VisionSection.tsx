@@ -63,7 +63,7 @@ export function VisionSection(): React.ReactElement {
         </div>
 
         <div className="mt-12 text-center font-mono text-sm text-brutalist-accent uppercase tracking-wider">
-          The registry that gives agents superpowers
+          One registry. Thousands of tools. Zero configuration.
         </div>
       </Container>
     </section>

@@ -1,4 +1,4 @@
-Contact: mailto:thomasalwyndavis@gmail.com
+Contact: mailto:hello@tpmjs.com
 Preferred-Languages: en
 Canonical: https://tpmjs.com/.well-known/security.txt
 Policy: https://tpmjs.com/.well-known/security.txt

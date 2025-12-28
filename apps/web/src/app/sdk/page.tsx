@@ -578,8 +578,8 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
               <p>
                 We&apos;re building the{' '}
                 <span className="text-foreground font-semibold">npm for AI tools</span>. Just as npm
-                revolutionized JavaScript package sharing, TPMJS aims to create a universal
-                ecosystem where AI agents can discover, share, and execute tools seamlessly.
+                changed how developers share JavaScript packages, TPMJS aims to do the same for AI
+                agent tools—a universal ecosystem where agents discover and use tools on-demand.
               </p>
               <p>
                 The <code className="text-primary">registrySearch</code> and{' '}

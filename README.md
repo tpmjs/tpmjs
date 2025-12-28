@@ -1,10 +1,59 @@
-# TPMJS Monorepo
+# TPMJS
 
-[![CI](https://github.com/YOUR_ORG/tpmjs/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_ORG/tpmjs/actions/workflows/ci.yml)
+[![CI](https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml/badge.svg)](https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml)
 
-Tool Package Manager for AI Agents - A Turborepo monorepo with strict TypeScript, Next.js 16, and best practices.
+**TPMJS is a registry that lets AI agents discover and use npm packages as tools at runtime.**
 
-## Structure
+Instead of manually importing and configuring tools, agents search by description and load what they need on-demand. Publish your npm package with the `tpmjs-tool` keyword—it appears on [tpmjs.com](https://tpmjs.com) within 15 minutes.
+
+## Why TPMJS?
+
+- **No config files** - Agents discover tools by describing what they need
+- **Always up-to-date** - Tools load from npm at runtime, no manual updates
+- **Works with any agent** - Compatible with Vercel AI SDK, LangChain, OpenAI, Claude, etc.
+- **Publish once** - Add one keyword to package.json, publish to npm, done
+
+## Quick Start
+
+**For AI agent developers:**
+```bash
+npm install @tpmjs/sdk
+```
+
+```typescript
+import { searchRegistry, executeRegistry } from '@tpmjs/sdk';
+
+// Find tools by description
+const tools = await searchRegistry({ query: 'parse PDF documents' });
+
+// Execute a tool
+const result = await executeRegistry({
+  toolId: 'pdf-parser/extractText',
+  input: { url: 'https://example.com/doc.pdf' }
+});
+```
+
+**For tool publishers:**
+```bash
+npx @tpmjs/create-basic-tools
+```
+
+Or add manually to your package.json:
+```json
+{
+  "keywords": ["tpmjs-tool"],
+  "tpmjs": {
+    "category": "text-analysis",
+    "description": "What your tool does"
+  }
+}
+```
+
+See [HOW_TO_PUBLISH_A_TOOL.md](./HOW_TO_PUBLISH_A_TOOL.md) for the full guide.
+
+---
+
+## Monorepo Structure
 
 ```
 apps/

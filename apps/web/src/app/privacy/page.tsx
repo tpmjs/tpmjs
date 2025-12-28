@@ -20,7 +20,7 @@ export default function PrivacyPage(): React.ReactElement {
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
               How we collect, use, and protect your data
             </p>
-            <p className="text-sm text-foreground-tertiary mt-4">Last updated: December 14, 2025</p>
+            <p className="text-sm text-foreground-tertiary mt-4">Last updated: December 2024</p>
           </div>
 
           {/* Introduction */}
@@ -432,11 +432,8 @@ export default function PrivacyPage(): React.ReactElement {
 
             <p className="mt-6 text-foreground-secondary">
               To exercise any of these rights, contact us at{' '}
-              <a
-                href="mailto:thomasalwyndavis@gmail.com"
-                className="text-primary hover:underline font-medium"
-              >
-                thomasalwyndavis@gmail.com
+              <a href="mailto:hello@tpmjs.com" className="text-primary hover:underline font-medium">
+                hello@tpmjs.com
               </a>
               . We will respond within 30 days.
             </p>
@@ -542,11 +539,8 @@ export default function PrivacyPage(): React.ReactElement {
               <div className="space-y-3">
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                  <a
-                    href="mailto:thomasalwyndavis@gmail.com"
-                    className="text-primary hover:underline"
-                  >
-                    thomasalwyndavis@gmail.com
+                  <a href="mailto:hello@tpmjs.com" className="text-primary hover:underline">
+                    hello@tpmjs.com
                   </a>
                 </div>
 

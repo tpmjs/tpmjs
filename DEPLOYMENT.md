@@ -167,7 +167,7 @@ Not needed for Option 1 (Deployment Protection).
 Add to README.md to show CI status:
 
 ```markdown
-[![CI](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_ORG/YOUR_REPO/actions/workflows/ci.yml)
+[![CI](https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml/badge.svg)](https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml)
 ```
 
 ## Summary

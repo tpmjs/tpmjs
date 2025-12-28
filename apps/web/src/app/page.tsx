@@ -83,6 +83,76 @@ export default async function HomePage(): Promise<React.ReactElement> {
         {/* Hero Section - Dithered Design */}
         <HeroSection stats={data.stats} />
 
+        {/* What is TPMJS? Explainer Section */}
+        <section className="py-16 bg-surface border-y border-border">
+          <Container size="xl" padding="lg">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-bold mb-8 text-foreground">
+                What is TPMJS?
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-8 mb-10">
+                {/* The Problem */}
+                <div className="p-6 border border-border rounded-lg bg-background">
+                  <h3 className="font-semibold text-lg mb-3 text-foreground flex items-center gap-2">
+                    <span className="text-red-500">✗</span> The Problem
+                  </h3>
+                  <p className="text-foreground-secondary text-sm leading-relaxed">
+                    AI agents need tools (web scraping, file processing, API calls) but developers
+                    must manually import and configure each one. As tooling grows, this becomes
+                    unmanageable—hundreds of imports, version conflicts, and static capabilities.
+                  </p>
+                </div>
+
+                {/* The Solution */}
+                <div className="p-6 border border-border rounded-lg bg-background">
+                  <h3 className="font-semibold text-lg mb-3 text-foreground flex items-center gap-2">
+                    <span className="text-green-500">✓</span> The Solution
+                  </h3>
+                  <p className="text-foreground-secondary text-sm leading-relaxed">
+                    TPMJS is a registry that automatically discovers npm packages built for AI
+                    agents. Your agent searches by description and loads tools at runtime—no config
+                    files, no manual imports, always up-to-date.
+                  </p>
+                </div>
+              </div>
+
+              {/* How it works - 3 steps */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="text-center p-4">
+                  <div className="w-10 h-10 rounded-full bg-brutalist-accent text-foreground font-bold flex items-center justify-center mx-auto mb-3">
+                    1
+                  </div>
+                  <h4 className="font-semibold mb-2 text-foreground">Publish to npm</h4>
+                  <p className="text-sm text-foreground-secondary">
+                    Add <code className="bg-surface px-1 rounded">tpmjs-tool</code> keyword to your
+                    package.json and publish normally
+                  </p>
+                </div>
+                <div className="text-center p-4">
+                  <div className="w-10 h-10 rounded-full bg-brutalist-accent text-foreground font-bold flex items-center justify-center mx-auto mb-3">
+                    2
+                  </div>
+                  <h4 className="font-semibold mb-2 text-foreground">Auto-indexed</h4>
+                  <p className="text-sm text-foreground-secondary">
+                    TPMJS discovers your package within 15 minutes and extracts tool schemas
+                    automatically
+                  </p>
+                </div>
+                <div className="text-center p-4">
+                  <div className="w-10 h-10 rounded-full bg-brutalist-accent text-foreground font-bold flex items-center justify-center mx-auto mb-3">
+                    3
+                  </div>
+                  <h4 className="font-semibold mb-2 text-foreground">Agents discover it</h4>
+                  <p className="text-sm text-foreground-secondary">
+                    Any AI agent can now find and use your tool by describing what they need
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Container>
+        </section>
+
         {/* Featured Tools Section */}
         <section className="py-16 bg-background">
           <Container size="xl" padding="lg">
@@ -173,7 +243,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
               </h2>
               <p className="text-lg text-foreground-secondary mb-8">
                 Share your tool with the AI community. Automatic discovery, quality scoring, and
-                seamless integration with popular AI frameworks.
+                integration with Vercel AI SDK, LangChain, and more.
               </p>
 
               {/* Generator Highlight Box */}

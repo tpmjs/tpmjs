@@ -11,7 +11,7 @@ export function AppFooter(): React.ReactElement {
           <p className="text-sm text-foreground-secondary">© 2025 TPMJS. All rights reserved.</p>
           <div className="flex items-center gap-4 text-sm">
             <a
-              href="mailto:thomasalwyndavis@gmail.com"
+              href="mailto:hello@tpmjs.com"
               className="text-foreground-secondary hover:text-foreground transition-colors"
             >
               Contact

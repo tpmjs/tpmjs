@@ -1,6 +1,16 @@
 {
   "name": "@tpmjs/utils",
   "version": "0.1.1",
+  "description": "Utility functions for TPMJS applications",
+  "author": "TPMJS",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/utils"
+  },
+  "homepage": "https://tpmjs.com",
+  "keywords": ["tpmjs", "typescript", "utilities", "tailwind"],
   "type": "module",
   "exports": {
     "./cn": {

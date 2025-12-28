@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: '%s | TPMJS',
   },
   description:
-    'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+    'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     siteName: 'TPMJS',
     title: 'TPMJS - Tool Package Manager for AI Agents',
     description:
-      'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+      'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
     images: [
       {
         url: '/og-image.png',
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     creator: '@tpmjs_registry',
     title: 'TPMJS - Tool Package Manager for AI Agents',
     description:
-      'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+      'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
     images: ['/og-image.png'],
   },
   robots: {
@@ -100,7 +100,7 @@ export default function RootLayout({
     url: 'https://tpmjs.com',
     logo: 'https://tpmjs.com/logo.png',
     description:
-      'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+      'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
     sameAs: ['https://github.com/tpmjs/tpmjs', 'https://x.com/tpmjs_registry'],
   };
 
@@ -110,7 +110,7 @@ export default function RootLayout({
     name: 'TPMJS',
     url: 'https://tpmjs.com',
     description:
-      'The registry for AI tools. Discover, share, and integrate tools that give your agents superpowers.',
+      'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
     potentialAction: {
       '@type': 'SearchAction',
       target: {

@@ -1,6 +1,16 @@
 {
   "name": "@tpmjs/types",
   "version": "0.1.1",
+  "description": "Shared TypeScript types and Zod schemas for TPMJS",
+  "author": "TPMJS",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/types"
+  },
+  "homepage": "https://tpmjs.com",
+  "keywords": ["tpmjs", "typescript", "types", "zod", "schemas"],
   "type": "module",
   "exports": {
     "./tool": {

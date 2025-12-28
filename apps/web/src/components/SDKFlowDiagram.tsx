@@ -530,7 +530,7 @@ export function SDKFlowDiagram(): React.ReactElement {
               <div className="text-foreground-secondary">
                 <span className="font-semibold text-foreground">Your existing tools</span> — Any AI
                 SDK tools you&apos;ve already built or installed. These work alongside the registry
-                tools seamlessly.
+                tools without conflicts.
               </div>
             )}
             {hoveredNode === 'registry-search' && (

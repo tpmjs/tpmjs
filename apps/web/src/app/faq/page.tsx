@@ -302,11 +302,8 @@ export default function FAQPage(): React.ReactElement {
                 <li>
                   <strong className="text-foreground">For security issues:</strong> Email us
                   directly at{' '}
-                  <a
-                    href="mailto:thomasalwyndavis@gmail.com"
-                    className="text-primary hover:underline"
-                  >
-                    thomasalwyndavis@gmail.com
+                  <a href="mailto:hello@tpmjs.com" className="text-primary hover:underline">
+                    hello@tpmjs.com
                   </a>
                 </li>
                 <li>
@@ -370,11 +367,8 @@ export default function FAQPage(): React.ReactElement {
                 </li>
                 <li>
                   <strong className="text-foreground">Email:</strong> Contact us at{' '}
-                  <a
-                    href="mailto:thomasalwyndavis@gmail.com"
-                    className="text-primary hover:underline"
-                  >
-                    thomasalwyndavis@gmail.com
+                  <a href="mailto:hello@tpmjs.com" className="text-primary hover:underline">
+                    hello@tpmjs.com
                   </a>{' '}
                   for private inquiries
                 </li>
