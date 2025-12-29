@@ -43,7 +43,7 @@ export async function getCachedImage(path: string): Promise<string | null> {
     }
 
     return blob.url;
-  } catch (error) {
+  } catch {
     // Blob doesn't exist or error accessing it
     return null;
   }
