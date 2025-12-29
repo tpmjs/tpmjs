@@ -14,8 +14,10 @@ export function ToolDetailSlide(): React.ReactElement {
         transition={{ duration: 0.8 }}
         className="relative z-10 max-w-4xl w-full"
       >
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Tool-Shaped Results</h2>
-        <p className="text-xl text-white/40 mb-12">Remove guesswork before you integrate</p>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">What We Store</h2>
+        <p className="text-xl text-white/40 mb-12">
+          Everything an agent needs to <span className="text-cyan-400">call a tool correctly</span>
+        </p>
 
         {/* Mock tool card */}
         <motion.div
@@ -91,15 +93,18 @@ export function ToolDetailSlide(): React.ReactElement {
             transition={{ delay: 1 }}
             className="p-4 rounded-lg bg-black/30 font-mono text-sm"
           >
-            <div className="text-white/40 mb-2">// Input Schema</div>
-            <div className="text-cyan-400">
-              query: <span className="text-white/60">string</span>
+            <div className="text-white/40 mb-2">{'// Extracted from actual code'}</div>
+            <div className="text-purple-400">
+              inputSchema: <span className="text-white/60">JSON Schema</span>
             </div>
-            <div className="text-cyan-400">
-              limit?: <span className="text-white/60">number</span>
+            <div className="text-purple-400">
+              returnSchema: <span className="text-white/60">JSON Schema</span>
             </div>
-            <div className="text-cyan-400">
-              domains?: <span className="text-white/60">string[]</span>
+            <div className="text-purple-400">
+              envKeys: <span className="text-white/60">[&quot;API_KEY&quot;]</span>
+            </div>
+            <div className="text-purple-400">
+              tier: <span className="text-emerald-400">&quot;rich&quot;</span>
             </div>
           </motion.div>
         </motion.div>

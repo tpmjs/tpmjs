@@ -17,9 +17,9 @@ export function ProblemSlide(): React.ReactElement {
   return (
     <div className="relative flex flex-col items-center justify-center h-full px-8 text-center">
       {/* Floating chaotic icons */}
-      {floatingIcons.map((item, index) => (
+      {floatingIcons.map((item) => (
         <motion.div
-          key={index}
+          key={item.icon}
           className="absolute text-4xl md:text-5xl opacity-20"
           initial={{ opacity: 0, scale: 0 }}
           animate={{
@@ -73,13 +73,13 @@ export function ProblemSlide(): React.ReactElement {
           😵
         </motion.div>
 
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">Tool Sprawl</h2>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">The Problem</h2>
 
         <p className="text-xl md:text-2xl text-white/60 leading-relaxed max-w-2xl">
-          In modern agent stacks, tools are the{' '}
-          <span className="text-red-400 font-semibold">real product surface area</span>.
+          npm has <span className="text-red-400 font-semibold">2 million packages</span>.
           <br />
-          But discovery is the <span className="text-orange-400 font-semibold">bottleneck</span>.
+          Which ones are AI-callable tools? Which ones{' '}
+          <span className="text-orange-400 font-semibold">actually work</span>?
         </p>
 
         <motion.div
@@ -88,17 +88,19 @@ export function ProblemSlide(): React.ReactElement {
           transition={{ delay: 1 }}
           className="mt-12 flex flex-wrap justify-center gap-4"
         >
-          {['Dozens of packages', 'Missing schemas', 'Vague READMEs', 'Unknown status'].map((word, i) => (
-            <motion.span
-              key={word}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.2 + i * 0.1 }}
-              className="px-4 py-2 rounded-full border border-red-500/30 text-red-400/60 text-sm font-mono"
-            >
-              {word}
-            </motion.span>
-          ))}
+          {["Can't find them", "Can't trust them", "Can't compare them", 'No schemas'].map(
+            (word, i) => (
+              <motion.span
+                key={word}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2 + i * 0.1 }}
+                className="px-4 py-2 rounded-full border border-red-500/30 text-red-400/60 text-sm font-mono"
+              >
+                {word}
+              </motion.span>
+            )
+          )}
         </motion.div>
       </motion.div>
     </div>

@@ -29,14 +29,14 @@ export function SolutionSlide(): React.ReactElement {
           ✨
         </motion.div>
 
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">TPMJS</h2>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">What TPMJS Is</h2>
 
         <p className="text-xl md:text-2xl text-white/60 leading-relaxed mb-12 max-w-2xl">
-          A registry that indexes AI-tool packages and exposes{' '}
-          <span className="text-cyan-400 font-semibold">normalized, enriched information</span>
+          A <span className="text-cyan-400 font-semibold">registry</span> that indexes npm packages
+          for AI tool use.
           <br />
-          so agents and engineers can{' '}
-          <span className="text-emerald-400 font-semibold">discover the right tool faster</span>.
+          <span className="text-emerald-400 font-semibold">Extracts schemas from code</span>. Scores
+          quality. Checks health.
         </p>
 
         {/* Organized grid of icons */}
@@ -46,9 +46,9 @@ export function SolutionSlide(): React.ReactElement {
           transition={{ delay: 0.5 }}
           className="grid grid-cols-4 md:grid-cols-6 gap-4 max-w-lg mx-auto"
         >
-          {gridItems.map((item, index) => (
+          {gridItems.map((item) => (
             <motion.div
-              key={index}
+              key={item.icon}
               initial={{ opacity: 0, scale: 0, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{
@@ -70,7 +70,7 @@ export function SolutionSlide(): React.ReactElement {
           transition={{ delay: 1.5 }}
           className="mt-12 flex flex-wrap justify-center gap-4"
         >
-          {['Catalog', 'Metadata layer', 'Search surface', 'Consistent contract'].map((word, i) => (
+          {['Registry', 'Schema extraction', 'Quality scoring', 'Health checks'].map((word, i) => (
             <motion.span
               key={word}
               initial={{ opacity: 0, y: 20 }}

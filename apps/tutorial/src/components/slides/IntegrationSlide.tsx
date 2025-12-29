@@ -4,14 +4,13 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
 const codeLines = [
-  { text: '// Faster tool evaluation', delay: 0.5 },
-  { text: 'const tool = await tpmjs.find({', delay: 0.8 },
-  { text: "  capability: 'web-scraping',", delay: 1.1 },
-  { text: "  minQuality: 0.8", delay: 1.4 },
-  { text: '});', delay: 1.7 },
-  { text: '', delay: 2.0 },
-  { text: '// Schema + examples included', delay: 2.2 },
-  { text: 'console.log(tool.schema, tool.examples);', delay: 2.5 },
+  { text: '// Quality score: 0.00 - 1.00', delay: 0.5 },
+  { text: "const tier = tier === 'rich' ? 0.6 : 0.4;", delay: 0.8 },
+  { text: 'const downloads = Math.min(0.2, log10(d));', delay: 1.1 },
+  { text: 'const stars = Math.min(0.1, log10(s));', delay: 1.4 },
+  { text: '', delay: 1.7 },
+  { text: '// Rich = has params, returns, env', delay: 2.0 },
+  { text: 'const score = tier + downloads + stars;', delay: 2.3 },
 ];
 
 function TypewriterLine({ text, delay }: { text: string; delay: number }) {
@@ -40,18 +39,15 @@ function TypewriterLine({ text, delay }: { text: string; delay: number }) {
     return () => clearTimeout(timeout);
   }, [text, delay]);
 
-  // Syntax highlighting
-  const highlightedText = displayText
-    .replace(/(import|from|const|await)/g, '<span class="text-purple-400">$1</span>')
-    .replace(/('.*?')/g, '<span class="text-emerald-400">$1</span>')
-    .replace(/(\/\/.*)/g, '<span class="text-white/30">$1</span>')
-    .replace(/(\{|\}|\(|\))/g, '<span class="text-yellow-300">$1</span>');
+  // Simple text display without syntax highlighting to avoid dangerouslySetInnerHTML
+  const isComment = displayText.startsWith('//');
 
   return (
     <div
-      className="font-mono text-sm md:text-base text-white/80 leading-relaxed"
-      dangerouslySetInnerHTML={{ __html: highlightedText || '&nbsp;' }}
-    />
+      className={`font-mono text-sm md:text-base leading-relaxed ${isComment ? 'text-white/30' : 'text-white/80'}`}
+    >
+      {displayText || '\u00A0'}
+    </div>
   );
 }
 
@@ -73,11 +69,11 @@ export function IntegrationSlide(): React.ReactElement {
           transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
           className="text-6xl mb-8"
         >
-          🔌
+          📊
         </motion.div>
 
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Immediate Benefits</h2>
-        <p className="text-xl text-white/40 mb-12">Even if you do nothing else</p>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Quality Scoring</h2>
+        <p className="text-xl text-white/40 mb-12">Deliberately simple. Not trying to be clever.</p>
 
         {/* Code block */}
         <motion.div
@@ -96,8 +92,8 @@ export function IntegrationSlide(): React.ReactElement {
 
           {/* Code content */}
           <div className="bg-[#1e1e2e] p-6 rounded-b-xl text-left overflow-x-auto">
-            {codeLines.map((line, index) => (
-              <TypewriterLine key={index} text={line.text} delay={line.delay} />
+            {codeLines.map((line) => (
+              <TypewriterLine key={line.text || line.delay} text={line.text} delay={line.delay} />
             ))}
             <motion.span
               animate={{ opacity: [1, 0, 1] }}
@@ -107,19 +103,19 @@ export function IntegrationSlide(): React.ReactElement {
           </div>
         </motion.div>
 
-        {/* Benefits badges */}
+        {/* Score factors */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 3 }}
           className="mt-8 flex flex-wrap justify-center gap-3"
         >
-          {['Less spelunking', 'Schemas + examples', 'Shared vocabulary', 'Tool visibility'].map((benefit) => (
+          {['Tier: 40-60%', 'Downloads: 0-20%', 'Stars: 0-10%', 'Richness: 0-10%'].map((factor) => (
             <span
-              key={benefit}
-              className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400/70 text-sm"
+              key={factor}
+              className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400/70 text-sm font-mono"
             >
-              {benefit}
+              {factor}
             </span>
           ))}
         </motion.div>

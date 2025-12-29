@@ -28,7 +28,7 @@ function AnimatedGauge({ value, delay = 0 }: { value: number; delay?: number }) 
 
   return (
     <div className="relative w-32 h-32">
-      <svg className="w-full h-full transform -rotate-90">
+      <svg aria-hidden="true" className="w-full h-full transform -rotate-90">
         {/* Background circle */}
         <circle cx="64" cy="64" r="45" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
         {/* Progress circle */}
@@ -58,10 +58,10 @@ function AnimatedGauge({ value, delay = 0 }: { value: number; delay?: number }) 
 }
 
 const qualityFactors = [
-  { name: 'Quality Signals', icon: '📊', score: 95, color: 'cyan', desc: 'Docs, schema, adoption' },
-  { name: 'Health Checks', icon: '💚', score: 88, color: 'emerald', desc: 'Imports, exports, runs' },
-  { name: 'The Playground', icon: '🎮', score: 92, color: 'purple', desc: 'Try before you adopt' },
-  { name: 'Remote Execution', icon: '☁️', score: 85, color: 'yellow', desc: 'Optional sandbox' },
+  { name: 'Import Health', icon: '📦', score: 95, color: 'cyan', desc: 'Can we require() it?' },
+  { name: 'Execution Health', icon: '▶️', score: 88, color: 'emerald', desc: 'Does it run at all?' },
+  { name: 'HEALTHY', icon: '✅', score: 100, color: 'emerald', desc: 'Passed both checks' },
+  { name: 'BROKEN', icon: '❌', score: 0, color: 'yellow', desc: 'Labeled, not hidden' },
 ];
 
 export function QualitySlide(): React.ReactElement {
@@ -85,8 +85,10 @@ export function QualitySlide(): React.ReactElement {
           ⭐
         </motion.div>
 
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">The Multipliers</h2>
-        <p className="text-xl text-white/40 mb-12">Extra leverage when you&apos;re ready</p>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">Health Checks</h2>
+        <p className="text-xl text-white/40 mb-12">
+          We don&apos;t hide broken tools. We <span className="text-yellow-400">label them</span>.
+        </p>
 
         {/* Main gauge */}
         <motion.div

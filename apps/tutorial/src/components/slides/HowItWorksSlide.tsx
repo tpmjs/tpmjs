@@ -3,10 +3,10 @@
 import { motion } from 'framer-motion';
 
 const steps = [
-  { icon: '📝', label: 'What it does', description: 'Description, category, tags' },
-  { icon: '⚙️', label: 'How to call it', description: 'Inputs, schema, examples' },
-  { icon: '🔑', label: 'What it needs', description: 'Env vars, auth hints' },
-  { icon: '📊', label: 'Signals', description: 'Downloads, health, freshness' },
+  { icon: '📦', label: 'npm publish', description: 'Add tpmjs-tool keyword' },
+  { icon: '🔄', label: 'Auto-sync', description: 'Indexed in ~2 minutes' },
+  { icon: '⚙️', label: 'Schema extracted', description: 'From actual code' },
+  { icon: '✅', label: 'Health checked', description: 'Import + execution' },
 ];
 
 export function HowItWorksSlide(): React.ReactElement {
@@ -21,13 +21,13 @@ export function HowItWorksSlide(): React.ReactElement {
         transition={{ duration: 0.8 }}
         className="relative z-10 max-w-5xl w-full"
       >
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">What TPMJS Stores</h2>
-        <p className="text-xl text-white/40 mb-16">For each tool, we expose the useful stuff</p>
+        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">How It Works</h2>
+        <p className="text-xl text-white/40 mb-16">Automated pipeline. No manual curation.</p>
 
         {/* Flow diagram */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
           {steps.map((step, index) => (
-            <div key={index} className="flex items-center">
+            <div key={step.label} className="flex items-center">
               {/* Step card */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -61,6 +61,7 @@ export function HowItWorksSlide(): React.ReactElement {
                 >
                   <div className="w-12 h-px bg-gradient-to-r from-cyan-500/50 to-purple-500/50" />
                   <svg
+                    aria-hidden="true"
                     className="w-4 h-4 text-purple-500/50 -ml-1"
                     fill="currentColor"
                     viewBox="0 0 20 20"

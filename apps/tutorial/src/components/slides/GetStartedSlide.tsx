@@ -6,21 +6,21 @@ const links = [
   {
     label: 'Browse Tools',
     href: 'https://tpmjs.com/tool-search',
-    description: 'Use as a discovery portal',
+    description: 'Search by name, category, quality',
     icon: '🔍',
     gradient: 'from-cyan-500 to-blue-500',
   },
   {
     label: 'Publish a Tool',
     href: 'https://tpmjs.com/docs/publishing',
-    description: 'Clean metadata + examples',
+    description: 'Add tpmjs-tool keyword to npm',
     icon: '📦',
     gradient: 'from-purple-500 to-pink-500',
   },
   {
     label: 'The Playground',
     href: 'https://tpmjs.com/playground',
-    description: 'Try tools before adopting',
+    description: 'Run tools in browser sandbox',
     icon: '🎮',
     gradient: 'from-emerald-500 to-teal-500',
   },
@@ -61,8 +61,10 @@ export function GetStartedSlide(): React.ReactElement {
           🚀
         </motion.div>
 
-        <h2 className="text-5xl md:text-7xl font-bold text-white mb-4">Try It</h2>
-        <p className="text-xl md:text-2xl text-white/40 mb-16">Discovery chaos is optional</p>
+        <h2 className="text-5xl md:text-7xl font-bold text-white mb-4">Get Started</h2>
+        <p className="text-xl md:text-2xl text-white/40 mb-16">
+          Indexed automatically. Updated every 2 minutes.
+        </p>
 
         {/* CTA buttons */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-6">
@@ -100,7 +102,13 @@ export function GetStartedSlide(): React.ReactElement {
                 initial={{ x: -10 }}
                 whileHover={{ x: 0 }}
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  aria-hidden="true"
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -120,7 +128,7 @@ export function GetStartedSlide(): React.ReactElement {
           transition={{ delay: 1.2 }}
           className="mt-16 text-white/30 text-sm"
         >
-          Tools are inevitable. Discovery chaos isn&apos;t.
+          The missing layer between npm and AI agents.
         </motion.div>
       </motion.div>
     </div>
