@@ -108,7 +108,7 @@ export default function HowItWorksPage(): React.ReactElement {
                   code={`{
   "name": "@yourname/awesome-tool",
   "version": "1.0.0",
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai"],
@@ -232,7 +232,7 @@ const result = await streamText({
                   <div className="p-4 border border-border rounded-lg bg-surface">
                     <h4 className="font-semibold mb-2 text-foreground">Keyword Search</h4>
                     <p className="text-sm text-foreground-secondary">
-                      Searches npm for &quot;tpmjs-tool&quot; keyword
+                      Searches npm for &quot;tpmjs&quot; keyword
                     </p>
                     <div className="mt-2 text-xs text-foreground-tertiary">Every 15 minutes</div>
                   </div>
@@ -398,8 +398,7 @@ const result = await streamText({
                   <h4 className="font-semibold text-foreground mb-1">Developer publishes to npm</h4>
                   <p className="text-sm text-foreground-secondary">
                     Package with{' '}
-                    <code className="text-xs bg-surface px-1 py-0.5 rounded">tpmjs-tool</code>{' '}
-                    keyword
+                    <code className="text-xs bg-surface px-1 py-0.5 rounded">tpmjs</code> keyword
                   </p>
                 </div>
                 <span className="text-xs text-foreground-tertiary ml-auto">~1 second</span>

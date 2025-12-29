@@ -370,9 +370,7 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
                 <DocSubSection title="Tool Discovery">
                   <p className="text-foreground-secondary mb-4">
                     TPMJS automatically discovers tools from npm packages that have the{' '}
-                    <code className="text-primary bg-surface px-1.5 py-0.5 rounded">
-                      tpmjs-tool
-                    </code>{' '}
+                    <code className="text-primary bg-surface px-1.5 py-0.5 rounded">tpmjs</code>{' '}
                     keyword. Tools are indexed every 2-15 minutes.
                   </p>
                 </DocSubSection>
@@ -832,7 +830,7 @@ while (true) {
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 {[
-                  { step: '1', label: 'Add tpmjs-tool keyword' },
+                  { step: '1', label: 'Add tpmjs keyword' },
                   { step: '2', label: 'Add tpmjs field' },
                   { step: '3', label: 'Publish to npm' },
                   { step: '4', label: 'Live in 15 minutes!' },
@@ -878,7 +876,7 @@ while (true) {
                 code={`{
   "name": "@yourname/my-tool",
   "version": "1.0.0",
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai"],
@@ -1118,7 +1116,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                 {[
                   {
                     q: 'How long does it take for my tool to appear?',
-                    a: 'Tools are discovered within 2-15 minutes of publishing to npm. Make sure you have the "tpmjs-tool" keyword in your package.json.',
+                    a: 'Tools are discovered within 2-15 minutes of publishing to npm. Make sure you have the "tpmjs" keyword in your package.json.',
                   },
                   {
                     q: 'What is auto-discovery?',
@@ -1155,8 +1153,8 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                   <ul className="list-disc list-inside space-y-2 text-foreground-secondary">
                     <li>
                       Ensure you have{' '}
-                      <code className="text-primary bg-surface px-1 rounded">tpmjs-tool</code> in
-                      your keywords
+                      <code className="text-primary bg-surface px-1 rounded">tpmjs</code> in your
+                      keywords
                     </li>
                     <li>
                       Verify your <code className="text-primary">tpmjs</code> field is valid JSON

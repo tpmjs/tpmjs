@@ -282,7 +282,7 @@ this becomes unmanageable.
 designed for AI agents. Agents can search for tools by description and load them
 at runtime.
 
-**For Tool Builders:** Add `tpmjs-tool` keyword to your package.json.
+**For Tool Builders:** Add `tpmjs` keyword to your package.json.
 Your tool appears on tpmjs.com within 15 minutes.
 
 **For Agent Developers:** Use semantic search to find tools:

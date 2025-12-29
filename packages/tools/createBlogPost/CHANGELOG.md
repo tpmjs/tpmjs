@@ -10,4 +10,4 @@
   - Supports both Markdown and MDX formats
   - Automatic slug generation, word count, and reading time calculation
   - Rich TPMJS metadata including parameters, authentication, pricing, and AI agent guidance
-  - Tagged with 'tpmjs-tool' keyword for NPM registry discovery
+  - Tagged with 'tpmjs' keyword for NPM registry discovery

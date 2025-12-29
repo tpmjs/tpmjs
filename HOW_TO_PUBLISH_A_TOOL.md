@@ -5,7 +5,7 @@ This guide shows you how to create and publish an AI tool that will be automatic
 ## Quick Start
 
 1. Create a new NPM package
-2. Add `"tpmjs-tool"` to the `keywords` array in package.json
+2. Add `"tpmjs"` to the `keywords` array in package.json
 3. Add a `tpmjs` field with your tool's metadata
 4. Publish to NPM
 5. Your tool will automatically appear on tpmjs.com within 15 minutes
@@ -24,18 +24,18 @@ npm init -y
 
 ### 2. Add the Required Keyword
 
-In your `package.json`, add `"tpmjs-tool"` to the keywords array:
+In your `package.json`, add `"tpmjs"` to the keywords array:
 
 ```json
 {
   "name": "@yourname/my-awesome-tool",
   "version": "1.0.0",
-  "keywords": ["tpmjs-tool", "ai", "other-keywords"],
+  "keywords": ["tpmjs", "ai", "other-keywords"],
   ...
 }
 ```
 
-**Important:** The `"tpmjs-tool"` keyword is REQUIRED for automatic discovery!
+**Important:** The `"tpmjs"` keyword is REQUIRED for automatic discovery!
 
 ### 3. Add TPMJS Metadata
 
@@ -212,7 +212,7 @@ npm publish --access public
 
 Your tool will be automatically discovered through:
 
-1. **Keyword Search** - Runs every 15 minutes, searches NPM for `"tpmjs-tool"`
+1. **Keyword Search** - Runs every 15 minutes, searches NPM for `"tpmjs"`
 2. **Changes Feed** - Monitors NPM publishes in real-time (every 2 minutes)
 
 After publishing, your tool should appear on https://tpmjs.com within 15 minutes!
@@ -229,7 +229,7 @@ Here's the complete `package.json` from the published example:
   "version": "0.2.0",
   "description": "A tool for creating structured blog posts with AI-generated content",
   "type": "module",
-  "keywords": ["tpmjs-tool", "blog", "content", "ai", "writing"],
+  "keywords": ["tpmjs", "blog", "content", "ai", "writing"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -402,7 +402,7 @@ Or manually check the structure matches the examples above.
 ## Troubleshooting
 
 **Tool not appearing after 15 minutes?**
-- Check that you added `"tpmjs-tool"` to keywords
+- Check that you added `"tpmjs"` to keywords
 - Verify your `tpmjs` field has required fields (category, description)
 - Check the NPM package is public: `npm view yourpackage`
 

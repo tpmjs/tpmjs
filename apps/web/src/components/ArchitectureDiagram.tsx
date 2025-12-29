@@ -24,7 +24,7 @@ const nodeDescriptions: Record<string, { title: string; description: string }> =
   npm: {
     title: 'NPM Registry',
     description:
-      'The public npm registry containing all JavaScript packages. TPMJS monitors packages with the tpmjs-tool keyword.',
+      'The public npm registry containing all JavaScript packages. TPMJS monitors packages with the tpmjs keyword.',
   },
   'changes-feed': {
     title: 'Changes Feed',
@@ -34,7 +34,7 @@ const nodeDescriptions: Record<string, { title: string; description: string }> =
   'keyword-search': {
     title: 'Keyword Search',
     description:
-      'Periodic search for packages with the tpmjs-tool keyword. Acts as a backup to ensure no packages are missed.',
+      'Periodic search for packages with the tpmjs keyword. Acts as a backup to ensure no packages are missed.',
   },
   validation: {
     title: 'Schema Validation',

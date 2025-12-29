@@ -9,7 +9,7 @@
     "build": "tsc",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs-tool", "markdown", "formatter", "text-processing"],
+  "keywords": ["tpmjs", "markdown", "formatter", "text-processing"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai"],

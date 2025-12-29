@@ -3,7 +3,7 @@
   "version": "0.3.0",
   "description": "A tool for creating structured blog posts with AI-generated content",
   "type": "module",
-  "keywords": ["tpmjs-tool", "blog", "content", "ai", "writing"],
+  "keywords": ["tpmjs", "blog", "content", "ai", "writing"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 
 const syncSteps = [
-  { step: '1', text: 'You publish to npm with tpmjs-tool keyword', color: 'purple' },
+  { step: '1', text: 'You publish to npm with tpmjs keyword', color: 'purple' },
   { step: '2', text: 'Registry detects your package within 2 minutes', color: 'cyan' },
   { step: '3', text: 'We extract schemas from your package.json', color: 'emerald' },
   { step: '4', text: 'Your tool appears in search results', color: 'yellow' },

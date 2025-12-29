@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 
 const steps = [
-  { num: '1', text: 'Add "tpmjs-tool" to your package.json keywords' },
+  { num: '1', text: 'Add "tpmjs" to your package.json keywords' },
   { num: '2', text: 'Define your tools in the "tpmjs" field' },
   { num: '3', text: 'npm publish' },
 ];

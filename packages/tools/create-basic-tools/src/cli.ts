@@ -18,7 +18,7 @@ import * as logger from './utils/logger.js';
  * Runs the interactive CLI workflow
  */
 export async function runInteractiveCLI(): Promise<GenerationResult> {
-  clack.intro(logger.bold('create-tpmjs-tool'));
+  clack.intro(logger.bold('create-tpmjs'));
 
   // Only ask for package name
   const name = await clack.text({

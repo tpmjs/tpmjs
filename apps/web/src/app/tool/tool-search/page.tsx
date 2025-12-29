@@ -463,7 +463,7 @@ export default function ToolSearchPage(): React.ReactElement {
                         variant="outline"
                         onClick={() =>
                           window.open(
-                            'https://www.npmjs.com/search?q=keywords:tpmjs-tool',
+                            'https://www.npmjs.com/search?q=keywords:tpmjs',
                             '_blank',
                             'noopener'
                           )
@@ -483,9 +483,7 @@ export default function ToolSearchPage(): React.ReactElement {
                           </div>
                           <p className="text-sm text-foreground-secondary">
                             Add{' '}
-                            <code className="px-1.5 py-0.5 bg-muted rounded text-xs">
-                              tpmjs-tool
-                            </code>{' '}
+                            <code className="px-1.5 py-0.5 bg-muted rounded text-xs">tpmjs</code>{' '}
                             keyword to your package.json
                           </p>
                         </div>

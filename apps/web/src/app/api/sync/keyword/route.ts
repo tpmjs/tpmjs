@@ -17,7 +17,7 @@ export const maxDuration = 300; // 5 minutes max for cron jobs
 
 /**
  * POST /api/sync/keyword
- * Sync tools by searching NPM for 'tpmjs-tool' keyword
+ * Sync tools by searching NPM for 'tpmjs' keyword
  *
  * This endpoint is called by Vercel Cron (every 15 minutes)
  * Requires Authorization: Bearer <CRON_SECRET>
@@ -40,9 +40,9 @@ export async function POST(request: NextRequest) {
   const skippedPackages: Array<{ name: string; author: string; reason: string }> = [];
 
   try {
-    // Search for packages with 'tpmjs-tool' keyword
+    // Search for packages with 'tpmjs' keyword
     const searchResults = await searchByKeyword({
-      keyword: 'tpmjs-tool',
+      keyword: 'tpmjs',
       size: 250, // Get up to 250 packages per sync
     });
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
             frameworks: validation.packageData.frameworks || [],
             tier: validation.tier || 'minimal',
             discoveryMethod: 'keyword',
-            isOfficial: pkg.keywords?.includes('tpmjs-tool') || false,
+            isOfficial: pkg.keywords?.includes('tpmjs') || false,
             npmDownloadsLastMonth: 0, // Will be updated by metrics sync
             githubStars: githubStars,
           },
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest) {
             env: validation.packageData.env ?? undefined,
             frameworks: validation.packageData.frameworks || [],
             tier: validation.tier || 'minimal',
-            isOfficial: pkg.keywords?.includes('tpmjs-tool') || false,
+            isOfficial: pkg.keywords?.includes('tpmjs') || false,
           },
         });
 

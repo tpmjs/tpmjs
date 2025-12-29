@@ -85,8 +85,7 @@ export default function SpecPage(): React.ReactElement {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-foreground-secondary">
-                    Add the{' '}
-                    <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code>{' '}
+                    Add the <code className="text-foreground bg-surface px-1 rounded">tpmjs</code>{' '}
                     keyword and a{' '}
                     <code className="text-foreground bg-surface px-1 rounded">tpmjs</code> metadata
                     field to your package.json
@@ -207,7 +206,7 @@ export default function SpecPage(): React.ReactElement {
                       language="json"
                       code={`{
   "name": "@yourname/my-tool",
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis"
   }
@@ -341,7 +340,7 @@ export default function SpecPage(): React.ReactElement {
                       language="json"
                       code={`{
   "name": "@yourname/sentiment-tool",
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai", "langchain"],
@@ -681,8 +680,8 @@ export default function SpecPage(): React.ReactElement {
                 <CardContent>
                   <p className="text-sm text-foreground-secondary mb-2">
                     Searches for{' '}
-                    <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code>{' '}
-                    keyword every 15 minutes
+                    <code className="text-foreground bg-surface px-1 rounded">tpmjs</code> keyword
+                    every 15 minutes
                   </p>
                   <Badge variant="outline" size="sm">
                     Every 15 min
@@ -760,7 +759,7 @@ export default function SpecPage(): React.ReactElement {
                 <CardContent className="pt-6 text-center">
                   <div className="text-3xl mb-2">1️⃣</div>
                   <p className="text-sm text-foreground-secondary">
-                    Add <code className="text-foreground bg-surface px-1 rounded">tpmjs-tool</code>{' '}
+                    Add <code className="text-foreground bg-surface px-1 rounded">tpmjs</code>{' '}
                     keyword
                   </p>
                 </CardContent>

@@ -684,14 +684,14 @@ The full working implementation is live at [tpmjs.com](https://tpmjs.com).
 
 ## NPM Package Syncing System
 
-TPMJS.com automatically mirrors npm packages with the `tpmjs-tool` keyword to keep the tool registry up-to-date. This section documents how the syncing system works.
+TPMJS.com automatically mirrors npm packages with the `tpmjs` keyword to keep the tool registry up-to-date. This section documents how the syncing system works.
 
 ### Overview
 
 The sync system uses three automated strategies running on Vercel Cron to discover and update TPMJS tools:
 
 1. **Changes Feed** - Monitors npm's real-time changes feed for all package updates
-2. **Keyword Search** - Actively searches npm for packages with the `tpmjs-tool` keyword
+2. **Keyword Search** - Actively searches npm for packages with the `tpmjs` keyword
 3. **Metrics Sync** - Updates download stats and calculates quality scores
 
 ### Sync Endpoints
@@ -735,12 +735,12 @@ All sync endpoints are located in `apps/web/src/app/api/sync/`:
 
 #### 2. Keyword Search Sync (`/api/sync/keyword`)
 
-**Purpose:** Actively searches npm for packages with the `tpmjs-tool` keyword.
+**Purpose:** Actively searches npm for packages with the `tpmjs` keyword.
 
 **Schedule:** Every 15 minutes (`*/15 * * * *`)
 
 **How it works:**
-1. Searches npm registry for packages with keyword `tpmjs-tool` (up to 250 results)
+1. Searches npm registry for packages with keyword `tpmjs` (up to 250 results)
 2. Fetches full metadata for each package
 3. Validates the `tpmjs` field
 4. Upserts tools with `discoveryMethod: 'keyword'`
@@ -1078,7 +1078,7 @@ curl -X POST http://localhost:3000/api/sync/changes \
 
 Here's how a new TPMJS tool gets discovered:
 
-1. **Developer publishes package to npm** with `tpmjs-tool` keyword and `tpmjs` field in package.json
+1. **Developer publishes package to npm** with `tpmjs` keyword and `tpmjs` field in package.json
 2. **Within 2 minutes:** Changes feed sync picks it up from npm's `/_changes` endpoint
 3. **Validation:** `validateTpmjsField()` checks that the `tpmjs` field meets requirements
 4. **Database Insert:** Tool is upserted with initial data

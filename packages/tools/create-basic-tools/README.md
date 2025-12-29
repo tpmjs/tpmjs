@@ -34,7 +34,7 @@ The CLI asks for just your package name and uses sensible defaults for everythin
 ```bash
 $ pnpmx @tpmjs/create-basic-tools
 
-┌  create-tpmjs-tool
+┌  create-tpmjs
 │
 ◇  Package name
 │  @myorg/content-tools

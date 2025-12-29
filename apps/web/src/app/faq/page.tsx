@@ -83,7 +83,7 @@ export default function FAQPage(): React.ReactElement {
               <p>
                 Think of it as npm for AI tools. Developers publish tools to npm with the{' '}
                 <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
-                  tpmjs-tool
+                  tpmjs
                 </code>{' '}
                 keyword, and TPMJS automatically syncs them to our registry where they can be
                 discovered by AI agents and developers.
@@ -97,7 +97,7 @@ export default function FAQPage(): React.ReactElement {
                 <li>
                   Add the{' '}
                   <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
-                    tpmjs-tool
+                    tpmjs
                   </code>{' '}
                   keyword to your package.json
                 </li>
@@ -254,7 +254,7 @@ export default function FAQPage(): React.ReactElement {
                   <strong className="text-foreground">Keyword Search (every 15 minutes):</strong>{' '}
                   Actively searches for packages with the{' '}
                   <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
-                    tpmjs-tool
+                    tpmjs
                   </code>{' '}
                   keyword
                 </li>

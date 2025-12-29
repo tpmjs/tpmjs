@@ -7,7 +7,7 @@ const packageJson = [
   { id: 'name', line: '  "name": "@your-org/your-tools",' },
   { id: 'version', line: '  "version": "1.0.0",' },
   { id: 'keywords-open', line: '  "keywords": [' },
-  { id: 'keyword', line: '    "tpmjs-tool"' },
+  { id: 'keyword', line: '    "tpmjs"' },
   { id: 'keywords-close', line: '  ],' },
   { id: 'tpmjs-open', line: '  "tpmjs": {' },
   { id: 'tools-open', line: '    "tools": [{ ... }]' },
@@ -43,7 +43,7 @@ export function PackageSetupSlide(): React.ReactElement {
                 <div
                   key={item.id}
                   className={
-                    item.line.includes('tpmjs-tool')
+                    item.line.includes('tpmjs')
                       ? 'text-cyan-400'
                       : item.line.includes('"tpmjs"')
                         ? 'text-purple-400'
@@ -66,7 +66,7 @@ export function PackageSetupSlide(): React.ReactElement {
             className="text-left space-y-4"
           >
             <div className="p-4 rounded-lg bg-white/5 border border-cyan-500/20">
-              <div className="text-sm font-medium text-cyan-400 mb-1">tpmjs-tool keyword</div>
+              <div className="text-sm font-medium text-cyan-400 mb-1">tpmjs keyword</div>
               <div className="text-xs text-white/50">Required. This is how we find you on npm.</div>
             </div>
             <div className="p-4 rounded-lg bg-white/5 border border-purple-500/20">

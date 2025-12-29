@@ -9,7 +9,7 @@
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs-tool", "ai-sdk", "code-execution", "sandbox", "unsandbox"],
+  "keywords": ["tpmjs", "ai-sdk", "code-execution", "sandbox", "unsandbox"],
   "dependencies": {
     "@thomasdavis/unsandbox": "^0.0.3"
   },

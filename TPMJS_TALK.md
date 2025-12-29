@@ -38,13 +38,13 @@ TPMJS runs three automated sync jobs:
 
 **1. npm Changes Feed (every 2 minutes)**
 ```
-npm registry → /_changes endpoint → filter for tpmjs-tool keyword → process
+npm registry → /_changes endpoint → filter for tpmjs keyword → process
 ```
 This catches new packages and updates in near-real-time. We track sequence numbers so we never reprocess.
 
 **2. Keyword Search (every 15 minutes)**
 ```
-npm search "tpmjs-tool" → up to 250 results → validate → ingest
+npm search "tpmjs" → up to 250 results → validate → ingest
 ```
 Backup mechanism. Catches anything the changes feed missed.
 
@@ -61,7 +61,7 @@ To get indexed, a package needs two things:
 ```json
 {
   "name": "@acme/my-tool",
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "web-scraping",
     "description": "Scrapes URLs and returns structured markdown"
@@ -303,7 +303,7 @@ Publish to npm → hope someone finds it → no visibility into usage
 
 After TPMJS:
 ```
-Publish to npm with tpmjs-tool keyword → indexed within 2 minutes →
+Publish to npm with tpmjs keyword → indexed within 2 minutes →
 schema auto-extracted → quality scored → discoverable by search →
 execution stats tracked
 ```
@@ -383,7 +383,7 @@ Discovery is the bottleneck. We're fixing discovery.
 
 - **Browse**: https://tpmjs.com/tool-search
 - **Playground**: https://tpmjs.com/playground
-- **Publish**: Add `tpmjs-tool` keyword + `tpmjs` field to your package.json
+- **Publish**: Add `tpmjs` keyword + `tpmjs` field to your package.json
 - **API**: `GET https://tpmjs.com/api/tools`
 
 ---

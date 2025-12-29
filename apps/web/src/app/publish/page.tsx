@@ -86,9 +86,8 @@ export default function PublishPage(): React.ReactElement {
               <ol className="space-y-4 text-foreground-secondary">
                 <li className="text-lg">Create a new NPM package</li>
                 <li className="text-lg">
-                  Add{' '}
-                  <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs-tool</code>{' '}
-                  to keywords
+                  Add <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code> to
+                  keywords
                 </li>
                 <li className="text-lg">
                   Add a <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
@@ -112,8 +111,7 @@ export default function PublishPage(): React.ReactElement {
               Step 1: Add Required Keyword
             </h2>
             <p className="text-lg text-foreground-secondary mb-6">
-              Add the{' '}
-              <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs-tool</code>{' '}
+              Add the <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
               keyword to your package.json. This is required for automatic discovery.
             </p>
             <CodeBlock
@@ -121,7 +119,7 @@ export default function PublishPage(): React.ReactElement {
               code={`{
   "name": "@yourname/my-awesome-tool",
   "version": "1.0.0",
-  "keywords": ["tpmjs-tool", "ai", "text"],
+  "keywords": ["tpmjs", "ai", "text"],
   ...
 }`}
             />
@@ -186,7 +184,7 @@ export default function PublishPage(): React.ReactElement {
                 language="json"
                 code={`{
   "name": "@yourname/my-awesome-tool",
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis"
   }
@@ -211,7 +209,7 @@ export default function PublishPage(): React.ReactElement {
                 language="json"
                 code={`{
   "name": "@yourname/sentiment-tool",
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai", "langchain"],
@@ -336,7 +334,7 @@ npm publish --access public
               code={`{
   "name": "@tpmjs/createblogpost",
   "version": "0.2.0",
-  "keywords": ["tpmjs-tool", "blog", "content"],
+  "keywords": ["tpmjs", "blog", "content"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai", "langchain"],

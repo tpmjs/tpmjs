@@ -64,7 +64,7 @@ This package serves as a template for creating your own TPMJS tools. Key require
      "description": "Your tool description"
    }
    ```
-5. **Include the `tpmjs-tool` keyword** in package.json
+5. **Include the `tpmjs` keyword** in package.json
 
 ## Development
 

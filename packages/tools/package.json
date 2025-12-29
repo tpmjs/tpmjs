@@ -11,7 +11,7 @@
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs-tool", "ai-sdk", "example"],
+  "keywords": ["tpmjs", "ai-sdk", "example"],
   "dependencies": {
     "ai": "6.0.0-beta.124",
     "zod": "^4.0.0"

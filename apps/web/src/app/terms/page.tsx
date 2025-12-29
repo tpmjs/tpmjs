@@ -63,7 +63,7 @@ export default function TermsPage(): React.ReactElement {
                 <ul className="list-disc pl-4 sm:pl-6 space-y-2">
                   <li>
                     Automatic discovery and indexing of npm packages with the{' '}
-                    <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs-tool</code>{' '}
+                    <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
                     keyword
                   </li>
                   <li>A searchable registry of AI tools with quality scoring and health checks</li>
@@ -247,7 +247,7 @@ export default function TermsPage(): React.ReactElement {
                 </p>
                 <p>
                   By publishing a tool to npm with the{' '}
-                  <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs-tool</code>{' '}
+                  <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
                   keyword, you grant TPMJS a non-exclusive, worldwide, royalty-free license to:
                 </p>
                 <ul className="list-disc pl-4 sm:pl-6 space-y-2">
@@ -321,7 +321,7 @@ export default function TermsPage(): React.ReactElement {
                 <p>
                   You may stop using the Service at any time. If you have published tools, they will
                   remain in the registry unless you remove the{' '}
-                  <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs-tool</code>{' '}
+                  <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
                   keyword from your package or unpublish your package from npm.
                 </p>
               </div>

@@ -10,7 +10,7 @@
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs-tool", "ai-sdk", "hello", "example"],
+  "keywords": ["tpmjs", "ai-sdk", "hello", "example"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai"],

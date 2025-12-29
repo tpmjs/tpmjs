@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 const packageJsonLines = [
   { id: 'open', line: '{' },
   { id: 'name', line: '  "name": "@your-org/your-tools",' },
-  { id: 'keywords', line: '  "keywords": ["tpmjs-tool"],' },
+  { id: 'keywords', line: '  "keywords": ["tpmjs"],' },
   { id: 'tpmjs', line: '  "tpmjs": {' },
   { id: 'tools', line: '    "tools": [{' },
   { id: 'toolName', line: '      "name": "yourTool",' },
@@ -16,7 +16,7 @@ const packageJsonLines = [
 ];
 
 const steps = [
-  { step: '1', text: 'Add tpmjs-tool keyword', color: 'cyan' },
+  { step: '1', text: 'Add tpmjs keyword', color: 'cyan' },
   { step: '2', text: 'Define tpmjs field with tool metadata', color: 'purple' },
   { step: '3', text: 'npm publish', color: 'emerald' },
 ];
@@ -56,7 +56,7 @@ export function GetStartedSlide(): React.ReactElement {
                 <div
                   key={item.id}
                   className={
-                    item.line.includes('tpmjs-tool')
+                    item.line.includes('tpmjs')
                       ? 'text-cyan-400'
                       : item.line.includes('tpmjs')
                         ? 'text-purple-400'

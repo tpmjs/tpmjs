@@ -907,7 +907,7 @@ const providers: Record<ExecutionProvider, (toolId: string, params: any, env?: a
   'aws-lambda': async (toolId, params, env) => {
     const lambda = new AWS.Lambda();
     const result = await lambda.invoke({
-      FunctionName: `tpmjs-tool-${toolId.replace('::', '-')}`,
+      FunctionName: `tpmjs-${toolId.replace('::', '-')}`,
       Payload: JSON.stringify({ params, env }),
     }).promise();
     return JSON.parse(result.Payload as string);

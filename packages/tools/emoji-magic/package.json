@@ -9,7 +9,7 @@
     "build": "tsc",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs-tool", "emoji", "ai", "text-processing"],
+  "keywords": ["tpmjs", "emoji", "ai", "text-processing"],
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai"],

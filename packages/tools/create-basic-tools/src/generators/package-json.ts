@@ -18,7 +18,7 @@ export function generatePackageJson(config: GeneratorConfig): string {
       dev: 'tsup --watch',
       'type-check': 'tsc --noEmit',
     },
-    keywords: ['tpmjs-tool', 'ai-sdk', packageInfo.category],
+    keywords: ['tpmjs', 'ai-sdk', packageInfo.category],
     author: packageInfo.author || '',
     license: packageInfo.license,
     tpmjs: {

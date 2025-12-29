@@ -11,6 +11,8 @@ import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import Link from 'next/link';
 import { useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
+import { BundleSize } from '~/components/BundleSize';
+import { DownloadSparkline } from '~/components/DownloadSparkline';
 import { Markdown } from '~/components/Markdown';
 import { ToolPlayground } from '~/components/ToolPlayground';
 
@@ -340,6 +342,21 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                       language="bash"
                       showCopy={true}
                     />
+                    <CodeBlock
+                      code={`yarn add ${pkg.npmPackageName}`}
+                      language="bash"
+                      showCopy={true}
+                    />
+                    <CodeBlock
+                      code={`bun add ${pkg.npmPackageName}`}
+                      language="bash"
+                      showCopy={true}
+                    />
+                    <CodeBlock
+                      code={`deno add npm:${pkg.npmPackageName}`}
+                      language="bash"
+                      showCopy={true}
+                    />
                   </div>
                 </div>
 
@@ -547,6 +564,9 @@ console.log(result.text);`}
                   <p className="text-2xl font-bold text-foreground">
                     {pkg.npmDownloadsLastMonth?.toLocaleString() || '0'}
                   </p>
+                  <div className="mt-2">
+                    <DownloadSparkline packageName={pkg.npmPackageName} />
+                  </div>
                 </div>
                 {pkg.githubStars != null && (
                   <div>
@@ -573,6 +593,9 @@ console.log(result.text);`}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Bundle Size */}
+            <BundleSize packageName={pkg.npmPackageName} version={pkg.npmVersion} />
 
             {/* NPM Keywords */}
             {pkg.npmKeywords && pkg.npmKeywords.length > 0 && (

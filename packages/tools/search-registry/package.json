@@ -9,7 +9,7 @@
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs-tool", "ai", "search", "tool-registry"],
+  "keywords": ["tpmjs", "ai", "search", "tool-registry"],
   "dependencies": {
     "ai": "6.0.0-beta.124",
     "zod": "^3.23.0"

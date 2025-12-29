@@ -98,7 +98,7 @@ Tools declare their capabilities via a `tpmjs` field in package.json:
 {
   "name": "@myorg/web-scraper",
   "version": "1.0.0",
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "web-scraping",
     "frameworks": ["vercel-ai"],

@@ -4,7 +4,7 @@
 
 **TPMJS is a registry for discovering AI tools published to npm.**
 
-Browse, search, and find tools at [tpmjs.com](https://tpmjs.com). Publish your tool by adding the `tpmjs-tool` keyword to your package.json—it appears in the registry within 15 minutes.
+Browse, search, and find tools at [tpmjs.com](https://tpmjs.com). Publish your tool by adding the `tpmjs` keyword to your package.json—it appears in the registry within 15 minutes.
 
 ## Why TPMJS?
 
@@ -24,7 +24,7 @@ npx @tpmjs/create-basic-tools
 Or add manually to your package.json:
 ```json
 {
-  "keywords": ["tpmjs-tool"],
+  "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis"
   }

@@ -58,7 +58,7 @@ export default function PrivacyPage(): React.ReactElement {
                 <p className="text-foreground-secondary mb-4">
                   We automatically collect and index public metadata from npm packages that use the{' '}
                   <code className="text-foreground bg-background px-2 py-1 rounded text-sm">
-                    tpmjs-tool
+                    tpmjs
                   </code>{' '}
                   keyword. This includes:
                 </p>
@@ -430,8 +430,7 @@ export default function PrivacyPage(): React.ReactElement {
                 <p className="text-sm text-foreground-secondary">
                   Request deletion of your data. To remove a tool from TPMJS, unpublish it from npm
                   or remove the{' '}
-                  <code className="text-xs bg-background px-1 py-0.5 rounded">tpmjs-tool</code>{' '}
-                  keyword.
+                  <code className="text-xs bg-background px-1 py-0.5 rounded">tpmjs</code> keyword.
                 </p>
               </div>
 

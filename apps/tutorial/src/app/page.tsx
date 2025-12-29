@@ -53,7 +53,7 @@ const tutorials = [
         />
       </svg>
     ),
-    features: ['tpmjs-tool keyword', 'Schema extraction', 'Quality scoring'],
+    features: ['tpmjs keyword', 'Schema extraction', 'Quality scoring'],
   },
 ];
 

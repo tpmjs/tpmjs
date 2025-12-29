@@ -377,7 +377,7 @@ packages/registryExecute/
       "types": "./dist/index.d.ts"
     }
   },
-  "keywords": ["tpmjs", "tpmjs-tool", "ai-sdk", "vercel-ai", "tools", "registry", "search"],
+  "keywords": ["tpmjs", "tpmjs", "ai-sdk", "vercel-ai", "tools", "registry", "search"],
   "peerDependencies": {
     "ai": "^4.0.0",
     "zod": "^3.0.0"
@@ -402,7 +402,7 @@ packages/registryExecute/
       "types": "./dist/index.d.ts"
     }
   },
-  "keywords": ["tpmjs", "tpmjs-tool", "ai-sdk", "vercel-ai", "tools", "registry", "execute"],
+  "keywords": ["tpmjs", "tpmjs", "ai-sdk", "vercel-ai", "tools", "registry", "execute"],
   "peerDependencies": {
     "ai": "^4.0.0",
     "zod": "^3.0.0"

@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
             frameworks: validation.packageData.frameworks || [],
             tier: validation.tier || 'minimal',
             discoveryMethod: 'changes-feed',
-            isOfficial: pkg.keywords?.includes('tpmjs-tool') || false,
+            isOfficial: pkg.keywords?.includes('tpmjs') || false,
             npmDownloadsLastMonth: 0, // Will be updated by metrics sync
             githubStars: githubStars,
           },
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
             env: validation.packageData.env ?? undefined,
             frameworks: validation.packageData.frameworks || [],
             tier: validation.tier || 'minimal',
-            isOfficial: pkg.keywords?.includes('tpmjs-tool') || false,
+            isOfficial: pkg.keywords?.includes('tpmjs') || false,
           },
         });
 
