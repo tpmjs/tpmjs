@@ -410,13 +410,16 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       if (!rawJsonSchema && toolModule.inputSchema._zod) {
         console.log(`📋 Detected Zod v4 schema for ${cacheKey}`);
         try {
-          // Dynamically import Zod v4's toJSONSchema function
-          const zodJsonSchema = await import('https://esm.sh/zod@4.0.0/json-schema');
-          if (zodJsonSchema.toJSONSchema) {
-            rawJsonSchema = zodJsonSchema.toJSONSchema(toolModule.inputSchema);
-            console.log(`✅ Successfully converted Zod v4 schema for ${cacheKey}`);
+          // Dynamically import Zod v4 and use its toJSONSchema method
+          const zod = await import('https://esm.sh/zod@4');
+          if (zod.toJSONSchema) {
+            rawJsonSchema = zod.toJSONSchema(toolModule.inputSchema);
+            console.log(`✅ Successfully converted Zod v4 schema using z.toJSONSchema for ${cacheKey}`);
+          } else if (zod.default?.toJSONSchema) {
+            rawJsonSchema = zod.default.toJSONSchema(toolModule.inputSchema);
+            console.log(`✅ Successfully converted Zod v4 schema using z.default.toJSONSchema for ${cacheKey}`);
           } else {
-            console.warn(`⚠️  Zod v4 toJSONSchema function not found in module`);
+            console.warn(`⚠️  Zod v4 toJSONSchema not found. Available exports:`, Object.keys(zod));
           }
         } catch (error) {
           console.warn(`⚠️  Zod v4 toJSONSchema conversion failed for ${cacheKey}:`, error);
