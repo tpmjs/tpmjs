@@ -3,6 +3,8 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { type Tool, ToolDetailClient } from './ToolDetailClient';
 
+export const dynamic = 'force-dynamic';
+
 interface ToolDetailPageProps {
   params: Promise<{ slug: string[] }>;
 }
