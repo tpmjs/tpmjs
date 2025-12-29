@@ -33,9 +33,19 @@ async function getTool(slug: string[]): Promise<Tool | null> {
     return null;
   }
 
+  // First find the package by npm name
+  const pkg = await prisma.package.findUnique({
+    where: { npmPackageName: packageName },
+  });
+
+  if (!pkg) {
+    return null;
+  }
+
+  // Then find the tool using packageId
   const tool = await prisma.tool.findFirst({
     where: {
-      package: { npmPackageName: packageName },
+      packageId: pkg.id,
       ...(exportName && { name: exportName }),
     },
     include: {
