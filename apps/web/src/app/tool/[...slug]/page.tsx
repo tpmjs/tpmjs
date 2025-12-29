@@ -13,14 +13,17 @@ interface ToolDetailPageProps {
  * Parse the URL slug to extract package name and optional export name
  */
 function parseSlug(slug: string[]): { packageName: string; exportName?: string } {
-  if (slug[0]?.startsWith('@')) {
+  // URL-decode slug components (@ comes as %40)
+  const decodedSlug = slug.map((s) => decodeURIComponent(s));
+
+  if (decodedSlug[0]?.startsWith('@')) {
     // Scoped package: ['@scope', 'package', 'exportName?']
-    const packageName = slug.slice(0, 2).join('/');
-    const exportName = slug[2];
+    const packageName = decodedSlug.slice(0, 2).join('/');
+    const exportName = decodedSlug[2];
     return { packageName, exportName };
   }
   // Unscoped: ['package', 'exportName?']
-  return { packageName: slug[0] || '', exportName: slug[1] };
+  return { packageName: decodedSlug[0] || '', exportName: decodedSlug[1] };
 }
 
 /**
