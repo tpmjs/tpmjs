@@ -2,46 +2,31 @@
 
 import { motion } from 'framer-motion';
 
-const links = [
-  {
-    label: 'Browse Tools',
-    href: 'https://tpmjs.com/tool-search',
-    description: 'Search by name, category, quality',
-    icon: '🔍',
-    gradient: 'from-cyan-500 to-blue-500',
-  },
-  {
-    label: 'Publish a Tool',
-    href: 'https://tpmjs.com/docs/publishing',
-    description: 'Add tpmjs-tool keyword to npm',
-    icon: '📦',
-    gradient: 'from-purple-500 to-pink-500',
-  },
-  {
-    label: 'The Playground',
-    href: 'https://tpmjs.com/playground',
-    description: 'Run tools in browser sandbox',
-    icon: '🎮',
-    gradient: 'from-emerald-500 to-teal-500',
-  },
+const packageJsonLines = [
+  { id: 'open', line: '{' },
+  { id: 'name', line: '  "name": "@your-org/your-tools",' },
+  { id: 'keywords', line: '  "keywords": ["tpmjs-tool"],' },
+  { id: 'tpmjs', line: '  "tpmjs": {' },
+  { id: 'tools', line: '    "tools": [{' },
+  { id: 'toolName', line: '      "name": "yourTool",' },
+  { id: 'desc', line: '      "description": "Does something useful"' },
+  { id: 'closeArr', line: '    }]' },
+  { id: 'closeTpmjs', line: '  }' },
+  { id: 'close', line: '}' },
+];
+
+const steps = [
+  { step: '1', text: 'Add tpmjs-tool keyword', color: 'cyan' },
+  { step: '2', text: 'Define tpmjs field with tool metadata', color: 'purple' },
+  { step: '3', text: 'npm publish', color: 'emerald' },
 ];
 
 export function GetStartedSlide(): React.ReactElement {
   return (
     <div className="relative flex flex-col items-center justify-center h-full px-8 text-center">
-      {/* Celebratory background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute w-[800px] h-[800px] rounded-full bg-gradient-to-r from-cyan-500/10 to-purple-500/10 blur-[150px]"
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 180, 360],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: 'linear',
-          }}
+        <div
+          className="absolute w-[600px] h-[600px] rounded-full bg-gradient-to-r from-cyan-500/5 to-purple-500/5 blur-[100px]"
           style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
         />
       </div>
@@ -52,83 +37,107 @@ export function GetStartedSlide(): React.ReactElement {
         transition={{ duration: 0.8 }}
         className="relative z-10 max-w-4xl w-full"
       >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-          className="text-7xl mb-8"
-        >
-          🚀
-        </motion.div>
-
-        <h2 className="text-5xl md:text-7xl font-bold text-white mb-4">Get Started</h2>
-        <p className="text-xl md:text-2xl text-white/40 mb-16">
-          Indexed automatically. Updated every 2 minutes.
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Publish Your Tool</h2>
+        <p className="text-xl text-white/50 mb-10">
+          Add keyword. Define metadata. Publish. Indexed in 2 minutes.
         </p>
 
-        {/* CTA buttons */}
-        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-          {links.map((link, index) => (
-            <motion.a
-              key={link.label}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + index * 0.15 }}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              className={`
-                group relative w-full md:w-auto
-                px-8 py-6 rounded-2xl
-                bg-gradient-to-br ${link.gradient}
-                text-white font-semibold text-lg
-                shadow-lg shadow-black/20
-                transition-shadow hover:shadow-xl hover:shadow-black/30
-              `}
-            >
-              <div className="flex items-center gap-4">
-                <span className="text-3xl">{link.icon}</span>
-                <div className="text-left">
-                  <div className="font-bold">{link.label}</div>
-                  <div className="text-sm text-white/70">{link.description}</div>
-                </div>
-              </div>
-
-              {/* Hover arrow */}
-              <motion.div
-                className="absolute right-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                initial={{ x: -10 }}
-                whileHover={{ x: 0 }}
-              >
-                <svg
-                  aria-hidden="true"
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+          {/* package.json */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-left"
+          >
+            <div className="text-xs text-cyan-400/60 font-mono mb-2">package.json</div>
+            <div className="bg-[#1e1e2e] p-4 rounded-xl font-mono text-sm">
+              {packageJsonLines.map((item) => (
+                <div
+                  key={item.id}
+                  className={
+                    item.line.includes('tpmjs-tool')
+                      ? 'text-cyan-400'
+                      : item.line.includes('tpmjs')
+                        ? 'text-purple-400'
+                        : item.line.includes('name') || item.line.includes('description')
+                          ? 'text-emerald-400'
+                          : 'text-white/60'
+                  }
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </motion.div>
-            </motion.a>
-          ))}
+                  {item.line}
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Steps */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+            className="text-left"
+          >
+            <div className="text-xs text-white/40 font-mono mb-2">three steps</div>
+            <div className="space-y-3">
+              {steps.map((item, i) => (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.7 + i * 0.1 }}
+                  className="flex items-center gap-3"
+                >
+                  <span
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-mono ${
+                      item.color === 'cyan'
+                        ? 'bg-cyan-500/20 text-cyan-400'
+                        : item.color === 'purple'
+                          ? 'bg-purple-500/20 text-purple-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                    }`}
+                  >
+                    {item.step}
+                  </span>
+                  <span className="text-sm text-white/70">{item.text}</span>
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+              className="mt-6 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20"
+            >
+              <code className="text-emerald-400 text-sm">npm publish</code>
+              <div className="text-xs text-white/40 mt-1">That&apos;s it. We find you.</div>
+            </motion.div>
+          </motion.div>
         </div>
 
-        {/* Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="mt-16 text-white/30 text-sm"
+          transition={{ delay: 1.5 }}
+          className="mt-10 flex flex-wrap justify-center gap-4"
         >
-          The missing layer between npm and AI agents.
+          <a
+            href="https://tpmjs.com/tool-search"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 rounded-lg bg-cyan-500/20 text-cyan-400 text-sm font-medium hover:bg-cyan-500/30 transition-colors"
+          >
+            Browse Registry
+          </a>
+          <a
+            href="https://tpmjs.com/playground"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 rounded-lg bg-purple-500/20 text-purple-400 text-sm font-medium hover:bg-purple-500/30 transition-colors"
+          >
+            Try Playground
+          </a>
         </motion.div>
       </motion.div>
     </div>

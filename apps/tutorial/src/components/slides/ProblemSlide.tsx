@@ -2,103 +2,85 @@
 
 import { motion } from 'framer-motion';
 
-const floatingIcons = [
-  { icon: '🔧', x: '15%', y: '20%', delay: 0 },
-  { icon: '⚙️', x: '75%', y: '15%', delay: 0.2 },
-  { icon: '🔌', x: '85%', y: '60%', delay: 0.4 },
-  { icon: '📦', x: '10%', y: '70%', delay: 0.6 },
-  { icon: '🛠️', x: '60%', y: '80%', delay: 0.8 },
-  { icon: '🔗', x: '25%', y: '45%', delay: 1 },
-  { icon: '📡', x: '80%', y: '35%', delay: 1.2 },
-  { icon: '💾', x: '40%', y: '25%', delay: 1.4 },
+const codeLines = [
+  "import { weatherTool } from './tools/weather';",
+  "import { searchTool } from './tools/search';",
+  "import { calendarTool } from './tools/calendar';",
+  "import { emailTool } from './tools/email';",
+  '// ... 47 more imports',
+  '',
+  'const result = await generateText({',
+  "  model: openai('gpt-4-turbo'),",
+  '  tools: { weather, search, calendar, email, ... },',
+  '});',
 ];
 
 export function ProblemSlide(): React.ReactElement {
   return (
     <div className="relative flex flex-col items-center justify-center h-full px-8 text-center">
-      {/* Floating chaotic icons */}
-      {floatingIcons.map((item) => (
-        <motion.div
-          key={item.icon}
-          className="absolute text-4xl md:text-5xl opacity-20"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{
-            opacity: 0.2,
-            scale: 1,
-            x: [0, Math.random() * 40 - 20, 0],
-            y: [0, Math.random() * 40 - 20, 0],
-            rotate: [0, Math.random() * 30 - 15, 0],
-          }}
-          transition={{
-            opacity: { duration: 0.5, delay: item.delay },
-            scale: { duration: 0.5, delay: item.delay },
-            x: {
-              duration: 4 + Math.random() * 2,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: 'easeInOut',
-            },
-            y: {
-              duration: 3 + Math.random() * 2,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: 'easeInOut',
-            },
-            rotate: {
-              duration: 5 + Math.random() * 2,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: 'easeInOut',
-            },
-          }}
-          style={{ left: item.x, top: item.y }}
-        >
-          {item.icon}
-        </motion.div>
-      ))}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-900/10 via-transparent to-red-900/10 pointer-events-none" />
 
-      {/* Red warning gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-red-900/10 via-transparent to-orange-900/10 pointer-events-none" />
-
-      {/* Content */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.3 }}
-        className="relative z-10 max-w-4xl"
+        transition={{ duration: 0.8 }}
+        className="relative z-10 max-w-4xl w-full"
       >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-          className="text-6xl mb-8"
-        >
-          😵
-        </motion.div>
-
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">The Problem</h2>
-
-        <p className="text-xl md:text-2xl text-white/60 leading-relaxed max-w-2xl">
-          npm has <span className="text-red-400 font-semibold">2 million packages</span>.
-          <br />
-          Which ones are AI-callable tools? Which ones{' '}
-          <span className="text-orange-400 font-semibold">actually work</span>?
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">AI SDK Tools Are Static</h2>
+        <p className="text-xl text-white/50 mb-12">
+          You import them. You bundle them. They&apos;re compiled in.
         </p>
+
+        {/* Code block */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="max-w-2xl mx-auto text-left"
+        >
+          <div className="flex items-center gap-2 px-4 py-3 bg-[#1e1e2e] rounded-t-xl border-b border-white/5">
+            <div className="w-3 h-3 rounded-full bg-red-500/80" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80" />
+            <span className="ml-4 text-xs text-white/30 font-mono">agent.ts</span>
+          </div>
+          <div className="bg-[#1e1e2e] p-6 rounded-b-xl overflow-x-auto">
+            {codeLines.map((line, i) => (
+              <motion.div
+                key={line || `empty-${i}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.5 + i * 0.1 }}
+                className={`font-mono text-sm leading-relaxed ${
+                  line.startsWith('import')
+                    ? 'text-purple-400'
+                    : line.startsWith('//')
+                      ? 'text-white/30'
+                      : line.includes('generateText')
+                        ? 'text-cyan-400'
+                        : 'text-white/70'
+                }`}
+              >
+                {line || '\u00A0'}
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="mt-12 flex flex-wrap justify-center gap-4"
+          transition={{ delay: 1.5 }}
+          className="mt-8 flex flex-wrap justify-center gap-3"
         >
-          {["Can't find them", "Can't trust them", "Can't compare them", 'No schemas'].map(
-            (word, i) => (
-              <motion.span
-                key={word}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 + i * 0.1 }}
-                className="px-4 py-2 rounded-full border border-red-500/30 text-red-400/60 text-sm font-mono"
+          {['Every tool compiled in', 'Bundle grows forever', 'No runtime discovery'].map(
+            (text) => (
+              <span
+                key={text}
+                className="px-3 py-1.5 rounded-full border border-orange-500/30 text-orange-400/70 text-sm font-mono"
               >
-                {word}
-              </motion.span>
+                {text}
+              </span>
             )
           )}
         </motion.div>

@@ -2,111 +2,107 @@
 
 import { motion } from 'framer-motion';
 
+const roleStyles: Record<string, string> = {
+  user: 'bg-white/10 text-white/60',
+  agent: 'bg-cyan-500/20 text-cyan-400',
+  registry: 'bg-emerald-500/20 text-emerald-400',
+  sandbox: 'bg-yellow-500/20 text-yellow-400',
+};
+
+const colorStyles: Record<string, string> = {
+  white: 'text-white/70',
+  cyan: 'text-cyan-400',
+  purple: 'text-purple-400',
+  emerald: 'text-emerald-400',
+  yellow: 'text-yellow-400',
+};
+
+const conversation = [
+  {
+    id: 'user-ask',
+    role: 'user',
+    content: '"Format this CSV as a markdown table"',
+    color: 'white',
+  },
+  {
+    id: 'agent-search',
+    role: 'agent',
+    content: 'searchTpmjsToolsTool({ query: "markdown table" })',
+    color: 'cyan',
+  },
+  {
+    id: 'registry-found',
+    role: 'registry',
+    content: '→ Found: @tpmjs/markdown::formatTable',
+    color: 'emerald',
+  },
+  {
+    id: 'agent-execute',
+    role: 'agent',
+    content: 'registryExecuteTool({ toolId: "...", params: {...} })',
+    color: 'purple',
+  },
+  {
+    id: 'sandbox-result',
+    role: 'sandbox',
+    content: '→ Executed in 120ms',
+    color: 'yellow',
+  },
+  {
+    id: 'agent-respond',
+    role: 'agent',
+    content: '"Here\'s your formatted table: ..."',
+    color: 'white',
+  },
+];
+
 export function ToolDetailSlide(): React.ReactElement {
   return (
     <div className="relative flex flex-col items-center justify-center h-full px-8 text-center">
-      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/10 via-transparent to-cyan-900/10 pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="relative z-10 max-w-4xl w-full"
+        className="relative z-10 max-w-3xl w-full"
       >
-        <h2 className="text-5xl md:text-6xl font-bold text-white mb-4">What We Store</h2>
-        <p className="text-xl text-white/40 mb-12">
-          Everything an agent needs to <span className="text-cyan-400">call a tool correctly</span>
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Full Agent Flow</h2>
+        <p className="text-xl text-white/50 mb-10">
+          User asks. Agent searches. Tool executes. Done.
         </p>
 
-        {/* Mock tool card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ delay: 0.3 }}
-          className="max-w-xl mx-auto p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 text-left"
-        >
-          {/* Header */}
-          <div className="flex items-start justify-between mb-6">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.5, type: 'spring' }}
-                  className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center text-2xl"
-                >
-                  🔍
-                </motion.div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">webSearch</h3>
-                  <span className="text-sm text-white/40 font-mono">@tpmjs/web-tools</span>
-                </div>
-              </div>
-            </div>
+        <div className="space-y-3 text-left">
+          {conversation.map((msg, i) => (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 text-xs font-medium"
+              key={msg.id}
+              initial={{ opacity: 0, x: msg.role === 'user' ? -20 : 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 + i * 0.15 }}
+              className={`flex items-start gap-3 ${msg.role === 'user' ? '' : 'pl-4'}`}
             >
-              Verified
+              <span
+                className={`text-xs font-mono px-2 py-1 rounded ${roleStyles[msg.role] ?? roleStyles.user}`}
+              >
+                {msg.role}
+              </span>
+              <span className={`font-mono text-sm ${colorStyles[msg.color] ?? colorStyles.white}`}>
+                {msg.content}
+              </span>
             </motion.div>
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="mt-10 p-4 rounded-xl bg-white/5 border border-white/10"
+        >
+          <div className="text-sm text-white/60">
+            The agent never imported <span className="text-cyan-400 font-mono">formatTable</span>.
+            It discovered and executed it at runtime.
           </div>
-
-          {/* Description */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-white/60 mb-6"
-          >
-            Search the web and return structured results. Supports query filtering, result limits,
-            and domain restrictions.
-          </motion.p>
-
-          {/* Metadata grid */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="grid grid-cols-3 gap-4 mb-6"
-          >
-            <div className="p-3 rounded-lg bg-white/5">
-              <div className="text-xs text-white/40 mb-1">Downloads</div>
-              <div className="text-lg font-bold text-white">12.4k</div>
-            </div>
-            <div className="p-3 rounded-lg bg-white/5">
-              <div className="text-xs text-white/40 mb-1">Quality</div>
-              <div className="text-lg font-bold text-cyan-400">94%</div>
-            </div>
-            <div className="p-3 rounded-lg bg-white/5">
-              <div className="text-xs text-white/40 mb-1">Category</div>
-              <div className="text-lg font-bold text-purple-400">Search</div>
-            </div>
-          </motion.div>
-
-          {/* Schema preview */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="p-4 rounded-lg bg-black/30 font-mono text-sm"
-          >
-            <div className="text-white/40 mb-2">{'// Extracted from actual code'}</div>
-            <div className="text-purple-400">
-              inputSchema: <span className="text-white/60">JSON Schema</span>
-            </div>
-            <div className="text-purple-400">
-              returnSchema: <span className="text-white/60">JSON Schema</span>
-            </div>
-            <div className="text-purple-400">
-              envKeys: <span className="text-white/60">[&quot;API_KEY&quot;]</span>
-            </div>
-            <div className="text-purple-400">
-              tier: <span className="text-emerald-400">&quot;rich&quot;</span>
-            </div>
-          </motion.div>
         </motion.div>
       </motion.div>
     </div>
