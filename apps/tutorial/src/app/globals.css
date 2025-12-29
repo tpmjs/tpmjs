@@ -41,7 +41,9 @@
     overflow: hidden;
   }
 
-  html, body, #__next {
+  html,
+  body,
+  #__next {
     height: 100%;
   }
 }
@@ -59,20 +61,19 @@
   }
 
   .glow-cyan {
-    box-shadow: 0 0 20px hsl(var(--accent-cyan) / 0.3),
-                0 0 40px hsl(var(--accent-cyan) / 0.2),
-                0 0 60px hsl(var(--accent-cyan) / 0.1);
+    box-shadow: 0 0 20px hsl(var(--accent-cyan) / 0.3), 0 0 40px hsl(var(--accent-cyan) / 0.2), 0 0
+      60px hsl(var(--accent-cyan) / 0.1);
   }
 
   .glow-purple {
-    box-shadow: 0 0 20px hsl(var(--accent-purple) / 0.3),
-                0 0 40px hsl(var(--accent-purple) / 0.2),
-                0 0 60px hsl(var(--accent-purple) / 0.1);
+    box-shadow: 0 0 20px hsl(var(--accent-purple) / 0.3), 0 0 40px hsl(var(--accent-purple) / 0.2),
+      0 0 60px hsl(var(--accent-purple) / 0.1);
   }
 
   /* Animated background gradient */
   @keyframes gradient-shift {
-    0%, 100% {
+    0%,
+    100% {
       background-position: 0% 50%;
     }
     50% {
@@ -87,7 +88,8 @@
 
   /* Floating animation */
   @keyframes float {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0);
     }
     50% {
@@ -101,7 +103,8 @@
 
   /* Pulse glow */
   @keyframes pulse-glow {
-    0%, 100% {
+    0%,
+    100% {
       opacity: 0.5;
     }
     50% {
@@ -114,11 +117,21 @@
   }
 
   /* Stagger delays */
-  .delay-100 { animation-delay: 100ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .delay-500 { animation-delay: 500ms; }
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+  .delay-500 {
+    animation-delay: 500ms;
+  }
 
   /* Motion Preferences */
   @media (prefers-reduced-motion: reduce) {
