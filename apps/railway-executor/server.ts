@@ -5,6 +5,8 @@
 
 // Import zod-to-json-schema for Zod v3 support
 import { zodToJsonSchema } from 'https://esm.sh/zod-to-json-schema@3.25.0';
+// Import Zod v4's JSON Schema converter (for packages using Zod v4)
+import { toJSONSchema as zodV4ToJsonSchema } from 'https://esm.sh/zod@4/json-schema';
 
 // Cache TTL: 2 minutes
 const CACHE_TTL_MS = 2 * 60 * 1000;
@@ -406,7 +408,20 @@ async function loadAndDescribe(req: Request): Promise<Response> {
         rawJsonSchema = toolModule.inputSchema.jsonSchema;
       }
 
-      // Strategy 3: Try Zod v3 schema (detect via _def property and convert)
+      // Strategy 3: Try Zod v4 schema (detect via _zod property - new in Zod v4)
+      if (!rawJsonSchema && toolModule.inputSchema._zod) {
+        console.log(
+          `📋 Detected Zod v4 schema, converting with Zod v4 toJSONSchema for ${cacheKey}`
+        );
+        try {
+          rawJsonSchema = zodV4ToJsonSchema(toolModule.inputSchema);
+          console.log(`✅ Successfully converted Zod v4 schema for ${cacheKey}`);
+        } catch (error) {
+          console.warn(`⚠️  Zod v4 toJSONSchema conversion failed for ${cacheKey}:`, error);
+        }
+      }
+
+      // Strategy 4: Try Zod v3 schema (detect via _def property and convert)
       if (!rawJsonSchema && toolModule.inputSchema._def) {
         console.log(
           `📋 Detected Zod schema (v3), converting with zod-to-json-schema for ${cacheKey}`
@@ -436,11 +451,12 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       return Response.json(
         {
           success: false,
-          error: `Tool "${name}" has no valid inputSchema. Tools must use AI SDK jsonSchema(), Zod v4 toJSONSchema(), or Zod v3 schemas.`,
+          error: `Tool "${name}" has no valid inputSchema. Tools must use AI SDK jsonSchema(), Zod v4 (._zod), or Zod v3 (._def) schemas.`,
           debug: {
             hasInputSchema: !!toolModule.inputSchema,
             availableMethods: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
-            hasZodDef: !!toolModule.inputSchema?._def,
+            hasZodV4: !!toolModule.inputSchema?._zod,
+            hasZodV3Def: !!toolModule.inputSchema?._def,
           },
         },
         { status: 400 }
