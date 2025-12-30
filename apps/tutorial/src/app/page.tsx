@@ -5,6 +5,31 @@ import Link from 'next/link';
 
 const tutorials = [
   {
+    id: 'overview',
+    title: 'General Overview',
+    subtitle: 'Start Here',
+    description: 'What is TPMJS? Learn about the registry, ecosystem, and architecture.',
+    href: '/overview',
+    gradient: 'from-emerald-500 to-teal-600',
+    icon: (
+      <svg
+        className="w-8 h-8"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={1.5}
+          d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+        />
+      </svg>
+    ),
+    features: ['What is TPMJS', 'Ecosystem', 'Architecture'],
+  },
+  {
     id: 'agents',
     title: 'For Agent Developers',
     subtitle: 'Search & Execute',
@@ -74,7 +99,7 @@ export default function TutorialHome(): React.ReactElement {
       />
 
       {/* Content */}
-      <div className="relative z-10 max-w-4xl w-full">
+      <div className="relative z-10 max-w-5xl w-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -93,7 +118,7 @@ export default function TutorialHome(): React.ReactElement {
         </motion.div>
 
         {/* Tutorial Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {tutorials.map((tutorial, index) => (
             <motion.div
               key={tutorial.id}
