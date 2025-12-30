@@ -15,7 +15,7 @@ export function OpenPlaygroundSlide(): React.ReactElement {
       >
         <div className="text-sky-400/60 font-mono text-sm mb-4">Step 2</div>
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Open the Playground</h2>
-        <p className="text-xl text-white/50 mb-10">Click "Try it" on any tool page</p>
+        <p className="text-xl text-white/50 mb-10">{'Click "Try it" on any tool page'}</p>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -75,7 +75,7 @@ export function OpenPlaygroundSlide(): React.ReactElement {
           className="mt-6 p-4 rounded-lg bg-sky-500/10 border border-sky-500/20 max-w-md mx-auto"
         >
           <p className="text-sky-400 text-sm">
-            Every tool page has a "Try it" button that opens the playground
+            {'Every tool page has a "Try it" button that opens the playground'}
           </p>
         </motion.div>
       </motion.div>

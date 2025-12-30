@@ -29,47 +29,47 @@ export function PackageJsonSlide(): React.ReactElement {
               <span className="text-white">{'{'}</span>
               {'\n'}
               <span className="text-white">{'  '}</span>
-              <span className="text-cyan-400">"name"</span>
+              <span className="text-cyan-400">{'"name"'}</span>
               <span className="text-white">: </span>
-              <span className="text-amber-300">"my-ai-tool"</span>
+              <span className="text-amber-300">{'"my-ai-tool"'}</span>
               <span className="text-white">,</span>
               {'\n'}
               <span className="text-white">{'  '}</span>
-              <span className="text-cyan-400">"version"</span>
+              <span className="text-cyan-400">{'"version"'}</span>
               <span className="text-white">: </span>
-              <span className="text-amber-300">"1.0.0"</span>
+              <span className="text-amber-300">{'"1.0.0"'}</span>
               <span className="text-white">,</span>
               {'\n'}
               <span className="text-white">{'  '}</span>
-              <span className="text-cyan-400">"keywords"</span>
+              <span className="text-cyan-400">{'"keywords"'}</span>
               <span className="text-white">: [</span>
               {'\n'}
               <span className="text-white">{'    '}</span>
-              <span className="text-amber-300 bg-orange-500/20 px-1 rounded">"tpmjs-tool"</span>
+              <span className="text-amber-300 bg-orange-500/20 px-1 rounded">{'"tpmjs-tool"'}</span>
               <span className="text-white/50">{' ← Required for discovery'}</span>
               {'\n'}
               <span className="text-white">{'  ],'}]</span>
               {'\n'}
               <span className="text-white">{'  '}</span>
-              <span className="text-cyan-400">"main"</span>
+              <span className="text-cyan-400">{'"main"'}</span>
               <span className="text-white">: </span>
-              <span className="text-amber-300">"dist/index.js"</span>
+              <span className="text-amber-300">{'"dist/index.js"'}</span>
               <span className="text-white">,</span>
               {'\n'}
               <span className="text-white">{'  '}</span>
-              <span className="text-cyan-400">"types"</span>
+              <span className="text-cyan-400">{'"types"'}</span>
               <span className="text-white">: </span>
-              <span className="text-amber-300">"dist/index.d.ts"</span>
+              <span className="text-amber-300">{'"dist/index.d.ts"'}</span>
               <span className="text-white">,</span>
               {'\n'}
               <span className="text-white">{'  '}</span>
-              <span className="text-cyan-400">"exports"</span>
+              <span className="text-cyan-400">{'"exports"'}</span>
               <span className="text-white">{': {'}</span>
               {'\n'}
               <span className="text-white">{'    '}</span>
-              <span className="text-cyan-400">"."</span>
+              <span className="text-cyan-400">{'"."'}</span>
               <span className="text-white">: </span>
-              <span className="text-amber-300">"./dist/index.js"</span>
+              <span className="text-amber-300">{'"./dist/index.js"'}</span>
               {'\n'}
               <span className="text-white">{'  }'}</span>
               {'\n'}

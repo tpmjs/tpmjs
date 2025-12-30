@@ -34,7 +34,7 @@ export function FirstToolNextStepsSlide(): React.ReactElement {
         transition={{ duration: 0.8 }}
         className="relative z-10 max-w-4xl w-full"
       >
-        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">You're Published!</h2>
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">{"You're Published!"}</h2>
         <p className="text-xl text-white/50 mb-12">Your tool is now discoverable by AI agents</p>
 
         <div className="grid md:grid-cols-3 gap-4 max-w-3xl mx-auto">

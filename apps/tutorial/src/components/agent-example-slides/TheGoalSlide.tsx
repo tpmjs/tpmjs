@@ -26,7 +26,7 @@ export function TheGoalSlide(): React.ReactElement {
         >
           <div className="text-xs text-white/40 font-mono mb-4">User Request</div>
           <p className="text-lg text-white/80 italic">
-            "Convert this markdown to a formatted blog post and generate a summary"
+            {'"Convert this markdown to a formatted blog post and generate a summary"'}
           </p>
         </motion.div>
 

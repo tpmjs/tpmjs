@@ -16,7 +16,7 @@ export function FillParametersSlide(): React.ReactElement {
         <div className="text-sky-400/60 font-mono text-sm mb-4">Step 3</div>
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Fill Parameters</h2>
         <p className="text-xl text-white/50 mb-10">
-          The form is auto-generated from the tool's schema
+          {"The form is auto-generated from the tool's schema"}
         </p>
 
         <motion.div

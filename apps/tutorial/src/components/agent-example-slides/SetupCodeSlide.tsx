@@ -48,20 +48,20 @@ export function SetupCodeSlide(): React.ReactElement {
               <span className="text-white">{' { searchTpmjsToolsTool } '}</span>
               <span className="text-purple-400">from</span>
               {'\n'}
-              <span className="text-amber-300"> '@tpmjs/search-registry'</span>
+              <span className="text-amber-300">{" '@tpmjs/search-registry'"}</span>
               <span className="text-white">;</span>
               {'\n'}
               <span className="text-purple-400">import</span>
               <span className="text-white">{' { registryExecuteTool } '}</span>
               <span className="text-purple-400">from</span>
               {'\n'}
-              <span className="text-amber-300"> '@tpmjs/registry-execute'</span>
+              <span className="text-amber-300">{" '@tpmjs/registry-execute'"}</span>
               <span className="text-white">;</span>
               {'\n'}
               <span className="text-purple-400">import</span>
               <span className="text-white">{' { generateText } '}</span>
               <span className="text-purple-400">from</span>
-              <span className="text-amber-300"> 'ai'</span>
+              <span className="text-amber-300">{" 'ai'"}</span>
               <span className="text-white">;</span>
             </code>
           </pre>

@@ -37,7 +37,7 @@ export function AgentCodeSlide(): React.ReactElement {
               <span className="text-white">: </span>
               <span className="text-yellow-400">openai</span>
               <span className="text-white">(</span>
-              <span className="text-amber-300">'gpt-4o'</span>
+              <span className="text-amber-300">{"'gpt-4o'"}</span>
               <span className="text-white">),</span>
               {'\n'}
               <span className="text-white">{'  '}</span>

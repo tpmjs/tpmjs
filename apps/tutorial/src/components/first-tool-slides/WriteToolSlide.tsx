@@ -49,7 +49,7 @@ export function WriteToolSlide(): React.ReactElement {
               <span className="text-white">{'  '}</span>
               <span className="text-cyan-400">description</span>
               <span className="text-white">: </span>
-              <span className="text-amber-300">'Generate a greeting'</span>
+              <span className="text-amber-300">{"'Generate a greeting'"}</span>
               <span className="text-white">,</span>
               {'\n'}
               <span className="text-white">{'  '}</span>
@@ -65,7 +65,7 @@ export function WriteToolSlide(): React.ReactElement {
               <span className="text-white">().</span>
               <span className="text-yellow-400">describe</span>
               <span className="text-white">(</span>
-              <span className="text-amber-300">'Name'</span>
+              <span className="text-amber-300">{"'Name'"}</span>
               <span className="text-white">),</span>
               {'\n'}
               <span className="text-white">{'  }'}),</span>

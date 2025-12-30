@@ -65,7 +65,7 @@ export function PublishSlide(): React.ReactElement {
           transition={{ delay: 0.8 }}
           className="mt-8 text-white/40 text-sm font-mono"
         >
-          TPMJS syncs from npm's changes feed every 2 minutes
+          {"TPMJS syncs from npm's changes feed every 2 minutes"}
         </motion.div>
       </motion.div>
     </div>
