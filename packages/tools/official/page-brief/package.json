@@ -1,0 +1,63 @@
+{
+  "name": "@tpmjs/tools-page-brief",
+  "version": "0.1.0",
+  "description": "Fetch a URL, extract main content, and return a brief with summary, key points, and claims needing citations",
+  "type": "module",
+  "keywords": ["tpmjs", "research", "ai", "readability", "web-scraping"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/page-brief"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "research",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "pageBriefTool",
+        "description": "Fetch a URL, extract main content, and return a brief with summary, key points, and claims needing citations",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL to fetch and analyze",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "PageBrief",
+          "description": "Object with url, title, summary, keyPoints array, and claimsNeedingCitation array"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "@mozilla/readability": "^0.5.0",
+    "jsdom": "^26.0.0",
+    "sbd": "^1.0.19"
+  }
+}

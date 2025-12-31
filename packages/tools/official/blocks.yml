@@ -1,0 +1,132 @@
+name: "tpmjs-official-tools"
+root: "."
+
+philosophy:
+  - "Tools must be pure functions with no side effects"
+  - "Each tool solves one specific problem well"
+  - "Tools are publishable to npm as @tpmjs/* packages"
+  - "Use AI SDK v6 tool() + jsonSchema() pattern"
+
+domain:
+  entities:
+    url:
+      fields: [href, domain, protocol, path]
+    text:
+      fields: [content, sentences, wordCount]
+    claim:
+      fields: [statement, needsCitation, evidence]
+    timeline_event:
+      fields: [date, description, confidence]
+
+  signals:
+    credibility:
+      description: "Trustworthiness of a source"
+      extraction_hint: "Look for author, date, citations, HTTPS"
+    readability:
+      description: "How easy content is to understand"
+      extraction_hint: "Check sentence length, jargon, structure"
+
+  measures:
+    valid_output:
+      constraints:
+        - "Must return structured object matching interface"
+        - "Must not throw unhandled errors"
+    npm_publishable:
+      constraints:
+        - "Must have valid package.json with tpmjs field"
+        - "Must export tool as named and default export"
+
+blocks:
+  domain_rules:
+    - id: pure_function
+      description: "Tool must be deterministic with no side effects"
+    - id: ai_sdk_pattern
+      description: "Must use AI SDK v6 tool() + jsonSchema()"
+    - id: npm_ready
+      description: "Must be publishable to npm with complete metadata"
+
+  adapter.createBlogPost:
+    description: "Creates structured blog posts with frontmatter and metadata"
+    path: "createBlogPost"
+    inputs:
+      - name: title
+        type: string
+      - name: author
+        type: string
+      - name: content
+        type: string
+      - name: tags
+        type: string[]
+        optional: true
+      - name: format
+        type: "'markdown' | 'mdx'"
+        optional: true
+    outputs:
+      - name: blogPost
+        type: BlogPost
+        measures: [valid_output, npm_publishable]
+
+  research.pageBrief:
+    description: "Fetch URL, extract main content, return summary with key points and claims needing citations"
+    path: "page-brief"
+    inputs:
+      - name: url
+        type: string
+    outputs:
+      - name: brief
+        type: PageBrief
+        measures: [valid_output]
+
+  research.comparePages:
+    description: "Compare two URLs for agreements, conflicts, and unique points"
+    path: "compare-pages"
+    inputs:
+      - name: urlA
+        type: string
+      - name: urlB
+        type: string
+    outputs:
+      - name: comparison
+        type: PageComparison
+        measures: [valid_output]
+
+  research.sourceCredibility:
+    description: "Heuristic credibility score based on domain signals, author presence, citations"
+    path: "source-credibility"
+    inputs:
+      - name: url
+        type: string
+      - name: html
+        type: string
+        optional: true
+    outputs:
+      - name: credibility
+        type: CredibilityScore
+        measures: [valid_output]
+
+  research.claimChecklist:
+    description: "Extract checkable factual claims from text, mark what needs citations"
+    path: "claim-checklist"
+    inputs:
+      - name: text
+        type: string
+    outputs:
+      - name: checklist
+        type: ClaimChecklist
+        measures: [valid_output]
+
+  research.timelineFromText:
+    description: "Extract dated events from text, return normalized timeline with confidence"
+    path: "timeline-from-text"
+    inputs:
+      - name: text
+        type: string
+    outputs:
+      - name: timeline
+        type: Timeline
+        measures: [valid_output]
+
+validators:
+  - schema
+  - shape.ts
+  - domain

@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-source-credibility",
+  "version": "0.1.0",
+  "description": "Calculate heuristic credibility score based on domain signals, author presence, and citations",
+  "type": "module",
+  "keywords": ["tpmjs", "research", "ai", "credibility", "fact-checking"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/source-credibility"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "research",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "sourceCredibilityTool",
+        "description": "Calculate heuristic credibility score based on domain signals",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "URL to analyze for credibility",
+            "required": true
+          },
+          {
+            "name": "html",
+            "type": "string",
+            "description": "Optional pre-fetched HTML content",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "CredibilityScore",
+          "description": "Object with score (0-1), signals breakdown, and detailed analysis"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "tldts": "^6.1.0",
+    "cheerio": "^1.0.0"
+  }
+}

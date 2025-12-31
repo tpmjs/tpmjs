@@ -1,0 +1,3 @@
+# Blocks CLI runtime files
+.blocks/
+.env

@@ -5,3 +5,4 @@ packages:
   - 'packages/config/tailwind'
   - 'packages/config/tsconfig'
   - 'packages/tools/*'
+  - 'packages/tools/official/*'

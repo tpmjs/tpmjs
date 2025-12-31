@@ -1,0 +1,61 @@
+{
+  "name": "@tpmjs/tools-claim-checklist",
+  "version": "0.1.0",
+  "description": "Extract checkable factual claims from text and identify what needs citations",
+  "type": "module",
+  "keywords": ["tpmjs", "research", "ai", "claims", "fact-checking", "citations"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/claim-checklist"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "research",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "claimChecklistTool",
+        "description": "Extract checkable factual claims from text and mark what needs citations",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to analyze for factual claims",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ClaimChecklist",
+          "description": "Object with claims array and summary statistics"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "sbd": "^1.0.19"
+  }
+}

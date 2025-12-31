@@ -40,6 +40,8 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@blocksai/cli": "^0.2.1",
+    "@blocksai/validators": "^1.1.1",
     "@changesets/cli": "^2.27.10",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/node": "^22.10.2",

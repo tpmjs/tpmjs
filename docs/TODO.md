@@ -130,6 +130,27 @@ GET  /api/users/[username]/collections   - Get user's public collections
 
 ---
 
+## Benchmark Comparison Page
+
+### Overview
+- [ ] Create `/benchmarks` page to compare tool performance
+- [ ] Display execution time comparisons across similar tools
+- [ ] Show token usage efficiency metrics
+- [ ] Compare success rates and reliability
+
+### Features
+- [ ] Side-by-side tool comparison UI
+- [ ] Historical performance trends (charts)
+- [ ] Filter by category to compare relevant tools
+- [ ] Export benchmark data as JSON/CSV
+
+### Data Collection
+- [ ] Track execution metrics from playground simulations
+- [ ] Aggregate anonymous performance data
+- [ ] Calculate percentile rankings within categories
+
+---
+
 ## Notes
 
 - Consider rate limiting on ratings to prevent abuse

@@ -1,0 +1,62 @@
+{
+  "name": "@tpmjs/tools-timeline-from-text",
+  "version": "0.1.0",
+  "description": "Extract dated events from text and return a normalized timeline with confidence scores",
+  "type": "module",
+  "keywords": ["tpmjs", "research", "ai", "timeline", "dates", "events"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/timeline-from-text"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "research",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "timelineFromTextTool",
+        "description": "Extract dated events from text and return normalized timeline",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to extract timeline events from",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "Timeline",
+          "description": "Object with events array and optional date range"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "chrono-node": "^2.7.0",
+    "sbd": "^1.0.19"
+  }
+}
