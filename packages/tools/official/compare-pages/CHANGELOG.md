@@ -1,5 +1,11 @@
 # @tpmjs/tools-compare-pages
 
+## 0.3.0
+
+### Minor Changes
+
+- Initial release of 100+ official TPMJS tools covering research, data transformation, statistics, security, engineering, ops, and agent utilities.
+
 ## 0.2.1
 
 ### Patch Changes

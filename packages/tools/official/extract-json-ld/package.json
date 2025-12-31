@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-extract-json-ld",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Extract JSON-LD structured data from web pages",
   "type": "module",
   "keywords": ["tpmjs", "research", "ai", "json-ld", "structured-data", "seo"],

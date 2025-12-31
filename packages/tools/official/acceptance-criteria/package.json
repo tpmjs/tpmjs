@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-acceptance-criteria",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Format acceptance criteria from requirements using Given/When/Then (Gherkin) format",
   "type": "module",
   "keywords": ["tpmjs", "documentation", "ai", "acceptance-criteria", "gherkin", "bdd", "testing"],

@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-data-classification-heuristic",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Classifies data sensitivity using heuristics to detect PII, financial data, and health data patterns",
   "type": "module",
   "keywords": ["tpmjs", "compliance", "ai", "privacy", "pii", "data-classification"],

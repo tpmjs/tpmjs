@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-dependency-audit-lite",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Lightweight audit of package.json dependencies for common issues",
   "type": "module",
   "keywords": ["tpmjs", "engineering", "ai", "npm", "dependencies", "audit"],

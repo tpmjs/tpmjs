@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-stacktrace-parse",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Parses stack traces into structured frames, handling Node.js and browser formats",
   "type": "module",
   "keywords": ["tpmjs", "engineering", "stacktrace", "error", "debugging"],

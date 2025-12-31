@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-effect-size-suite",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Calculate effect sizes (Cohen's d, Hedge's g, Glass's delta) for comparing two groups",
   "type": "module",
   "keywords": ["tpmjs", "statistics", "effect-size", "cohens-d", "hedges-g"],

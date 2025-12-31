@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-runbook-draft",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Draft operational runbooks from procedure steps with commands and verification",
   "type": "module",
   "keywords": ["tpmjs", "documentation", "runbook", "operations", "devops"],

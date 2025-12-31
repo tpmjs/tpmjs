@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-date-parse",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Parse dates in various natural language formats using chrono-node",
   "type": "module",
   "keywords": ["tpmjs", "date", "time", "parse", "chrono", "natural-language"],

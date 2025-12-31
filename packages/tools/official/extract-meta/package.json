@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-extract-meta",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Extract meta tags from HTML pages (title, description, Open Graph, Twitter Cards)",
   "type": "module",
   "keywords": ["tpmjs", "web", "meta", "og", "twitter", "seo"],

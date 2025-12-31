@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-rows-group-aggregate",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Groups rows by key and aggregates values with operations like sum, count, avg, min, max",
   "type": "module",
   "keywords": ["tpmjs", "data", "aggregate", "group-by"],

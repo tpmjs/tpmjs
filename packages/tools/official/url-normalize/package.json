@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-url-normalize",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Normalize URLs with configurable options for consistent URL handling",
   "type": "module",
   "keywords": ["tpmjs", "data", "url", "normalize", "validation"],

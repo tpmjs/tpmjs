@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-html-to-markdown",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Convert HTML to markdown using turndown",
   "type": "module",
   "keywords": ["tpmjs", "data", "html", "markdown", "convert", "turndown"],

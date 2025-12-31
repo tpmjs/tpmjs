@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-slo-draft",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Draft SLO (Service Level Objective) definitions for services",
   "type": "module",
   "keywords": ["tpmjs", "ops", "slo", "monitoring", "sre"],

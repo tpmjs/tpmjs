@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-access-control-matrix",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Generates access control matrix from roles, resources, and permissions for RBAC compliance",
   "type": "module",
   "keywords": ["tpmjs", "compliance", "ai", "rbac", "access-control", "security"],

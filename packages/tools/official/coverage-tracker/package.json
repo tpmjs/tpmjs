@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-coverage-tracker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Tracks which tools have been used in a workflow and calculates coverage percentage",
   "type": "module",
   "keywords": ["tpmjs", "agent", "ai", "testing", "coverage"],

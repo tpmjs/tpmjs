@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-openapi-snippet-build",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Builds code snippets from OpenAPI operation definitions",
   "type": "module",
   "keywords": ["tpmjs", "engineering", "ai", "openapi", "code-generation", "api"],

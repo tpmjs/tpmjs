@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/official-base64-decode",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Decode base64 encoded data to string with support for multiple output encodings",
   "type": "module",
   "keywords": ["tpmjs", "data", "base64", "decode", "encoding"],

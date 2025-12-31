@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-multiple-testing-adjust",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Adjust p-values for multiple testing using Bonferroni, Benjamini-Hochberg, or Holm methods",
   "type": "module",
   "keywords": ["tpmjs", "statistics", "ai", "multiple-testing", "p-value-adjustment"],

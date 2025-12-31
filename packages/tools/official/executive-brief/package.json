@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-executive-brief",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Format content into executive summary style with key bullets and concise overview",
   "type": "module",
   "keywords": ["tpmjs", "documentation", "ai", "executive-summary", "business"],

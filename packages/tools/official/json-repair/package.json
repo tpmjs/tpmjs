@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-json-repair",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Attempt to repair malformed JSON using jsonrepair",
   "type": "module",
   "keywords": ["tpmjs", "data", "json", "repair", "fix"],

@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-template-render",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Render mustache-style templates with variable tracking",
   "type": "module",
   "keywords": ["tpmjs", "template", "mustache", "render", "data"],

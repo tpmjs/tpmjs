@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-test-plan-matrix",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Creates test plan matrix from features and test types",
   "type": "module",
   "keywords": ["tpmjs", "documentation", "ai", "testing", "qa", "test-matrix"],

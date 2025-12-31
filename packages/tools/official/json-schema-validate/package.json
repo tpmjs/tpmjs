@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-json-schema-validate",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Validates JSON data against JSON Schema using ajv",
   "type": "module",
   "keywords": ["tpmjs", "data", "validation", "json-schema", "ajv"],

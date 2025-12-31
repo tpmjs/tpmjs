@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-csp-compose",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Compose Content Security Policy headers from directive configurations",
   "type": "module",
   "keywords": ["tpmjs", "security", "csp", "content-security-policy"],

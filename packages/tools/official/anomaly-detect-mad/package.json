@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-anomaly-detect-mad",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Detect anomalies in data using Median Absolute Deviation (MAD) method",
   "type": "module",
   "keywords": ["tpmjs", "statistics", "anomaly-detection", "outliers", "mad", "robust"],

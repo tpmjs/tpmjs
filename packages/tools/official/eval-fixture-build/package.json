@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-eval-fixture-build",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Builds evaluation fixtures for testing AI tools with structured input/output pairs",
   "type": "module",
   "keywords": ["tpmjs", "agent", "ai", "testing", "evaluation"],

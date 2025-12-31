@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-release-checklist",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Generates release checklists from components with readiness analysis and blocker detection",
   "type": "module",
   "keywords": ["tpmjs", "engineering", "ai", "release-management", "devops"],

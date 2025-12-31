@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-diff-text-unified",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Creates unified diff between two text strings with context lines",
   "type": "module",
   "keywords": ["tpmjs", "engineering", "diff", "text", "unified"],

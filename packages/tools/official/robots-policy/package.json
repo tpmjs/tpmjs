@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-robots-policy",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Parse robots.txt and check if a URL is allowed for crawling",
   "type": "module",
   "keywords": ["tpmjs", "robots", "robots.txt", "crawler", "seo", "web"],

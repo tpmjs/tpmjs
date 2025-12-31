@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-schema-infer",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Infer JSON Schema from sample data",
   "type": "module",
   "keywords": ["tpmjs", "json-schema", "schema", "infer", "data"],

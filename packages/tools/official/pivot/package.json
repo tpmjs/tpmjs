@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-pivot",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pivot array data from row format to column format (row-to-column transformation)",
   "type": "module",
   "keywords": ["tpmjs", "data", "pivot", "transform", "reshape"],

@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-recipe-publish-manifest",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Create a publish manifest for a recipe with metadata and verification hash",
   "type": "module",
   "keywords": ["tpmjs", "agent", "recipe", "manifest", "publish"],

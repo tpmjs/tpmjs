@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-page-brief",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Fetch a URL, extract main content, and return a brief with summary, key points, and claims needing citations",
   "type": "module",
   "keywords": ["tpmjs", "research", "ai", "readability", "web-scraping"],

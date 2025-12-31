@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-rows-filter",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Filter an array of objects by a predicate with support for field comparisons (eq, ne, gt, lt, contains)",
   "type": "module",
   "keywords": ["tpmjs", "data", "filter", "array"],

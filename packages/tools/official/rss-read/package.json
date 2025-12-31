@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-rss-read",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Parse RSS/Atom feeds and extract feed metadata and items",
   "type": "module",
   "keywords": ["tpmjs", "rss", "atom", "feed", "parser", "web"],

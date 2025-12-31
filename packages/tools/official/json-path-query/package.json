@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-json-path-query",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Query JSON using JSONPath expressions",
   "type": "module",
   "keywords": ["tpmjs", "json", "jsonpath", "query", "data"],

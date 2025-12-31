@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/official-hash-text",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Hash text using cryptographic algorithms (MD5, SHA-1, SHA-256, SHA-512)",
   "type": "module",
   "keywords": ["tpmjs", "data", "hash", "crypto", "md5", "sha256"],

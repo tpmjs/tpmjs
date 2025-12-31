@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-compare-pages",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Compare two URLs for agreements, conflicts, and unique points for cross-source validation",
   "type": "module",
   "keywords": ["tpmjs", "research", "ai", "comparison", "fact-checking"],

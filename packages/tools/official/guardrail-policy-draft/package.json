@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-guardrail-policy-draft",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Drafts guardrail policies for agent workflows with rules, severity levels, and enforcement actions",
   "type": "module",
   "keywords": ["tpmjs", "agent", "ai", "safety", "guardrails"],

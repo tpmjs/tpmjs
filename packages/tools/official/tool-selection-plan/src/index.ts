@@ -193,7 +193,8 @@ function planToolUsage(
   const alternatives: string[] = [];
 
   // If no tools score well, add warning
-  if (scoredTools.length === 0 || scoredTools[0]?.score < 0.1) {
+  const topTool = scoredTools[0];
+  if (!topTool || topTool.score < 0.1) {
     warnings.push('No tools found that clearly match the task requirements.');
     return {
       plan: [],
@@ -208,19 +209,19 @@ function planToolUsage(
   // Build plan based on complexity
   if (taskRequirements.complexity === 'simple') {
     // Single tool should suffice
-    const bestTool = scoredTools[0]!;
     plan.push({
       stepNumber: 1,
-      toolName: bestTool.tool.name,
-      purpose: `Use ${bestTool.tool.name} to ${task}`,
+      toolName: topTool.tool.name,
+      purpose: `Use ${topTool.tool.name} to ${task}`,
       inputSources: ['task input'],
       expectedOutput: 'task result',
     });
 
     // Suggest alternatives
-    if (scoredTools.length > 1 && scoredTools[1]?.score > 0.3) {
+    const secondTool = scoredTools[1];
+    if (secondTool && secondTool.score > 0.3) {
       alternatives.push(
-        `Could alternatively use ${scoredTools[1]?.tool.name} (relevance: ${Math.round(scoredTools[1]?.score * 100)}%)`
+        `Could alternatively use ${secondTool.tool.name} (relevance: ${Math.round(secondTool.score * 100)}%)`
       );
     }
   } else if (taskRequirements.complexity === 'moderate') {
@@ -261,11 +262,12 @@ function planToolUsage(
     let stepNum = 1;
 
     // Add fetch step
-    if (dataFetchTools.length > 0) {
+    const fetchTool = dataFetchTools[0];
+    if (fetchTool) {
       plan.push({
         stepNumber: stepNum++,
-        toolName: dataFetchTools[0]?.tool.name,
-        purpose: `Fetch/retrieve data: ${dataFetchTools[0]?.tool.description}`,
+        toolName: fetchTool.tool.name,
+        purpose: `Fetch/retrieve data: ${fetchTool.tool.description}`,
         inputSources: ['task input'],
         expectedOutput: 'raw data',
       });
@@ -284,11 +286,12 @@ function planToolUsage(
     });
 
     // Add output step
-    if (outputTools.length > 0) {
+    const outputTool = outputTools[0];
+    if (outputTool) {
       plan.push({
         stepNumber: stepNum++,
-        toolName: outputTools[0]?.tool.name,
-        purpose: `Output result: ${outputTools[0]?.tool.description}`,
+        toolName: outputTool.tool.name,
+        purpose: `Output result: ${outputTool.tool.description}`,
         inputSources: [`output from step ${stepNum - 2}`],
         expectedOutput: 'final result',
         dependencies: [stepNum - 2],

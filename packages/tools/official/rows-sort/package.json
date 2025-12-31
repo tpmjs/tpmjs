@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-rows-sort",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Sort an array of objects by one or more fields with support for ascending and descending order",
   "type": "module",
   "keywords": ["tpmjs", "data", "sort", "array"],

@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-yaml-stringify",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Convert JavaScript objects to YAML strings with formatting options",
   "type": "module",
   "keywords": ["tpmjs", "yaml", "data", "stringify"],

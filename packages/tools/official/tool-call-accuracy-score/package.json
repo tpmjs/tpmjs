@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-tool-call-accuracy-score",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scores the accuracy of actual tool calls against expected tool calls in agent workflows",
   "type": "module",
   "keywords": ["tpmjs", "agent", "ai", "testing", "accuracy"],

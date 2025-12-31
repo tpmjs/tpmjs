@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-recipe-emit",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Emits a recipe in standard format for workflow orchestration",
   "type": "module",
   "keywords": ["tpmjs", "agent", "workflow", "recipe"],

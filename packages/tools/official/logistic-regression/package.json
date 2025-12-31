@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-logistic-regression",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Simple logistic regression implementation for binary classification",
   "type": "module",
   "keywords": ["tpmjs", "statistics", "machine-learning", "logistic-regression", "classification"],

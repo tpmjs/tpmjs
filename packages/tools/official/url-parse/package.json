@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-url-parse",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Parse URL into components using the URL Web API",
   "type": "module",
   "keywords": ["tpmjs", "data", "url", "parse", "uri"],

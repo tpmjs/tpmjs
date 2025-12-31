@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-normalize-whitespace",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Normalize whitespace in text by trimming, collapsing spaces, and standardizing line endings",
   "type": "module",
   "keywords": ["tpmjs", "text", "data", "whitespace", "normalize"],

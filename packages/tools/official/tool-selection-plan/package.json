@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-tool-selection-plan",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Plans which tools to use for a task by analyzing requirements and available tools",
   "type": "module",
   "keywords": ["tpmjs", "agent", "ai", "planning", "tool-use"],

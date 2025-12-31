@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-workflow-auto-repair",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Suggests repairs for broken workflow steps by analyzing errors and proposing fixes",
   "type": "module",
   "keywords": ["tpmjs", "agent", "ai", "workflow", "debugging"],

@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-csv-parse",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Parse CSV text into array of objects using papaparse",
   "type": "module",
   "keywords": ["tpmjs", "data", "csv", "parse"],

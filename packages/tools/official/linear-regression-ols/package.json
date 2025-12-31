@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-linear-regression-ols",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Perform simple linear regression using Ordinary Least Squares (OLS)",
   "type": "module",
   "keywords": ["tpmjs", "statistics", "ai", "linear-regression", "ols", "machine-learning"],

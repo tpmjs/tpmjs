@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-release-notes",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Generate release notes from structured changes",
   "type": "module",
   "keywords": ["tpmjs", "doc", "ai", "release-notes", "changelog", "documentation"],

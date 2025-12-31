@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-beta-binomial-update",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Bayesian beta-binomial conjugate posterior update for estimating probabilities",
   "type": "module",
   "keywords": ["tpmjs", "statistics", "bayesian", "beta-distribution", "inference"],

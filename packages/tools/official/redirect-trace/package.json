@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-redirect-trace",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Trace all HTTP redirects from a URL to its final destination",
   "type": "module",
   "keywords": ["tpmjs", "web", "redirects", "http", "trace"],

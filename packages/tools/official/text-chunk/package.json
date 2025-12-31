@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-text-chunk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Split text into chunks by size or sentence boundaries with optional overlap",
   "type": "module",
   "keywords": ["tpmjs", "data", "text", "chunking", "nlp"],

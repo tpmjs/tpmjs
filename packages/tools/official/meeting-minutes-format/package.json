@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-meeting-minutes-format",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Formats meeting minutes from structured input into markdown",
   "type": "module",
   "keywords": ["tpmjs", "documentation", "ai", "meeting-minutes", "markdown"],

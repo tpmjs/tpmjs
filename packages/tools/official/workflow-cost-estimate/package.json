@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-workflow-cost-estimate",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Estimates cost of running a workflow based on step count and estimated API calls",
   "type": "module",
   "keywords": ["tpmjs", "workflow", "agent", "cost", "estimation"],

@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-html-sanitize",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Sanitize HTML to prevent XSS attacks using isomorphic-dompurify",
   "type": "module",
   "keywords": ["tpmjs", "security", "html", "sanitize", "xss", "dompurify"],

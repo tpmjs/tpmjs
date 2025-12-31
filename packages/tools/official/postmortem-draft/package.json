@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-postmortem-draft",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Draft postmortem documents from incident details with timeline and action items",
   "type": "module",
   "keywords": ["tpmjs", "documentation", "postmortem", "incident", "sre"],

@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-sitemap-read",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Parse XML sitemaps and extract URLs from sitemap.xml files",
   "type": "module",
   "keywords": ["tpmjs", "sitemap", "xml", "seo", "crawler", "web"],

@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-postmortem-action-extractor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Extract action items from postmortem documents",
   "type": "module",
   "keywords": ["tpmjs", "ops", "postmortem", "incident", "sre"],

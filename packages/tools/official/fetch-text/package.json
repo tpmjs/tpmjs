@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-fetch-text",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fetch a URL and return plain text content with metadata",
   "type": "module",
   "keywords": ["tpmjs", "web", "fetch", "text", "scraping"],

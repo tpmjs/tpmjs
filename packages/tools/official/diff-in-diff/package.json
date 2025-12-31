@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-diff-in-diff",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Difference-in-differences estimator for causal inference",
   "type": "module",
   "keywords": ["tpmjs", "statistics", "causal-inference", "diff-in-diff", "econometrics"],

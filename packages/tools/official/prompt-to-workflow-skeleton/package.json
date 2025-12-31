@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-prompt-to-workflow-skeleton",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Creates workflow skeleton from natural language prompt",
   "type": "module",
   "keywords": ["tpmjs", "agent", "workflow", "nlp", "automation"],

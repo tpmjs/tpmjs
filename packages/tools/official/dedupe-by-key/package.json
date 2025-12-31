@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-dedupe-by-key",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Remove duplicate objects from an array based on one or more key fields",
   "type": "module",
   "keywords": ["tpmjs", "data", "dedupe", "unique", "array"],

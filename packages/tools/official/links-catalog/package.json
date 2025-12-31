@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-links-catalog",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Extract and categorize all links from web pages",
   "type": "module",
   "keywords": ["tpmjs", "research", "ai", "links", "web-scraping", "seo"],

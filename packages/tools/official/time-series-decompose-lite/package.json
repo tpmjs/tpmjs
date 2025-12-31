@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-time-series-decompose-lite",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Simple time series decomposition into trend, seasonal, and residual components",
   "type": "module",
   "keywords": ["tpmjs", "statistics", "time-series", "decomposition", "forecasting"],
