@@ -6,7 +6,7 @@ const components = [
   {
     name: 'npm Sync',
     description: 'Monitors npm changes feed every 2 minutes',
-    detail: 'Catches new packages with tpmjs-tool keyword',
+    detail: 'Catches new packages with tpmjs keyword',
     icon: '🔄',
   },
   {

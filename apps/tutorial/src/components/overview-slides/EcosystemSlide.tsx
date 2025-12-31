@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 const participants = [
   {
     role: 'Package Authors',
-    action: 'Publish tools to npm with tpmjs-tool keyword',
+    action: 'Publish tools to npm with tpmjs keyword',
     color: 'purple',
   },
   {

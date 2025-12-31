@@ -12,7 +12,7 @@ const useCases = [
   {
     persona: 'Tool Authors',
     useCase: 'Get your AI SDK tools discovered by agents worldwide',
-    example: 'npm publish with tpmjs-tool keyword → Indexed in minutes',
+    example: 'npm publish with tpmjs keyword → Indexed in minutes',
     gradient: 'from-purple-500 to-pink-500',
   },
   {

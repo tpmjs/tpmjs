@@ -16,6 +16,7 @@ export const TPMJS_CATEGORIES = [
   'ai-ml',
   'security',
   'monitoring',
+  'research',
 ] as const;
 
 export type TpmjsCategory = (typeof TPMJS_CATEGORIES)[number];

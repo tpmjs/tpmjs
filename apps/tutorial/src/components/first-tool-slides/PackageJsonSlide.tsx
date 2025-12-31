@@ -15,7 +15,7 @@ export function PackageJsonSlide(): React.ReactElement {
       >
         <div className="text-orange-400/60 font-mono text-sm mb-4">Step 3</div>
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">Configure package.json</h2>
-        <p className="text-xl text-white/50 mb-8">Add the tpmjs-tool keyword for discovery</p>
+        <p className="text-xl text-white/50 mb-8">Add the tpmjs keyword for discovery</p>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -45,7 +45,7 @@ export function PackageJsonSlide(): React.ReactElement {
               <span className="text-white">: [</span>
               {'\n'}
               <span className="text-white">{'    '}</span>
-              <span className="text-amber-300 bg-orange-500/20 px-1 rounded">{'"tpmjs-tool"'}</span>
+              <span className="text-amber-300 bg-orange-500/20 px-1 rounded">{'"tpmjs"'}</span>
               <span className="text-white/50">{' ← Required for discovery'}</span>
               {'\n'}
               <span className="text-white">{'  ],'}]</span>
@@ -86,8 +86,8 @@ export function PackageJsonSlide(): React.ReactElement {
         >
           <p className="text-orange-400 text-sm">
             <span className="font-semibold">Key:</span> The{' '}
-            <code className="bg-orange-500/20 px-1 rounded">tpmjs-tool</code> keyword triggers
-            automatic indexing
+            <code className="bg-orange-500/20 px-1 rounded">tpmjs</code> keyword triggers automatic
+            indexing
           </p>
         </motion.div>
       </motion.div>
