@@ -1,18 +1,17 @@
 import { Button } from '@tpmjs/ui/Button/Button';
-import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
 import Link from 'next/link';
 import { AppHeader } from '~/components/AppHeader';
 import { EcosystemDiagram } from '~/components/EcosystemDiagram';
 
 export const metadata = {
-  title: 'Integrations | TPMJS',
+  title: 'The AI Infrastructure Stack | TPMJS',
   description:
-    'How TPMJS integrates with HLLM multi-agent orchestration and BlocksAI domain-driven validation',
+    'A new paradigm for AI systems: three layers working together to create composable, evolvable AI infrastructure.',
   openGraph: {
-    title: 'Integrations | TPMJS',
+    title: 'The AI Infrastructure Stack | TPMJS',
     description:
-      'How TPMJS integrates with HLLM multi-agent orchestration and BlocksAI domain-driven validation',
+      'A new paradigm for AI systems: three layers working together to create composable, evolvable AI infrastructure.',
   },
 };
 
@@ -23,661 +22,434 @@ export default function IntegrationsPage(): React.ReactElement {
 
       <main className="flex-1 py-16">
         <Container size="lg" padding="lg">
-          {/* Hero */}
-          <div className="text-center mb-16">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
-              Ecosystem Integrations
+          {/* Hero - The Big Idea */}
+          <div className="text-center mb-20">
+            <p className="text-sm font-mono text-foreground-tertiary mb-4 tracking-widest uppercase">
+              A New Paradigm
+            </p>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-foreground">
+              The AI Infrastructure Stack
             </h1>
-            <p className="text-xl text-foreground-secondary max-w-3xl mx-auto">
-              TPMJS is part of a larger AI infrastructure ecosystem. See how it connects with HLLM
-              for multi-agent orchestration and BlocksAI for domain-driven validation.
+            <p className="text-xl text-foreground-secondary max-w-3xl mx-auto leading-relaxed">
+              What if AI systems could be{' '}
+              <span className="text-foreground font-semibold">composable</span>,{' '}
+              <span className="text-foreground font-semibold">evolvable</span>, and{' '}
+              <span className="text-foreground font-semibold">self-improving</span>? Three projects
+              working together are making this possible.
             </p>
           </div>
 
-          {/* Ecosystem Diagram */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              The Complete Picture
+          {/* The Problem */}
+          <section className="mb-20">
+            <div className="max-w-3xl mx-auto">
+              <h2 className="text-xl sm:text-2xl font-bold mb-6 text-foreground">
+                The Problem with AI Today
+              </h2>
+              <div className="prose max-w-none text-foreground-secondary space-y-4">
+                <p className="text-lg">
+                  Current AI agents are <strong className="text-foreground">monolithic</strong>.
+                  They have a fixed set of tools baked in at build time. Adding a new capability
+                  means redeploying the entire system. There&apos;s no feedback loop—the agent makes
+                  mistakes and repeats them. There&apos;s no way to validate quality before
+                  deployment.
+                </p>
+                <p className="text-lg">
+                  This is like building a web app in 1995: everything in one file, no package
+                  manager, no separation of concerns. We&apos;ve learned that complex systems need{' '}
+                  <strong className="text-foreground">layers</strong>.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* The Insight - Three Layers */}
+          <section className="mb-20">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-8 text-center text-foreground">
+              The Insight: Separation of Concerns
             </h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+              {/* Semantic Layer */}
+              <div className="relative p-8 border-2 border-amber-500/40 rounded-xl bg-amber-500/5">
+                <div className="absolute -top-3 left-6 bg-background px-3 text-xs font-mono text-amber-500">
+                  LAYER 3: SEMANTIC
+                </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                    <span className="text-2xl">✅</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground">BlocksAI</h3>
+                    <p className="text-xs text-foreground-tertiary">Ensures correctness</p>
+                  </div>
+                </div>
+                <p className="text-sm text-foreground-secondary mb-4">
+                  The <strong className="text-foreground">TypeScript of AI</strong>. Validates that
+                  code means what it should mean. Catches semantic drift before deployment.
+                </p>
+                <div className="text-xs text-foreground-tertiary space-y-1">
+                  <p>→ Development-time validation</p>
+                  <p>→ Domain rules as executable specs</p>
+                  <p>→ AI learns from feedback loops</p>
+                </div>
+              </div>
+
+              {/* Distribution Layer */}
+              <div className="relative p-8 border-2 border-emerald-500/40 rounded-xl bg-emerald-500/5">
+                <div className="absolute -top-3 left-6 bg-background px-3 text-xs font-mono text-emerald-500">
+                  LAYER 2: DISTRIBUTION
+                </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                    <span className="text-2xl">🔧</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground">TPMJS</h3>
+                    <p className="text-xs text-foreground-tertiary">Delivers capabilities</p>
+                  </div>
+                </div>
+                <p className="text-sm text-foreground-secondary mb-4">
+                  The <strong className="text-foreground">npm of AI</strong>. Tools exist
+                  independently, discovered at runtime based on need. The ecosystem grows without
+                  central control.
+                </p>
+                <div className="text-xs text-foreground-tertiary space-y-1">
+                  <p>→ Runtime discovery, not build-time</p>
+                  <p>→ Sandboxed execution</p>
+                  <p>→ Quality signals emerge from usage</p>
+                </div>
+              </div>
+
+              {/* Orchestration Layer */}
+              <div className="relative p-8 border-2 border-purple-500/40 rounded-xl bg-purple-500/5">
+                <div className="absolute -top-3 left-6 bg-background px-3 text-xs font-mono text-purple-500">
+                  LAYER 1: ORCHESTRATION
+                </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <span className="text-2xl">🧠</span>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground">HLLM</h3>
+                    <p className="text-xs text-foreground-tertiary">Composes intelligence</p>
+                  </div>
+                </div>
+                <p className="text-sm text-foreground-secondary mb-4">
+                  The <strong className="text-foreground">Kubernetes of AI</strong>. Multiple agents
+                  working together in different patterns—debate, consensus, decomposition.
+                </p>
+                <div className="text-xs text-foreground-tertiary space-y-1">
+                  <p>→ 13 composition topologies</p>
+                  <p>→ Agents use tools dynamically</p>
+                  <p>→ Complex problems, simple agents</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Comparison */}
+            <div className="max-w-4xl mx-auto p-6 border border-border rounded-lg bg-surface">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <span className="text-red-500">✗</span> Traditional Model
+                  </h4>
+                  <div className="font-mono text-sm text-foreground-tertiary leading-relaxed">
+                    Monolithic Agent
+                    <br />
+                    &nbsp;&nbsp;→ Fixed tools (baked in)
+                    <br />
+                    &nbsp;&nbsp;→ No validation
+                    <br />
+                    &nbsp;&nbsp;→ No feedback loop
+                    <br />
+                    &nbsp;&nbsp;→ Hope for the best
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <span className="text-emerald-500">✓</span> New Paradigm
+                  </h4>
+                  <div className="font-mono text-sm text-foreground-tertiary leading-relaxed">
+                    Layered Infrastructure
+                    <br />
+                    &nbsp;&nbsp;→ Dynamic tools (discovered)
+                    <br />
+                    &nbsp;&nbsp;→ Semantic validation
+                    <br />
+                    &nbsp;&nbsp;→ Continuous improvement
+                    <br />
+                    &nbsp;&nbsp;→ Quality emerges
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Interactive Diagram */}
+          <section className="mb-20">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-center text-foreground">
+              How the Layers Connect
+            </h2>
+            <p className="text-center text-foreground-secondary mb-8 max-w-2xl mx-auto">
+              Each layer has a clear responsibility. Information flows between them, creating a
+              system that&apos;s more than the sum of its parts.
+            </p>
             <EcosystemDiagram />
           </section>
 
-          {/* Three Projects Overview */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Three Projects, One Vision
+          {/* The Novel Ideas */}
+          <section className="mb-20">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-8 text-center text-foreground">
+              What Makes This Different
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* HLLM */}
-              <div className="p-6 border-2 border-purple-500/30 rounded-xl bg-purple-500/5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <span className="text-xl">🧠</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-foreground">HLLM</h3>
-                    <p className="text-xs text-foreground-tertiary">Multi-Agent Orchestration</p>
-                  </div>
+
+            <div className="space-y-8 max-w-4xl mx-auto">
+              {/* Idea 1 */}
+              <div className="flex gap-6">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <span className="text-blue-500 font-bold">1</span>
                 </div>
-                <p className="text-sm text-foreground-secondary mb-4">
-                  A playground for orchestrating multiple AI agents using 13 different topology
-                  patterns. Agents can use TPMJS tools to extend their capabilities.
-                </p>
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400">→</span>
-                    <span className="text-foreground-secondary">
-                      13 topologies (debate, react, etc.)
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400">→</span>
-                    <span className="text-foreground-secondary">100+ AI models via OpenRouter</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-purple-400">→</span>
-                    <span className="text-foreground-secondary">Real-time D3 visualizations</span>
-                  </div>
+                <div>
+                  <h3 className="font-bold text-lg text-foreground mb-2">
+                    Tools as Independent Packages, Not Agent Plugins
+                  </h3>
+                  <p className="text-foreground-secondary">
+                    In traditional systems, tools are tightly coupled to agents. Here, tools exist
+                    independently in a registry—like npm packages. Any agent can discover and use
+                    any tool. The tool ecosystem grows through network effects, not central
+                    planning.
+                  </p>
                 </div>
               </div>
 
-              {/* TPMJS */}
-              <div className="p-6 border-2 border-emerald-500/30 rounded-xl bg-emerald-500/5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                    <span className="text-xl">🔧</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-foreground">TPMJS</h3>
-                    <p className="text-xs text-foreground-tertiary">AI Tool Registry</p>
-                  </div>
+              {/* Idea 2 */}
+              <div className="flex gap-6">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <span className="text-blue-500 font-bold">2</span>
                 </div>
-                <p className="text-sm text-foreground-secondary mb-4">
-                  The central registry for AI tools. Automatically discovers tools from npm,
-                  validates them, and provides sandboxed execution.
-                </p>
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400">→</span>
-                    <span className="text-foreground-secondary">106+ official tools</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400">→</span>
-                    <span className="text-foreground-secondary">Deno sandboxed execution</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-emerald-400">→</span>
-                    <span className="text-foreground-secondary">Auto-discovery from npm</span>
-                  </div>
+                <div>
+                  <h3 className="font-bold text-lg text-foreground mb-2">
+                    Development-Time Semantic Validation
+                  </h3>
+                  <p className="text-foreground-secondary">
+                    Instead of hoping AI-generated code is correct, BlocksAI validates source code
+                    against domain rules <em>before</em> deployment. If a template passes validation
+                    once, you can trust its output forever. This is TypeScript-level confidence for
+                    AI systems.
+                  </p>
                 </div>
               </div>
 
-              {/* BlocksAI */}
-              <div className="p-6 border-2 border-amber-500/30 rounded-xl bg-amber-500/5">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
-                    <span className="text-xl">✅</span>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-foreground">BlocksAI</h3>
-                    <p className="text-xs text-foreground-tertiary">Domain-Driven Validation</p>
-                  </div>
+              {/* Idea 3 */}
+              <div className="flex gap-6">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <span className="text-blue-500 font-bold">3</span>
                 </div>
-                <p className="text-sm text-foreground-secondary mb-4">
-                  A validation framework that uses AI to ensure code follows domain semantics. TPMJS
-                  tools are validated using BlocksAI patterns.
-                </p>
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400">→</span>
-                    <span className="text-foreground-secondary">3-layer validation pipeline</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400">→</span>
-                    <span className="text-foreground-secondary">AI-powered semantic checks</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-400">→</span>
-                    <span className="text-foreground-secondary">Domain rules in YAML</span>
-                  </div>
+                <div>
+                  <h3 className="font-bold text-lg text-foreground mb-2">
+                    AI Learns from Validation Feedback
+                  </h3>
+                  <p className="text-foreground-secondary">
+                    BlocksAI doesn&apos;t just reject bad code—it provides actionable feedback that
+                    AI agents can learn from. Generate, validate, fix, repeat. The system improves
+                    iteratively, not through one-shot generation.
+                  </p>
+                </div>
+              </div>
+
+              {/* Idea 4 */}
+              <div className="flex gap-6">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <span className="text-blue-500 font-bold">4</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-foreground mb-2">
+                    Multi-Agent Composition, Not Bigger Models
+                  </h3>
+                  <p className="text-foreground-secondary">
+                    Instead of building one massive agent, HLLM composes multiple smaller agents
+                    into topologies. Debate topology pits agents against each other. Consensus
+                    requires agreement. Decomposition breaks problems into pieces. Complex problems
+                    emerge from simple agents.
+                  </p>
+                </div>
+              </div>
+
+              {/* Idea 5 */}
+              <div className="flex gap-6">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <span className="text-blue-500 font-bold">5</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-foreground mb-2">
+                    Quality Emerges from Usage
+                  </h3>
+                  <p className="text-foreground-secondary">
+                    Tools aren&apos;t manually curated—they self-register via npm keywords. TPMJS
+                    monitors health (can it import? does it execute?), tracks downloads, calculates
+                    quality scores. Good tools rise, broken tools surface. Market forces, not
+                    gatekeeping.
+                  </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* HLLM Integration Deep Dive */}
-          <section className="mb-16">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 rounded bg-purple-500/20 flex items-center justify-center">
-                <span>🧠</span>
-              </div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-                HLLM Integration
+          {/* The Analogy */}
+          <section className="mb-20">
+            <div className="max-w-3xl mx-auto p-8 border border-border rounded-xl bg-surface">
+              <h2 className="text-xl sm:text-2xl font-bold mb-6 text-foreground text-center">
+                The Web Analogy
               </h2>
-            </div>
+              <p className="text-foreground-secondary mb-6 text-center">
+                The web didn&apos;t succeed because of one monolithic technology. It succeeded
+                because of <strong className="text-foreground">separation of concerns</strong>:
+              </p>
 
-            <div className="space-y-8">
-              {/* Overview */}
-              <div className="prose max-w-none text-foreground-secondary">
-                <p className="text-lg">
-                  HLLM (Hierarchical Language Learning Model) is a multi-agent orchestration
-                  platform. It integrates with TPMJS to give agents access to the full tool
-                  registry.
-                </p>
-              </div>
-
-              {/* How it works */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <h3 className="text-xl font-semibold mb-4 text-foreground">
-                  How HLLM Uses TPMJS Tools
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/10 text-purple-500 font-bold text-sm">
-                      1
-                    </span>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-1">Tool Discovery</h4>
-                      <p className="text-sm text-foreground-secondary">
-                        HLLM&apos;s Tool Browser fetches available tools from{' '}
-                        <code className="text-xs bg-surface-secondary px-1 py-0.5 rounded">
-                          /api/tpmjs/tools
-                        </code>{' '}
-                        proxy, which forwards to tpmjs.com
-                      </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                  <h4 className="font-semibold text-foreground mb-3">Web Stack</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-foreground-tertiary">HTTP</span>
+                      <span className="text-foreground-secondary">Transport layer</span>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/10 text-purple-500 font-bold text-sm">
-                      2
-                    </span>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-1">Agent Configuration</h4>
-                      <p className="text-sm text-foreground-secondary">
-                        Users attach tools to agents in the Agent Studio. Each agent can have
-                        different tools based on its role.
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-foreground-tertiary">HTML/CSS</span>
+                      <span className="text-foreground-secondary">Content layer</span>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/10 text-purple-500 font-bold text-sm">
-                      3
-                    </span>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-1">Tool Execution</h4>
-                      <p className="text-sm text-foreground-secondary">
-                        When an agent calls a tool, HLLM routes the request to{' '}
-                        <code className="text-xs bg-surface-secondary px-1 py-0.5 rounded">
-                          executor.tpmjs.com
-                        </code>{' '}
-                        for sandboxed execution
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-foreground-tertiary">JavaScript</span>
+                      <span className="text-foreground-secondary">Behavior layer</span>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/10 text-purple-500 font-bold text-sm">
-                      4
-                    </span>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-1">Environment Variables</h4>
-                      <p className="text-sm text-foreground-secondary">
-                        User API keys (e.g., FIRECRAWL_API_KEY) are encrypted and injected at
-                        runtime. Keys never leave the server.
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-foreground-tertiary">npm</span>
+                      <span className="text-foreground-secondary">Distribution layer</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-foreground-tertiary">TypeScript</span>
+                      <span className="text-foreground-secondary">Type safety layer</span>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* 13 Topologies */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <h3 className="text-xl font-semibold mb-4 text-foreground">
-                  13 Orchestration Topologies
-                </h3>
-                <p className="text-foreground-secondary mb-4">
-                  HLLM supports various multi-agent coordination patterns. Each topology can use
-                  TPMJS tools:
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  {[
-                    { name: 'single', desc: 'One agent' },
-                    { name: 'sequential', desc: 'Chain of agents' },
-                    { name: 'parallel', desc: 'Concurrent workers' },
-                    { name: 'map-reduce', desc: 'Split & aggregate' },
-                    { name: 'scatter', desc: 'Fan-out only' },
-                    { name: 'debate', desc: 'Pro vs Con vs Judge' },
-                    { name: 'reflection', desc: 'Generator + Critic' },
-                    { name: 'consensus', desc: 'Multi-voter agreement' },
-                    { name: 'brainstorm', desc: 'Idea generation' },
-                    { name: 'decomposition', desc: 'Task breakdown' },
-                    { name: 'rhetorical-triangle', desc: 'Ethos/Pathos/Logos' },
-                    { name: 'tree-of-thoughts', desc: 'Beam search' },
-                    { name: 'react', desc: 'Reason + Act loop' },
-                  ].map((topology) => (
-                    <div
-                      key={topology.name}
-                      className="p-3 border border-border rounded bg-background"
-                    >
-                      <div className="font-mono text-xs text-purple-500">{topology.name}</div>
-                      <div className="text-xs text-foreground-tertiary mt-1">{topology.desc}</div>
+                <div>
+                  <h4 className="font-semibold text-foreground mb-3">AI Stack</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-purple-500">HLLM</span>
+                      <span className="text-foreground-secondary">Orchestration layer</span>
                     </div>
-                  ))}
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-emerald-500">TPMJS</span>
+                      <span className="text-foreground-secondary">Distribution layer</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-amber-500">BlocksAI</span>
+                      <span className="text-foreground-secondary">Semantic safety layer</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-foreground-tertiary">AI SDK</span>
+                      <span className="text-foreground-secondary">Tool interface layer</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="w-20 font-mono text-foreground-tertiary">LLMs</span>
+                      <span className="text-foreground-secondary">Intelligence layer</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              {/* Code Example */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <h3 className="text-xl font-semibold mb-4 text-foreground">
-                  HLLM Tool Execution Code
-                </h3>
-                <CodeBlock
-                  language="typescript"
-                  code={`// HLLM's executeTpmjsTool function (simplified)
-async function executeTpmjsTool(
-  toolId: string,      // "packageName::exportName" or database ID
-  params: Record<string, unknown>,
-  env: Record<string, string>
-) {
-  // Fetch tool metadata from TPMJS registry
-  const toolMeta = await fetch(\`https://tpmjs.com/api/tools/\${toolId}\`);
-
-  // Execute in TPMJS sandbox
-  const response = await fetch('https://executor.tpmjs.com/execute-tool', {
-    method: 'POST',
-    body: JSON.stringify({
-      packageName: toolMeta.npmPackageName,
-      name: toolMeta.exportName,
-      version: toolMeta.version,
-      params,
-      env,  // User's encrypted API keys injected here
-    }),
-  });
-
-  // Parse SSE stream for results
-  return parseExecutionStream(response);
-}`}
-                />
               </div>
             </div>
           </section>
 
-          {/* BlocksAI Integration Deep Dive */}
-          <section className="mb-16">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 rounded bg-amber-500/20 flex items-center justify-center">
-                <span>✅</span>
+          {/* What This Enables */}
+          <section className="mb-20">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-8 text-center text-foreground">
+              What This Enables
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="font-bold text-foreground mb-3">Agents That Grow Smarter</h3>
+                <p className="text-sm text-foreground-secondary">
+                  As the TPMJS ecosystem grows, every agent connected to it gains new capabilities
+                  automatically. No redeployment needed. The agent in production today can use a
+                  tool published tomorrow.
+                </p>
               </div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
-                BlocksAI Validation
+
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="font-bold text-foreground mb-3">Self-Healing Systems</h3>
+                <p className="text-sm text-foreground-secondary">
+                  TPMJS monitors tool health continuously. When a tool breaks, it&apos;s marked
+                  BROKEN and agents route around it. When it&apos;s fixed, it&apos;s marked HEALTHY
+                  again. No manual intervention.
+                </p>
+              </div>
+
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="font-bold text-foreground mb-3">Composable Intelligence</h3>
+                <p className="text-sm text-foreground-secondary">
+                  HLLM lets you compose small, focused agents into powerful topologies. A debate
+                  between specialists beats a single generalist. Consensus provides reliability.
+                  Decomposition handles complexity.
+                </p>
+              </div>
+
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="font-bold text-foreground mb-3">Verified AI Output</h3>
+                <p className="text-sm text-foreground-secondary">
+                  BlocksAI validates that AI-generated code follows your domain rules. Not
+                  &quot;probably correct&quot;—validated against explicit semantic constraints.
+                  Trust, but verify.
+                </p>
+              </div>
+
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="font-bold text-foreground mb-3">Open Ecosystem</h3>
+                <p className="text-sm text-foreground-secondary">
+                  Anyone can publish a tool to TPMJS. Just add a keyword to package.json. No
+                  gatekeeping, no approval process. The ecosystem grows through network effects.
+                </p>
+              </div>
+
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <h3 className="font-bold text-foreground mb-3">Domain Alignment</h3>
+                <p className="text-sm text-foreground-secondary">
+                  BlocksAI captures domain semantics in machine-readable YAML. AI agents read this
+                  before generating code. The result: consistent output across all generations.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* The Vision */}
+          <section className="mb-20">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
+                The Vision
               </h2>
-            </div>
-
-            <div className="space-y-8">
-              {/* Overview */}
-              <div className="prose max-w-none text-foreground-secondary">
-                <p className="text-lg">
-                  BlocksAI provides domain-driven validation for code. TPMJS tools are validated
-                  using BlocksAI&apos;s 3-layer pipeline to ensure quality and consistency.
-                </p>
-              </div>
-
-              {/* 3-Layer Pipeline */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <h3 className="text-xl font-semibold mb-4 text-foreground">
-                  3-Layer Validation Pipeline
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-4 border border-amber-500/20 rounded-lg bg-amber-500/5">
-                    <span className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/20 text-amber-600 font-bold">
-                      1
-                    </span>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-1">Schema Validation</h4>
-                      <p className="text-sm text-foreground-secondary">
-                        Validates blocks.yml structure using Zod schemas. Ensures all required
-                        fields are present with correct types.
-                      </p>
-                      <div className="mt-2 text-xs font-mono text-foreground-tertiary">
-                        Validator: schema.io
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4 p-4 border border-amber-500/20 rounded-lg bg-amber-500/5">
-                    <span className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/20 text-amber-600 font-bold">
-                      2
-                    </span>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-1">Shape Validation</h4>
-                      <p className="text-sm text-foreground-secondary">
-                        Validates TypeScript file structure. Checks that files exist, have exports,
-                        and follow expected patterns.
-                      </p>
-                      <div className="mt-2 text-xs font-mono text-foreground-tertiary">
-                        Validator: shape.exports.ts
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4 p-4 border border-amber-500/20 rounded-lg bg-amber-500/5">
-                    <span className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-lg bg-amber-500/20 text-amber-600 font-bold">
-                      3
-                    </span>
-                    <div>
-                      <h4 className="font-semibold text-foreground mb-1">Domain Validation</h4>
-                      <p className="text-sm text-foreground-secondary">
-                        AI-powered semantic analysis using GPT-4 or Claude. Checks that code aligns
-                        with domain rules and expresses intent clearly.
-                      </p>
-                      <div className="mt-2 text-xs font-mono text-foreground-tertiary">
-                        Validator: domain.validation
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* blocks.yml Example */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <h3 className="text-xl font-semibold mb-4 text-foreground">
-                  TPMJS blocks.yml Configuration
-                </h3>
-                <p className="text-foreground-secondary mb-4">
-                  TPMJS tools are defined in blocks.yml with domain rules for validation:
-                </p>
-                <CodeBlock
-                  language="yaml"
-                  code={`# packages/tools/official/blocks.yml
-name: "TPMJS Official Tools"
-root: "."
-
-philosophy:
-  - "Tools must be small, focused, and composable"
-  - "Clear interfaces with typed inputs/outputs"
-  - "Documentation must be comprehensive"
-
-domain:
-  entities:
-    ai_tool:
-      fields: [name, description, inputSchema, execute]
-
-blocks:
-  domain_rules:
-    - id: must_export
-      description: "Must export a valid AI SDK tool"
-    - id: uses_pattern
-      description: "Must use tool() + jsonSchema() pattern"
-    - id: has_description
-      description: "Tool must have clear description"
-
-  webFetchTool:
-    description: "Fetch content from a URL"
-    path: "web-fetch/src/index.ts"
-    domain_rules:
-      - type: "must_export"
-        export: "webFetchTool"
-      - type: "uses_pattern"
-        pattern: "tool\\\\s*\\\\("
-    inputs:
-      - name: url
-        type: string
-        description: "URL to fetch"
-    outputs:
-      - name: content
-        type: string
-        description: "Fetched content"`}
-                />
-              </div>
-
-              {/* CLI Usage */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <h3 className="text-xl font-semibold mb-4 text-foreground">Running Validation</h3>
-                <CodeBlock
-                  language="bash"
-                  code={`# Validate all TPMJS tools
-npx blocks run --all
-
-# Output:
-# ✓ webFetchTool       [schema ✓] [shape ✓] [domain ✓]
-# ✓ jsonPathQueryTool  [schema ✓] [shape ✓] [domain ✓]
-# ✓ regexExtractTool   [schema ✓] [shape ✓] [domain ✓]
-# ...
-#
-# Summary: 106 blocks passed, 0 failed`}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Shared Technologies */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Shared Technologies
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* AI SDK */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-500/20 flex items-center justify-center">
-                    <span className="text-xl">⚡</span>
-                  </div>
-                  <h3 className="font-bold text-foreground">Vercel AI SDK v6</h3>
-                </div>
-                <p className="text-sm text-foreground-secondary mb-4">
-                  The foundation for all tool definitions. Both HLLM and TPMJS use the same pattern:
-                </p>
-                <CodeBlock
-                  language="typescript"
-                  code={`import { tool, jsonSchema } from 'ai';
-
-export const myTool = tool({
-  description: '...',
-  inputSchema: jsonSchema<{
-    param: string;
-  }>({
-    type: 'object',
-    properties: {...},
-  }),
-  execute: async ({ param }) => {
-    // Tool logic
-  },
-});`}
-                />
-              </div>
-
-              {/* D3.js */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-500/20 flex items-center justify-center">
-                    <span className="text-xl">📊</span>
-                  </div>
-                  <h3 className="font-bold text-foreground">D3.js Visualizations</h3>
-                </div>
-                <p className="text-sm text-foreground-secondary mb-4">
-                  Both projects use D3 for interactive diagrams:
-                </p>
-                <ul className="space-y-2 text-sm text-foreground-secondary">
-                  <li className="flex items-center gap-2">
-                    <span className="text-purple-400">HLLM:</span>
-                    <span>TopologyGraph, ExecutionTimeline</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-emerald-400">TPMJS:</span>
-                    <span>ArchitectureDiagram, SDKFlowDiagram</span>
-                  </li>
-                </ul>
-                <p className="text-xs text-foreground-tertiary mt-4">
-                  Real-time animations, hover tooltips, theme-aware colors
-                </p>
-              </div>
-
-              {/* Prisma */}
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gray-500/20 flex items-center justify-center">
-                    <span className="text-xl">🗄️</span>
-                  </div>
-                  <h3 className="font-bold text-foreground">Prisma + PostgreSQL</h3>
-                </div>
-                <p className="text-sm text-foreground-secondary mb-4">Shared database patterns:</p>
-                <ul className="space-y-2 text-sm text-foreground-secondary">
-                  <li className="flex items-center gap-2">
-                    <span className="text-purple-400">HLLM:</span>
-                    <span>Sessions, traces, prompts, user prefs</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-emerald-400">TPMJS:</span>
-                    <span>Tools, packages, health checks, metrics</span>
-                  </li>
-                </ul>
-                <p className="text-xs text-foreground-tertiary mt-4">
-                  Both hosted on Neon with connection pooling
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Integration APIs */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Integration APIs
-            </h2>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Endpoint</th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Project</th>
-                    <th className="text-left py-3 px-4 font-semibold text-foreground">Purpose</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  <tr>
-                    <td className="py-3 px-4 font-mono text-xs text-emerald-500">/api/tools</td>
-                    <td className="py-3 px-4 text-foreground-secondary">TPMJS</td>
-                    <td className="py-3 px-4 text-foreground-secondary">
-                      Search and list tools with filters
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-mono text-xs text-emerald-500">
-                      /api/tools/execute
-                    </td>
-                    <td className="py-3 px-4 text-foreground-secondary">TPMJS</td>
-                    <td className="py-3 px-4 text-foreground-secondary">
-                      Execute tools with SSE streaming
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-mono text-xs text-purple-500">
-                      /api/tpmjs/tools
-                    </td>
-                    <td className="py-3 px-4 text-foreground-secondary">HLLM</td>
-                    <td className="py-3 px-4 text-foreground-secondary">
-                      Proxy to TPMJS registry (avoids CORS)
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-mono text-xs text-purple-500">
-                      /api/tpmjs/execute
-                    </td>
-                    <td className="py-3 px-4 text-foreground-secondary">HLLM</td>
-                    <td className="py-3 px-4 text-foreground-secondary">
-                      Execute with user&apos;s encrypted env vars
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-mono text-xs text-purple-500">
-                      /api/user/tpmjs-env
-                    </td>
-                    <td className="py-3 px-4 text-foreground-secondary">HLLM</td>
-                    <td className="py-3 px-4 text-foreground-secondary">
-                      Store/retrieve encrypted API keys
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 font-mono text-xs text-amber-500">npx blocks run</td>
-                    <td className="py-3 px-4 text-foreground-secondary">BlocksAI</td>
-                    <td className="py-3 px-4 text-foreground-secondary">
-                      Validate tools against domain rules
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          {/* Data Flow */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Complete Data Flow
-            </h2>
-            <div className="space-y-4">
-              <div className="flex items-start gap-4 p-4 border border-border rounded-lg bg-surface">
-                <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 font-bold">
-                  1
-                </span>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">
-                    Tool Development & Validation
-                  </h4>
-                  <p className="text-sm text-foreground-secondary">
-                    Developer creates tool using AI SDK pattern →{' '}
-                    <code className="text-xs bg-surface-secondary px-1 py-0.5 rounded">
-                      npx blocks run
-                    </code>{' '}
-                    validates against domain rules → Tool published to npm
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 border border-border rounded-lg bg-surface">
-                <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 font-bold">
-                  2
-                </span>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Registry Discovery</h4>
-                  <p className="text-sm text-foreground-secondary">
-                    TPMJS changes feed detects new package → Schema extraction & health checks →
-                    Tool indexed with quality score → Available via API
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 border border-border rounded-lg bg-surface">
-                <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-purple-500/10 text-purple-500 font-bold">
-                  3
-                </span>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Agent Configuration</h4>
-                  <p className="text-sm text-foreground-secondary">
-                    HLLM user browses Tool Browser → Selects tools for agent → Configures topology →
-                    Saves agent configuration
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-4 p-4 border border-border rounded-lg bg-surface">
-                <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-500/10 text-blue-500 font-bold">
-                  4
-                </span>
-                <div>
-                  <h4 className="font-semibold text-foreground mb-1">Execution</h4>
-                  <p className="text-sm text-foreground-secondary">
-                    Agent decides to use tool → HLLM calls TPMJS executor → Tool runs in Deno
-                    sandbox → Result streamed back → Agent continues reasoning
-                  </p>
-                </div>
-              </div>
+              <p className="text-lg text-foreground-secondary leading-relaxed mb-8">
+                We&apos;re building the infrastructure for the next generation of AI systems. Not
+                monolithic agents that do everything poorly, but{' '}
+                <strong className="text-foreground">composable systems</strong> where specialized
+                components work together. Not fixed capabilities, but{' '}
+                <strong className="text-foreground">dynamic discovery</strong> from an ever-growing
+                ecosystem. Not &quot;trust the AI,&quot; but{' '}
+                <strong className="text-foreground">verify through semantic validation</strong>.
+              </p>
+              <p className="text-xl font-semibold text-foreground">
+                Three layers. One stack. A new paradigm for AI infrastructure.
+              </p>
             </div>
           </section>
 
           {/* CTA */}
           <section className="text-center py-12 border border-border rounded-lg bg-surface">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
-              Explore the Ecosystem
+              Start Building
             </h2>
             <p className="text-lg text-foreground-secondary mb-8 max-w-2xl mx-auto">
-              Dive deeper into each project or start building with TPMJS tools.
+              Explore the tools, publish your own, or dive into the architecture.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/tool/tool-search">
@@ -685,9 +457,9 @@ export const myTool = tool({
                   Browse Tools
                 </Button>
               </Link>
-              <Link href="/sdk">
+              <Link href="/publish">
                 <Button size="lg" variant="outline">
-                  View SDK Docs
+                  Publish a Tool
                 </Button>
               </Link>
               <Link href="/how-it-works">
