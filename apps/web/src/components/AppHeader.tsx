@@ -45,6 +45,11 @@ export function AppHeader(): React.ReactElement {
                   How It Works
                 </Button>
               </Link>
+              <Link href="/integrations">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Integrations
+                </Button>
+              </Link>
               <a href="https://playground.tpmjs.com" target="_blank" rel="noopener noreferrer">
                 <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
                   Playground

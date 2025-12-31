@@ -14,6 +14,7 @@ const navLinks = [
   { href: '/tool/tool-search', label: 'Tools' },
   { href: '/docs', label: 'Docs' },
   { href: '/how-it-works', label: 'How It Works' },
+  { href: '/integrations', label: 'Integrations' },
   { href: 'https://playground.tpmjs.com', label: 'Playground', external: true },
   { href: '/spec', label: 'Spec' },
   { href: '/sdk', label: 'SDK' },
@@ -63,7 +64,8 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps): React.ReactEle
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
-        aria-hidden="true"
+        onKeyDown={(e) => e.key === 'Escape' && onClose()}
+        role="presentation"
       />
 
       {/* Slide-out drawer */}
