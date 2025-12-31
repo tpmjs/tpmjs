@@ -26,6 +26,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vercel/analytics": "^1.6.1",
     "@vercel/blob": "^2.0.0",
+    "@vercel/kv": "^3.0.0",
     "ai": "6.0.3",
     "bm25": "^0.1.1",
     "d3": "^7.9.0",

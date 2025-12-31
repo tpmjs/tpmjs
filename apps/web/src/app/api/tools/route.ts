@@ -1,10 +1,39 @@
 import { type Prisma, prisma } from '@tpmjs/db';
+import { kv } from '@vercel/kv';
 import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
+
+// Cache configuration
+const CACHE_TTL = 300; // 5 minutes
+const CACHE_PREFIX = 'tools:';
+
+/**
+ * Try to get cached response, returns null if KV not configured or cache miss
+ */
+async function getCached<T>(key: string): Promise<T | null> {
+  try {
+    if (!process.env.KV_REST_API_URL) return null;
+    return await kv.get<T>(key);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Try to set cache, silently fails if KV not configured
+ */
+async function setCache<T>(key: string, value: T, ttl: number): Promise<void> {
+  try {
+    if (!process.env.KV_REST_API_URL) return;
+    await kv.set(key, value, { ex: ttl });
+  } catch {
+    // Silently ignore cache errors
+  }
+}
 
 // Constants
 const DEFAULT_LIMIT = 20;
@@ -255,6 +284,24 @@ export async function GET(request: NextRequest) {
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
 
+    // Build cache key from query params
+    const cacheKey = `${CACHE_PREFIX}${searchParams.toString() || 'default'}`;
+
+    // Try cache first (only for simple queries without search)
+    if (!query) {
+      const cached = await getCached<ApiResponse>(cacheKey);
+      if (cached) {
+        return NextResponse.json(cached, {
+          status: 200,
+          headers: {
+            'X-Request-ID': requestId,
+            'X-Cache': 'HIT',
+            'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+          },
+        });
+      }
+    }
+
     // Validate pagination parameters
     let limit: number;
     let offset: number;
@@ -344,11 +391,17 @@ export async function GET(request: NextRequest) {
       },
     };
 
+    // Cache response for non-search queries
+    if (!query) {
+      await setCache(cacheKey, response, CACHE_TTL);
+    }
+
     return NextResponse.json(response, {
       status: 200,
       headers: {
         'X-Request-ID': requestId,
         'X-Processing-Time': `${processingTime}ms`,
+        'X-Cache': 'MISS',
         'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
       },
     });

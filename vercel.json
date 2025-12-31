@@ -39,15 +39,15 @@
   "crons": [
     {
       "path": "/api/sync/changes",
-      "schedule": "*/2 * * * *"
+      "schedule": "0 */4 * * *"
     },
     {
       "path": "/api/sync/keyword",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 */6 * * *"
     },
     {
       "path": "/api/sync/metrics",
-      "schedule": "0 * * * *"
+      "schedule": "0 0 * * *"
     },
     {
       "path": "/api/sync/stats-snapshot",
