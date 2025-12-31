@@ -1826,6 +1826,272 @@ blocks:
         description: "Array of text chunks with metadata"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
+  data.base64Decode:
+    description: "Decode base64 encoded data to string with support for multiple output encodings"
+    path: "base64-decode"
+    domain_rules:
+      - id: encoding_support
+        description: "Must support utf8, binary, and hex output encodings"
+      - id: error_handling
+        description: "Must handle invalid base64 input gracefully"
+    inputs:
+      - name: base64
+        type: string
+        description: "The base64 encoded data to decode"
+      - name: encoding
+        type: string
+        optional: true
+        description: "Character encoding for output (utf8, binary, hex)"
+    outputs:
+      - name: result
+        type: Base64DecodeResult
+        description: "Object with decoded string and byte length"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.base64Encode:
+    description: "Encode string or buffer to base64 format with support for multiple character encodings"
+    path: "base64-encode"
+    domain_rules:
+      - id: encoding_support
+        description: "Must support utf8, binary, and hex input encodings"
+      - id: standard_output
+        description: "Must output valid base64 string"
+    inputs:
+      - name: data
+        type: string
+        description: "The data to encode"
+      - name: encoding
+        type: string
+        optional: true
+        description: "Character encoding (utf8, binary, hex)"
+    outputs:
+      - name: result
+        type: Base64EncodeResult
+        description: "Object with base64 encoded string and byte length"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.dateParse:
+    description: "Parse dates from natural language text like 'tomorrow at 3pm' or 'next Friday'"
+    path: "date-parse"
+    domain_rules:
+      - id: natural_language
+        description: "Must parse natural language date expressions"
+      - id: reference_date
+        description: "Must support custom reference date for relative dates"
+      - id: multiple_dates
+        description: "Must extract multiple dates from text"
+    inputs:
+      - name: text
+        type: string
+        description: "Text containing date/time expressions"
+      - name: referenceDate
+        type: string
+        optional: true
+        description: "ISO date string to use as reference for relative dates"
+      - name: strict
+        type: boolean
+        optional: true
+        description: "Use strict parsing mode for more accurate results"
+    outputs:
+      - name: result
+        type: DateParseResult
+        description: "Array of parsed dates with original text and timestamps"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.hashText:
+    description: "Hash text using cryptographic algorithms (MD5, SHA-1, SHA-256, SHA-512)"
+    path: "hash-text"
+    domain_rules:
+      - id: algorithm_support
+        description: "Must support md5, sha1, sha256, sha512 algorithms"
+      - id: hex_output
+        description: "Must output hexadecimal hash digest"
+    inputs:
+      - name: text
+        type: string
+        description: "The text to hash"
+      - name: algorithm
+        type: string
+        description: "Hash algorithm (md5, sha1, sha256, sha512)"
+    outputs:
+      - name: result
+        type: HashTextResult
+        description: "Object with hash digest, algorithm used, and input length"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.htmlToMarkdown:
+    description: "Convert HTML to markdown with customizable formatting options"
+    path: "html-to-markdown"
+    domain_rules:
+      - id: html_parsing
+        description: "Must use jsdom or cheerio for HTML parsing"
+      - id: element_mapping
+        description: "Must convert common HTML elements to markdown equivalents"
+      - id: custom_options
+        description: "Should support customizable formatting options"
+    inputs:
+      - name: html
+        type: string
+        description: "The HTML string to convert"
+      - name: options
+        type: object
+        optional: true
+        description: "Optional configuration for markdown formatting"
+    outputs:
+      - name: result
+        type: HtmlToMarkdownResult
+        description: "Object with markdown output and word count"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.jsonPathQuery:
+    description: "Query JSON data using JSONPath expressions like '$.users[?(@.age > 18)].name'"
+    path: "json-path-query"
+    domain_rules:
+      - id: jsonpath_standard
+        description: "Must support standard JSONPath syntax"
+      - id: filter_expressions
+        description: "Must support filter expressions"
+      - id: result_paths
+        description: "Should return matched paths along with values"
+    inputs:
+      - name: json
+        type: object | array
+        description: "JSON data to query"
+      - name: path
+        type: string
+        description: "JSONPath expression to evaluate"
+    outputs:
+      - name: result
+        type: JsonPathQueryResult
+        description: "Query results with count and matched paths"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.markdownToHtml:
+    description: "Convert markdown to HTML with optional GitHub Flavored Markdown and sanitization"
+    path: "markdown-to-html"
+    domain_rules:
+      - id: gfm_support
+        description: "Must support GitHub Flavored Markdown"
+      - id: sanitization
+        description: "Should support optional HTML sanitization"
+      - id: heading_extraction
+        description: "Should extract headings for TOC generation"
+    inputs:
+      - name: markdown
+        type: string
+        description: "The markdown string to convert"
+      - name: options
+        type: object
+        optional: true
+        description: "Optional configuration for GFM and sanitization"
+    outputs:
+      - name: result
+        type: MarkdownToHtmlResult
+        description: "Object with HTML output and extracted headings"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.regexExtract:
+    description: "Extract all regex matches from text with optional capture group support"
+    path: "regex-extract"
+    domain_rules:
+      - id: regex_execution
+        description: "Must properly execute regex with specified flags"
+      - id: capture_groups
+        description: "Must support capture group extraction"
+      - id: match_metadata
+        description: "Should include match indices and counts"
+    inputs:
+      - name: text
+        type: string
+        description: "The text to search"
+      - name: pattern
+        type: string
+        description: "Regular expression pattern"
+      - name: flags
+        type: string
+        optional: true
+        description: "Regular expression flags (g, i, m, s, u, y)"
+      - name: groups
+        type: boolean
+        optional: true
+        description: "Return capture groups as objects"
+    outputs:
+      - name: result
+        type: RegexExtractResult
+        description: "Object with matches array, match count, and hasMatches flag"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.schemaInfer:
+    description: "Infer JSON Schema from sample data objects"
+    path: "schema-infer"
+    domain_rules:
+      - id: type_inference
+        description: "Must infer types from sample values"
+      - id: schema_generation
+        description: "Must generate valid JSON Schema"
+      - id: multiple_samples
+        description: "Should handle multiple sample objects for better inference"
+    inputs:
+      - name: samples
+        type: array
+        description: "Array of sample data objects to analyze"
+      - name: options
+        type: object
+        optional: true
+        description: "Schema generation options"
+    outputs:
+      - name: result
+        type: SchemaInferResult
+        description: "Generated JSON Schema with metadata"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.templateRender:
+    description: "Render mustache-style templates with data and track variable usage"
+    path: "template-render"
+    domain_rules:
+      - id: mustache_syntax
+        description: "Must support {{variable}} placeholder syntax"
+      - id: variable_tracking
+        description: "Must track used and unused variables"
+      - id: html_escaping
+        description: "Should support optional HTML escaping"
+    inputs:
+      - name: template
+        type: string
+        description: "The mustache-style template string with {{variable}} placeholders"
+      - name: data
+        type: object
+        description: "Data object to substitute into the template"
+      - name: options
+        type: object
+        optional: true
+        description: "Optional settings like HTML escaping"
+    outputs:
+      - name: result
+        type: TemplateRenderResult
+        description: "Rendered template with tracking of used and unused variables"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.urlParse:
+    description: "Parse URL into protocol, hostname, port, pathname, search params, and hash"
+    path: "url-parse"
+    domain_rules:
+      - id: url_api
+        description: "Must use URL Web API for parsing"
+      - id: search_params
+        description: "Must parse query string into key-value pairs"
+      - id: all_components
+        description: "Must extract all URL components"
+    inputs:
+      - name: url
+        type: string
+        description: "The URL string to parse"
+    outputs:
+      - name: result
+        type: UrlParseResult
+        description: "Object with all URL components and parsed search parameters"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
   # ---------------------------------------------------------------------------
   # D) Engineering & Ops Helpers (15 tools)
   # ---------------------------------------------------------------------------
@@ -2208,6 +2474,30 @@ blocks:
       - name: checklist
         type: HardeningChecklist
         description: "Security hardening checklist"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  sec.htmlSanitize:
+    description: "Sanitize HTML to prevent XSS attacks with customizable allowed tags and attributes"
+    path: "html-sanitize"
+    domain_rules:
+      - id: xss_prevention
+        description: "Must remove script tags, event handlers, and dangerous attributes"
+      - id: allowlist_based
+        description: "Must use allowlist-based approach for tags and attributes"
+      - id: removal_tracking
+        description: "Should track what was removed for transparency"
+    inputs:
+      - name: html
+        type: string
+        description: "The HTML string to sanitize"
+      - name: options
+        type: object
+        optional: true
+        description: "Optional configuration for allowed tags and attributes"
+    outputs:
+      - name: result
+        type: HtmlSanitizeResult
+        description: "Object with sanitized HTML, removal count, and warnings about removed elements"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   compliance.dataClassificationHeuristic:
