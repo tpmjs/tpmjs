@@ -16,10 +16,13 @@ philosophy:
   - "Network I/O is async but tools are single-shot (no streaming, no multi-step orchestration inside)"
 
 # =============================================================================
-# DOMAIN - Entities, signals, and measures
+# DOMAIN - Entities, signals, and measures that define the problem space
 # =============================================================================
 domain:
   entities:
+    # -------------------------------------------------------------------------
+    # Core web entities
+    # -------------------------------------------------------------------------
     url:
       fields: [href, domain, protocol, path, query, fragment]
       description: "A fully qualified URL with parsed components"
@@ -28,6 +31,29 @@ domain:
       fields: [url, title, html, text, metadata]
       description: "A fetched webpage with extracted content"
 
+    redirect_chain:
+      fields: [steps, finalUrl, statusCodes]
+      description: "Full redirect trace from origin to destination"
+
+    meta_tags:
+      fields: [title, description, canonical, ogTags, twitterTags]
+      description: "Extracted metadata for previews and SEO"
+
+    json_ld:
+      fields: [type, data, context]
+      description: "Structured data extracted from JSON-LD blocks"
+
+    link_catalog:
+      fields: [internal, external, anchors, resolved]
+      description: "Categorized links from a page"
+
+    html_table:
+      fields: [headers, rows, caption]
+      description: "Normalized table data from HTML"
+
+    # -------------------------------------------------------------------------
+    # Research & content entities
+    # -------------------------------------------------------------------------
     text_content:
       fields: [raw, sentences, paragraphs, wordCount]
       description: "Processed text with structural analysis"
@@ -35,10 +61,12 @@ domain:
     claim:
       fields: [statement, confidence, needsCitation, category, suggestedEvidence]
       description: "A factual assertion that can be verified"
+      categories: [factual, statistical, quote, attribution, prediction]
 
     timeline_event:
       fields: [date, description, confidence, source, dateType]
       description: "A dated event with provenance"
+      dateTypes: [specific, partial, relative, range]
 
     page_brief:
       fields: [url, title, summary, keyPoints, claims]
@@ -52,114 +80,737 @@ domain:
       fields: [score, signals, warnings, recommendations, confidence]
       description: "Trust assessment of a source"
 
-    blog_post:
-      fields: [title, author, content, slug, frontmatter, wordCount, readingTime]
-      description: "A structured blog post with metadata"
+    claim_checklist:
+      fields: [claims, citedCount, uncitedCount, byPriority]
+      description: "Extracted claims with citation status"
 
+    timeline:
+      fields: [events, dateRange, gaps, eventCount]
+      description: "Chronological event sequence"
+
+    rss_feed:
+      fields: [title, link, items, lastBuildDate]
+      description: "Parsed RSS/Atom feed with normalized items"
+
+    rss_item:
+      fields: [title, link, pubDate, summary, guid]
+      description: "Individual feed item"
+
+    sitemap:
+      fields: [urls, isSitemapIndex, lastmod]
+      description: "Parsed sitemap with URLs for crawling"
+
+    robots_policy:
+      fields: [userAgent, allow, disallow, crawlDelay, sitemaps]
+      description: "Parsed robots.txt rules"
+
+    # -------------------------------------------------------------------------
+    # Document & deliverable entities
+    # -------------------------------------------------------------------------
+    executive_brief:
+      fields: [whatHappened, soWhat, recommendation, audience]
+      description: "Structured exec summary"
+
+    runbook:
+      fields: [prechecks, steps, rollback, verify, owners]
+      description: "Operational procedure document"
+
+    postmortem:
+      fields: [timeline, impact, rootCause, hypotheses, actions, lessons]
+      description: "Incident analysis document"
+
+    faq:
+      fields: [items, categories]
+      description: "Question and answer pairs"
+
+    glossary:
+      fields: [terms, domain]
+      description: "Domain terms with definitions"
+
+    toc:
+      fields: [entries, maxDepth]
+      description: "Table of contents from headings"
+
+    meeting_minutes:
+      fields: [attendees, decisions, actionItems, notes]
+      description: "Structured meeting record"
+
+    adr:
+      fields: [title, context, decision, alternatives, consequences, status]
+      description: "Architecture Decision Record"
+
+    changelog_entry:
+      fields: [version, date, added, changed, fixed, removed]
+      description: "Grouped change notes"
+
+    release_notes:
+      fields: [version, highlights, breaking, upgrades, audience]
+      description: "User-facing release documentation"
+
+    prd:
+      fields: [problem, goals, nonGoals, ux, metrics, risks, rollout]
+      description: "Product Requirements Document outline"
+
+    acceptance_criteria:
+      fields: [given, when, then, notes]
+      description: "Testable requirement specification"
+
+    test_plan:
+      fields: [scenarios, steps, expected, priority, coverage]
+      description: "QA test matrix"
+
+    blog_post:
+      fields: [frontmatter, content, formattedOutput]
+      description: "A complete blog post with metadata"
+
+    # -------------------------------------------------------------------------
+    # Data & transform entities
+    # -------------------------------------------------------------------------
+    csv_data:
+      fields: [headers, rows, delimiter]
+      description: "Parsed CSV with type inference"
+
+    yaml_data:
+      fields: [data, comments]
+      description: "Parsed YAML as JSON"
+
+    json_data:
+      fields: [data, repaired]
+      description: "Parsed or repaired JSON"
+
+    row_set:
+      fields: [rows, schema, count]
+      description: "Tabular data for operations"
+
+    validation_result:
+      fields: [valid, errors, warnings]
+      description: "Schema validation outcome"
+
+    text_chunks:
+      fields: [chunks, totalLength, overlap]
+      description: "Text split for processing"
+
+    pivot_result:
+      fields: [rows, index, columns, values]
+      description: "Pivoted data transformation"
+
+    # -------------------------------------------------------------------------
+    # Engineering & ops entities
+    # -------------------------------------------------------------------------
+    diff_result:
+      fields: [hunks, additions, deletions, unified]
+      description: "Text difference analysis"
+
+    stacktrace:
+      fields: [frames, language, appFrames, libFrames]
+      description: "Parsed stack trace"
+
+    error_triage:
+      fields: [category, likelyCause, nextChecks, confidence]
+      description: "Error classification result"
+
+    commit_message:
+      fields: [type, scope, subject, body, breaking]
+      description: "Conventional commit structure"
+
+    env_var_docs:
+      fields: [vars, required, optional, examples]
+      description: "Environment variable documentation"
+
+    openapi_snippet:
+      fields: [paths, components, info]
+      description: "Minimal OpenAPI specification"
+
+    api_docs:
+      fields: [auth, errors, endpoints, examples]
+      description: "API documentation structure"
+
+    dependency_audit:
+      fields: [duplicates, suspicious, heavy, recommendations]
+      description: "Package dependency analysis"
+
+    config_normalized:
+      fields: [config, applied, defaults]
+      description: "Normalized configuration object"
+
+    release_checklist:
+      fields: [items, stack, critical, optional]
+      description: "Pre-release verification list"
+
+    # -------------------------------------------------------------------------
+    # Ops entities
+    # -------------------------------------------------------------------------
+    monitoring_gaps:
+      fields: [missing, recommended, coverage]
+      description: "Monitoring gap analysis"
+
+    slo_draft:
+      fields: [slis, targets, alerts, rationale]
+      description: "Service Level Objective specification"
+
+    action_item:
+      fields: [action, owner, dueDate, priority, status]
+      description: "Extracted action from text"
+
+    # -------------------------------------------------------------------------
+    # Security & compliance entities
+    # -------------------------------------------------------------------------
+    url_risk:
+      fields: [riskLevel, signals, punycode, homoglyph, tldRisk]
+      description: "URL phishing risk assessment"
+
+    secret_scan:
+      fields: [findings, types, locations, severity]
+      description: "Detected secrets in text"
+
+    redaction_result:
+      fields: [redacted, report, fingerprints]
+      description: "Sanitized text with redaction log"
+
+    csp_header:
+      fields: [directives, headerString]
+      description: "Content Security Policy"
+
+    hardening_checklist:
+      fields: [items, category, priority, stack]
+      description: "Security hardening tasks"
+
+    data_classification:
+      fields: [fields, pii, sensitive, public]
+      description: "Data sensitivity labels"
+
+    retention_policy:
+      fields: [datasets, retention, deletion, legal]
+      description: "Data retention specification"
+
+    dpia_outline:
+      fields: [purpose, risks, mitigations, necessity]
+      description: "Data Protection Impact Assessment"
+
+    access_matrix:
+      fields: [roles, resources, permissions]
+      description: "RBAC permission matrix"
+
+    sbom:
+      fields: [packages, versions, licenses, sources]
+      description: "Software Bill of Materials"
+
+    # -------------------------------------------------------------------------
+    # Statistics & quantitative entities
+    # -------------------------------------------------------------------------
+    confidence_interval:
+      fields: [estimate, lower, upper, level, method]
+      description: "Statistical confidence interval"
+
+    hypothesis_test:
+      fields: [statistic, pValue, significant, method]
+      description: "Statistical test result"
+
+    effect_size:
+      fields: [measure, value, interpretation, type]
+      description: "Effect size calculation"
+
+    regression_result:
+      fields: [coefficients, rSquared, residuals, diagnostics]
+      description: "Regression model output"
+
+    time_series_decomposition:
+      fields: [trend, seasonal, residual, period]
+      description: "Decomposed time series"
+
+    anomaly_result:
+      fields: [anomalies, threshold, method, scores]
+      description: "Detected anomalies"
+
+    posterior:
+      fields: [distribution, mean, credibleInterval, prior]
+      description: "Bayesian posterior estimate"
+
+    did_estimate:
+      fields: [effect, standardError, assumptions, parallel]
+      description: "Difference-in-differences result"
+
+    # -------------------------------------------------------------------------
+    # Agent & workflow entities
+    # -------------------------------------------------------------------------
+    recipe:
+      fields: [name, steps, params, artifacts, checks]
+      description: "Canonical workflow specification"
+
+    workflow:
+      fields: [steps, inputs, outputs, cost]
+      description: "Executable step sequence"
+
+    routing_ruleset:
+      fields: [rules, predicates, actions, fallback]
+      description: "Intent to tool routing rules"
+
+    eval_fixture:
+      fields: [input, expectedCalls, context, tags]
+      description: "Evaluation test case"
+
+    coverage_report:
+      fields: [domains, artifacts, gaps, score]
+      description: "Recipe coverage analysis"
+
+    novelty_score:
+      fields: [score, similar, unique, method]
+      description: "Workflow uniqueness measure"
+
+    cost_estimate:
+      fields: [steps, bytes, networkCalls, complexity]
+      description: "Workflow resource estimate"
+
+    guardrail_policy:
+      fields: [allowedDomains, maxBytes, redaction, refusals]
+      description: "Operational safety constraints"
+
+    output_contract:
+      fields: [schema, limits, enforced]
+      description: "Tool output validation spec"
+
+    workflow_skeleton:
+      fields: [steps, rationale, alternatives]
+      description: "Proposed workflow structure"
+
+    workflow_explanation:
+      fields: [steps, whyEach, outputs]
+      description: "Human-readable workflow description"
+
+    publish_manifest:
+      fields: [tags, categories, readme, metadata]
+      description: "Recipe publication metadata"
+
+  # ---------------------------------------------------------------------------
+  # Signals - Observable indicators extracted from data
+  # ---------------------------------------------------------------------------
   signals:
     credibility:
-      description: "How trustworthy is this source"
-      extraction_hint: "Look for HTTPS, known domains, author info, dates, citations"
+      description: "Trustworthiness indicators for a source"
+      extraction_hints:
+        - "HTTPS vs HTTP"
+        - "Domain reputation (.edu, .gov, major news)"
+        - "Author byline and bio present"
+        - "Publication date visible"
+        - "Citations and references"
+        - "Contact information available"
 
     readability:
-      description: "How readable is the content"
-      extraction_hint: "Check sentence length, word complexity, structure"
+      description: "How accessible the content is"
+      extraction_hints:
+        - "Sentence length and complexity"
+        - "Technical jargon density"
+        - "Clear paragraph structure"
+        - "Heading hierarchy"
 
+    claim_strength:
+      description: "How verifiable a statement is"
+      extraction_hints:
+        - "Contains specific numbers or dates"
+        - "Attributes to named source"
+        - "Makes testable prediction"
+        - "Uses hedging language (may, might, could)"
+
+    url_suspicion:
+      description: "Phishing/fraud indicators in URLs"
+      extraction_hints:
+        - "Punycode characters"
+        - "Homoglyph substitutions"
+        - "Unusual TLD patterns"
+        - "Excessive subdomains"
+        - "IP address instead of domain"
+
+    data_sensitivity:
+      description: "PII and sensitive data indicators"
+      extraction_hints:
+        - "Email patterns"
+        - "Phone number formats"
+        - "Address structures"
+        - "ID number patterns"
+        - "Financial data markers"
+
+    code_quality:
+      description: "Code/config health indicators"
+      extraction_hints:
+        - "Version range patterns"
+        - "Dependency duplicates"
+        - "Known problematic packages"
+        - "Configuration anti-patterns"
+
+    statistical_validity:
+      description: "Statistical rigor indicators"
+      extraction_hints:
+        - "Sample size adequacy"
+        - "Assumption satisfaction"
+        - "Effect size reporting"
+        - "Multiple testing consideration"
+
+    workflow_coherence:
+      description: "Workflow quality indicators"
+      extraction_hints:
+        - "Input/output type matching"
+        - "Logical step ordering"
+        - "Resource efficiency"
+        - "Error handling coverage"
+
+  # ---------------------------------------------------------------------------
+  # Measures - Quality constraints that outputs must satisfy
+  # ---------------------------------------------------------------------------
   measures:
     working_implementation:
       constraints:
-        - "Tool must have actual working code, not stubs"
-        - "All dependencies must be installed and importable"
-        - "Execute function must return expected output type"
+        - "execute() function contains real logic, not placeholder comments"
+        - "No TODO, FIXME, or 'Not implemented' in output"
+        - "Returns actual computed values, not hardcoded test data"
+      severity: error
 
     valid_output_structure:
       constraints:
-        - "Output must match declared TypeScript interface"
-        - "All required fields must be present"
-        - "Types must match (string, number, array, etc.)"
+        - "Returns object matching declared interface"
+        - "All required fields are present and typed correctly"
+        - "Arrays are never undefined, use empty array []"
+        - "Null/undefined distinction is intentional and documented"
+      severity: error
 
     proper_error_handling:
       constraints:
-        - "Network errors must be caught and re-thrown with context"
-        - "Input validation must happen before processing"
-        - "Errors must include actionable messages"
+        - "Throws descriptive Error with context on failure"
+        - "Validates inputs before processing"
+        - "Catches and wraps external API errors"
+        - "Network errors include URL and status information"
+      severity: error
 
     ai_sdk_compliance:
       constraints:
-        - "Must use tool() from 'ai' package"
-        - "Must use jsonSchema() for input schema"
-        - "Must export the tool as default"
+        - "Uses tool() from 'ai' package"
+        - "Uses jsonSchema() for input schema (not Zod directly)"
+        - "Description is clear and actionable for LLMs"
+        - "Input schema has descriptions for each property"
+      severity: error
+
+    npm_publishable:
+      constraints:
+        - "Has valid package.json with tpmjs field"
+        - "Exports tool as both named and default export"
+        - "Has proper TypeScript types exported"
+        - "Version follows semver"
+      severity: error
 
     readme_documentation:
       constraints:
-        - "README.md must exist in tool directory"
-        - "README must document all inputs and outputs"
-        - "README must include usage example"
+        - "README.md exists in the package root"
+        - "README describes what the tool does"
+        - "README includes usage example with code snippet"
+        - "README documents all input parameters"
+        - "README documents the output structure"
+        - "README matches the actual implementation behavior"
+      severity: error
+
+    deterministic_output:
+      constraints:
+        - "Same input produces same output (where applicable)"
+        - "Random elements are seeded or documented"
+        - "Timestamps use provided values or are clearly marked"
+      severity: warning
+
+    minimal_dependencies:
+      constraints:
+        - "Only includes necessary runtime dependencies"
+        - "Prefers well-maintained, stable packages"
+        - "Avoids packages with known vulnerabilities"
+      severity: warning
 
 # =============================================================================
-# VALIDATORS
-# =============================================================================
-validators:
-  - schema
-  - shape.ts
-  - domain
-
-# =============================================================================
-# BLOCKS - Default rules that apply to all blocks
+# DOMAIN RULES - Enforce code quality across all blocks
 # =============================================================================
 blocks:
   domain_rules:
+    # -------------------------------------------------------------------------
+    # Core implementation rules (apply to ALL tools)
+    # -------------------------------------------------------------------------
+    - id: no_stub_implementations
+      description: |
+        CRITICAL: Tools must be fully implemented with real functionality.
+        - No TODO comments in execute()
+        - No placeholder returns like "Not implemented"
+        - No hardcoded test data as output
+        - The tool must actually perform the described operation
+
     - id: ai_sdk_v6_pattern
       description: |
-        Must follow AI SDK v6 tool pattern:
-        - Import { tool, jsonSchema } from 'ai'
-        - Use jsonSchema<InputType>() with proper TypeScript interface
-        - Wrap in tool() with description and execute function
-        - Export as default
+        All tools MUST use the AI SDK v6 pattern:
+        - import { tool, jsonSchema } from 'ai'
+        - Use tool() wrapper with description and inputSchema
+        - Use jsonSchema<T>() for type-safe input schema
+        - Include 'additionalProperties: false' in JSON schema
+        - Make execute() async and properly typed
 
     - id: proper_json_schema
       description: |
-        Input schema must be complete:
-        - All properties must have type and description
-        - Required fields must be listed
-        - Optional fields should be marked
-        - Use appropriate JSON Schema types
+        Input schemas must be complete and LLM-friendly:
+        - Every property needs a 'description' field
+        - Use 'required' array to specify mandatory fields
+        - Include 'additionalProperties: false'
+        - Use correct JSON Schema types (string, number, boolean, array, object)
+        - For enums, use 'enum' with array of allowed values
 
     - id: structured_outputs
       description: |
-        Output must be structured and typed:
-        - Define TypeScript interface for output
-        - Return object matching interface
-        - Include all fields documented in blocks.yml
+        Tools must return well-structured, typed objects:
+        - Define TypeScript interface for output type
+        - Export interface so consumers can use it
+        - All fields should have meaningful names
+        - Use arrays for collections, never undefined
+        - Include metadata fields where helpful (timestamp, source, confidence)
+
+    - id: input_validation
+      description: |
+        Validate inputs at the start of execute():
+        - Check required fields are present and non-empty
+        - Validate URLs are well-formed when accepting URLs
+        - Validate numbers are in expected ranges
+        - Throw descriptive errors for invalid input
+        - Don't silently accept bad data
 
     - id: async_error_handling
       description: |
-        Async operations must handle errors:
+        Handle async operations properly:
         - Wrap fetch/network calls in try-catch
-        - Provide meaningful error messages
-        - Don't silently fail or return empty
+        - Provide meaningful error messages with context
+        - Don't let errors silently fail to empty output
+        - Include original error in wrapped errors
+        - Set reasonable timeouts for network operations
 
     - id: readme_code_alignment
       description: |
-        README must match implementation:
-        - Documented inputs must match code
-        - Documented outputs must match code
-        - Usage examples must be accurate
+        README.md must accurately reflect the implementation:
+        - Tool description in README matches tool() description in code
+        - Input parameters documented in README match jsonSchema properties
+        - Output structure in README matches TypeScript interface
+        - Usage examples in README are valid and would actually work
+        - Any limitations or requirements mentioned are accurate
+        - No outdated information from previous versions
+
+    # -------------------------------------------------------------------------
+    # Web & fetch rules (apply to web.* and research.* tools)
+    # -------------------------------------------------------------------------
+    - id: safe_fetch_patterns
+      description: |
+        All network fetching must be safe and robust:
+        - Set timeout (default 30s max)
+        - Set max bytes limit to prevent memory issues
+        - Handle redirects explicitly (manual mode when tracing)
+        - Include User-Agent header
+        - Handle charset/encoding properly
+        - Verify Node.js 18+ fetch availability
+
+    - id: html_parsing_standards
+      description: |
+        HTML parsing must be consistent and safe:
+        - Use jsdom or cheerio for DOM parsing
+        - Handle malformed HTML gracefully
+        - Extract text content without script/style
+        - Preserve semantic structure where needed
+        - Handle missing elements without crashing
+
+    - id: url_handling
+      description: |
+        URL operations must be correct:
+        - Use URL constructor for parsing
+        - Resolve relative URLs against base
+        - Normalize for comparison/dedupe
+        - Handle edge cases (trailing slashes, default ports)
+        - Validate URL format before fetching
+
+    # -------------------------------------------------------------------------
+    # Document generation rules (apply to doc.* tools)
+    # -------------------------------------------------------------------------
+    - id: template_based_generation
+      description: |
+        Document tools should use structured templates:
+        - Define clear section structure
+        - Use consistent heading hierarchy
+        - Include placeholder guidance in optional sections
+        - Support customization through parameters
+        - Output valid markdown
+
+    - id: content_extraction_patterns
+      description: |
+        When extracting from text:
+        - Use sentence boundary detection (sbd) for splitting
+        - Preserve context around extracted items
+        - Handle edge cases (abbreviations, numbers)
+        - Return source references where applicable
+
+    - id: audience_aware_output
+      description: |
+        Generated documents should consider audience:
+        - Technical vs non-technical language
+        - Appropriate level of detail
+        - Actionable recommendations
+        - Clear structure for scanning
+
+    # -------------------------------------------------------------------------
+    # Data transformation rules (apply to data.* tools)
+    # -------------------------------------------------------------------------
+    - id: format_parsing_robustness
+      description: |
+        Data format parsing must be robust:
+        - Handle common format variations
+        - Provide meaningful parse errors
+        - Support lenient mode where appropriate
+        - Preserve data types correctly
+        - Handle empty/null values consistently
+
+    - id: type_inference_patterns
+      description: |
+        Type inference should be predictable:
+        - Infer number, boolean, date from string patterns
+        - Document inference rules
+        - Allow override/explicit typing
+        - Handle mixed-type columns gracefully
+
+    - id: row_operation_standards
+      description: |
+        Row operations must be consistent:
+        - Use stable sort algorithms
+        - Handle null/undefined in comparisons
+        - Support multiple sort keys
+        - Preserve row identity through transforms
+        - Return new arrays, don't mutate input
+
+    # -------------------------------------------------------------------------
+    # Engineering tool rules (apply to eng.* tools)
+    # -------------------------------------------------------------------------
+    - id: code_analysis_patterns
+      description: |
+        Code/config analysis should be helpful:
+        - Identify patterns, not just syntax
+        - Provide actionable suggestions
+        - Include severity levels
+        - Reference best practices
+        - Avoid false positives
+
+    - id: diff_and_comparison
+      description: |
+        Diff operations must be clear:
+        - Use unified diff format
+        - Show context lines
+        - Handle large files gracefully
+        - Identify semantic vs whitespace changes
+
+    - id: schema_validation_standards
+      description: |
+        Schema validation must be thorough:
+        - Use established validators (ajv)
+        - Return all errors, not just first
+        - Include path to error location
+        - Suggest fixes where possible
+
+    # -------------------------------------------------------------------------
+    # Security tool rules (apply to sec.* and compliance.* tools)
+    # -------------------------------------------------------------------------
+    - id: security_heuristics
+      description: |
+        Security analysis must be practical:
+        - Use established patterns (OWASP, etc.)
+        - Minimize false positives
+        - Prioritize by severity
+        - Provide remediation guidance
+        - Never store or log actual secrets
+
+    - id: secret_detection_patterns
+      description: |
+        Secret detection must be comprehensive:
+        - Cover common secret patterns (API keys, tokens, passwords)
+        - Use curated regex patterns
+        - Minimize false positives on UUIDs, hashes
+        - Include confidence levels
+        - Support custom patterns
+
+    - id: redaction_safety
+      description: |
+        Redaction must be thorough:
+        - Replace entire secret, not partial
+        - Keep consistent redaction markers
+        - Optionally preserve format hints
+        - Log redaction fingerprints for audit
+        - Handle overlapping patterns
+
+    # -------------------------------------------------------------------------
+    # Statistics tool rules (apply to stats.* tools)
+    # -------------------------------------------------------------------------
+    - id: statistical_rigor
+      description: |
+        Statistical tools must be methodologically sound:
+        - Document assumptions required
+        - Check assumptions where possible
+        - Report appropriate precision
+        - Use established implementations
+        - Include effect sizes, not just p-values
+
+    - id: numerical_stability
+      description: |
+        Numerical computations must be stable:
+        - Use appropriate algorithms for scale
+        - Handle edge cases (empty, single value)
+        - Avoid floating point issues
+        - Document numerical limitations
+
+    - id: resampling_methods
+      description: |
+        Resampling methods must be correct:
+        - Use sufficient iterations (1000+ for bootstrap)
+        - Support seeding for reproducibility
+        - Report method used
+        - Handle small sample sizes appropriately
+
+    # -------------------------------------------------------------------------
+    # Agent/workflow tool rules (apply to agent.* tools)
+    # -------------------------------------------------------------------------
+    - id: workflow_structure
+      description: |
+        Workflow specifications must be valid:
+        - Use consistent step structure
+        - Validate input/output type chains
+        - Include error handling steps
+        - Support conditional branches
+        - Be serializable to JSON
+
+    - id: recipe_generation
+      description: |
+        Generated recipes must be coherent:
+        - Follow grammar/template constraints
+        - Produce executable workflows
+        - Avoid redundant steps
+        - Consider resource constraints
+        - Support variation meaningfully
+
+    - id: evaluation_patterns
+      description: |
+        Evaluation tools must be fair:
+        - Use consistent scoring methods
+        - Support partial credit where appropriate
+        - Handle missing/extra items
+        - Report confidence in scores
 
   # ===========================================================================
-  # IMPLEMENTED TOOLS
+  # BLOCK DEFINITIONS - All 100 tools organized by category
   # ===========================================================================
 
+  # ---------------------------------------------------------------------------
+  # A) Web Research & Evidence (15 tools)
+  # ---------------------------------------------------------------------------
   research.pageBrief:
     description: "Fetches a URL, extracts main content using Readability algorithm, and returns a structured brief with summary, key points, and claims that need citations"
     path: "page-brief"
     domain_rules:
       - id: url_fetching
-        description: "Must fetch URL using fetch() API with timeout"
+        description: "Must actually fetch the URL using fetch() API with timeout"
       - id: content_extraction
         description: "Must use @mozilla/readability for content extraction"
       - id: sentence_parsing
-        description: "Must parse text into sentences using sbd library"
+        description: "Must parse text into sentences for claim extraction using sbd"
     inputs:
       - name: url
         type: string
@@ -167,19 +818,19 @@ blocks:
     outputs:
       - name: brief
         type: PageBrief
-        description: "Structured summary with key points and claims"
+        description: "Structured summary with key points and claims needing citation"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   research.comparePages:
-    description: "Compares content from two URLs, identifying agreements, conflicts, and unique points using TF-IDF similarity"
+    description: "Compares content from two URLs, identifying agreements, conflicts, and unique points from each source using TF-IDF similarity"
     path: "compare-pages"
     domain_rules:
       - id: dual_fetch
         description: "Must fetch both URLs and handle failures gracefully"
       - id: content_comparison
-        description: "Must use TF-IDF for text comparison (natural library)"
+        description: "Must perform actual text comparison using TF-IDF (natural library)"
       - id: structured_diff
-        description: "Must categorize into agreements/conflicts/unique"
+        description: "Must categorize differences into agreements/conflicts/unique"
     inputs:
       - name: urlA
         type: string
@@ -190,103 +841,2128 @@ blocks:
     outputs:
       - name: comparison
         type: PageComparison
-        description: "Structured comparison result"
+        description: "Structured comparison showing agreements, conflicts, and unique content"
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.sourceCredibility:
-    description: "Analyzes a URL for credibility signals using HTTPS, domain reputation, author presence, dates, and citations"
+    description: "Analyzes a URL for credibility signals using heuristics like HTTPS, domain reputation, author presence, publication date, and citation density"
     path: "source-credibility"
     domain_rules:
-      - id: url_analysis
-        description: "Must parse and analyze URL structure using tldts"
-      - id: html_parsing
-        description: "Must parse HTML for credibility signals using cheerio"
-      - id: signal_scoring
-        description: "Must calculate weighted credibility score 0-1"
+      - id: credibility_heuristics
+        description: |
+          Must check real credibility signals:
+          - HTTPS vs HTTP protocol
+          - Domain TLD and reputation (.edu, .gov, .org vs others)
+          - Author byline presence
+          - Publication date presence
+          - External citations/references
+          - Contact information
+      - id: score_calculation
+        description: "Score must be computed from actual signals, not random/hardcoded"
     inputs:
       - name: url
         type: string
-        description: "The URL to analyze"
+        description: "The URL to analyze for credibility"
+      - name: html
+        type: string
+        optional: true
+        description: "Pre-fetched HTML content (if available)"
     outputs:
       - name: credibility
-        type: CredibilityResult
-        description: "Credibility score with signals and recommendations"
+        type: CredibilityScore
+        description: "Credibility assessment with score, factors, and recommendations"
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.claimChecklist:
-    description: "Extracts checkable factual claims from text with priority levels and suggested evidence types"
+    description: "Extracts factual claims from text and identifies which ones need citations, categorizing by type and priority"
     path: "claim-checklist"
     domain_rules:
-      - id: sentence_detection
-        description: "Must use sbd for sentence boundary detection"
-      - id: claim_identification
-        description: "Must identify claims using pattern matching"
+      - id: claim_extraction
+        description: |
+          Must identify claims using real heuristics:
+          - Statements with numbers/statistics
+          - Quotes attributed to people
+          - Statements about events/facts
+          - Predictions or projections
+      - id: citation_detection
+        description: "Must check if claims are supported by inline citations"
       - id: priority_assignment
-        description: "Must assign priority levels (high/medium/low)"
+        description: "Must assign priority based on claim type and verifiability"
     inputs:
       - name: text
         type: string
-        description: "Text to extract claims from"
+        description: "The text to analyze for claims"
     outputs:
       - name: checklist
         type: ClaimChecklist
-        description: "List of claims with priorities and evidence suggestions"
-        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
+        description: "List of claims with citation status and priority ranking"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
 
   research.timelineFromText:
-    description: "Extracts dated events from text and returns a normalized chronological timeline"
+    description: "Extracts dated events from unstructured text and returns a normalized, chronologically sorted timeline with confidence scores"
     path: "timeline-from-text"
     domain_rules:
-      - id: date_parsing
-        description: "Must use chrono-node for date extraction"
-      - id: event_extraction
-        description: "Must extract event descriptions with context"
-      - id: chronological_ordering
-        description: "Must sort events chronologically and identify gaps"
+      - id: date_extraction
+        description: |
+          Must parse dates in multiple formats using chrono-node:
+          - Full dates (January 1, 2024)
+          - Partial dates (March 2024, Q1 2024)
+          - Relative dates (last year, in 2020)
+          - Ranges (2020-2024)
+      - id: event_association
+        description: "Must associate extracted dates with their context/events"
+      - id: chronological_sorting
+        description: "Output events must be sorted chronologically"
     inputs:
       - name: text
         type: string
-        description: "Text containing dated events"
+        description: "The text to extract timeline from"
     outputs:
       - name: timeline
         type: Timeline
-        description: "Chronologically ordered events with date range"
+        description: "Chronologically sorted events with dates and confidence scores"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  research.rssRead:
+    description: "Parses RSS/Atom feeds and returns normalized items with title, link, date, and summary"
+    path: "rss-read"
+    domain_rules:
+      - id: feed_parsing
+        description: "Must use rss-parser for robust RSS/Atom parsing"
+      - id: item_normalization
+        description: "Must normalize items to consistent structure regardless of feed type"
+      - id: date_handling
+        description: "Must parse various date formats to ISO strings"
+    inputs:
+      - name: feedUrl
+        type: string
+        description: "The RSS/Atom feed URL to parse"
+    outputs:
+      - name: feed
+        type: RssFeed
+        description: "Parsed feed with normalized items"
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
-  adapter.createBlogPost:
-    description: "Creates a structured blog post with frontmatter, metadata, slug, word count, and reading time"
-    path: "createBlogPost"
+  research.sitemapRead:
+    description: "Parses sitemap XML including sitemap indexes and returns URLs for crawling/indexing"
+    path: "sitemap-read"
     domain_rules:
-      - id: frontmatter_generation
-        description: "Must generate valid YAML frontmatter"
-      - id: slug_generation
-        description: "Must create URL-safe slug from title"
-      - id: reading_time_calculation
-        description: "Must calculate reading time based on word count"
+      - id: xml_parsing
+        description: "Must use fast-xml-parser for XML parsing"
+      - id: index_handling
+        description: "Must detect and handle sitemap index files"
+      - id: url_extraction
+        description: "Must extract URLs with lastmod and priority if available"
+    inputs:
+      - name: sitemapUrl
+        type: string
+        description: "The sitemap URL to parse"
+    outputs:
+      - name: sitemap
+        type: Sitemap
+        description: "Parsed sitemap with URLs and metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
+
+  research.robotsPolicy:
+    description: "Fetches and parses robots.txt into structured allow/deny rules and crawl-delay hints"
+    path: "robots-policy"
+    domain_rules:
+      - id: robots_parsing
+        description: "Must use robots-parser for correct parsing"
+      - id: rule_extraction
+        description: "Must extract allow, disallow, crawl-delay, and sitemap rules"
+      - id: user_agent_matching
+        description: "Must support querying rules for specific user agents"
+    inputs:
+      - name: origin
+        type: string
+        description: "The origin URL (e.g., https://example.com)"
+    outputs:
+      - name: policy
+        type: RobotsPolicy
+        description: "Structured robots.txt rules"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
+
+  web.fetchText:
+    description: "Safe fetch wrapper with max bytes, timeout, redirects policy, and charset decoding"
+    path: "fetch-text"
+    domain_rules:
+      - id: safe_fetch
+        description: |
+          Must implement safe fetch patterns:
+          - Configurable timeout (default 30s)
+          - Max bytes limit
+          - Redirect policy (follow/manual)
+          - Charset detection and decoding
+      - id: error_handling
+        description: "Must wrap network errors with context"
+    inputs:
+      - name: url
+        type: string
+        description: "The URL to fetch"
+      - name: maxBytes
+        type: number
+        optional: true
+        description: "Maximum bytes to read (default 5MB)"
+      - name: timeoutMs
+        type: number
+        optional: true
+        description: "Timeout in milliseconds (default 30000)"
+    outputs:
+      - name: result
+        type: FetchResult
+        description: "Fetched text with metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
+
+  web.redirectTrace:
+    description: "Returns full redirect chain for URL canonicalization and diagnosing paywall/geo redirects"
+    path: "redirect-trace"
+    domain_rules:
+      - id: manual_redirects
+        description: "Must use fetch with redirect:'manual' to trace each hop"
+      - id: chain_building
+        description: "Must build complete chain with status codes and locations"
+      - id: loop_detection
+        description: "Must detect and break redirect loops"
+    inputs:
+      - name: url
+        type: string
+        description: "The URL to trace"
+      - name: maxHops
+        type: number
+        optional: true
+        description: "Maximum redirects to follow (default 10)"
+    outputs:
+      - name: trace
+        type: RedirectTrace
+        description: "Full redirect chain with final destination"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
+
+  web.extractMeta:
+    description: "Extracts title, description, canonical, OG, and Twitter tags for previews and indexing"
+    path: "extract-meta"
+    domain_rules:
+      - id: meta_extraction
+        description: "Must use cheerio to extract all standard meta tags"
+      - id: og_parsing
+        description: "Must parse Open Graph tags completely"
+      - id: twitter_parsing
+        description: "Must parse Twitter Card tags"
+    inputs:
+      - name: html
+        type: string
+        description: "The HTML content to parse"
+      - name: baseUrl
+        type: string
+        optional: true
+        description: "Base URL for resolving relative URLs"
+    outputs:
+      - name: meta
+        type: MetaTags
+        description: "Extracted metadata tags"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  web.extractJsonLd:
+    description: "Extracts JSON-LD blocks, parses leniently, and returns schema objects for articles/products/events"
+    path: "extract-json-ld"
+    domain_rules:
+      - id: jsonld_extraction
+        description: "Must find all script[type='application/ld+json'] blocks"
+      - id: lenient_parsing
+        description: "Must use lenient JSON parser for malformed JSON-LD"
+      - id: schema_typing
+        description: "Must identify schema.org types"
+    inputs:
+      - name: html
+        type: string
+        description: "The HTML content to parse"
+    outputs:
+      - name: jsonLd
+        type: JsonLdResult
+        description: "Extracted and parsed JSON-LD objects"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  web.linksCatalog:
+    description: "Extracts links and classifies internal/external with resolved URLs and anchor text"
+    path: "links-catalog"
+    domain_rules:
+      - id: link_extraction
+        description: "Must extract all anchor tags with href"
+      - id: classification
+        description: "Must classify as internal or external based on domain"
+      - id: url_resolution
+        description: "Must resolve relative URLs against base"
+    inputs:
+      - name: html
+        type: string
+        description: "The HTML content to parse"
+      - name: baseUrl
+        type: string
+        description: "The base URL for resolution and classification"
+    outputs:
+      - name: links
+        type: LinksCatalog
+        description: "Categorized links with resolved URLs"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  web.tableExtract:
+    description: "Pulls HTML tables into normalized headers and rows arrays"
+    path: "table-extract"
+    domain_rules:
+      - id: table_parsing
+        description: "Must use cheerio to parse table elements"
+      - id: header_detection
+        description: "Must detect headers from th or first row"
+      - id: cell_normalization
+        description: "Must normalize cell content (trim, collapse whitespace)"
+    inputs:
+      - name: html
+        type: string
+        description: "The HTML content containing tables"
+      - name: selector
+        type: string
+        optional: true
+        description: "CSS selector for specific table (default: first table)"
+    outputs:
+      - name: table
+        type: TableData
+        description: "Extracted table with headers and rows"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # B) Writing, Docs & Deliverables (15 tools)
+  # ---------------------------------------------------------------------------
+  doc.executiveBrief:
+    description: "Produces a 1-page executive brief with 'what happened / so what / recommendation' structure"
+    path: "executive-brief"
+    domain_rules:
+      - id: structure
+        description: "Must follow What/So What/Recommendation format"
+      - id: audience_adaptation
+        description: "Must adapt language for specified audience"
+      - id: actionable_output
+        description: "Must include clear, actionable recommendations"
+    inputs:
+      - name: text
+        type: string
+        description: "The source text to summarize"
+      - name: audience
+        type: string
+        optional: true
+        description: "Target audience (e.g., 'executives', 'technical')"
+    outputs:
+      - name: brief
+        type: ExecutiveBrief
+        description: "Structured executive summary"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.runbookDraft:
+    description: "Converts a procedure into an operational runbook with prechecks, steps, rollback, and verify sections"
+    path: "runbook-draft"
+    domain_rules:
+      - id: runbook_structure
+        description: "Must include prechecks, steps, rollback, and verify sections"
+      - id: step_formatting
+        description: "Steps must be numbered and actionable"
+      - id: safety_checks
+        description: "Must include safety prechecks and rollback procedures"
+    inputs:
+      - name: process
+        type: string
+        description: "Description of the process to document"
+    outputs:
+      - name: runbook
+        type: Runbook
+        description: "Structured operational runbook"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.postmortemDraft:
+    description: "Generates postmortem skeleton with timeline, impact, root cause hypotheses, and actions"
+    path: "postmortem-draft"
+    domain_rules:
+      - id: postmortem_structure
+        description: "Must include timeline, impact, root cause, and actions"
+      - id: timeline_extraction
+        description: "Must extract timeline from notes/logs if provided"
+      - id: blameless_framing
+        description: "Must use blameless language focusing on systems"
+    inputs:
+      - name: notes
+        type: string
+        description: "Incident notes and observations"
+      - name: logs
+        type: string
+        optional: true
+        description: "Relevant log excerpts"
+    outputs:
+      - name: postmortem
+        type: Postmortem
+        description: "Structured postmortem document"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.faqFromText:
+    description: "Builds a FAQ with Q/A pairs from a reference document"
+    path: "faq-from-text"
+    domain_rules:
+      - id: question_generation
+        description: "Must identify likely questions from content"
+      - id: answer_extraction
+        description: "Must extract concise answers"
+      - id: organization
+        description: "Must organize by topic/category if applicable"
+    inputs:
+      - name: text
+        type: string
+        description: "The reference document"
+      - name: maxItems
+        type: number
+        optional: true
+        description: "Maximum FAQ items to generate"
+    outputs:
+      - name: faq
+        type: FAQ
+        description: "Generated FAQ document"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.glossaryBuild:
+    description: "Extracts domain terms and concise definitions from corpus context"
+    path: "glossary-build"
+    domain_rules:
+      - id: term_extraction
+        description: "Must identify domain-specific terms"
+      - id: definition_generation
+        description: "Must generate concise definitions from context"
+      - id: deduplication
+        description: "Must dedupe terms and merge definitions"
+    inputs:
+      - name: texts
+        type: string[]
+        description: "Array of text documents to analyze"
+    outputs:
+      - name: glossary
+        type: Glossary
+        description: "Extracted terms with definitions"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.tocGenerate:
+    description: "Generates a Markdown table of contents from headings"
+    path: "toc-generate"
+    domain_rules:
+      - id: heading_extraction
+        description: "Must parse markdown headings correctly"
+      - id: anchor_generation
+        description: "Must generate valid anchor links"
+      - id: depth_control
+        description: "Must respect maxDepth parameter"
+    inputs:
+      - name: markdown
+        type: string
+        description: "The markdown document"
+      - name: maxDepth
+        type: number
+        optional: true
+        description: "Maximum heading depth to include"
+    outputs:
+      - name: toc
+        type: TableOfContents
+        description: "Generated table of contents"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.markdownLintBasic:
+    description: "Flags broken heading order, empty links, trailing spaces, and other markdown issues"
+    path: "markdown-lint-basic"
+    domain_rules:
+      - id: lint_rules
+        description: "Must check common markdown issues"
+      - id: issue_reporting
+        description: "Must report line numbers and descriptions"
+      - id: severity_levels
+        description: "Must indicate error vs warning severity"
+    inputs:
+      - name: markdown
+        type: string
+        description: "The markdown document to lint"
+    outputs:
+      - name: issues
+        type: LintResult
+        description: "List of issues found"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.styleRewrite:
+    description: "Rewrites text to a specified tone without changing meaning"
+    path: "style-rewrite"
+    domain_rules:
+      - id: tone_adaptation
+        description: "Must adapt to specified tone (formal/terse/friendly)"
+      - id: meaning_preservation
+        description: "Must preserve core meaning and facts"
+      - id: format_preservation
+        description: "Must preserve structure and formatting"
+    inputs:
+      - name: text
+        type: string
+        description: "The text to rewrite"
+      - name: targetTone
+        type: string
+        description: "Target tone (formal, terse, friendly, technical)"
+    outputs:
+      - name: rewritten
+        type: StyleRewriteResult
+        description: "Rewritten text with change notes"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.meetingMinutesFormat:
+    description: "Turns messy notes into minutes with decisions and action items"
+    path: "meeting-minutes-format"
+    domain_rules:
+      - id: structure_extraction
+        description: "Must identify decisions, action items, and key points"
+      - id: cue_phrase_detection
+        description: "Must detect phrases like 'decided', 'action', 'owner'"
+      - id: formatting
+        description: "Must output clean, structured minutes"
+    inputs:
+      - name: notes
+        type: string
+        description: "Raw meeting notes"
+    outputs:
+      - name: minutes
+        type: MeetingMinutes
+        description: "Formatted meeting minutes"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.decisionRecordADR:
+    description: "Produces an Architecture Decision Record with context, decision, alternatives, and consequences"
+    path: "decision-record-adr"
+    domain_rules:
+      - id: adr_structure
+        description: "Must follow standard ADR format"
+      - id: alternatives_analysis
+        description: "Must include considered alternatives"
+      - id: consequences_section
+        description: "Must document consequences of decision"
+    inputs:
+      - name: context
+        type: string
+        description: "The context and problem statement"
+      - name: options
+        type: string[]
+        description: "Options considered"
+      - name: decision
+        type: string
+        description: "The chosen option"
+    outputs:
+      - name: adr
+        type: ADR
+        description: "Formatted ADR document"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.changelogEntry:
+    description: "Groups change notes into Added/Changed/Fixed/Removed entries"
+    path: "changelog-entry"
+    domain_rules:
+      - id: classification
+        description: "Must classify changes by type (added/changed/fixed/removed)"
+      - id: conventional_commits
+        description: "Should parse conventional commit format if present"
+      - id: keepachangelog_format
+        description: "Must output in Keep a Changelog format"
+    inputs:
+      - name: items
+        type: string[]
+        description: "List of change descriptions or commit messages"
+    outputs:
+      - name: entry
+        type: ChangelogEntry
+        description: "Formatted changelog entry"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.releaseNotes:
+    description: "Converts technical changes into user-facing release notes"
+    path: "release-notes"
+    domain_rules:
+      - id: audience_adaptation
+        description: "Must convert technical to user-friendly language"
+      - id: highlights_extraction
+        description: "Must identify key highlights"
+      - id: breaking_changes
+        description: "Must prominently note breaking changes"
+    inputs:
+      - name: changes
+        type: string[]
+        description: "List of technical changes"
+      - name: audience
+        type: string
+        optional: true
+        description: "Target audience (customers, developers)"
+    outputs:
+      - name: notes
+        type: ReleaseNotes
+        description: "User-facing release notes"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.prdOutline:
+    description: "Generates PRD structure with problem, goals, non-goals, UX, metrics, risks, and rollout"
+    path: "prd-outline"
+    domain_rules:
+      - id: prd_structure
+        description: "Must include all standard PRD sections"
+      - id: placeholder_guidance
+        description: "Must include guidance for filling each section"
+      - id: metrics_suggestions
+        description: "Must suggest success metrics"
+    inputs:
+      - name: feature
+        type: string
+        description: "Feature name and brief description"
+    outputs:
+      - name: prd
+        type: PRDOutline
+        description: "PRD document outline"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.acceptanceCriteria:
+    description: "Turns feature description into testable acceptance criteria in Given-When-Then format"
+    path: "acceptance-criteria"
+    domain_rules:
+      - id: gwt_format
+        description: "Must use Given-When-Then format"
+      - id: testability
+        description: "Criteria must be testable and specific"
+      - id: coverage
+        description: "Must cover happy path and edge cases"
+    inputs:
+      - name: featureText
+        type: string
+        description: "Feature description"
+    outputs:
+      - name: criteria
+        type: AcceptanceCriteria
+        description: "List of acceptance criteria"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  doc.testPlanMatrix:
+    description: "Produces a QA test matrix with scenarios, steps, expected results, and priority"
+    path: "test-plan-matrix"
+    domain_rules:
+      - id: scenario_generation
+        description: "Must generate test scenarios from requirements"
+      - id: step_detail
+        description: "Must include detailed test steps"
+      - id: priority_assignment
+        description: "Must assign priority levels"
+    inputs:
+      - name: requirements
+        type: string
+        description: "Feature requirements to test"
+    outputs:
+      - name: testPlan
+        type: TestPlanMatrix
+        description: "Test plan with scenarios matrix"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # C) Data Wrangling & Transforms (15 tools)
+  # ---------------------------------------------------------------------------
+  data.csvParse:
+    description: "Parses CSV into headers and rows with light type inference"
+    path: "csv-parse"
+    domain_rules:
+      - id: csv_parsing
+        description: "Must use papaparse for robust CSV parsing"
+      - id: type_inference
+        description: "Must infer number and boolean types"
+      - id: error_handling
+        description: "Must handle malformed rows gracefully"
+    inputs:
+      - name: csv
+        type: string
+        description: "CSV content to parse"
+      - name: delimiter
+        type: string
+        optional: true
+        description: "Field delimiter (default: auto-detect)"
+    outputs:
+      - name: data
+        type: CsvData
+        description: "Parsed CSV with headers and typed rows"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.csvStringify:
+    description: "Converts rows back to CSV with stable column ordering"
+    path: "csv-stringify"
+    domain_rules:
+      - id: csv_generation
+        description: "Must use papaparse for CSV generation"
+      - id: column_ordering
+        description: "Must maintain stable column order"
+      - id: escaping
+        description: "Must properly escape special characters"
+    inputs:
+      - name: rows
+        type: object[]
+        description: "Array of row objects"
+      - name: columns
+        type: string[]
+        optional: true
+        description: "Column order (default: from first row)"
+    outputs:
+      - name: csv
+        type: string
+        description: "Generated CSV string"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.yamlParse:
+    description: "Parses YAML safely into JSON"
+    path: "yaml-parse"
+    domain_rules:
+      - id: yaml_parsing
+        description: "Must use yaml library for safe parsing"
+      - id: security
+        description: "Must not execute code in YAML"
+      - id: error_messages
+        description: "Must provide helpful parse error messages"
+    inputs:
+      - name: yaml
+        type: string
+        description: "YAML content to parse"
+    outputs:
+      - name: data
+        type: object
+        description: "Parsed JSON object"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.yamlStringify:
+    description: "Converts JSON to YAML with formatting options"
+    path: "yaml-stringify"
+    domain_rules:
+      - id: yaml_generation
+        description: "Must use yaml library for generation"
+      - id: formatting
+        description: "Must support indentation and flow style options"
+    inputs:
+      - name: json
+        type: object
+        description: "JSON object to convert"
+      - name: indent
+        type: number
+        optional: true
+        description: "Indentation spaces (default: 2)"
+    outputs:
+      - name: yaml
+        type: string
+        description: "Generated YAML string"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.jsonRepair:
+    description: "Repairs common JSON formatting errors and parses the result"
+    path: "json-repair"
+    domain_rules:
+      - id: repair_logic
+        description: "Must use jsonrepair library"
+      - id: common_errors
+        description: "Must handle trailing commas, unquoted keys, single quotes"
+      - id: reporting
+        description: "Must report what was repaired"
+    inputs:
+      - name: text
+        type: string
+        description: "Malformed JSON text"
+    outputs:
+      - name: result
+        type: JsonRepairResult
+        description: "Repaired and parsed JSON"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.jsonSchemaValidate:
+    description: "Validates JSON against a JSON Schema and returns detailed errors"
+    path: "json-schema-validate"
+    domain_rules:
+      - id: validation
+        description: "Must use ajv for validation"
+      - id: error_detail
+        description: "Must return all errors with paths"
+      - id: formats
+        description: "Must support common formats (email, uri, date-time)"
+    inputs:
+      - name: data
+        type: object
+        description: "Data to validate"
+      - name: schema
+        type: object
+        description: "JSON Schema to validate against"
+    outputs:
+      - name: result
+        type: ValidationResult
+        description: "Validation result with errors"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.rowsFilter:
+    description: "Filters rows using a predicate DSL (field/operator/value)"
+    path: "rows-filter"
+    domain_rules:
+      - id: predicate_parsing
+        description: "Must support operators: eq, ne, gt, lt, gte, lte, contains, startsWith"
+      - id: type_handling
+        description: "Must handle type coercion correctly"
+      - id: null_handling
+        description: "Must handle null/undefined fields"
+    inputs:
+      - name: rows
+        type: object[]
+        description: "Array of row objects"
+      - name: where
+        type: object
+        description: "Filter predicate {field, op, value}"
+    outputs:
+      - name: filtered
+        type: object[]
+        description: "Filtered rows"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.rowsSort:
+    description: "Stable multi-key sort with null handling"
+    path: "rows-sort"
+    domain_rules:
+      - id: stable_sort
+        description: "Must use stable sort algorithm"
+      - id: multi_key
+        description: "Must support multiple sort keys with direction"
+      - id: null_handling
+        description: "Must handle nulls consistently (first or last)"
+    inputs:
+      - name: rows
+        type: object[]
+        description: "Array of row objects"
+      - name: sort
+        type: object[]
+        description: "Sort keys [{field, direction}]"
+    outputs:
+      - name: sorted
+        type: object[]
+        description: "Sorted rows"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.rowsGroupAggregate:
+    description: "Groups rows by key and computes aggregates (count/sum/avg/min/max)"
+    path: "rows-group-aggregate"
+    domain_rules:
+      - id: grouping
+        description: "Must group by specified key(s)"
+      - id: aggregates
+        description: "Must support count, sum, avg, min, max"
+      - id: null_handling
+        description: "Must handle null values in aggregates"
+    inputs:
+      - name: rows
+        type: object[]
+        description: "Array of row objects"
+      - name: key
+        type: string
+        description: "Field to group by"
+      - name: aggregates
+        type: object[]
+        description: "Aggregate definitions [{field, op, as}]"
+    outputs:
+      - name: groups
+        type: object[]
+        description: "Grouped rows with aggregates"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.rowsJoin:
+    description: "Joins two datasets on keys with inner/left join support"
+    path: "rows-join"
+    domain_rules:
+      - id: join_types
+        description: "Must support inner and left joins"
+      - id: key_matching
+        description: "Must build index for efficient matching"
+      - id: field_merging
+        description: "Must handle field name conflicts"
+    inputs:
+      - name: left
+        type: object[]
+        description: "Left dataset"
+      - name: right
+        type: object[]
+        description: "Right dataset"
+      - name: "on"
+        type: string
+        description: "Join key field"
+      - name: kind
+        type: string
+        optional: true
+        description: "Join type: inner or left (default: inner)"
+    outputs:
+      - name: joined
+        type: object[]
+        description: "Joined rows"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.dedupeByKey:
+    description: "Deduplicates rows by key, optionally keeping best by score/time"
+    path: "dedupe-by-key"
+    domain_rules:
+      - id: deduplication
+        description: "Must use Map for efficient deduplication"
+      - id: keep_strategy
+        description: "Must support keeping first, last, max, or min"
+      - id: key_function
+        description: "Must support simple field or composite key"
+    inputs:
+      - name: rows
+        type: object[]
+        description: "Array of row objects"
+      - name: key
+        type: string
+        description: "Field to dedupe on"
+      - name: keep
+        type: string
+        optional: true
+        description: "Keep strategy: first, last, max, min"
+    outputs:
+      - name: deduped
+        type: object[]
+        description: "Deduplicated rows"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.pivot:
+    description: "Pivots data long-to-wide or wide-to-long"
+    path: "pivot"
+    domain_rules:
+      - id: pivot_logic
+        description: "Must support pivot and unpivot operations"
+      - id: aggregation
+        description: "Must aggregate when multiple values exist"
+      - id: naming
+        description: "Must generate clear column names"
+    inputs:
+      - name: rows
+        type: object[]
+        description: "Array of row objects"
+      - name: index
+        type: string
+        description: "Index column(s)"
+      - name: columns
+        type: string
+        description: "Column to pivot on"
+      - name: values
+        type: string
+        description: "Value column"
+    outputs:
+      - name: pivoted
+        type: object[]
+        description: "Pivoted data"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.normalizeWhitespace:
+    description: "Normalizes newlines, trims, and collapses excessive spaces"
+    path: "normalize-whitespace"
+    domain_rules:
+      - id: normalization
+        description: "Must handle various whitespace types"
+      - id: modes
+        description: "Must support different normalization modes"
+      - id: preservation
+        description: "Must optionally preserve paragraph breaks"
+    inputs:
+      - name: text
+        type: string
+        description: "Text to normalize"
+      - name: mode
+        type: string
+        optional: true
+        description: "Mode: collapse, trim, paragraphs"
+    outputs:
+      - name: normalized
+        type: string
+        description: "Normalized text"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.urlNormalize:
+    description: "Canonicalizes URLs for deduplication and caching"
+    path: "url-normalize"
+    domain_rules:
+      - id: normalization
+        description: "Must normalize protocol, host, path, and query"
+      - id: fragment_handling
+        description: "Must strip fragments by default"
+      - id: query_ordering
+        description: "Must sort query parameters"
+    inputs:
+      - name: url
+        type: string
+        description: "URL to normalize"
+    outputs:
+      - name: normalized
+        type: string
+        description: "Normalized URL"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  data.textChunk:
+    description: "Splits text into chunks with overlap for downstream processing"
+    path: "text-chunk"
+    domain_rules:
+      - id: chunking
+        description: "Must split by character count with overlap"
+      - id: boundaries
+        description: "Should prefer sentence boundaries when possible"
+      - id: metadata
+        description: "Must include chunk index and offsets"
+    inputs:
+      - name: text
+        type: string
+        description: "Text to chunk"
+      - name: maxChars
+        type: number
+        description: "Maximum characters per chunk"
+      - name: overlapChars
+        type: number
+        optional: true
+        description: "Overlap between chunks"
+    outputs:
+      - name: chunks
+        type: TextChunks
+        description: "Array of text chunks with metadata"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # D) Engineering & Ops Helpers (15 tools)
+  # ---------------------------------------------------------------------------
+  eng.diffTextUnified:
+    description: "Produces unified diff between two strings for reviews and patch previews"
+    path: "diff-text-unified"
+    domain_rules:
+      - id: diff_algorithm
+        description: "Must use diff library for unified diff"
+      - id: context_lines
+        description: "Must include context lines"
+      - id: line_numbers
+        description: "Must include line numbers"
+    inputs:
+      - name: before
+        type: string
+        description: "Original text"
+      - name: after
+        type: string
+        description: "Modified text"
+      - name: contextLines
+        type: number
+        optional: true
+        description: "Context lines around changes"
+    outputs:
+      - name: diff
+        type: DiffResult
+        description: "Unified diff output"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.stacktraceParse:
+    description: "Parses stack traces into frames and highlights likely app frames vs library frames"
+    path: "stacktrace-parse"
+    domain_rules:
+      - id: parsing
+        description: "Must use stacktrace-parser library"
+      - id: classification
+        description: "Must classify app vs library frames"
+      - id: language_support
+        description: "Must support JavaScript/TypeScript stack traces"
+    inputs:
+      - name: stack
+        type: string
+        description: "Stack trace text"
+    outputs:
+      - name: parsed
+        type: StacktraceParsed
+        description: "Parsed stack trace with classified frames"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.errorLogTriage:
+    description: "Buckets logs into likely causes with recommended next checks"
+    path: "error-log-triage"
+    domain_rules:
+      - id: pattern_matching
+        description: "Must match common error patterns"
+      - id: categorization
+        description: "Must categorize as network, auth, timeout, schema, etc."
+      - id: recommendations
+        description: "Must provide actionable next steps"
+    inputs:
+      - name: logs
+        type: string
+        description: "Error log content"
+    outputs:
+      - name: triage
+        type: ErrorTriage
+        description: "Categorized errors with recommendations"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.conventionalCommitSuggest:
+    description: "Suggests conventional commit message from a change summary"
+    path: "conventional-commit-suggest"
+    domain_rules:
+      - id: classification
+        description: "Must classify as feat, fix, docs, refactor, etc."
+      - id: format
+        description: "Must follow conventional commit format"
+      - id: scope_detection
+        description: "Should suggest scope if detectable"
+    inputs:
+      - name: summary
+        type: string
+        description: "Summary of changes made"
+    outputs:
+      - name: commit
+        type: CommitMessage
+        description: "Suggested commit message"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.envVarDocsGenerate:
+    description: "Generates environment variable documentation table from schema"
+    path: "env-var-docs-generate"
+    domain_rules:
+      - id: table_format
+        description: "Must generate markdown table"
+      - id: required_marking
+        description: "Must indicate required vs optional"
+      - id: examples
+        description: "Must include example values"
+    inputs:
+      - name: vars
+        type: object[]
+        description: "Environment variable definitions"
+    outputs:
+      - name: docs
+        type: string
+        description: "Markdown documentation"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.openapiSnippetBuild:
+    description: "Builds minimal OpenAPI snippet from endpoint metadata"
+    path: "openapi-snippet-build"
+    domain_rules:
+      - id: openapi_format
+        description: "Must generate valid OpenAPI 3.0 YAML"
+      - id: schema_generation
+        description: "Must generate request/response schemas"
+      - id: minimal
+        description: "Must focus on essential elements"
+    inputs:
+      - name: endpoints
+        type: object[]
+        description: "Endpoint definitions [{method, path, params, response}]"
+    outputs:
+      - name: openapi
+        type: string
+        description: "OpenAPI YAML snippet"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.dependencyAuditLite:
+    description: "Heuristic audit for duplicates, suspicious version ranges, and heavy deps"
+    path: "dependency-audit-lite"
+    domain_rules:
+      - id: duplicate_detection
+        description: "Must detect duplicate packages at different versions"
+      - id: range_analysis
+        description: "Must flag suspicious version ranges"
+      - id: size_warnings
+        description: "Must warn about known heavy packages"
+    inputs:
+      - name: packageJson
+        type: object
+        description: "package.json content"
+    outputs:
+      - name: audit
+        type: DependencyAudit
+        description: "Audit results with recommendations"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.configNormalize:
+    description: "Applies defaults and coercions to config objects"
+    path: "config-normalize"
+    domain_rules:
+      - id: defaults
+        description: "Must apply default values from schema"
+      - id: coercion
+        description: "Must coerce types where safe"
+      - id: validation
+        description: "Must validate against schema"
+    inputs:
+      - name: config
+        type: object
+        description: "Raw configuration object"
+      - name: schema
+        type: object
+        description: "Schema with defaults"
+    outputs:
+      - name: normalized
+        type: ConfigNormalized
+        description: "Normalized config with applied defaults"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.testCaseGenerate:
+    description: "Generates test cases from requirements with scenarios and expected results"
+    path: "test-case-generate"
+    domain_rules:
+      - id: scenario_generation
+        description: "Must generate happy path and edge cases"
+      - id: structure
+        description: "Must include steps and expected results"
+      - id: traceability
+        description: "Should link back to requirements"
+    inputs:
+      - name: requirements
+        type: string
+        description: "Requirements to generate tests for"
+    outputs:
+      - name: testCases
+        type: TestCase[]
+        description: "Generated test cases"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  eng.releaseChecklist:
+    description: "Generates pre-release checklist tailored to stack"
+    path: "release-checklist"
+    domain_rules:
+      - id: stack_awareness
+        description: "Must customize for web/app/library stacks"
+      - id: critical_items
+        description: "Must mark critical vs optional items"
+      - id: categories
+        description: "Must organize by category (code, docs, ops)"
+    inputs:
+      - name: stack
+        type: string
+        description: "Technology stack (nextjs, node-library, react-app)"
+    outputs:
+      - name: checklist
+        type: ReleaseChecklist
+        description: "Tailored release checklist"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  ops.monitoringGapAnalysis:
+    description: "Suggests missing monitors and SLO signals from services and incidents"
+    path: "monitoring-gap-analysis"
+    domain_rules:
+      - id: signal_analysis
+        description: "Must check for latency, errors, saturation coverage"
+      - id: incident_correlation
+        description: "Must correlate gaps with past incidents"
+      - id: recommendations
+        description: "Must provide specific monitor recommendations"
+    inputs:
+      - name: services
+        type: object[]
+        description: "Service definitions"
+      - name: incidents
+        type: object[]
+        optional: true
+        description: "Past incident records"
+    outputs:
+      - name: gaps
+        type: MonitoringGaps
+        description: "Identified gaps with recommendations"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  ops.sloDraft:
+    description: "Drafts SLOs with SLI definitions, targets, and alerting hints"
+    path: "slo-draft"
+    domain_rules:
+      - id: sli_definition
+        description: "Must define measurable SLIs"
+      - id: targets
+        description: "Must suggest realistic targets"
+      - id: alerting
+        description: "Must include burn rate alerting hints"
+    inputs:
+      - name: serviceDesc
+        type: string
+        description: "Description of the service"
+    outputs:
+      - name: slo
+        type: SLODraft
+        description: "SLO specification draft"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  ops.postmortemActionExtractor:
+    description: "Extracts action items with owners and dates from postmortem text"
+    path: "postmortem-action-extractor"
+    domain_rules:
+      - id: action_detection
+        description: "Must detect action items from cue phrases"
+      - id: owner_extraction
+        description: "Must extract owner names"
+      - id: date_extraction
+        description: "Must extract due dates if mentioned"
+    inputs:
+      - name: text
+        type: string
+        description: "Postmortem text"
+    outputs:
+      - name: actions
+        type: ActionItem[]
+        description: "Extracted action items"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # E) Security & Compliance (10 tools)
+  # ---------------------------------------------------------------------------
+  sec.urlRiskHeuristic:
+    description: "Flags suspicious URLs using punycode, homoglyph, and TLD pattern detection"
+    path: "url-risk-heuristic"
+    domain_rules:
+      - id: punycode_detection
+        description: "Must detect punycode in domains"
+      - id: homoglyph_detection
+        description: "Must check for homoglyph substitutions"
+      - id: tld_analysis
+        description: "Must flag unusual TLDs"
+    inputs:
+      - name: url
+        type: string
+        description: "URL to analyze"
+    outputs:
+      - name: risk
+        type: UrlRisk
+        description: "Risk assessment with signals"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  sec.secretScanText:
+    description: "Detects potential secrets (API keys, tokens, private keys) in text"
+    path: "secret-scan-text"
+    domain_rules:
+      - id: pattern_library
+        description: "Must use comprehensive secret patterns"
+      - id: false_positive_reduction
+        description: "Must minimize false positives"
+      - id: severity_levels
+        description: "Must indicate severity per finding"
+    inputs:
+      - name: text
+        type: string
+        description: "Text to scan for secrets"
+    outputs:
+      - name: findings
+        type: SecretScan
+        description: "Detected secrets with locations"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  sec.redactSecrets:
+    description: "Redacts detected secrets from text and returns a redaction report"
+    path: "redact-secrets"
+    domain_rules:
+      - id: redaction
+        description: "Must fully redact secrets"
+      - id: markers
+        description: "Must use consistent redaction markers"
+      - id: fingerprints
+        description: "Must keep hashed fingerprints for audit"
+    inputs:
+      - name: text
+        type: string
+        description: "Text containing secrets"
+    outputs:
+      - name: result
+        type: RedactionResult
+        description: "Redacted text with report"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  sec.cspCompose:
+    description: "Builds a CSP header string from allowed origins and directives"
+    path: "csp-compose"
+    domain_rules:
+      - id: directive_building
+        description: "Must build valid CSP directives"
+      - id: best_practices
+        description: "Must follow CSP best practices"
+      - id: header_format
+        description: "Must output valid header string"
+    inputs:
+      - name: allow
+        type: object
+        description: "Allowed sources per directive"
+    outputs:
+      - name: csp
+        type: CSPHeader
+        description: "CSP header configuration"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  sec.hardeningChecklistWeb:
+    description: "Creates web app hardening checklist for headers, cookies, deps, and auth"
+    path: "hardening-checklist-web"
+    domain_rules:
+      - id: coverage
+        description: "Must cover headers, cookies, deps, auth"
+      - id: prioritization
+        description: "Must prioritize by impact"
+      - id: stack_awareness
+        description: "Must adapt to specified stack"
+    inputs:
+      - name: stack
+        type: string
+        description: "Technology stack"
+      - name: context
+        type: object
+        optional: true
+        description: "Additional context"
+    outputs:
+      - name: checklist
+        type: HardeningChecklist
+        description: "Security hardening checklist"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  compliance.dataClassificationHeuristic:
+    description: "Labels fields as PII/sensitive based on names and sample values"
+    path: "data-classification-heuristic"
+    domain_rules:
+      - id: pattern_detection
+        description: "Must detect email, phone, address, ID patterns"
+      - id: name_analysis
+        description: "Must analyze field names for PII hints"
+      - id: confidence
+        description: "Must report confidence levels"
+    inputs:
+      - name: rows
+        type: object[]
+        description: "Sample data rows"
+    outputs:
+      - name: classification
+        type: DataClassification
+        description: "Field classifications"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  compliance.retentionPolicyDraft:
+    description: "Drafts data retention/deletion policy from system requirements"
+    path: "retention-policy-draft"
+    domain_rules:
+      - id: policy_structure
+        description: "Must include retention periods and deletion procedures"
+      - id: legal_considerations
+        description: "Must note legal hold requirements"
+      - id: data_types
+        description: "Must differentiate by data type"
+    inputs:
+      - name: requirements
+        type: string
+        description: "System and compliance requirements"
+    outputs:
+      - name: policy
+        type: RetentionPolicy
+        description: "Draft retention policy"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  compliance.dpiaOutline:
+    description: "Drafts DPIA outline with purpose, risks, mitigations, and necessity assessment"
+    path: "dpia-outline"
+    domain_rules:
+      - id: dpia_structure
+        description: "Must follow DPIA structure"
+      - id: risk_identification
+        description: "Must identify privacy risks"
+      - id: mitigations
+        description: "Must suggest mitigations"
+    inputs:
+      - name: featureDesc
+        type: string
+        description: "Feature or system description"
+    outputs:
+      - name: dpia
+        type: DPIAOutline
+        description: "DPIA outline document"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  compliance.accessControlMatrix:
+    description: "Generates RBAC permissions matrix from roles and resources"
+    path: "access-control-matrix"
+    domain_rules:
+      - id: matrix_generation
+        description: "Must generate complete role/resource matrix"
+      - id: markdown_output
+        description: "Must output as markdown table"
+      - id: gap_detection
+        description: "Should flag missing permissions"
+    inputs:
+      - name: roles
+        type: string[]
+        description: "Role names"
+      - name: resources
+        type: string[]
+        description: "Resource names"
+    outputs:
+      - name: matrix
+        type: AccessMatrix
+        description: "RBAC matrix"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # F) Quantitative / Statistics (10 tools)
+  # ---------------------------------------------------------------------------
+  stats.bootstrapCI:
+    description: "Computes bootstrap confidence intervals for mean, median, or custom statistic"
+    path: "bootstrap-ci"
+    domain_rules:
+      - id: resampling
+        description: "Must perform proper bootstrap resampling (1000+ iterations)"
+      - id: percentile_method
+        description: "Must use percentile method for CI"
+      - id: seed_support
+        description: "Must support seeding for reproducibility"
+    inputs:
+      - name: samples
+        type: number[]
+        description: "Data samples"
+      - name: statistic
+        type: string
+        description: "Statistic: mean, median, or custom"
+      - name: confidence
+        type: number
+        optional: true
+        description: "Confidence level (default: 0.95)"
+    outputs:
+      - name: ci
+        type: ConfidenceInterval
+        description: "Bootstrap confidence interval"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  stats.permutationTest:
+    description: "Nonparametric hypothesis test using permutation resampling"
+    path: "permutation-test"
+    domain_rules:
+      - id: permutation_logic
+        description: "Must shuffle labels and compute test statistic"
+      - id: iteration_count
+        description: "Must use sufficient permutations (1000+)"
+      - id: p_value
+        description: "Must compute exact p-value from permutation distribution"
+    inputs:
+      - name: groupA
+        type: number[]
+        description: "First group samples"
+      - name: groupB
+        type: number[]
+        description: "Second group samples"
+    outputs:
+      - name: result
+        type: HypothesisTest
+        description: "Permutation test result with p-value"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  stats.effectSizeSuite:
+    description: "Computes effect sizes: Cohen's d, odds ratio, r, eta² for proper reporting"
+    path: "effect-size-suite"
+    domain_rules:
+      - id: measures
+        description: "Must support Cohen's d, r, odds ratio, eta²"
+      - id: interpretation
+        description: "Must provide effect size interpretation (small/medium/large)"
+      - id: confidence_intervals
+        description: "Should include CI for effect size"
+    inputs:
+      - name: type
+        type: string
+        description: "Effect size type: cohensD, oddsRatio, r, etaSquared"
+      - name: dataA
+        type: number[]
+        description: "First group data"
+      - name: dataB
+        type: number[]
+        description: "Second group data"
+    outputs:
+      - name: effectSize
+        type: EffectSize
+        description: "Effect size with interpretation"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  stats.multipleTestingAdjust:
+    description: "Applies Bonferroni, Holm, or Benjamini-Hochberg corrections to p-values"
+    path: "multiple-testing-adjust"
+    domain_rules:
+      - id: methods
+        description: "Must support Bonferroni, Holm, and BH methods"
+      - id: sorting
+        description: "Must handle p-value ordering correctly"
+      - id: output
+        description: "Must return adjusted p-values in original order"
+    inputs:
+      - name: pValues
+        type: number[]
+        description: "Array of p-values"
+      - name: method
+        type: string
+        description: "Adjustment method: bonferroni, holm, bh"
+    outputs:
+      - name: adjusted
+        type: number[]
+        description: "Adjusted p-values"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  stats.linearRegressionOLS:
+    description: "Fits OLS regression and returns coefficients with residual diagnostics"
+    path: "linear-regression-ols"
+    domain_rules:
+      - id: algorithm
+        description: "Must use proper OLS algorithm"
+      - id: diagnostics
+        description: "Must return R², residuals, and coefficient SEs"
+      - id: numerical_stability
+        description: "Must handle multicollinearity warnings"
+    inputs:
+      - name: X
+        type: number[][]
+        description: "Feature matrix (rows are observations)"
+      - name: y
+        type: number[]
+        description: "Target values"
+    outputs:
+      - name: regression
+        type: RegressionResult
+        description: "Regression results with diagnostics"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  stats.logisticRegression:
+    description: "Fits logistic regression for binary outcomes with weights and metrics"
+    path: "logistic-regression"
+    domain_rules:
+      - id: algorithm
+        description: "Must use proper logistic regression algorithm"
+      - id: metrics
+        description: "Must return accuracy, AUC if possible"
+      - id: convergence
+        description: "Must report convergence status"
+    inputs:
+      - name: X
+        type: number[][]
+        description: "Feature matrix"
+      - name: y
+        type: number[]
+        description: "Binary labels (0/1)"
+    outputs:
+      - name: model
+        type: LogisticRegressionResult
+        description: "Model with weights and metrics"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  causal.diffInDiff:
+    description: "Difference-in-differences estimate with parallel trends assumption check"
+    path: "diff-in-diff"
+    domain_rules:
+      - id: did_calculation
+        description: "Must compute proper DiD estimate"
+      - id: assumptions
+        description: "Must report on parallel trends assumption"
+      - id: standard_errors
+        description: "Must compute standard errors"
+    inputs:
+      - name: rows
+        type: object[]
+        description: "Panel data rows"
+      - name: unit
+        type: string
+        description: "Unit identifier field"
+      - name: time
+        type: string
+        description: "Time period field"
+      - name: treated
+        type: string
+        description: "Treatment indicator field"
+      - name: y
+        type: string
+        description: "Outcome field"
+    outputs:
+      - name: estimate
+        type: DiDEstimate
+        description: "DiD estimate with diagnostics"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  bayes.betaBinomialUpdate:
+    description: "Bayesian update for conversion rates with Beta prior, returns posterior and credible interval"
+    path: "beta-binomial-update"
+    domain_rules:
+      - id: posterior
+        description: "Must compute Beta posterior correctly"
+      - id: credible_interval
+        description: "Must compute credible interval"
+      - id: prior_sensitivity
+        description: "Should report prior impact"
+    inputs:
+      - name: a
+        type: number
+        description: "Prior alpha"
+      - name: b
+        type: number
+        description: "Prior beta"
+      - name: successes
+        type: number
+        description: "Observed successes"
+      - name: trials
+        type: number
+        description: "Total trials"
+    outputs:
+      - name: posterior
+        type: Posterior
+        description: "Posterior distribution with credible interval"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  stats.timeSeriesDecomposeLite:
+    description: "Decomposes time series into trend, seasonality, and residual components"
+    path: "time-series-decompose-lite"
+    domain_rules:
+      - id: decomposition
+        description: "Must separate trend, seasonal, and residual"
+      - id: period_handling
+        description: "Must handle specified seasonality period"
+      - id: method
+        description: "Must use moving average for trend"
+    inputs:
+      - name: t
+        type: number[]
+        description: "Time indices"
+      - name: y
+        type: number[]
+        description: "Values"
+      - name: period
+        type: number
+        description: "Seasonality period"
+    outputs:
+      - name: decomposition
+        type: TimeSeriesDecomposition
+        description: "Decomposed components"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  stats.anomalyDetectMAD:
+    description: "Robust anomaly detection using median absolute deviation"
+    path: "anomaly-detect-mad"
+    domain_rules:
+      - id: mad_calculation
+        description: "Must compute MAD correctly"
+      - id: threshold
+        description: "Must use configurable threshold"
+      - id: robustness
+        description: "Must be robust to outliers in calculation"
+    inputs:
+      - name: series
+        type: number[]
+        description: "Data series"
+      - name: threshold
+        type: number
+        optional: true
+        description: "MAD threshold (default: 3)"
+    outputs:
+      - name: anomalies
+        type: AnomalyResult
+        description: "Detected anomalies with scores"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # G) Agent Ops / Recipes / Routing / Eval (20 tools)
+  # ---------------------------------------------------------------------------
+  agent.recipeEmit:
+    description: "Emits canonical workflow JSON with steps, params, artifacts, and checks"
+    path: "recipe-emit"
+    domain_rules:
+      - id: schema
+        description: "Must output valid recipe JSON schema"
+      - id: normalization
+        description: "Must normalize step definitions"
+      - id: validation
+        description: "Must validate recipe structure"
+    inputs:
+      - name: recipeName
+        type: string
+        description: "Recipe identifier"
+      - name: options
+        type: object
+        description: "Recipe configuration options"
+    outputs:
+      - name: recipe
+        type: Recipe
+        description: "Canonical recipe specification"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.recipeHash:
+    description: "Produces stable hash ID for recipe deduplication and versioning"
+    path: "recipe-hash"
+    domain_rules:
+      - id: stability
+        description: "Must use json-stable-stringify for consistent ordering"
+      - id: hash_algorithm
+        description: "Must use crypto.createHash for hashing"
+      - id: collision_resistance
+        description: "Must use SHA-256 or better"
+    inputs:
+      - name: workflow
+        type: object
+        description: "Workflow object to hash"
+    outputs:
+      - name: hash
+        type: string
+        description: "Stable hash ID"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.workflowValidateIO:
+    description: "Validates that each step's output type matches next step's input type"
+    path: "workflow-validate-io"
+    domain_rules:
+      - id: type_checking
+        description: "Must check input/output type compatibility"
+      - id: error_reporting
+        description: "Must report mismatches with step details"
+      - id: catalog_lookup
+        description: "Must look up tool types from catalog"
+    inputs:
+      - name: steps
+        type: object[]
+        description: "Workflow steps to validate"
+    outputs:
+      - name: validation
+        type: WorkflowValidation
+        description: "Validation result with any mismatches"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.workflowAutoRepair:
+    description: "Inserts adapter steps when input/output types are mismatched"
+    path: "workflow-auto-repair"
+    domain_rules:
+      - id: adapter_insertion
+        description: "Must insert appropriate adapters (html→text, json-repair, etc.)"
+      - id: rule_table
+        description: "Must use adapter lookup table"
+      - id: minimal_changes
+        description: "Must make minimal necessary repairs"
+    inputs:
+      - name: steps
+        type: object[]
+        description: "Workflow steps with potential mismatches"
+    outputs:
+      - name: repaired
+        type: object[]
+        description: "Repaired workflow steps"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.toolSelectionPlan:
+    description: "Creates tool selection policy specifying when to use which tools"
+    path: "tool-selection-plan"
+    domain_rules:
+      - id: policy_generation
+        description: "Must generate clear selection rules"
+      - id: goal_mapping
+        description: "Must map goals to tool choices"
+      - id: rationale
+        description: "Must include rationale for each rule"
+    inputs:
+      - name: tools
+        type: object[]
+        description: "Available tools"
+      - name: goals
+        type: string[]
+        description: "Agent goals"
+    outputs:
+      - name: policy
+        type: ToolSelectionPolicy
+        description: "Tool selection policy"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.evalFixtureBuild:
+    description: "Converts conversations into eval fixtures with inputs and expected tool calls"
+    path: "eval-fixture-build"
+    domain_rules:
+      - id: fixture_format
+        description: "Must output JSONL-compatible fixtures"
+      - id: schema
+        description: "Must follow strict eval schema"
+      - id: extraction
+        description: "Must extract tool calls from conversations"
+    inputs:
+      - name: conversations
+        type: object[]
+        description: "Conversation transcripts"
+    outputs:
+      - name: fixtures
+        type: EvalFixture[]
+        description: "Evaluation fixtures"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.toolCallAccuracyScore:
+    description: "Scores predicted tool calls vs expected with exact, top-k, and partial credit"
+    path: "tool-call-accuracy-score"
+    domain_rules:
+      - id: scoring_methods
+        description: "Must support exact, top-k, and partial matching"
+      - id: metrics
+        description: "Must compute precision, recall, F1"
+      - id: detailed_breakdown
+        description: "Must provide per-example breakdown"
+    inputs:
+      - name: expected
+        type: object[]
+        description: "Expected tool calls"
+      - name: predicted
+        type: object[]
+        description: "Predicted tool calls"
+    outputs:
+      - name: scores
+        type: AccuracyScores
+        description: "Accuracy metrics"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.coverageTracker:
+    description: "Tracks coverage across domains, artifacts, and roles for recipe library"
+    path: "coverage-tracker"
+    domain_rules:
+      - id: coverage_computation
+        description: "Must compute coverage by category"
+      - id: gap_identification
+        description: "Must identify uncovered areas"
+      - id: histograms
+        description: "Must provide distribution data"
+    inputs:
+      - name: recipes
+        type: object[]
+        description: "Recipe library"
+    outputs:
+      - name: coverage
+        type: CoverageReport
+        description: "Coverage analysis"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.noveltyScoreWorkflow:
+    description: "Scores workflow uniqueness vs corpus using tool-sequence similarity"
+    path: "novelty-score-workflow"
+    domain_rules:
+      - id: similarity_method
+        description: "Must use simhash or minhash over tool IDs"
+      - id: scoring
+        description: "Must output 0-1 novelty score"
+      - id: similar_workflows
+        description: "Must identify most similar existing workflows"
+    inputs:
+      - name: workflow
+        type: object
+        description: "Workflow to score"
+      - name: corpus
+        type: object[]
+        description: "Existing workflow corpus"
+    outputs:
+      - name: novelty
+        type: NoveltyScore
+        description: "Novelty assessment"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.recipeGenerateFromGrammar:
+    description: "Expands workflow templates into concrete recipes using grammar rules"
+    path: "recipe-generate-from-grammar"
+    domain_rules:
+      - id: grammar_expansion
+        description: "Must follow Acquire→Extract→Analyze→Output pattern"
+      - id: slot_filling
+        description: "Must fill slots from tool catalog"
+      - id: quota_sampling
+        description: "Must sample to requested count"
+    inputs:
+      - name: templates
+        type: object[]
+        description: "Workflow templates"
+      - name: catalog
+        type: object[]
+        description: "Tool catalog"
+      - name: n
+        type: number
+        description: "Number of recipes to generate"
+    outputs:
+      - name: recipes
+        type: object[]
+        description: "Generated recipes"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.recipeCurateRank:
+    description: "Filters, dedupes, and ranks recipe candidates by coherence, novelty, and coverage"
+    path: "recipe-curate-rank"
+    domain_rules:
+      - id: deduplication
+        description: "Must dedupe by recipe hash"
+      - id: ranking
+        description: "Must rank by multiple criteria"
+      - id: selection
+        description: "Must select to target count"
+    inputs:
+      - name: candidates
+        type: object[]
+        description: "Recipe candidates"
+      - name: targets
+        type: object
+        description: "Selection targets"
+    outputs:
+      - name: curated
+        type: object[]
+        description: "Curated and ranked recipes"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.workflowCostEstimate:
+    description: "Estimates workflow cost in steps, bytes, network calls, and complexity"
+    path: "workflow-cost-estimate"
+    domain_rules:
+      - id: cost_metadata
+        description: "Must use per-tool cost metadata"
+      - id: aggregation
+        description: "Must aggregate across steps"
+      - id: categories
+        description: "Must break down by cost category"
+    inputs:
+      - name: steps
+        type: object[]
+        description: "Workflow steps"
+    outputs:
+      - name: estimate
+        type: CostEstimate
+        description: "Cost breakdown"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.guardrailPolicyDraft:
+    description: "Drafts operational guardrails for allowed domains, max fetch, redaction, and refusals"
+    path: "guardrail-policy-draft"
+    domain_rules:
+      - id: coverage
+        description: "Must cover domains, sizes, redaction, refusals"
+      - id: tool_awareness
+        description: "Must consider tool capabilities"
+      - id: output_format
+        description: "Must output executable policy"
+    inputs:
+      - name: catalog
+        type: object[]
+        description: "Tool catalog"
+      - name: context
+        type: object
+        description: "Operational context"
+    outputs:
+      - name: policy
+        type: GuardrailPolicy
+        description: "Guardrail policy specification"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.promptToWorkflowSkeleton:
+    description: "Converts user request into proposed workflow skeleton with steps and rationale"
+    path: "prompt-to-workflow-skeleton"
+    domain_rules:
+      - id: intent_mapping
+        description: "Must map intent to workflow structure"
+      - id: rationale
+        description: "Must provide rationale for each step"
+      - id: alternatives
+        description: "Must suggest alternatives where applicable"
+    inputs:
+      - name: prompt
+        type: string
+        description: "User request prompt"
+    outputs:
+      - name: skeleton
+        type: WorkflowSkeleton
+        description: "Proposed workflow structure"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.workflowExplain:
+    description: "Produces human-readable explanation of workflow with step purposes and outputs"
+    path: "workflow-explain"
+    domain_rules:
+      - id: explanation
+        description: "Must explain why each step exists"
+      - id: outputs
+        description: "Must describe what each step outputs"
+      - id: audience
+        description: "Must be readable by non-technical audience"
+    inputs:
+      - name: steps
+        type: object[]
+        description: "Workflow steps"
+      - name: catalog
+        type: object[]
+        description: "Tool catalog for metadata"
+    outputs:
+      - name: explanation
+        type: WorkflowExplanation
+        description: "Human-readable explanation"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.workflowVariantGenerate:
+    description: "Creates meaningful workflow variants for different goals (fast, accurate, low-web)"
+    path: "workflow-variant-generate"
+    domain_rules:
+      - id: variant_rules
+        description: "Must apply variant rules per goal"
+      - id: compatibility
+        description: "Must check variant compatibility"
+      - id: meaningful
+        description: "Must produce meaningfully different variants"
+    inputs:
+      - name: workflow
+        type: object
+        description: "Base workflow"
+      - name: goals
+        type: string[]
+        description: "Variant goals (fast, accurate, low-web)"
+    outputs:
+      - name: variants
+        type: object[]
+        description: "Workflow variants"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  agent.recipePublishManifest:
+    description: "Builds publish-ready manifests with tags, categories, and readme snippets"
+    path: "recipe-publish-manifest"
+    domain_rules:
+      - id: manifest_format
+        description: "Must generate valid publish manifest"
+      - id: readme_generation
+        description: "Must generate readme snippet"
+      - id: tagging
+        description: "Must auto-generate tags from content"
+    inputs:
+      - name: recipes
+        type: object[]
+        description: "Recipes to publish"
+    outputs:
+      - name: manifests
+        type: PublishManifest[]
+        description: "Publish-ready manifests"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # Existing tool (kept for compatibility)
+  # ---------------------------------------------------------------------------
+  adapter.createBlogPost:
+    description: "Creates structured blog posts with frontmatter, metadata, slug generation, word count, and reading time estimation"
+    path: "createBlogPost"
     inputs:
       - name: title
         type: string
-        description: "Blog post title"
+        description: "The blog post title"
       - name: author
         type: string
-        description: "Author name"
+        description: "Author name for attribution"
       - name: content
         type: string
-        description: "Blog post content in markdown"
+        description: "Main body content in markdown"
       - name: tags
-        type: array
+        type: string[]
         optional: true
-        description: "Optional tags for the post"
+        description: "Categorization tags"
+      - name: format
+        type: "'markdown' | 'mdx'"
+        optional: true
+        description: "Output format preference"
       - name: excerpt
         type: string
         optional: true
-        description: "Optional excerpt/summary"
-      - name: format
-        type: string
-        optional: true
-        description: "Output format: markdown or mdx"
+        description: "Short summary for previews"
     outputs:
       - name: blogPost
         type: BlogPost
-        description: "Complete blog post with frontmatter and metadata"
-        measures: [working_implementation, valid_output_structure, ai_sdk_compliance, readme_documentation]
+        description: "Complete blog post with frontmatter and formatted content"
+        measures: [working_implementation, valid_output_structure, ai_sdk_compliance, npm_publishable, readme_documentation]
+
+# =============================================================================
+# VALIDATORS - Which validators to run against each block
+# =============================================================================
+validators:
+  - schema      # Validates inputs/outputs are defined correctly
+  - shape.ts    # Validates TypeScript exports match expected shape
+  - domain      # AI-powered semantic validation against domain rules
