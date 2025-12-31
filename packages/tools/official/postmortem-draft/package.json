@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/tools-postmortem-draft",
+  "version": "0.1.0",
+  "description": "Draft postmortem documents from incident details with timeline and action items",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "postmortem", "incident", "sre"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/postmortem-draft"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "postmortemDraftTool",
+        "description": "Draft postmortem documents from incident details with timeline and action items",
+        "parameters": [
+          {
+            "name": "title",
+            "type": "string",
+            "description": "Title of the incident",
+            "required": true
+          },
+          {
+            "name": "timeline",
+            "type": "array",
+            "description": "Array of timeline events with time and event description",
+            "required": true
+          },
+          {
+            "name": "rootCause",
+            "type": "string",
+            "description": "Root cause analysis",
+            "required": true
+          },
+          {
+            "name": "actionItems",
+            "type": "array",
+            "description": "Array of action items to prevent recurrence",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "PostmortemDraft",
+          "description": "Object with postmortem markdown, severity assessment, and duration"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

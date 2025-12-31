@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-csv-parse",
+  "version": "0.1.0",
+  "description": "Parse CSV text into array of objects using papaparse",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "csv", "parse"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/papaparse": "^5.3.15",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/csv-parse"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "csvParseTool",
+        "description": "Parse CSV text into array of objects with automatic header detection",
+        "parameters": [
+          {
+            "name": "csv",
+            "type": "string",
+            "description": "The CSV text to parse",
+            "required": true
+          },
+          {
+            "name": "hasHeaders",
+            "type": "boolean",
+            "description": "Whether the first row contains headers (default: true)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "CsvParseResult",
+          "description": "Object with rows array, headers array, and rowCount"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "papaparse": "^5.4.1"
+  }
+}

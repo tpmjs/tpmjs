@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-dedupe-by-key",
+  "version": "0.1.0",
+  "description": "Remove duplicate objects from an array based on one or more key fields",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "dedupe", "unique", "array"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/dedupe-by-key"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "dedupeByKeyTool",
+        "description": "Remove duplicate objects from an array based on one or more key fields",
+        "parameters": [
+          {
+            "name": "rows",
+            "type": "array",
+            "description": "Array of objects to deduplicate",
+            "required": true
+          },
+          {
+            "name": "key",
+            "type": "string | array",
+            "description": "Field name(s) to use as unique key",
+            "required": true
+          },
+          {
+            "name": "keepLast",
+            "type": "boolean",
+            "description": "If true, keep last occurrence; if false, keep first",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "DedupeResult",
+          "description": "Object with deduplicated rows and statistics"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

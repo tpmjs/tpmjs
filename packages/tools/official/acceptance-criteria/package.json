@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-acceptance-criteria",
+  "version": "0.1.0",
+  "description": "Format acceptance criteria from requirements using Given/When/Then (Gherkin) format",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "ai", "acceptance-criteria", "gherkin", "bdd", "testing"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/acceptance-criteria"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "acceptanceCriteriaTool",
+        "description": "Format acceptance criteria from requirements using Given/When/Then (Gherkin) format",
+        "parameters": [
+          {
+            "name": "story",
+            "type": "string",
+            "description": "The user story or feature description",
+            "required": true
+          },
+          {
+            "name": "criteria",
+            "type": "array",
+            "description": "Array of criteria objects with given, when, then properties",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "AcceptanceCriteria",
+          "description": "Object with formatted criteria in markdown and criteria count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

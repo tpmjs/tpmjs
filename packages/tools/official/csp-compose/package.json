@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-csp-compose",
+  "version": "0.1.0",
+  "description": "Compose Content Security Policy headers from directive configurations",
+  "type": "module",
+  "keywords": ["tpmjs", "security", "csp", "content-security-policy"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/csp-compose"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "security",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "cspComposeTool",
+        "description": "Compose a Content Security Policy header from directive configurations",
+        "parameters": [
+          {
+            "name": "policies",
+            "type": "object",
+            "description": "CSP directives mapped to source arrays",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "CSPResult",
+          "description": "Object with header string, directives array, and isStrict boolean"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

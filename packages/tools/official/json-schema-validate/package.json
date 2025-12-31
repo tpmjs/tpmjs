@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-json-schema-validate",
+  "version": "0.1.0",
+  "description": "Validates JSON data against JSON Schema using ajv",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "validation", "json-schema", "ajv"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/json-schema-validate"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "jsonSchemaValidateTool",
+        "description": "Validates JSON data against a JSON Schema specification using ajv validator",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "any",
+            "description": "The data to validate",
+            "required": true
+          },
+          {
+            "name": "schema",
+            "type": "object",
+            "description": "JSON Schema object to validate against",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ValidationResult",
+          "description": "Object with valid boolean, errors array, and errorCount"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

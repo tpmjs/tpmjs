@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-html-to-markdown",
+  "version": "0.0.1",
+  "description": "Convert HTML to markdown using turndown",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "html", "markdown", "convert", "turndown"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/turndown": "^5.0.5",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/html-to-markdown"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "htmlToMarkdownTool",
+        "description": "Convert HTML to markdown with customizable formatting options",
+        "parameters": [
+          {
+            "name": "html",
+            "type": "string",
+            "description": "The HTML string to convert",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Optional configuration for markdown formatting",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "HtmlToMarkdownResult",
+          "description": "Object with markdown output and word count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "turndown": "^7.2.0"
+  }
+}

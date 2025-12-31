@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-effect-size-suite",
+  "version": "0.1.0",
+  "description": "Calculate effect sizes (Cohen's d, Hedge's g, Glass's delta) for comparing two groups",
+  "type": "module",
+  "keywords": ["tpmjs", "statistics", "effect-size", "cohens-d", "hedges-g"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/effect-size-suite"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "statistics",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "effectSizeSuiteTool",
+        "description": "Calculate multiple effect size measures (Cohen's d, Hedge's g, Glass's delta) for comparing two groups",
+        "parameters": [
+          {
+            "name": "group1",
+            "type": "number[]",
+            "description": "First group of numeric values",
+            "required": true
+          },
+          {
+            "name": "group2",
+            "type": "number[]",
+            "description": "Second group of numeric values",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "EffectSizeResult",
+          "description": "Object with Cohen's d, Hedge's g, Glass's delta, and interpretation"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

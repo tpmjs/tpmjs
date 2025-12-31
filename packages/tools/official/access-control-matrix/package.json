@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-access-control-matrix",
+  "version": "0.1.0",
+  "description": "Generates access control matrix from roles, resources, and permissions for RBAC compliance",
+  "type": "module",
+  "keywords": ["tpmjs", "compliance", "ai", "rbac", "access-control", "security"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/access-control-matrix"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "compliance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "accessControlMatrix",
+        "description": "Generates access control matrix from roles, resources, and permissions for RBAC compliance",
+        "parameters": [
+          {
+            "name": "roles",
+            "type": "array",
+            "description": "Array of role names (e.g., ['admin', 'editor', 'viewer'])",
+            "required": true
+          },
+          {
+            "name": "resources",
+            "type": "array",
+            "description": "Array of resource names (e.g., ['documents', 'reports', 'settings'])",
+            "required": true
+          },
+          {
+            "name": "permissions",
+            "type": "object",
+            "description": "Nested object mapping role -> resource -> actions array",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "AccessControlMatrix",
+          "description": "Object with 2D matrix, roles, resources, and summary statistics"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

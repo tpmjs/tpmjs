@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-slo-draft",
+  "version": "0.1.0",
+  "description": "Draft SLO (Service Level Objective) definitions for services",
+  "type": "module",
+  "keywords": ["tpmjs", "ops", "slo", "monitoring", "sre"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/slo-draft"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ops",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "sloDraftTool",
+        "description": "Draft SLO (Service Level Objective) definitions for services with metrics, targets, and windows",
+        "parameters": [
+          {
+            "name": "serviceName",
+            "type": "string",
+            "description": "Name of the service",
+            "required": true
+          },
+          {
+            "name": "metrics",
+            "type": "array",
+            "description": "Array of metrics with name, target, and window",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "SLODraft",
+          "description": "Object with slo (markdown), metrics array, and summary"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

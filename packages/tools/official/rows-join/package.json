@@ -1,0 +1,84 @@
+{
+  "name": "@tpmjs/tools-rows-join",
+  "version": "0.1.0",
+  "description": "Joins two arrays of objects by key (inner, left, right, full outer join)",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "join", "merge"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/rows-join"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "rowsJoinTool",
+        "description": "Joins two arrays of objects by key fields, supporting inner, left, right, and full outer joins",
+        "parameters": [
+          {
+            "name": "left",
+            "type": "array",
+            "description": "Left array of objects to join",
+            "required": true
+          },
+          {
+            "name": "right",
+            "type": "array",
+            "description": "Right array of objects to join",
+            "required": true
+          },
+          {
+            "name": "leftKey",
+            "type": "string",
+            "description": "Field name in left array to join on",
+            "required": true
+          },
+          {
+            "name": "rightKey",
+            "type": "string",
+            "description": "Field name in right array to join on",
+            "required": true
+          },
+          {
+            "name": "type",
+            "type": "string",
+            "description": "Join type: 'inner', 'left', 'right', or 'full'",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "JoinResult",
+          "description": "Object with joined rows array and match statistics"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

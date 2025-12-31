@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-markdown-lint-basic",
+  "version": "0.1.0",
+  "description": "Basic markdown linting to check for common issues",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "markdown", "lint", "ai"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/markdown-lint-basic"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "markdownLintBasicTool",
+        "description": "Basic markdown linting to check for common issues",
+        "parameters": [
+          {
+            "name": "markdown",
+            "type": "string",
+            "description": "The markdown content to lint",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "LintResult",
+          "description": "Object with issues array, passed boolean, and summary"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

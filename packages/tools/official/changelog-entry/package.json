@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-changelog-entry",
+  "version": "0.1.0",
+  "description": "Generate changelog entries in Keep a Changelog format",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "changelog", "versioning", "ai"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/changelog-entry"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "changelogEntryTool",
+        "description": "Generate changelog entries in Keep a Changelog format",
+        "parameters": [
+          {
+            "name": "version",
+            "type": "string",
+            "description": "The version number (e.g., '1.2.0')",
+            "required": true
+          },
+          {
+            "name": "changes",
+            "type": "array",
+            "description": "Array of change objects with type and description",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ChangelogEntry",
+          "description": "Object with entry markdown string, date, and types array"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

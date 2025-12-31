@@ -1,0 +1,74 @@
+{
+  "name": "@tpmjs/tools-diff-text-unified",
+  "version": "0.1.0",
+  "description": "Creates unified diff between two text strings with context lines",
+  "type": "module",
+  "keywords": ["tpmjs", "engineering", "diff", "text", "unified"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/diff": "^6.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/diff-text-unified"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "engineering",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "diffTextUnified",
+        "description": "Creates unified diff between two text strings with context lines",
+        "parameters": [
+          {
+            "name": "original",
+            "type": "string",
+            "description": "The original text",
+            "required": true
+          },
+          {
+            "name": "modified",
+            "type": "string",
+            "description": "The modified text",
+            "required": true
+          },
+          {
+            "name": "contextLines",
+            "type": "number",
+            "description": "Number of context lines to show around changes (default: 3)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "DiffResult",
+          "description": "Object with diff string, additions, deletions, and changes count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "diff": "^7.0.0"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-recipe-hash",
+  "version": "0.1.0",
+  "description": "Generates a deterministic hash for a recipe/workflow using SHA-256",
+  "type": "module",
+  "keywords": ["tpmjs", "workflow", "agent", "hash", "deterministic"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/recipe-hash"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "recipeHash",
+        "description": "Generates a deterministic hash for a recipe/workflow using SHA-256",
+        "parameters": [
+          {
+            "name": "recipe",
+            "type": "object",
+            "description": "Recipe or workflow object to hash",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "HashResult",
+          "description": "Object with hash (hex string), algorithm (SHA-256), and inputSize (bytes)"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

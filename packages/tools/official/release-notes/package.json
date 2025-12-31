@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-release-notes",
+  "version": "0.1.0",
+  "description": "Generate release notes from structured changes",
+  "type": "module",
+  "keywords": ["tpmjs", "doc", "ai", "release-notes", "changelog", "documentation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/release-notes"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "doc",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "releaseNotesTool",
+        "description": "Generate release notes from structured changes",
+        "parameters": [
+          {
+            "name": "version",
+            "type": "string",
+            "description": "Version number",
+            "required": true
+          },
+          {
+            "name": "changes",
+            "type": "array",
+            "description": "Array of changes with type, description, and optional issue",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ReleaseNotesResult",
+          "description": "Object with notes (markdown), version, date, and summary"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

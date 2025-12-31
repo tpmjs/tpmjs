@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-workflow-explain",
+  "version": "0.1.0",
+  "description": "Explains what a workflow does in plain language",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "workflow", "documentation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/workflow-explain"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "workflowExplainTool",
+        "description": "Explains what a workflow does in plain language",
+        "parameters": [
+          {
+            "name": "workflow",
+            "type": "object",
+            "description": "Workflow object with name and steps",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "WorkflowExplanation",
+          "description": "Object with explanation, stepSummaries array, and complexity assessment"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

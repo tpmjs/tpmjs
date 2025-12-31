@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-logistic-regression",
+  "version": "0.1.0",
+  "description": "Simple logistic regression implementation for binary classification",
+  "type": "module",
+  "keywords": ["tpmjs", "statistics", "machine-learning", "logistic-regression", "classification"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/logistic-regression"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "statistics",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "logisticRegressionTool",
+        "description": "Perform binary logistic regression using gradient descent",
+        "parameters": [
+          {
+            "name": "x",
+            "type": "number[][]",
+            "description": "Feature matrix (each row is a sample, each column is a feature)",
+            "required": true
+          },
+          {
+            "name": "y",
+            "type": "number[]",
+            "description": "Binary target labels (0 or 1)",
+            "required": true
+          },
+          {
+            "name": "iterations",
+            "type": "number",
+            "description": "Number of gradient descent iterations (default: 1000)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "LogisticRegressionResult",
+          "description": "Object with coefficients, predictions, and accuracy"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

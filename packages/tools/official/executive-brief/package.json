@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-executive-brief",
+  "version": "0.1.0",
+  "description": "Format content into executive summary style with key bullets and concise overview",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "ai", "executive-summary", "business"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/executive-brief"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "executiveBriefTool",
+        "description": "Format content into executive summary style with key bullets and concise overview",
+        "parameters": [
+          {
+            "name": "content",
+            "type": "string",
+            "description": "The content to format into an executive brief",
+            "required": true
+          },
+          {
+            "name": "maxBullets",
+            "type": "number",
+            "description": "Maximum number of bullet points (default: 5)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "ExecutiveBrief",
+          "description": "Object with formatted brief in markdown, bullet count, and word count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

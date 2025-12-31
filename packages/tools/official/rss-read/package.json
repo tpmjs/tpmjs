@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-rss-read",
+  "version": "0.1.0",
+  "description": "Parse RSS/Atom feeds and extract feed metadata and items",
+  "type": "module",
+  "keywords": ["tpmjs", "rss", "atom", "feed", "parser", "web"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/rss-read"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "web",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "rssReadTool",
+        "description": "Parse RSS/Atom feeds and extract feed metadata and items",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The RSS/Atom feed URL to parse",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "type": "number",
+            "description": "Maximum number of items to return (default: 20)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "RssFeed",
+          "description": "Object with feed metadata, items array, and item count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "rss-parser": "^3.13.0"
+  }
+}

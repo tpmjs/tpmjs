@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-table-extract",
+  "version": "0.1.0",
+  "description": "Extract HTML tables as structured data from web pages",
+  "type": "module",
+  "keywords": ["tpmjs", "research", "ai", "tables", "web-scraping", "data-extraction"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/cheerio": "^0.22.35",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/table-extract"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "research",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "tableExtractTool",
+        "description": "Extract HTML tables as structured data from web pages",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL to fetch and extract tables from",
+            "required": true
+          },
+          {
+            "name": "tableIndex",
+            "type": "number",
+            "description": "Which table to extract (0-based index, default: 0 for first table)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "TableExtraction",
+          "description": "Object with tables array and tableCount"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "cheerio": "^1.0.0"
+  }
+}

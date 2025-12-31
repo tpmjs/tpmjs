@@ -1,0 +1,61 @@
+{
+  "name": "@tpmjs/tools-json-repair",
+  "version": "0.1.0",
+  "description": "Attempt to repair malformed JSON using jsonrepair",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "json", "repair", "fix"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/json-repair"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "jsonRepairTool",
+        "description": "Attempt to repair malformed JSON with detailed change tracking",
+        "parameters": [
+          {
+            "name": "json",
+            "type": "string",
+            "description": "The malformed JSON string to repair",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "JsonRepairResult",
+          "description": "Object with repaired JSON, modification flag, and list of changes made"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "jsonrepair": "^3.11.1"
+  }
+}

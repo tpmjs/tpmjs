@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-postmortem-action-extractor",
+  "version": "0.1.0",
+  "description": "Extract action items from postmortem documents",
+  "type": "module",
+  "keywords": ["tpmjs", "ops", "postmortem", "incident", "sre"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/postmortem-action-extractor"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ops",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "postmortemActionExtractorTool",
+        "description": "Extract action items from postmortem text with owner, priority, and due date detection",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "Postmortem text to analyze",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "PostmortemActions",
+          "description": "Object with actions array and count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

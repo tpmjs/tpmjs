@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/tools-rows-filter",
+  "version": "0.1.0",
+  "description": "Filter an array of objects by a predicate with support for field comparisons (eq, ne, gt, lt, contains)",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "filter", "array"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/rows-filter"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "rowsFilterTool",
+        "description": "Filter an array of objects by a predicate with support for field comparisons",
+        "parameters": [
+          {
+            "name": "rows",
+            "type": "array",
+            "description": "Array of objects to filter",
+            "required": true
+          },
+          {
+            "name": "field",
+            "type": "string",
+            "description": "Field name to filter on",
+            "required": true
+          },
+          {
+            "name": "operator",
+            "type": "string",
+            "description": "Comparison operator: eq, ne, gt, lt, gte, lte, contains",
+            "required": true
+          },
+          {
+            "name": "value",
+            "type": "any",
+            "description": "Value to compare against",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "FilterResult",
+          "description": "Object with filtered rows, matchCount, and totalCount"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "name": "@tpmjs/tools-sitemap-read",
+  "version": "0.1.0",
+  "description": "Parse XML sitemaps and extract URLs from sitemap.xml files",
+  "type": "module",
+  "keywords": ["tpmjs", "sitemap", "xml", "seo", "crawler", "web"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sitemap-read"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "web",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "sitemapReadTool",
+        "description": "Parse XML sitemaps and extract URLs from sitemap.xml files",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The sitemap.xml URL to parse",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "Sitemap",
+          "description": "Object with URLs array, sitemap type, and URL count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "fast-xml-parser": "^4.5.0"
+  }
+}

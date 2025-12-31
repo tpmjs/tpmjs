@@ -1,0 +1,73 @@
+{
+  "name": "@tpmjs/tools-date-parse",
+  "version": "0.0.1",
+  "description": "Parse dates in various natural language formats using chrono-node",
+  "type": "module",
+  "keywords": ["tpmjs", "date", "time", "parse", "chrono", "natural-language"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/date-parse"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "dateParseTool",
+        "description": "Parse dates from natural language text like 'tomorrow at 3pm' or 'next Friday'",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "Text containing date/time expressions",
+            "required": true
+          },
+          {
+            "name": "referenceDate",
+            "type": "string",
+            "description": "ISO date string to use as reference for relative dates",
+            "required": false
+          },
+          {
+            "name": "strict",
+            "type": "boolean",
+            "description": "Use strict parsing mode for more accurate results",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "DateParseResult",
+          "description": "Array of parsed dates with original text and timestamps"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "chrono-node": "^2.7.9"
+  }
+}

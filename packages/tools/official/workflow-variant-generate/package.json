@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-workflow-variant-generate",
+  "version": "0.1.0",
+  "description": "Generate variations of a workflow with constraints and tracking",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "workflow", "variant", "generation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/workflow-variant-generate"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "workflowVariantGenerateTool",
+        "description": "Generate variations of a workflow with constraints and tracking",
+        "parameters": [
+          {
+            "name": "workflow",
+            "type": "object",
+            "description": "Base workflow to generate variants from",
+            "required": true
+          },
+          {
+            "name": "variationCount",
+            "type": "number",
+            "description": "Number of variants to generate",
+            "required": true
+          },
+          {
+            "name": "constraints",
+            "type": "object",
+            "description": "Constraints for variant generation",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "WorkflowVariantResult",
+          "description": "Generated variants with hashes for tracking"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

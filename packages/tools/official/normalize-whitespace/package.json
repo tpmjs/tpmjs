@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-normalize-whitespace",
+  "version": "0.1.0",
+  "description": "Normalize whitespace in text by trimming, collapsing spaces, and standardizing line endings",
+  "type": "module",
+  "keywords": ["tpmjs", "text", "data", "whitespace", "normalize"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/normalize-whitespace"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "normalizeWhitespaceTool",
+        "description": "Normalize whitespace in text by trimming, collapsing spaces, and standardizing line endings",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to normalize",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Normalization options",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "NormalizeWhitespaceResult",
+          "description": "Object with normalized text and change statistics"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

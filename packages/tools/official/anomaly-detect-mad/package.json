@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-anomaly-detect-mad",
+  "version": "0.1.0",
+  "description": "Detect anomalies in data using Median Absolute Deviation (MAD) method",
+  "type": "module",
+  "keywords": ["tpmjs", "statistics", "anomaly-detection", "outliers", "mad", "robust"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/anomaly-detect-mad"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "statistics",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "anomalyDetectMADTool",
+        "description": "Detect anomalies in numeric data using the Median Absolute Deviation (MAD) method",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "number[]",
+            "description": "Array of numeric values to analyze for anomalies",
+            "required": true
+          },
+          {
+            "name": "threshold",
+            "type": "number",
+            "description": "MAD threshold multiplier (default: 3.5)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "AnomalyResult",
+          "description": "Object with detected anomalies, their indices, median, MAD, and threshold"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

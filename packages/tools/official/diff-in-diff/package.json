@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/tools-diff-in-diff",
+  "version": "0.1.0",
+  "description": "Difference-in-differences estimator for causal inference",
+  "type": "module",
+  "keywords": ["tpmjs", "statistics", "causal-inference", "diff-in-diff", "econometrics"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/diff-in-diff"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "statistics",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "diffInDiffTool",
+        "description": "Estimate causal treatment effect using difference-in-differences",
+        "parameters": [
+          {
+            "name": "treatmentBefore",
+            "type": "number[]",
+            "description": "Treatment group observations before intervention",
+            "required": true
+          },
+          {
+            "name": "treatmentAfter",
+            "type": "number[]",
+            "description": "Treatment group observations after intervention",
+            "required": true
+          },
+          {
+            "name": "controlBefore",
+            "type": "number[]",
+            "description": "Control group observations before intervention",
+            "required": true
+          },
+          {
+            "name": "controlAfter",
+            "type": "number[]",
+            "description": "Control group observations after intervention",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "DiffInDiffResult",
+          "description": "Object with treatment effect, standard error, significance, and interpretation"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

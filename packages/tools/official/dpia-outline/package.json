@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-dpia-outline",
+  "version": "0.1.0",
+  "description": "Generate Data Protection Impact Assessment (DPIA) outline for GDPR compliance",
+  "type": "module",
+  "keywords": ["tpmjs", "compliance", "gdpr", "dpia", "privacy", "data-protection"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/dpia-outline"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "compliance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "dpiaOutlineTool",
+        "description": "Generate a Data Protection Impact Assessment (DPIA) outline",
+        "parameters": [
+          {
+            "name": "project",
+            "type": "string",
+            "description": "Project or system name and description",
+            "required": true
+          },
+          {
+            "name": "dataTypes",
+            "type": "array",
+            "description": "Types of personal data being processed",
+            "required": true
+          },
+          {
+            "name": "processing",
+            "type": "array",
+            "description": "Processing activities being performed",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "DPIAResult",
+          "description": "Object with DPIA markdown outline, identified risks, and mitigation strategies"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

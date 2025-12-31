@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-csv-stringify",
+  "version": "0.1.0",
+  "description": "Convert array of objects to CSV string using papaparse",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "csv", "stringify"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/papaparse": "^5.3.15",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/csv-stringify"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "csvStringifyTool",
+        "description": "Convert array of objects to CSV string with optional custom headers",
+        "parameters": [
+          {
+            "name": "rows",
+            "type": "array",
+            "description": "Array of objects to convert to CSV",
+            "required": true
+          },
+          {
+            "name": "headers",
+            "type": "array",
+            "description": "Optional array of header names (default: uses object keys)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "CsvStringifyResult",
+          "description": "Object with csv string and rowCount"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "papaparse": "^5.4.1"
+  }
+}

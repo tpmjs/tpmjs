@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-url-risk-heuristic",
+  "version": "0.1.0",
+  "description": "Analyze URLs for security risks using heuristics",
+  "type": "module",
+  "keywords": ["tpmjs", "security", "url", "safety", "risk-analysis"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/url-risk-heuristic"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "security",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "urlRiskHeuristic",
+        "description": "Analyze URLs for security risks using heuristics such as IP addresses, suspicious TLDs, long URLs, unicode tricks, and known patterns",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL to analyze for security risks",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "UrlRiskAnalysis",
+          "description": "Object with riskScore (0-1), risks array, recommendations array, and isHighRisk boolean"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

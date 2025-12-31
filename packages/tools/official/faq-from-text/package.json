@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-faq-from-text",
+  "version": "0.1.0",
+  "description": "Extract Q&A pairs from text that looks like FAQ format",
+  "type": "module",
+  "keywords": ["tpmjs", "doc", "ai", "faq", "documentation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/faq-from-text"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "doc",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "faqFromTextTool",
+        "description": "Extract Q&A pairs from text that looks like FAQ format",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "Text containing FAQ-style content",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "FaqResult",
+          "description": "Object with faqs array and count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

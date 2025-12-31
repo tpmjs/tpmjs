@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-url-normalize",
+  "version": "0.1.0",
+  "description": "Normalize URLs with configurable options for consistent URL handling",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "url", "normalize", "validation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/url-normalize"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "urlNormalizeTool",
+        "description": "Normalize URLs with configurable options (lowercase, remove trailing slash, sort params, etc.)",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL to normalize",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Normalization options (sortParams, removeHash, lowercase)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "UrlNormalizeResult",
+          "description": "Object with normalized URL, original URL, and array of changes made"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

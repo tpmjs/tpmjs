@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-recipe-curate-rank",
+  "version": "0.1.0",
+  "description": "Rank recipes by quality and efficiency using weighted criteria",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "recipe", "ranking", "curation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/recipe-curate-rank"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "recipeCurateRankTool",
+        "description": "Rank recipes by quality and efficiency using weighted criteria",
+        "parameters": [
+          {
+            "name": "recipes",
+            "type": "array",
+            "description": "Array of recipes to rank",
+            "required": true
+          },
+          {
+            "name": "criteria",
+            "type": "array",
+            "description": "Array of ranking criteria with names and weights",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "RecipeRankResult",
+          "description": "Ranked recipes with scores and top pick"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

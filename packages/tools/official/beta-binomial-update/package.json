@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/tools-beta-binomial-update",
+  "version": "0.1.0",
+  "description": "Bayesian beta-binomial conjugate posterior update for estimating probabilities",
+  "type": "module",
+  "keywords": ["tpmjs", "statistics", "bayesian", "beta-distribution", "inference"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/beta-binomial-update"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "statistics",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "betaBinomialUpdateTool",
+        "description": "Update Beta prior with binomial data to get posterior distribution",
+        "parameters": [
+          {
+            "name": "priorAlpha",
+            "type": "number",
+            "description": "Prior alpha parameter (pseudo-successes)",
+            "required": true
+          },
+          {
+            "name": "priorBeta",
+            "type": "number",
+            "description": "Prior beta parameter (pseudo-failures)",
+            "required": true
+          },
+          {
+            "name": "successes",
+            "type": "number",
+            "description": "Number of successes observed",
+            "required": true
+          },
+          {
+            "name": "trials",
+            "type": "number",
+            "description": "Total number of trials",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "BetaBinomialPosterior",
+          "description": "Object with posterior parameters, mean, mode, variance, and credible interval"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

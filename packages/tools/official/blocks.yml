@@ -7,236 +7,159 @@ root: "."
 philosophy:
   - "Every tool MUST be a working, production-ready implementation - no stubs, no TODOs"
   - "Tools use AI SDK v6 tool() + jsonSchema() pattern exclusively"
-  - "Each tool does ONE thing exceptionally well"
+  - "Each tool does ONE thing exceptionally well (single-shot, one call in, one result out)"
   - "Tools return structured, typed outputs that agents can reliably parse"
   - "Error handling is explicit - throw meaningful errors, never silently fail"
   - "All async operations use proper error boundaries"
-  - "Dependencies are minimal and production-stable (no alpha/beta packages)"
+  - "Dependencies are minimal and production-stable (no alpha/beta packages unless necessary)"
+  - "Tools are deterministic where possible - same input yields same output"
+  - "Network I/O is async but tools are single-shot (no streaming, no multi-step orchestration inside)"
 
 # =============================================================================
-# DOMAIN - Entities, signals, and measures that define the problem space
+# DOMAIN - Entities, signals, and measures
 # =============================================================================
 domain:
   entities:
-    # Core web entities
     url:
-      fields: [href, domain, protocol, path, query]
+      fields: [href, domain, protocol, path, query, fragment]
       description: "A fully qualified URL with parsed components"
 
     webpage:
       fields: [url, title, html, text, metadata]
       description: "A fetched webpage with extracted content"
 
-    # Content entities
     text_content:
       fields: [raw, sentences, paragraphs, wordCount]
       description: "Processed text with structural analysis"
 
     claim:
-      fields: [statement, confidence, needsCitation, category]
+      fields: [statement, confidence, needsCitation, category, suggestedEvidence]
       description: "A factual assertion that can be verified"
-      categories: [factual, statistical, quote, attribution, prediction]
 
     timeline_event:
-      fields: [date, description, confidence, source]
+      fields: [date, description, confidence, source, dateType]
       description: "A dated event with provenance"
-
-    # Output entities
-    blog_post:
-      fields: [frontmatter, content, formattedOutput]
-      description: "A complete blog post with metadata"
 
     page_brief:
       fields: [url, title, summary, keyPoints, claims]
       description: "A summarized view of a webpage"
 
     comparison_result:
-      fields: [agreements, conflicts, uniqueToA, uniqueToB]
+      fields: [agreements, conflicts, uniqueToA, uniqueToB, similarity]
       description: "Side-by-side analysis of two sources"
 
     credibility_score:
-      fields: [score, factors, warnings, recommendations]
+      fields: [score, signals, warnings, recommendations, confidence]
       description: "Trust assessment of a source"
 
-    claim_checklist:
-      fields: [claims, citedCount, uncitedCount, priority]
-      description: "Extracted claims with citation status"
-
-    timeline:
-      fields: [events, dateRange, gaps, confidence]
-      description: "Chronological event sequence"
+    blog_post:
+      fields: [title, author, content, slug, frontmatter, wordCount, readingTime]
+      description: "A structured blog post with metadata"
 
   signals:
     credibility:
-      description: "Trustworthiness indicators for a source"
-      extraction_hints:
-        - "HTTPS vs HTTP"
-        - "Domain reputation (.edu, .gov, major news)"
-        - "Author byline and bio present"
-        - "Publication date visible"
-        - "Citations and references"
-        - "Contact information available"
+      description: "How trustworthy is this source"
+      extraction_hint: "Look for HTTPS, known domains, author info, dates, citations"
 
     readability:
-      description: "How accessible the content is"
-      extraction_hints:
-        - "Sentence length and complexity"
-        - "Technical jargon density"
-        - "Clear paragraph structure"
-        - "Heading hierarchy"
+      description: "How readable is the content"
+      extraction_hint: "Check sentence length, word complexity, structure"
 
-    claim_strength:
-      description: "How verifiable a statement is"
-      extraction_hints:
-        - "Contains specific numbers or dates"
-        - "Attributes to named source"
-        - "Makes testable prediction"
-        - "Uses hedging language (may, might, could)"
-
-  # Quality measures that outputs must satisfy
   measures:
     working_implementation:
       constraints:
-        - "execute() function contains real logic, not placeholder comments"
-        - "No TODO, FIXME, or 'Not implemented' in output"
-        - "Returns actual computed values, not hardcoded test data"
-      severity: error
+        - "Tool must have actual working code, not stubs"
+        - "All dependencies must be installed and importable"
+        - "Execute function must return expected output type"
 
     valid_output_structure:
       constraints:
-        - "Returns object matching declared interface"
-        - "All required fields are present and typed correctly"
-        - "Arrays are never undefined, use empty array []"
-      severity: error
+        - "Output must match declared TypeScript interface"
+        - "All required fields must be present"
+        - "Types must match (string, number, array, etc.)"
 
     proper_error_handling:
       constraints:
-        - "Throws descriptive Error with context on failure"
-        - "Validates inputs before processing"
-        - "Catches and wraps external API errors"
-      severity: error
+        - "Network errors must be caught and re-thrown with context"
+        - "Input validation must happen before processing"
+        - "Errors must include actionable messages"
 
     ai_sdk_compliance:
       constraints:
-        - "Uses tool() from 'ai' package"
-        - "Uses jsonSchema() for input schema (not Zod directly)"
-        - "Description is clear and actionable for LLMs"
-        - "Input schema has descriptions for each property"
-      severity: error
+        - "Must use tool() from 'ai' package"
+        - "Must use jsonSchema() for input schema"
+        - "Must export the tool as default"
 
-    npm_publishable:
+    readme_documentation:
       constraints:
-        - "Has valid package.json with tpmjs field"
-        - "Exports tool as both named and default export"
-        - "Has proper TypeScript types exported"
-        - "Version follows semver"
-      severity: error
+        - "README.md must exist in tool directory"
+        - "README must document all inputs and outputs"
+        - "README must include usage example"
 
 # =============================================================================
-# DOMAIN RULES - Enforce code quality across all blocks
+# VALIDATORS
+# =============================================================================
+validators:
+  - schema
+  - shape.ts
+  - domain
+
+# =============================================================================
+# BLOCKS - Default rules that apply to all blocks
 # =============================================================================
 blocks:
   domain_rules:
-    - id: no_stub_implementations
-      description: |
-        CRITICAL: Tools must be fully implemented with real functionality.
-        - No TODO comments in execute()
-        - No placeholder returns like "Not implemented"
-        - No hardcoded test data as output
-        - The tool must actually perform the described operation
-
     - id: ai_sdk_v6_pattern
       description: |
-        All tools MUST use the AI SDK v6 pattern:
-        - import { tool, jsonSchema } from 'ai'
-        - Use tool() wrapper with description and inputSchema
-        - Use jsonSchema<T>() for type-safe input schema
-        - Include 'additionalProperties: false' in JSON schema
-        - Make execute() async and properly typed
+        Must follow AI SDK v6 tool pattern:
+        - Import { tool, jsonSchema } from 'ai'
+        - Use jsonSchema<InputType>() with proper TypeScript interface
+        - Wrap in tool() with description and execute function
+        - Export as default
 
     - id: proper_json_schema
       description: |
-        Input schemas must be complete and LLM-friendly:
-        - Every property needs a 'description' field
-        - Use 'required' array to specify mandatory fields
-        - Include 'additionalProperties: false'
-        - Use correct JSON Schema types (string, number, boolean, array, object)
-        - For enums, use 'enum' with array of allowed values
+        Input schema must be complete:
+        - All properties must have type and description
+        - Required fields must be listed
+        - Optional fields should be marked
+        - Use appropriate JSON Schema types
 
     - id: structured_outputs
       description: |
-        Tools must return well-structured, typed objects:
-        - Define TypeScript interface for output type
-        - Export interface so consumers can use it
-        - All fields should have meaningful names
-        - Use arrays for collections, never undefined
-        - Include metadata fields where helpful (timestamp, source, confidence)
-
-    - id: input_validation
-      description: |
-        Validate inputs at the start of execute():
-        - Check required fields are present and non-empty
-        - Validate URLs are well-formed when accepting URLs
-        - Throw descriptive errors for invalid input
-        - Don't silently accept bad data
+        Output must be structured and typed:
+        - Define TypeScript interface for output
+        - Return object matching interface
+        - Include all fields documented in blocks.yml
 
     - id: async_error_handling
       description: |
-        Handle async operations properly:
+        Async operations must handle errors:
         - Wrap fetch/network calls in try-catch
-        - Provide meaningful error messages with context
-        - Don't let errors silently fail to empty output
-        - Include original error in wrapped errors
+        - Provide meaningful error messages
+        - Don't silently fail or return empty
+
+    - id: readme_code_alignment
+      description: |
+        README must match implementation:
+        - Documented inputs must match code
+        - Documented outputs must match code
+        - Usage examples must be accurate
 
   # ===========================================================================
-  # BLOCK DEFINITIONS - Each tool with its full specification
+  # IMPLEMENTED TOOLS
   # ===========================================================================
-
-  adapter.createBlogPost:
-    description: "Creates structured blog posts with frontmatter, metadata, slug generation, word count, and reading time estimation"
-    path: "createBlogPost"
-    inputs:
-      - name: title
-        type: string
-        description: "The blog post title"
-      - name: author
-        type: string
-        description: "Author name for attribution"
-      - name: content
-        type: string
-        description: "Main body content in markdown"
-      - name: tags
-        type: string[]
-        optional: true
-        description: "Categorization tags"
-      - name: format
-        type: "'markdown' | 'mdx'"
-        optional: true
-        description: "Output format preference"
-      - name: excerpt
-        type: string
-        optional: true
-        description: "Short summary for previews"
-    outputs:
-      - name: blogPost
-        type: BlogPost
-        description: "Complete blog post with frontmatter and formatted content"
-        measures:
-          - working_implementation
-          - valid_output_structure
-          - ai_sdk_compliance
-          - npm_publishable
 
   research.pageBrief:
     description: "Fetches a URL, extracts main content using Readability algorithm, and returns a structured brief with summary, key points, and claims that need citations"
     path: "page-brief"
     domain_rules:
       - id: url_fetching
-        description: "Must actually fetch the URL using fetch() API"
+        description: "Must fetch URL using fetch() API with timeout"
       - id: content_extraction
         description: "Must use @mozilla/readability for content extraction"
       - id: sentence_parsing
-        description: "Must parse text into sentences for claim extraction"
+        description: "Must parse text into sentences using sbd library"
     inputs:
       - name: url
         type: string
@@ -244,23 +167,19 @@ blocks:
     outputs:
       - name: brief
         type: PageBrief
-        description: "Structured summary with key points and claims needing citation"
-        measures:
-          - working_implementation
-          - valid_output_structure
-          - proper_error_handling
-          - ai_sdk_compliance
+        description: "Structured summary with key points and claims"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   research.comparePages:
-    description: "Compares content from two URLs, identifying agreements, conflicts, and unique points from each source"
+    description: "Compares content from two URLs, identifying agreements, conflicts, and unique points using TF-IDF similarity"
     path: "compare-pages"
     domain_rules:
       - id: dual_fetch
         description: "Must fetch both URLs and handle failures gracefully"
       - id: content_comparison
-        description: "Must perform actual text comparison, not placeholder"
+        description: "Must use TF-IDF for text comparison (natural library)"
       - id: structured_diff
-        description: "Must categorize differences into agreements/conflicts/unique"
+        description: "Must categorize into agreements/conflicts/unique"
     inputs:
       - name: urlA
         type: string
@@ -271,99 +190,103 @@ blocks:
     outputs:
       - name: comparison
         type: PageComparison
-        description: "Structured comparison showing agreements, conflicts, and unique content"
-        measures:
-          - working_implementation
-          - valid_output_structure
-          - proper_error_handling
+        description: "Structured comparison result"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.sourceCredibility:
-    description: "Analyzes a URL for credibility signals using heuristics like HTTPS, domain reputation, author presence, publication date, and citation density"
+    description: "Analyzes a URL for credibility signals using HTTPS, domain reputation, author presence, dates, and citations"
     path: "source-credibility"
     domain_rules:
-      - id: credibility_heuristics
-        description: |
-          Must check real credibility signals:
-          - HTTPS vs HTTP protocol
-          - Domain TLD (.edu, .gov, .org vs others)
-          - Author byline presence
-          - Publication date presence
-          - External citations/references
-      - id: score_calculation
-        description: "Score must be computed from actual signals, not random/hardcoded"
+      - id: url_analysis
+        description: "Must parse and analyze URL structure using tldts"
+      - id: html_parsing
+        description: "Must parse HTML for credibility signals using cheerio"
+      - id: signal_scoring
+        description: "Must calculate weighted credibility score 0-1"
     inputs:
       - name: url
         type: string
-        description: "The URL to analyze for credibility"
-      - name: html
-        type: string
-        optional: true
-        description: "Pre-fetched HTML content (if available)"
+        description: "The URL to analyze"
     outputs:
       - name: credibility
-        type: CredibilityScore
-        description: "Credibility assessment with score, factors, and recommendations"
-        measures:
-          - working_implementation
-          - valid_output_structure
-          - proper_error_handling
+        type: CredibilityResult
+        description: "Credibility score with signals and recommendations"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.claimChecklist:
-    description: "Extracts factual claims from text and identifies which ones need citations, categorizing by type and priority"
+    description: "Extracts checkable factual claims from text with priority levels and suggested evidence types"
     path: "claim-checklist"
     domain_rules:
-      - id: claim_extraction
-        description: |
-          Must identify claims using real heuristics:
-          - Statements with numbers/statistics
-          - Quotes attributed to people
-          - Statements about events/facts
-          - Predictions or projections
-      - id: citation_detection
-        description: "Must check if claims are supported by inline citations"
+      - id: sentence_detection
+        description: "Must use sbd for sentence boundary detection"
+      - id: claim_identification
+        description: "Must identify claims using pattern matching"
+      - id: priority_assignment
+        description: "Must assign priority levels (high/medium/low)"
     inputs:
       - name: text
         type: string
-        description: "The text to analyze for claims"
+        description: "Text to extract claims from"
     outputs:
       - name: checklist
         type: ClaimChecklist
-        description: "List of claims with citation status and priority ranking"
-        measures:
-          - working_implementation
-          - valid_output_structure
+        description: "List of claims with priorities and evidence suggestions"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.timelineFromText:
-    description: "Extracts dated events from unstructured text and returns a normalized, chronologically sorted timeline with confidence scores"
+    description: "Extracts dated events from text and returns a normalized chronological timeline"
     path: "timeline-from-text"
     domain_rules:
-      - id: date_extraction
-        description: |
-          Must parse dates in multiple formats:
-          - Full dates (January 1, 2024)
-          - Partial dates (March 2024, Q1 2024)
-          - Relative dates (last year, in 2020)
-          - Ranges (2020-2024)
-      - id: event_association
-        description: "Must associate extracted dates with their context/events"
-      - id: chronological_sorting
-        description: "Output events must be sorted chronologically"
+      - id: date_parsing
+        description: "Must use chrono-node for date extraction"
+      - id: event_extraction
+        description: "Must extract event descriptions with context"
+      - id: chronological_ordering
+        description: "Must sort events chronologically and identify gaps"
     inputs:
       - name: text
         type: string
-        description: "The text to extract timeline from"
+        description: "Text containing dated events"
     outputs:
       - name: timeline
         type: Timeline
-        description: "Chronologically sorted events with dates and confidence scores"
-        measures:
-          - working_implementation
-          - valid_output_structure
+        description: "Chronologically ordered events with date range"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
-# =============================================================================
-# VALIDATORS - Which validators to run against each block
-# =============================================================================
-validators:
-  - schema      # Validates inputs/outputs are defined correctly
-  - shape.ts    # Validates TypeScript exports match expected shape
-  - domain      # AI-powered semantic validation against domain rules
+  adapter.createBlogPost:
+    description: "Creates a structured blog post with frontmatter, metadata, slug, word count, and reading time"
+    path: "createBlogPost"
+    domain_rules:
+      - id: frontmatter_generation
+        description: "Must generate valid YAML frontmatter"
+      - id: slug_generation
+        description: "Must create URL-safe slug from title"
+      - id: reading_time_calculation
+        description: "Must calculate reading time based on word count"
+    inputs:
+      - name: title
+        type: string
+        description: "Blog post title"
+      - name: author
+        type: string
+        description: "Author name"
+      - name: content
+        type: string
+        description: "Blog post content in markdown"
+      - name: tags
+        type: array
+        optional: true
+        description: "Optional tags for the post"
+      - name: excerpt
+        type: string
+        optional: true
+        description: "Optional excerpt/summary"
+      - name: format
+        type: string
+        optional: true
+        description: "Output format: markdown or mdx"
+    outputs:
+      - name: blogPost
+        type: BlogPost
+        description: "Complete blog post with frontmatter and metadata"
+        measures: [working_implementation, valid_output_structure, ai_sdk_compliance, readme_documentation]

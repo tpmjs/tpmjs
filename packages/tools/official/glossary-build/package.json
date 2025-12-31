@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-glossary-build",
+  "version": "0.1.0",
+  "description": "Build a glossary from term definitions in text",
+  "type": "module",
+  "keywords": ["tpmjs", "doc", "ai", "glossary", "documentation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/glossary-build"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "doc",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "glossaryBuildTool",
+        "description": "Build a glossary from term definitions in text",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "Text containing term definitions",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "GlossaryResult",
+          "description": "Object with terms array, count, and alphabetized flag"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

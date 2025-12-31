@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-toc-generate",
+  "version": "0.1.0",
+  "description": "Generate table of contents from markdown headings",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "markdown", "toc", "ai"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/toc-generate"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "tocGenerateTool",
+        "description": "Generate table of contents from markdown headings",
+        "parameters": [
+          {
+            "name": "markdown",
+            "type": "string",
+            "description": "The markdown content to generate TOC from",
+            "required": true
+          },
+          {
+            "name": "maxDepth",
+            "type": "number",
+            "description": "Maximum heading depth to include (1-6)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "TocResult",
+          "description": "Object with toc markdown string, headings array, and depth info"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

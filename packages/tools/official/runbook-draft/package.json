@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-runbook-draft",
+  "version": "0.1.0",
+  "description": "Draft operational runbooks from procedure steps with commands and verification",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "runbook", "operations", "devops"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/runbook-draft"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "runbookDraftTool",
+        "description": "Draft operational runbooks from procedure steps with commands and verification",
+        "parameters": [
+          {
+            "name": "title",
+            "type": "string",
+            "description": "Title of the runbook",
+            "required": true
+          },
+          {
+            "name": "steps",
+            "type": "array",
+            "description": "Array of procedure steps with action, command, and verification",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "RunbookDraft",
+          "description": "Object with runbook markdown, stepCount, and hasCommands boolean"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-test-case-generate",
+  "version": "0.1.0",
+  "description": "Generates test case outlines from function signatures with edge cases and recommendations",
+  "type": "module",
+  "keywords": ["tpmjs", "engineering", "ai", "testing", "test-generation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/test-case-generate"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "engineering",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "testCaseGenerateTool",
+        "description": "Generates comprehensive test case outlines from function signatures including edge cases",
+        "parameters": [
+          {
+            "name": "functionName",
+            "type": "string",
+            "description": "Name of the function to generate tests for",
+            "required": true
+          },
+          {
+            "name": "params",
+            "type": "array",
+            "description": "Function parameters with name and type",
+            "required": true
+          },
+          {
+            "name": "returnType",
+            "type": "string",
+            "description": "Return type of the function",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "TestCaseGenerateResult",
+          "description": "Object with test cases, edge cases, and testing summary"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

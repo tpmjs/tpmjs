@@ -1,0 +1,11 @@
+{
+  "extends": "@tpmjs/tsconfig/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "incremental": false,
+    "composite": false
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

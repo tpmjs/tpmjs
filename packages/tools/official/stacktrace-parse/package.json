@@ -1,0 +1,61 @@
+{
+  "name": "@tpmjs/tools-stacktrace-parse",
+  "version": "0.1.0",
+  "description": "Parses stack traces into structured frames, handling Node.js and browser formats",
+  "type": "module",
+  "keywords": ["tpmjs", "engineering", "stacktrace", "error", "debugging"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/stacktrace-parse"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "engineering",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "stacktraceParse",
+        "description": "Parses stack traces into structured frames, handling Node.js and browser formats",
+        "parameters": [
+          {
+            "name": "stacktrace",
+            "type": "string",
+            "description": "The stack trace string to parse",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "StackTraceResult",
+          "description": "Object with parsed frames, error type, error message, and detected language"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "stacktrace-parser": "^0.1.10"
+  }
+}

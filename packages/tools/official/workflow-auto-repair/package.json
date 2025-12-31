@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-workflow-auto-repair",
+  "version": "0.1.0",
+  "description": "Suggests repairs for broken workflow steps by analyzing errors and proposing fixes",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "ai", "workflow", "debugging"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/workflow-auto-repair"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "workflowAutoRepairTool",
+        "description": "Suggests repairs for broken workflow steps by analyzing errors and proposing fixes",
+        "parameters": [
+          {
+            "name": "workflow",
+            "type": "object",
+            "description": "The workflow object with steps array",
+            "required": true
+          },
+          {
+            "name": "errors",
+            "type": "array",
+            "description": "Array of error objects with step and error properties",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "WorkflowRepairResult",
+          "description": "Object with repairs array, fixedSteps count, and unfixable steps array"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

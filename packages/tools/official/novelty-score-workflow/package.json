@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-novelty-score-workflow",
+  "version": "0.1.0",
+  "description": "Scores how novel/unique a workflow is compared to existing workflows",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "ai", "workflow", "analysis"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/novelty-score-workflow"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "noveltyScoreWorkflowTool",
+        "description": "Scores how novel/unique a workflow is compared to existing workflows",
+        "parameters": [
+          {
+            "name": "workflow",
+            "type": "object",
+            "description": "The workflow to analyze",
+            "required": true
+          },
+          {
+            "name": "existingWorkflows",
+            "type": "array",
+            "description": "Array of existing workflows to compare against",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "NoveltyScore",
+          "description": "Object with noveltyScore (0-1), similarWorkflows array, and uniqueSteps array"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

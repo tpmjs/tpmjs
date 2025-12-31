@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-coverage-tracker",
+  "version": "0.1.0",
+  "description": "Tracks which tools have been used in a workflow and calculates coverage percentage",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "ai", "testing", "coverage"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/coverage-tracker"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "coverageTrackerTool",
+        "description": "Tracks which tools have been used in a workflow and calculates coverage",
+        "parameters": [
+          {
+            "name": "availableTools",
+            "type": "array",
+            "description": "List of all available tool names",
+            "required": true
+          },
+          {
+            "name": "usedTools",
+            "type": "array",
+            "description": "List of tool names that were actually used",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "CoverageReport",
+          "description": "Coverage report with percentage, used/unused tools, and statistics"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

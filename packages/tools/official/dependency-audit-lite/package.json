@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-dependency-audit-lite",
+  "version": "0.1.0",
+  "description": "Lightweight audit of package.json dependencies for common issues",
+  "type": "module",
+  "keywords": ["tpmjs", "engineering", "ai", "npm", "dependencies", "audit"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/dependency-audit-lite"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "engineering",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "dependencyAuditLite",
+        "description": "Lightweight audit of package.json dependencies for common issues",
+        "parameters": [
+          {
+            "name": "packageJson",
+            "type": "string | object",
+            "description": "The package.json content as a string or parsed object",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "DependencyAudit",
+          "description": "Object with issues array, dependency count, and recommendations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

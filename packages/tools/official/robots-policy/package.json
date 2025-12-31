@@ -1,0 +1,73 @@
+{
+  "name": "@tpmjs/tools-robots-policy",
+  "version": "0.1.0",
+  "description": "Parse robots.txt and check if a URL is allowed for crawling",
+  "type": "module",
+  "keywords": ["tpmjs", "robots", "robots.txt", "crawler", "seo", "web"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/robots-policy"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "web",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "robotsPolicyTool",
+        "description": "Parse robots.txt and check if a URL is allowed for crawling",
+        "parameters": [
+          {
+            "name": "robotsUrl",
+            "type": "string",
+            "description": "The robots.txt URL to parse",
+            "required": true
+          },
+          {
+            "name": "testUrl",
+            "type": "string",
+            "description": "The URL path to test for crawl permission",
+            "required": true
+          },
+          {
+            "name": "userAgent",
+            "type": "string",
+            "description": "The user agent to check (default: '*')",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "RobotsPolicy",
+          "description": "Object with allowed status, matching rules, and crawl delay"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

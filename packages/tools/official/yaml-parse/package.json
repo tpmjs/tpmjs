@@ -1,0 +1,62 @@
+{
+  "name": "@tpmjs/tools-yaml-parse",
+  "version": "0.1.0",
+  "description": "Parse YAML text into JavaScript objects with validation",
+  "type": "module",
+  "keywords": ["tpmjs", "yaml", "data", "parser"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/js-yaml": "^4.0.9",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/yaml-parse"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "yamlParseTool",
+        "description": "Parse YAML text into JavaScript objects with validation",
+        "parameters": [
+          {
+            "name": "yaml",
+            "type": "string",
+            "description": "The YAML string to parse",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "YamlParseResult",
+          "description": "Object with parsed data and validation status"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "js-yaml": "^4.1.0"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-release-checklist",
+  "version": "0.1.0",
+  "description": "Generates release checklists from components with readiness analysis and blocker detection",
+  "type": "module",
+  "keywords": ["tpmjs", "engineering", "ai", "release-management", "devops"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/release-checklist"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "engineering",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "releaseChecklistTool",
+        "description": "Generates comprehensive release checklists from components with readiness tracking",
+        "parameters": [
+          {
+            "name": "components",
+            "type": "array",
+            "description": "Array of components with name, test status, docs status, and version",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ReleaseChecklistResult",
+          "description": "Object with markdown checklist, checklist items, readiness count, and blockers"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

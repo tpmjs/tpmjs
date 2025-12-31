@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-recipe-generate-from-grammar",
+  "version": "0.1.0",
+  "description": "Generate recipes following a grammar template with rules and optional seeding",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "recipe", "grammar", "generation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/recipe-generate-from-grammar"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "recipeGenerateFromGrammarTool",
+        "description": "Generate recipes following a grammar template with rules and optional seeding",
+        "parameters": [
+          {
+            "name": "grammar",
+            "type": "object",
+            "description": "Grammar rules defining recipe structure",
+            "required": true
+          },
+          {
+            "name": "seed",
+            "type": "string",
+            "description": "Optional seed for deterministic generation",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "RecipeGenerateResult",
+          "description": "Generated recipe with metadata about steps and grammar used"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

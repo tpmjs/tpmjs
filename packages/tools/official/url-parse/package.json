@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-url-parse",
+  "version": "0.0.1",
+  "description": "Parse URL into components using the URL Web API",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "url", "parse", "uri"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/url-parse"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "urlParseTool",
+        "description": "Parse URL into protocol, hostname, port, pathname, search params, and hash",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL string to parse",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "UrlParseResult",
+          "description": "Object with all URL components and parsed search parameters"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

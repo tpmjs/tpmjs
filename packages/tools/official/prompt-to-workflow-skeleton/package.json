@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-prompt-to-workflow-skeleton",
+  "version": "0.1.0",
+  "description": "Creates workflow skeleton from natural language prompt",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "workflow", "nlp", "automation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/prompt-to-workflow-skeleton"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "promptToWorkflowSkeletonTool",
+        "description": "Creates workflow skeleton from natural language prompt",
+        "parameters": [
+          {
+            "name": "prompt",
+            "type": "string",
+            "description": "Natural language description of the desired workflow",
+            "required": true
+          },
+          {
+            "name": "availableTools",
+            "type": "array",
+            "description": "Array of available tool names that can be used",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "WorkflowSkeleton",
+          "description": "Object with skeleton, suggestedTools array, and confidence score"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

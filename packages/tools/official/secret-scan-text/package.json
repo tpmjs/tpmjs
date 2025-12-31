@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-secret-scan-text",
+  "version": "0.1.0",
+  "description": "Scan text for potential secrets using regex patterns",
+  "type": "module",
+  "keywords": ["tpmjs", "security", "secrets", "scanning", "detection"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/secret-scan-text"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "security",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "secretScanText",
+        "description": "Scan text for potential secrets using regex patterns. Detects API keys, tokens, passwords, AWS credentials, and more",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to scan for secrets",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "SecretScanResult",
+          "description": "Object with secrets array, secretCount, and patterns array"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

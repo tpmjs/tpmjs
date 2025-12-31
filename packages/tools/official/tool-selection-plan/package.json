@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-tool-selection-plan",
+  "version": "0.1.0",
+  "description": "Plans which tools to use for a task by analyzing requirements and available tools",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "ai", "planning", "tool-use"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/tool-selection-plan"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "toolSelectionPlanTool",
+        "description": "Plans which tools to use for a task by analyzing requirements and available tools",
+        "parameters": [
+          {
+            "name": "task",
+            "type": "string",
+            "description": "Description of the task to accomplish",
+            "required": true
+          },
+          {
+            "name": "availableTools",
+            "type": "array",
+            "description": "Array of available tools with name and description",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ToolSelectionPlan",
+          "description": "Object with plan array, reasoning, and confidence score"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

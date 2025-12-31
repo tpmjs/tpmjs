@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/tools-meeting-minutes-format",
+  "version": "0.1.0",
+  "description": "Formats meeting minutes from structured input into markdown",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "ai", "meeting-minutes", "markdown"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/meeting-minutes-format"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "meetingMinutesFormatTool",
+        "description": "Formats meeting minutes from structured input into markdown",
+        "parameters": [
+          {
+            "name": "title",
+            "type": "string",
+            "description": "The meeting title",
+            "required": true
+          },
+          {
+            "name": "date",
+            "type": "string",
+            "description": "The meeting date",
+            "required": true
+          },
+          {
+            "name": "attendees",
+            "type": "array",
+            "description": "Array of attendee names",
+            "required": true
+          },
+          {
+            "name": "items",
+            "type": "array",
+            "description": "Array of {topic, discussion, action?} objects",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "MeetingMinutesResult",
+          "description": "Object with formatted minutes in markdown, action items, and attendee count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

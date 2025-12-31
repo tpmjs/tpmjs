@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-data-classification-heuristic",
+  "version": "0.1.0",
+  "description": "Classifies data sensitivity using heuristics to detect PII, financial data, and health data patterns",
+  "type": "module",
+  "keywords": ["tpmjs", "compliance", "ai", "privacy", "pii", "data-classification"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/data-classification-heuristic"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "compliance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "dataClassificationHeuristic",
+        "description": "Classifies data sensitivity using heuristics to detect PII, financial data, and health data patterns",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text content to analyze for sensitive data patterns",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "DataClassification",
+          "description": "Object with classification level (public/internal/confidential/restricted), detected signals, and confidence score"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

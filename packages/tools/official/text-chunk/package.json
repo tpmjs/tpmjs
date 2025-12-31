@@ -1,0 +1,74 @@
+{
+  "name": "@tpmjs/tools-text-chunk",
+  "version": "0.1.0",
+  "description": "Split text into chunks by size or sentence boundaries with optional overlap",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "text", "chunking", "nlp"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/sbd": "^1.0.5",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/text-chunk"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "textChunkTool",
+        "description": "Split text into chunks by size or sentence boundaries with optional overlap",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to split into chunks",
+            "required": true
+          },
+          {
+            "name": "maxChunkSize",
+            "type": "number",
+            "description": "Maximum size of each chunk in characters",
+            "required": true
+          },
+          {
+            "name": "overlap",
+            "type": "number",
+            "description": "Number of characters to overlap between chunks (optional, default: 0)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "TextChunkResult",
+          "description": "Object with chunks array, chunkCount, and totalLength"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "sbd": "^1.0.19"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "name": "@tpmjs/tools-extract-meta",
+  "version": "0.1.0",
+  "description": "Extract meta tags from HTML pages (title, description, Open Graph, Twitter Cards)",
+  "type": "module",
+  "keywords": ["tpmjs", "web", "meta", "og", "twitter", "seo"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/cheerio": "^0.22.35",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/extract-meta"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "web",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "extractMetaTool",
+        "description": "Extract meta tags from HTML pages including title, description, Open Graph, and Twitter Cards",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL to extract meta tags from",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ExtractMetaResult",
+          "description": "Object with title, description, canonical URL, Open Graph tags, and Twitter Card tags"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "cheerio": "^1.0.0"
+  }
+}

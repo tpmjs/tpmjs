@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/tools-prd-outline",
+  "version": "0.1.0",
+  "description": "Create PRD (Product Requirements Document) outlines from problem statements and features",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "prd", "product", "requirements"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/prd-outline"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "prdOutlineTool",
+        "description": "Create PRD (Product Requirements Document) outlines from problem statements and features",
+        "parameters": [
+          {
+            "name": "title",
+            "type": "string",
+            "description": "Title of the product or feature",
+            "required": true
+          },
+          {
+            "name": "problem",
+            "type": "string",
+            "description": "Problem statement describing what needs to be solved",
+            "required": true
+          },
+          {
+            "name": "goals",
+            "type": "array",
+            "description": "Array of goals for the product or feature",
+            "required": true
+          },
+          {
+            "name": "features",
+            "type": "array",
+            "description": "Array of features to include",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "PrdOutline",
+          "description": "Object with PRD markdown, sections array, and featureCount"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

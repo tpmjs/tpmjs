@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/official-hash-text",
+  "version": "0.0.1",
+  "description": "Hash text using cryptographic algorithms (MD5, SHA-1, SHA-256, SHA-512)",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "hash", "crypto", "md5", "sha256"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/hash-text"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "hashTextTool",
+        "description": "Hash text using cryptographic algorithms (MD5, SHA-1, SHA-256, SHA-512)",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to hash",
+            "required": true
+          },
+          {
+            "name": "algorithm",
+            "type": "string",
+            "description": "Hash algorithm (md5, sha1, sha256, sha512)",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "HashTextResult",
+          "description": "Object with hash digest, algorithm used, and input length"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

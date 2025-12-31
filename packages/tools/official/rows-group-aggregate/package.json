@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-rows-group-aggregate",
+  "version": "0.1.0",
+  "description": "Groups rows by key and aggregates values with operations like sum, count, avg, min, max",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "aggregate", "group-by"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/rows-group-aggregate"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "rowsGroupAggregateTool",
+        "description": "Groups rows by key and aggregates values using operations like sum, count, avg, min, max",
+        "parameters": [
+          {
+            "name": "rows",
+            "type": "array",
+            "description": "Array of objects to group and aggregate",
+            "required": true
+          },
+          {
+            "name": "groupBy",
+            "type": "string",
+            "description": "The field name to group by",
+            "required": true
+          },
+          {
+            "name": "aggregates",
+            "type": "array",
+            "description": "Array of aggregation operations: {field: string, operation: 'sum'|'count'|'avg'|'min'|'max'}",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "GroupAggregateResult",
+          "description": "Object with groups array and groupCount"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

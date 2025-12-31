@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-bootstrap-ci",
+  "version": "0.1.0",
+  "description": "Calculate bootstrap confidence intervals for sample statistics using resampling",
+  "type": "module",
+  "keywords": ["tpmjs", "statistics", "bootstrap", "confidence-interval", "resampling"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/bootstrap-ci"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "statistics",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "bootstrapCITool",
+        "description": "Calculate bootstrap confidence interval for a sample using resampling method",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "number[]",
+            "description": "Array of numeric values to analyze",
+            "required": true
+          },
+          {
+            "name": "confidenceLevel",
+            "type": "number",
+            "description": "Confidence level (e.g., 0.95 for 95% CI)",
+            "required": false
+          },
+          {
+            "name": "iterations",
+            "type": "number",
+            "description": "Number of bootstrap iterations",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "BootstrapResult",
+          "description": "Object with mean, lower bound, upper bound, confidence level, and iterations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

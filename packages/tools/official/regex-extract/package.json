@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/official-regex-extract",
+  "version": "0.0.1",
+  "description": "Extract all regex matches from text with optional capture group support",
+  "type": "module",
+  "keywords": ["tpmjs", "text", "regex", "extract", "pattern", "matching"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/regex-extract"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "text",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "regexExtractTool",
+        "description": "Extract all regex matches from text with optional capture group support",
+        "parameters": [
+          {
+            "name": "text",
+            "type": "string",
+            "description": "The text to search",
+            "required": true
+          },
+          {
+            "name": "pattern",
+            "type": "string",
+            "description": "Regular expression pattern",
+            "required": true
+          },
+          {
+            "name": "flags",
+            "type": "string",
+            "description": "Regular expression flags (g, i, m, s, u, y)",
+            "required": false
+          },
+          {
+            "name": "groups",
+            "type": "boolean",
+            "description": "Return capture groups as objects",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "RegexExtractResult",
+          "description": "Object with matches array, match count, and hasMatches flag"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

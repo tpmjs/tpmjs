@@ -1,0 +1,67 @@
+{
+  "name": "@tpmjs/tools-json-path-query",
+  "version": "0.0.1",
+  "description": "Query JSON using JSONPath expressions",
+  "type": "module",
+  "keywords": ["tpmjs", "json", "jsonpath", "query", "data"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/json-path-query"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "jsonPathQueryTool",
+        "description": "Query JSON data using JSONPath expressions like '$.users[?(@.age > 18)].name'",
+        "parameters": [
+          {
+            "name": "json",
+            "type": "object | array",
+            "description": "JSON data to query",
+            "required": true
+          },
+          {
+            "name": "path",
+            "type": "string",
+            "description": "JSONPath expression to evaluate",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "JsonPathQueryResult",
+          "description": "Query results with count and matched paths"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "jsonpath-plus": "^10.2.0"
+  }
+}

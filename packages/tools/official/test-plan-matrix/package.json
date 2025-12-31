@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-test-plan-matrix",
+  "version": "0.1.0",
+  "description": "Creates test plan matrix from features and test types",
+  "type": "module",
+  "keywords": ["tpmjs", "documentation", "ai", "testing", "qa", "test-matrix"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/test-plan-matrix"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "documentation",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "testPlanMatrixTool",
+        "description": "Creates test plan matrix from features and test types",
+        "parameters": [
+          {
+            "name": "features",
+            "type": "array",
+            "description": "Array of feature names",
+            "required": true
+          },
+          {
+            "name": "testTypes",
+            "type": "array",
+            "description": "Array of test type names",
+            "required": true
+          },
+          {
+            "name": "coverage",
+            "type": "object",
+            "description": "Coverage mapping of {feature: [testTypes]}",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "TestPlanMatrixResult",
+          "description": "Object with matrix, coverage stats, and gaps"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

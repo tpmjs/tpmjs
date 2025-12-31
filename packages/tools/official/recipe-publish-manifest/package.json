@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-recipe-publish-manifest",
+  "version": "0.1.0",
+  "description": "Create a publish manifest for a recipe with metadata and verification hash",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "recipe", "manifest", "publish"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/recipe-publish-manifest"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "recipePublishManifestTool",
+        "description": "Create a publish manifest for a recipe with metadata and verification hash",
+        "parameters": [
+          {
+            "name": "recipe",
+            "type": "object",
+            "description": "Recipe object to publish",
+            "required": true
+          },
+          {
+            "name": "metadata",
+            "type": "object",
+            "description": "Publication metadata (author, version, description)",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "PublishManifestResult",
+          "description": "Manifest with hash and publication timestamp"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

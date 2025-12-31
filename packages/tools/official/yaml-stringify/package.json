@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-yaml-stringify",
+  "version": "0.1.0",
+  "description": "Convert JavaScript objects to YAML strings with formatting options",
+  "type": "module",
+  "keywords": ["tpmjs", "yaml", "data", "stringify"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/js-yaml": "^4.0.9",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/yaml-stringify"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "yamlStringifyTool",
+        "description": "Convert JavaScript objects to YAML strings with formatting options",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "object",
+            "description": "The JavaScript object to convert to YAML",
+            "required": true
+          },
+          {
+            "name": "indent",
+            "type": "number",
+            "description": "Number of spaces for indentation (default: 2)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "YamlStringifyResult",
+          "description": "Object with YAML string output"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "js-yaml": "^4.1.0"
+  }
+}

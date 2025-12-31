@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-redirect-trace",
+  "version": "0.1.0",
+  "description": "Trace all HTTP redirects from a URL to its final destination",
+  "type": "module",
+  "keywords": ["tpmjs", "web", "redirects", "http", "trace"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/redirect-trace"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "web",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "redirectTraceTool",
+        "description": "Trace all HTTP redirects from a URL to its final destination",
+        "parameters": [
+          {
+            "name": "url",
+            "type": "string",
+            "description": "The URL to trace",
+            "required": true
+          },
+          {
+            "name": "maxRedirects",
+            "type": "number",
+            "description": "Maximum number of redirects to follow (default: 10)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "RedirectTraceResult",
+          "description": "Object with redirect steps, final URL, and status codes"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

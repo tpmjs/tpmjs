@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-workflow-cost-estimate",
+  "version": "0.1.0",
+  "description": "Estimates cost of running a workflow based on step count and estimated API calls",
+  "type": "module",
+  "keywords": ["tpmjs", "workflow", "agent", "cost", "estimation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/workflow-cost-estimate"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "workflowCostEstimate",
+        "description": "Estimates cost of running a workflow based on step count and estimated API calls",
+        "parameters": [
+          {
+            "name": "workflow",
+            "type": "object",
+            "description": "Workflow object with steps array",
+            "required": true
+          },
+          {
+            "name": "costPerStep",
+            "type": "number",
+            "description": "Cost per step in dollars (default: 0.01)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "CostEstimate",
+          "description": "Object with totalCost, stepCount, and breakdown array"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

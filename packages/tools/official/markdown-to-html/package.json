@@ -1,0 +1,68 @@
+{
+  "name": "@tpmjs/tools-markdown-to-html",
+  "version": "0.0.1",
+  "description": "Convert markdown to HTML using marked",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "markdown", "html", "convert", "marked"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/marked": "^6.0.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/markdown-to-html"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "markdownToHtmlTool",
+        "description": "Convert markdown to HTML with optional GitHub Flavored Markdown and sanitization",
+        "parameters": [
+          {
+            "name": "markdown",
+            "type": "string",
+            "description": "The markdown string to convert",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Optional configuration for GFM and sanitization",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "MarkdownToHtmlResult",
+          "description": "Object with HTML output and extracted headings"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "marked": "^14.1.4"
+  }
+}

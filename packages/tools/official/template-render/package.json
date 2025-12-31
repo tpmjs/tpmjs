@@ -1,0 +1,74 @@
+{
+  "name": "@tpmjs/tools-template-render",
+  "version": "0.0.1",
+  "description": "Render mustache-style templates with variable tracking",
+  "type": "module",
+  "keywords": ["tpmjs", "template", "mustache", "render", "data"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/mustache": "^4.2.5",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/template-render"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "templateRenderTool",
+        "description": "Render mustache-style templates with data and track variable usage",
+        "parameters": [
+          {
+            "name": "template",
+            "type": "string",
+            "description": "The mustache-style template string with {{variable}} placeholders",
+            "required": true
+          },
+          {
+            "name": "data",
+            "type": "object",
+            "description": "Data object to substitute into the template",
+            "required": true
+          },
+          {
+            "name": "options",
+            "type": "object",
+            "description": "Optional settings like HTML escaping",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "TemplateRenderResult",
+          "description": "Rendered template with tracking of used and unused variables"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124",
+    "mustache": "^4.2.0"
+  }
+}

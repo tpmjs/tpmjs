@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/official-base64-encode",
+  "version": "0.0.1",
+  "description": "Encode string or buffer to base64 format with support for multiple character encodings",
+  "type": "module",
+  "keywords": ["tpmjs", "data", "base64", "encode", "encoding"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/base64-encode"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "base64EncodeTool",
+        "description": "Encode string or buffer to base64 format with support for multiple character encodings",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "string",
+            "description": "The data to encode",
+            "required": true
+          },
+          {
+            "name": "encoding",
+            "type": "string",
+            "description": "Character encoding (utf8, binary, hex)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "Base64EncodeResult",
+          "description": "Object with base64 encoded string and byte length"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

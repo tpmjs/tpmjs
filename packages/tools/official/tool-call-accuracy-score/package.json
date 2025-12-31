@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-tool-call-accuracy-score",
+  "version": "0.1.0",
+  "description": "Scores the accuracy of actual tool calls against expected tool calls in agent workflows",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "ai", "testing", "accuracy"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/tool-call-accuracy-score"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "toolCallAccuracyScoreTool",
+        "description": "Scores the accuracy of actual tool calls against expected tool calls",
+        "parameters": [
+          {
+            "name": "expected",
+            "type": "array",
+            "description": "Expected tool calls with tool name and arguments",
+            "required": true
+          },
+          {
+            "name": "actual",
+            "type": "array",
+            "description": "Actual tool calls made with tool name and arguments",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ToolCallAccuracyScore",
+          "description": "Score object with accuracy metrics and detailed comparison"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

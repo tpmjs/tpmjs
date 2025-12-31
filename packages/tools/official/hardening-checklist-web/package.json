@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-hardening-checklist-web",
+  "version": "0.1.0",
+  "description": "Generate web security hardening checklist with scoring and recommendations",
+  "type": "module",
+  "keywords": ["tpmjs", "security", "hardening", "web-security", "checklist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/hardening-checklist-web"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "security",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "hardeningChecklistWebTool",
+        "description": "Generate a web security hardening checklist based on configuration",
+        "parameters": [
+          {
+            "name": "config",
+            "type": "object",
+            "description": "Security configuration with boolean flags for various features",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "HardeningChecklistResult",
+          "description": "Object with checklist items, security score, and recommendations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

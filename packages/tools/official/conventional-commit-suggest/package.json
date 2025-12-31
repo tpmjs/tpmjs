@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-conventional-commit-suggest",
+  "version": "0.1.0",
+  "description": "Suggests conventional commit messages from descriptions or file changes",
+  "type": "module",
+  "keywords": ["tpmjs", "engineering", "git", "commit", "conventional-commits"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/conventional-commit-suggest"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "engineering",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "conventionalCommitSuggest",
+        "description": "Suggests conventional commit messages from descriptions or file changes",
+        "parameters": [
+          {
+            "name": "description",
+            "type": "string",
+            "description": "Description of the changes made",
+            "required": true
+          },
+          {
+            "name": "files",
+            "type": "array",
+            "description": "Optional array of changed file paths to help determine scope",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "ConventionalCommit",
+          "description": "Object with suggested commit message, type, scope, breaking change flag, and body"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

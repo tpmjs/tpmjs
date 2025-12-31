@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-recipe-emit",
+  "version": "0.1.0",
+  "description": "Emits a recipe in standard format for workflow orchestration",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "workflow", "recipe"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/recipe-emit"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "recipeEmitTool",
+        "description": "Emits a recipe in standard format for workflow orchestration",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "The name of the recipe",
+            "required": true
+          },
+          {
+            "name": "steps",
+            "type": "array",
+            "description": "Array of workflow steps with tool, inputs, and outputs",
+            "required": true
+          },
+          {
+            "name": "metadata",
+            "type": "object",
+            "description": "Additional metadata about the recipe",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "RecipeOutput",
+          "description": "Object with recipe, format, and stepCount"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

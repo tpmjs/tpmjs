@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-time-series-decompose-lite",
+  "version": "0.1.0",
+  "description": "Simple time series decomposition into trend, seasonal, and residual components",
+  "type": "module",
+  "keywords": ["tpmjs", "statistics", "time-series", "decomposition", "forecasting"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/time-series-decompose-lite"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "statistics",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "timeSeriesDecomposeLiteTool",
+        "description": "Decompose time series data into trend, seasonal, and residual components",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "number[]",
+            "description": "Time series data points",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "number",
+            "description": "Seasonal period (e.g., 12 for monthly data with yearly seasonality)",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "TimeSeriesDecomposition",
+          "description": "Object with trend, seasonal, residual components and period"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

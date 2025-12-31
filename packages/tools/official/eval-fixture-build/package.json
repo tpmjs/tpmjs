@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-eval-fixture-build",
+  "version": "0.1.0",
+  "description": "Builds evaluation fixtures for testing AI tools with structured input/output pairs",
+  "type": "module",
+  "keywords": ["tpmjs", "agent", "ai", "testing", "evaluation"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/eval-fixture-build"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "evalFixtureBuildTool",
+        "description": "Builds evaluation fixtures for testing AI tools with structured input/output pairs",
+        "parameters": [
+          {
+            "name": "toolName",
+            "type": "string",
+            "description": "Name of the tool being tested",
+            "required": true
+          },
+          {
+            "name": "inputs",
+            "type": "array",
+            "description": "Array of input test cases",
+            "required": true
+          },
+          {
+            "name": "expectedOutputs",
+            "type": "array",
+            "description": "Array of expected outputs corresponding to inputs",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "EvalFixtureResult",
+          "description": "Object with fixtures array, count, and format information"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}
