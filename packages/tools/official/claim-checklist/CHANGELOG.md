@@ -4,6 +4,20 @@
 
 ### Patch Changes
 
+- Fully implement research tools with production-ready functionality:
+
+  - page-brief: Uses @mozilla/readability + jsdom for content extraction
+  - compare-pages: Uses natural TF-IDF for text similarity analysis
+  - source-credibility: Uses tldts + cheerio for credibility signal analysis
+  - claim-checklist: Uses sbd for sentence parsing with pattern-based detection
+  - timeline-from-text: Uses chrono-node for date parsing
+
+  All tools include comprehensive error handling, input validation, and Node.js 18+ fetch requirement verification.
+
+## 0.2.1
+
+### Patch Changes
+
 - Fully implement claim-checklist tool with production-ready functionality:
   - Uses sbd for sentence boundary detection
   - Identifies claims using regex patterns for statistics, quotes, historical, scientific, and factual claims

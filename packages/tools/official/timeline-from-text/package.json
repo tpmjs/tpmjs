@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-timeline-from-text",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Extract dated events from text and return a normalized timeline with confidence scores",
   "type": "module",
   "keywords": ["tpmjs", "research", "ai", "timeline", "dates", "events"],
