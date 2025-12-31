@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-source-credibility",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Calculate heuristic credibility score based on domain signals, author presence, and citations",
   "type": "module",
   "keywords": ["tpmjs", "research", "ai", "credibility", "fact-checking"],

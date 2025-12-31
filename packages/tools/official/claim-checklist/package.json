@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-claim-checklist",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Extract checkable factual claims from text and identify what needs citations",
   "type": "module",
   "keywords": ["tpmjs", "research", "ai", "claims", "fact-checking", "citations"],
