@@ -1,132 +1,369 @@
 name: "tpmjs-official-tools"
 root: "."
 
+# =============================================================================
+# PHILOSOPHY - Core principles that guide all tool development
+# =============================================================================
 philosophy:
-  - "Tools must be pure functions with no side effects"
-  - "Each tool solves one specific problem well"
-  - "Tools are publishable to npm as @tpmjs/* packages"
-  - "Use AI SDK v6 tool() + jsonSchema() pattern"
+  - "Every tool MUST be a working, production-ready implementation - no stubs, no TODOs"
+  - "Tools use AI SDK v6 tool() + jsonSchema() pattern exclusively"
+  - "Each tool does ONE thing exceptionally well"
+  - "Tools return structured, typed outputs that agents can reliably parse"
+  - "Error handling is explicit - throw meaningful errors, never silently fail"
+  - "All async operations use proper error boundaries"
+  - "Dependencies are minimal and production-stable (no alpha/beta packages)"
 
+# =============================================================================
+# DOMAIN - Entities, signals, and measures that define the problem space
+# =============================================================================
 domain:
   entities:
+    # Core web entities
     url:
-      fields: [href, domain, protocol, path]
-    text:
-      fields: [content, sentences, wordCount]
+      fields: [href, domain, protocol, path, query]
+      description: "A fully qualified URL with parsed components"
+
+    webpage:
+      fields: [url, title, html, text, metadata]
+      description: "A fetched webpage with extracted content"
+
+    # Content entities
+    text_content:
+      fields: [raw, sentences, paragraphs, wordCount]
+      description: "Processed text with structural analysis"
+
     claim:
-      fields: [statement, needsCitation, evidence]
+      fields: [statement, confidence, needsCitation, category]
+      description: "A factual assertion that can be verified"
+      categories: [factual, statistical, quote, attribution, prediction]
+
     timeline_event:
-      fields: [date, description, confidence]
+      fields: [date, description, confidence, source]
+      description: "A dated event with provenance"
+
+    # Output entities
+    blog_post:
+      fields: [frontmatter, content, formattedOutput]
+      description: "A complete blog post with metadata"
+
+    page_brief:
+      fields: [url, title, summary, keyPoints, claims]
+      description: "A summarized view of a webpage"
+
+    comparison_result:
+      fields: [agreements, conflicts, uniqueToA, uniqueToB]
+      description: "Side-by-side analysis of two sources"
+
+    credibility_score:
+      fields: [score, factors, warnings, recommendations]
+      description: "Trust assessment of a source"
+
+    claim_checklist:
+      fields: [claims, citedCount, uncitedCount, priority]
+      description: "Extracted claims with citation status"
+
+    timeline:
+      fields: [events, dateRange, gaps, confidence]
+      description: "Chronological event sequence"
 
   signals:
     credibility:
-      description: "Trustworthiness of a source"
-      extraction_hint: "Look for author, date, citations, HTTPS"
-    readability:
-      description: "How easy content is to understand"
-      extraction_hint: "Check sentence length, jargon, structure"
+      description: "Trustworthiness indicators for a source"
+      extraction_hints:
+        - "HTTPS vs HTTP"
+        - "Domain reputation (.edu, .gov, major news)"
+        - "Author byline and bio present"
+        - "Publication date visible"
+        - "Citations and references"
+        - "Contact information available"
 
+    readability:
+      description: "How accessible the content is"
+      extraction_hints:
+        - "Sentence length and complexity"
+        - "Technical jargon density"
+        - "Clear paragraph structure"
+        - "Heading hierarchy"
+
+    claim_strength:
+      description: "How verifiable a statement is"
+      extraction_hints:
+        - "Contains specific numbers or dates"
+        - "Attributes to named source"
+        - "Makes testable prediction"
+        - "Uses hedging language (may, might, could)"
+
+  # Quality measures that outputs must satisfy
   measures:
-    valid_output:
+    working_implementation:
       constraints:
-        - "Must return structured object matching interface"
-        - "Must not throw unhandled errors"
+        - "execute() function contains real logic, not placeholder comments"
+        - "No TODO, FIXME, or 'Not implemented' in output"
+        - "Returns actual computed values, not hardcoded test data"
+      severity: error
+
+    valid_output_structure:
+      constraints:
+        - "Returns object matching declared interface"
+        - "All required fields are present and typed correctly"
+        - "Arrays are never undefined, use empty array []"
+      severity: error
+
+    proper_error_handling:
+      constraints:
+        - "Throws descriptive Error with context on failure"
+        - "Validates inputs before processing"
+        - "Catches and wraps external API errors"
+      severity: error
+
+    ai_sdk_compliance:
+      constraints:
+        - "Uses tool() from 'ai' package"
+        - "Uses jsonSchema() for input schema (not Zod directly)"
+        - "Description is clear and actionable for LLMs"
+        - "Input schema has descriptions for each property"
+      severity: error
+
     npm_publishable:
       constraints:
-        - "Must have valid package.json with tpmjs field"
-        - "Must export tool as named and default export"
+        - "Has valid package.json with tpmjs field"
+        - "Exports tool as both named and default export"
+        - "Has proper TypeScript types exported"
+        - "Version follows semver"
+      severity: error
 
+# =============================================================================
+# DOMAIN RULES - Enforce code quality across all blocks
+# =============================================================================
 blocks:
   domain_rules:
-    - id: pure_function
-      description: "Tool must be deterministic with no side effects"
-    - id: ai_sdk_pattern
-      description: "Must use AI SDK v6 tool() + jsonSchema()"
-    - id: npm_ready
-      description: "Must be publishable to npm with complete metadata"
+    - id: no_stub_implementations
+      description: |
+        CRITICAL: Tools must be fully implemented with real functionality.
+        - No TODO comments in execute()
+        - No placeholder returns like "Not implemented"
+        - No hardcoded test data as output
+        - The tool must actually perform the described operation
+
+    - id: ai_sdk_v6_pattern
+      description: |
+        All tools MUST use the AI SDK v6 pattern:
+        - import { tool, jsonSchema } from 'ai'
+        - Use tool() wrapper with description and inputSchema
+        - Use jsonSchema<T>() for type-safe input schema
+        - Include 'additionalProperties: false' in JSON schema
+        - Make execute() async and properly typed
+
+    - id: proper_json_schema
+      description: |
+        Input schemas must be complete and LLM-friendly:
+        - Every property needs a 'description' field
+        - Use 'required' array to specify mandatory fields
+        - Include 'additionalProperties: false'
+        - Use correct JSON Schema types (string, number, boolean, array, object)
+        - For enums, use 'enum' with array of allowed values
+
+    - id: structured_outputs
+      description: |
+        Tools must return well-structured, typed objects:
+        - Define TypeScript interface for output type
+        - Export interface so consumers can use it
+        - All fields should have meaningful names
+        - Use arrays for collections, never undefined
+        - Include metadata fields where helpful (timestamp, source, confidence)
+
+    - id: input_validation
+      description: |
+        Validate inputs at the start of execute():
+        - Check required fields are present and non-empty
+        - Validate URLs are well-formed when accepting URLs
+        - Throw descriptive errors for invalid input
+        - Don't silently accept bad data
+
+    - id: async_error_handling
+      description: |
+        Handle async operations properly:
+        - Wrap fetch/network calls in try-catch
+        - Provide meaningful error messages with context
+        - Don't let errors silently fail to empty output
+        - Include original error in wrapped errors
+
+  # ===========================================================================
+  # BLOCK DEFINITIONS - Each tool with its full specification
+  # ===========================================================================
 
   adapter.createBlogPost:
-    description: "Creates structured blog posts with frontmatter and metadata"
+    description: "Creates structured blog posts with frontmatter, metadata, slug generation, word count, and reading time estimation"
     path: "createBlogPost"
     inputs:
       - name: title
         type: string
+        description: "The blog post title"
       - name: author
         type: string
+        description: "Author name for attribution"
       - name: content
         type: string
+        description: "Main body content in markdown"
       - name: tags
         type: string[]
         optional: true
+        description: "Categorization tags"
       - name: format
         type: "'markdown' | 'mdx'"
         optional: true
+        description: "Output format preference"
+      - name: excerpt
+        type: string
+        optional: true
+        description: "Short summary for previews"
     outputs:
       - name: blogPost
         type: BlogPost
-        measures: [valid_output, npm_publishable]
+        description: "Complete blog post with frontmatter and formatted content"
+        measures:
+          - working_implementation
+          - valid_output_structure
+          - ai_sdk_compliance
+          - npm_publishable
 
   research.pageBrief:
-    description: "Fetch URL, extract main content, return summary with key points and claims needing citations"
+    description: "Fetches a URL, extracts main content using Readability algorithm, and returns a structured brief with summary, key points, and claims that need citations"
     path: "page-brief"
+    domain_rules:
+      - id: url_fetching
+        description: "Must actually fetch the URL using fetch() API"
+      - id: content_extraction
+        description: "Must use @mozilla/readability for content extraction"
+      - id: sentence_parsing
+        description: "Must parse text into sentences for claim extraction"
     inputs:
       - name: url
         type: string
+        description: "The URL to fetch and analyze"
     outputs:
       - name: brief
         type: PageBrief
-        measures: [valid_output]
+        description: "Structured summary with key points and claims needing citation"
+        measures:
+          - working_implementation
+          - valid_output_structure
+          - proper_error_handling
+          - ai_sdk_compliance
 
   research.comparePages:
-    description: "Compare two URLs for agreements, conflicts, and unique points"
+    description: "Compares content from two URLs, identifying agreements, conflicts, and unique points from each source"
     path: "compare-pages"
+    domain_rules:
+      - id: dual_fetch
+        description: "Must fetch both URLs and handle failures gracefully"
+      - id: content_comparison
+        description: "Must perform actual text comparison, not placeholder"
+      - id: structured_diff
+        description: "Must categorize differences into agreements/conflicts/unique"
     inputs:
       - name: urlA
         type: string
+        description: "First URL to compare"
       - name: urlB
         type: string
+        description: "Second URL to compare"
     outputs:
       - name: comparison
         type: PageComparison
-        measures: [valid_output]
+        description: "Structured comparison showing agreements, conflicts, and unique content"
+        measures:
+          - working_implementation
+          - valid_output_structure
+          - proper_error_handling
 
   research.sourceCredibility:
-    description: "Heuristic credibility score based on domain signals, author presence, citations"
+    description: "Analyzes a URL for credibility signals using heuristics like HTTPS, domain reputation, author presence, publication date, and citation density"
     path: "source-credibility"
+    domain_rules:
+      - id: credibility_heuristics
+        description: |
+          Must check real credibility signals:
+          - HTTPS vs HTTP protocol
+          - Domain TLD (.edu, .gov, .org vs others)
+          - Author byline presence
+          - Publication date presence
+          - External citations/references
+      - id: score_calculation
+        description: "Score must be computed from actual signals, not random/hardcoded"
     inputs:
       - name: url
         type: string
+        description: "The URL to analyze for credibility"
       - name: html
         type: string
         optional: true
+        description: "Pre-fetched HTML content (if available)"
     outputs:
       - name: credibility
         type: CredibilityScore
-        measures: [valid_output]
+        description: "Credibility assessment with score, factors, and recommendations"
+        measures:
+          - working_implementation
+          - valid_output_structure
+          - proper_error_handling
 
   research.claimChecklist:
-    description: "Extract checkable factual claims from text, mark what needs citations"
+    description: "Extracts factual claims from text and identifies which ones need citations, categorizing by type and priority"
     path: "claim-checklist"
+    domain_rules:
+      - id: claim_extraction
+        description: |
+          Must identify claims using real heuristics:
+          - Statements with numbers/statistics
+          - Quotes attributed to people
+          - Statements about events/facts
+          - Predictions or projections
+      - id: citation_detection
+        description: "Must check if claims are supported by inline citations"
     inputs:
       - name: text
         type: string
+        description: "The text to analyze for claims"
     outputs:
       - name: checklist
         type: ClaimChecklist
-        measures: [valid_output]
+        description: "List of claims with citation status and priority ranking"
+        measures:
+          - working_implementation
+          - valid_output_structure
 
   research.timelineFromText:
-    description: "Extract dated events from text, return normalized timeline with confidence"
+    description: "Extracts dated events from unstructured text and returns a normalized, chronologically sorted timeline with confidence scores"
     path: "timeline-from-text"
+    domain_rules:
+      - id: date_extraction
+        description: |
+          Must parse dates in multiple formats:
+          - Full dates (January 1, 2024)
+          - Partial dates (March 2024, Q1 2024)
+          - Relative dates (last year, in 2020)
+          - Ranges (2020-2024)
+      - id: event_association
+        description: "Must associate extracted dates with their context/events"
+      - id: chronological_sorting
+        description: "Output events must be sorted chronologically"
     inputs:
       - name: text
         type: string
+        description: "The text to extract timeline from"
     outputs:
       - name: timeline
         type: Timeline
-        measures: [valid_output]
+        description: "Chronologically sorted events with dates and confidence scores"
+        measures:
+          - working_implementation
+          - valid_output_structure
 
+# =============================================================================
+# VALIDATORS - Which validators to run against each block
+# =============================================================================
 validators:
-  - schema
-  - shape.ts
-  - domain
+  - schema      # Validates inputs/outputs are defined correctly
+  - shape.ts    # Validates TypeScript exports match expected shape
+  - domain      # AI-powered semantic validation against domain rules
