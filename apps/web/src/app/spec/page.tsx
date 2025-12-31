@@ -1,887 +1,433 @@
+'use client';
+
 import { TPMJS_CATEGORIES } from '@tpmjs/types/tpmjs';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
-import { Button } from '@tpmjs/ui/Button/Button';
-import { Card, CardContent, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
-import Link from 'next/link';
+import { useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 
-export const metadata = {
-  title: 'TPMJS Specification | The Open Standard for AI Tool Discovery',
-  description:
-    'Complete technical reference for the TPMJS specification - field definitions, validation rules, and integration guide for AI tool developers.',
-  openGraph: {
-    title: 'TPMJS Specification | The Open Standard for AI Tool Discovery',
-    description:
-      'Complete technical reference for the TPMJS specification - field definitions, validation rules, and integration guide for AI tool developers.',
-    images: [{ url: '/api/og/spec', width: 1200, height: 630 }],
-  },
-  twitter: {
-    card: 'summary_large_image' as const,
-    images: ['/api/og/spec'],
-  },
-};
+type ViewMode = 'spec' | 'example';
 
-export default function SpecPage(): React.ReactElement {
-  return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <AppHeader />
-
-      <main className="flex-1 py-16">
-        <Container size="lg" padding="lg">
-          {/* Hero */}
-          <div className="text-center mb-16">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-foreground">
-              TPMJS Specification
-            </h1>
-            <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
-              The open standard for AI tool discovery and integration
-            </p>
-          </div>
-
-          {/* What is TPMJS */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              What is TPMJS?
-            </h2>
-            <div className="prose prose-invert max-w-none">
-              <p className="text-lg text-foreground-secondary mb-4">
-                TPMJS (Tool Package Manager for JavaScript) is an open standard and registry for AI
-                tool discovery and integration. It solves the problem of fragmented AI tool
-                ecosystems by providing:
-              </p>
-              <ul className="space-y-2 text-foreground-secondary list-disc list-inside">
-                <li>
-                  <strong className="text-foreground">Automatic Discovery</strong> - Tools are
-                  automatically indexed from NPM based on keywords
-                </li>
-                <li>
-                  <strong className="text-foreground">Standardized Metadata</strong> - A unified
-                  specification for describing tool capabilities
-                </li>
-                <li>
-                  <strong className="text-foreground">Quality Scoring</strong> - Algorithmic ranking
-                  based on documentation completeness and community adoption
-                </li>
-                <li>
-                  <strong className="text-foreground">AI Agent Integration</strong> - Structured
-                  metadata optimized for LLM tool selection
-                </li>
-              </ul>
-            </div>
-          </section>
-
-          {/* How it Works */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              How it Works
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              <Card>
-                <CardHeader>
-                  <div className="text-3xl mb-2">📦</div>
-                  <CardTitle>1. Publish to NPM</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary">
-                    Add the <code className="text-foreground bg-surface px-1 rounded">tpmjs</code>{' '}
-                    keyword and a{' '}
-                    <code className="text-foreground bg-surface px-1 rounded">tpmjs</code> metadata
-                    field to your package.json
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <div className="text-3xl mb-2">🔍</div>
-                  <CardTitle>2. Automatic Discovery</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary">
-                    TPMJS monitors NPM every 2 minutes for new tools and updates the registry
-                    automatically
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <div className="text-3xl mb-2">⚡</div>
-                  <CardTitle>3. Instant Availability</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary">
-                    Your tool appears on tpmjs.com within 15 minutes, searchable by AI agents and
-                    developers
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* The Specification */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              The Specification
-            </h2>
-            <p className="text-lg text-foreground-secondary mb-8">
-              The TPMJS specification defines a{' '}
-              <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code> field in
-              package.json. TPMJS automatically extracts parameter schemas from your tool code, so
-              you only need to provide basic metadata.
-            </p>
-
-            {/* Auto-extraction callout */}
-            <div className="mb-12 p-6 border-2 border-primary/30 rounded-lg bg-primary/5">
-              <div className="flex items-start gap-4">
-                <div className="text-3xl">✨</div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">
-                    Automatic Schema Extraction
-                  </h3>
-                  <p className="text-foreground-secondary mb-4">
-                    TPMJS automatically extracts your tool&apos;s input schema (parameters) by
-                    analyzing your code when it syncs. You no longer need to manually document
-                    parameters, returns, or AI agent guidance in package.json.
-                  </p>
-                  <div className="grid md:grid-cols-3 gap-4 text-sm">
-                    <div className="p-3 bg-background rounded border border-border">
-                      <strong className="text-foreground">inputSchema</strong>
-                      <p className="text-foreground-secondary mt-1">
-                        Auto-extracted from your Zod schema
-                      </p>
-                    </div>
-                    <div className="p-3 bg-background rounded border border-border">
-                      <strong className="text-foreground">parameters</strong>
-                      <p className="text-foreground-secondary mt-1">
-                        Derived from inputSchema automatically
-                      </p>
-                    </div>
-                    <div className="p-3 bg-background rounded border border-border">
-                      <strong className="text-foreground">Tool page</strong>
-                      <p className="text-foreground-secondary mt-1">
-                        Shows extracted schema with source badge
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Required Fields */}
-            <div className="mb-12">
-              <div className="flex items-center gap-3 mb-4">
-                <Badge variant="default" size="lg">
-                  Required Fields
-                </Badge>
-                <span className="text-foreground-secondary">What you need to provide</span>
-              </div>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>category</code> <span className="text-red-500">*</span>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-3">
-                        Tool category for organization. Must be one of the following:
-                      </p>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {TPMJS_CATEGORIES.map((cat) => (
-                          <Badge key={cat} variant="secondary" size="sm">
-                            {cat}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <h5 className="text-sm font-semibold text-foreground mb-3">
-                      Minimal Example (auto-discovery):
-                    </h5>
-                    <CodeBlock
-                      language="json"
-                      code={`{
+const MINIMAL_EXAMPLE = `{
   "name": "@yourname/my-tool",
+  "version": "1.0.0",
   "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis"
   }
-}`}
-                    />
-                    <p className="text-sm text-foreground-secondary mt-4">
-                      That&apos;s it! TPMJS will automatically discover your exported tools and
-                      extract their schemas.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+}`;
 
-            {/* Auto-Discovery */}
-            <div className="mb-12 p-6 border-2 border-amber-500/30 rounded-lg bg-amber-500/5">
-              <div className="flex items-start gap-4">
-                <div className="text-3xl">🔍</div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground mb-2">
-                    Auto-Discovery of Tools
-                  </h3>
-                  <p className="text-foreground-secondary mb-4">
-                    When you omit the <code className="text-foreground">tools</code> array, TPMJS
-                    automatically scans your package exports and registers any export that looks
-                    like an AI SDK tool (has <code className="text-foreground">description</code>{' '}
-                    and <code className="text-foreground">execute</code> properties).
-                  </p>
-                  <div className="grid md:grid-cols-2 gap-4 text-sm">
-                    <div className="p-3 bg-background rounded border border-border">
-                      <strong className="text-foreground">Automatic</strong>
-                      <p className="text-foreground-secondary mt-1">
-                        Works with any AI SDK compatible tool
-                      </p>
-                    </div>
-                    <div className="p-3 bg-background rounded border border-border">
-                      <strong className="text-foreground">Override</strong>
-                      <p className="text-foreground-secondary mt-1">
-                        Add explicit <code>tools</code> to control what gets registered
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Optional Fields */}
-            <div className="mb-12">
-              <div className="flex items-center gap-3 mb-4">
-                <Badge variant="success" size="lg">
-                  Optional Fields
-                </Badge>
-                <span className="text-foreground-secondary">
-                  Additional metadata for better visibility
-                </span>
-              </div>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-6">
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>tools</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-2">
-                        Array of tools to register. If omitted, tools are auto-discovered. Each tool
-                        has:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
-                        <li>
-                          <code className="text-foreground">name</code> - The exported function name
-                          (required)
-                        </li>
-                        <li>
-                          <code className="text-foreground">description</code> - What the tool does
-                          (optional, auto-extracted if omitted)
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>env</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-2">
-                        Array of environment variables required by the tool. Each variable has:
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 text-sm text-foreground-secondary ml-4">
-                        <li>
-                          <code className="text-foreground">name</code> - Environment variable name
-                          (e.g., &quot;OPENAI_API_KEY&quot;)
-                        </li>
-                        <li>
-                          <code className="text-foreground">description</code> - What the variable
-                          is used for
-                        </li>
-                        <li>
-                          <code className="text-foreground">required</code> - Boolean (defaults to
-                          true)
-                        </li>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <h4 className="text-lg font-semibold text-foreground mb-2">
-                        <code>frameworks</code>
-                      </h4>
-                      <p className="text-sm text-foreground-secondary mb-2">
-                        Array of compatible AI frameworks. Supported values:
-                      </p>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {[
-                          'vercel-ai',
-                          'langchain',
-                          'llamaindex',
-                          'haystack',
-                          'semantic-kernel',
-                        ].map((fw) => (
-                          <Badge key={fw} variant="outline" size="sm">
-                            {fw}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-6">
-                    <h5 className="text-sm font-semibold text-foreground mb-3">
-                      Example with explicit tools:
-                    </h5>
-                    <CodeBlock
-                      language="json"
-                      code={`{
-  "name": "@yourname/sentiment-tool",
-  "keywords": ["tpmjs"],
+const FULL_EXAMPLE = `{
+  "name": "@acme/sentiment-analyzer",
+  "version": "2.1.0",
+  "description": "Advanced sentiment analysis with emotion detection and confidence scoring",
+  "keywords": ["tpmjs", "sentiment", "nlp", "ai-tool"],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/acme/sentiment-analyzer"
+  },
   "tpmjs": {
     "category": "text-analysis",
     "frameworks": ["vercel-ai", "langchain"],
     "env": [
       {
-        "name": "SENTIMENT_API_KEY",
-        "description": "API key for sentiment analysis service",
+        "name": "OPENAI_API_KEY",
+        "description": "OpenAI API key for advanced analysis",
         "required": true
+      },
+      {
+        "name": "SENTIMENT_MODEL",
+        "description": "Model variant to use (default: gpt-4)",
+        "required": false
       }
     ],
     "tools": [
       {
-        "name": "sentimentAnalysisTool",
-        "description": "Advanced sentiment analysis with emotion detection"
+        "name": "analyzeSentiment",
+        "description": "Analyze text sentiment with emotion breakdown"
+      },
+      {
+        "name": "batchAnalyze",
+        "description": "Analyze multiple texts in parallel"
+      },
+      {
+        "name": "compareSentiments",
+        "description": "Compare sentiment between two texts"
       }
     ]
   }
-}`}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+}`;
 
-            {/* Auto-Extracted Fields */}
-            <div className="mb-12">
-              <div className="flex items-center gap-3 mb-4">
-                <Badge variant="outline" size="lg">
-                  Auto-Extracted
-                </Badge>
-                <span className="text-foreground-secondary">
-                  No need to specify (kept for backward compatibility)
-                </span>
-              </div>
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-foreground-secondary mb-4">
-                    The following fields are automatically extracted from your tool code. You can
-                    optionally provide them to override the extracted values:
-                  </p>
-                  <ul className="space-y-3 text-sm text-foreground-secondary">
-                    <li className="flex items-start gap-2">
-                      <code className="text-foreground bg-surface px-2 py-1 rounded">
-                        description
-                      </code>
-                      <span>→ Auto-extracted from tool&apos;s description property</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <code className="text-foreground bg-surface px-2 py-1 rounded">
-                        parameters
-                      </code>
-                      <span>→ Auto-extracted from tool&apos;s Zod inputSchema</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <code className="text-foreground bg-surface px-2 py-1 rounded">returns</code>
-                      <span>→ Auto-extracted from tool definition</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <code className="text-foreground bg-surface px-2 py-1 rounded">aiAgent</code>
-                      <span>→ Auto-extracted from tool metadata</span>
-                    </li>
-                  </ul>
-                  <p className="text-foreground-secondary mt-4 text-sm">
-                    If auto-extraction fails, TPMJS will fall back to any manually provided values.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
+const TOOL_CODE_EXAMPLE = `import { tool } from 'ai';
+import { z } from 'zod';
 
-          {/* Schema Extraction */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Schema Extraction
-            </h2>
-            <p className="text-lg text-foreground-secondary mb-6">
-              When TPMJS syncs your package, it automatically extracts your tool&apos;s inputSchema
-              by loading and inspecting your tool in a sandboxed environment.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <Card>
-                <CardHeader>
-                  <div className="text-3xl mb-2">🔄</div>
-                  <CardTitle>During Sync</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary">
-                    Schema is extracted automatically when your package is discovered or updated
-                  </p>
-                </CardContent>
-              </Card>
+export const analyzeSentiment = tool({
+  description: 'Analyze text sentiment with emotion breakdown',
+  parameters: z.object({
+    text: z.string().describe('The text to analyze'),
+    language: z.string().optional().describe('ISO language code'),
+    includeEmotions: z.boolean().default(true).describe('Include emotion breakdown'),
+  }),
+  execute: async ({ text, language, includeEmotions }) => {
+    // Your implementation here
+    return {
+      sentiment: 'positive',
+      confidence: 0.92,
+      emotions: includeEmotions ? {
+        joy: 0.7,
+        trust: 0.2,
+        anticipation: 0.1,
+      } : undefined,
+    };
+  },
+});
 
-              <Card>
-                <CardHeader>
-                  <div className="text-3xl mb-2">🏷️</div>
-                  <CardTitle>Source Badge</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary">
-                    Tool pages show whether schema was &quot;Auto-extracted&quot; or
-                    &quot;Author-provided&quot;
-                  </p>
-                </CardContent>
-              </Card>
+export const batchAnalyze = tool({
+  description: 'Analyze multiple texts in parallel',
+  parameters: z.object({
+    texts: z.array(z.string()).describe('Array of texts to analyze'),
+  }),
+  execute: async ({ texts }) => {
+    // Batch implementation
+    return texts.map(text => ({ text, sentiment: 'neutral' }));
+  },
+});`;
 
-              <Card>
-                <CardHeader>
-                  <div className="text-3xl mb-2">🔁</div>
-                  <CardTitle>Manual Re-extract</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary">
-                    Users can trigger re-extraction from the tool page if needed
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-            <Card>
-              <CardContent className="pt-6">
-                <h4 className="text-sm font-semibold text-foreground mb-3">How It Works:</h4>
-                <ol className="space-y-2 text-sm text-foreground-secondary list-decimal list-inside">
-                  <li>Your tool is loaded in a Deno sandbox via esm.sh</li>
-                  <li>
-                    The <code className="text-foreground">inputSchema</code> property is read from
-                    your exported tool
-                  </li>
-                  <li>The JSON Schema is stored in our database</li>
-                  <li>Parameters are derived from the schema for display</li>
-                </ol>
-              </CardContent>
-            </Card>
-          </section>
+export default function SpecPage(): React.ReactElement {
+  const [view, setView] = useState<ViewMode>('spec');
 
-          {/* Field Reference Table */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Field Reference
-            </h2>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="text-left py-3 px-4 text-foreground">Field</th>
-                        <th className="text-left py-3 px-4 text-foreground">Type</th>
-                        <th className="text-left py-3 px-4 text-foreground">Required</th>
-                        <th className="text-left py-3 px-4 text-foreground">Description</th>
-                      </tr>
-                    </thead>
-                    <tbody className="text-foreground-secondary">
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">category</code>
-                        </td>
-                        <td className="py-3 px-4">string</td>
-                        <td className="py-3 px-4">
-                          <span className="text-red-500">Yes</span>
-                        </td>
-                        <td className="py-3 px-4">Tool category from predefined list</td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">tools</code>
-                        </td>
-                        <td className="py-3 px-4">array</td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">
-                          Array of tool definitions (name + description). Auto-discovered if
-                          omitted.
-                        </td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">env</code>
-                        </td>
-                        <td className="py-3 px-4">array</td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">Required environment variables</td>
-                      </tr>
-                      <tr className="border-b border-border">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground">frameworks</code>
-                        </td>
-                        <td className="py-3 px-4">array</td>
-                        <td className="py-3 px-4">No</td>
-                        <td className="py-3 px-4">Compatible AI frameworks</td>
-                      </tr>
-                      <tr className="border-b border-border bg-surface/50">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground-tertiary">parameters</code>
-                        </td>
-                        <td className="py-3 px-4 text-foreground-tertiary">array</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="outline" size="sm">
-                            Deprecated
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-foreground-tertiary">
-                          Auto-extracted from tool
-                        </td>
-                      </tr>
-                      <tr className="border-b border-border bg-surface/50">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground-tertiary">returns</code>
-                        </td>
-                        <td className="py-3 px-4 text-foreground-tertiary">object</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="outline" size="sm">
-                            Deprecated
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-foreground-tertiary">
-                          Auto-extracted from tool
-                        </td>
-                      </tr>
-                      <tr className="border-b border-border bg-surface/50">
-                        <td className="py-3 px-4">
-                          <code className="text-foreground-tertiary">aiAgent</code>
-                        </td>
-                        <td className="py-3 px-4 text-foreground-tertiary">object</td>
-                        <td className="py-3 px-4">
-                          <Badge variant="outline" size="sm">
-                            Deprecated
-                          </Badge>
-                        </td>
-                        <td className="py-3 px-4 text-foreground-tertiary">
-                          Auto-extracted from tool
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <AppHeader />
+
+      <main className="flex-1">
+        {/* Hero */}
+        <div className="border-b border-border bg-gradient-to-b from-surface to-background">
+          <Container size="xl" padding="lg" className="py-16">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <Badge variant="outline" size="lg">
+                    v1.0
+                  </Badge>
+                  <span className="text-foreground-tertiary font-mono text-sm">package.json</span>
                 </div>
-              </CardContent>
-            </Card>
-          </section>
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground tracking-tight">
+                  TPMJS Specification
+                </h1>
+              </div>
 
-          {/* Quality Score */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Quality Score
-            </h2>
-            <p className="text-lg text-foreground-secondary mb-6">
-              Tools are ranked by quality score, calculated from three factors:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tier Multiplier</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm text-foreground-secondary">
-                    <li>
-                      <strong className="text-foreground">Rich:</strong> 4x multiplier
-                    </li>
-                    <li>
-                      <strong className="text-foreground">Basic:</strong> 2x multiplier
-                    </li>
-                    <li>
-                      <strong className="text-foreground">Minimal:</strong> 1x multiplier
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>NPM Downloads</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary">
-                    Logarithmic scale based on monthly downloads. More downloads = higher score.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>GitHub Stars</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary">
-                    Logarithmic scale based on repository stars. Community validation boosts
-                    visibility.
-                  </p>
-                </CardContent>
-              </Card>
+              {/* View Toggle */}
+              <div className="flex gap-1 p-1 bg-surface rounded-lg border border-border">
+                <button
+                  type="button"
+                  onClick={() => setView('spec')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    view === 'spec'
+                      ? 'bg-foreground text-background'
+                      : 'text-foreground-secondary hover:text-foreground'
+                  }`}
+                >
+                  Specification
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setView('example')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    view === 'example'
+                      ? 'bg-foreground text-background'
+                      : 'text-foreground-secondary hover:text-foreground'
+                  }`}
+                >
+                  Full Example
+                </button>
+              </div>
             </div>
-            <Card>
-              <CardContent className="pt-6">
-                <h4 className="text-sm font-semibold text-foreground mb-3">Formula:</h4>
-                <CodeBlock
-                  language="typescript"
-                  code={`function calculateQualityScore(params: {
-  tier: 'minimal' | 'basic' | 'rich';
-  downloads: number;
-  githubStars: number;
-}): number {
-  const tierScore = tier === 'rich' ? 0.6 : tier === 'basic' ? 0.4 : 0.2;
-  const downloadsScore = Math.min(0.3, Math.log10(downloads + 1) / 10);
-  const starsScore = Math.min(0.1, Math.log10(githubStars + 1) / 10);
+          </Container>
+        </div>
 
-  return Math.min(1.0, tierScore + downloadsScore + starsScore);
-}`}
-                />
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Discovery & Sync */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Discovery & Sync
-            </h2>
-            <p className="text-lg text-foreground-secondary mb-6">
-              TPMJS automatically discovers and updates tools using three strategies:
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Changes Feed</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary mb-2">
-                    Monitors NPM&apos;s real-time changes feed every 2 minutes
-                  </p>
-                  <Badge variant="outline" size="sm">
-                    Real-time
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Keyword Search</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary mb-2">
-                    Searches for{' '}
-                    <code className="text-foreground bg-surface px-1 rounded">tpmjs</code> keyword
-                    every 15 minutes
-                  </p>
-                  <Badge variant="outline" size="sm">
-                    Every 15 min
-                  </Badge>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Metrics Update</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-foreground-secondary mb-2">
-                    Updates download stats and quality scores hourly
-                  </p>
-                  <Badge variant="outline" size="sm">
-                    Hourly
-                  </Badge>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-
-          {/* Validation */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Validation
-            </h2>
-            <p className="text-lg text-foreground-secondary mb-6">
-              The TPMJS specification is validated using Zod schemas. The validation logic is
-              available in the{' '}
-              <a
-                href="https://www.npmjs.com/package/@tpmjs/types"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                @tpmjs/types
-              </a>{' '}
-              package.
-            </p>
-            <Card>
-              <CardContent className="pt-6">
-                <h4 className="text-sm font-semibold text-foreground mb-3">
-                  Common Validation Errors:
-                </h4>
-                <ul className="space-y-2 text-sm text-foreground-secondary list-disc list-inside">
-                  <li>
-                    <strong className="text-foreground">Invalid category:</strong> Category must be
-                    one of the 12 predefined values
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Description too short/long:</strong>{' '}
-                    Description must be 20-500 characters
-                  </li>
-                  <li>
-                    <strong className="text-foreground">Invalid env:</strong> Each environment
-                    variable must have a name and description
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </section>
-
-          {/* Publishing Your Tool */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Publishing Your Tool
-            </h2>
-            <p className="text-lg text-foreground-secondary mb-6">
-              Publishing a tool to TPMJS is simple:
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <div className="text-3xl mb-2">1️⃣</div>
-                  <p className="text-sm text-foreground-secondary">
-                    Add <code className="text-foreground bg-surface px-1 rounded">tpmjs</code>{' '}
-                    keyword
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <div className="text-3xl mb-2">2️⃣</div>
-                  <p className="text-sm text-foreground-secondary">
-                    Add <code className="text-foreground bg-surface px-1 rounded">tpmjs</code> field
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <div className="text-3xl mb-2">3️⃣</div>
-                  <p className="text-sm text-foreground-secondary">Publish to NPM</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <div className="text-3xl mb-2">✅</div>
-                  <p className="text-sm text-foreground-secondary">
-                    Appears on tpmjs.com in 15 min
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-            <div className="text-center">
-              <Link href="/publish">
-                <Button size="lg" variant="default">
-                  View Complete Publishing Guide →
-                </Button>
-              </Link>
-            </div>
-          </section>
-
-          {/* Support & Resources */}
-          <section className="mb-16">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              Support & Resources
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Documentation</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Link
-                    href="/publish"
-                    className="block text-sm text-foreground-secondary hover:text-primary"
-                  >
-                    → Publishing Guide
-                  </Link>
-                  <a
-                    href="https://github.com/tpmjs/tpmjs"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-sm text-foreground-secondary hover:text-primary"
-                  >
-                    → GitHub Repository
-                  </a>
-                  <a
-                    href="https://www.npmjs.com/package/@tpmjs/types"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-sm text-foreground-secondary hover:text-primary"
-                  >
-                    → TypeScript Types Package
-                  </a>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Examples</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Link
-                    href="/tool/tool-search"
-                    className="block text-sm text-foreground-secondary hover:text-primary"
-                  >
-                    → Browse All Tools
-                  </Link>
-                  <Link
-                    href="/playground"
-                    className="block text-sm text-foreground-secondary hover:text-primary"
-                  >
-                    → Try the Playground
-                  </Link>
-                  <a
-                    href="https://github.com/tpmjs/tpmjs/issues"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block text-sm text-foreground-secondary hover:text-primary"
-                  >
-                    → Report Issues or Ask Questions
-                  </a>
-                </CardContent>
-              </Card>
-            </div>
-          </section>
+        {/* Content */}
+        <Container size="xl" padding="lg" className="py-12">
+          {view === 'spec' ? <SpecificationView /> : <ExampleView />}
         </Container>
       </main>
+    </div>
+  );
+}
 
-      {/* Footer */}
-      <footer className="border-t border-border py-8 bg-surface">
-        <Container size="xl" padding="lg">
-          <div className="text-center text-foreground-secondary">
-            <p>
-              TPMJS is an open standard. Contribute on{' '}
-              <a
-                href="https://github.com/tpmjs/tpmjs"
-                className="text-primary hover:underline"
-                target="_blank"
-                rel="noopener noreferrer"
+function SpecificationView(): React.ReactElement {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Main Content */}
+      <div className="lg:col-span-8 space-y-12">
+        {/* Minimal Required */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+              <span className="text-green-400 text-sm font-bold">1</span>
+            </div>
+            <h2 className="text-xl font-bold text-foreground">Minimal Configuration</h2>
+          </div>
+          <p className="text-foreground-secondary mb-4">
+            Add the <code className="text-foreground bg-surface px-1.5 py-0.5 rounded">tpmjs</code>{' '}
+            keyword and field to your package.json. Tools are auto-discovered from your exports.
+          </p>
+          <CodeBlock language="json" code={MINIMAL_EXAMPLE} showCopy />
+        </section>
+
+        {/* Category Field */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
+              <span className="text-red-400 text-sm font-bold">*</span>
+            </div>
+            <h2 className="text-xl font-bold text-foreground">
+              category <span className="text-red-400 font-normal text-sm">(required)</span>
+            </h2>
+          </div>
+          <p className="text-foreground-secondary mb-4">
+            One of the following predefined categories:
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {TPMJS_CATEGORIES.map((cat) => (
+              <code
+                key={cat}
+                className="px-3 py-1.5 rounded bg-surface border border-border text-sm text-foreground font-mono"
               >
-                GitHub
-              </a>
+                {cat}
+              </code>
+            ))}
+          </div>
+        </section>
+
+        {/* Tools Array */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+              <span className="text-blue-400 text-sm font-bold">?</span>
+            </div>
+            <h2 className="text-xl font-bold text-foreground">
+              tools <span className="text-foreground-tertiary font-normal text-sm">(optional)</span>
+            </h2>
+          </div>
+          <p className="text-foreground-secondary mb-4">
+            Explicit tool definitions. If omitted, tools are auto-discovered from your exports.
+          </p>
+          <CodeBlock
+            language="json"
+            code={`"tools": [
+  {
+    "name": "functionName",        // Export name (required)
+    "description": "What it does"  // Optional, auto-extracted if omitted
+  }
+]`}
+            showCopy
+          />
+        </section>
+
+        {/* Env Array */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+              <span className="text-amber-400 text-sm font-bold">?</span>
+            </div>
+            <h2 className="text-xl font-bold text-foreground">
+              env <span className="text-foreground-tertiary font-normal text-sm">(optional)</span>
+            </h2>
+          </div>
+          <p className="text-foreground-secondary mb-4">
+            Environment variables required by your tools:
+          </p>
+          <CodeBlock
+            language="json"
+            code={`"env": [
+  {
+    "name": "API_KEY",              // Variable name (required)
+    "description": "Your API key",  // What it's for (required)
+    "required": true                // Default: true
+  }
+]`}
+            showCopy
+          />
+        </section>
+
+        {/* Frameworks Array */}
+        <section>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
+              <span className="text-purple-400 text-sm font-bold">?</span>
+            </div>
+            <h2 className="text-xl font-bold text-foreground">
+              frameworks{' '}
+              <span className="text-foreground-tertiary font-normal text-sm">(optional)</span>
+            </h2>
+          </div>
+          <p className="text-foreground-secondary mb-4">Compatible AI frameworks:</p>
+          <div className="flex flex-wrap gap-2">
+            {['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel'].map((fw) => (
+              <code
+                key={fw}
+                className="px-3 py-1.5 rounded bg-surface border border-border text-sm text-foreground font-mono"
+              >
+                {fw}
+              </code>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* Sidebar - Schema Reference */}
+      <aside className="lg:col-span-4">
+        <div className="sticky top-8 space-y-6">
+          <div className="p-6 rounded-xl border border-border bg-surface">
+            <h3 className="text-sm font-bold text-foreground uppercase tracking-wider mb-4">
+              Schema Reference
+            </h3>
+            <div className="space-y-3 font-mono text-sm">
+              <div className="flex justify-between">
+                <span className="text-foreground">category</span>
+                <span className="text-red-400">required</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">tools[]</span>
+                <span className="text-foreground-tertiary">optional</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">├─ name</span>
+                <span className="text-foreground-tertiary">string</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">└─ description</span>
+                <span className="text-foreground-tertiary">string</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">env[]</span>
+                <span className="text-foreground-tertiary">optional</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">├─ name</span>
+                <span className="text-foreground-tertiary">string</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">├─ description</span>
+                <span className="text-foreground-tertiary">string</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">└─ required</span>
+                <span className="text-foreground-tertiary">boolean</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">frameworks[]</span>
+                <span className="text-foreground-tertiary">optional</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 rounded-xl border border-cyan-500/30 bg-cyan-500/5">
+            <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">
+              Auto-Extracted
+            </h3>
+            <p className="text-sm text-foreground-secondary mb-3">
+              These fields are automatically extracted from your tool code:
+            </p>
+            <ul className="space-y-2 text-sm text-foreground-secondary font-mono">
+              <li>• inputSchema</li>
+              <li>• parameters</li>
+              <li>• description</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+  );
+}
+
+function ExampleView(): React.ReactElement {
+  return (
+    <div className="space-y-12">
+      {/* Package.json Example */}
+      <section>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+            <span className="text-white text-lg">📦</span>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">package.json</h2>
+            <p className="text-foreground-tertiary text-sm">Complete TPMJS configuration</p>
+          </div>
+        </div>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="bg-surface px-4 py-2 border-b border-border flex items-center gap-2">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-500/50" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+              <div className="w-3 h-3 rounded-full bg-green-500/50" />
+            </div>
+            <span className="text-foreground-tertiary text-sm font-mono ml-2">package.json</span>
+          </div>
+          <CodeBlock language="json" code={FULL_EXAMPLE} showCopy className="rounded-none" />
+        </div>
+      </section>
+
+      {/* Tool Code Example */}
+      <section>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+            <span className="text-white text-lg">⚡</span>
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold text-foreground">src/index.ts</h2>
+            <p className="text-foreground-tertiary text-sm">
+              Tool implementation with Vercel AI SDK
             </p>
           </div>
-        </Container>
-      </footer>
+        </div>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <div className="bg-surface px-4 py-2 border-b border-border flex items-center gap-2">
+            <div className="flex gap-1.5">
+              <div className="w-3 h-3 rounded-full bg-red-500/50" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+              <div className="w-3 h-3 rounded-full bg-green-500/50" />
+            </div>
+            <span className="text-foreground-tertiary text-sm font-mono ml-2">src/index.ts</span>
+          </div>
+          <CodeBlock
+            language="typescript"
+            code={TOOL_CODE_EXAMPLE}
+            showCopy
+            className="rounded-none"
+          />
+        </div>
+      </section>
+
+      {/* What Happens */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="p-6 rounded-xl border border-border bg-surface">
+          <div className="text-3xl mb-4">1️⃣</div>
+          <h3 className="font-bold text-foreground mb-2">Publish to npm</h3>
+          <p className="text-sm text-foreground-secondary">
+            Run <code className="text-foreground bg-background px-1 rounded">npm publish</code> to
+            publish your package
+          </p>
+        </div>
+        <div className="p-6 rounded-xl border border-border bg-surface">
+          <div className="text-3xl mb-4">2️⃣</div>
+          <h3 className="font-bold text-foreground mb-2">Auto-Discovery</h3>
+          <p className="text-sm text-foreground-secondary">
+            TPMJS detects your package and extracts tool schemas automatically
+          </p>
+        </div>
+        <div className="p-6 rounded-xl border border-border bg-surface">
+          <div className="text-3xl mb-4">3️⃣</div>
+          <h3 className="font-bold text-foreground mb-2">Live on Registry</h3>
+          <p className="text-sm text-foreground-secondary">
+            Your tools appear on tpmjs.com, searchable by AI agents
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
