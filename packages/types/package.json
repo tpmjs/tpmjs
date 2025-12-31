@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/types",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Shared TypeScript types and Zod schemas for TPMJS",
   "author": "TPMJS",
   "license": "MIT",

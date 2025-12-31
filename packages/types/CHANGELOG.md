@@ -1,5 +1,11 @@
 # @tpmjs/types
 
+## 0.1.2
+
+### Patch Changes
+
+- Add 'research' to valid TPMJS_CATEGORIES for package validation
+
 ## 0.1.1
 
 ### Patch Changes
