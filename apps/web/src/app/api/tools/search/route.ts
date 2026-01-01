@@ -10,13 +10,27 @@ export const maxDuration = 60;
 const k1 = 1.5; // term frequency saturation parameter
 const b = 0.75; // length normalization parameter
 
-// Tokenize text into words
-function tokenize(text: string): string[] {
+// Split camelCase and PascalCase into words
+function splitCamelCase(text: string): string {
   return text
+    .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase -> camel Case
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2'); // XMLParser -> XML Parser
+}
+
+// Tokenize text into words (handles camelCase)
+function tokenize(text: string): string[] {
+  return splitCamelCase(text)
     .toLowerCase()
     .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
     .filter((t) => t.length > 0);
+}
+
+// Check for exact tool name match (case-insensitive)
+function hasExactNameMatch(query: string, toolName: string): boolean {
+  const queryLower = query.toLowerCase();
+  const nameLower = toolName.toLowerCase();
+  return queryLower.includes(nameLower) || nameLower.includes(queryLower);
 }
 
 // Calculate term frequency
@@ -131,7 +145,11 @@ export async function GET(request: NextRequest) {
       const bm25Score = calculateBM25(fullQuery, text, avgDocLength, tools.length, docFrequencies);
       const qualityBoost = Number(tool.qualityScore ?? 0) * 0.5;
       const downloadBoost = Math.log10((tool.package.npmDownloadsLastMonth || 0) + 1) * 0.1;
-      const finalScore = bm25Score + qualityBoost + downloadBoost;
+
+      // Massive boost for exact tool name match (when user mentions tool by name)
+      const exactNameBoost = hasExactNameMatch(query, tool.name) ? 100 : 0;
+
+      const finalScore = bm25Score + qualityBoost + downloadBoost + exactNameBoost;
 
       return { tool, score: finalScore };
     });
