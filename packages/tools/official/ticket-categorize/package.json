@@ -1,0 +1,69 @@
+{
+  "name": "@tpmjs/ticket-categorize",
+  "version": "0.1.0",
+  "description": "Categorizes support tickets by type, priority, and product area",
+  "type": "module",
+  "keywords": ["tpmjs", "cx", "support", "tickets", "categorization", "customer-success"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/ticket-categorize"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "cx",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "ticketCategorizeTool",
+        "description": "Categorizes support tickets by type, priority, and product area. Suggests routing based on category and identifies urgent issues requiring immediate attention.",
+        "parameters": [
+          {
+            "name": "ticket",
+            "type": "object",
+            "description": "Support ticket with subject, description, and optional metadata",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "TicketCategorization",
+          "description": "Categorization with type, priority, product area, routing suggestion, and reasoning"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool to automate support ticket triage, route tickets to the right team, prioritize urgent issues, and improve support efficiency.",
+          "limitations": "Categorization is keyword-based. For complex tickets, consider AI-powered classification. Routing suggestions are generic and should be customized to your organization.",
+          "examples": [
+            "Automatically categorize incoming support tickets",
+            "Prioritize critical bugs and outages",
+            "Route tickets to appropriate support teams"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

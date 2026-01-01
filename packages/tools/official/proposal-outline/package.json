@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-proposal-outline",
+  "version": "0.1.0",
+  "description": "Generate structured sales proposal outlines from opportunity details and customer requirements",
+  "type": "module",
+  "keywords": ["tpmjs", "sales", "proposal", "rfp"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/proposal-outline"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sales",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "proposalOutlineTool",
+        "description": "Generate structured sales proposal outlines from opportunity details and customer requirements",
+        "parameters": [
+          {
+            "name": "opportunity",
+            "type": "object",
+            "description": "Opportunity details including customer, requirements, budget",
+            "required": true
+          },
+          {
+            "name": "template",
+            "type": "string",
+            "description": "Optional proposal template type",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "ProposalOutline",
+          "description": "Structured proposal outline with sections"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "^4.0.0"
+  }
+}

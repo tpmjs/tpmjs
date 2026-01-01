@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-competitor-brief",
+  "version": "0.1.0",
+  "description": "Extract and structure competitor information from various sources into a competitive brief",
+  "type": "module",
+  "keywords": ["tpmjs", "marketing", "competitive-analysis", "market-research"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/competitor-brief"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "marketing",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "competitorBriefTool",
+        "description": "Extract and structure competitor information from various sources into a competitive brief",
+        "parameters": [
+          {
+            "name": "competitorName",
+            "type": "string",
+            "description": "Name of competitor to analyze",
+            "required": true
+          },
+          {
+            "name": "sources",
+            "type": "array",
+            "description": "Source texts/URLs to analyze",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "CompetitorBrief",
+          "description": "Structured competitor analysis with comparison matrix"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "^4.0.0"
+  }
+}

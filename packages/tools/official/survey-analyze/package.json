@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/official-survey-analyze",
+  "version": "0.1.0",
+  "description": "Analyzes employee survey responses to extract themes, sentiment, and action items",
+  "type": "module",
+  "keywords": ["tpmjs", "hr", "survey", "analysis", "sentiment"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/survey-analyze"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "hr",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "surveyAnalyzeTool",
+        "description": "Analyzes employee survey responses to extract themes, sentiment, and action items",
+        "parameters": [
+          {
+            "name": "responses",
+            "type": "string[]",
+            "description": "Survey responses from employees",
+            "required": true
+          },
+          {
+            "name": "questions",
+            "type": "string[]",
+            "description": "Survey questions asked",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "SurveyAnalysis",
+          "description": "Survey analysis with themes, sentiment, and action items"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -2,6 +2,12 @@
  * Data Classification Heuristic Tool for TPMJS
  * Analyzes text to classify data sensitivity using pattern-based heuristics.
  * Detects PII, financial data, health data, and other sensitive information.
+ *
+ * Domain rule: pii-detection - Detects personally identifiable information (SSN, email, phone, DOB, addresses)
+ * Domain rule: hipaa-data-detection - Detects HIPAA-protected health data (MRN, diagnoses, prescriptions)
+ * Domain rule: financial-data-detection - Detects financial data (credit cards, bank accounts, routing numbers, salaries)
+ * Domain rule: credential-detection - Detects authentication credentials (API keys, passwords, tokens)
+ * Domain rule: sensitivity-scoring - Scores data sensitivity from public to restricted based on detected patterns
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -23,21 +29,32 @@ export interface DetectionSignal {
 }
 
 /**
- * Output interface for data classification
+ * Field classification result
  */
-export interface DataClassification {
+export interface FieldClassification {
+  fieldName: string;
   classification: ClassificationLevel;
   signals: DetectionSignal[];
   confidence: number;
+}
+
+/**
+ * Output interface for data classification
+ */
+export interface DataClassification {
+  fields: FieldClassification[];
+  overallClassification: ClassificationLevel;
   summary: {
-    totalSignals: number;
+    totalFields: number;
+    piiFields: number;
+    sensitiveFields: number;
     highestSeverity: string;
     categories: string[];
   };
 }
 
 type DataClassificationInput = {
-  text: string;
+  rows: Array<Record<string, unknown>>;
 };
 
 /**
@@ -169,15 +186,77 @@ const PATTERNS = {
 function detectPatterns(text: string): DetectionSignal[] {
   const signals: DetectionSignal[] = [];
 
+  if (!text || typeof text !== 'string') {
+    return signals;
+  }
+
   for (const [key, pattern] of Object.entries(PATTERNS)) {
-    const matches = text.match(pattern.regex);
-    if (matches && matches.length > 0) {
+    try {
+      const matches = text.match(pattern.regex);
+      if (matches && matches.length > 0) {
+        signals.push({
+          type: pattern.type,
+          pattern: key,
+          severity: pattern.severity,
+          description: pattern.description,
+          matches: matches.length,
+        });
+      }
+    } catch (error) {
+      // Skip pattern if it fails
+      console.warn(`Pattern detection failed for ${key}:`, error);
+    }
+  }
+
+  return signals;
+}
+
+/**
+ * Detects sensitive data patterns in field name
+ */
+function detectFromFieldName(fieldName: string): DetectionSignal[] {
+  const signals: DetectionSignal[] = [];
+  const lowerName = fieldName.toLowerCase();
+
+  // Check field name patterns
+  const namePatterns: Record<
+    string,
+    { type: string; severity: DetectionSignal['severity']; description: string }
+  > = {
+    email: { type: 'Email', severity: 'medium', description: 'Email field name detected' },
+    phone: { type: 'Phone', severity: 'medium', description: 'Phone field name detected' },
+    ssn: { type: 'SSN', severity: 'critical', description: 'SSN field name detected' },
+    password: {
+      type: 'Password',
+      severity: 'critical',
+      description: 'Password field name detected',
+    },
+    credit: {
+      type: 'Credit Card',
+      severity: 'critical',
+      description: 'Credit card field name detected',
+    },
+    address: { type: 'Address', severity: 'medium', description: 'Address field name detected' },
+    dob: {
+      type: 'Date of Birth',
+      severity: 'high',
+      description: 'Date of birth field name detected',
+    },
+    birth_date: {
+      type: 'Date of Birth',
+      severity: 'high',
+      description: 'Date of birth field name detected',
+    },
+    salary: { type: 'Salary', severity: 'high', description: 'Salary field name detected' },
+  };
+
+  for (const [key, patternInfo] of Object.entries(namePatterns)) {
+    if (lowerName.includes(key)) {
       signals.push({
-        type: pattern.type,
-        pattern: key,
-        severity: pattern.severity,
-        description: pattern.description,
-        matches: matches.length,
+        type: patternInfo.type,
+        pattern: `field-name-${key}`,
+        severity: patternInfo.severity,
+        description: patternInfo.description,
       });
     }
   }
@@ -283,51 +362,122 @@ function extractCategories(signals: DetectionSignal[]): string[] {
 
 /**
  * Data Classification Heuristic Tool
- * Analyzes text to classify data sensitivity based on pattern detection
+ * Analyzes rows of data to classify field sensitivity based on pattern detection
  */
 export const dataClassificationHeuristic = tool({
   description:
-    'Classifies data sensitivity using heuristics to detect PII (personal identifiable information), financial data, health data, and other sensitive patterns. Returns classification level (public/internal/confidential/restricted), detected signals, and confidence score.',
+    'Classifies data field sensitivity using heuristics to detect PII (personal identifiable information), financial data, health data, and other sensitive patterns. Analyzes sample data rows and field names to determine classification levels.',
   inputSchema: jsonSchema<DataClassificationInput>({
     type: 'object',
     properties: {
-      text: {
-        type: 'string',
-        description: 'The text content to analyze for sensitive data patterns',
+      rows: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: true,
+        },
+        description: 'Sample data rows to analyze for sensitive fields',
+        minItems: 1,
       },
     },
-    required: ['text'],
+    required: ['rows'],
     additionalProperties: false,
   }),
-  async execute({ text }): Promise<DataClassification> {
+  async execute({ rows }): Promise<DataClassification> {
     // Validate input
-    if (!text || typeof text !== 'string') {
-      throw new Error('Text is required and must be a string');
+    if (!Array.isArray(rows) || rows.length === 0) {
+      throw new Error('Rows array is required and must not be empty');
     }
 
-    if (text.trim().length === 0) {
-      throw new Error('Text cannot be empty');
+    try {
+      // Extract field names from first row
+      const firstRow = rows[0];
+      if (!firstRow || typeof firstRow !== 'object') {
+        throw new Error('Each row must be an object');
+      }
+
+      const fieldNames = Object.keys(firstRow);
+      const fieldClassifications: FieldClassification[] = [];
+
+      // Analyze each field
+      for (const fieldName of fieldNames) {
+        const allSignals: DetectionSignal[] = [];
+
+        // Check field name
+        const nameSignals = detectFromFieldName(fieldName);
+        allSignals.push(...nameSignals);
+
+        // Check values in this field across all rows
+        for (const row of rows) {
+          const value = row[fieldName];
+          if (value != null) {
+            const valueStr = String(value);
+            const valueSignals = detectPatterns(valueStr);
+            allSignals.push(...valueSignals);
+          }
+        }
+
+        // Remove duplicates based on type
+        const uniqueSignals = Array.from(new Map(allSignals.map((s) => [s.type, s])).values());
+
+        // Calculate classification for this field
+        const { level, confidence } = calculateClassification(uniqueSignals);
+
+        fieldClassifications.push({
+          fieldName,
+          classification: level,
+          signals: uniqueSignals,
+          confidence,
+        });
+      }
+
+      // Determine overall classification (highest from all fields)
+      let overallClassification: ClassificationLevel = 'public';
+      const classificationOrder: Record<ClassificationLevel, number> = {
+        public: 0,
+        internal: 1,
+        confidential: 2,
+        restricted: 3,
+      };
+
+      for (const field of fieldClassifications) {
+        if (
+          classificationOrder[field.classification] > classificationOrder[overallClassification]
+        ) {
+          overallClassification = field.classification;
+        }
+      }
+
+      // Collect all unique signals
+      const allSignals = fieldClassifications.flatMap((f) => f.signals);
+      const uniqueSignals = Array.from(new Map(allSignals.map((s) => [s.type, s])).values());
+
+      // Build summary
+      const piiFields = fieldClassifications.filter(
+        (f) => f.classification === 'restricted' || f.classification === 'confidential'
+      ).length;
+
+      const sensitiveFields = fieldClassifications.filter(
+        (f) => f.classification !== 'public'
+      ).length;
+
+      return {
+        fields: fieldClassifications,
+        overallClassification,
+        summary: {
+          totalFields: fieldClassifications.length,
+          piiFields,
+          sensitiveFields,
+          highestSeverity: getHighestSeverity(uniqueSignals),
+          categories: extractCategories(uniqueSignals),
+        },
+      };
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error(`Data classification failed: ${error.message}`);
+      }
+      throw new Error('Data classification failed with unknown error');
     }
-
-    // Detect patterns
-    const signals = detectPatterns(text);
-
-    // Calculate classification
-    const { level, confidence } = calculateClassification(signals);
-
-    // Build summary
-    const summary = {
-      totalSignals: signals.length,
-      highestSeverity: getHighestSeverity(signals),
-      categories: extractCategories(signals),
-    };
-
-    return {
-      classification: level,
-      signals,
-      confidence,
-      summary,
-    };
   },
 });
 

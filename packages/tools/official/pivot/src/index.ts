@@ -2,6 +2,9 @@
  * Pivot Tool for TPMJS
  * Transforms array data from row format to column format (pivot table transformation).
  * Useful for reshaping data for analysis, reporting, and visualization.
+ *
+ * Domain rule: pivot_transformation - Transforms row-oriented data to column-oriented (pivot table)
+ * Domain rule: value_aggregation - Aggregates multiple values (sum for numbers, concatenate for strings)
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -29,7 +32,40 @@ type PivotInput = {
 };
 
 /**
- * Pivots array data from row format to column format
+ * Domain rule: value_aggregation - Aggregates multiple values into a single value
+ * For numbers: sum
+ * For strings: concatenate with comma
+ * For arrays: flatten
+ * For others: take first value
+ */
+function aggregateValues(values: unknown[]): unknown {
+  if (values.length === 0) return null;
+  if (values.length === 1) return values[0];
+
+  // Check if all values are numbers
+  const allNumbers = values.every((v) => typeof v === 'number');
+  if (allNumbers) {
+    return (values as number[]).reduce((sum, val) => sum + val, 0);
+  }
+
+  // Check if all values are strings
+  const allStrings = values.every((v) => typeof v === 'string');
+  if (allStrings) {
+    return (values as string[]).join(', ');
+  }
+
+  // Check if all values are arrays
+  const allArrays = values.every((v) => Array.isArray(v));
+  if (allArrays) {
+    return (values as unknown[][]).flat();
+  }
+
+  // Default: return first non-null value
+  return values.find((v) => v !== null && v !== undefined) ?? null;
+}
+
+/**
+ * Domain rule: pivot_transformation - Pivots array data from row format to column format
  */
 function pivotData(
   rows: Array<Record<string, unknown>>,
@@ -47,7 +83,8 @@ function pivotData(
   // Collect all unique column values and row values
   const columnValues = new Set<string>();
   const rowValues = new Set<string>();
-  const pivotMap = new Map<string, Map<string, unknown>>();
+  // Map of (rowValue -> (colValue -> array of values))
+  const pivotMap = new Map<string, Map<string, unknown[]>>();
 
   for (const row of rows) {
     const rowValue = String(row[rowKey] ?? '');
@@ -61,7 +98,13 @@ function pivotData(
       pivotMap.set(rowValue, new Map());
     }
 
-    pivotMap.get(rowValue)?.set(colValue, cellValue);
+    const rowData = pivotMap.get(rowValue)!;
+    if (!rowData.has(colValue)) {
+      rowData.set(colValue, []);
+    }
+
+    // Accumulate values for aggregation
+    rowData.get(colValue)!.push(cellValue);
   }
 
   // Build pivoted array
@@ -78,8 +121,10 @@ function pivotData(
     const rowData = pivotMap.get(rowValue)!;
 
     for (const col of columns) {
-      const value = rowData.get(col);
-      pivotedRow[col] = value ?? null;
+      const values = rowData.get(col);
+      // Aggregate multiple values
+      const value = values ? aggregateValues(values) : null;
+      pivotedRow[col] = value;
       totalCells++;
 
       if (value === undefined || value === null) {

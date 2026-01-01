@@ -1,0 +1,81 @@
+{
+  "name": "@tpmjs/social-post-draft",
+  "version": "0.1.0",
+  "description": "Draft social media posts optimized for specific platforms with hashtags and call-to-action",
+  "type": "module",
+  "keywords": ["tpmjs", "social-media", "marketing", "content", "ai"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/social-post-draft"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "marketing",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "socialPostDraftTool",
+        "description": "Drafts social media posts optimized for specific platforms (Twitter, LinkedIn, Instagram, Facebook) with appropriate hashtags, CTAs, and platform-specific best practices. Respects character limits and engagement patterns.",
+        "parameters": [
+          {
+            "name": "message",
+            "type": "string",
+            "description": "Core message to communicate in the social post",
+            "required": true
+          },
+          {
+            "name": "platform",
+            "type": "'twitter' | 'linkedin' | 'instagram' | 'facebook'",
+            "description": "Target social media platform",
+            "required": true
+          },
+          {
+            "name": "tone",
+            "type": "string",
+            "description": "Desired tone (professional, casual, friendly, etc.)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "SocialPost",
+          "description": "Platform-optimized social post with content, hashtags, character count, suggestions, and CTA"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool when users need to create social media posts optimized for specific platforms. Handles character limits, hashtag generation, and platform-specific best practices.",
+          "limitations": "Does not include AI content generation - you must provide the core message. Only optimizes and formats existing content for platforms.",
+          "examples": [
+            "Draft a Twitter post about our new product launch",
+            "Create a LinkedIn post about our latest blog article",
+            "Generate an Instagram caption for our event photos"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

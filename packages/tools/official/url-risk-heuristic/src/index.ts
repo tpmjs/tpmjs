@@ -10,6 +10,12 @@
  * - Known phishing patterns
  * - Multiple subdomains
  * - URL shorteners
+ *
+ * Domain rule: phishing-detection - Detects phishing indicators (suspicious TLDs, URL shorteners, brand keywords)
+ * Domain rule: homograph-attack-detection - Identifies punycode domains and lookalike unicode characters
+ * Domain rule: url-structure-analysis - Analyzes URL structure (IP addresses, excessive subdomains, path traversal)
+ * Domain rule: protocol-security-validation - Validates secure protocols (HTTPS) and checks for non-standard ports
+ * Domain rule: risk-scoring - Calculates weighted risk score from 0 to 1 based on detected threats
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -98,6 +104,14 @@ function hasIpAddress(hostname: string): boolean {
   const ipv6Pattern = /^[0-9a-f:]+$/i;
 
   return ipv4Pattern.test(hostname) || (hostname.includes(':') && ipv6Pattern.test(hostname));
+}
+
+/**
+ * Check if domain contains punycode (IDN homograph attack vector)
+ */
+function hasPunycode(hostname: string): boolean {
+  // Punycode domains start with 'xn--'
+  return hostname.includes('xn--');
 }
 
 /**
@@ -244,7 +258,20 @@ export const urlRiskHeuristic = tool({
       recommendations.push('Long URLs can be used to hide malicious content');
     }
 
-    // Check 6: Unicode/homograph attacks
+    // Check 6: Punycode domain (IDN)
+    if (hasPunycode(hostname)) {
+      risks.push({
+        type: 'punycode-domain',
+        severity: 'high',
+        description: 'URL uses punycode/IDN encoding (xn--), potential for homograph attacks',
+      });
+      riskScore += 0.3;
+      recommendations.push(
+        'Punycode domains can disguise lookalike characters - verify the actual domain carefully'
+      );
+    }
+
+    // Check 7: Unicode/homograph attacks
     if (hasUnicodeTricks(hostname)) {
       risks.push({
         type: 'unicode-tricks',
@@ -255,7 +282,7 @@ export const urlRiskHeuristic = tool({
       recommendations.push('Check for lookalike characters that mimic legitimate domains');
     }
 
-    // Check 7: Excessive subdomains
+    // Check 8: Excessive subdomains
     const subdomainCount = countSubdomains(hostname);
     if (subdomainCount > 3) {
       risks.push({
@@ -267,7 +294,7 @@ export const urlRiskHeuristic = tool({
       recommendations.push('Multiple subdomains can be used to impersonate legitimate sites');
     }
 
-    // Check 8: Suspicious patterns/keywords
+    // Check 9: Suspicious patterns/keywords
     const suspiciousPatterns = checkSuspiciousPatterns(url);
     if (suspiciousPatterns.length > 0) {
       risks.push({
@@ -279,7 +306,7 @@ export const urlRiskHeuristic = tool({
       recommendations.push('Suspicious keywords often indicate phishing attempts');
     }
 
-    // Check 9: Non-standard port
+    // Check 10: Non-standard port
     if (port && !['80', '443'].includes(port)) {
       risks.push({
         type: 'non-standard-port',
@@ -290,7 +317,7 @@ export const urlRiskHeuristic = tool({
       recommendations.push('Non-standard ports can indicate unusual server configuration');
     }
 
-    // Check 10: Path traversal attempts
+    // Check 11: Path traversal attempts
     if (pathname.includes('..') || pathname.includes('//')) {
       risks.push({
         type: 'path-traversal',

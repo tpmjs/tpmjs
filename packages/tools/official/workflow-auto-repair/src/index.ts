@@ -1,9 +1,43 @@
 /**
  * Workflow Auto-Repair Tool for TPMJS
- * Analyzes workflow errors and suggests repairs for broken steps.
+ * Inserts adapter steps when input/output types are mismatched.
+ *
+ * Domain Rules:
+ * - Must insert appropriate adapters (html→text, json-repair, etc.)
+ * - Must use adapter lookup table
+ * - Must make minimal necessary repairs
  */
 
 import { jsonSchema, tool } from 'ai';
+
+/**
+ * Adapter lookup table (domain rule)
+ * Maps source→target type pairs to appropriate adapter tools
+ */
+const ADAPTER_LOOKUP: Record<string, string> = {
+  'html→text': 'html-to-text',
+  'html→markdown': 'html-to-markdown',
+  'markdown→html': 'markdown-to-html',
+  'json→yaml': 'json-to-yaml',
+  'yaml→json': 'yaml-to-json',
+  'text→json': 'json-parse',
+  'string→json': 'json-parse',
+  'json→text': 'json-stringify',
+  'json→string': 'json-stringify',
+  'object→string': 'json-stringify',
+  'array→string': 'json-stringify',
+  'csv→json': 'csv-to-json',
+  'json→csv': 'json-to-csv',
+  'xml→json': 'xml-to-json',
+  'json→xml': 'json-to-xml',
+  'string→number': 'parse-number',
+  'text→number': 'parse-number',
+  'number→string': 'number-to-string',
+  'boolean→string': 'boolean-to-string',
+  'string→boolean': 'parse-boolean',
+  'malformed-json→json': 'json-repair',
+  'broken-json→json': 'json-repair',
+};
 
 /**
  * Represents a step in a workflow
@@ -11,423 +45,254 @@ import { jsonSchema, tool } from 'ai';
 export interface WorkflowStep {
   id: string;
   name: string;
-  type?: string;
+  inputType?: string;
+  outputType?: string;
   config?: Record<string, unknown>;
   dependencies?: string[];
   [key: string]: unknown;
 }
 
 /**
- * Represents a workflow with steps
+ * Represents a type mismatch between steps
  */
-export interface Workflow {
-  id?: string;
-  name?: string;
-  steps: WorkflowStep[];
-  [key: string]: unknown;
+export interface TypeMismatch {
+  fromStepId: string;
+  toStepId: string;
+  outputType: string;
+  inputType: string;
 }
 
 /**
- * Represents an error in a workflow step
+ * Represents an inserted adapter step
  */
-export interface StepError {
-  step: string; // step ID or name
-  error: string; // error message
+export interface AdapterInsertion {
+  position: number; // where to insert in the steps array
+  adapterStep: WorkflowStep;
+  reason: string;
 }
 
 /**
- * Represents a suggested repair for a broken step
- */
-export interface StepRepair {
-  stepId: string;
-  stepName: string;
-  errorType: string;
-  suggestedFix: string;
-  confidence: 'high' | 'medium' | 'low';
-  codeChanges?: {
-    field: string;
-    oldValue: unknown;
-    newValue: unknown;
-  }[];
-}
-
-/**
- * Result of the workflow repair analysis
+ * Result of the workflow repair
  */
 export interface WorkflowRepairResult {
-  repairs: StepRepair[];
-  fixedSteps: number;
-  unfixable: Array<{
-    stepId: string;
-    stepName: string;
+  repairedSteps: WorkflowStep[];
+  insertions: AdapterInsertion[];
+  unrepairable: Array<{
+    fromStepId: string;
+    toStepId: string;
     reason: string;
   }>;
+  changesMade: number;
 }
 
 type WorkflowAutoRepairInput = {
-  workflow: Workflow;
-  errors: StepError[];
+  steps: WorkflowStep[];
 };
 
 /**
- * Analyzes error messages to determine error types
+ * Detects type mismatches between consecutive workflow steps
  */
-function categorizeError(errorMessage: string): {
-  type: string;
-  keywords: string[];
-} {
-  const lowerError = errorMessage.toLowerCase();
+function detectTypeMismatches(steps: WorkflowStep[]): TypeMismatch[] {
+  const mismatches: TypeMismatch[] = [];
 
-  // Network/Connection errors
-  if (
-    lowerError.includes('network') ||
-    lowerError.includes('timeout') ||
-    lowerError.includes('econnrefused') ||
-    lowerError.includes('fetch failed')
-  ) {
-    return { type: 'network', keywords: ['network', 'timeout', 'connection'] };
+  for (let i = 0; i < steps.length - 1; i++) {
+    const currentStep = steps[i];
+    const nextStep = steps[i + 1];
+
+    if (!currentStep || !nextStep) continue;
+
+    const outputType = currentStep.outputType;
+    const inputType = nextStep.inputType;
+
+    // Skip if types are not specified or already match
+    if (!outputType || !inputType) continue;
+    if (outputType === inputType) continue;
+
+    mismatches.push({
+      fromStepId: currentStep.id,
+      toStepId: nextStep.id,
+      outputType,
+      inputType,
+    });
   }
 
-  // Authentication errors
-  if (
-    lowerError.includes('unauthorized') ||
-    lowerError.includes('authentication') ||
-    lowerError.includes('auth') ||
-    lowerError.includes('401') ||
-    lowerError.includes('403')
-  ) {
-    return { type: 'authentication', keywords: ['auth', 'credentials', 'token'] };
-  }
-
-  // Validation errors
-  if (
-    lowerError.includes('validation') ||
-    lowerError.includes('invalid') ||
-    lowerError.includes('required') ||
-    lowerError.includes('missing')
-  ) {
-    return { type: 'validation', keywords: ['required', 'invalid', 'schema'] };
-  }
-
-  // Dependency errors
-  if (
-    lowerError.includes('not found') ||
-    lowerError.includes('undefined') ||
-    lowerError.includes('null') ||
-    lowerError.includes('dependency')
-  ) {
-    return { type: 'dependency', keywords: ['dependency', 'missing', 'prerequisite'] };
-  }
-
-  // Type errors
-  if (
-    lowerError.includes('type') ||
-    lowerError.includes('expected') ||
-    lowerError.includes('cannot read')
-  ) {
-    return { type: 'type', keywords: ['type', 'casting', 'format'] };
-  }
-
-  // Rate limiting
-  if (lowerError.includes('rate') || lowerError.includes('429') || lowerError.includes('quota')) {
-    return { type: 'rate-limit', keywords: ['rate', 'quota', 'throttle'] };
-  }
-
-  // Configuration errors
-  if (
-    lowerError.includes('config') ||
-    lowerError.includes('setting') ||
-    lowerError.includes('parameter')
-  ) {
-    return { type: 'configuration', keywords: ['config', 'parameter', 'setting'] };
-  }
-
-  return { type: 'unknown', keywords: [] };
+  return mismatches;
 }
 
 /**
- * Generates repair suggestions based on error type
+ * Finds an appropriate adapter for a type conversion (domain rule: use adapter lookup table)
  */
-function generateRepairSuggestion(
-  step: WorkflowStep,
-  errorType: string,
-  errorMessage: string
-): {
-  suggestedFix: string;
-  confidence: 'high' | 'medium' | 'low';
-  codeChanges?: StepRepair['codeChanges'];
-} {
-  switch (errorType) {
-    case 'network':
-      return {
-        suggestedFix:
-          'Add retry logic with exponential backoff. Increase timeout value. Verify network connectivity and endpoint availability.',
-        confidence: 'high',
-        codeChanges: [
-          {
-            field: 'retries',
-            oldValue: step.config?.retries ?? 0,
-            newValue: 3,
-          },
-          {
-            field: 'timeout',
-            oldValue: step.config?.timeout ?? 5000,
-            newValue: 30000,
-          },
-        ],
-      };
-
-    case 'authentication':
-      return {
-        suggestedFix:
-          'Verify API credentials are correct and not expired. Check if authentication token needs refresh. Ensure proper authorization headers are set.',
-        confidence: 'high',
-        codeChanges: [
-          {
-            field: 'authRefresh',
-            oldValue: step.config?.authRefresh ?? false,
-            newValue: true,
-          },
-        ],
-      };
-
-    case 'validation':
-      return {
-        suggestedFix:
-          'Review input schema requirements. Add validation step before execution. Ensure all required fields are provided with correct types.',
-        confidence: 'medium',
-        codeChanges: [
-          {
-            field: 'validateInput',
-            oldValue: step.config?.validateInput ?? false,
-            newValue: true,
-          },
-        ],
-      };
-
-    case 'dependency':
-      return {
-        suggestedFix:
-          'Check that prerequisite steps have completed successfully. Verify dependency IDs are correct. Add error handling for missing dependencies.',
-        confidence: 'high',
-        codeChanges: [
-          {
-            field: 'waitForDependencies',
-            oldValue: step.config?.waitForDependencies ?? false,
-            newValue: true,
-          },
-        ],
-      };
-
-    case 'type':
-      return {
-        suggestedFix:
-          'Add type conversion or casting. Verify data format matches expected schema. Use defensive programming with null checks.',
-        confidence: 'medium',
-        codeChanges: [
-          {
-            field: 'strictTypeChecking',
-            oldValue: step.config?.strictTypeChecking ?? false,
-            newValue: true,
-          },
-        ],
-      };
-
-    case 'rate-limit':
-      return {
-        suggestedFix:
-          'Implement rate limiting with queue. Add delay between requests. Consider using batch processing.',
-        confidence: 'high',
-        codeChanges: [
-          {
-            field: 'rateLimitDelay',
-            oldValue: step.config?.rateLimitDelay ?? 0,
-            newValue: 1000,
-          },
-          {
-            field: 'maxConcurrency',
-            oldValue: step.config?.maxConcurrency ?? 10,
-            newValue: 1,
-          },
-        ],
-      };
-
-    case 'configuration':
-      return {
-        suggestedFix:
-          'Review configuration parameters for correctness. Check environment variables are set. Validate configuration schema.',
-        confidence: 'medium',
-        codeChanges: [
-          {
-            field: 'validateConfig',
-            oldValue: step.config?.validateConfig ?? false,
-            newValue: true,
-          },
-        ],
-      };
-
-    default:
-      return {
-        suggestedFix: `Review error message: "${errorMessage}". Consider adding comprehensive error handling and logging to diagnose the issue.`,
-        confidence: 'low',
-      };
-  }
+function findAdapter(fromType: string, toType: string): string | null {
+  const key = `${fromType}→${toType}`;
+  return ADAPTER_LOOKUP[key] || null;
 }
 
 /**
- * Finds a step in the workflow by ID or name
+ * Creates an adapter step to insert between mismatched steps
  */
-function findStep(workflow: Workflow, stepIdentifier: string): WorkflowStep | undefined {
-  return workflow.steps.find((step) => step.id === stepIdentifier || step.name === stepIdentifier);
+function createAdapterStep(
+  fromStepId: string,
+  toStepId: string,
+  adapterName: string,
+  position: number
+): WorkflowStep {
+  return {
+    id: `adapter-${fromStepId}-to-${toStepId}`,
+    name: adapterName,
+    inputType: undefined, // Will inherit from previous step
+    outputType: undefined, // Will match next step's input
+    config: {
+      autoInserted: true,
+      insertedAt: new Date().toISOString(),
+      insertPosition: position,
+    },
+    dependencies: [fromStepId],
+  };
 }
 
 /**
- * Determines if an error is fixable based on error type and context
+ * Repairs workflow by inserting adapter steps (domain rule: insert adapters)
  */
-function isErrorFixable(errorType: string, step: WorkflowStep): boolean {
-  // Most error types are fixable with proper configuration
-  const fixableTypes = [
-    'network',
-    'authentication',
-    'validation',
-    'dependency',
-    'type',
-    'rate-limit',
-    'configuration',
-  ];
+function repairWorkflow(steps: WorkflowStep[]): WorkflowRepairResult {
+  const mismatches = detectTypeMismatches(steps);
+  const insertions: AdapterInsertion[] = [];
+  const unrepairable: WorkflowRepairResult['unrepairable'] = [];
 
-  if (!fixableTypes.includes(errorType)) {
-    return false;
+  // Process mismatches and create adapter insertions
+  for (const mismatch of mismatches) {
+    const adapter = findAdapter(mismatch.outputType, mismatch.inputType);
+
+    if (!adapter) {
+      unrepairable.push({
+        fromStepId: mismatch.fromStepId,
+        toStepId: mismatch.toStepId,
+        reason: `No adapter found for ${mismatch.outputType}→${mismatch.inputType}`,
+      });
+      continue;
+    }
+
+    // Find position to insert adapter (after fromStep, before toStep)
+    const fromIndex = steps.findIndex((s) => s.id === mismatch.fromStepId);
+    const toIndex = steps.findIndex((s) => s.id === mismatch.toStepId);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      unrepairable.push({
+        fromStepId: mismatch.fromStepId,
+        toStepId: mismatch.toStepId,
+        reason: 'Could not find step indices in workflow',
+      });
+      continue;
+    }
+
+    const insertPosition = fromIndex + 1;
+
+    const adapterStep = createAdapterStep(
+      mismatch.fromStepId,
+      mismatch.toStepId,
+      adapter,
+      insertPosition
+    );
+
+    insertions.push({
+      position: insertPosition,
+      adapterStep,
+      reason: `Type mismatch: ${mismatch.outputType}→${mismatch.inputType}`,
+    });
   }
 
-  // Check if step has enough information to suggest a fix
-  if (!step.id && !step.name) {
-    return false;
+  // Insert adapters into workflow (domain rule: make minimal necessary repairs)
+  // Sort insertions by position (descending) to maintain correct indices
+  insertions.sort((a, b) => b.position - a.position);
+
+  const repairedSteps = [...steps];
+  for (const insertion of insertions) {
+    repairedSteps.splice(insertion.position, 0, insertion.adapterStep);
   }
 
-  return true;
+  // Reverse insertions array back to ascending order for output
+  insertions.reverse();
+
+  return {
+    repairedSteps,
+    insertions,
+    unrepairable,
+    changesMade: insertions.length,
+  };
 }
 
 /**
  * Workflow Auto-Repair Tool
- * Analyzes workflow errors and suggests repairs
+ * Inserts adapter steps when input/output types are mismatched
  */
 export const workflowAutoRepairTool = tool({
   description:
-    'Analyzes errors in a workflow and suggests repairs for broken steps. Categorizes errors by type (network, authentication, validation, etc.) and provides actionable fix recommendations with confidence levels.',
+    'Inserts adapter steps when workflow steps have mismatched input/output types. Uses an adapter lookup table to find appropriate converters (html→text, json-repair, etc.). Makes minimal necessary repairs by only inserting adapters where needed.',
   inputSchema: jsonSchema<WorkflowAutoRepairInput>({
     type: 'object',
     properties: {
-      workflow: {
-        type: 'object',
-        description: 'The workflow object containing steps array and metadata',
-        properties: {
-          id: { type: 'string' },
-          name: { type: 'string' },
-          steps: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                name: { type: 'string' },
-                type: { type: 'string' },
-                config: { type: 'object' },
-                dependencies: { type: 'array', items: { type: 'string' } },
-              },
-              required: ['id', 'name'],
-            },
-          },
-        },
-        required: ['steps'],
-      },
-      errors: {
+      steps: {
         type: 'array',
-        description: 'Array of error objects with step identifier and error message',
+        description: 'Array of workflow steps with inputType and outputType specified',
         items: {
           type: 'object',
           properties: {
-            step: {
+            id: {
               type: 'string',
-              description: 'Step ID or name that failed',
+              description: 'Unique step ID',
             },
-            error: {
+            name: {
               type: 'string',
-              description: 'Error message from the failed step',
+              description: 'Step name',
+            },
+            inputType: {
+              type: 'string',
+              description: 'Expected input type (e.g., "html", "json", "text")',
+            },
+            outputType: {
+              type: 'string',
+              description: 'Output type produced by this step',
+            },
+            config: {
+              type: 'object',
+              description: 'Step configuration',
+            },
+            dependencies: {
+              type: 'array',
+              description: 'Array of step IDs this step depends on',
+              items: { type: 'string' },
             },
           },
-          required: ['step', 'error'],
+          required: ['id', 'name'],
         },
       },
     },
-    required: ['workflow', 'errors'],
+    required: ['steps'],
     additionalProperties: false,
   }),
-  async execute({ workflow, errors }): Promise<WorkflowRepairResult> {
+  async execute({ steps }): Promise<WorkflowRepairResult> {
     // Validate inputs
-    if (!workflow || !workflow.steps || !Array.isArray(workflow.steps)) {
-      throw new Error('Invalid workflow: must contain a steps array');
+    if (!Array.isArray(steps)) {
+      throw new Error('Invalid steps: must be an array');
     }
 
-    if (!errors || !Array.isArray(errors)) {
-      throw new Error('Invalid errors: must be an array');
-    }
-
-    if (errors.length === 0) {
+    if (steps.length === 0) {
       return {
-        repairs: [],
-        fixedSteps: 0,
-        unfixable: [],
+        repairedSteps: [],
+        insertions: [],
+        unrepairable: [],
+        changesMade: 0,
       };
     }
 
-    const repairs: StepRepair[] = [];
-    const unfixable: WorkflowRepairResult['unfixable'] = [];
-
-    // Process each error
-    for (const error of errors) {
-      const step = findStep(workflow, error.step);
-
-      if (!step) {
-        unfixable.push({
-          stepId: error.step,
-          stepName: error.step,
-          reason: `Step not found in workflow. Step identifier: ${error.step}`,
-        });
-        continue;
+    // Validate step structure
+    for (const step of steps) {
+      if (!step.id || !step.name) {
+        throw new Error('Invalid step: each step must have id and name');
       }
-
-      // Categorize the error
-      const { type: errorType } = categorizeError(error.error);
-
-      // Check if fixable
-      if (!isErrorFixable(errorType, step)) {
-        unfixable.push({
-          stepId: step.id,
-          stepName: step.name,
-          reason: `Error type "${errorType}" cannot be automatically repaired. Manual intervention required.`,
-        });
-        continue;
-      }
-
-      // Generate repair suggestion
-      const repairSuggestion = generateRepairSuggestion(step, errorType, error.error);
-
-      repairs.push({
-        stepId: step.id,
-        stepName: step.name,
-        errorType,
-        suggestedFix: repairSuggestion.suggestedFix,
-        confidence: repairSuggestion.confidence,
-        codeChanges: repairSuggestion.codeChanges,
-      });
     }
 
-    return {
-      repairs,
-      fixedSteps: repairs.filter((r) => r.confidence === 'high').length,
-      unfixable,
-    };
+    // Repair workflow by inserting adapters
+    return repairWorkflow(steps);
   },
 });
 

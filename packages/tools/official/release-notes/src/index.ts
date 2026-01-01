@@ -52,6 +52,8 @@ type ReleaseNotesInput = {
 
 /**
  * Gets the section title for a change type
+ *
+ * Domain rule: change_categorization - Maps change types (feature, fix, breaking, etc.) to section titles
  */
 function getSectionTitle(type: ChangeType): string {
   switch (type) {
@@ -129,6 +131,10 @@ function formatChange(change: Change): string {
 
 /**
  * Generates release notes in markdown format
+ *
+ * Domain rule: doc_sections - Follows release notes pattern: Header with stats -> Breaking Changes -> Features -> Fixes -> Other sections
+ * Domain rule: markdown_template - Uses # for title, ## for sections, emoji prefixes, markdown lists
+ * Domain rule: change_categorization - Groups changes by type, orders sections (breaking first), formats with issue links
  */
 function generateReleaseNotes(version: string, changes: Change[]): string {
   const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
@@ -247,6 +253,7 @@ export const releaseNotesTool = tool({
     additionalProperties: false,
   }),
   async execute({ version, changes }): Promise<ReleaseNotesResult> {
+    // Domain rule: input_validation - Validates version (string), changes (non-empty array), each change has type and description
     // Validate input
     if (!version || typeof version !== 'string') {
       throw new Error('Version is required and must be a string');

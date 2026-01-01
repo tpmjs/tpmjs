@@ -71,6 +71,21 @@ function isValidUrl(urlString: string): boolean {
 }
 
 /**
+ * Converts various date formats to ISO string
+ * Domain rule: date_handling - Must parse various date formats to ISO strings
+ */
+function normalizeToIsoDate(dateStr: string | undefined): string | undefined {
+  if (!dateStr) return undefined;
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr; // Return original if parsing fails
+    return date.toISOString();
+  } catch {
+    return dateStr; // Return original on error
+  }
+}
+
+/**
  * Sanitizes HTML content to plain text
  */
 function sanitizeHtml(html: string | undefined): string | undefined {
@@ -194,7 +209,8 @@ export const rssReadTool = tool({
         description: sanitizeHtml(
           (item.contentSnippet as string) || (item.content as string) || (item.summary as string)
         ),
-        pubDate: (item.pubDate as string) || (item.isoDate as string),
+        // Domain rule: date_handling - Normalize pubDate to ISO format
+        pubDate: normalizeToIsoDate((item.pubDate as string) || (item.isoDate as string)),
         author: (item.creator as string) || (item.author as string),
         categories: item.categories as string[] | undefined,
         guid: (item.guid as string) || (item.id as string),

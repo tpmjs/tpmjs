@@ -2,6 +2,10 @@
  * Access Control Matrix Tool for TPMJS
  * Generates access control matrices from roles, resources, and permissions.
  * Useful for RBAC (Role-Based Access Control) compliance and documentation.
+ *
+ * Domain rule: rbac-matrix-generation - Generates 2D permission matrices for role-based access control
+ * Domain rule: permission-gap-detection - Detects roles with no permissions and resources with no access
+ * Domain rule: least-privilege-analysis - Identifies most permissive roles and most restricted resources
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -38,6 +42,7 @@ export interface AccessControlMatrix {
     mostPermissiveRole: string;
     mostRestrictedResource: string;
   };
+  gaps: string[]; // Permission gaps detected
   visualization: string;
 }
 
@@ -244,6 +249,34 @@ function generateSummary(
 }
 
 /**
+ * Detects permission gaps in the matrix
+ */
+function detectGaps(matrix: MatrixCell[][], roles: string[], resources: string[]): string[] {
+  const gaps: string[] = [];
+
+  // Check for roles with no permissions
+  for (const role of roles) {
+    const roleRow = matrix.find((row) => row[0]?.role === role);
+    const hasAnyPermission = roleRow?.some((cell) => cell.hasAccess);
+    if (!hasAnyPermission) {
+      gaps.push(`Role "${role}" has no permissions to any resource`);
+    }
+  }
+
+  // Check for resources with no access
+  for (let resourceIndex = 0; resourceIndex < resources.length; resourceIndex++) {
+    const resource = resources[resourceIndex];
+    if (!resource) continue;
+    const hasAnyAccess = matrix.some((row) => row[resourceIndex]?.hasAccess);
+    if (!hasAnyAccess) {
+      gaps.push(`Resource "${resource}" has no roles with access permissions`);
+    }
+  }
+
+  return gaps;
+}
+
+/**
  * Generates ASCII table visualization of the matrix
  */
 function generateVisualization(matrix: MatrixCell[][], resources: string[]): string {
@@ -330,6 +363,9 @@ export const accessControlMatrix = tool({
     // Generate summary
     const summary = generateSummary(matrix, roles, resources);
 
+    // Detect permission gaps
+    const gaps = detectGaps(matrix, roles, resources);
+
     // Generate visualization
     const visualization = generateVisualization(matrix, resources);
 
@@ -338,6 +374,7 @@ export const accessControlMatrix = tool({
       roles,
       resources,
       summary,
+      gaps,
       visualization,
     };
   },

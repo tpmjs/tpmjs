@@ -117,6 +117,43 @@ function createContentHash(content: any): string {
 }
 
 /**
+ * Generates tags from recipe content
+ */
+function generateTags(recipe: Recipe): string[] {
+  const tags = new Set<string>();
+
+  // Add tags from recipe name
+  const nameWords = recipe.name.toLowerCase().split(/\s+/);
+  for (const word of nameWords) {
+    if (word.length > 3) {
+      tags.add(word);
+    }
+  }
+
+  // Add tags from description
+  if (recipe.description) {
+    const descWords = recipe.description.toLowerCase().split(/\s+/);
+    for (const word of descWords) {
+      if (word.length > 4 && tags.size < 10) {
+        tags.add(word);
+      }
+    }
+  }
+
+  // Add tags from step actions
+  if (recipe.steps) {
+    for (const step of recipe.steps) {
+      if (step.action) {
+        tags.add(step.action.toLowerCase());
+      }
+    }
+  }
+
+  // Limit to 10 tags
+  return Array.from(tags).slice(0, 10);
+}
+
+/**
  * Sanitizes recipe for manifest (removes internal/temporary fields)
  */
 function sanitizeRecipe(recipe: Recipe): Recipe {
@@ -138,10 +175,15 @@ function createPublishManifest(recipe: Recipe, metadata: PublicationMetadata): M
   const sanitizedRecipe = sanitizeRecipe(recipe);
   const recipeHash = createContentHash(sanitizedRecipe);
 
+  // Auto-generate tags if not provided
+  const autoTags = generateTags(recipe);
+  const finalTags = metadata.tags && metadata.tags.length > 0 ? metadata.tags : autoTags;
+
   const manifest: Manifest = {
     recipe: sanitizedRecipe,
     metadata: {
       ...metadata,
+      tags: finalTags,
       publishedAt,
       hash: recipeHash,
       manifestVersion: '1.0.0',

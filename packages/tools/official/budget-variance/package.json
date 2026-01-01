@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/official-budget-variance",
+  "version": "0.1.0",
+  "description": "Calculates budget vs actual variance with percentage and trend analysis",
+  "type": "module",
+  "keywords": ["tpmjs", "finance", "budget", "variance", "analysis"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/budget-variance"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "finance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "budgetVarianceTool",
+        "description": "Calculates budget vs actual variance with percentage and trend analysis",
+        "parameters": [
+          {
+            "name": "budget",
+            "type": "array",
+            "description": "Budget line items with category and amount",
+            "required": true
+          },
+          {
+            "name": "actual",
+            "type": "array",
+            "description": "Actual spending line items with category and amount",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "BudgetVarianceResult",
+          "description": "Variance analysis with trends and summary statistics"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

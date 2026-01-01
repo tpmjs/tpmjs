@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-lesson-plan-outline",
+  "version": "0.1.0",
+  "description": "Generates lesson plan outlines with objectives, activities, and assessments",
+  "type": "module",
+  "keywords": ["tpmjs", "education", "ai", "lesson-plan", "teaching", "curriculum"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/lesson-plan-outline"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "edu",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "lessonPlanOutlineTool",
+        "description": "Generates lesson plan outlines with objectives, activities, and assessments",
+        "parameters": [
+          {
+            "name": "topic",
+            "type": "string",
+            "description": "The lesson topic or subject matter",
+            "required": true
+          },
+          {
+            "name": "duration",
+            "type": "number",
+            "description": "Lesson duration in minutes",
+            "required": true
+          },
+          {
+            "name": "gradeLevel",
+            "type": "string",
+            "description": "Target grade level (e.g., 'K-2', '3-5', '6-8', '9-12')",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "LessonPlan",
+          "description": "Structured lesson plan with objectives, materials, activities, and assessment"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

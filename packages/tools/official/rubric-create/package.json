@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-rubric-create",
+  "version": "0.1.0",
+  "description": "Creates grading rubrics with criteria, levels, and point values",
+  "type": "module",
+  "keywords": ["tpmjs", "edu", "ai", "rubric", "grading", "assessment", "education"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/rubric-create"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "edu",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "rubricCreateTool",
+        "description": "Create a grading rubric with performance criteria, levels, and point values",
+        "parameters": [
+          {
+            "name": "assignment",
+            "type": "string",
+            "description": "The assignment or task being evaluated",
+            "required": true
+          },
+          {
+            "name": "criteria",
+            "type": "array",
+            "description": "Array of criteria to evaluate",
+            "required": true
+          },
+          {
+            "name": "totalPoints",
+            "type": "number",
+            "description": "Total possible points for the assignment",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "GradingRubric",
+          "description": "Complete grading rubric with criteria, levels, and formatted output"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

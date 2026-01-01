@@ -1,6 +1,9 @@
 /**
  * Rows Sort Tool for TPMJS
  * Sorts an array of objects by one or more fields with customizable direction
+ *
+ * Domain rule: multi_level_sorting - Supports multi-level sorting with nested field access
+ * Domain rule: type_aware_comparison - Uses type-aware comparison (numbers, strings, dates, booleans)
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -32,7 +35,7 @@ type RowsSortInput = {
 };
 
 /**
- * Gets a nested field value from an object using dot notation
+ * Domain rule: nested_field_access - Gets a nested field value from an object using dot notation
  */
 function getFieldValue(obj: Record<string, unknown>, field: string): unknown {
   const parts = field.split('.');
@@ -50,7 +53,7 @@ function getFieldValue(obj: Record<string, unknown>, field: string): unknown {
 }
 
 /**
- * Compares two values for sorting
+ * Domain rule: type_aware_comparison - Compares two values for sorting with type awareness
  * Returns: -1 if a < b, 1 if a > b, 0 if equal
  */
 function compareValues(a: unknown, b: unknown): number {
@@ -153,7 +156,7 @@ export const rowsSortTool = tool({
     // Create a copy of the array to avoid mutating the input
     const sortedRows = [...rows];
 
-    // Sort using multi-level comparison
+    // Domain rule: multi_level_sorting - Sort using multi-level comparison
     sortedRows.sort((a, b) => {
       if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
         return 0;

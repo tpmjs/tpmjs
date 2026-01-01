@@ -1,0 +1,81 @@
+{
+  "name": "@tpmjs/content-calendar-plan",
+  "version": "0.1.0",
+  "description": "Generate content calendar structure with themes, topics, and posting schedule",
+  "type": "module",
+  "keywords": ["tpmjs", "content-calendar", "marketing", "planning", "ai"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/content-calendar-plan"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "marketing",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "contentCalendarPlanTool",
+        "description": "Generates a structured content calendar with posting schedule, themes, topics, and content types. Organizes content by date, channel, and theme while maintaining consistent posting frequency.",
+        "parameters": [
+          {
+            "name": "duration",
+            "type": "string",
+            "description": "Calendar duration (e.g., '1 week', '1 month', 'quarter')",
+            "required": true
+          },
+          {
+            "name": "channels",
+            "type": "string[]",
+            "description": "Content channels to plan for (e.g., ['Twitter', 'Instagram', 'Blog', 'LinkedIn'])",
+            "required": true
+          },
+          {
+            "name": "themes",
+            "type": "string[]",
+            "description": "Content themes or pillars (optional, defaults will be generated)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "ContentCalendar",
+          "description": "Structured content calendar with items (date, channel, type, theme, topic, objective), summary statistics, and posting frequency breakdown"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool when users need to plan content calendars for social media, blogs, or multi-channel marketing. Automatically distributes content across channels with appropriate frequency and variety.",
+          "limitations": "Generates content structure and topics, not actual content. Posting frequency is based on best practices and may need adjustment based on resources.",
+          "examples": [
+            "Create a 1 month content calendar for Twitter and Instagram",
+            "Plan a quarterly content calendar for our blog and LinkedIn",
+            "Generate a week of content ideas across all our social channels"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

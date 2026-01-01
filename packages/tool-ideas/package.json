@@ -1,0 +1,43 @@
+{
+  "name": "@tpmjs/tool-ideas",
+  "version": "0.1.0",
+  "description": "Generate 10K high-quality AI tool ideas for the TPMJS registry",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "tool-ideas": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "cli": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "ai": "^6.0.3",
+    "@ai-sdk/openai": "^3.0.1",
+    "better-sqlite3": "^11.8.1",
+    "drizzle-orm": "^0.38.3",
+    "commander": "^13.0.0",
+    "p-limit": "^6.2.0",
+    "zod": "^3.24.1",
+    "ora": "^8.1.1",
+    "chalk": "^5.4.1"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.5",
+    "drizzle-kit": "^0.30.1",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

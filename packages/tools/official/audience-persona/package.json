@@ -1,0 +1,75 @@
+{
+  "name": "@tpmjs/audience-persona",
+  "version": "0.1.0",
+  "description": "Create audience persona profiles from demographic and behavioral data",
+  "type": "module",
+  "keywords": ["tpmjs", "marketing", "persona", "audience", "ai"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/audience-persona"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "marketing",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "audiencePersonaTool",
+        "description": "Creates detailed audience persona profiles from demographic and behavioral data. Generates personas with demographics, psychographics, goals, pain points, behaviors, and actionable marketing implications.",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "object",
+            "description": "Audience data points (age/ageRange, gender, location, education, occupation, income, interests, values, lifestyle, personality, goals, painPoints, preferredChannels, contentPreferences, buyingPatterns, deviceUsage)",
+            "required": true
+          },
+          {
+            "name": "productContext",
+            "type": "string",
+            "description": "Product or service context for persona development",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "AudiencePersona",
+          "description": "Complete persona profile with demographics, psychographics, goals, pain points, behaviors, marketing implications, and representative quote"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool when users need to create detailed audience personas for marketing strategy. Transforms raw audience data into actionable persona profiles with marketing recommendations.",
+          "limitations": "Requires structured input data. Generated names are fictional. Marketing implications are strategic suggestions, not guaranteed results.",
+          "examples": [
+            "Create a persona for our SaaS product targeting small business owners",
+            "Build an audience profile from our customer survey data",
+            "Generate a marketing persona for 25-34 year old tech professionals"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

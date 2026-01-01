@@ -1,6 +1,10 @@
 /**
  * SLO Draft Tool for TPMJS
  * Drafts Service Level Objective (SLO) definitions for services with metrics, targets, and time windows.
+ *
+ * Domain rule: slo-definition - Generates SLO/SLI definitions with burn rate alerting and error budgets
+ * Domain rule: monitoring-query-generation - Creates Prometheus-compatible monitoring queries for metrics
+ * Domain rule: severity-classification - Classifies metrics by severity based on target percentages (99.9%+ = critical)
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -26,22 +30,48 @@ export interface ProcessedMetric {
 }
 
 /**
+ * SLI (Service Level Indicator) definition
+ */
+export interface SLI {
+  name: string;
+  description: string;
+  query: string;
+  unit: string;
+}
+
+/**
+ * Target definition with thresholds
+ */
+export interface Target {
+  sliName: string;
+  target: number;
+  window: string;
+  windowType: 'rolling' | 'calendar';
+}
+
+/**
+ * Alert configuration with burn rate
+ */
+export interface Alert {
+  sliName: string;
+  severity: 'critical' | 'high' | 'medium';
+  burnRateWindow: string;
+  burnRateThreshold: number;
+  notificationChannels: string[];
+}
+
+/**
  * Output interface for SLO draft
  */
 export interface SLODraft {
-  slo: string; // Markdown formatted SLO document
-  metrics: ProcessedMetric[];
-  summary: string;
-  metadata: {
-    serviceName: string;
-    createdAt: string;
-    totalMetrics: number;
-    criticalMetrics: number;
-  };
+  slis: SLI[];
+  targets: Target[];
+  alerts: Alert[];
+  rationale: string;
 }
 
 type SLODraftInput = {
-  serviceName: string;
+  serviceDesc: string;
   metrics: MetricInput[];
 };
 
@@ -67,153 +97,103 @@ function determineSeverity(target: number): 'critical' | 'high' | 'medium' {
 }
 
 /**
- * Calculates allowed downtime based on target and window
+ * Generates SLI definition from metric
  */
-function calculateAllowedDowntime(target: number, window: string): string {
-  const lowerWindow = window.toLowerCase();
-  let totalMinutes = 0;
+function generateSLI(metric: ProcessedMetric): SLI {
+  const lowerName = metric.name.toLowerCase();
+  let description = '';
+  let query = '';
+  let unit = '';
 
-  // Parse window to get total minutes
-  if (lowerWindow.includes('30d') || lowerWindow.includes('30 day')) {
-    totalMinutes = 30 * 24 * 60;
-  } else if (lowerWindow.includes('7d') || lowerWindow.includes('7 day')) {
-    totalMinutes = 7 * 24 * 60;
-  } else if (lowerWindow.includes('1d') || lowerWindow.includes('1 day')) {
-    totalMinutes = 24 * 60;
-  } else if (lowerWindow.includes('month')) {
-    totalMinutes = 30 * 24 * 60; // Approximate
+  if (lowerName.includes('availability') || lowerName.includes('uptime')) {
+    description = 'Measures the proportion of successful requests over total requests';
+    query =
+      'sum(rate(http_requests_total{status=~"2.."}[5m])) / sum(rate(http_requests_total[5m]))';
+    unit = 'percentage';
+  } else if (lowerName.includes('latency') || lowerName.includes('response')) {
+    description = 'Measures the proportion of requests completing within latency threshold';
+    query = 'histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))';
+    unit = 'percentage';
+  } else if (lowerName.includes('error') || lowerName.includes('success')) {
+    description = 'Measures the proportion of successful requests (non-error responses)';
+    query =
+      'sum(rate(http_requests_total{status!~"5.."}[5m])) / sum(rate(http_requests_total[5m]))';
+    unit = 'percentage';
   } else {
-    // Default to 30 days if unparseable
-    totalMinutes = 30 * 24 * 60;
+    description = `Measures ${metric.name} performance over time`;
+    query = `rate(${metric.name.toLowerCase().replace(/\s+/g, '_')}_total[5m])`;
+    unit = 'percentage';
   }
 
-  const uptimePercentage = target / 100;
-  const allowedDowntimeMinutes = totalMinutes * (1 - uptimePercentage);
-
-  // Format as hours/minutes
-  const hours = Math.floor(allowedDowntimeMinutes / 60);
-  const minutes = Math.floor(allowedDowntimeMinutes % 60);
-
-  if (hours >= 24) {
-    const days = Math.floor(hours / 24);
-    const remainingHours = hours % 24;
-    return `${days}d ${remainingHours}h ${minutes}m`;
-  }
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  return `${minutes}m`;
+  return {
+    name: metric.name,
+    description,
+    query,
+    unit,
+  };
 }
 
 /**
- * Generates markdown SLO document
+ * Generates alert configuration from metric
  */
-function generateSLOMarkdown(serviceName: string, metrics: ProcessedMetric[]): string {
-  const timestamp = new Date().toISOString().split('T')[0];
+function generateAlert(metric: ProcessedMetric): Alert {
+  let burnRateWindow = '';
+  let burnRateThreshold = 0;
+  let notificationChannels: string[] = [];
 
-  let markdown = '# Service Level Objectives (SLO)\n\n';
-  markdown += `**Service:** ${serviceName}\n`;
-  markdown += `**Date:** ${timestamp}\n`;
-  markdown += '**Status:** Draft\n\n';
-
-  markdown += '## Overview\n\n';
-  markdown += `This document defines the Service Level Objectives (SLOs) for ${serviceName}. `;
-  markdown +=
-    'These objectives represent the target reliability and performance metrics that the service commits to achieving.\n\n';
-
-  markdown += '## SLO Definitions\n\n';
-
-  for (const metric of metrics) {
-    const downtime = calculateAllowedDowntime(metric.target, metric.window);
-    const icon = metric.severity === 'critical' ? '🔴' : metric.severity === 'high' ? '🟡' : '🟢';
-
-    markdown += `### ${icon} ${metric.name}\n\n`;
-    markdown += `- **Target:** ${metric.target}%\n`;
-    markdown += `- **Window:** ${metric.window} (${metric.windowType})\n`;
-    markdown += `- **Severity:** ${metric.severity}\n`;
-    markdown += `- **Allowed Downtime:** ${downtime}\n\n`;
-    markdown += '**Description:** ';
-
-    // Add contextual description based on metric name
-    const lowerName = metric.name.toLowerCase();
-    if (lowerName.includes('availability') || lowerName.includes('uptime')) {
-      markdown += `The service must be available and responding to requests ${metric.target}% of the time within the ${metric.window} window. `;
-    } else if (lowerName.includes('latency') || lowerName.includes('response')) {
-      markdown += `${metric.target}% of requests must complete within the defined latency threshold during the ${metric.window} window. `;
-    } else if (lowerName.includes('error') || lowerName.includes('success')) {
-      markdown += `The error rate must remain below ${100 - metric.target}% (success rate above ${metric.target}%) within the ${metric.window} window. `;
-    } else {
-      markdown += `This metric must achieve a ${metric.target}% target within the ${metric.window} window. `;
-    }
-
-    markdown += '\n\n';
+  if (metric.severity === 'critical') {
+    burnRateWindow = '1h';
+    burnRateThreshold = 14.4; // Will exhaust error budget in ~2 hours
+    notificationChannels = ['pagerduty', 'slack-incidents'];
+  } else if (metric.severity === 'high') {
+    burnRateWindow = '6h';
+    burnRateThreshold = 6.0; // Will exhaust error budget in ~24 hours
+    notificationChannels = ['slack-incidents'];
+  } else {
+    burnRateWindow = '3d';
+    burnRateThreshold = 1.0; // Will exhaust error budget in ~7 days
+    notificationChannels = ['slack-alerts'];
   }
 
-  markdown += '## Monitoring & Alerting\n\n';
-  markdown += '### Error Budget\n\n';
-  markdown += 'Each SLO has an associated error budget based on the allowed downtime. ';
-  markdown += 'When the error budget is exhausted:\n\n';
-  markdown += '- Halt non-critical deployments\n';
-  markdown += '- Focus on reliability improvements\n';
-  markdown += '- Conduct incident review\n\n';
-
-  markdown += '### Alerting Strategy\n\n';
-  const criticalMetrics = metrics.filter((m) => m.severity === 'critical');
-  if (criticalMetrics.length > 0) {
-    markdown +=
-      '**Critical SLOs:** Alert immediately when burn rate indicates budget will be exhausted in <2 hours\n\n';
-  }
-  markdown +=
-    '**High SLOs:** Alert when burn rate indicates budget will be exhausted in <24 hours\n\n';
-  markdown +=
-    '**Medium SLOs:** Alert when burn rate indicates budget will be exhausted in <7 days\n\n';
-
-  markdown += '## Review Process\n\n';
-  markdown += '- **Frequency:** Quarterly\n';
-  markdown += '- **Participants:** Engineering team, SRE, Product\n';
-  markdown += '- **Review criteria:** User impact, operational cost, business requirements\n\n';
-
-  markdown += '## Related Documents\n\n';
-  markdown += '- Service Architecture\n';
-  markdown += '- Incident Response Playbook\n';
-  markdown += '- Monitoring Dashboard\n';
-  markdown += '- On-call Runbook\n';
-
-  return markdown;
+  return {
+    sliName: metric.name,
+    severity: metric.severity,
+    burnRateWindow,
+    burnRateThreshold,
+    notificationChannels,
+  };
 }
 
 /**
- * Creates a summary of the SLO draft
+ * Creates rationale for SLO choices
  */
-function createSummary(serviceName: string, metrics: ProcessedMetric[]): string {
+function createRationale(serviceDesc: string, metrics: ProcessedMetric[]): string {
   const criticalCount = metrics.filter((m) => m.severity === 'critical').length;
   const highCount = metrics.filter((m) => m.severity === 'high').length;
   const mediumCount = metrics.filter((m) => m.severity === 'medium').length;
 
-  let summary = `SLO draft for ${serviceName} with ${metrics.length} metric${metrics.length !== 1 ? 's' : ''}`;
+  let rationale = `This SLO draft for ${serviceDesc} defines ${metrics.length} measurable service level indicator${metrics.length !== 1 ? 's' : ''} `;
+  rationale += `(${criticalCount} critical, ${highCount} high, ${mediumCount} medium severity). `;
 
-  const parts: string[] = [];
-  if (criticalCount > 0) parts.push(`${criticalCount} critical`);
-  if (highCount > 0) parts.push(`${highCount} high`);
-  if (mediumCount > 0) parts.push(`${mediumCount} medium`);
+  rationale += 'Each SLI is designed to be measurable using standard monitoring queries. ';
+  rationale += 'Targets are set based on industry best practices and error budget principles. ';
 
-  if (parts.length > 0) {
-    summary += ` (${parts.join(', ')} severity)`;
-  }
-
-  summary += '. ';
-
-  // Add highest target info
   const highestTarget = Math.max(...metrics.map((m) => m.target));
   if (highestTarget >= 99.9) {
-    summary += `Includes stringent ${highestTarget}% availability targets requiring careful monitoring and error budget management.`;
+    rationale +=
+      'The stringent targets (99.9%+) reflect mission-critical service requirements and necessitate robust monitoring, alerting, and incident response processes. ';
   } else if (highestTarget >= 99.0) {
-    summary += `Targets balanced reliability with ${highestTarget}% as the highest objective.`;
+    rationale +=
+      'The targets (99.0%+) balance reliability with operational flexibility, allowing for planned maintenance and gradual improvements. ';
   } else {
-    summary += `Focuses on achievable targets with ${highestTarget}% as the highest objective.`;
+    rationale +=
+      'The targets are set to be achievable while driving continuous improvement in service quality. ';
   }
 
-  return summary;
+  rationale +=
+    'Burn rate alerting ensures early detection of SLO violations before error budgets are exhausted, enabling proactive remediation.';
+
+  return rationale;
 }
 
 /**
@@ -222,13 +202,13 @@ function createSummary(serviceName: string, metrics: ProcessedMetric[]): string 
  */
 export const sloDraftTool = tool({
   description:
-    'Draft Service Level Objective (SLO) definitions for a service. Provide the service name and metrics (with name, target percentage, and time window) to generate a comprehensive SLO document in markdown format with error budgets, alerting strategies, and monitoring recommendations.',
+    'Draft Service Level Objective (SLO) definitions for a service. Provide the service description and metrics (with name, target percentage, and time window) to generate a comprehensive SLO document in markdown format with error budgets, alerting strategies, and monitoring recommendations.',
   inputSchema: jsonSchema<SLODraftInput>({
     type: 'object',
     properties: {
-      serviceName: {
+      serviceDesc: {
         type: 'string',
-        description: 'Name of the service (e.g., "API Gateway", "Payment Service")',
+        description: 'Description of the service (e.g., "API Gateway", "Payment Service")',
       },
       metrics: {
         type: 'array',
@@ -256,13 +236,13 @@ export const sloDraftTool = tool({
         },
       },
     },
-    required: ['serviceName', 'metrics'],
+    required: ['serviceDesc', 'metrics'],
     additionalProperties: false,
   }),
-  async execute({ serviceName, metrics }): Promise<SLODraft> {
+  async execute({ serviceDesc, metrics }): Promise<SLODraft> {
     // Validate inputs
-    if (!serviceName || typeof serviceName !== 'string' || serviceName.trim().length === 0) {
-      throw new Error('Service name is required and must be a non-empty string');
+    if (!serviceDesc || typeof serviceDesc !== 'string' || serviceDesc.trim().length === 0) {
+      throw new Error('Service description is required and must be a non-empty string');
     }
 
     if (!Array.isArray(metrics) || metrics.length === 0) {
@@ -313,22 +293,22 @@ export const sloDraftTool = tool({
       return severityOrder[a.severity] - severityOrder[b.severity];
     });
 
-    // Generate the SLO document
-    const sloMarkdown = generateSLOMarkdown(serviceName.trim(), processedMetrics);
-    const summary = createSummary(serviceName.trim(), processedMetrics);
-
-    const criticalMetrics = processedMetrics.filter((m) => m.severity === 'critical').length;
+    // Generate SLIs, targets, and alerts
+    const slis: SLI[] = processedMetrics.map(generateSLI);
+    const targets: Target[] = processedMetrics.map((metric) => ({
+      sliName: metric.name,
+      target: metric.target,
+      window: metric.window,
+      windowType: metric.windowType,
+    }));
+    const alerts: Alert[] = processedMetrics.map(generateAlert);
+    const rationale = createRationale(serviceDesc.trim(), processedMetrics);
 
     return {
-      slo: sloMarkdown,
-      metrics: processedMetrics,
-      summary,
-      metadata: {
-        serviceName: serviceName.trim(),
-        createdAt: new Date().toISOString(),
-        totalMetrics: processedMetrics.length,
-        criticalMetrics,
-      },
+      slis,
+      targets,
+      alerts,
+      rationale,
     };
   },
 });

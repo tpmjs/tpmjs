@@ -1,9 +1,12 @@
 /**
  * YAML Stringify Tool for TPMJS
  * Converts JavaScript objects to YAML strings with formatting options
+ *
+ * Domain rule: yaml_serialization - Uses js-yaml library for YAML serialization
  */
 
 import { jsonSchema, tool } from 'ai';
+// Domain rule: yaml_serialization - js-yaml for YAML serialization
 import * as yaml from 'js-yaml';
 
 /**
@@ -66,7 +69,7 @@ export const yamlStringifyTool = tool({
     }
 
     try {
-      // Convert to YAML with specified indentation
+      // Domain rule: yaml_serialization - Convert to YAML with specified indentation using yaml.dump
       const yamlString = yaml.dump(data, {
         indent: indent,
         lineWidth: -1, // Don't wrap lines

@@ -40,6 +40,7 @@ function calculateMean(values: number[]): number {
 
 /**
  * Shuffle an array using Fisher-Yates algorithm
+ * Domain rule: Fisher-Yates Shuffle - Generates uniform random permutation by swapping each element with random position
  */
 function shuffle(array: number[]): number[] {
   const shuffled = [...array];
@@ -76,6 +77,7 @@ function performPermutationTest(
   const n2 = group2.length;
 
   // Perform permutations
+  // Domain rule: Permutation Null Distribution - Under null hypothesis of no difference, any permutation is equally likely
   let extremeCount = 0;
 
   for (let i = 0; i < iterations; i++) {
@@ -98,6 +100,7 @@ function performPermutationTest(
   }
 
   // Calculate p-value
+  // Domain rule: Monte Carlo p-value - Proportion of permutations with test statistic as extreme as observed
   const pValue = extremeCount / iterations;
 
   // Determine significance (alpha = 0.05)

@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/official-revenue-breakdown",
+  "version": "0.1.0",
+  "description": "Breaks down revenue by segment, product, or period with growth rates",
+  "type": "module",
+  "keywords": ["tpmjs", "finance", "revenue", "breakdown", "growth"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/revenue-breakdown"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "finance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "revenueBreakdownTool",
+        "description": "Breaks down revenue by segment, product, or period with growth rates",
+        "parameters": [
+          {
+            "name": "revenue",
+            "type": "array",
+            "description": "Revenue data with segments and periods",
+            "required": true
+          },
+          {
+            "name": "dimension",
+            "type": "string",
+            "description": "Breakdown dimension (product, segment, region, period)",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "RevenueBreakdownResult",
+          "description": "Revenue breakdown with growth rates and summary"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

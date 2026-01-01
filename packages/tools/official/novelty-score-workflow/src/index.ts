@@ -88,16 +88,44 @@ function normalizeStepIdentifier(step: WorkflowStep): string {
 }
 
 /**
- * Calculates Jaccard similarity between two sets
+ * Calculates MinHash signature for a set (simpler similarity hash)
+ * Using a simple hash-based approach for tool sequence similarity
+ * Domain rule: minhash_similarity - Use MinHash algorithm for efficient workflow similarity detection
  */
-function jaccardSimilarity(setA: Set<string>, setB: Set<string>): number {
-  if (setA.size === 0 && setB.size === 0) return 1;
-  if (setA.size === 0 || setB.size === 0) return 0;
+function calculateMinHash(items: string[], numHashes = 10): number[] {
+  const hashes: number[] = [];
 
-  const intersection = new Set([...setA].filter((x) => setB.has(x)));
-  const union = new Set([...setA, ...setB]);
+  for (let i = 0; i < numHashes; i++) {
+    let minHash = Number.MAX_SAFE_INTEGER;
 
-  return intersection.size / union.size;
+    for (const item of items) {
+      // Simple hash function with seed
+      let hash = i;
+      for (let j = 0; j < item.length; j++) {
+        hash = ((hash << 5) - hash + item.charCodeAt(j)) | 0;
+      }
+      minHash = Math.min(minHash, hash >>> 0);
+    }
+
+    hashes.push(minHash);
+  }
+
+  return hashes;
+}
+
+/**
+ * Calculates similarity between two MinHash signatures
+ */
+function minHashSimilarity(hash1: number[], hash2: number[]): number {
+  if (hash1.length !== hash2.length) return 0;
+  if (hash1.length === 0) return 1;
+
+  let matches = 0;
+  for (let i = 0; i < hash1.length; i++) {
+    if (hash1[i] === hash2[i]) matches++;
+  }
+
+  return matches / hash1.length;
 }
 
 /**
@@ -139,6 +167,7 @@ function longestCommonSubsequenceLength(seq1: string[], seq2: string[]): number 
 
 /**
  * Compares two workflows and returns similarity score
+ * Domain rule: hybrid_similarity - Combine MinHash and sequence similarity for comprehensive comparison
  */
 function compareWorkflows(
   workflow1: Workflow,
@@ -152,18 +181,20 @@ function compareWorkflows(
   const steps1 = workflow1.steps.map(normalizeStepIdentifier);
   const steps2 = workflow2.steps.map(normalizeStepIdentifier);
 
-  // Calculate Jaccard similarity (set-based)
-  const set1 = new Set(steps1);
-  const set2 = new Set(steps2);
-  const jaccardScore = jaccardSimilarity(set1, set2);
+  // Domain rule: minhash_component - Use MinHash for set-based similarity (ignores order)
+  const hash1 = calculateMinHash(steps1);
+  const hash2 = calculateMinHash(steps2);
+  const hashScore = minHashSimilarity(hash1, hash2);
 
-  // Calculate sequence similarity (order-based)
+  // Domain rule: sequence_component - Use LCS for order-preserving similarity
   const sequenceScore = sequenceSimilarity(steps1, steps2);
 
-  // Weighted combination (60% Jaccard, 40% sequence)
-  const similarityScore = jaccardScore * 0.6 + sequenceScore * 0.4;
+  // Domain rule: weighted_combination - Weight MinHash 60%, sequence 40% for balanced scoring
+  const similarityScore = hashScore * 0.6 + sequenceScore * 0.4;
 
   // Find shared steps
+  const set1 = new Set(steps1);
+  const set2 = new Set(steps2);
   const sharedStepIds = [...set1].filter((s) => set2.has(s));
   const sharedSteps = sharedStepIds.map((id) => {
     const step = workflow1.steps.find((s) => normalizeStepIdentifier(s) === id);
@@ -267,11 +298,11 @@ function calculateNoveltyScore(
 
 /**
  * Novelty Score Workflow Tool
- * Analyzes how novel a workflow is compared to existing workflows
+ * Analyzes how novel a workflow is compared to existing workflows using MinHash
  */
 export const noveltyScoreWorkflowTool = tool({
   description:
-    'Analyzes how novel/unique a workflow is by comparing it to existing workflows. Calculates a novelty score (0-1), identifies similar workflows, and highlights unique steps. Higher scores indicate more novel workflows.',
+    'Scores workflow uniqueness vs corpus using tool-sequence similarity with MinHash algorithm. Calculates a novelty score (0-1), identifies similar workflows, and highlights unique steps. Higher scores indicate more novel workflows.',
   inputSchema: jsonSchema<NoveltyScoreWorkflowInput>({
     type: 'object',
     properties: {

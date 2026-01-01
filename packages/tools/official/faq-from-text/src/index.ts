@@ -7,12 +7,23 @@
 import { jsonSchema, tool } from 'ai';
 
 /**
+ * Individual FAQ item with category
+ */
+export interface FaqItem {
+  question: string;
+  answer: string;
+  category: string;
+}
+
+/**
  * Output interface for FAQ extraction
  */
 export interface FaqResult {
-  faqs: Array<{
-    question: string;
-    answer: string;
+  faqs: FaqItem[];
+  categories: Array<{
+    name: string;
+    count: number;
+    faqs: FaqItem[];
   }>;
   count: number;
 }
@@ -80,9 +91,73 @@ function cleanAnswerPrefix(text: string): string {
 }
 
 /**
+ * Common category keywords for FAQ categorization
+ */
+const CATEGORY_KEYWORDS: Record<string, string[]> = {
+  'Getting Started': ['start', 'begin', 'first', 'setup', 'install', 'create', 'new', 'account'],
+  Pricing: ['price', 'cost', 'pay', 'billing', 'subscription', 'plan', 'free', 'trial', 'charge'],
+  Account: ['account', 'profile', 'login', 'password', 'email', 'sign', 'register'],
+  Technical: [
+    'error',
+    'bug',
+    'issue',
+    'problem',
+    'work',
+    'fix',
+    'support',
+    'technical',
+    'api',
+    'integrate',
+  ],
+  Features: ['feature', 'can', 'able', 'capability', 'function', 'option', 'setting'],
+  Security: ['security', 'secure', 'privacy', 'data', 'encrypt', 'safe', 'protect'],
+  Shipping: ['ship', 'deliver', 'order', 'track', 'return', 'refund'],
+  General: [],
+};
+
+/**
+ * Determines the category for a FAQ based on question and answer content
+ */
+function categorize(question: string, answer: string): string {
+  const text = (question + ' ' + answer).toLowerCase();
+
+  // Check each category's keywords
+  for (const [category, keywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    if (category === 'General') continue; // Skip general, it's the fallback
+    if (keywords.some((keyword) => text.includes(keyword))) {
+      return category;
+    }
+  }
+
+  return 'General';
+}
+
+/**
+ * Groups FAQs by category
+ */
+function groupByCategory(faqs: FaqItem[]): Array<{ name: string; count: number; faqs: FaqItem[] }> {
+  const categoryMap = new Map<string, FaqItem[]>();
+
+  for (const faq of faqs) {
+    const existing = categoryMap.get(faq.category) || [];
+    existing.push(faq);
+    categoryMap.set(faq.category, existing);
+  }
+
+  // Convert to array and sort by count (descending)
+  return Array.from(categoryMap.entries())
+    .map(([name, items]) => ({
+      name,
+      count: items.length,
+      faqs: items,
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
+/**
  * Extracts FAQ pairs from text
  */
-function extractFaqs(text: string): Array<{ question: string; answer: string }> {
+function extractFaqs(text: string): FaqItem[] {
   const lines = text.split('\n');
   const faqs: Array<{ question: string; answer: string }> = [];
 
@@ -143,9 +218,15 @@ function extractFaqs(text: string): Array<{ question: string; answer: string }> 
   }
 
   // Filter out invalid pairs (questions without answers or vice versa)
-  return faqs.filter(
+  const validFaqs = faqs.filter(
     (faq) => faq.question.length > 3 && faq.answer.length > 3 && faq.question !== faq.answer
   );
+
+  // Add category to each FAQ
+  return validFaqs.map((faq) => ({
+    ...faq,
+    category: categorize(faq.question, faq.answer),
+  }));
 }
 
 /**
@@ -154,7 +235,7 @@ function extractFaqs(text: string): Array<{ question: string; answer: string }> 
  */
 export const faqFromTextTool = tool({
   description:
-    'Extract Q&A pairs from text that looks like FAQ format. Detects question patterns (?, "Q:", "Question:", numbered questions, etc.) and pairs them with their answers. Returns an array of FAQ objects with question and answer fields.',
+    'Extract Q&A pairs from text that looks like FAQ format. Detects question patterns (?, "Q:", "Question:", numbered questions, etc.) and pairs them with their answers. Automatically categorizes FAQs by topic (Pricing, Account, Technical, Features, etc.) and groups them. Returns FAQs with category information.',
   inputSchema: jsonSchema<FaqFromTextInput>({
     type: 'object',
     properties: {
@@ -176,11 +257,15 @@ export const faqFromTextTool = tool({
       throw new Error('Text cannot be empty');
     }
 
-    // Extract FAQs
+    // Extract FAQs with categorization
     const faqs = extractFaqs(text);
+
+    // Group by category
+    const categories = groupByCategory(faqs);
 
     return {
       faqs,
+      categories,
       count: faqs.length,
     };
   },

@@ -3,11 +3,17 @@
  * Generates a deterministic hash for a recipe/workflow using SHA-256.
  * Uses Node.js built-in crypto module for hashing.
  *
+ * Domain Rules:
+ * - Must use json-stable-stringify for consistent ordering
+ * - Must use crypto.createHash for hashing
+ * - Must use SHA-256 or better
+ *
  * @requires Node.js 18+ (uses native crypto API)
  */
 
 import { createHash } from 'node:crypto';
 import { jsonSchema, tool } from 'ai';
+import stringify from 'json-stable-stringify';
 
 /**
  * Hash result containing hash value and metadata
@@ -23,49 +29,23 @@ type RecipeHashInput = {
 };
 
 /**
- * Normalizes an object to ensure deterministic serialization
- * Sorts object keys recursively to produce consistent output
- */
-function normalizeForHashing(obj: unknown): unknown {
-  if (obj === null || obj === undefined) {
-    return obj;
-  }
-
-  // Handle arrays
-  if (Array.isArray(obj)) {
-    return obj.map(normalizeForHashing);
-  }
-
-  // Handle objects
-  if (typeof obj === 'object') {
-    const normalized: Record<string, unknown> = {};
-    const keys = Object.keys(obj as Record<string, unknown>).sort();
-
-    for (const key of keys) {
-      normalized[key] = normalizeForHashing((obj as Record<string, unknown>)[key]);
-    }
-
-    return normalized;
-  }
-
-  // Primitives return as-is
-  return obj;
-}
-
-/**
  * Generates a deterministic SHA-256 hash for a recipe/workflow
+ * Uses json-stable-stringify for consistent ordering (domain rule)
  */
 function generateRecipeHash(recipe: Record<string, unknown> | unknown[]): HashResult {
-  // Normalize the recipe to ensure deterministic serialization
-  const normalized = normalizeForHashing(recipe);
+  // Use json-stable-stringify for deterministic serialization (domain rule)
+  // This ensures consistent key ordering and handles all edge cases properly
+  const jsonString = stringify(recipe);
 
-  // Convert to JSON with no whitespace for consistent hashing
-  const jsonString = JSON.stringify(normalized);
+  // Handle edge case where stringify returns undefined
+  if (jsonString === undefined) {
+    throw new Error('Failed to stringify recipe: result was undefined');
+  }
 
   // Calculate input size in bytes
   const inputSize = Buffer.byteLength(jsonString, 'utf8');
 
-  // Generate SHA-256 hash
+  // Generate SHA-256 hash (domain rule: SHA-256 or better)
   const hash = createHash('sha256').update(jsonString, 'utf8').digest('hex');
 
   return {

@@ -21,6 +21,8 @@ export interface WorkflowSkeletonStep {
   stepNumber: number;
   toolName: string;
   purpose: string;
+  rationale: string;
+  alternatives: string[];
   estimatedInputs: string[];
   estimatedOutputs: string[];
   isAvailable: boolean;
@@ -87,6 +89,7 @@ const WORKFLOW_PATTERNS = {
 
 /**
  * Analyzes prompt to detect workflow intent
+ * Domain rule: intent_detection - Extract actions and patterns from natural language prompts
  */
 function analyzePrompt(prompt: string): {
   detectedIntent: string;
@@ -123,10 +126,11 @@ function analyzePrompt(prompt: string): {
 
   const detectedActions = actionWords.filter((word) => lowerPrompt.includes(word));
 
-  // Determine intent based on detected pattern
+  // Domain rule: pattern_matching - Match prompts to workflow patterns using keyword frequency
   let detectedIntent = 'general workflow';
   for (const [patternName, pattern] of Object.entries(WORKFLOW_PATTERNS)) {
     const matchCount = pattern.keywords.filter((kw) => lowerPrompt.includes(kw)).length;
+    // Domain rule: pattern_threshold - Require at least 2 matching keywords to identify pattern
     if (matchCount >= 2) {
       detectedIntent = patternName.replace(/_/g, ' ');
       break;
@@ -149,6 +153,52 @@ function analyzePrompt(prompt: string): {
 }
 
 /**
+ * Generates rationale for why a step is needed
+ */
+function generateRationale(action: string, index: number, totalSteps: number): string {
+  if (index === 0) {
+    return `Initial step to ${action} the input data and prepare it for processing`;
+  }
+  if (index === totalSteps - 1) {
+    return `Final step to ${action} the results and produce the desired output`;
+  }
+  return `Intermediate step to ${action} the data from previous step and pass it forward`;
+}
+
+/**
+ * Generates alternative tool suggestions for a step
+ */
+function generateAlternatives(action: string, availableTools: string[] | undefined): string[] {
+  const alternatives: string[] = [];
+
+  // Action-specific alternatives
+  const alternativeMap: Record<string, string[]> = {
+    fetch: ['retrieve', 'get', 'download'],
+    transform: ['process', 'convert', 'modify'],
+    save: ['store', 'persist', 'write'],
+    validate: ['check', 'verify', 'test'],
+    analyze: ['compute', 'calculate', 'evaluate'],
+    filter: ['select', 'search', 'query'],
+  };
+
+  const possibleAlternatives = alternativeMap[action] || [];
+  const toolSet = new Set(availableTools?.map((t) => t.toLowerCase()) || []);
+
+  for (const alt of possibleAlternatives) {
+    const altToolName = `${alt}Tool`;
+    if (
+      !availableTools ||
+      toolSet.has(alt.toLowerCase()) ||
+      toolSet.has(altToolName.toLowerCase())
+    ) {
+      alternatives.push(alt);
+    }
+  }
+
+  return alternatives.slice(0, 3); // Max 3 alternatives
+}
+
+/**
  * Generates workflow steps based on detected actions
  */
 function generateSteps(
@@ -161,6 +211,8 @@ function generateSteps(
         stepNumber: 1,
         toolName: 'genericTool',
         purpose: 'Execute the requested action',
+        rationale: 'No specific actions detected, using generic tool to process request',
+        alternatives: [],
         estimatedInputs: ['parameters'],
         estimatedOutputs: ['result'],
         isAvailable: false,
@@ -180,6 +232,8 @@ function generateSteps(
       stepNumber: index + 1,
       toolName: isAvailable ? action : toolName,
       purpose: `${action.charAt(0).toUpperCase()}${action.slice(1)} the data`,
+      rationale: generateRationale(action, index, keyActions.length),
+      alternatives: generateAlternatives(action, availableTools),
       estimatedInputs: index === 0 ? ['inputData'] : [`output${index}`],
       estimatedOutputs: [`output${index + 1}`],
       isAvailable,

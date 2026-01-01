@@ -7,12 +7,25 @@
 import { jsonSchema, tool } from 'ai';
 
 /**
+ * Test scenario with detailed steps
+ */
+export interface TestScenario {
+  feature: string;
+  testType: string;
+  scenario: string;
+  steps: string[];
+  expectedResult: string;
+  priority: 'high' | 'medium' | 'low';
+}
+
+/**
  * Matrix cell representing test coverage status
  */
 export interface MatrixCell {
   feature: string;
   testType: string;
   covered: boolean;
+  scenario?: TestScenario;
 }
 
 /**
@@ -48,7 +61,99 @@ type TestPlanMatrixInput = {
 };
 
 /**
- * Builds the test coverage matrix
+ * Generates a test scenario for a feature and test type combination
+ */
+function generateScenario(feature: string, testType: string): TestScenario {
+  // Determine priority based on test type and feature importance
+  let priority: 'high' | 'medium' | 'low';
+
+  // Core test types are high priority
+  if (testType === 'unit' || testType === 'integration' || testType === 'e2e') {
+    priority = 'high';
+  } else if (testType === 'smoke' || testType === 'regression' || testType === 'security') {
+    priority = 'medium';
+  } else {
+    priority = 'low';
+  }
+
+  // Generate scenario description based on test type
+  const scenarioTemplates: Record<string, string> = {
+    unit: `Verify ${feature} functionality at the unit level`,
+    integration: `Test ${feature} integration with dependent services`,
+    e2e: `Validate ${feature} end-to-end user workflow`,
+    smoke: `Quick smoke test of ${feature} core functionality`,
+    regression: `Ensure ${feature} hasn't regressed from previous versions`,
+    performance: `Measure ${feature} performance under load`,
+    security: `Verify ${feature} security controls and access`,
+    accessibility: `Test ${feature} accessibility compliance`,
+    compatibility: `Verify ${feature} cross-browser/platform compatibility`,
+  };
+
+  const scenario = scenarioTemplates[testType] || `Test ${feature} with ${testType} testing`;
+
+  // Generate detailed steps based on test type
+  const steps: string[] = [];
+
+  if (testType === 'unit') {
+    steps.push('Set up test fixtures and mocks');
+    steps.push(`Call ${feature} function/method with valid inputs`);
+    steps.push('Assert expected outputs and side effects');
+    steps.push('Test edge cases and error conditions');
+  } else if (testType === 'integration') {
+    steps.push('Set up test environment with required services');
+    steps.push(`Invoke ${feature} integration points`);
+    steps.push('Verify data flow between components');
+    steps.push('Clean up test data and resources');
+  } else if (testType === 'e2e') {
+    steps.push('Navigate to feature entry point');
+    steps.push(`Interact with ${feature} user interface`);
+    steps.push('Complete user workflow from start to finish');
+    steps.push('Verify final state and data persistence');
+  } else if (testType === 'performance') {
+    steps.push('Set up performance monitoring tools');
+    steps.push(`Execute ${feature} under simulated load`);
+    steps.push('Measure response times and resource usage');
+    steps.push('Compare against performance baselines');
+  } else if (testType === 'security') {
+    steps.push(`Identify security-critical areas of ${feature}`);
+    steps.push('Attempt unauthorized access scenarios');
+    steps.push('Verify input validation and sanitization');
+    steps.push('Test authentication and authorization controls');
+  } else {
+    steps.push(`Prepare test environment for ${feature}`);
+    steps.push(`Execute ${testType} test procedures`);
+    steps.push('Verify results match expected behavior');
+    steps.push('Document findings and cleanup');
+  }
+
+  // Generate expected result based on test type
+  const expectedResults: Record<string, string> = {
+    unit: `${feature} unit tests pass with 100% code coverage`,
+    integration: `${feature} successfully integrates with all dependencies`,
+    e2e: `User can complete ${feature} workflow without errors`,
+    performance: `${feature} meets performance SLAs (response time < threshold)`,
+    security: `${feature} passes security scan with no critical vulnerabilities`,
+    smoke: `${feature} core functionality is operational`,
+    regression: `${feature} behavior matches previous version baseline`,
+    accessibility: `${feature} meets WCAG 2.1 AA accessibility standards`,
+    compatibility: `${feature} works correctly across all supported platforms`,
+  };
+
+  const expectedResult =
+    expectedResults[testType] || `${feature} passes ${testType} testing criteria`;
+
+  return {
+    feature,
+    testType,
+    scenario,
+    steps,
+    expectedResult,
+    priority,
+  };
+}
+
+/**
+ * Builds the test coverage matrix with generated scenarios
  */
 function buildMatrix(
   features: string[],
@@ -62,10 +167,14 @@ function buildMatrix(
     const coveredTypes = coverage[feature] || [];
 
     for (const testType of testTypes) {
+      const covered = coveredTypes.includes(testType);
+      const scenario = covered ? generateScenario(feature, testType) : undefined;
+
       row.push({
         feature,
         testType,
-        covered: coveredTypes.includes(testType),
+        covered,
+        scenario,
       });
     }
 
@@ -123,11 +232,11 @@ function identifyGaps(
 
 /**
  * Test Plan Matrix Tool
- * Creates a comprehensive test coverage matrix
+ * Creates a comprehensive test coverage matrix with generated test scenarios
  */
 export const testPlanMatrixTool = tool({
   description:
-    'Creates a test plan matrix showing coverage of features by test types. Takes a list of features, test types, and optional coverage mapping. Returns a matrix showing which features are covered by which test types, coverage statistics, and identifies gaps where features lack certain test types.',
+    'Generates a QA test plan matrix with test scenarios, detailed steps, expected results, and priority assignments. For each feature/test-type combination, generates specific test scenarios with step-by-step instructions and assigns priorities (high/medium/low) based on test criticality. Identifies coverage gaps and provides statistics. Perfect for QA planning and ensuring comprehensive test coverage.',
   inputSchema: jsonSchema<TestPlanMatrixInput>({
     type: 'object',
     properties: {

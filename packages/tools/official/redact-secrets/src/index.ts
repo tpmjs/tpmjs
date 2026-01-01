@@ -3,6 +3,11 @@
  * Redacts detected secrets from text by replacing them with [REDACTED:type] placeholders
  *
  * Uses the same patterns as secret-scan-text but replaces matches instead of reporting them
+ *
+ * Domain rule: secret-pattern-detection - Detects secrets using regex patterns (AWS keys, GitHub tokens, API keys, etc.)
+ * Domain rule: credential-redaction - Replaces detected secrets with [REDACTED:type] placeholders
+ * Domain rule: fingerprint-generation - Generates SHA-256 fingerprints of redacted secrets for audit trails
+ * Domain rule: overlap-elimination - Removes overlapping secret matches to avoid double-redaction
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -13,6 +18,7 @@ export interface Redaction {
   line: number;
   column: number;
   replacement: string;
+  fingerprint: string; // SHA-256 hash of the secret for audit trail
 }
 
 export interface RedactionResult {
@@ -210,6 +216,34 @@ function getLineAndColumn(text: string, index: number): { line: number; column: 
 }
 
 /**
+ * Generate SHA-256 hash fingerprint of a secret value for audit trail
+ */
+async function generateFingerprint(value: string): Promise<string> {
+  try {
+    // Use Web Crypto API if available (browser/modern Node)
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(value);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    // Fallback: use a simple hash for environments without crypto.subtle
+    let hash = 0;
+    for (let i = 0; i < value.length; i++) {
+      const char = value.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return `fallback-${Math.abs(hash).toString(16)}`;
+  } catch (error) {
+    // If all else fails, return a placeholder
+    return `error-${value.length}`;
+  }
+}
+
+/**
  * Convert a string pattern to RegExp, handling invalid patterns
  */
 function parseCustomPattern(pattern: string): RegExp | null {
@@ -325,12 +359,16 @@ export const redactSecrets = tool({
       const replacement = `[REDACTED:${match.type}]`;
       const { line, column } = getLineAndColumn(text, match.start);
 
+      // Generate fingerprint for audit trail
+      const fingerprint = await generateFingerprint(match.value);
+
       redactions.push({
         type: match.type,
         originalLength: match.value.length,
         line,
         column,
         replacement,
+        fingerprint,
       });
 
       redactedText =

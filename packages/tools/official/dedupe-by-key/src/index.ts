@@ -1,6 +1,9 @@
 /**
  * Dedupe By Key Tool for TPMJS
  * Removes duplicate objects from an array based on one or more key fields
+ *
+ * Domain rule: composite_key_deduplication - Supports single and composite key deduplication
+ * Domain rule: key_serialization - Uses string serialization for key comparison
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -22,7 +25,7 @@ type DedupeByKeyInput = {
 };
 
 /**
- * Gets a nested field value from an object using dot notation
+ * Domain rule: nested_field_access - Gets a nested field value from an object using dot notation
  */
 function getFieldValue(obj: Record<string, unknown>, field: string): unknown {
   const parts = field.split('.');
@@ -40,7 +43,7 @@ function getFieldValue(obj: Record<string, unknown>, field: string): unknown {
 }
 
 /**
- * Creates a unique key string from an object based on the key field(s)
+ * Domain rule: key_serialization - Creates a unique key string from an object based on the key field(s)
  */
 function createKeyString(obj: Record<string, unknown>, keyFields: string[]): string {
   const keyValues = keyFields.map((field) => {
@@ -117,7 +120,7 @@ export const dedupeByKeyTool = tool({
 
     const originalCount = rows.length;
 
-    // Track seen keys and their associated rows
+    // Domain rule: composite_key_deduplication - Track seen keys and their associated rows
     const seen = new Map<string, Record<string, unknown>>();
 
     // Process rows

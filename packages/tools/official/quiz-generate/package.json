@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-quiz-generate",
+  "version": "0.1.0",
+  "description": "Generates quiz questions from content with answer options and explanations",
+  "type": "module",
+  "keywords": ["tpmjs", "education", "ai", "quiz", "assessment", "testing", "learning"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/quiz-generate"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "edu",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "quizGenerateTool",
+        "description": "Generates quiz questions from content with answer options and explanations",
+        "parameters": [
+          {
+            "name": "content",
+            "type": "string",
+            "description": "Source content from which to generate quiz questions",
+            "required": true
+          },
+          {
+            "name": "count",
+            "type": "number",
+            "description": "Number of questions to generate",
+            "required": true
+          },
+          {
+            "name": "difficulty",
+            "type": "'easy' | 'medium' | 'hard'",
+            "description": "Question difficulty level",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "Quiz",
+          "description": "Generated quiz with questions, answer options, correct answers, and explanations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

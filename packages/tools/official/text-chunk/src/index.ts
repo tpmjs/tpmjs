@@ -2,9 +2,13 @@
  * Text Chunk Tool for TPMJS
  * Splits text into chunks by size or sentence boundaries with optional overlap.
  * Uses the sbd library for intelligent sentence detection.
+ *
+ * Domain rule: sentence_boundary_detection - Uses sbd library for intelligent sentence detection
+ * Domain rule: chunking_with_overlap - Supports overlapping chunks to maintain context
  */
 
 import { jsonSchema, tool } from 'ai';
+// Domain rule: sentence_boundary_detection - sbd library for sentence detection
 import sbd from 'sbd';
 
 /**
@@ -33,14 +37,14 @@ type TextChunkInput = {
 };
 
 /**
- * Splits text into chunks by sentence boundaries, respecting maxChunkSize
+ * Domain rule: sentence_boundary_detection - Splits text into chunks by sentence boundaries, respecting maxChunkSize
  */
 function chunkBySentences(
   text: string,
   maxChunkSize: number,
   overlap: number
 ): Array<{ text: string; startIndex: number; endIndex: number }> {
-  // Parse text into sentences
+  // Domain rule: sentence_boundary_detection - Parse text into sentences using sbd
   const sentences: string[] = sbd.sentences(text, {
     newline_boundaries: true,
     preserve_whitespace: false,
@@ -68,7 +72,7 @@ function chunkBySentences(
         endIndex: currentStartIndex + currentChunk.length,
       });
 
-      // Start new chunk with overlap
+      // Domain rule: chunking_with_overlap - Start new chunk with overlap to maintain context
       if (overlap > 0) {
         // Calculate how many sentences to include for overlap
         let overlapText = '';
@@ -115,7 +119,7 @@ function chunkBySentences(
 }
 
 /**
- * Splits text into fixed-size chunks with overlap
+ * Domain rule: chunking_with_overlap - Splits text into fixed-size chunks with overlap
  */
 function chunkBySize(
   text: string,

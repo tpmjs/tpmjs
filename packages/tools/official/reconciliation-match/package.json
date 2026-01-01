@@ -1,0 +1,75 @@
+{
+  "name": "@tpmjs/reconciliation-match",
+  "version": "0.1.0",
+  "description": "Matches bank transactions to ledger entries for reconciliation",
+  "type": "module",
+  "keywords": ["tpmjs", "finance", "reconciliation", "accounting", "banking"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/reconciliation-match"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "finance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "reconciliationMatchTool",
+        "description": "Matches bank transactions to ledger entries for reconciliation. Uses amount, date proximity, and description similarity to identify matches with confidence scoring.",
+        "parameters": [
+          {
+            "name": "bankTransactions",
+            "type": "object[]",
+            "description": "Bank transactions with date, amount, and description",
+            "required": true
+          },
+          {
+            "name": "ledgerEntries",
+            "type": "object[]",
+            "description": "Ledger entries to match against",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ReconciliationMatches",
+          "description": "Matched pairs, unmatched bank transactions, and unmatched ledger entries with confidence scores"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool for bank reconciliation, matching financial transactions, identifying discrepancies between bank statements and accounting ledgers.",
+          "limitations": "Requires structured transaction data. Match confidence is heuristic-based and may need manual review for low-confidence matches.",
+          "examples": [
+            "Match bank transactions to QuickBooks entries",
+            "Reconcile monthly bank statements",
+            "Identify unmatched transactions for investigation"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

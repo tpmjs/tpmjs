@@ -46,7 +46,7 @@ type UrlNormalizeInput = {
  */
 const DEFAULT_OPTIONS: Required<NormalizeOptions> = {
   sortParams: true,
-  removeHash: false,
+  removeHash: true, // Changed default to true per domain rules
   lowercase: true,
   removeTrailingSlash: true,
   removeDefaultPort: true,
@@ -212,7 +212,7 @@ export const urlNormalizeTool = tool({
           },
           removeHash: {
             type: 'boolean',
-            description: 'Remove URL fragment/hash (default: false)',
+            description: 'Remove URL fragment/hash (default: true)',
           },
           lowercase: {
             type: 'boolean',

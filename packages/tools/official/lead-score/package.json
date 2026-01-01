@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-lead-score",
+  "version": "0.1.0",
+  "description": "Score leads based on engagement signals like email opens, page visits, and company fit",
+  "type": "module",
+  "keywords": ["tpmjs", "sales", "lead-scoring", "crm"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/lead-score"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sales",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "leadScoreTool",
+        "description": "Score leads based on engagement signals like email opens, page visits, form fills, and company fit",
+        "parameters": [
+          {
+            "name": "lead",
+            "type": "object",
+            "description": "Lead information with engagement history",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "LeadScore",
+          "description": "Scored lead with breakdown and explanation"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "^4.0.0"
+  }
+}

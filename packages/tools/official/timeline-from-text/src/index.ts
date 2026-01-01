@@ -71,6 +71,37 @@ function calculateConfidence(parsed: chrono.ParsedResult): number {
 }
 
 /**
+ * Parse quarter-based dates (Q1 2024, Q2 2023, etc.) that chrono-node doesn't handle
+ * Domain rule: date_extraction - Must handle partial dates including quarters
+ */
+function parseQuarterDates(text: string): Array<{ date: Date; text: string; index: number }> {
+  const quarterPattern = /\b(Q[1-4])\s*[,\s]*(\d{4})\b/gi;
+  const results: Array<{ date: Date; text: string; index: number }> = [];
+
+  let match;
+  while ((match = quarterPattern.exec(text)) !== null) {
+    const quarterStr = match[1];
+    const yearStr = match[2];
+    if (!quarterStr || !yearStr) continue;
+    const quarter = Number.parseInt(quarterStr.charAt(1), 10);
+    const year = Number.parseInt(yearStr, 10);
+
+    // Map quarter to middle month of that quarter
+    const monthMap: Record<number, number> = { 1: 1, 2: 4, 3: 7, 4: 10 };
+    const month = monthMap[quarter] || 1;
+
+    const date = new Date(year, month, 15); // Middle of the quarter
+    results.push({
+      date,
+      text: match[0],
+      index: match.index,
+    });
+  }
+
+  return results;
+}
+
+/**
  * Determine date type based on parsing
  */
 function determineDateType(parsed: chrono.ParsedResult): TimelineEvent['dateType'] {
@@ -207,11 +238,34 @@ export const timelineFromTextTool = tool({
     });
 
     // Parse dates from text using chrono-node
+    // Domain rule: date_extraction - Uses chrono-node for comprehensive date extraction
     const parsedDates = chrono.parse(text);
+
+    // Also parse quarter-based dates that chrono-node doesn't handle
+    // Domain rule: date_extraction - Handles partial dates like 'Q1 2024'
+    const quarterDates = parseQuarterDates(text);
 
     // Convert to timeline events
     const events: TimelineEvent[] = [];
     const seenDates = new Set<string>();
+
+    // Add quarter-based dates first
+    for (const qd of quarterDates) {
+      const isoDate = qd.date.toISOString().split('T')[0] || '';
+      if (seenDates.has(isoDate)) continue;
+      seenDates.add(isoDate);
+
+      const description = extractContext(text, qd.index, qd.text.length, sentences);
+
+      events.push({
+        date: isoDate,
+        dateDisplay: formatDateDisplay(qd.date, 'partial'),
+        description,
+        confidence: 0.7, // Quarter dates have medium confidence
+        originalMention: qd.text,
+        dateType: 'partial',
+      });
+    }
 
     for (const parsed of parsedDates) {
       const date = parsed.start.date();
@@ -238,6 +292,23 @@ export const timelineFromTextTool = tool({
 
     // Sort chronologically
     events.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // Handle edge case of no dates found
+    // Domain rule: explicit error handling for empty results
+    if (events.length === 0) {
+      // Return empty timeline rather than throwing - this is a valid result
+      return {
+        originalText: text.substring(0, 500) + (text.length > 500 ? '...' : ''),
+        events: [],
+        dateRange: null,
+        gaps: [],
+        metadata: {
+          extractedAt: new Date().toISOString(),
+          totalEvents: 0,
+          datesCovered: 0,
+        },
+      };
+    }
 
     // Calculate date range
     const dateRange =

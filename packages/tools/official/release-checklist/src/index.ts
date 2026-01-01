@@ -1,194 +1,246 @@
 /**
  * Release Checklist Tool for TPMJS
- * Generates comprehensive release checklists from component information,
- * tracks readiness status, and identifies blockers.
+ * Generates pre-release checklist tailored to stack.
+ *
+ * Domain rule: stack-specific-checklist - Generates release checklists customized for Next.js, Node.js libraries, React apps
+ * Domain rule: release-validation - Validates critical release requirements (tests, builds, CI/CD, versioning)
+ * Domain rule: rollback-planning - Ensures rollback plans are documented before release
  */
 
 import { jsonSchema, tool } from 'ai';
 
 /**
- * Component information for release planning
- */
-export interface Component {
-  name: string;
-  hasTests: boolean;
-  hasDocs: boolean;
-  version: string;
-}
-
-/**
  * Individual checklist item
  */
 export interface ChecklistItem {
-  component: string;
   item: string;
-  status: 'complete' | 'incomplete' | 'blocked';
-  priority: 'critical' | 'high' | 'medium' | 'low';
-  category: 'testing' | 'documentation' | 'versioning' | 'quality' | 'deployment';
+  critical: boolean;
+  category: 'code' | 'docs' | 'ops';
+  description?: string;
 }
 
 /**
  * Output interface for release checklist generation
  */
 export interface ReleaseChecklistResult {
-  checklist: string; // Markdown-formatted checklist
-  items: ChecklistItem[];
-  readyCount: number;
-  blockers: string[];
-  summary: {
-    totalComponents: number;
-    componentsReady: number;
-    componentsBlocked: number;
-    readinessPercentage: number;
-    criticalItems: number;
-    incompleteItems: number;
-  };
+  checklist: ChecklistItem[];
+  stack: string;
+  criticalCount: number;
+  optionalCount: number;
 }
 
 type ReleaseChecklistInput = {
-  components: Component[];
+  stack: string;
 };
 
 /**
- * Validates semantic version format
+ * Generates checklist items customized for stack
+ * Domain rule: stack_awareness - Customizes for web/app/library stacks
+ * Domain rule: critical_items - Marks critical vs optional items
+ * Domain rule: categories - Organizes by category (code, docs, ops)
  */
-function isValidSemver(version: string): boolean {
-  // Basic semver validation: X.Y.Z or X.Y.Z-prerelease
-  const semverRegex = /^\d+\.\d+\.\d+(-[\w.]+)?$/;
-  return semverRegex.test(version);
-}
-
-/**
- * Determines if a component is ready for release
- */
-function isComponentReady(component: Component): boolean {
-  return component.hasTests && component.hasDocs && isValidSemver(component.version);
-}
-
-/**
- * Generates checklist items for components
- */
-function generateChecklistItems(components: Component[]): ChecklistItem[] {
+function generateChecklistForStack(stack: string): ChecklistItem[] {
+  const normalized = stack.toLowerCase();
   const items: ChecklistItem[] = [];
 
-  for (const component of components) {
-    // Testing checklist
-    items.push({
-      component: component.name,
-      item: 'Unit tests passing',
-      status: component.hasTests ? 'complete' : 'incomplete',
-      priority: 'critical',
-      category: 'testing',
-    });
-
-    // Documentation checklist
-    items.push({
-      component: component.name,
-      item: 'Documentation complete',
-      status: component.hasDocs ? 'complete' : 'incomplete',
-      priority: 'high',
-      category: 'documentation',
-    });
-
-    // Version validation
-    const validVersion = isValidSemver(component.version);
-    items.push({
-      component: component.name,
-      item: `Version ${component.version} follows semver`,
-      status: validVersion ? 'complete' : 'blocked',
-      priority: 'critical',
-      category: 'versioning',
-    });
-
-    // Additional quality checks
-    if (component.hasTests) {
-      items.push({
-        component: component.name,
-        item: 'Integration tests passing',
-        status: 'incomplete',
-        priority: 'high',
-        category: 'testing',
-      });
-
-      items.push({
-        component: component.name,
-        item: 'Code coverage meets threshold',
-        status: 'incomplete',
-        priority: 'medium',
-        category: 'quality',
-      });
-    }
-
-    // Documentation enhancements
-    if (component.hasDocs) {
-      items.push({
-        component: component.name,
-        item: 'API documentation reviewed',
-        status: 'incomplete',
-        priority: 'medium',
-        category: 'documentation',
-      });
-
-      items.push({
-        component: component.name,
-        item: 'Changelog updated',
-        status: 'incomplete',
-        priority: 'high',
-        category: 'documentation',
-      });
-    }
-  }
-
-  // Global release items
+  // Domain rule: categories - Code category items
+  // Domain rule: critical_items - Tests and linting are critical
   items.push(
     {
-      component: 'Release',
-      item: 'All critical bugs resolved',
-      status: 'incomplete',
-      priority: 'critical',
-      category: 'quality',
+      item: 'All tests pass',
+      critical: true,
+      category: 'code',
+      description: 'Run full test suite and ensure all tests pass',
     },
     {
-      component: 'Release',
-      item: 'Security audit completed',
-      status: 'incomplete',
-      priority: 'critical',
-      category: 'quality',
+      item: 'Linting passes',
+      critical: true,
+      category: 'code',
+      description: 'No linting errors or warnings',
     },
     {
-      component: 'Release',
-      item: 'Performance benchmarks passing',
-      status: 'incomplete',
-      priority: 'high',
-      category: 'quality',
+      item: 'Type checking passes',
+      critical: false,
+      category: 'code',
+      description: 'TypeScript type checking without errors',
     },
     {
-      component: 'Release',
-      item: 'Release notes prepared',
-      status: 'incomplete',
-      priority: 'high',
-      category: 'documentation',
+      item: 'Dependencies updated',
+      critical: false,
+      category: 'code',
+      description: 'All dependencies are up to date with security patches',
+    }
+  );
+
+  // Domain rule: categories - Docs category items
+  // Domain rule: critical_items - Changelog is critical, README is optional
+  items.push(
+    {
+      item: 'Changelog updated',
+      critical: true,
+      category: 'docs',
+      description: 'Document all user-facing changes',
     },
     {
-      component: 'Release',
-      item: 'Deployment runbook reviewed',
-      status: 'incomplete',
-      priority: 'high',
-      category: 'deployment',
+      item: 'README updated',
+      critical: false,
+      category: 'docs',
+      description: 'Update README if API or usage changed',
     },
     {
-      component: 'Release',
+      item: 'API docs reviewed',
+      critical: false,
+      category: 'docs',
+      description: 'Ensure API documentation is accurate',
+    }
+  );
+
+  // Domain rule: stack_awareness - Next.js/web stack specific items
+  if (normalized.includes('nextjs') || normalized.includes('next')) {
+    items.push(
+      {
+        item: 'Build succeeds in production mode',
+        critical: true,
+        category: 'code',
+        description: 'next build completes without errors',
+      },
+      {
+        item: 'Environment variables documented',
+        critical: true,
+        category: 'docs',
+        description: 'All required env vars are documented',
+      },
+      {
+        item: 'Static pages pre-rendered',
+        critical: false,
+        category: 'code',
+        description: 'Verify static generation works correctly',
+      },
+      {
+        item: 'Image optimization configured',
+        critical: false,
+        category: 'ops',
+        description: 'Next.js image optimization is properly configured',
+      },
+      {
+        item: 'Deployment previews tested',
+        critical: true,
+        category: 'ops',
+        description: 'Test on Vercel preview or similar',
+      }
+    );
+  } // Domain rule: stack_awareness - Node.js library stack specific items
+  else if (normalized.includes('node') && normalized.includes('library')) {
+    items.push(
+      {
+        item: 'Package builds successfully',
+        critical: true,
+        category: 'code',
+        description: 'npm run build completes without errors',
+      },
+      {
+        item: 'Exports are properly typed',
+        critical: true,
+        category: 'code',
+        description: 'TypeScript definitions are generated and correct',
+      },
+      {
+        item: 'Package.json fields complete',
+        critical: true,
+        category: 'code',
+        description: 'main, types, exports fields are correctly set',
+      },
+      {
+        item: 'Peer dependencies documented',
+        critical: false,
+        category: 'docs',
+        description: 'Document any peer dependency requirements',
+      },
+      {
+        item: 'npm pack tested locally',
+        critical: true,
+        category: 'ops',
+        description: 'Test the packaged tarball in a separate project',
+      }
+    );
+  } // Domain rule: stack_awareness - React app stack specific items
+  else if (normalized.includes('react') && normalized.includes('app')) {
+    items.push(
+      {
+        item: 'Build succeeds',
+        critical: true,
+        category: 'code',
+        description: 'Production build completes without errors',
+      },
+      {
+        item: 'Bundle size checked',
+        critical: false,
+        category: 'code',
+        description: 'Verify bundle size has not increased unexpectedly',
+      },
+      {
+        item: 'Console errors checked',
+        critical: true,
+        category: 'code',
+        description: 'No console errors or warnings in production build',
+      },
+      {
+        item: 'Accessibility checked',
+        critical: false,
+        category: 'code',
+        description: 'Run accessibility audits',
+      },
+      {
+        item: 'Hosting platform configured',
+        critical: true,
+        category: 'ops',
+        description: 'Ensure hosting platform is properly configured',
+      }
+    );
+  } else {
+    // Domain rule: stack_awareness - Generic stack fallback
+    items.push(
+      {
+        item: 'Build succeeds',
+        critical: true,
+        category: 'code',
+        description: 'Production build completes without errors',
+      },
+      {
+        item: 'Integration tests pass',
+        critical: false,
+        category: 'code',
+        description: 'Run integration test suite',
+      }
+    );
+  }
+
+  // Domain rule: categories - Ops category items (common to all stacks)
+  // Domain rule: critical_items - Version, git tag, CI/CD, rollback are critical
+  items.push(
+    {
+      item: 'Version bumped',
+      critical: true,
+      category: 'ops',
+      description: 'Update version number following semver',
+    },
+    {
+      item: 'Git tag created',
+      critical: true,
+      category: 'ops',
+      description: 'Create git tag matching version',
+    },
+    {
+      item: 'CI/CD pipeline passing',
+      critical: true,
+      category: 'ops',
+      description: 'All CI/CD checks pass',
+    },
+    {
       item: 'Rollback plan documented',
-      status: 'incomplete',
-      priority: 'critical',
-      category: 'deployment',
-    },
-    {
-      component: 'Release',
-      item: 'Stakeholders notified',
-      status: 'incomplete',
-      priority: 'medium',
-      category: 'deployment',
+      critical: true,
+      category: 'ops',
+      description: 'Document how to rollback if issues arise',
     }
   );
 
@@ -196,207 +248,45 @@ function generateChecklistItems(components: Component[]): ChecklistItem[] {
 }
 
 /**
- * Generates markdown checklist from items
- */
-function generateMarkdownChecklist(items: ChecklistItem[]): string {
-  let markdown = '# Release Checklist\n\n';
-
-  // Group by category
-  const categories = ['testing', 'documentation', 'versioning', 'quality', 'deployment'] as const;
-  const categoryLabels = {
-    testing: 'Testing',
-    documentation: 'Documentation',
-    versioning: 'Version Management',
-    quality: 'Quality Assurance',
-    deployment: 'Deployment',
-  };
-
-  for (const category of categories) {
-    const categoryItems = items.filter((item) => item.category === category);
-    if (categoryItems.length === 0) continue;
-
-    markdown += `## ${categoryLabels[category]}\n\n`;
-
-    // Group by component within category
-    const componentGroups = new Map<string, ChecklistItem[]>();
-    for (const item of categoryItems) {
-      const existing = componentGroups.get(item.component) || [];
-      existing.push(item);
-      componentGroups.set(item.component, existing);
-    }
-
-    for (const [component, componentItems] of componentGroups) {
-      if (component !== 'Release') {
-        markdown += `### ${component}\n\n`;
-      }
-
-      for (const item of componentItems) {
-        const checkbox = item.status === 'complete' ? '[x]' : '[ ]';
-        const priorityEmoji =
-          item.priority === 'critical'
-            ? '🔴'
-            : item.priority === 'high'
-              ? '🟡'
-              : item.priority === 'medium'
-                ? '🔵'
-                : '⚪';
-        const blockedLabel = item.status === 'blocked' ? ' **[BLOCKED]**' : '';
-
-        markdown += `- ${checkbox} ${priorityEmoji} ${item.item}${blockedLabel}\n`;
-      }
-
-      markdown += '\n';
-    }
-  }
-
-  // Add legend
-  markdown += '---\n\n';
-  markdown += '**Priority Legend:**\n';
-  markdown += '- 🔴 Critical - Must be completed before release\n';
-  markdown += '- 🟡 High - Should be completed before release\n';
-  markdown += '- 🔵 Medium - Nice to have\n';
-  markdown += '- ⚪ Low - Optional\n\n';
-
-  return markdown;
-}
-
-/**
- * Identifies release blockers
- */
-function identifyBlockers(components: Component[], items: ChecklistItem[]): string[] {
-  const blockers: string[] = [];
-
-  // Check for blocked items
-  const blockedItems = items.filter((item) => item.status === 'blocked');
-  for (const item of blockedItems) {
-    blockers.push(`${item.component}: ${item.item}`);
-  }
-
-  // Check for critical incomplete items
-  const criticalIncomplete = items.filter(
-    (item) => item.status === 'incomplete' && item.priority === 'critical'
-  );
-  for (const item of criticalIncomplete) {
-    blockers.push(`${item.component}: ${item.item} (critical)`);
-  }
-
-  // Check for components without tests
-  const noTests = components.filter((c) => !c.hasTests);
-  for (const component of noTests) {
-    blockers.push(`${component.name}: Missing tests (critical)`);
-  }
-
-  // Check for components without docs
-  const noDocs = components.filter((c) => !c.hasDocs);
-  for (const component of noDocs) {
-    blockers.push(`${component.name}: Missing documentation (high priority)`);
-  }
-
-  // Check for version conflicts
-  const versions = components.map((c) => c.version);
-  const uniqueVersions = new Set(versions);
-  if (versions.length > 1 && versions.length !== uniqueVersions.size) {
-    blockers.push('Version conflict: Multiple components share the same version number');
-  }
-
-  return blockers;
-}
-
-/**
  * Release Checklist Tool
- * Generates comprehensive release checklists from component information
+ * Generates pre-release checklist tailored to stack
  */
 export const releaseChecklistTool = tool({
   description:
-    'Generates a comprehensive release checklist from component information. Analyzes components for tests, documentation, and version compliance. Creates a detailed markdown checklist with priority levels, identifies release blockers, and calculates readiness percentage. Useful for release planning, tracking release progress, and ensuring quality standards.',
+    'Generates pre-release checklist tailored to stack (nextjs, node-library, react-app). Customizes checklist items based on technology stack, marks critical vs optional items, and organizes by category (code, docs, ops).',
   inputSchema: jsonSchema<ReleaseChecklistInput>({
     type: 'object',
     properties: {
-      components: {
-        type: 'array',
-        description: 'Array of components to include in the release',
-        items: {
-          type: 'object',
-          properties: {
-            name: {
-              type: 'string',
-              description: 'Component name',
-            },
-            hasTests: {
-              type: 'boolean',
-              description: 'Whether the component has tests',
-            },
-            hasDocs: {
-              type: 'boolean',
-              description: 'Whether the component has documentation',
-            },
-            version: {
-              type: 'string',
-              description: 'Semantic version number (e.g., 1.0.0)',
-            },
-          },
-          required: ['name', 'hasTests', 'hasDocs', 'version'],
-        },
+      stack: {
+        type: 'string',
+        description: 'Technology stack (nextjs, node-library, react-app)',
       },
     },
-    required: ['components'],
+    required: ['stack'],
     additionalProperties: false,
   }),
-  async execute({ components }): Promise<ReleaseChecklistResult> {
+  async execute({ stack }): Promise<ReleaseChecklistResult> {
     // Validate input
-    if (!Array.isArray(components)) {
-      throw new Error('components must be an array');
+    if (!stack || typeof stack !== 'string') {
+      throw new Error('stack is required and must be a string');
     }
 
-    if (components.length === 0) {
-      return {
-        checklist: '# Release Checklist\n\nNo components provided.',
-        items: [],
-        readyCount: 0,
-        blockers: ['No components to release'],
-        summary: {
-          totalComponents: 0,
-          componentsReady: 0,
-          componentsBlocked: 0,
-          readinessPercentage: 0,
-          criticalItems: 0,
-          incompleteItems: 0,
-        },
-      };
+    if (stack.trim().length === 0) {
+      throw new Error('stack cannot be empty');
     }
 
-    // Generate checklist items
-    const items = generateChecklistItems(components);
+    // Generate checklist items for the stack
+    const checklist = generateChecklistForStack(stack);
 
-    // Identify blockers
-    const blockers = identifyBlockers(components, items);
-
-    // Calculate readiness
-    const readyComponents = components.filter(isComponentReady);
-    const readyCount = readyComponents.length;
-    const blockedComponents = components.filter((c) => !isValidSemver(c.version));
-    const readinessPercentage = Math.round((readyCount / components.length) * 100);
-
-    // Count incomplete items
-    const criticalItems = items.filter((item) => item.priority === 'critical').length;
-    const incompleteItems = items.filter((item) => item.status === 'incomplete').length;
-
-    // Generate markdown checklist
-    const checklist = generateMarkdownChecklist(items);
+    // Count critical and optional items
+    const criticalCount = checklist.filter((item) => item.critical).length;
+    const optionalCount = checklist.filter((item) => !item.critical).length;
 
     return {
       checklist,
-      items,
-      readyCount,
-      blockers,
-      summary: {
-        totalComponents: components.length,
-        componentsReady: readyCount,
-        componentsBlocked: blockedComponents.length,
-        readinessPercentage,
-        criticalItems,
-        incompleteItems,
-      },
+      stack,
+      criticalCount,
+      optionalCount,
     };
   },
 });

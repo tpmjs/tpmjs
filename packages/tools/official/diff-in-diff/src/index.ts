@@ -8,7 +8,7 @@ import { jsonSchema, tool } from 'ai';
 /**
  * Output interface for difference-in-differences analysis
  */
-export interface DiffInDiffResult {
+export interface DiDEstimate {
   effect: number;
   standardError: number;
   tStatistic: number;
@@ -19,7 +19,11 @@ export interface DiffInDiffResult {
     upper: number;
     level: number;
   };
-  interpretation: string;
+  parallelTrends: {
+    assumption: string;
+    pretreatmentTrend: number;
+    warning?: string;
+  };
   groupMeans: {
     treatmentBefore: number;
     treatmentAfter: number;
@@ -33,10 +37,11 @@ export interface DiffInDiffResult {
 }
 
 type DiffInDiffInput = {
-  treatmentBefore: number[];
-  treatmentAfter: number[];
-  controlBefore: number[];
-  controlAfter: number[];
+  rows: Array<Record<string, number | string | boolean>>;
+  unit: string;
+  time: string;
+  treated: string;
+  y: string;
   confidenceLevel?: number;
 };
 
@@ -61,6 +66,7 @@ function variance(values: number[]): number {
 /**
  * Calculate standard error for difference-in-differences estimator
  * Uses pooled variance approach
+ * Domain rule: DiD Standard Error - SE(DiD) = √(σ²_T,after/n_TA + σ²_T,before/n_TB + σ²_C,after/n_CA + σ²_C,before/n_CB)
  */
 function calculateStandardError(
   treatmentBefore: number[],
@@ -181,49 +187,151 @@ function normalQuantile(p: number): number {
 }
 
 /**
- * Generate interpretation string based on results
+ * Parse panel data into groups
  */
-function generateInterpretation(effect: number, significant: boolean, pValue: number): string {
-  const direction = effect > 0 ? 'increased' : 'decreased';
-  const magnitude = Math.abs(effect);
-  const sigStatus = significant ? 'statistically significant' : 'not statistically significant';
+function parsePanelData(
+  rows: Array<Record<string, number | string | boolean>>,
+  _unit: string,
+  time: string,
+  treated: string,
+  y: string
+): {
+  treatmentBefore: number[];
+  treatmentAfter: number[];
+  controlBefore: number[];
+  controlAfter: number[];
+  timePeriods: number[];
+} {
+  const treatmentBefore: number[] = [];
+  const treatmentAfter: number[] = [];
+  const controlBefore: number[] = [];
+  const controlAfter: number[] = [];
+  const timePeriods: number[] = [];
 
-  return `The treatment effect is ${magnitude.toFixed(3)} (${direction} by ${magnitude.toFixed(3)} units). This effect is ${sigStatus} (p = ${pValue.toFixed(4)}). ${
-    significant
-      ? 'We can conclude the treatment had a causal effect.'
-      : 'We cannot conclude the treatment had a causal effect at the 0.05 significance level.'
-  }`;
+  // Find unique time periods to determine before/after
+  const times = new Set<number>();
+  for (const row of rows) {
+    const timeVal = row[time];
+    if (typeof timeVal === 'number') {
+      times.add(timeVal);
+    }
+  }
+  const sortedTimes = Array.from(times).sort((a, b) => a - b);
+  const midpoint = sortedTimes[Math.floor(sortedTimes.length / 2)] ?? 0;
+
+  for (const row of rows) {
+    const timeVal = row[time];
+    const treatedVal = row[treated];
+    const yVal = row[y];
+
+    if (typeof yVal !== 'number') continue;
+    if (typeof timeVal !== 'number') continue;
+
+    const isTreated = Boolean(treatedVal);
+    const isBefore = timeVal < midpoint;
+
+    if (isTreated && isBefore) {
+      treatmentBefore.push(yVal);
+    } else if (isTreated && !isBefore) {
+      treatmentAfter.push(yVal);
+    } else if (!isTreated && isBefore) {
+      controlBefore.push(yVal);
+    } else if (!isTreated && !isBefore) {
+      controlAfter.push(yVal);
+    }
+
+    timePeriods.push(timeVal);
+  }
+
+  return {
+    treatmentBefore,
+    treatmentAfter,
+    controlBefore,
+    controlAfter,
+    timePeriods: Array.from(new Set(timePeriods)).sort((a, b) => a - b),
+  };
+}
+
+/**
+ * Check parallel trends assumption
+ * Compares pre-treatment trends between treatment and control groups
+ * Domain rule: Parallel Trends Assumption - DiD requires treatment and control groups have same counterfactual trend
+ */
+function checkParallelTrends(
+  treatmentBefore: number[],
+  controlBefore: number[]
+): { assumption: string; pretreatmentTrend: number; warning?: string } {
+  if (treatmentBefore.length < 2 || controlBefore.length < 2) {
+    return {
+      assumption: 'Cannot assess - insufficient pre-treatment periods',
+      pretreatmentTrend: 0,
+      warning: 'Need at least 2 pre-treatment observations per group',
+    };
+  }
+
+  // Calculate pre-treatment trends (simple approach: difference in means over time)
+  const treatmentTrend = treatmentBefore[treatmentBefore.length - 1]! - treatmentBefore[0]!;
+  const controlTrend = controlBefore[controlBefore.length - 1]! - controlBefore[0]!;
+  const trendDifference = Math.abs(treatmentTrend - controlTrend);
+
+  const assumption =
+    trendDifference < 0.1 * Math.abs(controlTrend)
+      ? 'Parallel trends assumption appears satisfied'
+      : 'Parallel trends assumption may be violated';
+
+  const warning =
+    trendDifference >= 0.1 * Math.abs(controlTrend)
+      ? 'Pre-treatment trends differ between groups - DiD estimate may be biased'
+      : undefined;
+
+  return {
+    assumption,
+    pretreatmentTrend: trendDifference,
+    warning,
+  };
 }
 
 /**
  * Validate input data
  */
 function validateInput(
-  treatmentBefore: number[],
-  treatmentAfter: number[],
-  controlBefore: number[],
-  controlAfter: number[]
+  rows: Array<Record<string, number | string | boolean>>,
+  unit: string,
+  time: string,
+  treated: string,
+  y: string
 ): void {
-  if (!Array.isArray(treatmentBefore) || treatmentBefore.length === 0) {
-    throw new Error('treatmentBefore must be a non-empty array');
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error('rows must be a non-empty array');
   }
 
-  if (!Array.isArray(treatmentAfter) || treatmentAfter.length === 0) {
-    throw new Error('treatmentAfter must be a non-empty array');
+  if (typeof unit !== 'string' || unit.length === 0) {
+    throw new Error('unit must be a non-empty string');
   }
 
-  if (!Array.isArray(controlBefore) || controlBefore.length === 0) {
-    throw new Error('controlBefore must be a non-empty array');
+  if (typeof time !== 'string' || time.length === 0) {
+    throw new Error('time must be a non-empty string');
   }
 
-  if (!Array.isArray(controlAfter) || controlAfter.length === 0) {
-    throw new Error('controlAfter must be a non-empty array');
+  if (typeof treated !== 'string' || treated.length === 0) {
+    throw new Error('treated must be a non-empty string');
   }
 
-  const allValues = [...treatmentBefore, ...treatmentAfter, ...controlBefore, ...controlAfter];
+  if (typeof y !== 'string' || y.length === 0) {
+    throw new Error('y must be a non-empty string');
+  }
 
-  if (!allValues.every((val) => typeof val === 'number' && Number.isFinite(val))) {
-    throw new Error('All values must be finite numbers');
+  // Check that required fields exist in at least one row
+  const hasFields = rows.some(
+    (row) =>
+      row[unit] !== undefined &&
+      row[time] !== undefined &&
+      row[treated] !== undefined &&
+      row[y] !== undefined
+  );
+
+  if (!hasFields) {
+    throw new Error('rows must contain the specified fields: unit, time, treated, y');
   }
 }
 
@@ -233,50 +341,71 @@ function validateInput(
  */
 export const diffInDiffTool = tool({
   description:
-    'Estimate the causal effect of a treatment using difference-in-differences (DiD) methodology. Compares changes over time between treatment and control groups to isolate the treatment effect. Returns effect size, statistical significance, and interpretation.',
+    'Estimate the causal effect of a treatment using difference-in-differences (DiD) methodology. Takes panel data with unit identifiers, time periods, treatment indicators, and outcomes. Compares changes over time between treatment and control groups to isolate the treatment effect. Includes parallel trends assumption check.',
   inputSchema: jsonSchema<DiffInDiffInput>({
     type: 'object',
     properties: {
-      treatmentBefore: {
+      rows: {
         type: 'array',
-        items: { type: 'number' },
-        description: 'Outcome values for treatment group before intervention',
+        items: { type: 'object' },
+        description:
+          'Panel data rows (each row is an observation with unit, time, treatment, and outcome)',
       },
-      treatmentAfter: {
-        type: 'array',
-        items: { type: 'number' },
-        description: 'Outcome values for treatment group after intervention',
+      unit: {
+        type: 'string',
+        description: 'Name of the field containing unit identifiers (e.g., "state", "firm_id")',
       },
-      controlBefore: {
-        type: 'array',
-        items: { type: 'number' },
-        description: 'Outcome values for control group before intervention',
+      time: {
+        type: 'string',
+        description: 'Name of the field containing time period (e.g., "year", "quarter")',
       },
-      controlAfter: {
-        type: 'array',
-        items: { type: 'number' },
-        description: 'Outcome values for control group after intervention',
+      treated: {
+        type: 'string',
+        description:
+          'Name of the field indicating treatment status (e.g., "treated", "intervention")',
+      },
+      y: {
+        type: 'string',
+        description:
+          'Name of the field containing the outcome variable (e.g., "revenue", "employment")',
       },
       confidenceLevel: {
         type: 'number',
         description: 'Confidence level for interval (default: 0.95)',
       },
     },
-    required: ['treatmentBefore', 'treatmentAfter', 'controlBefore', 'controlAfter'],
+    required: ['rows', 'unit', 'time', 'treated', 'y'],
     additionalProperties: false,
   }),
-  async execute({
-    treatmentBefore,
-    treatmentAfter,
-    controlBefore,
-    controlAfter,
-    confidenceLevel = 0.95,
-  }): Promise<DiffInDiffResult> {
+  async execute({ rows, unit, time, treated, y, confidenceLevel = 0.95 }): Promise<DiDEstimate> {
     // Validate inputs
-    validateInput(treatmentBefore, treatmentAfter, controlBefore, controlAfter);
+    validateInput(rows, unit, time, treated, y);
 
     if (confidenceLevel <= 0 || confidenceLevel >= 1) {
       throw new Error('confidenceLevel must be between 0 and 1 (exclusive)');
+    }
+
+    // Parse panel data into groups
+    const { treatmentBefore, treatmentAfter, controlBefore, controlAfter } = parsePanelData(
+      rows,
+      unit,
+      time,
+      treated,
+      y
+    );
+
+    // Validate that we have data in all groups
+    if (treatmentBefore.length === 0) {
+      throw new Error('No observations found for treatment group before period');
+    }
+    if (treatmentAfter.length === 0) {
+      throw new Error('No observations found for treatment group after period');
+    }
+    if (controlBefore.length === 0) {
+      throw new Error('No observations found for control group before period');
+    }
+    if (controlAfter.length === 0) {
+      throw new Error('No observations found for control group after period');
     }
 
     // Calculate group means
@@ -290,6 +419,7 @@ export const diffInDiffTool = tool({
     const controlDiff = meanCA - meanCB;
 
     // Calculate DiD estimator
+    // Domain rule: Difference-in-Differences Estimator - DiD = (Y_T,after - Y_T,before) - (Y_C,after - Y_C,before) isolates treatment effect
     // DiD = (T_after - T_before) - (C_after - C_before)
     const effect = treatmentDiff - controlDiff;
 
@@ -328,8 +458,8 @@ export const diffInDiffTool = tool({
       level: confidenceLevel,
     };
 
-    // Generate interpretation
-    const interpretation = generateInterpretation(effect, significant, pValue);
+    // Check parallel trends assumption
+    const parallelTrends = checkParallelTrends(treatmentBefore, controlBefore);
 
     return {
       effect,
@@ -338,7 +468,7 @@ export const diffInDiffTool = tool({
       pValue,
       significant,
       confidenceInterval,
-      interpretation,
+      parallelTrends,
       groupMeans: {
         treatmentBefore: meanTB,
         treatmentAfter: meanTA,

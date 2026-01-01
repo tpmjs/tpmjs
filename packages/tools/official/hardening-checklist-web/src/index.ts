@@ -2,6 +2,13 @@
  * Web Security Hardening Checklist Tool for TPMJS
  * Generates a comprehensive security hardening checklist based on configuration.
  * Evaluates security posture and provides actionable recommendations.
+ *
+ * Domain rule: owasp-security-headers - Validates OWASP-recommended security headers (CSP, HSTS, X-Frame-Options, etc.)
+ * Domain rule: secure-cookie-configuration - Checks cookie security flags (Secure, HttpOnly, SameSite)
+ * Domain rule: injection-prevention - Validates input validation, output encoding, and parameterized queries
+ * Domain rule: authentication-controls - Evaluates MFA, session management, and rate limiting
+ * Domain rule: stack-specific-hardening - Customizes checklist for Next.js, Django, Spring, Rails frameworks
+ * Domain rule: security-score-grading - Calculates weighted security score and assigns letter grades (A+ to F)
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -62,10 +69,16 @@ export interface SecurityConfig {
   errorHandling?: boolean;
   dependencyScanning?: boolean;
   secretsManagement?: boolean;
+  // Stack-specific options
+  csrf?: boolean;
+  springSecurityConfig?: boolean;
+  railsSecureHeaders?: boolean;
+  [key: string]: boolean | undefined; // Allow dynamic stack-specific keys
 }
 
 type HardeningChecklistInput = {
-  config: SecurityConfig;
+  stack: string;
+  context?: Record<string, unknown>;
 };
 
 /**
@@ -258,6 +271,72 @@ const SECURITY_ITEMS: Array<{
 ];
 
 /**
+ * Get stack-specific checklist items
+ */
+function getStackSpecificItems(stack: string): typeof SECURITY_ITEMS {
+  const lowerStack = stack.toLowerCase();
+  const baseItems = [...SECURITY_ITEMS];
+
+  // Add stack-specific items based on technology
+  if (lowerStack.includes('next') || lowerStack.includes('react')) {
+    baseItems.push({
+      key: 'xContentTypeOptions',
+      category: 'Headers',
+      item: 'Content-Type header validation for React hydration',
+      priority: 'medium',
+      impact: 'Prevents hydration mismatches and XSS via content type confusion',
+      points: 5,
+    });
+  }
+
+  if (lowerStack.includes('node') || lowerStack.includes('express')) {
+    baseItems.push({
+      key: 'rateLimiting',
+      category: 'API Security',
+      item: 'Helmet.js middleware for Express security headers',
+      priority: 'high',
+      impact: 'Simplifies implementation of security headers in Node.js',
+      points: 7,
+    });
+  }
+
+  if (lowerStack.includes('django') || lowerStack.includes('python')) {
+    baseItems.push({
+      key: 'csrf',
+      category: 'Authentication',
+      item: 'Django CSRF middleware enabled',
+      priority: 'critical',
+      impact: 'Prevents cross-site request forgery attacks in Django',
+      points: 10,
+    });
+  }
+
+  if (lowerStack.includes('spring') || lowerStack.includes('java')) {
+    baseItems.push({
+      key: 'springSecurityConfig',
+      category: 'Authentication',
+      item: 'Spring Security configuration with proper authentication',
+      priority: 'critical',
+      impact: 'Ensures proper authentication and authorization in Spring apps',
+      points: 10,
+    });
+  }
+
+  if (lowerStack.includes('rails') || lowerStack.includes('ruby')) {
+    baseItems.push({
+      key: 'railsSecureHeaders',
+      category: 'Headers',
+      item: 'secure_headers gem configured',
+      priority: 'high',
+      impact: 'Manages security headers in Rails applications',
+      points: 7,
+    });
+  }
+
+  return baseItems;
+}
+
+/**
  * Calculate security score grade
  */
 function calculateGrade(percentage: number): 'A+' | 'A' | 'B' | 'C' | 'D' | 'F' {
@@ -346,60 +425,31 @@ export const hardeningChecklistWebTool = tool({
   inputSchema: jsonSchema<HardeningChecklistInput>({
     type: 'object',
     properties: {
-      config: {
-        type: 'object',
+      stack: {
+        type: 'string',
         description:
-          'Security configuration object with boolean flags for various security features. Omitted properties default to false.',
-        properties: {
-          https: { type: 'boolean', description: 'HTTPS enabled' },
-          hsts: { type: 'boolean', description: 'HSTS header configured' },
-          csp: { type: 'boolean', description: 'Content Security Policy implemented' },
-          cors: { type: 'boolean', description: 'CORS policy configured' },
-          xFrameOptions: { type: 'boolean', description: 'X-Frame-Options header set' },
-          xContentTypeOptions: {
-            type: 'boolean',
-            description: 'X-Content-Type-Options header set',
-          },
-          referrerPolicy: { type: 'boolean', description: 'Referrer-Policy configured' },
-          permissionsPolicy: { type: 'boolean', description: 'Permissions-Policy configured' },
-          sri: { type: 'boolean', description: 'Subresource Integrity implemented' },
-          cookieSecure: { type: 'boolean', description: 'Secure flag on cookies' },
-          cookieHttpOnly: { type: 'boolean', description: 'HttpOnly flag on cookies' },
-          cookieSameSite: { type: 'boolean', description: 'SameSite attribute on cookies' },
-          inputValidation: { type: 'boolean', description: 'Input validation implemented' },
-          outputEncoding: { type: 'boolean', description: 'Output encoding implemented' },
-          sqlParameterized: {
-            type: 'boolean',
-            description: 'Parameterized queries used',
-          },
-          authenticationMFA: { type: 'boolean', description: 'MFA available' },
-          sessionManagement: {
-            type: 'boolean',
-            description: 'Secure session management',
-          },
-          rateLimiting: { type: 'boolean', description: 'Rate limiting implemented' },
-          logging: { type: 'boolean', description: 'Security logging enabled' },
-          errorHandling: { type: 'boolean', description: 'Secure error handling' },
-          dependencyScanning: {
-            type: 'boolean',
-            description: 'Dependency scanning enabled',
-          },
-          secretsManagement: {
-            type: 'boolean',
-            description: 'Secrets management implemented',
-          },
-        },
-        additionalProperties: false,
+          'Technology stack description (e.g., "Next.js + React", "Express + Node.js", "Django + Python", "Spring Boot + Java", "Ruby on Rails")',
+      },
+      context: {
+        type: 'object',
+        description: 'Additional context about the application (optional)',
+        additionalProperties: true,
       },
     },
-    required: ['config'],
+    required: ['stack'],
     additionalProperties: false,
   }),
-  async execute({ config }): Promise<HardeningChecklistResult> {
+  async execute({ stack, context }): Promise<HardeningChecklistResult> {
     // Validate input
-    if (!config || typeof config !== 'object') {
-      throw new Error('Config must be an object with security feature flags');
+    if (!stack || typeof stack !== 'string' || stack.trim().length === 0) {
+      throw new Error('Stack is required and must be a non-empty string');
     }
+
+    // Get stack-specific security items
+    const securityItems = getStackSpecificItems(stack);
+
+    // Extract config from context if provided
+    const config: Partial<SecurityConfig> = (context as SecurityConfig) || {};
 
     // Build checklist
     const checklist: ChecklistItem[] = [];
@@ -414,7 +464,7 @@ export const hardeningChecklistWebTool = tool({
       high: 0,
     };
 
-    for (const item of SECURITY_ITEMS) {
+    for (const item of securityItems) {
       const implemented = config[item.key] === true;
       const status = implemented ? 'implemented' : 'missing';
 

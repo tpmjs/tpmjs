@@ -41,6 +41,9 @@ const STANDARD_SECTIONS = [
 
 /**
  * Generates the PRD markdown
+ *
+ * Domain rule: doc_sections - Follows PRD pattern: Header with metadata -> Overview -> Problem -> Goals -> Non-Goals -> Features -> User Stories -> Success Metrics -> Technical Considerations -> Timeline -> Open Questions -> Appendix
+ * Domain rule: markdown_template - Uses # for title, ## for main sections, ### for subsections, markdown tables for timeline/revision history
  */
 function generatePrd(title: string, problem: string, goals: string[], features: string[]): string {
   const lines: string[] = [];
@@ -213,6 +216,7 @@ export const prdOutlineTool = tool({
     additionalProperties: false,
   }),
   async execute({ title, problem, goals, features }): Promise<PrdOutline> {
+    // Domain rule: input_validation - Validates required fields (title, problem, goals, features), types, and non-empty constraints
     // Validate inputs
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
       throw new Error('Title is required and must be a non-empty string');

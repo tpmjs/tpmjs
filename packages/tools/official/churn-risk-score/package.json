@@ -1,0 +1,69 @@
+{
+  "name": "@tpmjs/churn-risk-score",
+  "version": "0.1.0",
+  "description": "Scores customer churn risk based on usage, engagement, and support signals",
+  "type": "module",
+  "keywords": ["tpmjs", "cx", "churn", "retention", "customer-success", "analytics"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/churn-risk-score"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "cx",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "churnRiskScoreTool",
+        "description": "Scores customer churn risk based on usage, engagement, and support signals. Provides risk score (0-100) with detailed contributing factors and recommendations.",
+        "parameters": [
+          {
+            "name": "customer",
+            "type": "object",
+            "description": "Customer data with activity metrics including usage, engagement, and support interactions",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ChurnRiskScore",
+          "description": "Risk score with contributing factors, risk level, and retention recommendations"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool to identify at-risk customers, prioritize retention efforts, and proactively reduce churn. Ideal for customer success teams and account managers.",
+          "limitations": "Requires comprehensive customer data. Risk scoring is heuristic-based and should be combined with human judgment for critical decisions.",
+          "examples": [
+            "Identify customers at high risk of churning",
+            "Prioritize outreach for retention campaigns",
+            "Monitor customer health scores over time"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

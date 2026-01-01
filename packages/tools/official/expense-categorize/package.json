@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-expense-categorize",
+  "version": "0.1.0",
+  "description": "Categorizes expenses into accounting categories based on description and amount",
+  "type": "module",
+  "keywords": ["tpmjs", "finance", "accounting", "expenses", "categorization"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/expense-categorize"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "finance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "expenseCategoriizeTool",
+        "description": "Categorizes business expenses into standard accounting categories with confidence scores",
+        "parameters": [
+          {
+            "name": "expenses",
+            "type": "array",
+            "description": "Expense entries with description and amount",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "CategorizedExpenses",
+          "description": "Categorized expenses with confidence scores and summary"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

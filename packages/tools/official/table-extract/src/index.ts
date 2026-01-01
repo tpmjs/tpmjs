@@ -3,6 +3,7 @@
  * Extracts HTML tables from web pages and converts them to structured data.
  * Supports tables with <thead> headers or first-row headers.
  *
+ * Domain rule: table_parsing - Uses cheerio library for HTML table element parsing
  * @requires Node.js 18+ (uses native fetch API)
  */
 
@@ -80,17 +81,29 @@ function normalizeHeader(text: string): string {
 }
 
 /**
- * Extracts structured data from a table element
+ * Domain rule: cell_normalization - Normalize cell content (trim, collapse whitespace)
+ */
+function normalizeCellContent(text: string): string {
+  return text.trim().replace(/\s+/g, ' '); // Collapse multiple whitespace to single space
+}
+
+/**
+ * Domain rule: table_parsing - Extract structured data from a table element using cheerio
  */
 function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTable | null {
   const $table = $(table);
 
-  // Extract caption if present
-  const caption = $table.find('caption').first().text().trim() || undefined;
+  // Skip nested tables - only process top-level content
+  // We'll remove nested tables from our processing to avoid duplicate data
+  const $clonedTable = $table.clone();
+  $clonedTable.find('table').remove();
 
-  // Try to find headers in <thead>
+  // Extract caption if present
+  const caption = $clonedTable.find('caption').first().text().trim() || undefined;
+
+  // Domain rule: header_detection - Detect headers from <thead> elements
   let headers: string[] = [];
-  const $thead = $table.find('thead');
+  const $thead = $clonedTable.find('thead');
 
   if ($thead.length > 0) {
     $thead
@@ -98,30 +111,30 @@ function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTa
       .first()
       .find('th, td')
       .each((_, cell) => {
-        headers.push($(cell).text().trim());
+        headers.push(normalizeCellContent($(cell).text()));
       });
   }
 
-  // If no <thead>, check if first row has <th> elements
+  // Domain rule: header_detection - If no <thead>, check if first row has <th> elements
   if (headers.length === 0) {
-    const $firstRow = $table.find('tr').first();
+    const $firstRow = $clonedTable.find('tr').first();
     const $thCells = $firstRow.find('th');
 
     if ($thCells.length > 0) {
       $thCells.each((_, cell) => {
-        headers.push($(cell).text().trim());
+        headers.push(normalizeCellContent($(cell).text()));
       });
     }
   }
 
-  // If still no headers, use first row as headers
-  const $tbody = $table.find('tbody');
-  const $rows = $tbody.length > 0 ? $tbody.find('tr') : $table.find('tr');
+  // Domain rule: header_detection - If still no headers, use first row as headers
+  const $tbody = $clonedTable.find('tbody');
+  const $rows = $tbody.length > 0 ? $tbody.find('tr') : $clonedTable.find('tr');
 
   if (headers.length === 0 && $rows.length > 0) {
     const $firstRow = $rows.first();
     $firstRow.find('td, th').each((i, cell) => {
-      const text = $(cell).text().trim();
+      const text = normalizeCellContent($(cell).text());
       headers.push(text || `column_${i + 1}`);
     });
 
@@ -147,7 +160,7 @@ function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTa
     return normalized || `column_${i + 1}`;
   });
 
-  // Extract data rows
+  // Domain rule: table_parsing - Extract data rows and normalize cell content
   const rows: Array<Record<string, string>> = [];
   $rows.each((_, row) => {
     const $cells = $(row).find('td, th');
@@ -158,7 +171,8 @@ function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTa
     const rowData: Record<string, string> = {};
     $cells.each((i, cell) => {
       const header = normalizedHeaders[i] || `column_${i + 1}`;
-      const value = $(cell).text().trim();
+      // Domain rule: cell_normalization - Normalize each cell's content
+      const value = normalizeCellContent($(cell).text());
       rowData[header] = value;
     });
 
@@ -273,10 +287,10 @@ export const tableExtractTool = tool({
       throw new Error(`Failed to fetch URL ${url}: Unknown network error`);
     }
 
-    // Parse HTML with cheerio
+    // Domain rule: table_parsing - Parse HTML with cheerio library
     const $ = cheerio.load(html);
 
-    // Extract all tables
+    // Domain rule: table_parsing - Extract all table elements and parse structure
     const allTables: StructuredTable[] = [];
     $('table').each((_, table) => {
       const structuredTable = extractTableData($, table as cheerio.Element);

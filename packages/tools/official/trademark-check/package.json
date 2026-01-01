@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-trademark-check",
+  "version": "0.1.0",
+  "description": "Checks proposed names against common trademark patterns and suggests conflicts",
+  "type": "module",
+  "keywords": ["tpmjs", "trademark", "legal", "intellectual-property", "branding"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/trademark-check"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "legal",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "trademarkCheckTool",
+        "description": "Performs preliminary trademark conflict check using phonetic, visual, and conceptual similarity analysis",
+        "parameters": [
+          {
+            "name": "proposedName",
+            "type": "string",
+            "description": "Proposed name to check",
+            "required": true
+          },
+          {
+            "name": "industry",
+            "type": "string",
+            "description": "Industry/class for the mark",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "TrademarkCheck",
+          "description": "Potential conflicts, risk assessment, and recommendations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

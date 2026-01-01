@@ -1,163 +1,269 @@
 /**
  * Coverage Tracker Tool for TPMJS
- * Tracks which tools have been used in a workflow and calculates coverage percentage.
- * Useful for testing workflow completeness and tool utilization.
+ * Tracks coverage across domains, artifacts, and roles for recipe library.
+ *
+ * Domain Rules:
+ * - Must compute coverage by category
+ * - Must identify uncovered areas
+ * - Must provide distribution data (histograms)
  */
 
 import { jsonSchema, tool } from 'ai';
 
 /**
- * Tool usage statistics for a single tool
+ * Represents a recipe with category information
  */
-export interface ToolUsage {
+export interface Recipe {
+  id: string;
   name: string;
-  used: boolean;
-  usageCount: number;
+  category?: string; // e.g., "research", "doc", "web", "agent"
+  domain?: string; // e.g., "marketing", "engineering", "finance"
+  artifact?: string; // e.g., "brief", "report", "workflow"
+  role?: string; // e.g., "analyst", "developer", "manager"
+  [key: string]: unknown;
 }
 
 /**
- * Output interface for coverage tracking
+ * Coverage metrics for a specific category
+ */
+export interface CategoryCoverage {
+  category: string;
+  count: number;
+  percentage: number;
+}
+
+/**
+ * Distribution data (histogram) for a dimension
+ */
+export interface DistributionData {
+  label: string;
+  count: number;
+  percentage: number;
+}
+
+/**
+ * Output interface for coverage tracking (domain rule: detailed coverage)
  */
 export interface CoverageReport {
-  coverage: number;
-  usedCount: number;
-  totalCount: number;
-  unusedTools: string[];
-  usedTools: ToolUsage[];
-  coveragePercent: string;
+  totalRecipes: number;
+  coverageByCategory: CategoryCoverage[]; // domain rule: coverage by category
+  uncoveredCategories: string[]; // domain rule: identify uncovered areas
+  distributions: {
+    // domain rule: provide distribution data (histograms)
+    byCategory: DistributionData[];
+    byDomain: DistributionData[];
+    byArtifact: DistributionData[];
+    byRole: DistributionData[];
+  };
   summary: string;
 }
 
 type CoverageTrackerInput = {
-  availableTools: string[];
-  usedTools: string[];
+  recipes: Recipe[];
+  expectedCategories?: string[]; // Optional list of categories that should be covered
 };
 
 /**
- * Counts occurrences of each tool in the used tools list
+ * Computes distribution histogram for a dimension
  */
-function countToolUsage(usedTools: string[]): Map<string, number> {
+function computeDistribution(recipes: Recipe[], field: keyof Recipe): DistributionData[] {
   const counts = new Map<string, number>();
+  let total = 0;
 
-  for (const tool of usedTools) {
-    counts.set(tool, (counts.get(tool) || 0) + 1);
+  for (const recipe of recipes) {
+    const value = recipe[field];
+    if (typeof value === 'string' && value.trim()) {
+      counts.set(value, (counts.get(value) || 0) + 1);
+      total++;
+    }
   }
 
-  return counts;
+  const distribution: DistributionData[] = [];
+  for (const [label, count] of counts.entries()) {
+    distribution.push({
+      label,
+      count,
+      percentage: total > 0 ? Math.round((count / total) * 1000) / 1000 : 0,
+    });
+  }
+
+  // Sort by count descending
+  distribution.sort((a, b) => b.count - a.count);
+
+  return distribution;
+}
+
+/**
+ * Computes coverage by category (domain rule)
+ */
+function computeCoverageByCategory(
+  recipes: Recipe[],
+  expectedCategories?: string[]
+): {
+  coverageByCategory: CategoryCoverage[];
+  uncoveredCategories: string[];
+} {
+  const categoryCounts = new Map<string, number>();
+
+  // Count recipes in each category
+  for (const recipe of recipes) {
+    if (recipe.category) {
+      categoryCounts.set(recipe.category, (categoryCounts.get(recipe.category) || 0) + 1);
+    }
+  }
+
+  // Build coverage array
+  const coverageByCategory: CategoryCoverage[] = [];
+  const totalRecipes = recipes.length;
+
+  for (const [category, count] of categoryCounts.entries()) {
+    coverageByCategory.push({
+      category,
+      count,
+      percentage: totalRecipes > 0 ? Math.round((count / totalRecipes) * 1000) / 1000 : 0,
+    });
+  }
+
+  // Sort by count descending
+  coverageByCategory.sort((a, b) => b.count - a.count);
+
+  // Identify uncovered categories (domain rule)
+  const uncoveredCategories: string[] = [];
+  if (expectedCategories && expectedCategories.length > 0) {
+    const coveredCategories = new Set(categoryCounts.keys());
+    for (const expected of expectedCategories) {
+      if (!coveredCategories.has(expected)) {
+        uncoveredCategories.push(expected);
+      }
+    }
+  }
+
+  return { coverageByCategory, uncoveredCategories };
 }
 
 /**
  * Coverage Tracker Tool
- * Tracks which tools have been used and calculates coverage metrics
+ * Tracks coverage across categories, domains, and artifacts for recipe library
  */
 export const coverageTrackerTool = tool({
   description:
-    'Tracks which tools have been used in a workflow and calculates coverage percentage. Returns coverage metrics, lists of used/unused tools, and usage counts. Useful for testing workflow completeness and analyzing tool utilization patterns.',
+    'Tracks coverage across categories, domains, artifacts, and roles for a recipe library. Computes coverage by category, identifies uncovered areas, and provides distribution data (histograms) for analysis.',
   inputSchema: jsonSchema<CoverageTrackerInput>({
     type: 'object',
     properties: {
-      availableTools: {
+      recipes: {
         type: 'array',
-        description: 'Array of all available tool names in the workflow',
+        description: 'Array of recipes with category, domain, artifact, and role metadata',
         items: {
-          type: 'string',
-          description: 'Name of an available tool',
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Unique recipe ID',
+            },
+            name: {
+              type: 'string',
+              description: 'Recipe name',
+            },
+            category: {
+              type: 'string',
+              description: 'Recipe category (e.g., "research", "doc", "web", "agent")',
+            },
+            domain: {
+              type: 'string',
+              description: 'Domain (e.g., "marketing", "engineering", "finance")',
+            },
+            artifact: {
+              type: 'string',
+              description: 'Artifact type (e.g., "brief", "report", "workflow")',
+            },
+            role: {
+              type: 'string',
+              description: 'Target role (e.g., "analyst", "developer", "manager")',
+            },
+          },
+          required: ['id', 'name'],
         },
       },
-      usedTools: {
+      expectedCategories: {
         type: 'array',
-        description: 'Array of tool names that were actually used (can include duplicates)',
+        description: 'Optional list of categories that should be covered',
         items: {
           type: 'string',
-          description: 'Name of a used tool',
         },
       },
     },
-    required: ['availableTools', 'usedTools'],
+    required: ['recipes'],
     additionalProperties: false,
   }),
-  async execute({ availableTools, usedTools }): Promise<CoverageReport> {
-    // Validate inputs
-    if (!Array.isArray(availableTools)) {
-      throw new Error('availableTools must be an array of strings');
-    }
-    if (!Array.isArray(usedTools)) {
-      throw new Error('usedTools must be an array of strings');
+  async execute({ recipes, expectedCategories }): Promise<CoverageReport> {
+    // Validate input
+    if (!Array.isArray(recipes)) {
+      throw new Error('Invalid recipes: must be an array');
     }
 
-    // Remove duplicates from available tools and validate
-    const uniqueAvailableTools = Array.from(
-      new Set(availableTools.filter((t) => typeof t === 'string' && t.trim()))
+    if (recipes.length === 0) {
+      return {
+        totalRecipes: 0,
+        coverageByCategory: [],
+        uncoveredCategories: expectedCategories || [],
+        distributions: {
+          byCategory: [],
+          byDomain: [],
+          byArtifact: [],
+          byRole: [],
+        },
+        summary: 'No recipes provided',
+      };
+    }
+
+    // Validate recipe structure
+    for (const recipe of recipes) {
+      if (!recipe.id || !recipe.name) {
+        throw new Error('Invalid recipe: each recipe must have id and name');
+      }
+    }
+
+    // Compute coverage by category (domain rule)
+    const { coverageByCategory, uncoveredCategories } = computeCoverageByCategory(
+      recipes,
+      expectedCategories
     );
 
-    if (uniqueAvailableTools.length === 0) {
-      throw new Error('availableTools must contain at least one valid tool name');
-    }
-
-    // Filter valid used tools
-    const validUsedTools = usedTools.filter((t) => typeof t === 'string' && t.trim());
-
-    // Count usage for each tool
-    const usageCounts = countToolUsage(validUsedTools);
-
-    // Create tool usage list
-    const usedToolsList: ToolUsage[] = [];
-    const unusedTools: string[] = [];
-
-    for (const toolName of uniqueAvailableTools) {
-      const usageCount = usageCounts.get(toolName) || 0;
-
-      if (usageCount > 0) {
-        usedToolsList.push({
-          name: toolName,
-          used: true,
-          usageCount,
-        });
-      } else {
-        unusedTools.push(toolName);
-      }
-    }
-
-    // Sort used tools by usage count (descending)
-    usedToolsList.sort((a, b) => b.usageCount - a.usageCount);
-
-    // Calculate coverage
-    const totalCount = uniqueAvailableTools.length;
-    const usedCount = usedToolsList.length;
-    const coverage = totalCount > 0 ? usedCount / totalCount : 0;
-    const coveragePercent = `${(coverage * 100).toFixed(1)}%`;
-
-    // Identify tools that were used but not in available tools (potential issues)
-    const unknownTools: string[] = [];
-    const availableSet = new Set(uniqueAvailableTools);
-    for (const tool of new Set(validUsedTools)) {
-      if (!availableSet.has(tool)) {
-        unknownTools.push(tool);
-      }
-    }
+    // Compute distributions (domain rule: histograms)
+    const distributions = {
+      byCategory: computeDistribution(recipes, 'category'),
+      byDomain: computeDistribution(recipes, 'domain'),
+      byArtifact: computeDistribution(recipes, 'artifact'),
+      byRole: computeDistribution(recipes, 'role'),
+    };
 
     // Generate summary
-    const summaryParts = [`Coverage: ${coveragePercent} (${usedCount}/${totalCount} tools)`];
+    const totalRecipes = recipes.length;
+    const categoriesCount = coverageByCategory.length;
+    const topCategory = coverageByCategory[0];
 
-    if (unusedTools.length > 0) {
+    const summaryParts = [`Total recipes: ${totalRecipes}`, `Categories: ${categoriesCount}`];
+
+    if (topCategory) {
       summaryParts.push(
-        `Unused: ${unusedTools.slice(0, 3).join(', ')}${unusedTools.length > 3 ? '...' : ''}`
+        `Top category: ${topCategory.category} (${topCategory.count} recipes, ${(topCategory.percentage * 100).toFixed(1)}%)`
       );
     }
 
-    if (unknownTools.length > 0) {
-      summaryParts.push(`Warning: ${unknownTools.length} unknown tool(s) used`);
+    if (uncoveredCategories.length > 0) {
+      summaryParts.push(
+        `Uncovered: ${uncoveredCategories.slice(0, 3).join(', ')}${uncoveredCategories.length > 3 ? '...' : ''}`
+      );
     }
 
     const summary = summaryParts.join(' | ');
 
     return {
-      coverage: Math.round(coverage * 1000) / 1000, // Round to 3 decimal places
-      usedCount,
-      totalCount,
-      unusedTools,
-      usedTools: usedToolsList,
-      coveragePercent,
+      totalRecipes,
+      coverageByCategory,
+      uncoveredCategories,
+      distributions,
       summary,
     };
   },

@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-response-template-suggest",
+  "version": "0.1.0",
+  "description": "Suggests response templates based on ticket category and customer context",
+  "type": "module",
+  "keywords": ["tpmjs", "customer-experience", "ai", "support", "templates", "customer-service"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/response-template-suggest"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "cx",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "responseTemplateSuggestTool",
+        "description": "Suggests response templates based on ticket category and customer context",
+        "parameters": [
+          {
+            "name": "ticket",
+            "type": "object",
+            "description": "Support ticket with subject, description, and category",
+            "required": true
+          },
+          {
+            "name": "customerContext",
+            "type": "object",
+            "description": "Customer history and context including tier, sentiment, past interactions",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "ResponseTemplates",
+          "description": "Suggested response templates ranked by relevance with personalization points"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

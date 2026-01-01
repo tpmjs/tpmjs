@@ -1,0 +1,69 @@
+{
+  "name": "@tpmjs/email-subject-score",
+  "version": "0.1.0",
+  "description": "Score email subject lines for open rate potential based on length, urgency, personalization",
+  "type": "module",
+  "keywords": ["tpmjs", "email", "marketing", "subject-line", "ai"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/email-subject-score"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "marketing",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "emailSubjectScoreTool",
+        "description": "Scores email subject lines for open rate potential based on length, clarity, urgency, curiosity, and personalization. Provides detailed feedback and improvement suggestions.",
+        "parameters": [
+          {
+            "name": "subjects",
+            "type": "string[]",
+            "description": "Array of email subject lines to evaluate",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "SubjectScores",
+          "description": "Detailed scores for each subject line with overall score, criterion breakdown, suggestions, and predicted open rate (low/medium/high)"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool when users need to evaluate and compare email subject lines for effectiveness. Helps optimize email marketing campaigns by scoring subjects on multiple criteria.",
+          "limitations": "Scores are based on best practices and heuristics, not actual A/B testing data. Results are predictive and should be validated with real campaign data.",
+          "examples": [
+            "Score these subject lines: 'New Product Launch' vs 'You won't believe what we just released'",
+            "Evaluate my email subject for open rate potential",
+            "Compare multiple subject lines and recommend the best one"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

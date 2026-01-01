@@ -1,7 +1,6 @@
 /**
  * Config Normalize Tool for TPMJS
- * Normalizes configuration objects by sorting keys, removing null/undefined values,
- * removing empty objects/arrays, and tracking changes made during normalization.
+ * Applies defaults from schema and validates configuration objects.
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -10,19 +9,30 @@ import { jsonSchema, tool } from 'ai';
  * Represents a change made during normalization
  */
 export interface ConfigChange {
-  type: 'removed' | 'sorted' | 'cleaned';
+  type: 'removed' | 'sorted' | 'cleaned' | 'defaultApplied' | 'coerced';
   path: string;
   reason: string;
   oldValue?: unknown;
+  newValue?: unknown;
 }
 
 /**
- * Options for configuration normalization
+ * Schema property definition
  */
-export interface NormalizeOptions {
-  sortKeys?: boolean;
-  removeNulls?: boolean;
-  removeEmpty?: boolean;
+export interface SchemaProperty {
+  type: string;
+  default?: unknown;
+  properties?: Record<string, SchemaProperty>;
+  items?: SchemaProperty;
+}
+
+/**
+ * Configuration schema
+ */
+export interface ConfigSchema {
+  type: string;
+  properties: Record<string, SchemaProperty>;
+  required?: string[];
 }
 
 /**
@@ -31,268 +41,249 @@ export interface NormalizeOptions {
 export interface ConfigNormalizeResult {
   normalized: Record<string, unknown>;
   changes: ConfigChange[];
-  keyCount: number;
-  originalKeyCount: number;
+  valid: boolean;
+  errors: string[];
 }
 
 type ConfigNormalizeInput = {
   config: Record<string, unknown>;
-  options?: NormalizeOptions;
+  schema: ConfigSchema;
 };
 
 /**
- * Default normalization options
+ * Validates a value against a schema property
+ * Domain rule: validation - Validates against schema with type checking
  */
-const DEFAULT_OPTIONS: Required<NormalizeOptions> = {
-  sortKeys: true,
-  removeNulls: true,
-  removeEmpty: true,
-};
+function validateValue(
+  value: unknown,
+  schema: SchemaProperty,
+  path: string,
+  errors: string[]
+): boolean {
+  if (value === undefined) return true;
 
-/**
- * Checks if a value is null or undefined
- */
-function isNullOrUndefined(value: unknown): value is null | undefined {
-  return value === null || value === undefined;
-}
+  const type = schema.type;
 
-/**
- * Checks if a value is an empty object
- */
-function isEmptyObject(value: unknown): boolean {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    !Array.isArray(value) &&
-    Object.keys(value).length === 0
-  );
-}
-
-/**
- * Checks if a value is an empty array
- */
-function isEmptyArray(value: unknown): boolean {
-  return Array.isArray(value) && value.length === 0;
-}
-
-/**
- * Checks if a value should be considered empty based on options
- */
-function isEmpty(value: unknown, options: Required<NormalizeOptions>): boolean {
-  if (options.removeNulls && isNullOrUndefined(value)) {
-    return true;
+  // Domain rule: validation - Type validation for primitives and objects
+  if (type === 'string' && typeof value !== 'string') {
+    errors.push(`${path}: expected string, got ${typeof value}`);
+    return false;
   }
-  if (options.removeEmpty) {
-    return isEmptyObject(value) || isEmptyArray(value);
+  if (type === 'number' && typeof value !== 'number') {
+    errors.push(`${path}: expected number, got ${typeof value}`);
+    return false;
   }
-  return false;
-}
-
-/**
- * Gets the reason why a value is being removed
- */
-function getRemovalReason(value: unknown): string {
-  if (value === null) return 'null value';
-  if (value === undefined) return 'undefined value';
-  if (isEmptyObject(value)) return 'empty object';
-  if (isEmptyArray(value)) return 'empty array';
-  return 'empty value';
-}
-
-/**
- * Counts total keys in a nested object
- */
-function countKeys(obj: unknown): number {
-  if (typeof obj !== 'object' || obj === null) {
-    return 0;
+  if (type === 'boolean' && typeof value !== 'boolean') {
+    errors.push(`${path}: expected boolean, got ${typeof value}`);
+    return false;
+  }
+  if (type === 'array' && !Array.isArray(value)) {
+    errors.push(`${path}: expected array, got ${typeof value}`);
+    return false;
+  }
+  if (type === 'object' && (typeof value !== 'object' || Array.isArray(value) || value === null)) {
+    errors.push(`${path}: expected object, got ${typeof value}`);
+    return false;
   }
 
-  let count = 0;
-
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      count += countKeys(item);
-    }
-  } else {
-    const keys = Object.keys(obj);
-    count += keys.length;
-
-    for (const key of keys) {
-      count += countKeys((obj as Record<string, unknown>)[key]);
+  // Validate nested objects
+  if (type === 'object' && schema.properties) {
+    for (const [key, propSchema] of Object.entries(schema.properties)) {
+      const propValue = (value as Record<string, unknown>)[key];
+      validateValue(propValue, propSchema, `${path}.${key}`, errors);
     }
   }
 
-  return count;
+  // Validate array items
+  if (type === 'array' && schema.items && Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      validateValue(value[i], schema.items, `${path}[${i}]`, errors);
+    }
+  }
+
+  return errors.length === 0;
 }
 
 /**
- * Normalizes a configuration object recursively
+ * Coerces a value to the expected type if safe
+ * Domain rule: coercion - Coerces types where safe (string to number, string to boolean, etc.)
  */
-function normalizeConfig(
-  config: unknown,
-  options: Required<NormalizeOptions>,
+function coerceValue(value: unknown, targetType: string): unknown {
+  if (value === null || value === undefined) return value;
+
+  // Domain rule: coercion - String coercion (safe for all types)
+  if (targetType === 'string' && typeof value !== 'string') {
+    return String(value);
+  }
+
+  // Domain rule: coercion - Number coercion from string (only if valid number)
+  if (targetType === 'number' && typeof value === 'string') {
+    const num = Number(value);
+    if (!Number.isNaN(num)) return num;
+  }
+
+  // Domain rule: coercion - Boolean coercion from string ('true'/'false') or number
+  if (targetType === 'boolean') {
+    if (typeof value === 'string') {
+      if (value.toLowerCase() === 'true') return true;
+      if (value.toLowerCase() === 'false') return false;
+    }
+    if (typeof value === 'number') {
+      return value !== 0;
+    }
+  }
+
+  return value;
+}
+
+/**
+ * Applies defaults and coercion from schema to config
+ * Domain rule: defaults - Applies default values from schema for missing properties
+ * Domain rule: coercion - Coerces types where safe
+ */
+function applyDefaults(
+  config: Record<string, unknown>,
+  schema: ConfigSchema,
   changes: ConfigChange[],
   path = ''
-): unknown {
-  // Handle null/undefined
-  if (isNullOrUndefined(config)) {
-    return config;
-  }
+): Record<string, unknown> {
+  const result: Record<string, unknown> = { ...config };
 
-  // Handle arrays
-  if (Array.isArray(config)) {
-    const normalized: unknown[] = [];
+  // Domain rule: defaults - Apply defaults for missing properties
+  for (const [key, propSchema] of Object.entries(schema.properties)) {
+    const valuePath = path ? `${path}.${key}` : key;
+    const currentValue = result[key];
 
-    for (let i = 0; i < config.length; i++) {
-      const item = config[i];
-      const itemPath = `${path}[${i}]`;
-
-      if (isEmpty(item, options)) {
-        changes.push({
-          type: 'removed',
-          path: itemPath,
-          reason: getRemovalReason(item),
-          oldValue: item,
-        });
-        continue;
-      }
-
-      normalized.push(normalizeConfig(item, options, changes, itemPath));
+    // Domain rule: defaults - Apply default if missing
+    if (currentValue === undefined && propSchema.default !== undefined) {
+      result[key] = propSchema.default;
+      changes.push({
+        type: 'defaultApplied',
+        path: valuePath,
+        reason: 'applied default value from schema',
+        newValue: propSchema.default,
+      });
+      continue;
     }
 
-    return normalized;
-  }
-
-  // Handle objects
-  if (typeof config === 'object') {
-    const obj = config as Record<string, unknown>;
-    const keys = Object.keys(obj);
-
-    // Sort keys if requested
-    const sortedKeys = options.sortKeys ? keys.sort() : keys;
-
-    // Track if keys were reordered
-    if (options.sortKeys && keys.length > 1) {
-      const wasReordered = sortedKeys.some((key, index) => keys[index] !== key);
-      if (wasReordered) {
+    // Domain rule: coercion - Coerce type if safe (e.g., "123" -> 123, "true" -> true)
+    if (currentValue !== undefined) {
+      const coerced = coerceValue(currentValue, propSchema.type);
+      if (coerced !== currentValue) {
+        result[key] = coerced;
         changes.push({
-          type: 'sorted',
-          path: path || 'root',
-          reason: 'keys sorted alphabetically',
-        });
-      }
-    }
-
-    const normalized: Record<string, unknown> = {};
-
-    for (const key of sortedKeys) {
-      const value = obj[key];
-      const valuePath = path ? `${path}.${key}` : key;
-
-      // Remove empty values if requested
-      if (isEmpty(value, options)) {
-        changes.push({
-          type: 'removed',
+          type: 'coerced',
           path: valuePath,
-          reason: getRemovalReason(value),
-          oldValue: value,
+          reason: `coerced to ${propSchema.type}`,
+          oldValue: currentValue,
+          newValue: coerced,
         });
-        continue;
       }
-
-      // Recursively normalize nested objects
-      const normalizedValue = normalizeConfig(value, options, changes, valuePath);
-
-      // After normalization, check again if it became empty
-      if (isEmpty(normalizedValue, options)) {
-        changes.push({
-          type: 'cleaned',
-          path: valuePath,
-          reason: 'became empty after normalization',
-          oldValue: value,
-        });
-        continue;
-      }
-
-      normalized[key] = normalizedValue;
     }
 
-    return normalized;
+    // Recursively apply defaults for nested objects
+    if (propSchema.type === 'object' && propSchema.properties && result[key]) {
+      const nestedSchema: ConfigSchema = {
+        type: 'object',
+        properties: propSchema.properties,
+      };
+      result[key] = applyDefaults(
+        result[key] as Record<string, unknown>,
+        nestedSchema,
+        changes,
+        valuePath
+      );
+    }
   }
 
-  // Return primitives as-is
-  return config;
+  return result;
 }
 
 /**
  * Config Normalize Tool
- * Normalizes configuration objects with various options
+ * Applies defaults from schema and validates configuration objects
  */
 export const configNormalize = tool({
   description:
-    'Normalize configuration objects by sorting keys alphabetically, removing null/undefined values, and removing empty objects/arrays. Returns the normalized config along with a list of changes made and key counts.',
+    'Applies defaults and coercions to config objects based on a schema. Validates the config against the schema and returns normalized config with changes and validation results.',
   inputSchema: jsonSchema<ConfigNormalizeInput>({
     type: 'object',
     properties: {
       config: {
         type: 'object',
-        description: 'The configuration object to normalize',
+        description: 'Raw configuration object to normalize',
       },
-      options: {
+      schema: {
         type: 'object',
-        description: 'Normalization options',
+        description: 'Schema with defaults and type definitions',
         properties: {
-          sortKeys: {
-            type: 'boolean',
-            description: 'Sort object keys alphabetically (default: true)',
+          type: {
+            type: 'string',
+            description: 'Schema type (should be "object")',
           },
-          removeNulls: {
-            type: 'boolean',
-            description: 'Remove null and undefined values (default: true)',
+          properties: {
+            type: 'object',
+            description: 'Property definitions with types and defaults',
           },
-          removeEmpty: {
-            type: 'boolean',
-            description: 'Remove empty objects and arrays (default: true)',
+          required: {
+            type: 'array',
+            description: 'List of required property names',
+            items: {
+              type: 'string',
+            },
           },
         },
-        additionalProperties: false,
+        required: ['type', 'properties'],
       },
     },
-    required: ['config'],
+    required: ['config', 'schema'],
     additionalProperties: false,
   }),
-  async execute({ config, options = {} }): Promise<ConfigNormalizeResult> {
-    // Validate input
+  async execute({ config, schema }): Promise<ConfigNormalizeResult> {
+    // Validate inputs
     if (!config || typeof config !== 'object' || Array.isArray(config)) {
       throw new Error('config must be a non-null object (not an array)');
     }
 
-    // Merge with default options
-    const normalizeOptions: Required<NormalizeOptions> = {
-      ...DEFAULT_OPTIONS,
-      ...options,
-    };
+    if (!schema || typeof schema !== 'object') {
+      throw new Error('schema must be an object');
+    }
 
-    // Count original keys
-    const originalKeyCount = countKeys(config);
+    if (!schema.properties || typeof schema.properties !== 'object') {
+      throw new Error('schema.properties must be an object');
+    }
 
     // Track changes
     const changes: ConfigChange[] = [];
 
-    // Normalize the config
-    const normalized = normalizeConfig(config, normalizeOptions, changes) as Record<
-      string,
-      unknown
-    >;
+    // Apply defaults and coerce types
+    const normalized = applyDefaults(config, schema, changes);
 
-    // Count normalized keys
-    const keyCount = countKeys(normalized);
+    // Validate against schema
+    const errors: string[] = [];
+
+    // Check required fields
+    if (schema.required) {
+      for (const requiredKey of schema.required) {
+        if (normalized[requiredKey] === undefined) {
+          errors.push(`Missing required field: ${requiredKey}`);
+        }
+      }
+    }
+
+    // Validate all properties
+    for (const [key, value] of Object.entries(normalized)) {
+      const propSchema = schema.properties[key];
+      if (propSchema) {
+        validateValue(value, propSchema, key, errors);
+      }
+    }
 
     return {
       normalized,
       changes,
-      keyCount,
-      originalKeyCount,
+      valid: errors.length === 0,
+      errors,
     };
   },
 });

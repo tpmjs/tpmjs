@@ -16,7 +16,7 @@ if (typeof globalThis.fetch !== 'function') {
 /**
  * Output interface for the fetch text result
  */
-export interface FetchTextResult {
+export interface FetchResult {
   text: string;
   url: string;
   contentLength: number;
@@ -31,6 +31,8 @@ export interface FetchTextResult {
 
 type FetchTextInput = {
   url: string;
+  maxBytes?: number;
+  timeoutMs?: number;
 };
 
 /**
@@ -91,11 +93,19 @@ export const fetchTextTool = tool({
         type: 'string',
         description: 'The URL to fetch (must be http or https)',
       },
+      maxBytes: {
+        type: 'number',
+        description: 'Maximum bytes to read from response (default: unlimited)',
+      },
+      timeoutMs: {
+        type: 'number',
+        description: 'Request timeout in milliseconds (default: 30000)',
+      },
     },
     required: ['url'],
     additionalProperties: false,
   }),
-  async execute({ url }): Promise<FetchTextResult> {
+  async execute({ url, maxBytes, timeoutMs }): Promise<FetchResult> {
     // Validate URL
     if (!url || typeof url !== 'string') {
       throw new Error('URL is required and must be a string');
@@ -105,11 +115,17 @@ export const fetchTextTool = tool({
       throw new Error(`Invalid URL: ${url}. Must be a valid http or https URL.`);
     }
 
+    // Use configurable timeout (default 30s)
+    const timeout = timeoutMs && timeoutMs > 0 ? timeoutMs : 30000;
+
+    // Use configurable max bytes (default 5MB)
+    const maxBytesLimit = maxBytes && maxBytes > 0 ? maxBytes : 5 * 1024 * 1024;
+
     // Fetch the page with timeout
     let response: Response;
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       response = await fetch(url, {
         headers: {
@@ -127,7 +143,7 @@ export const fetchTextTool = tool({
     } catch (error) {
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          throw new Error(`Request to ${url} timed out after 30 seconds`);
+          throw new Error(`Request to ${url} timed out after ${timeout}ms`);
         }
         if (error.message.includes('ENOTFOUND') || error.message.includes('getaddrinfo')) {
           throw new Error(`DNS resolution failed for ${url}. Check the domain name.`);
@@ -148,8 +164,39 @@ export const fetchTextTool = tool({
     // Get content type
     const contentType = response.headers.get('content-type') || 'unknown';
 
-    // Get response text
-    const rawText = await response.text();
+    // Get response text, limiting by maxBytes (default 5MB)
+    let rawText: string;
+    if (maxBytesLimit > 0) {
+      // Read response as stream and limit to maxBytes
+      const reader = response.body?.getReader();
+      if (!reader) {
+        rawText = await response.text();
+      } else {
+        const chunks: Uint8Array[] = [];
+        let totalBytes = 0;
+        const decoder = new TextDecoder();
+
+        while (totalBytes < maxBytesLimit) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          totalBytes += value.length;
+        }
+
+        // Cancel the stream if we hit the limit
+        if (totalBytes >= maxBytesLimit) {
+          await reader.cancel();
+        }
+
+        rawText = chunks.map((chunk) => decoder.decode(chunk, { stream: true })).join('');
+        // Truncate to exactly maxBytesLimit if we went over
+        if (rawText.length > maxBytesLimit) {
+          rawText = rawText.slice(0, maxBytesLimit);
+        }
+      }
+    } else {
+      rawText = await response.text();
+    }
 
     // Strip HTML tags if content is HTML
     let text: string;
@@ -162,7 +209,7 @@ export const fetchTextTool = tool({
     const contentLength = rawText.length;
 
     // Build result
-    const result: FetchTextResult = {
+    const result: FetchResult = {
       text,
       url,
       contentLength,

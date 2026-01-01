@@ -2,6 +2,10 @@
  * CSP Compose Tool for TPMJS
  * Composes Content Security Policy headers from directive configurations.
  * Validates directives and checks for strict CSP patterns.
+ *
+ * Domain rule: csp-validation - Validates CSP directives against W3C Content Security Policy spec
+ * Domain rule: xss-protection-detection - Detects unsafe CSP patterns ('unsafe-inline', 'unsafe-eval', wildcards)
+ * Domain rule: nonce-hash-verification - Verifies strict CSP usage with nonces/hashes for script sources
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -20,7 +24,7 @@ export interface CSPResult {
 }
 
 type CSPComposeInput = {
-  policies: Record<string, string[]>;
+  allow: Record<string, string[]>;
 };
 
 /**
@@ -168,10 +172,10 @@ export const cspComposeTool = tool({
   inputSchema: jsonSchema<CSPComposeInput>({
     type: 'object',
     properties: {
-      policies: {
+      allow: {
         type: 'object',
         description:
-          'CSP directives mapped to arrays of source values. Example: { "default-src": ["\'self\'"], "script-src": ["\'nonce-abc123\'", "https://cdn.example.com"] }',
+          'CSP directives mapped to arrays of allowed source values. Example: { "default-src": ["\'self\'"], "script-src": ["\'nonce-abc123\'", "https://cdn.example.com"] }',
         additionalProperties: {
           type: 'array',
           items: {
@@ -180,18 +184,21 @@ export const cspComposeTool = tool({
         },
       },
     },
-    required: ['policies'],
+    required: ['allow'],
     additionalProperties: false,
   }),
-  async execute({ policies }): Promise<CSPResult> {
+  async execute({ allow }): Promise<CSPResult> {
     // Validate input
-    if (!policies || typeof policies !== 'object') {
-      throw new Error('Policies must be an object mapping directives to source arrays');
+    if (!allow || typeof allow !== 'object') {
+      throw new Error('Allow must be an object mapping directives to source arrays');
     }
 
-    if (Object.keys(policies).length === 0) {
+    if (Object.keys(allow).length === 0) {
       throw new Error('At least one CSP directive is required');
     }
+
+    // Rename for consistency with rest of function
+    const policies = allow;
 
     // Validate and build directives
     const directives: Array<{ directive: string; sources: string[] }> = [];

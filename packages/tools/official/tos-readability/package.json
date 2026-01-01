@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/official-tos-readability",
+  "version": "0.1.0",
+  "description": "Analyzes Terms of Service for readability, complexity, and consumer-friendliness",
+  "type": "module",
+  "keywords": ["tpmjs", "legal", "tos", "readability", "analysis"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/tos-readability"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "legal",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "tosReadabilityTool",
+        "description": "Analyzes Terms of Service for readability, complexity, and consumer-friendliness",
+        "parameters": [
+          {
+            "name": "tosText",
+            "type": "string",
+            "description": "Terms of Service text",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "TOSAnalysis",
+          "description": "Readability analysis with scores and recommendations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

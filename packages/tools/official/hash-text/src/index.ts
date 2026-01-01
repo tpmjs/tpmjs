@@ -1,8 +1,12 @@
 /**
  * Hash Text Tool for TPMJS
  * Hash text using various cryptographic algorithms
+ *
+ * Domain rule: cryptographic_hashing - Uses Node.js crypto module for cryptographic hashing
+ * Domain rule: multiple_algorithms - Supports MD5, SHA-1, SHA-256, SHA-512 algorithms
  */
 
+// Domain rule: cryptographic_hashing - Node.js crypto for cryptographic hashing
 import { createHash } from 'node:crypto';
 import { jsonSchema, tool } from 'ai';
 
@@ -66,7 +70,7 @@ export const hashTextTool = tool({
     }
 
     try {
-      // Create hash
+      // Domain rule: cryptographic_hashing - Create hash using Node.js crypto module
       const hash = createHash(algorithm);
       hash.update(text, 'utf8');
       const digest = hash.digest('hex');

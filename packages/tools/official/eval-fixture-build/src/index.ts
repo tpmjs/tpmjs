@@ -1,22 +1,52 @@
 /**
  * Eval Fixture Build Tool for TPMJS
- * Generates structured test fixtures for evaluating AI tool performance.
+ * Converts conversations into eval fixtures with inputs and expected tool calls.
+ *
+ * Domain Rules:
+ * - Must output JSONL-compatible fixtures
+ * - Must follow strict eval schema
+ * - Must extract tool calls from conversations
  */
 
 import { jsonSchema, tool } from 'ai';
 
 /**
- * Represents a single test fixture
+ * Represents a tool call extracted from a conversation
+ */
+export interface ToolCall {
+  tool: string;
+  args: Record<string, unknown>;
+}
+
+/**
+ * Represents a conversation message
+ */
+export interface ConversationMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  toolCalls?: ToolCall[];
+}
+
+/**
+ * Represents a conversation transcript
+ */
+export interface Conversation {
+  id?: string;
+  messages: ConversationMessage[];
+  metadata?: Record<string, unknown>;
+}
+
+/**
+ * Represents a single eval fixture (JSONL-compatible)
  */
 export interface EvalFixture {
   id: string;
-  input: unknown;
-  expectedOutput: unknown;
+  input: string; // User prompt
+  expectedToolCalls: ToolCall[];
   metadata?: {
-    testType?: string;
-    difficulty?: 'easy' | 'medium' | 'hard';
-    tags?: string[];
-    description?: string;
+    conversationId?: string;
+    messageCount?: number;
+    extractedAt?: string;
   };
 }
 
@@ -26,418 +56,190 @@ export interface EvalFixture {
 export interface EvalFixtureResult {
   fixtures: EvalFixture[];
   count: number;
-  format: {
-    inputTypes: string[];
-    outputTypes: string[];
-    complexity: 'simple' | 'moderate' | 'complex';
-  };
-  statistics?: {
-    validFixtures: number;
-    invalidFixtures: number;
-    coverageScore: number;
-  };
-  recommendations?: string[];
+  totalConversations: number;
+  skipped: number;
 }
 
 type EvalFixtureBuildInput = {
-  toolName: string;
-  inputs: unknown[];
-  expectedOutputs: unknown[];
+  conversations: Conversation[];
 };
 
 /**
- * Determines the type of a value for categorization
+ * Extracts tool calls from conversation messages (domain rule)
  */
-function determineType(value: unknown): string {
-  if (value === null) return 'null';
-  if (value === undefined) return 'undefined';
-  if (Array.isArray(value)) return 'array';
-  if (typeof value === 'object') return 'object';
-  if (typeof value === 'string') return 'string';
-  if (typeof value === 'number') return 'number';
-  if (typeof value === 'boolean') return 'boolean';
-  return 'unknown';
+function extractToolCallsFromConversation(conversation: Conversation): {
+  input: string;
+  toolCalls: ToolCall[];
+} | null {
+  const messages = conversation.messages;
+
+  // Find the first user message as input
+  const userMessage = messages.find((m) => m.role === 'user');
+  if (!userMessage) {
+    return null; // No user input found
+  }
+
+  // Extract all tool calls from assistant messages
+  const toolCalls: ToolCall[] = [];
+  for (const message of messages) {
+    if (message.role === 'assistant' && message.toolCalls) {
+      toolCalls.push(...message.toolCalls);
+    }
+  }
+
+  // Skip if no tool calls were made
+  if (toolCalls.length === 0) {
+    return null;
+  }
+
+  return {
+    input: userMessage.content,
+    toolCalls,
+  };
 }
 
 /**
- * Analyzes input complexity
+ * Converts conversations to JSONL-compatible eval fixtures (domain rule)
  */
-function analyzeComplexity(value: unknown): number {
-  const type = determineType(value);
+function buildFixtures(conversations: Conversation[]): {
+  fixtures: EvalFixture[];
+  skipped: number;
+} {
+  const fixtures: EvalFixture[] = [];
+  let skipped = 0;
 
-  if (type === 'null' || type === 'undefined' || type === 'boolean') {
-    return 1;
+  for (let i = 0; i < conversations.length; i++) {
+    const conversation = conversations[i];
+    if (!conversation) continue;
+
+    const extracted = extractToolCallsFromConversation(conversation);
+
+    if (!extracted) {
+      skipped++;
+      continue;
+    }
+
+    const fixtureId = conversation.id || `fixture-${i + 1}`;
+
+    // Build JSONL-compatible fixture (domain rule: strict eval schema)
+    const fixture: EvalFixture = {
+      id: fixtureId,
+      input: extracted.input,
+      expectedToolCalls: extracted.toolCalls,
+      metadata: {
+        conversationId: conversation.id,
+        messageCount: conversation.messages.length,
+        extractedAt: new Date().toISOString(),
+        ...conversation.metadata,
+      },
+    };
+
+    fixtures.push(fixture);
   }
 
-  if (type === 'number' || type === 'string') {
-    return 2;
-  }
-
-  if (type === 'array') {
-    const arr = value as unknown[];
-    if (arr.length === 0) return 2;
-    const avgItemComplexity =
-      arr.reduce((sum: number, item) => sum + analyzeComplexity(item), 0) / arr.length;
-    return 3 + avgItemComplexity;
-  }
-
-  if (type === 'object') {
-    const obj = value as Record<string, unknown>;
-    const keys = Object.keys(obj);
-    if (keys.length === 0) return 2;
-    const avgValueComplexity =
-      keys.reduce((sum: number, key) => sum + analyzeComplexity(obj[key]), 0) / keys.length;
-    return 3 + avgValueComplexity;
-  }
-
-  return 1;
-}
-
-/**
- * Categorizes fixture difficulty based on input/output complexity
- */
-function categorizeFixtureDifficulty(
-  input: unknown,
-  expectedOutput: unknown
-): 'easy' | 'medium' | 'hard' {
-  const inputComplexity = analyzeComplexity(input);
-  const outputComplexity = analyzeComplexity(expectedOutput);
-  const totalComplexity = inputComplexity + outputComplexity;
-
-  if (totalComplexity <= 6) return 'easy';
-  if (totalComplexity <= 12) return 'medium';
-  return 'hard';
-}
-
-/**
- * Infers test type from input/output patterns
- */
-function inferTestType(input: unknown, expectedOutput: unknown): string {
-  const inputType = determineType(input);
-  const outputType = determineType(expectedOutput);
-
-  if (inputType === 'string' && outputType === 'string') {
-    return 'string-transformation';
-  }
-
-  if (inputType === 'string' && outputType === 'object') {
-    return 'parsing';
-  }
-
-  if (inputType === 'object' && outputType === 'string') {
-    return 'serialization';
-  }
-
-  if (inputType === 'array' && outputType === 'array') {
-    return 'array-transformation';
-  }
-
-  if (inputType === 'object' && outputType === 'object') {
-    return 'object-transformation';
-  }
-
-  if (
-    (inputType === 'string' || inputType === 'number') &&
-    (outputType === 'boolean' || outputType === 'number')
-  ) {
-    return 'validation-or-computation';
-  }
-
-  return 'general';
-}
-
-/**
- * Generates tags for a fixture based on its characteristics
- */
-function generateFixtureTags(input: unknown, expectedOutput: unknown): string[] {
-  const tags: string[] = [];
-  const inputType = determineType(input);
-  const outputType = determineType(expectedOutput);
-
-  tags.push(`input:${inputType}`);
-  tags.push(`output:${outputType}`);
-
-  // Add special case tags
-  if (inputType === 'array' && Array.isArray(input)) {
-    if (input.length === 0) tags.push('edge:empty-array');
-    if (input.length > 100) tags.push('scale:large-array');
-  }
-
-  if (inputType === 'string' && typeof input === 'string') {
-    if (input.length === 0) tags.push('edge:empty-string');
-    if (input.length > 1000) tags.push('scale:long-string');
-    if (/^\s+$/.test(input)) tags.push('edge:whitespace-only');
-  }
-
-  if (inputType === 'object' && input !== null && typeof input === 'object') {
-    const keys = Object.keys(input as object);
-    if (keys.length === 0) tags.push('edge:empty-object');
-    if (keys.length > 20) tags.push('scale:large-object');
-  }
-
-  if (inputType === 'number' && typeof input === 'number') {
-    if (input === 0) tags.push('edge:zero');
-    if (input < 0) tags.push('edge:negative');
-    if (!Number.isFinite(input)) tags.push('edge:non-finite');
-  }
-
-  if (input === null) tags.push('edge:null');
-
-  return tags;
-}
-
-/**
- * Validates that a fixture is well-formed
- */
-function validateFixture(
-  input: unknown,
-  expectedOutput: unknown,
-  index: number
-): { valid: boolean; reason?: string } {
-  // Check for undefined (null is allowed)
-  if (input === undefined) {
-    return { valid: false, reason: `Input at index ${index} is undefined` };
-  }
-
-  if (expectedOutput === undefined) {
-    return { valid: false, reason: `Expected output at index ${index} is undefined` };
-  }
-
-  return { valid: true };
-}
-
-/**
- * Calculates coverage score based on fixture diversity
- */
-function calculateCoverageScore(fixtures: EvalFixture[]): number {
-  if (fixtures.length === 0) return 0;
-
-  // Count unique input types
-  const inputTypes = new Set(fixtures.map((f) => determineType(f.input)));
-
-  // Count unique output types
-  const outputTypes = new Set(fixtures.map((f) => determineType(f.expectedOutput)));
-
-  // Count unique difficulty levels
-  const difficulties = new Set(fixtures.map((f) => f.metadata?.difficulty));
-
-  // Count unique test types
-  const testTypes = new Set(fixtures.map((f) => f.metadata?.testType));
-
-  // Calculate diversity scores
-  const inputDiversity = inputTypes.size / 7; // max 7 basic types
-  const outputDiversity = outputTypes.size / 7;
-  const difficultyDiversity = difficulties.size / 3; // easy, medium, hard
-  const testTypeDiversity = Math.min(testTypes.size / 5, 1); // normalize to max 5
-
-  // Weighted average
-  const coverageScore =
-    inputDiversity * 0.25 +
-    outputDiversity * 0.25 +
-    difficultyDiversity * 0.25 +
-    testTypeDiversity * 0.25;
-
-  return Math.round(coverageScore * 100) / 100;
-}
-
-/**
- * Generates recommendations for improving fixture quality
- */
-function generateRecommendations(
-  fixtures: EvalFixture[],
-  statistics: EvalFixtureResult['statistics']
-): string[] {
-  const recommendations: string[] = [];
-
-  if (!statistics) return recommendations;
-
-  // Check fixture count
-  if (fixtures.length < 5) {
-    recommendations.push(
-      `Consider adding more fixtures (current: ${fixtures.length}, recommended: 10+)`
-    );
-  }
-
-  // Check coverage
-  if (statistics.coverageScore < 0.5) {
-    recommendations.push(
-      `Test coverage is low (${Math.round(statistics.coverageScore * 100)}%). Add more diverse test cases.`
-    );
-  }
-
-  // Check difficulty distribution
-  const difficulties = fixtures.map((f) => f.metadata?.difficulty);
-  const hasEasy = difficulties.includes('easy');
-  const hasMedium = difficulties.includes('medium');
-  const hasHard = difficulties.includes('hard');
-
-  if (!hasEasy) recommendations.push('Add simple edge cases (easy difficulty)');
-  if (!hasMedium) recommendations.push('Add moderate complexity cases (medium difficulty)');
-  if (!hasHard) recommendations.push('Add complex scenarios (hard difficulty)');
-
-  // Check for edge cases
-  const tags = fixtures.flatMap((f) => f.metadata?.tags || []);
-  const hasEdgeCases = tags.some((tag) => tag.startsWith('edge:'));
-
-  if (!hasEdgeCases) {
-    recommendations.push('Include edge cases (empty inputs, null values, boundary conditions)');
-  }
-
-  // Check for scale testing
-  const hasScaleTests = tags.some((tag) => tag.startsWith('scale:'));
-  if (!hasScaleTests) {
-    recommendations.push('Add large-scale test cases to verify performance');
-  }
-
-  return recommendations;
+  return { fixtures, skipped };
 }
 
 /**
  * Eval Fixture Build Tool
- * Generates structured test fixtures for tool evaluation
+ * Converts conversations into eval fixtures with inputs and expected tool calls
  */
 export const evalFixtureBuildTool = tool({
   description:
-    'Builds structured evaluation fixtures for testing AI tools. Takes tool inputs and expected outputs, then generates comprehensive test fixtures with metadata, difficulty categorization, and coverage analysis.',
+    'Converts conversation transcripts into evaluation fixtures for testing AI tool usage. Extracts user inputs and tool calls from conversations, outputting JSONL-compatible fixtures with strict schema adherence.',
   inputSchema: jsonSchema<EvalFixtureBuildInput>({
     type: 'object',
     properties: {
-      toolName: {
-        type: 'string',
-        description: 'Name of the tool being tested',
-      },
-      inputs: {
+      conversations: {
         type: 'array',
-        description: 'Array of input test cases (can be any type)',
-        items: {},
-      },
-      expectedOutputs: {
-        type: 'array',
-        description: 'Array of expected outputs corresponding to each input',
-        items: {},
+        description: 'Array of conversation transcripts with messages and tool calls',
+        items: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'Unique conversation ID',
+            },
+            messages: {
+              type: 'array',
+              description: 'Conversation messages',
+              items: {
+                type: 'object',
+                properties: {
+                  role: {
+                    type: 'string',
+                    enum: ['user', 'assistant', 'system'],
+                    description: 'Message role',
+                  },
+                  content: {
+                    type: 'string',
+                    description: 'Message content',
+                  },
+                  toolCalls: {
+                    type: 'array',
+                    description: 'Tool calls made in this message',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        tool: {
+                          type: 'string',
+                          description: 'Tool name',
+                        },
+                        args: {
+                          type: 'object',
+                          description: 'Tool arguments',
+                          additionalProperties: true,
+                        },
+                      },
+                      required: ['tool', 'args'],
+                    },
+                  },
+                },
+                required: ['role', 'content'],
+              },
+            },
+            metadata: {
+              type: 'object',
+              description: 'Conversation metadata',
+            },
+          },
+          required: ['messages'],
+        },
       },
     },
-    required: ['toolName', 'inputs', 'expectedOutputs'],
+    required: ['conversations'],
     additionalProperties: false,
   }),
-  async execute({ toolName, inputs, expectedOutputs }): Promise<EvalFixtureResult> {
-    // Validate inputs
-    if (!toolName || typeof toolName !== 'string' || toolName.trim().length === 0) {
-      throw new Error('Invalid toolName: must be a non-empty string');
+  async execute({ conversations }): Promise<EvalFixtureResult> {
+    // Validate input
+    if (!Array.isArray(conversations)) {
+      throw new Error('Invalid conversations: must be an array');
     }
 
-    if (!Array.isArray(inputs)) {
-      throw new Error('Invalid inputs: must be an array');
-    }
-
-    if (!Array.isArray(expectedOutputs)) {
-      throw new Error('Invalid expectedOutputs: must be an array');
-    }
-
-    if (inputs.length !== expectedOutputs.length) {
-      throw new Error(
-        `Input/output mismatch: inputs has ${inputs.length} items but expectedOutputs has ${expectedOutputs.length} items`
-      );
-    }
-
-    if (inputs.length === 0) {
+    if (conversations.length === 0) {
       return {
         fixtures: [],
         count: 0,
-        format: {
-          inputTypes: [],
-          outputTypes: [],
-          complexity: 'simple',
-        },
-        statistics: {
-          validFixtures: 0,
-          invalidFixtures: 0,
-          coverageScore: 0,
-        },
-        recommendations: ['Provide at least one input/output pair to build fixtures'],
+        totalConversations: 0,
+        skipped: 0,
       };
     }
 
-    // Build fixtures
-    const fixtures: EvalFixture[] = [];
-    const validationErrors: string[] = [];
-    const inputTypes = new Set<string>();
-    const outputTypes = new Set<string>();
-    let totalComplexity = 0;
-
-    for (let i = 0; i < inputs.length; i++) {
-      const input = inputs[i];
-      const expectedOutput = expectedOutputs[i];
-
-      // Validate fixture
-      const validation = validateFixture(input, expectedOutput, i);
-      if (!validation.valid) {
-        validationErrors.push(validation.reason!);
-        continue;
+    // Validate conversation structure
+    for (const conversation of conversations) {
+      if (!conversation.messages || !Array.isArray(conversation.messages)) {
+        throw new Error('Invalid conversation: each conversation must have a messages array');
       }
-
-      // Collect type information
-      const inputType = determineType(input);
-      const outputType = determineType(expectedOutput);
-      inputTypes.add(inputType);
-      outputTypes.add(outputType);
-
-      // Analyze complexity
-      const complexity = analyzeComplexity(input) + analyzeComplexity(expectedOutput);
-      totalComplexity += complexity;
-
-      // Build fixture
-      const fixture: EvalFixture = {
-        id: `${toolName}-fixture-${i + 1}`,
-        input,
-        expectedOutput,
-        metadata: {
-          testType: inferTestType(input, expectedOutput),
-          difficulty: categorizeFixtureDifficulty(input, expectedOutput),
-          tags: generateFixtureTags(input, expectedOutput),
-          description: `Test case ${i + 1} for ${toolName}`,
-        },
-      };
-
-      fixtures.push(fixture);
     }
 
-    // Determine overall complexity
-    const avgComplexity = totalComplexity / Math.max(fixtures.length, 1);
-    let overallComplexity: 'simple' | 'moderate' | 'complex' = 'simple';
-    if (avgComplexity > 12) {
-      overallComplexity = 'complex';
-    } else if (avgComplexity > 6) {
-      overallComplexity = 'moderate';
-    }
-
-    // Calculate statistics
-    const statistics = {
-      validFixtures: fixtures.length,
-      invalidFixtures: validationErrors.length,
-      coverageScore: calculateCoverageScore(fixtures),
-    };
-
-    // Generate recommendations
-    const recommendations = generateRecommendations(fixtures, statistics);
-
-    // Add validation errors to recommendations
-    if (validationErrors.length > 0) {
-      recommendations.unshift(
-        `${validationErrors.length} fixture(s) failed validation: ${validationErrors.join('; ')}`
-      );
-    }
+    // Build fixtures from conversations
+    const { fixtures, skipped } = buildFixtures(conversations);
 
     return {
       fixtures,
       count: fixtures.length,
-      format: {
-        inputTypes: Array.from(inputTypes),
-        outputTypes: Array.from(outputTypes),
-        complexity: overallComplexity,
-      },
-      statistics,
-      recommendations: recommendations.length > 0 ? recommendations : undefined,
+      totalConversations: conversations.length,
+      skipped,
     };
   },
 });

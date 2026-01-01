@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/tools-performance-review-draft",
+  "version": "0.1.0",
+  "description": "Structures performance review from achievements and feedback into formal review format",
+  "type": "module",
+  "keywords": ["tpmjs", "hr", "ai", "performance-review", "feedback", "management"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/performance-review-draft"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "hr",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "performanceReviewDraftTool",
+        "description": "Structures performance reviews with constructive framing and development goals",
+        "parameters": [
+          {
+            "name": "achievements",
+            "type": "array",
+            "description": "Key achievements during review period",
+            "required": true
+          },
+          {
+            "name": "feedback",
+            "type": "array",
+            "description": "Feedback points and areas for improvement",
+            "required": true
+          },
+          {
+            "name": "period",
+            "type": "string",
+            "description": "Review period (Q1, annual, etc.)",
+            "required": true
+          },
+          {
+            "name": "rating",
+            "type": "string",
+            "description": "Performance rating (exceeds/meets/needs-improvement/unacceptable)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "PerformanceReview",
+          "description": "Structured performance review with formatted output"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/official-ratio-analysis",
+  "version": "0.1.0",
+  "description": "Calculates key financial ratios from balance sheet and income statement data",
+  "type": "module",
+  "keywords": ["tpmjs", "finance", "ratios", "analysis", "financial-statements"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/ratio-analysis"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "finance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "ratioAnalysisTool",
+        "description": "Calculates key financial ratios from balance sheet and income statement data",
+        "parameters": [
+          {
+            "name": "financials",
+            "type": "object",
+            "description": "Financial statement data including balance sheet and income statement",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "FinancialRatios",
+          "description": "Calculated ratios with interpretations across liquidity, profitability, leverage, and efficiency"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

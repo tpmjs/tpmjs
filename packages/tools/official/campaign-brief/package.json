@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-campaign-brief",
+  "version": "0.1.0",
+  "description": "Structure marketing campaign briefs with objectives, audience, channels, and KPIs",
+  "type": "module",
+  "keywords": ["tpmjs", "marketing", "campaign", "marketing-brief"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/campaign-brief"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "marketing",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "campaignBriefTool",
+        "description": "Structure marketing campaign briefs with objectives, audience, channels, and KPIs",
+        "parameters": [
+          {
+            "name": "campaignGoal",
+            "type": "string",
+            "description": "Primary campaign objective",
+            "required": true
+          },
+          {
+            "name": "product",
+            "type": "string",
+            "description": "Product or service being promoted",
+            "required": true
+          },
+          {
+            "name": "budget",
+            "type": "number",
+            "description": "Campaign budget if known",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "CampaignBrief",
+          "description": "Complete campaign brief with strategy and KPIs"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "^4.0.0"
+  }
+}

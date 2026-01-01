@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-compensation-band",
+  "version": "0.1.0",
+  "description": "Structures compensation data into salary bands with percentiles and benchmarks",
+  "type": "module",
+  "keywords": ["tpmjs", "hr", "ai", "compensation", "salary", "benchmarking"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/compensation-band"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "hr",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "compensationBandTool",
+        "description": "Structures market compensation data into salary bands with percentiles and positioning recommendations",
+        "parameters": [
+          {
+            "name": "role",
+            "type": "string",
+            "description": "Role title",
+            "required": true
+          },
+          {
+            "name": "marketData",
+            "type": "array",
+            "description": "Market compensation data points",
+            "required": true
+          },
+          {
+            "name": "location",
+            "type": "string",
+            "description": "Geographic location",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "CompensationBand",
+          "description": "Structured compensation band with market analysis and recommendations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -38,6 +38,9 @@
     "changeset:publish": "pnpm build && changeset publish",
     "prepare": "node -e \"if (!process.env.CI && !process.env.VERCEL && require('fs').existsSync('.git')) { require('child_process').execSync('lefthook install', {stdio: 'inherit'}) }\""
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["better-sqlite3", "esbuild"]
+  },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@blocksai/cli": "^0.2.1",

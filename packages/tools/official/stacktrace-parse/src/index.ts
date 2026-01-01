@@ -35,6 +35,7 @@ type StackTraceParseInput = {
 
 /**
  * Detects the error type and message from the stack trace
+ * Domain rule: parsing - Extracts error type and message using regex patterns
  */
 function extractErrorInfo(stacktrace: string): {
   errorType: string | null;
@@ -50,7 +51,7 @@ function extractErrorInfo(stacktrace: string): {
     return { errorType: null, errorMessage: null };
   }
 
-  // Common error format: "ErrorType: Error message"
+  // Domain rule: parsing - Common error format pattern: "ErrorType: Error message"
   const errorMatch = firstLine.match(/^(\w+Error):\s*(.+)$/);
   if (errorMatch) {
     return {
@@ -59,7 +60,7 @@ function extractErrorInfo(stacktrace: string): {
     };
   }
 
-  // Just error type: "ErrorType"
+  // Domain rule: parsing - Just error type pattern: "ErrorType"
   if (/^\w+Error$/.test(firstLine)) {
     return {
       errorType: firstLine,
@@ -67,7 +68,7 @@ function extractErrorInfo(stacktrace: string): {
     };
   }
 
-  // Generic format with colon
+  // Domain rule: parsing - Generic format with colon
   const colonMatch = firstLine.match(/^([^:]+):\s*(.+)$/);
   if (colonMatch) {
     return {
@@ -85,9 +86,10 @@ function extractErrorInfo(stacktrace: string): {
 
 /**
  * Detects whether the stack trace is from Node.js or browser
+ * Domain rule: language_support - Supports JavaScript/TypeScript stack traces (Node.js and browser)
  */
 function detectLanguage(stacktrace: string): 'node' | 'browser' | 'unknown' {
-  // Node.js indicators
+  // Domain rule: language_support - Node.js indicators (node_modules, internal/, .js files)
   if (
     /at\s+\w+\s+\([^)]+\)/.test(stacktrace) &&
     (/node_modules/.test(stacktrace) ||
@@ -97,7 +99,7 @@ function detectLanguage(stacktrace: string): 'node' | 'browser' | 'unknown' {
     return 'node';
   }
 
-  // Browser indicators
+  // Domain rule: language_support - Browser indicators (HTTP URLs, webpack)
   if (
     /https?:\/\//.test(stacktrace) ||
     /@https?:\/\//.test(stacktrace) ||
@@ -106,7 +108,7 @@ function detectLanguage(stacktrace: string): 'node' | 'browser' | 'unknown' {
     return 'browser';
   }
 
-  // Check for typical Node.js patterns
+  // Domain rule: language_support - Typical Node.js pattern fallback
   if (/at\s+\w+/.test(stacktrace) && /:\d+:\d+/.test(stacktrace)) {
     return 'node';
   }
@@ -148,6 +150,7 @@ export const stacktraceParse = tool({
     // Detect language/environment
     const language = detectLanguage(stacktrace);
 
+    // Domain rule: parsing - Uses stacktrace-parser library for parsing
     // Parse the stack trace
     let parsedFrames: Array<{
       file: string | null;
@@ -165,7 +168,7 @@ export const stacktraceParse = tool({
       );
     }
 
-    // Convert to our frame format
+    // Domain rule: classification - Converts frames to standard format with file, method, line, column
     const frames: StackFrame[] = parsedFrames.map((frame) => ({
       file: frame.file || null,
       methodName: frame.methodName || null,

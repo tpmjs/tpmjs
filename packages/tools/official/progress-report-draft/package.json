@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-progress-report-draft",
+  "version": "0.1.0",
+  "description": "Drafts student progress reports from grades and observation notes",
+  "type": "module",
+  "keywords": ["tpmjs", "edu", "ai", "progress-report", "student", "education", "grading"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/progress-report-draft"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "edu",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "progressReportDraftTool",
+        "description": "Draft a comprehensive student progress report from grades and teacher observations",
+        "parameters": [
+          {
+            "name": "student",
+            "type": "object",
+            "description": "Student information and grades",
+            "required": true
+          },
+          {
+            "name": "observations",
+            "type": "array",
+            "description": "Teacher observation notes about student behavior and engagement",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ProgressReport",
+          "description": "Complete progress report with academic progress, behavior, and recommendations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -49,6 +49,7 @@ type TestCaseGenerateInput = {
 
 /**
  * Generates test inputs based on parameter type
+ * Domain rule: scenario_generation - Generates happy path and edge cases for different types
  */
 function generateTestInputsForType(
   _paramName: string,
@@ -61,7 +62,7 @@ function generateTestInputsForType(
     description: string;
   }> = [];
 
-  // String types
+  // Domain rule: scenario_generation - String edge cases (empty, whitespace, unicode, length)
   if (type.includes('string')) {
     inputs.push(
       { value: 'test', category: 'normal', description: 'normal string' },
@@ -72,7 +73,7 @@ function generateTestInputsForType(
     );
   }
 
-  // Number types
+  // Domain rule: scenario_generation - Number edge cases (zero, negative, infinity, NaN, precision)
   else if (type.includes('number') || type === 'int' || type === 'float' || type === 'double') {
     inputs.push(
       { value: 42, category: 'normal', description: 'positive integer' },
@@ -85,7 +86,7 @@ function generateTestInputsForType(
     );
   }
 
-  // Boolean types
+  // Domain rule: scenario_generation - Boolean cases (true and false)
   else if (type.includes('boolean') || type === 'bool') {
     inputs.push(
       { value: true, category: 'normal', description: 'true value' },
@@ -93,7 +94,7 @@ function generateTestInputsForType(
     );
   }
 
-  // Array types
+  // Domain rule: scenario_generation - Array edge cases (empty, single element, large size)
   else if (type.includes('array') || type.includes('[]')) {
     inputs.push(
       { value: [1, 2, 3], category: 'normal', description: 'normal array' },
@@ -151,6 +152,8 @@ function generateTestInputsForType(
 
 /**
  * Generates test cases for a function signature
+ * Domain rule: scenario_generation - Generates happy path and edge cases
+ * Domain rule: structure - Includes steps (input) and expected results (expectedBehavior)
  */
 function generateTestCases(
   functionName: string,
@@ -161,7 +164,7 @@ function generateTestCases(
   const edgeCases: TestCase[] = [];
   const coverageAreas: string[] = [];
 
-  // Generate normal cases
+  // Domain rule: scenario_generation - Happy path test case with normal inputs
   const normalInputs: Record<string, unknown> = {};
   for (const param of params) {
     const inputs = generateTestInputsForType(param.name, param.type);
@@ -171,6 +174,7 @@ function generateTestCases(
     }
   }
 
+  // Domain rule: structure - Test case includes name, description, input, expectedBehavior
   testCases.push({
     name: 'should handle valid inputs',
     description: `Test ${functionName} with standard valid inputs`,
@@ -181,7 +185,7 @@ function generateTestCases(
 
   coverageAreas.push('Happy path with valid inputs');
 
-  // Generate edge cases for each parameter
+  // Domain rule: scenario_generation - Generate edge cases for each parameter
   for (const param of params) {
     const inputs = generateTestInputsForType(param.name, param.type);
     const paramEdgeCases = inputs.filter((i) => i.category === 'edge' || i.category === 'error');
@@ -190,6 +194,7 @@ function generateTestCases(
       const testInput = { ...normalInputs, [param.name]: edgeInput.value };
       const isError = edgeInput.category === 'error';
 
+      // Domain rule: structure - Each test case has name, description, input, expectedBehavior
       const testCase: TestCase = {
         name: `should handle ${param.name} as ${edgeInput.description}`,
         description: `Test ${functionName} when ${param.name} is ${edgeInput.description}`,

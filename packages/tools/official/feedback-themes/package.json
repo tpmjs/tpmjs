@@ -1,0 +1,69 @@
+{
+  "name": "@tpmjs/feedback-themes",
+  "version": "0.1.0",
+  "description": "Extracts themes and sentiment from customer feedback text",
+  "type": "module",
+  "keywords": ["tpmjs", "cx", "feedback", "sentiment", "analysis", "customer-success"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/feedback-themes"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "cx",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "feedbackThemesTool",
+        "description": "Extracts themes and sentiment from customer feedback text. Identifies recurring themes, scores sentiment per theme, and provides frequency counts.",
+        "parameters": [
+          {
+            "name": "feedback",
+            "type": "string[]",
+            "description": "Array of customer feedback entries",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "FeedbackThemes",
+          "description": "Themes with sentiment scores, frequency counts, and example feedback"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool to analyze customer feedback, identify common themes, track sentiment trends, and prioritize product improvements based on customer voice.",
+          "limitations": "Sentiment analysis is keyword-based. For complex sentiment, consider using an AI model. Requires sufficient feedback volume for meaningful themes.",
+          "examples": [
+            "Analyze product reviews to identify improvement areas",
+            "Extract themes from NPS survey comments",
+            "Track sentiment trends across feedback channels"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

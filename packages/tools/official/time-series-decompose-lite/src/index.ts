@@ -21,13 +21,15 @@ export interface TimeSeriesDecomposition {
 }
 
 type TimeSeriesDecomposeInput = {
-  data: number[];
+  t: number[];
+  y: number[];
   period: number;
 };
 
 /**
  * Calculate moving average for trend extraction
  * Uses centered moving average with window size = period
+ * Domain rule: Centered Moving Average - Smooths data by averaging values within symmetric window of size m
  */
 function calculateMovingAverage(data: number[], period: number): number[] {
   const n = data.length;
@@ -79,6 +81,7 @@ function calculateMovingAverage(data: number[], period: number): number[] {
 
 /**
  * Extract seasonal component from detrended data
+ * Domain rule: Seasonal Averaging - Computes mean detrended value for each phase of period, then centers to sum to zero
  */
 function extractSeasonalComponent(detrended: number[], period: number): number[] {
   const n = detrended.length;
@@ -100,6 +103,7 @@ function extractSeasonalComponent(detrended: number[], period: number): number[]
   }
 
   // Center the seasonal component (mean = 0)
+  // Domain rule: Seasonal Centering - Ensures seasonal component sums to zero over complete period for identifiability
   const seasonalMean = seasonalAverages.reduce((sum, val) => sum + val, 0) / period;
   const centeredSeasonal = seasonalAverages.map((val) => val - seasonalMean);
 
@@ -146,22 +150,34 @@ function calculateStrengths(
 /**
  * Validate input data
  */
-function validateInput(data: number[], period: number): void {
-  if (!Array.isArray(data) || data.length === 0) {
-    throw new Error('data must be a non-empty array');
+function validateInput(t: number[], y: number[], period: number): void {
+  if (!Array.isArray(t) || t.length === 0) {
+    throw new Error('t (time indices) must be a non-empty array');
   }
 
-  if (!data.every((val) => typeof val === 'number' && Number.isFinite(val))) {
-    throw new Error('data must contain only finite numbers');
+  if (!Array.isArray(y) || y.length === 0) {
+    throw new Error('y (values) must be a non-empty array');
+  }
+
+  if (t.length !== y.length) {
+    throw new Error(`t and y must have the same length (t: ${t.length}, y: ${y.length})`);
+  }
+
+  if (!t.every((val) => typeof val === 'number' && Number.isFinite(val))) {
+    throw new Error('t must contain only finite numbers');
+  }
+
+  if (!y.every((val) => typeof val === 'number' && Number.isFinite(val))) {
+    throw new Error('y must contain only finite numbers');
   }
 
   if (!Number.isInteger(period) || period < 2) {
     throw new Error('period must be an integer >= 2');
   }
 
-  if (data.length < period * 2) {
+  if (y.length < period * 2) {
     throw new Error(
-      `data must have at least ${period * 2} points (2 complete periods) for period=${period}`
+      `y must have at least ${period * 2} points (2 complete periods) for period=${period}`
     );
   }
 }
@@ -177,10 +193,15 @@ export const timeSeriesDecomposeLiteTool = tool({
   inputSchema: jsonSchema<TimeSeriesDecomposeInput>({
     type: 'object',
     properties: {
-      data: {
+      t: {
         type: 'array',
         items: { type: 'number' },
-        description: 'Time series data points in chronological order',
+        description: 'Time indices (e.g., [0, 1, 2, ...] or timestamps)',
+      },
+      y: {
+        type: 'array',
+        items: { type: 'number' },
+        description: 'Values corresponding to each time point',
       },
       period: {
         type: 'number',
@@ -188,18 +209,19 @@ export const timeSeriesDecomposeLiteTool = tool({
           'Seasonal period (e.g., 12 for monthly data with yearly seasonality, 7 for daily data with weekly patterns)',
       },
     },
-    required: ['data', 'period'],
+    required: ['t', 'y', 'period'],
     additionalProperties: false,
   }),
-  async execute({ data, period }): Promise<TimeSeriesDecomposition> {
+  async execute({ t, y, period }): Promise<TimeSeriesDecomposition> {
     // Validate inputs
-    validateInput(data, period);
+    validateInput(t, y, period);
 
     // Step 1: Extract trend using centered moving average
-    const trend = calculateMovingAverage(data, period);
+    const trend = calculateMovingAverage(y, period);
 
     // Step 2: Detrend the data
-    const detrended = data.map((val, i) => {
+    // Domain rule: Additive Decomposition - Data = Trend + Seasonal + Residual (components are summed)
+    const detrended = y.map((val, i) => {
       const trendVal = trend[i];
       return trendVal !== undefined ? val - trendVal : 0;
     });
@@ -208,7 +230,8 @@ export const timeSeriesDecomposeLiteTool = tool({
     const seasonal = extractSeasonalComponent(detrended, period);
 
     // Step 4: Calculate residual (what's left after removing trend and seasonal)
-    const residual = data.map((val, i) => {
+    // Domain rule: Residual Component - Captures random variation not explained by trend or seasonality
+    const residual = y.map((val, i) => {
       const trendVal = trend[i];
       const seasonalVal = seasonal[i];
       if (trendVal === undefined || seasonalVal === undefined) return 0;

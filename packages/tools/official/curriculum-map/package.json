@@ -1,0 +1,75 @@
+{
+  "name": "@tpmjs/tools-curriculum-map",
+  "version": "0.1.0",
+  "description": "Maps curriculum standards to learning activities and assessments",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "edu",
+    "ai",
+    "curriculum",
+    "standards",
+    "education",
+    "teaching",
+    "alignment"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/curriculum-map"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "edu",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "curriculumMapTool",
+        "description": "Create a curriculum map that aligns curriculum standards to learning activities and assessments",
+        "parameters": [
+          {
+            "name": "standards",
+            "type": "array",
+            "description": "Curriculum standards to map",
+            "required": true
+          },
+          {
+            "name": "units",
+            "type": "array",
+            "description": "Course units with activities",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "CurriculumMap",
+          "description": "Complete curriculum map with standards-to-activities mappings and coverage statistics"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

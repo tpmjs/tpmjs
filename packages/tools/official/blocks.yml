@@ -934,13 +934,26 @@ blocks:
       - id: date_handling
         description: "Must parse various date formats to ISO strings"
     inputs:
-      - name: feedUrl
+      - name: url
         type: string
-        description: "The RSS/Atom feed URL to parse"
+        description: "The RSS or Atom feed URL to parse (must be http or https)"
+      - name: limit
+        type: number
+        optional: true
+        description: "Maximum number of items to return (default: 20, max: 100)"
     outputs:
       - name: feed
-        type: RssFeed
-        description: "Parsed feed with normalized items"
+        type: RssFeedMetadata
+        description: "Feed metadata (title, link, description, language)"
+      - name: items
+        type: RssFeedItem[]
+        description: "Array of feed items with title, link, description, pubDate, author"
+      - name: itemCount
+        type: number
+        description: "Number of items returned"
+      - name: metadata
+        type: FeedMetadata
+        description: "Fetch metadata (fetchedAt, feedType, totalItems, limitApplied)"
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.sitemapRead:
@@ -964,23 +977,30 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.robotsPolicy:
-    description: "Fetches and parses robots.txt into structured allow/deny rules and crawl-delay hints"
+    description: "Fetches and parses robots.txt and checks if URLs are allowed for crawling"
     path: "robots-policy"
     domain_rules:
       - id: robots_parsing
-        description: "Must use robots-parser for correct parsing"
+        description: "Must parse robots.txt according to standard format"
       - id: rule_extraction
         description: "Must extract allow, disallow, crawl-delay, and sitemap rules"
       - id: user_agent_matching
         description: "Must support querying rules for specific user agents"
     inputs:
-      - name: origin
+      - name: robotsUrl
         type: string
-        description: "The origin URL (e.g., https://example.com)"
+        description: "URL to the robots.txt file to fetch and parse"
+      - name: testUrl
+        type: string
+        description: "URL to check if allowed or disallowed"
+      - name: userAgent
+        type: string
+        optional: true
+        description: "User agent to check rules for (default: *)"
     outputs:
       - name: policy
         type: RobotsPolicy
-        description: "Structured robots.txt rules"
+        description: "Structured robots.txt rules with allow/disallow result"
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   web.fetchText:
@@ -1049,17 +1069,28 @@ blocks:
       - id: twitter_parsing
         description: "Must parse Twitter Card tags"
     inputs:
-      - name: html
+      - name: url
         type: string
-        description: "The HTML content to parse"
-      - name: baseUrl
-        type: string
-        optional: true
-        description: "Base URL for resolving relative URLs"
+        description: "The URL to extract meta tags from (must be http or https)"
     outputs:
-      - name: meta
-        type: MetaTags
-        description: "Extracted metadata tags"
+      - name: title
+        type: string
+        description: "Page title"
+      - name: description
+        type: string
+        description: "Meta description"
+      - name: canonical
+        type: string
+        description: "Canonical URL"
+      - name: ogTags
+        type: object
+        description: "Open Graph tags as key-value pairs"
+      - name: twitterTags
+        type: object
+        description: "Twitter Card tags as key-value pairs"
+      - name: metadata
+        type: FetchMetadata
+        description: "Fetch metadata (url, fetchedAt, contentType, hasOpenGraph, hasTwitterCard)"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   web.extractJsonLd:
@@ -1073,13 +1104,13 @@ blocks:
       - id: schema_typing
         description: "Must identify schema.org types"
     inputs:
-      - name: html
+      - name: url
         type: string
-        description: "The HTML content to parse"
+        description: "The URL to fetch and extract JSON-LD from"
     outputs:
       - name: jsonLd
-        type: JsonLdResult
-        description: "Extracted and parsed JSON-LD objects"
+        type: JsonLdExtraction
+        description: "Extracted and parsed JSON-LD objects with types and metadata"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   web.linksCatalog:
@@ -1116,17 +1147,17 @@ blocks:
       - id: cell_normalization
         description: "Must normalize cell content (trim, collapse whitespace)"
     inputs:
-      - name: html
+      - name: url
         type: string
-        description: "The HTML content containing tables"
-      - name: selector
-        type: string
+        description: "The URL to fetch and extract tables from"
+      - name: tableIndex
+        type: number
         optional: true
-        description: "CSS selector for specific table (default: first table)"
+        description: "Optional 0-based index to extract specific table"
     outputs:
-      - name: table
-        type: TableData
-        description: "Extracted table with headers and rows"
+      - name: tables
+        type: TableExtraction
+        description: "Extracted tables with headers, rows, and metadata"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   # ---------------------------------------------------------------------------
@@ -1143,17 +1174,23 @@ blocks:
       - id: actionable_output
         description: "Must include clear, actionable recommendations"
     inputs:
-      - name: text
+      - name: content
         type: string
-        description: "The source text to summarize"
-      - name: audience
-        type: string
+        description: "The content to format into an executive brief"
+      - name: maxBullets
+        type: number
         optional: true
-        description: "Target audience (e.g., 'executives', 'technical')"
+        description: "Maximum number of bullet points to include (default: 5)"
     outputs:
       - name: brief
-        type: ExecutiveBrief
-        description: "Structured executive summary"
+        type: string
+        description: "Formatted executive brief in markdown"
+      - name: bulletCount
+        type: number
+        description: "Number of bullet points included"
+      - name: wordCount
+        type: number
+        description: "Word count of the brief"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.runbookDraft:
@@ -1167,13 +1204,36 @@ blocks:
       - id: safety_checks
         description: "Must include safety prechecks and rollback procedures"
     inputs:
-      - name: process
+      - name: title
         type: string
-        description: "Description of the process to document"
+        description: "Title of the runbook"
+      - name: steps
+        type: RunbookStep[]
+        description: "Array of procedure steps with action, optional command, and optional verification"
+      - name: prechecks
+        type: PrecheckItem[]
+        optional: true
+        description: "Optional prechecks to run before starting the procedure"
+      - name: rollback
+        type: RollbackStep[]
+        optional: true
+        description: "Optional rollback steps to revert changes if something goes wrong"
     outputs:
       - name: runbook
-        type: Runbook
-        description: "Structured operational runbook"
+        type: string
+        description: "Formatted runbook in markdown with prechecks, procedure, verification, and rollback sections"
+      - name: stepCount
+        type: number
+        description: "Number of steps in the runbook"
+      - name: hasCommands
+        type: boolean
+        description: "Whether any steps include commands"
+      - name: hasPrechecks
+        type: boolean
+        description: "Whether the runbook includes prechecks"
+      - name: hasRollback
+        type: boolean
+        description: "Whether the runbook includes rollback steps"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.postmortemDraft:
@@ -1187,21 +1247,32 @@ blocks:
       - id: blameless_framing
         description: "Must use blameless language focusing on systems"
     inputs:
-      - name: notes
+      - name: title
         type: string
-        description: "Incident notes and observations"
-      - name: logs
+        description: "Title of the incident"
+      - name: timeline
+        type: TimelineEvent[]
+        description: "Array of timeline events with time and event description"
+      - name: rootCause
         type: string
-        optional: true
-        description: "Relevant log excerpts"
+        description: "Root cause analysis of the incident"
+      - name: actionItems
+        type: string[]
+        description: "Array of action items to prevent recurrence"
     outputs:
       - name: postmortem
-        type: Postmortem
-        description: "Structured postmortem document"
+        type: string
+        description: "Formatted postmortem document in markdown"
+      - name: severity
+        type: string
+        description: "Assessed severity (low, medium, high, critical)"
+      - name: duration
+        type: string
+        description: "Calculated incident duration"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.faqFromText:
-    description: "Builds a FAQ with Q/A pairs from a reference document"
+    description: "Builds a FAQ with Q/A pairs from a reference document, with automatic categorization"
     path: "faq-from-text"
     domain_rules:
       - id: question_generation
@@ -1209,23 +1280,25 @@ blocks:
       - id: answer_extraction
         description: "Must extract concise answers"
       - id: organization
-        description: "Must organize by topic/category if applicable"
+        description: "Must organize by topic/category"
     inputs:
       - name: text
         type: string
-        description: "The reference document"
-      - name: maxItems
-        type: number
-        optional: true
-        description: "Maximum FAQ items to generate"
+        description: "Text containing FAQ-style content with questions and answers"
     outputs:
-      - name: faq
-        type: FAQ
-        description: "Generated FAQ document"
+      - name: faqs
+        type: FaqItem[]
+        description: "Array of extracted question-answer pairs with category"
+      - name: categories
+        type: CategoryGroup[]
+        description: "FAQs grouped by category with counts"
+      - name: count
+        type: number
+        description: "Number of FAQ items extracted"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.glossaryBuild:
-    description: "Extracts domain terms and concise definitions from corpus context"
+    description: "Extracts domain terms and concise definitions from corpus context with malformed input handling"
     path: "glossary-build"
     domain_rules:
       - id: term_extraction
@@ -1234,14 +1307,25 @@ blocks:
         description: "Must generate concise definitions from context"
       - id: deduplication
         description: "Must dedupe terms and merge definitions"
+      - id: malformed_input
+        description: "Must gracefully handle malformed input with warnings"
     inputs:
-      - name: texts
-        type: string[]
-        description: "Array of text documents to analyze"
+      - name: text
+        type: string
+        description: "Text containing term definitions in various formats"
     outputs:
-      - name: glossary
-        type: Glossary
-        description: "Extracted terms with definitions"
+      - name: terms
+        type: GlossaryTerm[]
+        description: "Array of extracted term-definition pairs"
+      - name: count
+        type: number
+        description: "Number of terms extracted"
+      - name: alphabetized
+        type: boolean
+        description: "Whether terms are alphabetically sorted"
+      - name: warnings
+        type: GlossaryWarning[]
+        description: "Warnings for potentially malformed input"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.tocGenerate:
@@ -1257,15 +1341,21 @@ blocks:
     inputs:
       - name: markdown
         type: string
-        description: "The markdown document"
+        description: "The markdown content to generate table of contents from"
       - name: maxDepth
         type: number
         optional: true
-        description: "Maximum heading depth to include"
+        description: "Maximum heading depth to include (1-6, default: 3)"
     outputs:
       - name: toc
-        type: TableOfContents
-        description: "Generated table of contents"
+        type: string
+        description: "Formatted table of contents in markdown"
+      - name: headings
+        type: Heading[]
+        description: "Array of parsed headings with level, text, slug, and line"
+      - name: depth
+        type: DepthInfo
+        description: "Depth statistics (min, max, included count)"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.markdownLintBasic:
@@ -1342,19 +1432,28 @@ blocks:
       - id: consequences_section
         description: "Must document consequences of decision"
     inputs:
+      - name: title
+        type: string
+        description: "Title of the decision (e.g., 'Use PostgreSQL for primary database')"
       - name: context
         type: string
-        description: "The context and problem statement"
-      - name: options
-        type: string[]
-        description: "Options considered"
+        description: "Context and background information that led to this decision"
       - name: decision
         type: string
-        description: "The chosen option"
+        description: "The decision that was made"
+      - name: consequences
+        type: string[]
+        description: "Array of consequences (both positive and negative)"
     outputs:
       - name: adr
-        type: ADR
-        description: "Formatted ADR document"
+        type: string
+        description: "Formatted ADR document in markdown"
+      - name: date
+        type: string
+        description: "Date the ADR was created"
+      - name: status
+        type: string
+        description: "Status of the decision (Accepted)"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.changelogEntry:
@@ -1368,13 +1467,29 @@ blocks:
       - id: keepachangelog_format
         description: "Must output in Keep a Changelog format"
     inputs:
-      - name: items
-        type: string[]
-        description: "List of change descriptions or commit messages"
+      - name: version
+        type: string
+        description: "Version number (e.g., '1.2.0', 'v1.2.0', or 'Unreleased')"
+      - name: changes
+        type: Change[]
+        description: "Array of changes with type (Added/Changed/Fixed/etc) and description"
+      - name: date
+        type: string
+        optional: true
+        description: "Optional date for the release (YYYY-MM-DD), defaults to today"
     outputs:
       - name: entry
-        type: ChangelogEntry
-        description: "Formatted changelog entry"
+        type: string
+        description: "Formatted changelog entry in markdown"
+      - name: date
+        type: string
+        description: "Formatted date string"
+      - name: types
+        type: string[]
+        description: "Array of change types used"
+      - name: version
+        type: string
+        description: "Normalized version string"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.releaseNotes:
@@ -1388,17 +1503,25 @@ blocks:
       - id: breaking_changes
         description: "Must prominently note breaking changes"
     inputs:
-      - name: changes
-        type: string[]
-        description: "List of technical changes"
-      - name: audience
+      - name: version
         type: string
-        optional: true
-        description: "Target audience (customers, developers)"
+        description: "Version number (e.g., '1.2.0', 'v2.0.0-beta.1')"
+      - name: changes
+        type: ReleaseChange[]
+        description: "Array of changes with type (feature/fix/breaking/etc), description, and optional issue"
     outputs:
       - name: notes
-        type: ReleaseNotes
-        description: "User-facing release notes"
+        type: string
+        description: "Formatted release notes in markdown"
+      - name: version
+        type: string
+        description: "Version string"
+      - name: date
+        type: string
+        description: "Release date"
+      - name: summary
+        type: ReleaseSummary
+        description: "Summary with counts by type (features, fixes, breaking, other)"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.prdOutline:
@@ -1412,13 +1535,28 @@ blocks:
       - id: metrics_suggestions
         description: "Must suggest success metrics"
     inputs:
-      - name: feature
+      - name: title
         type: string
-        description: "Feature name and brief description"
+        description: "Title of the product or feature"
+      - name: problem
+        type: string
+        description: "Problem statement describing what needs to be solved"
+      - name: goals
+        type: string[]
+        description: "Array of goals for the product or feature"
+      - name: features
+        type: string[]
+        description: "Array of features to include"
     outputs:
       - name: prd
-        type: PRDOutline
-        description: "PRD document outline"
+        type: string
+        description: "Formatted PRD document in markdown"
+      - name: sections
+        type: string[]
+        description: "List of sections included in the PRD"
+      - name: featureCount
+        type: number
+        description: "Number of features included"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.acceptanceCriteria:
@@ -1432,13 +1570,19 @@ blocks:
       - id: coverage
         description: "Must cover happy path and edge cases"
     inputs:
-      - name: featureText
+      - name: story
         type: string
-        description: "Feature description"
-    outputs:
+        description: "The user story or feature description"
       - name: criteria
-        type: AcceptanceCriteria
-        description: "List of acceptance criteria"
+        type: Criterion[]
+        description: "Array of criteria with given, when, then properties in Gherkin format"
+    outputs:
+      - name: formatted
+        type: string
+        description: "Formatted acceptance criteria in markdown"
+      - name: criteriaCount
+        type: number
+        description: "Number of criteria included"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.testPlanMatrix:
@@ -1452,13 +1596,26 @@ blocks:
       - id: priority_assignment
         description: "Must assign priority levels"
     inputs:
-      - name: requirements
-        type: string
-        description: "Feature requirements to test"
+      - name: features
+        type: string[]
+        description: "List of features to test"
+      - name: testTypes
+        type: string[]
+        description: "List of test types (e.g., unit, integration, e2e, performance)"
+      - name: coverage
+        type: object
+        optional: true
+        description: "Optional coverage mapping. Keys are feature names, values are arrays of test types."
     outputs:
-      - name: testPlan
-        type: TestPlanMatrix
-        description: "Test plan with scenarios matrix"
+      - name: matrix
+        type: MatrixCell[][]
+        description: "2D matrix showing coverage of each feature by each test type"
+      - name: coverage
+        type: CoverageStats[]
+        description: "Coverage statistics for each feature"
+      - name: gaps
+        type: CoverageGap[]
+        description: "Identified gaps where features lack certain test types"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   # ---------------------------------------------------------------------------
@@ -1533,25 +1690,25 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.yamlStringify:
-    description: "Converts JSON to YAML with formatting options"
+    description: "Converts JavaScript data to YAML with formatting options"
     path: "yaml-stringify"
     domain_rules:
       - id: yaml_generation
         description: "Must use yaml library for generation"
       - id: formatting
-        description: "Must support indentation and flow style options"
+        description: "Must support indentation options"
     inputs:
-      - name: json
-        type: object
-        description: "JSON object to convert"
+      - name: data
+        type: any
+        description: "JavaScript data to convert to YAML"
       - name: indent
         type: number
         optional: true
-        description: "Indentation spaces (default: 2)"
+        description: "Indentation spaces (default: 2, range: 1-8)"
     outputs:
       - name: yaml
-        type: string
-        description: "Generated YAML string"
+        type: YamlStringifyResult
+        description: "Generated YAML string with metadata"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.jsonRepair:
@@ -1657,28 +1814,28 @@ blocks:
       - name: rows
         type: object[]
         description: "Array of row objects"
-      - name: key
+      - name: groupBy
         type: string
-        description: "Field to group by"
+        description: "Field to group by (supports dot notation for nested fields)"
       - name: aggregates
         type: object[]
-        description: "Aggregate definitions [{field, op, as}]"
+        description: "Aggregate definitions [{field, operation}]"
     outputs:
       - name: groups
-        type: object[]
-        description: "Grouped rows with aggregates"
+        type: GroupAggregateResult
+        description: "Grouped rows with aggregates and group count"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.rowsJoin:
-    description: "Joins two datasets on keys with inner/left join support"
+    description: "Joins two datasets on keys with inner/left/right/full join support"
     path: "rows-join"
     domain_rules:
       - id: join_types
-        description: "Must support inner and left joins"
+        description: "Must support inner, left, right, and full joins"
       - id: key_matching
         description: "Must build index for efficient matching"
       - id: field_merging
-        description: "Must handle field name conflicts"
+        description: "Must handle field name conflicts with prefixing"
     inputs:
       - name: left
         type: object[]
@@ -1686,52 +1843,55 @@ blocks:
       - name: right
         type: object[]
         description: "Right dataset"
-      - name: "on"
+      - name: leftKey
         type: string
-        description: "Join key field"
-      - name: kind
+        description: "Field name in left array to join on"
+      - name: rightKey
+        type: string
+        description: "Field name in right array to join on"
+      - name: type
         type: string
         optional: true
-        description: "Join type: inner or left (default: inner)"
+        description: "Join type: inner, left, right, or full (default: inner)"
     outputs:
-      - name: joined
-        type: object[]
-        description: "Joined rows"
+      - name: rows
+        type: JoinResult
+        description: "Joined rows with match statistics"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.dedupeByKey:
-    description: "Deduplicates rows by key, optionally keeping best by score/time"
+    description: "Deduplicates rows by key, keeping first or last occurrence"
     path: "dedupe-by-key"
     domain_rules:
       - id: deduplication
         description: "Must use Map for efficient deduplication"
       - id: keep_strategy
-        description: "Must support keeping first, last, max, or min"
+        description: "Must support keeping first or last occurrence"
       - id: key_function
-        description: "Must support simple field or composite key"
+        description: "Must support simple field or composite key with dot notation"
     inputs:
       - name: rows
         type: object[]
         description: "Array of row objects"
       - name: key
-        type: string
-        description: "Field to dedupe on"
-      - name: keep
-        type: string
+        type: string | string[]
+        description: "Field(s) to dedupe on, supports dot notation for nested fields"
+      - name: keepLast
+        type: boolean
         optional: true
-        description: "Keep strategy: first, last, max, min"
+        description: "If true, keeps last occurrence; if false, keeps first (default: false)"
     outputs:
-      - name: deduped
-        type: object[]
-        description: "Deduplicated rows"
+      - name: rows
+        type: DedupeResult
+        description: "Deduplicated rows with statistics"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.pivot:
-    description: "Pivots data long-to-wide or wide-to-long"
+    description: "Pivots data long-to-wide with row key, column key, and value key"
     path: "pivot"
     domain_rules:
       - id: pivot_logic
-        description: "Must support pivot and unpivot operations"
+        description: "Must transform rows to pivoted columns"
       - id: aggregation
         description: "Must aggregate when multiple values exist"
       - id: naming
@@ -1740,19 +1900,19 @@ blocks:
       - name: rows
         type: object[]
         description: "Array of row objects"
-      - name: index
+      - name: rowKey
         type: string
-        description: "Index column(s)"
-      - name: columns
+        description: "Field to use as row identifier"
+      - name: columnKey
         type: string
-        description: "Column to pivot on"
-      - name: values
+        description: "Field whose values become column names"
+      - name: valueKey
         type: string
-        description: "Value column"
+        description: "Field containing values to pivot"
     outputs:
       - name: pivoted
-        type: object[]
-        description: "Pivoted data"
+        type: PivotResult
+        description: "Pivoted data with columns and metadata"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.normalizeWhitespace:
@@ -1923,8 +2083,8 @@ blocks:
     description: "Convert HTML to markdown with customizable formatting options"
     path: "html-to-markdown"
     domain_rules:
-      - id: html_parsing
-        description: "Must use jsdom or cheerio for HTML parsing"
+      - id: html_conversion
+        description: "Must use turndown for HTML to markdown conversion"
       - id: element_mapping
         description: "Must convert common HTML elements to markdown equivalents"
       - id: custom_options
@@ -1936,7 +2096,7 @@ blocks:
       - name: options
         type: object
         optional: true
-        description: "Optional configuration for markdown formatting"
+        description: "Optional configuration for markdown formatting (headingStyle, bulletListMarker)"
     outputs:
       - name: result
         type: HtmlToMarkdownResult
@@ -2106,20 +2266,20 @@ blocks:
       - id: line_numbers
         description: "Must include line numbers"
     inputs:
-      - name: before
+      - name: original
         type: string
-        description: "Original text"
-      - name: after
+        description: "Original text to compare from"
+      - name: modified
         type: string
-        description: "Modified text"
+        description: "Modified text to compare to"
       - name: contextLines
         type: number
         optional: true
-        description: "Context lines around changes"
+        description: "Number of context lines to show around changes (default: 3)"
     outputs:
       - name: diff
         type: DiffResult
-        description: "Unified diff output"
+        description: "Unified diff output with statistics"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.stacktraceParse:
@@ -2774,22 +2934,26 @@ blocks:
       - id: prior_sensitivity
         description: "Should report prior impact"
     inputs:
-      - name: a
+      - name: priorAlpha
         type: number
-        description: "Prior alpha"
-      - name: b
+        description: "Prior alpha parameter (represents prior successes + 1)"
+      - name: priorBeta
         type: number
-        description: "Prior beta"
+        description: "Prior beta parameter (represents prior failures + 1)"
       - name: successes
         type: number
         description: "Observed successes"
       - name: trials
         type: number
         description: "Total trials"
+      - name: credibleLevel
+        type: number
+        optional: true
+        description: "Credible interval level (default: 0.95 for 95% interval)"
     outputs:
       - name: posterior
-        type: Posterior
-        description: "Posterior distribution with credible interval"
+        type: BetaBinomialPosterior
+        description: "Posterior distribution with credible interval and statistics"
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   stats.timeSeriesDecomposeLite:
@@ -3248,6 +3412,1087 @@ blocks:
         type: BlogPost
         description: "Complete blog post with frontmatter and formatted content"
         measures: [working_implementation, valid_output_structure, ai_sdk_compliance, npm_publishable, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # H) Sales & Marketing (10 tools)
+  # ---------------------------------------------------------------------------
+  sales.leadScore:
+    description: "Scores leads based on engagement signals like email opens, page visits, form fills, and company fit"
+    path: "lead-score"
+    domain_rules:
+      - id: signal_weighting
+        description: "Must weight different engagement signals appropriately"
+      - id: score_normalization
+        description: "Must normalize score to 0-100 range"
+      - id: transparency
+        description: "Must explain which signals contributed to score"
+    inputs:
+      - name: lead
+        type: LeadData
+        description: "Lead information with engagement history"
+    outputs:
+      - name: score
+        type: LeadScore
+        description: "Scored lead with breakdown"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  sales.proposalOutline:
+    description: "Generates structured sales proposal outline from opportunity details and customer requirements"
+    path: "proposal-outline"
+    domain_rules:
+      - id: section_structure
+        description: "Must include executive summary, solution, pricing, timeline sections"
+      - id: customization
+        description: "Must incorporate customer-specific details"
+    inputs:
+      - name: opportunity
+        type: object
+        description: "Opportunity details including customer, requirements, budget"
+      - name: template
+        type: string
+        optional: true
+        description: "Optional proposal template type"
+    outputs:
+      - name: outline
+        type: ProposalOutline
+        description: "Structured proposal outline"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  sales.objectionResponse:
+    description: "Suggests responses to common sales objections based on objection category and context"
+    path: "objection-response"
+    domain_rules:
+      - id: objection_classification
+        description: "Must classify objection type (price, timing, competition, etc.)"
+      - id: response_options
+        description: "Must provide multiple response strategies"
+    inputs:
+      - name: objection
+        type: string
+        description: "The customer objection text"
+      - name: context
+        type: object
+        optional: true
+        description: "Deal context and customer info"
+    outputs:
+      - name: responses
+        type: ObjectionResponses
+        description: "Suggested responses with rationale"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  marketing.competitorBrief:
+    description: "Extracts and structures competitor information from various sources into a competitive brief"
+    path: "competitor-brief"
+    domain_rules:
+      - id: info_extraction
+        description: "Must extract pricing, features, positioning, and strengths/weaknesses"
+      - id: comparison_matrix
+        description: "Must format as comparable matrix"
+    inputs:
+      - name: competitorName
+        type: string
+        description: "Name of competitor to analyze"
+      - name: sources
+        type: string[]
+        description: "Source texts/URLs to analyze"
+    outputs:
+      - name: brief
+        type: CompetitorBrief
+        description: "Structured competitor analysis"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  marketing.campaignBrief:
+    description: "Structures marketing campaign briefs with objectives, audience, channels, and KPIs"
+    path: "campaign-brief"
+    domain_rules:
+      - id: brief_structure
+        description: "Must include goals, audience, messaging, channels, budget, timeline"
+      - id: measurability
+        description: "Must define measurable KPIs"
+    inputs:
+      - name: campaignGoal
+        type: string
+        description: "Primary campaign objective"
+      - name: product
+        type: string
+        description: "Product or service being promoted"
+      - name: budget
+        type: number
+        optional: true
+        description: "Campaign budget if known"
+    outputs:
+      - name: brief
+        type: CampaignBrief
+        description: "Complete campaign brief"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  marketing.socialPostDraft:
+    description: "Drafts social media posts optimized for specific platforms with hashtags and call-to-action"
+    path: "social-post-draft"
+    domain_rules:
+      - id: platform_optimization
+        description: "Must respect platform character limits and best practices"
+      - id: engagement_elements
+        description: "Must include hashtags, mentions, or CTAs as appropriate"
+    inputs:
+      - name: message
+        type: string
+        description: "Core message to communicate"
+      - name: platform
+        type: "'twitter' | 'linkedin' | 'instagram' | 'facebook'"
+        description: "Target platform"
+      - name: tone
+        type: string
+        optional: true
+        description: "Desired tone (professional, casual, etc.)"
+    outputs:
+      - name: post
+        type: SocialPost
+        description: "Platform-optimized post"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  marketing.emailSubjectScore:
+    description: "Scores email subject lines for open rate potential based on length, urgency, personalization"
+    path: "email-subject-score"
+    domain_rules:
+      - id: scoring_criteria
+        description: "Must evaluate length, clarity, urgency, curiosity, personalization"
+      - id: suggestions
+        description: "Must suggest improvements"
+    inputs:
+      - name: subjects
+        type: string[]
+        description: "Subject lines to evaluate"
+    outputs:
+      - name: scores
+        type: SubjectScores
+        description: "Scored subjects with recommendations"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  marketing.audiencePersona:
+    description: "Creates audience persona profiles from demographic and behavioral data"
+    path: "audience-persona"
+    domain_rules:
+      - id: persona_structure
+        description: "Must include demographics, goals, pain points, behaviors"
+      - id: actionability
+        description: "Must include marketing implications"
+    inputs:
+      - name: data
+        type: object
+        description: "Audience data points"
+      - name: productContext
+        type: string
+        description: "Product or service context"
+    outputs:
+      - name: persona
+        type: AudiencePersona
+        description: "Complete persona profile"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  marketing.contentCalendarPlan:
+    description: "Generates content calendar structure with themes, topics, and posting schedule"
+    path: "content-calendar-plan"
+    domain_rules:
+      - id: calendar_structure
+        description: "Must organize by date, theme, channel, content type"
+      - id: consistency
+        description: "Must maintain consistent posting frequency"
+    inputs:
+      - name: duration
+        type: string
+        description: "Calendar duration (week, month, quarter)"
+      - name: channels
+        type: string[]
+        description: "Content channels to plan for"
+      - name: themes
+        type: string[]
+        optional: true
+        description: "Content themes or pillars"
+    outputs:
+      - name: calendar
+        type: ContentCalendar
+        description: "Structured content calendar"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  marketing.pricingPageCopy:
+    description: "Generates pricing page copy with tier names, feature lists, and CTAs"
+    path: "pricing-page-copy"
+    domain_rules:
+      - id: tier_structure
+        description: "Must clearly differentiate tiers"
+      - id: value_framing
+        description: "Must frame features as benefits"
+    inputs:
+      - name: tiers
+        type: object[]
+        description: "Pricing tiers with features and prices"
+      - name: targetAudience
+        type: string
+        description: "Primary target audience"
+    outputs:
+      - name: copy
+        type: PricingPageCopy
+        description: "Pricing page content"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # I) HR & People Operations (10 tools)
+  # ---------------------------------------------------------------------------
+  hr.jobDescriptionDraft:
+    description: "Generates job descriptions from role requirements with responsibilities, qualifications, and benefits"
+    path: "job-description-draft"
+    domain_rules:
+      - id: jd_structure
+        description: "Must include role summary, responsibilities, qualifications, benefits"
+      - id: inclusive_language
+        description: "Must use inclusive, bias-free language"
+    inputs:
+      - name: title
+        type: string
+        description: "Job title"
+      - name: requirements
+        type: object
+        description: "Role requirements and context"
+      - name: companyInfo
+        type: object
+        optional: true
+        description: "Company details for context"
+    outputs:
+      - name: jobDescription
+        type: JobDescription
+        description: "Complete job description"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.interviewQuestions:
+    description: "Generates behavioral and technical interview questions for specific roles"
+    path: "interview-questions"
+    domain_rules:
+      - id: question_types
+        description: "Must include behavioral (STAR format) and role-specific questions"
+      - id: legal_compliance
+        description: "Must avoid legally problematic questions"
+    inputs:
+      - name: role
+        type: string
+        description: "Role being interviewed for"
+      - name: skills
+        type: string[]
+        description: "Key skills to assess"
+      - name: level
+        type: string
+        optional: true
+        description: "Seniority level"
+    outputs:
+      - name: questions
+        type: InterviewQuestions
+        description: "Categorized interview questions"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.performanceReviewDraft:
+    description: "Structures performance review from achievements and feedback into formal review format"
+    path: "performance-review-draft"
+    domain_rules:
+      - id: review_sections
+        description: "Must include achievements, areas for growth, goals, rating"
+      - id: constructive_framing
+        description: "Must frame feedback constructively"
+    inputs:
+      - name: achievements
+        type: string[]
+        description: "Key achievements in review period"
+      - name: feedback
+        type: string[]
+        description: "Feedback points to address"
+      - name: period
+        type: string
+        description: "Review period (Q1, annual, etc.)"
+    outputs:
+      - name: review
+        type: PerformanceReview
+        description: "Structured performance review"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.onboardingChecklist:
+    description: "Generates role-specific onboarding checklists with tasks, owners, and timelines"
+    path: "onboarding-checklist"
+    domain_rules:
+      - id: checklist_structure
+        description: "Must organize by day/week with clear owners"
+      - id: completeness
+        description: "Must cover IT, HR, team, and role-specific items"
+    inputs:
+      - name: role
+        type: string
+        description: "New hire's role"
+      - name: department
+        type: string
+        description: "Department"
+      - name: startDate
+        type: string
+        description: "Start date"
+    outputs:
+      - name: checklist
+        type: OnboardingChecklist
+        description: "Onboarding checklist with timeline"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.compensationBand:
+    description: "Structures compensation data into salary bands with percentiles and benchmarks"
+    path: "compensation-band"
+    domain_rules:
+      - id: band_structure
+        description: "Must define min, mid, max with percentiles"
+      - id: market_context
+        description: "Must include market comparison context"
+    inputs:
+      - name: role
+        type: string
+        description: "Role title"
+      - name: marketData
+        type: object[]
+        description: "Market compensation data points"
+      - name: location
+        type: string
+        optional: true
+        description: "Geographic location"
+    outputs:
+      - name: band
+        type: CompensationBand
+        description: "Structured compensation band"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.surveyAnalyze:
+    description: "Analyzes employee survey responses to extract themes, sentiment, and action items"
+    path: "survey-analyze"
+    domain_rules:
+      - id: theme_extraction
+        description: "Must identify key themes from responses"
+      - id: sentiment_analysis
+        description: "Must assess overall and per-question sentiment"
+      - id: actionability
+        description: "Must suggest action items"
+    inputs:
+      - name: responses
+        type: object[]
+        description: "Survey responses"
+      - name: questions
+        type: string[]
+        description: "Survey questions"
+    outputs:
+      - name: analysis
+        type: SurveyAnalysis
+        description: "Survey analysis with themes and actions"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.orgChartFormat:
+    description: "Formats organizational hierarchy data into structured org chart representation"
+    path: "org-chart-format"
+    domain_rules:
+      - id: hierarchy_structure
+        description: "Must represent reporting relationships clearly"
+      - id: metadata
+        description: "Must include role titles and departments"
+    inputs:
+      - name: employees
+        type: object[]
+        description: "Employee data with manager relationships"
+    outputs:
+      - name: orgChart
+        type: OrgChart
+        description: "Structured org chart"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.offerLetterDraft:
+    description: "Generates offer letter content from compensation and role details"
+    path: "offer-letter-draft"
+    domain_rules:
+      - id: letter_structure
+        description: "Must include position, compensation, benefits, start date"
+      - id: legal_elements
+        description: "Must include at-will statement and contingencies"
+    inputs:
+      - name: candidate
+        type: object
+        description: "Candidate name and details"
+      - name: offer
+        type: object
+        description: "Offer details (salary, equity, benefits)"
+      - name: role
+        type: object
+        description: "Role details"
+    outputs:
+      - name: letter
+        type: OfferLetter
+        description: "Offer letter content"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.exitInterviewSummarize:
+    description: "Summarizes exit interview responses into themes and retention insights"
+    path: "exit-interview-summarize"
+    domain_rules:
+      - id: theme_extraction
+        description: "Must extract departure reasons and themes"
+      - id: retention_insights
+        description: "Must suggest retention improvements"
+    inputs:
+      - name: responses
+        type: object
+        description: "Exit interview responses"
+    outputs:
+      - name: summary
+        type: ExitInterviewSummary
+        description: "Summarized insights"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  hr.policyDocFormat:
+    description: "Formats HR policy content into standardized policy document structure"
+    path: "policy-doc-format"
+    domain_rules:
+      - id: policy_structure
+        description: "Must include purpose, scope, policy statement, procedures"
+      - id: metadata
+        description: "Must include effective date, owner, review date"
+    inputs:
+      - name: policyContent
+        type: string
+        description: "Raw policy content"
+      - name: policyType
+        type: string
+        description: "Type of policy (PTO, remote work, etc.)"
+    outputs:
+      - name: policy
+        type: PolicyDocument
+        description: "Formatted policy document"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # J) Legal & Contracts (8 tools)
+  # ---------------------------------------------------------------------------
+  legal.contractClauseScan:
+    description: "Scans contract text to identify and categorize key clauses (termination, liability, IP, etc.)"
+    path: "contract-clause-scan"
+    domain_rules:
+      - id: clause_detection
+        description: "Must detect common clause types"
+      - id: location_reporting
+        description: "Must report clause locations in document"
+    inputs:
+      - name: contractText
+        type: string
+        description: "Contract text to analyze"
+    outputs:
+      - name: clauses
+        type: ContractClauses
+        description: "Identified clauses by category"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  legal.ndaTemplateDraft:
+    description: "Generates NDA template with customizable terms for mutual or unilateral agreements"
+    path: "nda-template-draft"
+    domain_rules:
+      - id: nda_structure
+        description: "Must include definition, obligations, term, exclusions"
+      - id: type_support
+        description: "Must support mutual and unilateral types"
+    inputs:
+      - name: type
+        type: "'mutual' | 'unilateral'"
+        description: "NDA type"
+      - name: disclosingParty
+        type: string
+        description: "Disclosing party name"
+      - name: receivingParty
+        type: string
+        description: "Receiving party name"
+      - name: term
+        type: number
+        optional: true
+        description: "Term in years"
+    outputs:
+      - name: nda
+        type: NDATemplate
+        description: "NDA template content"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  legal.tosReadability:
+    description: "Analyzes Terms of Service for readability, complexity, and consumer-friendliness"
+    path: "tos-readability"
+    domain_rules:
+      - id: readability_scoring
+        description: "Must calculate readability metrics (Flesch, etc.)"
+      - id: complexity_analysis
+        description: "Must identify complex or problematic sections"
+    inputs:
+      - name: tosText
+        type: string
+        description: "Terms of Service text"
+    outputs:
+      - name: analysis
+        type: TOSAnalysis
+        description: "Readability analysis with scores"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  legal.riskClauseHighlight:
+    description: "Identifies and highlights potentially risky clauses in contracts"
+    path: "risk-clause-highlight"
+    domain_rules:
+      - id: risk_detection
+        description: "Must identify liability, indemnification, auto-renewal risks"
+      - id: severity_rating
+        description: "Must rate risk severity"
+    inputs:
+      - name: contractText
+        type: string
+        description: "Contract text to analyze"
+    outputs:
+      - name: risks
+        type: ContractRisks
+        description: "Identified risks with severity"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  legal.invoiceTermsExtract:
+    description: "Extracts payment terms, due dates, and late fees from invoice text"
+    path: "invoice-terms-extract"
+    domain_rules:
+      - id: term_extraction
+        description: "Must extract net days, due date, late fee terms"
+      - id: normalization
+        description: "Must normalize to standard format"
+    inputs:
+      - name: invoiceText
+        type: string
+        description: "Invoice text or terms section"
+    outputs:
+      - name: terms
+        type: PaymentTerms
+        description: "Extracted payment terms"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  legal.gdprDataMap:
+    description: "Maps data processing activities to GDPR requirements and legal bases"
+    path: "gdpr-data-map"
+    domain_rules:
+      - id: activity_mapping
+        description: "Must map each activity to legal basis"
+      - id: requirement_check
+        description: "Must check against GDPR requirements"
+    inputs:
+      - name: activities
+        type: object[]
+        description: "Data processing activities"
+    outputs:
+      - name: map
+        type: GDPRDataMap
+        description: "GDPR compliance mapping"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  legal.copyrightNotice:
+    description: "Generates appropriate copyright notices for different content types and jurisdictions"
+    path: "copyright-notice"
+    domain_rules:
+      - id: format_rules
+        description: "Must follow jurisdiction-specific formats"
+      - id: completeness
+        description: "Must include year, owner, rights statement"
+    inputs:
+      - name: owner
+        type: string
+        description: "Copyright owner name"
+      - name: year
+        type: number
+        description: "Copyright year"
+      - name: contentType
+        type: string
+        description: "Type of content (software, text, media)"
+    outputs:
+      - name: notice
+        type: CopyrightNotice
+        description: "Formatted copyright notice"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  legal.trademarkCheck:
+    description: "Checks proposed names against common trademark patterns and suggests conflicts"
+    path: "trademark-check"
+    domain_rules:
+      - id: similarity_check
+        description: "Must check phonetic and visual similarity"
+      - id: class_awareness
+        description: "Must consider trademark classes"
+    inputs:
+      - name: proposedName
+        type: string
+        description: "Proposed name to check"
+      - name: industry
+        type: string
+        description: "Industry/class for the mark"
+    outputs:
+      - name: check
+        type: TrademarkCheck
+        description: "Potential conflicts and recommendations"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # K) Finance & Accounting (8 tools)
+  # ---------------------------------------------------------------------------
+  finance.expenseCategoriize:
+    description: "Categorizes expenses into accounting categories based on description and amount"
+    path: "expense-categorize"
+    domain_rules:
+      - id: category_assignment
+        description: "Must assign to standard accounting categories"
+      - id: confidence_score
+        description: "Must provide confidence for each assignment"
+    inputs:
+      - name: expenses
+        type: object[]
+        description: "Expense entries with description and amount"
+    outputs:
+      - name: categorized
+        type: CategorizedExpenses
+        description: "Categorized expenses"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  finance.invoiceDataExtract:
+    description: "Extracts structured data from invoice text including vendor, line items, totals"
+    path: "invoice-data-extract"
+    domain_rules:
+      - id: field_extraction
+        description: "Must extract vendor, date, items, amounts, tax, total"
+      - id: validation
+        description: "Must validate totals match line items"
+    inputs:
+      - name: invoiceText
+        type: string
+        description: "Invoice text content"
+    outputs:
+      - name: invoice
+        type: ExtractedInvoice
+        description: "Structured invoice data"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  finance.budgetVariance:
+    description: "Calculates budget vs actual variance with percentage and trend analysis"
+    path: "budget-variance"
+    domain_rules:
+      - id: variance_calculation
+        description: "Must calculate absolute and percentage variance"
+      - id: trend_identification
+        description: "Must identify favorable/unfavorable trends"
+    inputs:
+      - name: budget
+        type: object[]
+        description: "Budget line items"
+      - name: actual
+        type: object[]
+        description: "Actual spending"
+    outputs:
+      - name: variance
+        type: BudgetVariance
+        description: "Variance analysis"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  finance.cashFlowProject:
+    description: "Projects cash flow based on receivables, payables, and recurring items"
+    path: "cash-flow-project"
+    domain_rules:
+      - id: projection_logic
+        description: "Must project based on timing of ins and outs"
+      - id: runway_calculation
+        description: "Must calculate runway at current burn"
+    inputs:
+      - name: currentCash
+        type: number
+        description: "Current cash balance"
+      - name: receivables
+        type: object[]
+        description: "Expected receivables with dates"
+      - name: payables
+        type: object[]
+        description: "Expected payables with dates"
+    outputs:
+      - name: projection
+        type: CashFlowProjection
+        description: "Cash flow projection"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  finance.revenueBreakdown:
+    description: "Breaks down revenue by segment, product, or period with growth rates"
+    path: "revenue-breakdown"
+    domain_rules:
+      - id: segmentation
+        description: "Must segment by provided dimension"
+      - id: growth_calculation
+        description: "Must calculate period-over-period growth"
+    inputs:
+      - name: revenue
+        type: object[]
+        description: "Revenue data with segments and periods"
+      - name: dimension
+        type: "'product' | 'segment' | 'region' | 'period'"
+        description: "Breakdown dimension"
+    outputs:
+      - name: breakdown
+        type: RevenueBreakdown
+        description: "Revenue breakdown with analysis"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  finance.ratioAnalysis:
+    description: "Calculates key financial ratios from balance sheet and income statement data"
+    path: "ratio-analysis"
+    domain_rules:
+      - id: ratio_calculation
+        description: "Must calculate liquidity, profitability, leverage ratios"
+      - id: interpretation
+        description: "Must provide ratio interpretations"
+    inputs:
+      - name: financials
+        type: object
+        description: "Financial statement data"
+    outputs:
+      - name: ratios
+        type: FinancialRatios
+        description: "Calculated ratios with interpretation"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  finance.taxDeductionScan:
+    description: "Scans expense data for potential tax deductions by category"
+    path: "tax-deduction-scan"
+    domain_rules:
+      - id: deduction_rules
+        description: "Must apply category-specific deduction rules"
+      - id: documentation
+        description: "Must note documentation requirements"
+    inputs:
+      - name: expenses
+        type: object[]
+        description: "Expense records"
+      - name: entityType
+        type: string
+        description: "Business entity type"
+    outputs:
+      - name: deductions
+        type: TaxDeductions
+        description: "Potential deductions with requirements"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  finance.reconciliationMatch:
+    description: "Matches bank transactions to ledger entries for reconciliation"
+    path: "reconciliation-match"
+    domain_rules:
+      - id: matching_logic
+        description: "Must match by amount, date proximity, description"
+      - id: confidence_scoring
+        description: "Must score match confidence"
+    inputs:
+      - name: bankTransactions
+        type: object[]
+        description: "Bank transactions"
+      - name: ledgerEntries
+        type: object[]
+        description: "Ledger entries"
+    outputs:
+      - name: matches
+        type: ReconciliationMatches
+        description: "Matched and unmatched items"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # L) Customer Success (7 tools)
+  # ---------------------------------------------------------------------------
+  cx.feedbackThemes:
+    description: "Extracts themes and sentiment from customer feedback text"
+    path: "feedback-themes"
+    domain_rules:
+      - id: theme_extraction
+        description: "Must identify recurring themes"
+      - id: sentiment_scoring
+        description: "Must score sentiment per theme"
+    inputs:
+      - name: feedback
+        type: string[]
+        description: "Customer feedback entries"
+    outputs:
+      - name: themes
+        type: FeedbackThemes
+        description: "Themes with sentiment and frequency"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  cx.churnRiskScore:
+    description: "Scores customer churn risk based on usage, engagement, and support signals"
+    path: "churn-risk-score"
+    domain_rules:
+      - id: signal_weighting
+        description: "Must weight usage, engagement, support signals"
+      - id: risk_explanation
+        description: "Must explain risk factors"
+    inputs:
+      - name: customer
+        type: object
+        description: "Customer data with activity metrics"
+    outputs:
+      - name: risk
+        type: ChurnRiskScore
+        description: "Risk score with contributing factors"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  cx.npsAnalysis:
+    description: "Analyzes NPS survey responses to categorize by promoter/detractor and extract themes"
+    path: "nps-analysis"
+    domain_rules:
+      - id: score_categorization
+        description: "Must categorize by score (promoter/passive/detractor)"
+      - id: comment_analysis
+        description: "Must analyze comments for themes"
+    inputs:
+      - name: responses
+        type: object[]
+        description: "NPS responses with score and comment"
+    outputs:
+      - name: analysis
+        type: NPSAnalysis
+        description: "NPS breakdown with themes"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  cx.ticketCategorize:
+    description: "Categorizes support tickets by type, priority, and product area"
+    path: "ticket-categorize"
+    domain_rules:
+      - id: category_assignment
+        description: "Must assign category, priority, product area"
+      - id: routing_suggestion
+        description: "Must suggest routing based on category"
+    inputs:
+      - name: ticket
+        type: object
+        description: "Support ticket with subject and description"
+    outputs:
+      - name: categorization
+        type: TicketCategory
+        description: "Ticket categorization"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  cx.responseTemplateSuggest:
+    description: "Suggests response templates based on ticket category and customer context"
+    path: "response-template-suggest"
+    domain_rules:
+      - id: template_matching
+        description: "Must match templates to ticket type"
+      - id: personalization
+        description: "Must suggest personalization points"
+    inputs:
+      - name: ticket
+        type: object
+        description: "Support ticket"
+      - name: customerContext
+        type: object
+        optional: true
+        description: "Customer history and context"
+    outputs:
+      - name: templates
+        type: ResponseTemplates
+        description: "Suggested templates ranked by relevance"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  cx.healthScoreCalculate:
+    description: "Calculates customer health score from usage, support, payment, and engagement data"
+    path: "health-score-calculate"
+    domain_rules:
+      - id: metric_weighting
+        description: "Must weight component metrics"
+      - id: trend_analysis
+        description: "Must analyze score trend"
+    inputs:
+      - name: customer
+        type: object
+        description: "Customer with usage, support, payment data"
+    outputs:
+      - name: healthScore
+        type: HealthScore
+        description: "Health score with components"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  cx.renewalForecast:
+    description: "Forecasts renewal likelihood based on health score and engagement patterns"
+    path: "renewal-forecast"
+    domain_rules:
+      - id: forecast_model
+        description: "Must use health and engagement signals"
+      - id: action_suggestions
+        description: "Must suggest actions to improve likelihood"
+    inputs:
+      - name: account
+        type: object
+        description: "Account with health score and renewal date"
+    outputs:
+      - name: forecast
+        type: RenewalForecast
+        description: "Renewal forecast with recommendations"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # M) Education (7 tools)
+  # ---------------------------------------------------------------------------
+  edu.lessonPlanOutline:
+    description: "Generates lesson plan outlines with objectives, activities, and assessments"
+    path: "lesson-plan-outline"
+    domain_rules:
+      - id: plan_structure
+        description: "Must include objectives, materials, activities, assessment"
+      - id: time_allocation
+        description: "Must allocate time for each section"
+    inputs:
+      - name: topic
+        type: string
+        description: "Lesson topic"
+      - name: duration
+        type: number
+        description: "Lesson duration in minutes"
+      - name: gradeLevel
+        type: string
+        description: "Target grade level"
+    outputs:
+      - name: lessonPlan
+        type: LessonPlan
+        description: "Structured lesson plan"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  edu.quizGenerate:
+    description: "Generates quiz questions from content with answer options and explanations"
+    path: "quiz-generate"
+    domain_rules:
+      - id: question_variety
+        description: "Must generate varied question types"
+      - id: answer_quality
+        description: "Must include distractors and explanations"
+    inputs:
+      - name: content
+        type: string
+        description: "Source content for questions"
+      - name: count
+        type: number
+        description: "Number of questions"
+      - name: difficulty
+        type: "'easy' | 'medium' | 'hard'"
+        optional: true
+        description: "Question difficulty"
+    outputs:
+      - name: quiz
+        type: Quiz
+        description: "Generated quiz with answers"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  edu.rubricCreate:
+    description: "Creates grading rubrics with criteria, levels, and point values"
+    path: "rubric-create"
+    domain_rules:
+      - id: rubric_structure
+        description: "Must define criteria with levels and descriptions"
+      - id: scoring_clarity
+        description: "Must have clear point allocation"
+    inputs:
+      - name: assignment
+        type: string
+        description: "Assignment description"
+      - name: criteria
+        type: string[]
+        description: "Criteria to evaluate"
+      - name: totalPoints
+        type: number
+        description: "Total possible points"
+    outputs:
+      - name: rubric
+        type: GradingRubric
+        description: "Complete grading rubric"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  edu.syllabusFormat:
+    description: "Formats course syllabus with schedule, policies, and learning outcomes"
+    path: "syllabus-format"
+    domain_rules:
+      - id: syllabus_sections
+        description: "Must include all standard syllabus sections"
+      - id: policy_completeness
+        description: "Must include grading, attendance, academic integrity policies"
+    inputs:
+      - name: courseInfo
+        type: object
+        description: "Course details"
+      - name: schedule
+        type: object[]
+        description: "Weekly schedule"
+      - name: policies
+        type: object
+        optional: true
+        description: "Course policies"
+    outputs:
+      - name: syllabus
+        type: Syllabus
+        description: "Formatted syllabus"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  edu.progressReportDraft:
+    description: "Drafts student progress reports from grades and observation notes"
+    path: "progress-report-draft"
+    domain_rules:
+      - id: report_structure
+        description: "Must include academic progress, behavior, recommendations"
+      - id: constructive_tone
+        description: "Must be constructive and growth-oriented"
+    inputs:
+      - name: student
+        type: object
+        description: "Student info and grades"
+      - name: observations
+        type: string[]
+        description: "Teacher observations"
+    outputs:
+      - name: report
+        type: ProgressReport
+        description: "Progress report content"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  edu.learningObjectiveWrite:
+    description: "Writes measurable learning objectives using Bloom's taxonomy verbs"
+    path: "learning-objective-write"
+    domain_rules:
+      - id: blooms_taxonomy
+        description: "Must use appropriate Bloom's taxonomy level verbs"
+      - id: measurability
+        description: "Must be specific and measurable"
+    inputs:
+      - name: topic
+        type: string
+        description: "Topic or skill"
+      - name: level
+        type: "'remember' | 'understand' | 'apply' | 'analyze' | 'evaluate' | 'create'"
+        description: "Bloom's taxonomy level"
+    outputs:
+      - name: objectives
+        type: LearningObjectives
+        description: "Learning objectives"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  edu.curriculumMap:
+    description: "Maps curriculum standards to learning activities and assessments"
+    path: "curriculum-map"
+    domain_rules:
+      - id: standards_alignment
+        description: "Must align activities to standards"
+      - id: coverage_tracking
+        description: "Must track standards coverage"
+    inputs:
+      - name: standards
+        type: object[]
+        description: "Curriculum standards"
+      - name: units
+        type: object[]
+        description: "Course units with activities"
+    outputs:
+      - name: map
+        type: CurriculumMap
+        description: "Standards to activities mapping"
+        measures: [working_implementation, valid_output_structure, readme_documentation]
 
 # =============================================================================
 # VALIDATORS - Which validators to run against each block

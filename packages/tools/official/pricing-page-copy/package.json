@@ -1,0 +1,75 @@
+{
+  "name": "@tpmjs/pricing-page-copy",
+  "version": "0.1.0",
+  "description": "Generate pricing page copy with tier names, feature lists, and CTAs",
+  "type": "module",
+  "keywords": ["tpmjs", "pricing", "marketing", "copywriting", "ai"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/pricing-page-copy"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "marketing",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "pricingPageCopyTool",
+        "description": "Generates comprehensive pricing page copy with tier names, headlines, benefit-oriented feature lists, CTAs, FAQs, and trust signals. Frames features as benefits and clearly differentiates tiers.",
+        "parameters": [
+          {
+            "name": "tiers",
+            "type": "object[]",
+            "description": "Pricing tiers with features and prices. Each tier should have: name (optional), price (number or string), billingPeriod (optional), features (string[]), recommended (optional boolean)",
+            "required": true
+          },
+          {
+            "name": "targetAudience",
+            "type": "string",
+            "description": "Primary target audience (e.g., 'small businesses', 'developers', 'teams')",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "PricingPageCopy",
+          "description": "Complete pricing page copy with page headline/subheadline, processed tiers (with names, headlines, benefit-oriented features, CTAs, badges), FAQs, trust signals, and guarantee"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool when users need to create pricing page copy for their products or services. Automatically generates benefit-oriented copy, tier differentiation, and conversion-focused CTAs.",
+          "limitations": "Generates copy structure and suggestions, not actual product pricing strategy. Copy should be reviewed and customized based on brand voice and specific product details.",
+          "examples": [
+            "Generate pricing page copy for our SaaS product with 3 tiers",
+            "Create pricing copy for small business audience with Free, Pro, and Enterprise plans",
+            "Build a pricing page for our API product targeting developers"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

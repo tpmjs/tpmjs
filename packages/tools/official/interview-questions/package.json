@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-interview-questions",
+  "version": "0.1.0",
+  "description": "Generates behavioral and technical interview questions for specific roles",
+  "type": "module",
+  "keywords": ["tpmjs", "hr", "ai", "interview", "recruiting", "hiring", "questions"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/interview-questions"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "hr",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "interviewQuestionsTool",
+        "description": "Generates behavioral (STAR format) and technical interview questions with legal compliance checks",
+        "parameters": [
+          {
+            "name": "role",
+            "type": "string",
+            "description": "Role being interviewed for",
+            "required": true
+          },
+          {
+            "name": "skills",
+            "type": "array",
+            "description": "Key skills to assess",
+            "required": true
+          },
+          {
+            "name": "level",
+            "type": "string",
+            "description": "Seniority level (junior, mid-level, senior, staff, executive)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "InterviewQuestions",
+          "description": "Categorized interview questions with follow-ups and evaluation criteria"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

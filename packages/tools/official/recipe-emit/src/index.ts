@@ -190,15 +190,26 @@ export const recipeEmitTool = tool({
     additionalProperties: false,
   }),
   async execute(input: RecipeEmitInput): Promise<RecipeOutput> {
-    // Validate the recipe
+    // Domain rule: recipe_validation - Validate recipe structure before emitting
     const validation = validateRecipe(input);
 
-    // Build the formatted recipe
+    // Domain rule: strict_validation - Throw error if validation fails (must validate recipe structure)
+    if (!validation.isValid) {
+      const criticalErrors = validation.warnings.filter(
+        (w) => w.includes('required') || w.includes('must be') || w.includes('Missing')
+      );
+      throw new Error(`Recipe validation failed: ${criticalErrors.join('; ')}`);
+    }
+
+    // Domain rule: step_normalization - Normalize step definitions with consistent structure
     const recipe = {
       name: input.name,
       version: input.metadata?.version || '1.0.0',
+      // Domain rule: default_descriptions - Provide default descriptions for steps without them
       steps: input.steps.map((step, index) => ({
-        ...step,
+        tool: step.tool,
+        inputs: step.inputs || {},
+        outputs: step.outputs || {},
         description: step.description || `Step ${index + 1}: Execute ${step.tool}`,
       })),
       metadata: {

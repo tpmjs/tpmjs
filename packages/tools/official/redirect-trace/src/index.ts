@@ -132,12 +132,26 @@ export const redirectTraceTool = tool({
     let currentUrl = url;
     let maxRedirectsReached = false;
 
-    // Follow redirects manually
+    // Domain rule: loop_detection - Track visited URLs to detect and break redirect loops
+    const visitedUrls = new Set<string>();
+
+    // Domain rule: manual_redirects - Use fetch with redirect:'manual' to trace each hop
+    // Follow redirects manually instead of letting fetch auto-follow
     for (let i = 0; i < maxRedirects; i++) {
+      // Domain rule: loop_detection - Check for redirect loop before making request
+      if (visitedUrls.has(currentUrl)) {
+        throw new Error(
+          `Redirect loop detected: URL "${currentUrl}" was already visited. ` +
+            `Chain: ${Array.from(visitedUrls).join(' -> ')} -> ${currentUrl}`
+        );
+      }
+      visitedUrls.add(currentUrl);
+
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout per request
 
+        // Domain rule: manual_redirects - Native fetch API with redirect:'manual' for manual redirect handling
         const response = await fetch(currentUrl, {
           method: 'GET',
           redirect: 'manual', // Don't follow redirects automatically
@@ -153,7 +167,8 @@ export const redirectTraceTool = tool({
         const location = response.headers.get('location');
         const headers = extractHeaders(response);
 
-        // Record this step
+        // Domain rule: chain_building - Build complete chain with status codes and locations
+        // Record this step in the redirect chain
         const step: RedirectStep = {
           url: currentUrl,
           statusCode: response.status,
@@ -164,11 +179,20 @@ export const redirectTraceTool = tool({
 
         steps.push(step);
 
-        // Check if this is a redirect
+        // Domain rule: chain_building - Check if this is a redirect and continue chain
         if (response.status >= 300 && response.status < 400 && location) {
           // Resolve the redirect URL (handle relative URLs)
-          currentUrl = resolveUrl(currentUrl, location);
+          const nextUrl = resolveUrl(currentUrl, location);
 
+          // Domain rule: loop_detection - Check if next URL would create a loop
+          if (visitedUrls.has(nextUrl)) {
+            throw new Error(
+              `Redirect loop detected: URL "${nextUrl}" was already visited. ` +
+                `Chain: ${Array.from(visitedUrls).join(' -> ')} -> ${nextUrl}`
+            );
+          }
+
+          currentUrl = nextUrl;
           // Continue to next iteration
           continue;
         }

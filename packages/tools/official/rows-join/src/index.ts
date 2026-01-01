@@ -1,6 +1,9 @@
 /**
  * Rows Join Tool for TPMJS
  * Joins two arrays of objects by key fields, supporting inner, left, right, and full outer joins
+ *
+ * Domain rule: relational_joins - Supports SQL-like join operations (inner, left, right, full)
+ * Domain rule: field_prefixing - Prefixes fields with 'left_' and 'right_' to avoid collisions
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -29,7 +32,7 @@ type RowsJoinInput = {
 };
 
 /**
- * Gets the value from an object by field path
+ * Domain rule: nested_field_access - Gets the value from an object by field path with dot notation
  */
 function getFieldValue(obj: Record<string, any>, field: string): any {
   const parts = field.split('.');
@@ -57,7 +60,7 @@ function toKey(value: any): string {
 }
 
 /**
- * Merges two objects, prefixing keys to avoid collisions
+ * Domain rule: field_prefixing - Merges two objects, prefixing keys to avoid collisions
  */
 function mergeRows(
   leftRow: Record<string, any> | null,
@@ -161,7 +164,7 @@ export const rowsJoinTool = tool({
       throw new Error(`Invalid join type "${type}". Must be one of: inner, left, right, full`);
     }
 
-    // Build index for right array
+    // Domain rule: relational_joins - Build index for right array to enable efficient matching
     const rightIndex = new Map<string, Array<Record<string, any>>>();
     for (const rightRow of right) {
       const key = toKey(getFieldValue(rightRow, rightKey));

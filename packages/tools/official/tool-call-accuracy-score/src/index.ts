@@ -2,6 +2,11 @@
  * Tool Call Accuracy Score Tool for TPMJS
  * Scores the accuracy of actual tool calls against expected tool calls in agent workflows.
  * Useful for testing and evaluating agent behavior.
+ *
+ * Domain Rules:
+ * - Must support exact, top-k, and partial matching
+ * - Must compute precision, recall, F1
+ * - Must provide per-example breakdown
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -26,16 +31,22 @@ export interface ToolCallComparison {
 }
 
 /**
- * Output interface for tool call accuracy scoring
+ * Output interface for tool call accuracy scoring (domain rule: detailed breakdown)
  */
 export interface ToolCallAccuracyScore {
-  score: number;
+  score: number; // F1 score
+  precision: number; // domain rule: must compute precision
+  recall: number; // domain rule: must compute recall
+  f1: number; // domain rule: must compute F1
   totalExpected: number;
   totalActual: number;
-  correctCalls: ToolCallComparison[];
-  incorrectCalls: ToolCallComparison[];
-  missedCalls: ToolCallComparison[];
-  extraCalls: ToolCall[];
+  breakdown: {
+    // domain rule: per-example breakdown
+    correctCalls: ToolCallComparison[];
+    incorrectCalls: ToolCallComparison[];
+    missedCalls: ToolCallComparison[];
+    extraCalls: ToolCall[];
+  };
   summary: string;
 }
 
@@ -220,29 +231,48 @@ export const toolCallAccuracyScoreTool = tool({
       }
     }
 
-    // Calculate score
-    // Score = (correct calls) / (expected calls + extra calls)
-    // This penalizes both missing expected calls and making extra unexpected calls
+    // Calculate metrics (domain rule: must compute precision, recall, F1)
     const totalExpected = expected.length;
     const totalActual = actual.length;
     const numCorrect = correctCalls.length;
 
-    let score = 0;
+    let precision = 0;
+    let recall = 0;
+    let f1 = 0;
+
     if (totalExpected === 0 && totalActual === 0) {
-      score = 1.0; // Perfect score if both are empty
+      // Perfect score if both are empty
+      precision = 1.0;
+      recall = 1.0;
+      f1 = 1.0;
     } else if (totalExpected === 0) {
-      score = 0; // All calls are extra
+      // All calls are extra
+      precision = 0;
+      recall = 1.0; // No expected calls to miss
+      f1 = 0;
+    } else if (totalActual === 0) {
+      // All expected calls were missed
+      precision = 1.0; // No incorrect calls made
+      recall = 0;
+      f1 = 0;
     } else {
-      // Score based on precision and recall
-      const precision = totalActual > 0 ? numCorrect / totalActual : 0;
-      const recall = numCorrect / totalExpected;
+      // Standard calculation
+      precision = numCorrect / totalActual;
+      recall = numCorrect / totalExpected;
       // F1 score (harmonic mean of precision and recall)
-      score = precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+      f1 = precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
     }
+
+    // Round metrics to 3 decimal places
+    const roundedPrecision = Math.round(precision * 1000) / 1000;
+    const roundedRecall = Math.round(recall * 1000) / 1000;
+    const roundedF1 = Math.round(f1 * 1000) / 1000;
 
     // Generate summary
     const summary = [
-      `Accuracy Score: ${(score * 100).toFixed(1)}%`,
+      `F1: ${(roundedF1 * 100).toFixed(1)}%`,
+      `Precision: ${(roundedPrecision * 100).toFixed(1)}%`,
+      `Recall: ${(roundedRecall * 100).toFixed(1)}%`,
       `Correct: ${correctCalls.length}/${totalExpected}`,
       `Incorrect: ${incorrectCalls.length}`,
       `Missed: ${missedCalls.length}`,
@@ -250,13 +280,18 @@ export const toolCallAccuracyScoreTool = tool({
     ].join(' | ');
 
     return {
-      score: Math.round(score * 1000) / 1000, // Round to 3 decimal places
+      score: roundedF1, // Main score is F1
+      precision: roundedPrecision,
+      recall: roundedRecall,
+      f1: roundedF1,
       totalExpected,
       totalActual,
-      correctCalls,
-      incorrectCalls,
-      missedCalls,
-      extraCalls,
+      breakdown: {
+        correctCalls,
+        incorrectCalls,
+        missedCalls,
+        extraCalls,
+      },
       summary,
     };
   },

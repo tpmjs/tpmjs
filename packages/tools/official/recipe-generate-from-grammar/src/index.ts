@@ -41,206 +41,163 @@ export interface Recipe {
  * Output interface for recipe generation
  */
 export interface RecipeGenerateResult {
-  recipe: Recipe;
-  stepsGenerated: number;
-  grammarUsed: string;
+  recipes: Recipe[];
+  count: number;
+  templatesUsed: string[];
 }
 
 type RecipeGenerateInput = {
-  grammar: Grammar;
-  seed?: string;
+  templates: Array<{ name: string; pattern: string }>;
+  catalog: Array<{ id: string; name: string; category: string }>;
+  n: number;
 };
 
 /**
- * Validates grammar structure
+ * Expands a workflow template into concrete recipe using the Acquire→Extract→Analyze→Output pattern
+ * Domain rule: workflow_pattern - Follow standard Acquire→Extract→Analyze→Output workflow structure
  */
-function validateGrammar(grammar: Grammar): void {
-  if (!grammar.start || typeof grammar.start !== 'string') {
-    throw new Error('Grammar must have a "start" rule name');
+function expandTemplate(
+  template: { name: string; pattern: string },
+  catalog: Array<{ id: string; name: string; category: string }>,
+  random: () => number
+): Recipe {
+  const steps: Array<{ action: string; details: string; order: number }> = [];
+
+  // Domain rule: aeao_pattern - Acquire→Extract→Analyze→Output is the standard workflow pattern
+  const pattern = ['Acquire', 'Extract', 'Analyze', 'Output'];
+
+  for (let i = 0; i < pattern.length; i++) {
+    const phase = pattern[i]!;
+
+    // Domain rule: category_matching - Match tools to workflow phases by category keywords
+    const matchingTools = catalog.filter((tool) => {
+      const category = tool.category?.toLowerCase() || '';
+      return (
+        category.includes(phase.toLowerCase()) ||
+        (phase === 'Acquire' && (category.includes('fetch') || category.includes('get'))) ||
+        (phase === 'Extract' && (category.includes('parse') || category.includes('extract'))) ||
+        (phase === 'Analyze' && (category.includes('analyze') || category.includes('compute'))) ||
+        (phase === 'Output' && (category.includes('output') || category.includes('save')))
+      );
+    });
+
+    // Select a random tool from matching category, or use generic if none match
+    let selectedTool = 'genericTool';
+    let details = `Perform ${phase} operation`;
+
+    if (matchingTools.length > 0) {
+      const index = Math.floor(random() * matchingTools.length);
+      const tool = matchingTools[index];
+      if (tool) {
+        selectedTool = tool.name;
+        details = `${phase} using ${tool.name}`;
+      }
+    }
+
+    steps.push({
+      action: selectedTool,
+      details,
+      order: i,
+    });
   }
 
-  if (!grammar.rules || typeof grammar.rules !== 'object') {
-    throw new Error('Grammar must have a "rules" object');
-  }
-
-  if (!grammar.rules[grammar.start]) {
-    throw new Error(`Start rule "${grammar.start}" not found in grammar rules`);
-  }
+  return {
+    name: template.name,
+    steps,
+    metadata: {
+      generatedAt: new Date().toISOString(),
+      grammarHash: createHash('sha256').update(template.pattern).digest('hex').substring(0, 16),
+    },
+  };
 }
 
 /**
  * Creates a deterministic random number generator from seed
  */
-function createSeededRandom(seed: string): () => number {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash << 5) - hash + seed.charCodeAt(i);
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-
+function createSeededRandom(seed: number): () => number {
+  let state = seed;
   return () => {
-    hash = (hash * 1664525 + 1013904223) | 0;
-    return (hash >>> 0) / 4294967296;
-  };
-}
-
-/**
- * Expands a grammar rule into a concrete value
- */
-function expandRule(ruleName: string, grammar: Grammar, random: () => number, depth = 0): string {
-  // Prevent infinite recursion
-  if (depth > 20) {
-    return ruleName;
-  }
-
-  const rule = grammar.rules[ruleName];
-
-  if (!rule) {
-    // If rule doesn't exist, return the literal
-    return ruleName;
-  }
-
-  // String rule - check if it references another rule
-  if (typeof rule === 'string') {
-    if (grammar.rules[rule]) {
-      return expandRule(rule, grammar, random, depth + 1);
-    }
-    return rule;
-  }
-
-  // Array rule - pick random alternative
-  if (Array.isArray(rule)) {
-    const index = Math.floor(random() * rule.length);
-    const selected = rule[index];
-
-    // If selected is a reference to another rule
-    if (typeof selected === 'string' && grammar.rules[selected]) {
-      return expandRule(selected, grammar, random, depth + 1);
-    }
-
-    return selected;
-  }
-
-  // Object rule - expand each property
-  if (typeof rule === 'object') {
-    const expanded: Record<string, string> = {};
-    for (const [key, value] of Object.entries(rule)) {
-      if (typeof value === 'string') {
-        expanded[key] = grammar.rules[value]
-          ? expandRule(value, grammar, random, depth + 1)
-          : value;
-      } else if (Array.isArray(value)) {
-        const index = Math.floor(random() * value.length);
-        const selected = value[index];
-        expanded[key] = typeof selected === 'string' ? selected : JSON.stringify(selected);
-      } else {
-        expanded[key] = JSON.stringify(value);
-      }
-    }
-    return JSON.stringify(expanded);
-  }
-
-  return String(rule);
-}
-
-/**
- * Generates a recipe from grammar
- */
-function generateRecipeFromGrammar(grammar: Grammar, seed?: string): Recipe {
-  const random = seed ? createSeededRandom(seed) : Math.random;
-  const grammarHash = createHash('sha256').update(JSON.stringify(grammar)).digest('hex');
-
-  // Expand the start rule
-  const expanded = expandRule(grammar.start, grammar, random);
-
-  // Parse the expanded result to extract steps
-  let steps: Array<{ action: string; details: string; order: number }> = [];
-
-  try {
-    // Try to parse as JSON if it's an object
-    const parsed = JSON.parse(expanded);
-
-    if (parsed.steps && Array.isArray(parsed.steps)) {
-      steps = parsed.steps.map((step: any, index: number) => ({
-        action: step.action || `Step ${index + 1}`,
-        details: step.details || step.description || '',
-        order: index,
-      }));
-    } else {
-      // Convert object properties to steps
-      steps = Object.entries(parsed).map(([key, value], index) => ({
-        action: key,
-        details: String(value),
-        order: index,
-      }));
-    }
-  } catch {
-    // If not JSON, treat as single step
-    steps = [
-      {
-        action: 'Execute',
-        details: expanded,
-        order: 0,
-      },
-    ];
-  }
-
-  return {
-    name: grammar.start,
-    steps,
-    metadata: {
-      generatedAt: new Date().toISOString(),
-      grammarHash: grammarHash.substring(0, 16),
-    },
+    state = (state * 1664525 + 1013904223) | 0;
+    return (state >>> 0) / 4294967296;
   };
 }
 
 /**
  * Recipe Generate from Grammar Tool
- * Generates recipes following a grammar template with rules
+ * Generates recipes following the Acquire→Extract→Analyze→Output pattern
  */
 export const recipeGenerateFromGrammarTool = tool({
   description:
-    'Generate recipes following a grammar/template with rules. Useful for creating structured workflows or recipes from a formal grammar definition. Supports optional seeding for deterministic generation.',
+    'Expands workflow templates into concrete recipes using grammar rules. Follows the Acquire→Extract→Analyze→Output pattern, fills slots from tool catalog, and samples to requested count.',
   inputSchema: jsonSchema<RecipeGenerateInput>({
     type: 'object',
     properties: {
-      grammar: {
-        type: 'object',
-        description:
-          'Grammar definition with "start" rule name and "rules" object mapping rule names to values (strings, arrays of alternatives, or nested objects)',
-        properties: {
-          start: {
-            type: 'string',
-            description: 'Name of the starting rule to expand',
+      templates: {
+        type: 'array',
+        description: 'Workflow templates to expand',
+        items: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            pattern: { type: 'string' },
           },
-          rules: {
-            type: 'object',
-            description: 'Map of rule names to their definitions',
-            additionalProperties: true,
-          },
+          required: ['name', 'pattern'],
         },
-        required: ['start', 'rules'],
       },
-      seed: {
-        type: 'string',
-        description: 'Optional seed string for deterministic generation',
+      catalog: {
+        type: 'array',
+        description: 'Tool catalog for slot filling',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            name: { type: 'string' },
+            category: { type: 'string' },
+          },
+          required: ['id', 'name', 'category'],
+        },
+      },
+      n: {
+        type: 'number',
+        description: 'Number of recipes to generate',
       },
     },
-    required: ['grammar'],
+    required: ['templates', 'catalog', 'n'],
     additionalProperties: false,
   }),
-  async execute({ grammar, seed }): Promise<RecipeGenerateResult> {
+  async execute({ templates, catalog, n }): Promise<RecipeGenerateResult> {
     // Validate inputs
-    validateGrammar(grammar);
+    if (!Array.isArray(templates) || templates.length === 0) {
+      throw new Error('Templates must be a non-empty array');
+    }
+    if (!Array.isArray(catalog)) {
+      throw new Error('Catalog must be an array');
+    }
+    if (typeof n !== 'number' || n < 1 || n > 100) {
+      throw new Error('n must be a number between 1 and 100');
+    }
 
-    // Generate the recipe
-    const recipe = generateRecipeFromGrammar(grammar, seed);
+    // Generate recipes by sampling templates
+    const recipes: Recipe[] = [];
+    const templatesUsed: string[] = [];
+
+    for (let i = 0; i < n; i++) {
+      const templateIndex = i % templates.length;
+      const template = templates[templateIndex]!;
+      const random = createSeededRandom(i * 12345);
+
+      const recipe = expandTemplate(template, catalog, random);
+      recipes.push(recipe);
+
+      if (!templatesUsed.includes(template.name)) {
+        templatesUsed.push(template.name);
+      }
+    }
 
     return {
-      recipe,
-      stepsGenerated: recipe.steps.length,
-      grammarUsed: grammar.start,
+      recipes,
+      count: recipes.length,
+      templatesUsed,
     };
   },
 });

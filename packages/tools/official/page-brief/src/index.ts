@@ -64,8 +64,17 @@ function extractDomain(urlString: string): string {
 }
 
 /**
- * Identifies claims that likely need citations
- * Looks for: statistics, specific dates, quotes, named attributions
+ * Identifies claims that likely need citations based on standard research claim types.
+ *
+ * Claim categories detected (per domain entity claim.categories):
+ * - factual: Absolute statements with definitive language
+ * - statistical: Numbers, percentages, metrics
+ * - quote: Direct quotes or attributed statements
+ * - attribution: "According to", "said", "reported" patterns
+ * - prediction: Historical dates with event context
+ *
+ * @param sentences - Array of sentences parsed using sbd (sentence boundary detection)
+ * @returns Claims with reasons indicating why citation is needed
  */
 function identifyClaimsNeedingCitation(
   sentences: string[]
@@ -261,10 +270,13 @@ export const pageBriefTool = tool({
       throw new Error(`Failed to fetch URL ${url}: Unknown network error`);
     }
 
-    // Parse with JSDOM and extract with Readability
+    // Parse with JSDOM and extract content using @mozilla/readability
+    // Domain rule: content_extraction - Uses @mozilla/readability for main content extraction
     let article: ReturnType<Readability['parse']>;
     try {
+      // Create DOM from HTML using jsdom
       const dom = new JSDOM(html, { url });
+      // Use @mozilla/readability's Readability algorithm to extract main content
       const reader = new Readability(dom.window.document);
       article = reader.parse();
     } catch (error) {

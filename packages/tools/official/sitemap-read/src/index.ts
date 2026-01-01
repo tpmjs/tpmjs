@@ -37,17 +37,11 @@ export interface SitemapIndexEntry {
 export interface Sitemap {
   urls: SitemapUrl[];
   isSitemapIndex: boolean;
-  urlCount: number;
-  sitemapIndexUrls?: SitemapIndexEntry[];
-  metadata: {
-    fetchedAt: string;
-    sourceUrl: string;
-    type: 'urlset' | 'sitemapindex';
-  };
+  lastmod?: string;
 }
 
 type SitemapReadInput = {
-  url: string;
+  sitemapUrl: string;
 };
 
 /**
@@ -80,22 +74,22 @@ export const sitemapReadTool = tool({
   inputSchema: jsonSchema<SitemapReadInput>({
     type: 'object',
     properties: {
-      url: {
+      sitemapUrl: {
         type: 'string',
-        description: 'The sitemap.xml URL to parse (must be http or https)',
+        description: 'The sitemap URL to parse (must be http or https)',
       },
     },
-    required: ['url'],
+    required: ['sitemapUrl'],
     additionalProperties: false,
   }),
-  async execute({ url }): Promise<Sitemap> {
+  async execute({ sitemapUrl }): Promise<Sitemap> {
     // Validate URL
-    if (!url || typeof url !== 'string') {
-      throw new Error('URL is required and must be a string');
+    if (!sitemapUrl || typeof sitemapUrl !== 'string') {
+      throw new Error('Sitemap URL is required and must be a string');
     }
 
-    if (!isValidUrl(url)) {
-      throw new Error(`Invalid URL: ${url}. Must be a valid http or https URL.`);
+    if (!isValidUrl(sitemapUrl)) {
+      throw new Error(`Invalid URL: ${sitemapUrl}. Must be a valid http or https URL.`);
     }
 
     // Fetch the sitemap with comprehensive error handling
@@ -104,7 +98,7 @@ export const sitemapReadTool = tool({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-      const response = await fetch(url, {
+      const response = await fetch(sitemapUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (compatible; TPMJSBot/1.0; +https://tpmjs.com)',
           Accept: 'application/xml, text/xml, application/x-xml',
@@ -122,7 +116,7 @@ export const sitemapReadTool = tool({
       if (
         !contentType.includes('xml') &&
         !contentType.includes('text/plain') &&
-        !url.endsWith('.xml')
+        !sitemapUrl.endsWith('.xml')
       ) {
         throw new Error(
           `Invalid content type: ${contentType}. Expected XML content. The URL may not point to a sitemap.`
@@ -137,25 +131,26 @@ export const sitemapReadTool = tool({
     } catch (error) {
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          throw new Error(`Request to ${url} timed out after 30 seconds`);
+          throw new Error(`Request to ${sitemapUrl} timed out after 30 seconds`);
         }
         if (error.message.includes('ENOTFOUND') || error.message.includes('getaddrinfo')) {
-          throw new Error(`DNS resolution failed for ${url}. Check the domain name.`);
+          throw new Error(`DNS resolution failed for ${sitemapUrl}. Check the domain name.`);
         }
         if (error.message.includes('ECONNREFUSED')) {
-          throw new Error(`Connection refused to ${url}. The server may be down.`);
+          throw new Error(`Connection refused to ${sitemapUrl}. The server may be down.`);
         }
         if (error.message.includes('404')) {
           throw new Error(
-            `Sitemap not found at ${url}. Try checking /sitemap.xml or /sitemap_index.xml`
+            `Sitemap not found at ${sitemapUrl}. Try checking /sitemap.xml or /sitemap_index.xml`
           );
         }
-        throw new Error(`Failed to fetch sitemap from ${url}: ${error.message}`);
+        throw new Error(`Failed to fetch sitemap from ${sitemapUrl}: ${error.message}`);
       }
-      throw new Error(`Failed to fetch sitemap from ${url}: Unknown network error`);
+      throw new Error(`Failed to fetch sitemap from ${sitemapUrl}: Unknown network error`);
     }
 
-    // Parse XML
+    // Parse XML using fast-xml-parser
+    // Domain rule: xml_parsing - Uses fast-xml-parser for robust XML sitemap parsing
     let parsedXml: Record<string, unknown>;
     try {
       const parser = new XMLParser({
@@ -168,24 +163,23 @@ export const sitemapReadTool = tool({
       parsedXml = parser.parse(xml);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to parse XML from ${url}: ${message}`);
+      throw new Error(`Failed to parse XML from ${sitemapUrl}: ${message}`);
     }
 
     // Determine sitemap type and extract data
+    // Domain rule: sitemap_index_handling - Must detect and handle sitemap index files
     let isSitemapIndex = false;
     let urls: SitemapUrl[] = [];
-    let sitemapIndexUrls: SitemapIndexEntry[] | undefined;
-    let sitemapType: 'urlset' | 'sitemapindex' = 'urlset';
+    let lastmod: string | undefined;
 
     // Check for sitemap index
     if (parsedXml.sitemapindex) {
       isSitemapIndex = true;
-      sitemapType = 'sitemapindex';
 
       const sitemapData = parsedXml.sitemapindex as Record<string, unknown>;
       const sitemaps = normalizeUrlArray(sitemapData.sitemap);
 
-      sitemapIndexUrls = sitemaps.map((sitemap: unknown) => {
+      const sitemapIndexUrls = sitemaps.map((sitemap: unknown) => {
         const sitemapObj = sitemap as Record<string, unknown>;
         return {
           loc: String(sitemapObj.loc || ''),
@@ -198,6 +192,14 @@ export const sitemapReadTool = tool({
         loc: entry.loc,
         lastmod: entry.lastmod,
       }));
+
+      // Use the most recent lastmod from the index
+      const lastmods = sitemapIndexUrls
+        .map((s) => s.lastmod)
+        .filter((d): d is string => d !== undefined);
+      if (lastmods.length > 0) {
+        lastmod = lastmods.sort().reverse()[0];
+      }
     }
     // Check for regular sitemap (urlset)
     else if (parsedXml.urlset) {
@@ -213,29 +215,30 @@ export const sitemapReadTool = tool({
           priority: urlObj.priority ? String(urlObj.priority) : undefined,
         };
       });
+
+      // Use the most recent lastmod from the URLs
+      const lastmods = urls.map((u) => u.lastmod).filter((d): d is string => d !== undefined);
+      if (lastmods.length > 0) {
+        lastmod = lastmods.sort().reverse()[0];
+      }
     } else {
       throw new Error(
-        `Invalid sitemap format at ${url}. Expected <urlset> or <sitemapindex> root element.`
+        `Invalid sitemap format at ${sitemapUrl}. Expected <urlset> or <sitemapindex> root element.`
       );
     }
 
     // Validate we have URLs
+    // Domain rule: empty_sitemap_handling - Must handle empty sitemaps gracefully
     if (urls.length === 0) {
       throw new Error(
-        `Sitemap at ${url} has no URLs. The sitemap may be empty or improperly formatted.`
+        `Sitemap at ${sitemapUrl} has no URLs. The sitemap may be empty or improperly formatted.`
       );
     }
 
     return {
       urls,
       isSitemapIndex,
-      urlCount: urls.length,
-      sitemapIndexUrls: isSitemapIndex ? sitemapIndexUrls : undefined,
-      metadata: {
-        fetchedAt: new Date().toISOString(),
-        sourceUrl: url,
-        type: sitemapType,
-      },
+      lastmod,
     };
   },
 });

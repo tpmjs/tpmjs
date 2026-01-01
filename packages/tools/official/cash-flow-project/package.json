@@ -1,0 +1,84 @@
+{
+  "name": "@tpmjs/official-cash-flow-project",
+  "version": "0.1.0",
+  "description": "Projects cash flow based on receivables, payables, and recurring items",
+  "type": "module",
+  "keywords": ["tpmjs", "finance", "cash-flow", "projection", "runway"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/cash-flow-project"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "finance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "cashFlowProjectTool",
+        "description": "Projects cash flow based on receivables, payables, and recurring items",
+        "parameters": [
+          {
+            "name": "currentCash",
+            "type": "number",
+            "description": "Current cash balance",
+            "required": true
+          },
+          {
+            "name": "receivables",
+            "type": "array",
+            "description": "Expected receivables with due dates",
+            "required": true
+          },
+          {
+            "name": "payables",
+            "type": "array",
+            "description": "Expected payables with due dates",
+            "required": true
+          },
+          {
+            "name": "recurringItems",
+            "type": "array",
+            "description": "Recurring revenue or expenses",
+            "required": false
+          },
+          {
+            "name": "projectionMonths",
+            "type": "number",
+            "description": "Number of months to project",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "CashFlowProjectResult",
+          "description": "Cash flow projections with runway calculation"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

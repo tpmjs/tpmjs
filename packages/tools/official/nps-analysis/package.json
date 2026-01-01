@@ -1,0 +1,69 @@
+{
+  "name": "@tpmjs/nps-analysis",
+  "version": "0.1.0",
+  "description": "Analyzes NPS survey responses to categorize by promoter/detractor and extract themes",
+  "type": "module",
+  "keywords": ["tpmjs", "cx", "nps", "survey", "customer-success", "analytics"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajaxdavis/tpmjs.git",
+    "directory": "packages/tools/official/nps-analysis"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "cx",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "exportName": "npsAnalysisTool",
+        "description": "Analyzes NPS survey responses to categorize by promoter/passive/detractor and extract themes from comments. Provides NPS score, distribution, and actionable insights.",
+        "parameters": [
+          {
+            "name": "responses",
+            "type": "object[]",
+            "description": "NPS survey responses with score (0-10) and optional comment",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "NPSAnalysis",
+          "description": "NPS breakdown with score, distribution, themes by category, and recommendations"
+        },
+        "aiAgent": {
+          "useCase": "Use this tool to analyze NPS survey results, identify themes from promoters and detractors, and extract actionable insights for product and customer success teams.",
+          "limitations": "Theme extraction is keyword-based. For deeper sentiment analysis, consider using an AI model. Requires sufficient response volume for meaningful analysis.",
+          "examples": [
+            "Analyze quarterly NPS survey results",
+            "Extract themes from detractor comments",
+            "Compare promoter vs detractor feedback"
+          ]
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -34,6 +34,8 @@ export interface PostmortemDraft {
 
 /**
  * Calculates incident duration from timeline
+ *
+ * Domain rule: time_calculation - Parses ISO timestamps, calculates duration in minutes/hours/days
  */
 function calculateDuration(timeline: TimelineEvent[]): string | null {
   if (timeline.length < 2) return null;
@@ -74,6 +76,8 @@ function calculateDuration(timeline: TimelineEvent[]): string | null {
 
 /**
  * Assesses severity based on timeline and root cause
+ *
+ * Domain rule: severity_heuristic - Uses keyword matching (outage, failure, data loss) and event count to classify severity
  */
 function assessSeverity(
   timeline: TimelineEvent[],
@@ -119,7 +123,34 @@ function assessSeverity(
 }
 
 /**
+ * Converts text to use blameless language focusing on systems not people
+ *
+ * Domain rule: blameless_language - Uses regex to replace blame-focused phrases (failed, broke, user error) with system-focused language (system experienced, process gap)
+ */
+function toBlamelessLanguage(text: string): string {
+  // Replace blame-focused phrases with system-focused phrases
+  return text
+    .replace(
+      /\b(who|whoever|someone|somebody|person|people|team|engineer|developer)s?\s+(broke|failed|caused|didn't|forgot|missed|screwed up|messed up|fucked up)/gi,
+      'the system experienced'
+    )
+    .replace(/\b(mistake|error|fault|blame|failure)\s+(by|from|of)\s+\w+/gi, 'system issue')
+    .replace(
+      /\b(john|jane|bob|alice|team\s+\w+)\s+(broke|failed|caused)/gi,
+      'the system experienced'
+    )
+    .replace(/\b(user error|human error|manual error)/gi, 'process gap')
+    .replace(/\bfailed to\b/gi, 'did not')
+    .replace(/\bshould have\b/gi, 'could have')
+    .replace(/\bneglected to\b/gi, 'did not');
+}
+
+/**
  * Generates the postmortem markdown
+ *
+ * Domain rule: doc_sections - Follows postmortem pattern: Header -> Summary -> Timeline -> Root Cause -> Action Items -> Lessons Learned
+ * Domain rule: markdown_template - Uses # for title, ## for sections, blockquote (>) for blameless notice
+ * Domain rule: blameless_language - Transforms all user content through toBlamelessLanguage() before rendering
  */
 function generatePostmortem(
   title: string,
@@ -129,8 +160,21 @@ function generatePostmortem(
 ): string {
   const lines: string[] = [];
 
+  // Apply blameless language transformation to all user-provided content
+  const blamelessTitle = toBlamelessLanguage(title);
+  const blamelessRootCause = toBlamelessLanguage(rootCause);
+  const blamelessTimeline = timeline.map((event) => ({
+    time: event.time,
+    event: toBlamelessLanguage(event.event),
+  }));
+  const blamelessActionItems = actionItems.map((item) => toBlamelessLanguage(item));
+
   // Header
-  lines.push(`# Postmortem: ${title}`);
+  lines.push(`# Postmortem: ${blamelessTitle}`);
+  lines.push('');
+  lines.push(
+    '> This postmortem follows blameless principles, focusing on systems and processes rather than individuals.'
+  );
   lines.push('');
 
   // Metadata
@@ -143,11 +187,11 @@ function generatePostmortem(
   if (duration) {
     lines.push(`**Duration:** ${duration}`);
   }
-  const firstEvent = timeline[0];
-  const lastEvent = timeline[timeline.length - 1];
+  const firstEvent = blamelessTimeline[0];
+  const lastEvent = blamelessTimeline[blamelessTimeline.length - 1];
   if (firstEvent) {
     lines.push(`**Start Time:** ${firstEvent.time}`);
-    if (timeline.length > 1 && lastEvent) {
+    if (blamelessTimeline.length > 1 && lastEvent) {
       lines.push(`**End Time:** ${lastEvent.time}`);
     }
   }
@@ -156,7 +200,7 @@ function generatePostmortem(
   // Timeline
   lines.push('## Timeline');
   lines.push('');
-  for (const event of timeline) {
+  for (const event of blamelessTimeline) {
     lines.push(`- **${event.time}** - ${event.event}`);
   }
   lines.push('');
@@ -164,33 +208,35 @@ function generatePostmortem(
   // Root Cause
   lines.push('## Root Cause Analysis');
   lines.push('');
-  lines.push(rootCause);
+  lines.push(blamelessRootCause);
   lines.push('');
 
   // Action Items
   lines.push('## Action Items');
   lines.push('');
-  for (let i = 0; i < actionItems.length; i++) {
-    lines.push(`${i + 1}. ${actionItems[i]}`);
+  for (let i = 0; i < blamelessActionItems.length; i++) {
+    lines.push(`${i + 1}. ${blamelessActionItems[i]}`);
   }
   lines.push('');
 
   // What Went Well
   lines.push('## What Went Well');
   lines.push('');
-  lines.push('- [To be filled in during review]');
+  lines.push(
+    '- [To be filled in during review - focus on system responses and team collaboration]'
+  );
   lines.push('');
 
-  // What Went Wrong
-  lines.push('## What Went Wrong');
+  // What Could Be Improved
+  lines.push('## What Could Be Improved');
   lines.push('');
-  lines.push('- [To be filled in during review]');
+  lines.push('- [To be filled in during review - focus on system gaps and process improvements]');
   lines.push('');
 
   // Lessons Learned
   lines.push('## Lessons Learned');
   lines.push('');
-  lines.push('- [To be filled in during review]');
+  lines.push('- [To be filled in during review - focus on system behaviors and detection methods]');
   lines.push('');
 
   // Footer
@@ -250,6 +296,7 @@ export const postmortemDraftTool = tool({
     additionalProperties: false,
   }),
   async execute({ title, timeline, rootCause, actionItems }): Promise<PostmortemDraft> {
+    // Domain rule: input_validation - Validates required fields (title, timeline, rootCause, actionItems), types, and non-empty constraints
     // Validate inputs
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
       throw new Error('Title is required and must be a non-empty string');

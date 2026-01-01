@@ -1,20 +1,13 @@
 /**
  * Links Catalog Tool for TPMJS
- * Extracts and categorizes all links from web pages into:
+ * Extracts and categorizes all links from HTML content into:
  * - Internal links (same domain)
  * - External links (different domain)
  * - Anchor links (same page)
- *
- * @requires Node.js 18+ (uses native fetch API)
  */
 
 import { jsonSchema, tool } from 'ai';
 import * as cheerio from 'cheerio';
-
-// Verify fetch is available (Node.js 18+)
-if (typeof globalThis.fetch !== 'function') {
-  throw new Error('Links Catalog tool requires Node.js 18+ with native fetch support');
-}
 
 /**
  * Represents a single link with its text and href
@@ -41,7 +34,8 @@ export interface LinksCatalog {
 }
 
 type LinksCatalogInput = {
-  url: string;
+  html: string;
+  baseUrl: string;
 };
 
 /**
@@ -130,86 +124,47 @@ function categorizeLink(
 
 /**
  * Links Catalog Tool
- * Fetches a URL and extracts all links, categorized by type
+ * Extracts all links from HTML content, categorized by type
  */
 export const linksCatalogTool = tool({
   description:
-    'Extract and categorize all links from a web page. Links are organized into three categories: internal (same domain), external (different domain), and anchors (same page). Each link includes its href, visible text, and optional title attribute. Useful for SEO analysis, site mapping, and understanding page structure.',
+    'Extract and categorize all links from HTML content. Links are organized into three categories: internal (same domain), external (different domain), and anchors (same page). Each link includes its href, visible text, and optional title attribute. Useful for SEO analysis, site mapping, and understanding page structure.',
   inputSchema: jsonSchema<LinksCatalogInput>({
     type: 'object',
     properties: {
-      url: {
+      html: {
         type: 'string',
-        description: 'The URL to fetch and extract links from (must be http or https)',
+        description: 'The HTML content to parse',
+      },
+      baseUrl: {
+        type: 'string',
+        description: 'The base URL for resolution and classification (must be http or https)',
       },
     },
-    required: ['url'],
+    required: ['html', 'baseUrl'],
     additionalProperties: false,
   }),
-  async execute({ url }): Promise<LinksCatalog> {
-    // Validate URL
-    if (!url || typeof url !== 'string') {
-      throw new Error('URL is required and must be a string');
+  async execute({ html, baseUrl }): Promise<LinksCatalog> {
+    // Validate inputs
+    if (!html || typeof html !== 'string') {
+      throw new Error('HTML is required and must be a string');
     }
 
-    if (!isValidUrl(url)) {
-      throw new Error(`Invalid URL: ${url}. Must be a valid http or https URL.`);
+    if (!baseUrl || typeof baseUrl !== 'string') {
+      throw new Error('baseUrl is required and must be a string');
     }
 
-    // Fetch the page
-    let html: string;
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    if (!isValidUrl(baseUrl)) {
+      throw new Error(`Invalid baseUrl: ${baseUrl}. Must be a valid http or https URL.`);
+    }
 
-      const response = await fetch(url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (compatible; TPMJSBot/1.0; +https://tpmjs.com)',
-          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const contentType = response.headers.get('content-type') || '';
-      if (!contentType.includes('text/html') && !contentType.includes('application/xhtml')) {
-        throw new Error(`Invalid content type: ${contentType}. Expected HTML content.`);
-      }
-
-      html = await response.text();
-
-      if (!html || html.trim().length === 0) {
-        throw new Error('Received empty response from server');
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          throw new Error(`Request to ${url} timed out after 30 seconds`);
-        }
-        if (error.message.includes('ENOTFOUND') || error.message.includes('getaddrinfo')) {
-          throw new Error(`DNS resolution failed for ${url}. Check the domain name.`);
-        }
-        if (error.message.includes('ECONNREFUSED')) {
-          throw new Error(`Connection refused to ${url}. The server may be down.`);
-        }
-        if (error.message.includes('CERT_')) {
-          throw new Error(
-            `SSL certificate error for ${url}. The site may have an invalid certificate.`
-          );
-        }
-        throw new Error(`Failed to fetch URL ${url}: ${error.message}`);
-      }
-      throw new Error(`Failed to fetch URL ${url}: Unknown network error`);
+    if (html.trim().length === 0) {
+      throw new Error('HTML content cannot be empty');
     }
 
     // Parse HTML with cheerio
     const $ = cheerio.load(html);
-    const baseDomain = extractDomain(url);
+    const baseDomain = extractDomain(baseUrl);
 
     // Extract all links
     const internal: Link[] = [];
@@ -223,7 +178,7 @@ export const linksCatalogTool = tool({
       if (!rawHref) return;
 
       // Normalize the URL
-      const normalizedHref = normalizeUrl(rawHref, url);
+      const normalizedHref = normalizeUrl(rawHref, baseUrl);
       if (!normalizedHref) return;
 
       // Skip duplicates
@@ -260,7 +215,7 @@ export const linksCatalogTool = tool({
     const total = internal.length + external.length + anchors.length;
 
     return {
-      url,
+      url: baseUrl,
       internal,
       external,
       anchors,

@@ -1,173 +1,286 @@
 /**
  * Meeting Minutes Format Tool for TPMJS
- * Formats meeting minutes from structured input into professional markdown format.
+ * Parses raw meeting notes and extracts decisions, action items, and key points.
  */
 
 import { jsonSchema, tool } from 'ai';
 
 /**
- * Meeting agenda item
+ * Decision extracted from meeting notes
  */
-export interface MeetingItem {
-  topic: string;
-  discussion: string;
-  action?: string;
+export interface Decision {
+  decision: string;
+  context?: string;
 }
 
 /**
- * Action item extracted from meeting
+ * Action item extracted from meeting notes
  */
 export interface ActionItem {
-  topic: string;
   action: string;
+  owner?: string;
+  dueDate?: string;
 }
 
 /**
  * Output interface for meeting minutes
  */
-export interface MeetingMinutesResult {
-  minutes: string;
+export interface MeetingMinutes {
+  summary: string;
+  decisions: Decision[];
   actionItems: ActionItem[];
-  attendeeCount: number;
+  keyPoints: string[];
+  attendees: string[];
 }
 
 type MeetingMinutesInput = {
-  title: string;
-  date: string;
-  attendees: string[];
-  items: MeetingItem[];
+  notes: string;
 };
 
 /**
- * Formats a single meeting item as markdown
+ * Cue phrases for detecting decisions
  */
-function formatMeetingItem(item: MeetingItem, index: number): string {
-  let markdown = `### ${index + 1}. ${item.topic}\n\n`;
-  markdown += `${item.discussion}\n\n`;
-
-  if (item.action) {
-    markdown += `**Action:** ${item.action}\n\n`;
-  }
-
-  return markdown;
-}
+const DECISION_CUES = [
+  'decided',
+  'decision',
+  'agree',
+  'agreed',
+  'consensus',
+  'conclude',
+  'concluded',
+  'resolution',
+  'resolved',
+  'will',
+  'going to',
+];
 
 /**
- * Formats the complete meeting minutes as markdown
+ * Cue phrases for detecting action items
  */
-function formatMinutes(input: MeetingMinutesInput): string {
-  let markdown = `# ${input.title}\n\n`;
-  markdown += `**Date:** ${input.date}\n\n`;
-  markdown += `**Attendees:** ${input.attendees.join(', ')}\n\n`;
-  markdown += '---\n\n';
+const ACTION_CUES = [
+  'action',
+  'todo',
+  'task',
+  'owner',
+  'responsible',
+  'assign',
+  'follow up',
+  'needs to',
+  'should',
+  'must',
+];
 
-  markdown += '## Discussion\n\n';
+/**
+ * Extracts attendees from notes (looks for "Attendees:", "Present:", etc.)
+ */
+function extractAttendees(notes: string): string[] {
+  const lines = notes.split('\n');
+  const attendees: string[] = [];
 
-  for (let i = 0; i < input.items.length; i++) {
-    const item = input.items[i];
-    if (item) {
-      markdown += formatMeetingItem(item, i);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Match patterns like "Attendees: John, Jane" or "Present: John, Jane"
+    const match = trimmed.match(/^(?:attendees?|present|participants?):\s*(.+)$/i);
+    if (match?.[1]) {
+      const names = match[1].split(/[,;]/).map((n) => n.trim());
+      attendees.push(...names.filter((n) => n.length > 0));
     }
   }
 
-  return markdown.trim();
+  return attendees;
 }
 
 /**
- * Extracts action items from meeting items
+ * Extracts decisions from notes using cue phrase detection
  */
-function extractActionItems(items: MeetingItem[]): ActionItem[] {
-  return items
-    .filter((item) => item.action)
-    .map((item) => ({
-      topic: item.topic,
-      action: item.action as string,
-    }));
+function extractDecisions(notes: string): Decision[] {
+  const lines = notes.split('\n');
+  const decisions: Decision[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Check if line contains decision cue phrases
+    const lowerLine = trimmed.toLowerCase();
+    const hasDecisionCue = DECISION_CUES.some((cue) => lowerLine.includes(cue));
+
+    if (hasDecisionCue) {
+      // Clean up bullet points and markers
+      const cleaned = trimmed
+        .replace(/^[-*•]\s*/, '')
+        .replace(/^decision:\s*/i, '')
+        .replace(/^decided:\s*/i, '');
+
+      if (cleaned.length > 10) {
+        decisions.push({ decision: cleaned });
+      }
+    }
+  }
+
+  return decisions;
+}
+
+/**
+ * Extracts action items from notes using cue phrase detection
+ */
+function extractActionItems(notes: string): ActionItem[] {
+  const lines = notes.split('\n');
+  const actions: ActionItem[] = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Check if line contains action cue phrases
+    const lowerLine = trimmed.toLowerCase();
+    const hasActionCue = ACTION_CUES.some((cue) => lowerLine.includes(cue));
+
+    if (hasActionCue) {
+      // Clean up bullet points and markers
+      let cleaned = trimmed.replace(/^[-*•]\s*/, '').replace(/^action:\s*/i, '');
+
+      // Try to extract owner (e.g., "@John" or "Owner: John" or "(John)")
+      let owner: string | undefined;
+      const ownerMatch =
+        cleaned.match(/@(\w+)/i) ||
+        cleaned.match(/owner:\s*(\w+)/i) ||
+        cleaned.match(/\(([^)]+)\)/);
+
+      if (ownerMatch?.[1]) {
+        owner = ownerMatch[1];
+        // Remove owner from action text
+        cleaned = cleaned.replace(ownerMatch[0], '').trim();
+      }
+
+      // Try to extract due date (e.g., "by Friday" or "due 12/31")
+      let dueDate: string | undefined;
+      const dateMatch = cleaned.match(/by\s+(\w+)/i) || cleaned.match(/due\s+([^\s,]+)/i);
+
+      if (dateMatch?.[1]) {
+        dueDate = dateMatch[1];
+        // Remove due date from action text
+        cleaned = cleaned.replace(dateMatch[0], '').trim();
+      }
+
+      if (cleaned.length > 5) {
+        actions.push({
+          action: cleaned,
+          owner,
+          dueDate,
+        });
+      }
+    }
+  }
+
+  return actions;
+}
+
+/**
+ * Extracts key points that aren't decisions or actions
+ */
+function extractKeyPoints(notes: string, decisions: Decision[], actions: ActionItem[]): string[] {
+  const lines = notes.split('\n');
+  const keyPoints: string[] = [];
+  const decisionTexts = new Set(decisions.map((d) => d.decision.toLowerCase()));
+  const actionTexts = new Set(actions.map((a) => a.action.toLowerCase()));
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Skip header lines, attendee lists, etc.
+    if (/^(attendees?|present|participants?|agenda|date|time|location):/i.test(trimmed)) {
+      continue;
+    }
+
+    // Clean up bullet points
+    const cleaned = trimmed.replace(/^[-*•]\s*/, '').replace(/^\d+\.\s*/, '');
+
+    // Skip if it's too short or already a decision/action
+    if (cleaned.length < 10) continue;
+    if (decisionTexts.has(cleaned.toLowerCase())) continue;
+    if (actionTexts.has(cleaned.toLowerCase())) continue;
+
+    // Add as key point if it looks substantive
+    if (cleaned.length > 20 || /[.!?]$/.test(cleaned)) {
+      keyPoints.push(cleaned);
+    }
+  }
+
+  return keyPoints.slice(0, 10); // Limit to top 10 key points
+}
+
+/**
+ * Generates a summary from the notes
+ */
+function generateSummary(
+  decisions: Decision[],
+  actions: ActionItem[],
+  keyPoints: string[]
+): string {
+  const parts: string[] = [];
+
+  if (decisions.length > 0) {
+    parts.push(`${decisions.length} decision${decisions.length === 1 ? '' : 's'} made`);
+  }
+
+  if (actions.length > 0) {
+    parts.push(`${actions.length} action item${actions.length === 1 ? '' : 's'}`);
+  }
+
+  if (keyPoints.length > 0) {
+    parts.push(`${keyPoints.length} key point${keyPoints.length === 1 ? '' : 's'}`);
+  }
+
+  if (parts.length === 0) {
+    return 'Meeting notes processed';
+  }
+
+  return `Meeting summary: ${parts.join(', ')}`;
 }
 
 /**
  * Meeting Minutes Format Tool
- * Converts structured meeting data into formatted markdown minutes
+ * Parses raw meeting notes and extracts decisions, action items, and key points
  */
 export const meetingMinutesFormatTool = tool({
   description:
-    'Formats meeting minutes from structured input into professional markdown. Takes a meeting title, date, list of attendees, and discussion items with optional action items. Returns formatted minutes in markdown, extracted action items, and attendee count.',
+    'Parse raw meeting notes and extract structured information including decisions, action items, and key points. Uses cue phrase detection to identify decisions (decided, agreed, consensus) and actions (action, todo, owner). Returns formatted meeting minutes with all extracted information.',
   inputSchema: jsonSchema<MeetingMinutesInput>({
     type: 'object',
     properties: {
-      title: {
+      notes: {
         type: 'string',
-        description: 'The title of the meeting',
-      },
-      date: {
-        type: 'string',
-        description: 'The date of the meeting (any format)',
-      },
-      attendees: {
-        type: 'array',
-        description: 'List of attendee names',
-        items: {
-          type: 'string',
-        },
-      },
-      items: {
-        type: 'array',
-        description: 'Meeting agenda items with discussion and optional actions',
-        items: {
-          type: 'object',
-          properties: {
-            topic: {
-              type: 'string',
-              description: 'The topic or agenda item',
-            },
-            discussion: {
-              type: 'string',
-              description: 'Discussion notes for this topic',
-            },
-            action: {
-              type: 'string',
-              description: 'Optional action item or next step',
-            },
-          },
-          required: ['topic', 'discussion'],
-        },
+        description: 'Raw meeting notes to parse and format',
       },
     },
-    required: ['title', 'date', 'attendees', 'items'],
+    required: ['notes'],
     additionalProperties: false,
   }),
-  async execute({ title, date, attendees, items }): Promise<MeetingMinutesResult> {
-    // Validate inputs
-    if (!title || typeof title !== 'string') {
-      throw new Error('title is required and must be a string');
+  async execute({ notes }): Promise<MeetingMinutes> {
+    // Validate input
+    if (!notes || typeof notes !== 'string') {
+      throw new Error('notes is required and must be a string');
     }
 
-    if (!date || typeof date !== 'string') {
-      throw new Error('date is required and must be a string');
+    if (notes.trim().length === 0) {
+      throw new Error('notes cannot be empty');
     }
 
-    if (!Array.isArray(attendees) || attendees.length === 0) {
-      throw new Error('attendees is required and must be a non-empty array');
-    }
-
-    if (!Array.isArray(items) || items.length === 0) {
-      throw new Error('items is required and must be a non-empty array');
-    }
-
-    // Validate each item
-    for (const item of items) {
-      if (!item.topic || !item.discussion) {
-        throw new Error('Each item must have both topic and discussion');
-      }
-    }
-
-    const minutes = formatMinutes({ title, date, attendees, items });
-    const actionItems = extractActionItems(items);
+    // Extract structured information
+    const decisions = extractDecisions(notes);
+    const actionItems = extractActionItems(notes);
+    const attendees = extractAttendees(notes);
+    const keyPoints = extractKeyPoints(notes, decisions, actionItems);
+    const summary = generateSummary(decisions, actionItems, keyPoints);
 
     return {
-      minutes,
+      summary,
+      decisions,
       actionItems,
-      attendeeCount: attendees.length,
+      keyPoints,
+      attendees,
     };
   },
 });

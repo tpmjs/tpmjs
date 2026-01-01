@@ -1,0 +1,66 @@
+{
+  "name": "@tpmjs/tools-objection-response",
+  "version": "0.1.0",
+  "description": "Suggest responses to common sales objections based on objection category and context",
+  "type": "module",
+  "keywords": ["tpmjs", "sales", "objection-handling", "crm"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/objection-response"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sales",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "objectionResponseTool",
+        "description": "Suggest responses to common sales objections based on objection category and context",
+        "parameters": [
+          {
+            "name": "objection",
+            "type": "string",
+            "description": "The customer objection text",
+            "required": true
+          },
+          {
+            "name": "context",
+            "type": "object",
+            "description": "Deal context and customer info",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "ObjectionResponses",
+          "description": "Suggested responses with rationale and next steps"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "^4.0.0"
+  }
+}

@@ -74,8 +74,7 @@ export interface WorkflowVariantResult {
 
 type WorkflowVariantInput = {
   workflow: Workflow;
-  variationCount: number;
-  constraints?: VariantConstraints;
+  goals: string[];
 };
 
 /**
@@ -106,20 +105,78 @@ function validateWorkflow(workflow: Workflow): void {
 }
 
 /**
- * Validates variation count
+ * Gets constraints for a specific goal
+ * Domain rule: goal_constraints - Map optimization goals to workflow modification constraints
  */
-function validateVariationCount(count: number): void {
-  if (typeof count !== 'number' || !Number.isInteger(count)) {
-    throw new Error('Variation count must be an integer');
+function getGoalConstraints(goal: string): VariantConstraints {
+  const goalLower = goal.toLowerCase();
+
+  // Domain rule: fast_workflow_constraints - Fast workflows minimize steps and allow reordering
+  if (goalLower.includes('fast') || goalLower.includes('speed')) {
+    return {
+      maxSteps: 5,
+      minSteps: 2,
+      allowStepRemoval: true,
+      allowStepModification: true,
+      allowReordering: true,
+      preserveOrder: false,
+    };
   }
 
-  if (count < 1) {
-    throw new Error('Variation count must be at least 1');
+  // Domain rule: accurate_workflow_constraints - Accurate workflows preserve steps and maintain order
+  if (goalLower.includes('accurate') || goalLower.includes('quality')) {
+    return {
+      maxSteps: 20,
+      minSteps: 5,
+      allowStepRemoval: false,
+      allowStepModification: true,
+      allowReordering: false,
+      preserveOrder: true,
+    };
   }
 
-  if (count > 50) {
-    throw new Error('Variation count cannot exceed 50');
+  if (goalLower.includes('low-web') || goalLower.includes('offline')) {
+    return {
+      allowStepRemoval: true,
+      allowStepModification: true,
+      allowReordering: true,
+      preserveOrder: false,
+      forbiddenSteps: ['fetch', 'api', 'http', 'download', 'scrape'],
+    };
   }
+
+  // Default constraints
+  return {
+    allowStepRemoval: true,
+    allowStepModification: true,
+    allowReordering: true,
+  };
+}
+
+/**
+ * Checks if a variant is compatible with its goal
+ */
+function isVariantCompatible(variant: WorkflowVariant, goal: string): boolean {
+  const goalLower = goal.toLowerCase();
+  const stepCount = variant.steps.length;
+
+  if (goalLower.includes('fast')) {
+    return stepCount <= 5;
+  }
+
+  if (goalLower.includes('accurate')) {
+    return stepCount >= 5;
+  }
+
+  if (goalLower.includes('low-web')) {
+    const webSteps = ['fetch', 'api', 'http', 'download', 'scrape'];
+    const hasWebSteps = variant.steps.some((step) =>
+      webSteps.some((web) => step.action.toLowerCase().includes(web))
+    );
+    return !hasWebSteps;
+  }
+
+  return true;
 }
 
 /**
@@ -149,13 +206,10 @@ function createSeededRandom(seed: number): () => number {
 }
 
 /**
- * Generates a variant by modifying steps
+ * Generates a variant by modifying steps for a specific goal
  */
-function generateVariant(
-  workflow: Workflow,
-  variantNumber: number,
-  constraints: VariantConstraints = {}
-): WorkflowVariant {
+function generateVariant(workflow: Workflow, goal: string, variantNumber: number): WorkflowVariant {
+  const constraints = getGoalConstraints(goal);
   const random = createSeededRandom(variantNumber * 12345);
   const steps = deepClone(workflow.steps);
   const modifications: string[] = [];
@@ -262,17 +316,17 @@ function generateVariant(
   }
 
   const variant: WorkflowVariant = {
-    name: `${workflow.name} (Variant ${variantNumber})`,
+    name: `${workflow.name} (${goal})`,
     description: workflow.description
-      ? `${workflow.description} - Variant ${variantNumber}`
-      : `Variant ${variantNumber} of ${workflow.name}`,
+      ? `${workflow.description} - Optimized for ${goal}`
+      : `${goal} variant of ${workflow.name}`,
     steps: variantSteps,
     metadata: {
       variantNumber,
       derivedFrom: workflow.name,
       generatedAt: new Date().toISOString(),
       hash: createContentHash(variantSteps),
-      modifications,
+      modifications: [...modifications, `Goal: ${goal}`],
     },
   };
 
@@ -281,11 +335,11 @@ function generateVariant(
 
 /**
  * Workflow Variant Generate Tool
- * Generates variations of a workflow with configurable constraints
+ * Creates meaningful workflow variants for different goals (fast, accurate, low-web)
  */
 export const workflowVariantGenerateTool = tool({
   description:
-    'Generate multiple variations of a workflow with configurable constraints. Useful for creating test scenarios, exploring optimization options, or generating alternative execution paths. Constraints control which modifications are allowed (reordering, removal, modification).',
+    'Creates meaningful workflow variants for different goals (fast, accurate, low-web). Applies variant rules per goal, checks variant compatibility, and produces meaningfully different variants.',
   inputSchema: jsonSchema<WorkflowVariantInput>({
     type: 'object',
     properties: {
@@ -326,74 +380,55 @@ export const workflowVariantGenerateTool = tool({
         },
         required: ['name', 'steps'],
       },
-      variationCount: {
-        type: 'number',
-        description: 'Number of variants to generate (1-50)',
-      },
-      constraints: {
-        type: 'object',
-        description: 'Optional constraints for variant generation',
-        properties: {
-          maxSteps: {
-            type: 'number',
-            description: 'Maximum number of steps per variant',
-          },
-          minSteps: {
-            type: 'number',
-            description: 'Minimum number of steps per variant',
-          },
-          preserveOrder: {
-            type: 'boolean',
-            description: 'If true, steps cannot be reordered',
-          },
-          allowStepRemoval: {
-            type: 'boolean',
-            description: 'If true, steps can be removed',
-          },
-          allowStepModification: {
-            type: 'boolean',
-            description: 'If true, step properties can be modified',
-          },
-          allowReordering: {
-            type: 'boolean',
-            description: 'If true, steps can be reordered',
-          },
-          requiredSteps: {
-            type: 'array',
-            description: 'Array of step action names that must be included',
-            items: {
-              type: 'string',
-            },
-          },
-          forbiddenSteps: {
-            type: 'array',
-            description: 'Array of step action names that must not be included',
-            items: {
-              type: 'string',
-            },
-          },
+      goals: {
+        type: 'array',
+        description: 'Variant goals (fast, accurate, low-web)',
+        items: {
+          type: 'string',
         },
       },
     },
-    required: ['workflow', 'variationCount'],
+    required: ['workflow', 'goals'],
     additionalProperties: false,
   }),
-  async execute({ workflow, variationCount, constraints }): Promise<WorkflowVariantResult> {
+  async execute({ workflow, goals }): Promise<WorkflowVariantResult> {
     // Validate inputs
     validateWorkflow(workflow);
-    validateVariationCount(variationCount);
+
+    if (!Array.isArray(goals) || goals.length === 0) {
+      throw new Error('Goals must be a non-empty array');
+    }
 
     // Generate original hash
     const originalHash = createContentHash(workflow.steps);
 
-    // Generate variants
+    // Generate variants for each goal
     const variants: WorkflowVariant[] = [];
     const variantHashes: string[] = [];
 
-    for (let i = 1; i <= variationCount; i++) {
-      const variant = generateVariant(workflow, i, constraints);
-      variants.push(variant);
-      variantHashes.push(variant.metadata.hash);
+    for (let i = 0; i < goals.length; i++) {
+      const goal = goals[i]!;
+      const variant = generateVariant(workflow, goal, i + 1);
+
+      // Check compatibility
+      if (!isVariantCompatible(variant, goal)) {
+        // Retry with different seed
+        const retryVariant = generateVariant(workflow, goal, i + 100);
+        if (isVariantCompatible(retryVariant, goal)) {
+          variants.push(retryVariant);
+          variantHashes.push(retryVariant.metadata.hash);
+        } else {
+          // Add note about incompatibility
+          variant.metadata.modifications.push(
+            'Warning: Variant may not fully satisfy goal constraints'
+          );
+          variants.push(variant);
+          variantHashes.push(variant.metadata.hash);
+        }
+      } else {
+        variants.push(variant);
+        variantHashes.push(variant.metadata.hash);
+      }
     }
 
     return {

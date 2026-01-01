@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/official-contract-clause-scan",
+  "version": "0.1.0",
+  "description": "Scans contract text to identify and categorize key clauses (termination, liability, IP, etc.)",
+  "type": "module",
+  "keywords": ["tpmjs", "legal", "contract", "clause", "analysis"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/contract-clause-scan"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "legal",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "contractClauseScanTool",
+        "description": "Scans contract text to identify and categorize key clauses (termination, liability, IP, etc.)",
+        "parameters": [
+          {
+            "name": "contractText",
+            "type": "string",
+            "description": "Contract text to analyze",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ContractClauses",
+          "description": "Identified clauses by category with locations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

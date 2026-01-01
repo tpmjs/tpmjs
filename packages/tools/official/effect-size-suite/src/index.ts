@@ -11,25 +11,27 @@ import { jsonSchema, tool } from 'ai';
 /**
  * Output interface for effect size results
  */
-export interface EffectSizeResult {
-  cohensD: number;
-  hedgesG: number;
-  glassDelta: number;
-  interpretation: {
-    cohensD: string;
-    hedgesG: string;
-    glassDelta: string;
+export interface EffectSize {
+  type: string;
+  value: number;
+  interpretation: string;
+  confidenceInterval?: {
+    lower: number;
+    upper: number;
+    level: number;
   };
-  groupStats: {
-    group1: { mean: number; sd: number; n: number };
-    group2: { mean: number; sd: number; n: number };
+  groupStats?: {
+    groupA: { mean: number; sd: number; n: number };
+    groupB: { mean: number; sd: number; n: number };
     meanDifference: number;
   };
 }
 
 type EffectSizeInput = {
-  group1: number[];
-  group2: number[];
+  type: 'cohensD' | 'oddsRatio' | 'r' | 'etaSquared';
+  dataA: number[];
+  dataB: number[];
+  confidenceLevel?: number;
 };
 
 /**
@@ -55,6 +57,7 @@ function calculateStandardDeviation(arr: number[], mean?: number): number {
 
 /**
  * Calculates pooled standard deviation for two groups
+ * Domain rule: Pooled Standard Deviation - SD_pooled = √(((n₁-1)s₁² + (n₂-1)s₂²)/(n₁+n₂-2)) assumes equal variances
  */
 function calculatePooledSD(sd1: number, n1: number, sd2: number, n2: number): number {
   const numerator = (n1 - 1) * sd1 ** 2 + (n2 - 1) * sd2 ** 2;
@@ -65,6 +68,7 @@ function calculatePooledSD(sd1: number, n1: number, sd2: number, n2: number): nu
 
 /**
  * Calculates Cohen's d using pooled standard deviation
+ * Domain rule: Cohen's d - Standardized mean difference d = (μ₁ - μ₂)/SD_pooled measures effect size in SD units
  */
 function calculateCohensD(
   mean1: number,
@@ -84,135 +88,251 @@ function calculateCohensD(
 }
 
 /**
- * Calculates Hedge's g (bias-corrected Cohen's d for small samples)
+ * Calculates correlation coefficient r from two groups
  */
-function calculateHedgesG(cohensD: number, n1: number, n2: number): number {
-  const totalN = n1 + n2;
-  const correctionFactor = 1 - 3 / (4 * totalN - 9);
-
-  return cohensD * correctionFactor;
-}
-
-/**
- * Calculates Glass's delta using control group (group2) standard deviation
- */
-function calculateGlassDelta(mean1: number, mean2: number, sd2: number): number {
-  if (sd2 === 0) {
-    throw new Error('Control group standard deviation is zero. Cannot calculate Glass delta.');
+function calculateCorrelationR(data1: number[], data2: number[]): number {
+  if (data1.length !== data2.length) {
+    throw new Error('Both groups must have the same length for correlation calculation');
   }
 
-  return (mean1 - mean2) / sd2;
+  const n = data1.length;
+  const mean1 = calculateMean(data1);
+  const mean2 = calculateMean(data2);
+
+  let numerator = 0;
+  let sumSq1 = 0;
+  let sumSq2 = 0;
+
+  for (let i = 0; i < n; i++) {
+    const diff1 = (data1[i] ?? 0) - mean1;
+    const diff2 = (data2[i] ?? 0) - mean2;
+    numerator += diff1 * diff2;
+    sumSq1 += diff1 * diff1;
+    sumSq2 += diff2 * diff2;
+  }
+
+  const denominator = Math.sqrt(sumSq1 * sumSq2);
+  if (denominator === 0) return 0;
+
+  return numerator / denominator;
 }
 
 /**
- * Interprets effect size magnitude based on Cohen's conventions
+ * Calculates eta squared (η²) for two groups
+ * Domain rule: Eta Squared - η² = SS_between/SS_total measures proportion of total variance explained by group membership
  */
-function interpretEffectSize(effectSize: number): string {
+function calculateEtaSquared(data1: number[], data2: number[]): number {
+  const mean1 = calculateMean(data1);
+  const mean2 = calculateMean(data2);
+  const grandMean = calculateMean([...data1, ...data2]);
+
+  const ssBetween =
+    data1.length * (mean1 - grandMean) ** 2 + data2.length * (mean2 - grandMean) ** 2;
+
+  const ssWithin1 = data1.reduce((sum, val) => sum + (val - mean1) ** 2, 0);
+  const ssWithin2 = data2.reduce((sum, val) => sum + (val - mean2) ** 2, 0);
+  const ssWithin = ssWithin1 + ssWithin2;
+
+  const ssTotal = ssBetween + ssWithin;
+  if (ssTotal === 0) return 0;
+
+  return ssBetween / ssTotal;
+}
+
+/**
+ * Calculates odds ratio for two groups (assumes binary outcomes 0/1)
+ */
+function calculateOddsRatio(data1: number[], data2: number[]): number {
+  const successes1 = data1.filter((x) => x === 1).length;
+  const failures1 = data1.length - successes1;
+  const successes2 = data2.filter((x) => x === 1).length;
+  const failures2 = data2.length - successes2;
+
+  // Add 0.5 continuity correction if any cell is 0
+  const correction =
+    successes1 === 0 || failures1 === 0 || successes2 === 0 || failures2 === 0 ? 0.5 : 0;
+
+  const odds1 = (successes1 + correction) / (failures1 + correction);
+  const odds2 = (successes2 + correction) / (failures2 + correction);
+
+  if (odds2 === 0) return Number.POSITIVE_INFINITY;
+  return odds1 / odds2;
+}
+
+/**
+ * Interprets effect size magnitude based on the type
+ */
+function interpretEffectSize(effectSize: number, type: string): string {
   const absEffect = Math.abs(effectSize);
 
-  if (absEffect < 0.2) {
-    return 'negligible';
+  switch (type) {
+    case 'cohensD':
+      if (absEffect < 0.2) return 'negligible';
+      if (absEffect < 0.5) return 'small';
+      if (absEffect < 0.8) return 'medium';
+      return 'large';
+    case 'r':
+      if (absEffect < 0.1) return 'negligible';
+      if (absEffect < 0.3) return 'small';
+      if (absEffect < 0.5) return 'medium';
+      return 'large';
+    case 'etaSquared':
+      if (absEffect < 0.01) return 'negligible';
+      if (absEffect < 0.06) return 'small';
+      if (absEffect < 0.14) return 'medium';
+      return 'large';
+    case 'oddsRatio':
+      if (effectSize < 1.5) return 'negligible';
+      if (effectSize < 3) return 'small';
+      if (effectSize < 9) return 'medium';
+      return 'large';
+    default:
+      return 'unknown';
   }
-  if (absEffect < 0.5) {
-    return 'small';
-  }
-  if (absEffect < 0.8) {
-    return 'medium';
-  }
-  return 'large';
+}
+
+/**
+ * Calculates confidence interval for Cohen's d using bootstrap approximation
+ * Domain rule: Cohen's d CI - SE(d) ≈ √((n₁+n₂)/(n₁n₂) + d²/(2(n₁+n₂))) with normal approximation for CI
+ */
+function calculateCohensDCI(
+  cohensD: number,
+  n1: number,
+  n2: number,
+  confidenceLevel: number
+): { lower: number; upper: number } {
+  // Approximate SE for Cohen's d
+  const se = Math.sqrt((n1 + n2) / (n1 * n2) + cohensD ** 2 / (2 * (n1 + n2)));
+  const z = confidenceLevel === 0.95 ? 1.96 : 2.576; // 95% or 99%
+
+  return {
+    lower: cohensD - z * se,
+    upper: cohensD + z * se,
+  };
 }
 
 /**
  * Effect Size Suite Tool
- * Calculates Cohen's d, Hedge's g, and Glass's delta for two groups
+ * Calculates various effect size measures for comparing two groups
  */
 export const effectSizeSuiteTool = tool({
   description:
-    "Calculate multiple effect size measures for comparing two groups. Returns Cohen's d (using pooled standard deviation), Hedge's g (bias-corrected for small samples), and Glass's delta (using control group standard deviation). Effect sizes quantify the magnitude of difference between groups in standardized units, making comparisons across different scales meaningful.",
+    "Calculate effect sizes for comparing two groups: Cohen's d, odds ratio, correlation r, or eta squared (η²). Effect sizes quantify the magnitude of difference between groups in standardized units, making comparisons across different scales meaningful. Includes confidence intervals and interpretations.",
   inputSchema: jsonSchema<EffectSizeInput>({
     type: 'object',
     properties: {
-      group1: {
+      type: {
+        type: 'string',
+        enum: ['cohensD', 'oddsRatio', 'r', 'etaSquared'],
+        description:
+          'Effect size type: cohensD (standardized mean difference), oddsRatio (binary outcomes), r (correlation), etaSquared (variance explained)',
+      },
+      dataA: {
         type: 'array',
         items: { type: 'number' },
-        description: 'First group of numeric values (treatment or experimental group)',
+        description: 'First group of numeric values',
         minItems: 2,
       },
-      group2: {
+      dataB: {
         type: 'array',
         items: { type: 'number' },
-        description:
-          'Second group of numeric values (control or comparison group, used as denominator in Glass delta)',
+        description: 'Second group of numeric values',
         minItems: 2,
+      },
+      confidenceLevel: {
+        type: 'number',
+        description: 'Confidence level for CI (default: 0.95)',
+        minimum: 0.8,
+        maximum: 0.99,
       },
     },
-    required: ['group1', 'group2'],
+    required: ['type', 'dataA', 'dataB'],
     additionalProperties: false,
   }),
-  async execute({ group1, group2 }): Promise<EffectSizeResult> {
+  async execute({ type, dataA, dataB, confidenceLevel = 0.95 }): Promise<EffectSize> {
     // Validate inputs
-    if (!Array.isArray(group1) || group1.length < 2) {
-      throw new Error('Group 1 must be an array with at least 2 numeric values');
+    if (!Array.isArray(dataA) || dataA.length < 2) {
+      throw new Error('DataA must be an array with at least 2 numeric values');
     }
 
-    if (!Array.isArray(group2) || group2.length < 2) {
-      throw new Error('Group 2 must be an array with at least 2 numeric values');
+    if (!Array.isArray(dataB) || dataB.length < 2) {
+      throw new Error('DataB must be an array with at least 2 numeric values');
     }
 
     // Validate all values are numbers
-    for (const value of group1) {
+    for (const value of dataA) {
       if (typeof value !== 'number' || !Number.isFinite(value)) {
-        throw new Error(`Invalid group1 data: all values must be finite numbers. Found: ${value}`);
+        throw new Error(`Invalid dataA: all values must be finite numbers. Found: ${value}`);
       }
     }
 
-    for (const value of group2) {
+    for (const value of dataB) {
       if (typeof value !== 'number' || !Number.isFinite(value)) {
-        throw new Error(`Invalid group2 data: all values must be finite numbers. Found: ${value}`);
+        throw new Error(`Invalid dataB: all values must be finite numbers. Found: ${value}`);
       }
     }
 
-    // Calculate descriptive statistics for each group
-    const mean1 = calculateMean(group1);
-    const mean2 = calculateMean(group2);
-    const sd1 = calculateStandardDeviation(group1, mean1);
-    const sd2 = calculateStandardDeviation(group2, mean2);
-    const n1 = group1.length;
-    const n2 = group2.length;
+    // Calculate effect size based on type
+    let value: number;
+    let ci: { lower: number; upper: number } | undefined;
 
-    const meanDifference = mean1 - mean2;
+    switch (type) {
+      case 'cohensD': {
+        const meanA = calculateMean(dataA);
+        const meanB = calculateMean(dataB);
+        const sdA = calculateStandardDeviation(dataA, meanA);
+        const sdB = calculateStandardDeviation(dataB, meanB);
+        value = calculateCohensD(meanA, meanB, sdA, dataA.length, sdB, dataB.length);
+        ci = calculateCohensDCI(value, dataA.length, dataB.length, confidenceLevel);
+        break;
+      }
+      case 'oddsRatio':
+        value = calculateOddsRatio(dataA, dataB);
+        break;
+      case 'r':
+        value = calculateCorrelationR(dataA, dataB);
+        break;
+      case 'etaSquared':
+        value = calculateEtaSquared(dataA, dataB);
+        break;
+      default:
+        throw new Error(`Unknown effect size type: ${type}`);
+    }
 
-    // Calculate effect sizes
-    const cohensD = calculateCohensD(mean1, mean2, sd1, n1, sd2, n2);
-    const hedgesG = calculateHedgesG(cohensD, n1, n2);
-    const glassDelta = calculateGlassDelta(mean1, mean2, sd2);
+    // Calculate descriptive statistics
+    const meanA = calculateMean(dataA);
+    const meanB = calculateMean(dataB);
+    const sdA = calculateStandardDeviation(dataA, meanA);
+    const sdB = calculateStandardDeviation(dataB, meanB);
 
-    // Interpret effect sizes
-    const interpretation = {
-      cohensD: interpretEffectSize(cohensD),
-      hedgesG: interpretEffectSize(hedgesG),
-      glassDelta: interpretEffectSize(glassDelta),
-    };
-
-    return {
-      cohensD: Math.round(cohensD * 1000) / 1000,
-      hedgesG: Math.round(hedgesG * 1000) / 1000,
-      glassDelta: Math.round(glassDelta * 1000) / 1000,
-      interpretation,
+    const result: EffectSize = {
+      type,
+      value: Math.round(value * 1000) / 1000,
+      interpretation: interpretEffectSize(value, type),
       groupStats: {
-        group1: {
-          mean: Math.round(mean1 * 1000) / 1000,
-          sd: Math.round(sd1 * 1000) / 1000,
-          n: n1,
+        groupA: {
+          mean: Math.round(meanA * 1000) / 1000,
+          sd: Math.round(sdA * 1000) / 1000,
+          n: dataA.length,
         },
-        group2: {
-          mean: Math.round(mean2 * 1000) / 1000,
-          sd: Math.round(sd2 * 1000) / 1000,
-          n: n2,
+        groupB: {
+          mean: Math.round(meanB * 1000) / 1000,
+          sd: Math.round(sdB * 1000) / 1000,
+          n: dataB.length,
         },
-        meanDifference: Math.round(meanDifference * 1000) / 1000,
+        meanDifference: Math.round((meanA - meanB) * 1000) / 1000,
       },
     };
+
+    if (ci) {
+      result.confidenceInterval = {
+        lower: Math.round(ci.lower * 1000) / 1000,
+        upper: Math.round(ci.upper * 1000) / 1000,
+        level: confidenceLevel,
+      };
+    }
+
+    return result;
   },
 });
 

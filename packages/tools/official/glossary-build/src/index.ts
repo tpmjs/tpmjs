@@ -7,15 +7,30 @@
 import { jsonSchema, tool } from 'ai';
 
 /**
+ * Individual glossary term
+ */
+export interface GlossaryTerm {
+  term: string;
+  definition: string;
+}
+
+/**
+ * Warning for potentially malformed input
+ */
+export interface GlossaryWarning {
+  line: number;
+  text: string;
+  reason: string;
+}
+
+/**
  * Output interface for glossary building
  */
 export interface GlossaryResult {
-  terms: Array<{
-    term: string;
-    definition: string;
-  }>;
+  terms: GlossaryTerm[];
   count: number;
   alphabetized: boolean;
+  warnings: GlossaryWarning[];
 }
 
 type GlossaryBuildInput = {
@@ -91,27 +106,107 @@ function cleanTerm(term: string): string {
 }
 
 /**
+ * Checks if a line looks like it might be a term definition but couldn't be parsed
+ */
+function checkForMalformedDefinition(line: string): string | null {
+  const trimmed = line.trim();
+
+  // Skip empty or very short lines
+  if (!trimmed || trimmed.length < 3) return null;
+
+  // Check for partial patterns that suggest a definition was intended
+  // Short term with colon but no definition
+  if (/^[^:]+:\s*$/.test(trimmed)) {
+    return 'Term followed by colon but missing definition';
+  }
+
+  // Term followed by dash but no definition
+  if (/^[^-—]+[-—]\s*$/.test(trimmed)) {
+    return 'Term followed by dash but missing definition';
+  }
+
+  // Very long "term" (probably not a real term definition)
+  const colonMatch = trimmed.match(/^([^:]+):/);
+  if (colonMatch?.[1] && colonMatch[1].length > 50) {
+    return 'Term is unusually long (>50 chars) - might not be a glossary entry';
+  }
+
+  // Very short definition
+  const shortDefMatch = trimmed.match(/^([^:]+):\s*(.{1,5})$/);
+  if (shortDefMatch?.[2]) {
+    return 'Definition is too short (less than 6 characters)';
+  }
+
+  // Markdown bold with no following definition
+  if (/^\*\*[^*]+\*\*\s*$/.test(trimmed)) {
+    return 'Bold term but missing definition after it';
+  }
+
+  return null;
+}
+
+/**
  * Extracts glossary terms from text
  */
-function extractGlossary(text: string): Array<{ term: string; definition: string }> {
+function extractGlossary(text: string): {
+  terms: GlossaryTerm[];
+  warnings: GlossaryWarning[];
+} {
   const lines = text.split('\n');
-  const terms: Array<{ term: string; definition: string }> = [];
-  const seenTerms = new Set<string>();
+  const termMap = new Map<string, { term: string; definitions: string[] }>();
+  const warnings: GlossaryWarning[] = [];
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i] ?? '';
     const result = extractTermDefinition(line);
 
     if (result) {
-      // Avoid duplicates (case-insensitive)
+      // Merge duplicates (case-insensitive)
       const termLower = result.term.toLowerCase();
-      if (!seenTerms.has(termLower)) {
-        seenTerms.add(termLower);
-        terms.push(result);
+      const existing = termMap.get(termLower);
+
+      if (!existing) {
+        termMap.set(termLower, {
+          term: result.term,
+          definitions: [result.definition],
+        });
+      } else {
+        // Merge definition if it's different
+        if (!existing.definitions.includes(result.definition)) {
+          existing.definitions.push(result.definition);
+          warnings.push({
+            line: i + 1,
+            text: line.slice(0, 50) + (line.length > 50 ? '...' : ''),
+            reason: `Duplicate term "${result.term}" - definitions merged`,
+          });
+        } else {
+          warnings.push({
+            line: i + 1,
+            text: line.slice(0, 50) + (line.length > 50 ? '...' : ''),
+            reason: `Duplicate term "${result.term}" with identical definition - skipped`,
+          });
+        }
+      }
+    } else {
+      // Check if this line looks like a malformed definition
+      const malformedReason = checkForMalformedDefinition(line);
+      if (malformedReason) {
+        warnings.push({
+          line: i + 1,
+          text: line.slice(0, 50) + (line.length > 50 ? '...' : ''),
+          reason: malformedReason,
+        });
       }
     }
   }
 
-  return terms;
+  // Convert map to array, merging definitions with semicolons
+  const terms = Array.from(termMap.values()).map((entry) => ({
+    term: entry.term,
+    definition: entry.definitions.join('; '),
+  }));
+
+  return { terms, warnings };
 }
 
 /**
@@ -150,22 +245,42 @@ export const glossaryBuildTool = tool({
     additionalProperties: false,
   }),
   async execute({ text }): Promise<GlossaryResult> {
-    // Validate input
-    if (!text || typeof text !== 'string') {
-      throw new Error('Text is required and must be a string');
+    // Validate input with specific error messages
+    if (text === null || text === undefined) {
+      throw new Error('Text is required - please provide text containing glossary definitions');
+    }
+
+    if (typeof text !== 'string') {
+      throw new Error(
+        `Text must be a string, but received ${typeof text}. Please provide text as a string.`
+      );
     }
 
     if (text.trim().length === 0) {
-      throw new Error('Text cannot be empty');
+      throw new Error(
+        'Text cannot be empty. Please provide text containing term definitions ' +
+          '(e.g., "Term: definition" or "Term - definition")'
+      );
     }
 
-    // Extract glossary terms
-    const terms = extractGlossary(text);
+    // Extract glossary terms with warnings
+    const { terms, warnings } = extractGlossary(text);
+
+    // Add warning if no terms were found but text was provided
+    if (terms.length === 0 && text.trim().length > 0) {
+      warnings.push({
+        line: 0,
+        text: '',
+        reason:
+          'No glossary entries found. Expected format: "Term: definition" or "Term - definition"',
+      });
+    }
 
     return {
       terms,
       count: terms.length,
       alphabetized: isAlphabetized(terms),
+      warnings,
     };
   },
 });

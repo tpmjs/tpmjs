@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/official-risk-clause-highlight",
+  "version": "0.1.0",
+  "description": "Identifies and highlights potentially risky clauses in contracts",
+  "type": "module",
+  "keywords": ["tpmjs", "legal", "contract", "risk", "analysis"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/risk-clause-highlight"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "legal",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "riskClauseHighlightTool",
+        "description": "Identifies and highlights potentially risky clauses in contracts",
+        "parameters": [
+          {
+            "name": "contractText",
+            "type": "string",
+            "description": "Contract text to analyze",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ContractRisks",
+          "description": "Identified risks with severity ratings and mitigation suggestions"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

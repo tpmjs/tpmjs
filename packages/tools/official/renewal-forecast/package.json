@@ -1,0 +1,67 @@
+{
+  "name": "@tpmjs/tools-renewal-forecast",
+  "version": "0.1.0",
+  "description": "Forecasts renewal likelihood based on health score and engagement patterns",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "customer-experience",
+    "ai",
+    "renewal",
+    "churn-prediction",
+    "customer-success"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/renewal-forecast"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "cx",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "renewalForecastTool",
+        "description": "Forecasts renewal likelihood based on health score and engagement patterns",
+        "parameters": [
+          {
+            "name": "account",
+            "type": "object",
+            "description": "Account data including health score, renewal date, ARR, and engagement history",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "RenewalForecast",
+          "description": "Renewal forecast with likelihood, risk factors, and recommended actions"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

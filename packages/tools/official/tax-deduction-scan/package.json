@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/official-tax-deduction-scan",
+  "version": "0.1.0",
+  "description": "Scans expense data for potential tax deductions by category",
+  "type": "module",
+  "keywords": ["tpmjs", "finance", "tax", "deductions", "expenses"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/tax-deduction-scan"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "finance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "taxDeductionScanTool",
+        "description": "Scans expense data for potential tax deductions by category",
+        "parameters": [
+          {
+            "name": "expenses",
+            "type": "array",
+            "description": "Expense records to scan for deductions",
+            "required": true
+          },
+          {
+            "name": "entityType",
+            "type": "string",
+            "description": "Business entity type for tax treatment",
+            "required": true
+          },
+          {
+            "name": "taxYear",
+            "type": "number",
+            "description": "Tax year",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "TaxDeductionScanResult",
+          "description": "Deduction analysis with documentation requirements and flags"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -146,19 +146,41 @@ export const tocGenerateTool = tool({
     additionalProperties: false,
   }),
   async execute({ markdown, maxDepth = 3 }): Promise<TocResult> {
-    // Validate inputs
+    // Validate inputs with user-friendly messages
     if (!markdown || typeof markdown !== 'string') {
-      throw new Error('Markdown content is required and must be a string');
+      throw new Error(
+        'Markdown content is required. Please provide markdown text containing headings ' +
+          '(e.g., "# Title", "## Section", "### Subsection").'
+      );
     }
 
     if (markdown.trim().length === 0) {
-      throw new Error('Markdown content cannot be empty');
+      throw new Error(
+        'Markdown content cannot be empty. Please provide markdown text with at least one heading.'
+      );
     }
 
-    // Validate maxDepth
+    // Validate maxDepth with helpful error message
     const depth = maxDepth ?? 3;
-    if (depth < 1 || depth > 6 || !Number.isInteger(depth)) {
-      throw new Error('maxDepth must be an integer between 1 and 6');
+    if (!Number.isInteger(depth)) {
+      throw new Error(
+        `maxDepth must be a whole number, but received ${depth}. ` +
+          'Please use an integer between 1 and 6 (e.g., 1 for only # headings, 3 for # ## ###).'
+      );
+    }
+
+    if (depth < 1) {
+      throw new Error(
+        `maxDepth must be at least 1, but received ${depth}. ` +
+          'Use 1 to include only top-level (#) headings, or higher numbers for more depth.'
+      );
+    }
+
+    if (depth > 6) {
+      throw new Error(
+        `maxDepth cannot exceed 6, but received ${depth}. ` +
+          'Markdown only supports heading levels 1-6 (# through ######).'
+      );
     }
 
     // Parse headings

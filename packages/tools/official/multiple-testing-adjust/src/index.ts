@@ -8,27 +8,20 @@ import { jsonSchema, tool } from 'ai';
 
 /**
  * Output interface for multiple testing adjustment
+ * Returns just the adjusted p-values in original order
  */
-export interface MultipleTestingResult {
+export interface AdjustedPValues {
   adjusted: number[];
-  significant: number[];
-  method: string;
-  alpha: number;
-  metadata: {
-    totalTests: number;
-    significantCount: number;
-    originalSignificant: number;
-  };
 }
 
 type MultipleTestingInput = {
   pValues: number[];
   method?: 'bonferroni' | 'bh' | 'holm';
-  alpha?: number;
 };
 
 /**
  * Bonferroni correction: multiply each p-value by the number of tests
+ * Domain rule: Bonferroni FWER Control - Adjusted p-value = min(1, p × m) controls family-wise error rate at α
  */
 function bonferroniCorrection(pValues: number[]): number[] {
   const n = pValues.length;
@@ -37,6 +30,7 @@ function bonferroniCorrection(pValues: number[]): number[] {
 
 /**
  * Benjamini-Hochberg (BH) procedure for controlling false discovery rate
+ * Domain rule: BH FDR Control - Adjusted p-value = min(1, p(i) × m/i) for rank i, enforces monotonicity
  */
 function benjaminiHochberg(pValues: number[]): number[] {
   const n = pValues.length;
@@ -52,6 +46,7 @@ function benjaminiHochberg(pValues: number[]): number[] {
   let minAdjusted = 1;
 
   // Work backwards to ensure monotonicity
+  // Domain rule: Monotonicity Constraint - Adjusted p-values must be non-decreasing with rank
   for (let i = n - 1; i >= 0; i--) {
     const rank = i + 1;
     const item = indexed[i];
@@ -68,6 +63,7 @@ function benjaminiHochberg(pValues: number[]): number[] {
 
 /**
  * Holm step-down procedure (more powerful than Bonferroni)
+ * Domain rule: Holm Step-Down - Adjusted p-value = max(p(1)×m, p(2)×(m-1), ..., p(i)×(m-i+1)) for ranks 1 to i
  */
 function holmCorrection(pValues: number[]): number[] {
   const n = pValues.length;
@@ -83,6 +79,7 @@ function holmCorrection(pValues: number[]): number[] {
   let maxAdjusted = 0;
 
   // Work forwards with step-down multiplier
+  // Domain rule: Sequential Rejection - Decreasing multipliers maintain FWER control while increasing power
   for (let i = 0; i < n; i++) {
     const multiplier = n - i;
     const item = indexed[i];
@@ -99,46 +96,20 @@ function holmCorrection(pValues: number[]): number[] {
 
 /**
  * Perform multiple testing adjustment
+ * Returns adjusted p-values in the original order
  */
-function adjustPValues(
-  pValues: number[],
-  method: 'bonferroni' | 'bh' | 'holm',
-  alpha: number
-): MultipleTestingResult {
+function adjustPValues(pValues: number[], method: 'bonferroni' | 'bh' | 'holm'): number[] {
   // Calculate adjusted p-values based on method
-  let adjusted: number[];
-
   switch (method) {
     case 'bonferroni':
-      adjusted = bonferroniCorrection(pValues);
-      break;
+      return bonferroniCorrection(pValues);
     case 'bh':
-      adjusted = benjaminiHochberg(pValues);
-      break;
+      return benjaminiHochberg(pValues);
     case 'holm':
-      adjusted = holmCorrection(pValues);
-      break;
+      return holmCorrection(pValues);
     default:
       throw new Error(`Unknown method: ${method}`);
   }
-
-  // Determine which tests are significant after adjustment
-  const significant = adjusted.map((p, i) => (p < alpha ? i : -1)).filter((i) => i >= 0);
-
-  // Count original significant tests (before adjustment)
-  const originalSignificant = pValues.filter((p) => p < alpha).length;
-
-  return {
-    adjusted,
-    significant,
-    method,
-    alpha,
-    metadata: {
-      totalTests: pValues.length,
-      significantCount: significant.length,
-      originalSignificant,
-    },
-  };
 }
 
 /**
@@ -163,17 +134,11 @@ export const multipleTestingAdjustTool = tool({
         description:
           'Adjustment method: bonferroni (most conservative), bh (Benjamini-Hochberg, controls FDR), or holm (step-down, more powerful than Bonferroni). Default: bonferroni',
       },
-      alpha: {
-        type: 'number',
-        description: 'Significance level (default: 0.05)',
-        minimum: 0,
-        maximum: 1,
-      },
     },
     required: ['pValues'],
     additionalProperties: false,
   }),
-  async execute({ pValues, method = 'bonferroni', alpha = 0.05 }): Promise<MultipleTestingResult> {
+  async execute({ pValues, method = 'bonferroni' }): Promise<AdjustedPValues> {
     // Validate inputs
     if (!Array.isArray(pValues) || pValues.length === 0) {
       throw new Error('pValues must be a non-empty array');
@@ -189,13 +154,10 @@ export const multipleTestingAdjustTool = tool({
       throw new Error('method must be one of: bonferroni, bh, holm');
     }
 
-    // Validate alpha
-    if (typeof alpha !== 'number' || alpha <= 0 || alpha >= 1) {
-      throw new Error('alpha must be a number between 0 and 1');
-    }
+    // Perform the adjustment and return in original order
+    const adjusted = adjustPValues(pValues, method);
 
-    // Perform the adjustment
-    return adjustPValues(pValues, method, alpha);
+    return { adjusted };
   },
 });
 

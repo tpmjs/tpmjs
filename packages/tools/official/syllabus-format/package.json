@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-syllabus-format",
+  "version": "0.1.0",
+  "description": "Formats course syllabus with schedule, policies, and learning outcomes",
+  "type": "module",
+  "keywords": ["tpmjs", "edu", "ai", "syllabus", "course", "education", "teaching"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/syllabus-format"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "edu",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "syllabusFormatTool",
+        "description": "Format a comprehensive course syllabus with course information, learning outcomes, weekly schedule, and policies",
+        "parameters": [
+          {
+            "name": "courseInfo",
+            "type": "object",
+            "description": "Course details including name, code, semester, instructor",
+            "required": true
+          },
+          {
+            "name": "schedule",
+            "type": "array",
+            "description": "Weekly schedule with topics, readings, and assignments",
+            "required": true
+          },
+          {
+            "name": "policies",
+            "type": "object",
+            "description": "Course policies (optional, defaults provided)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "Syllabus",
+          "description": "Complete formatted syllabus with all sections"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

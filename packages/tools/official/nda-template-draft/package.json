@@ -1,0 +1,78 @@
+{
+  "name": "@tpmjs/official-nda-template-draft",
+  "version": "0.1.0",
+  "description": "Generates NDA template with customizable terms for mutual or unilateral agreements",
+  "type": "module",
+  "keywords": ["tpmjs", "legal", "nda", "template", "confidentiality"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/nda-template-draft"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "legal",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "ndaTemplateDraftTool",
+        "description": "Generates NDA template with customizable terms for mutual or unilateral agreements",
+        "parameters": [
+          {
+            "name": "type",
+            "type": "string",
+            "description": "NDA type (mutual or unilateral)",
+            "required": true
+          },
+          {
+            "name": "disclosingParty",
+            "type": "string",
+            "description": "Disclosing party name",
+            "required": true
+          },
+          {
+            "name": "receivingParty",
+            "type": "string",
+            "description": "Receiving party name",
+            "required": true
+          },
+          {
+            "name": "term",
+            "type": "number",
+            "description": "Term in years (default: 2)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "NDATemplate",
+          "description": "Generated NDA template with all sections"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

@@ -1,6 +1,11 @@
 /**
  * Tool Selection Plan Tool for TPMJS
  * Analyzes a task and recommends which tools to use from available options.
+ *
+ * Domain Rules:
+ * - Must generate clear selection rules
+ * - Must map goals to tool choices
+ * - Must include rationale for each rule
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -26,6 +31,7 @@ export interface PlannedToolStep {
   stepNumber: number;
   toolName: string;
   purpose: string;
+  rationale: string; // domain rule: must include rationale for each rule
   inputSources?: string[];
   expectedOutput?: string;
   dependencies?: number[]; // step numbers this depends on
@@ -49,6 +55,7 @@ type ToolSelectionPlanInput = {
 
 /**
  * Extracts key action verbs and nouns from task description
+ * Domain rule: task_analysis - Extract actions, domains, and complexity from task descriptions
  */
 function analyzeTaskRequirements(task: string): {
   actions: string[];
@@ -133,6 +140,7 @@ function analyzeTaskRequirements(task: string): {
 
 /**
  * Scores how well a tool matches the task requirements
+ * Domain rule: relevance_scoring - Calculate weighted relevance based on keyword, action, and domain matching
  */
 function scoreToolRelevance(
   tool: AvailableTool,
@@ -144,20 +152,20 @@ function scoreToolRelevance(
   const lowerToolName = tool.name.toLowerCase();
   const lowerTask = task.toLowerCase();
 
-  // Check if tool description contains task keywords
+  // Domain rule: keyword_weight - 40% weight for general keyword matching
   const taskWords = lowerTask.split(/\s+/).filter((word) => word.length > 3);
   const matchingWords = taskWords.filter(
     (word) => lowerToolDesc.includes(word) || lowerToolName.includes(word)
   );
   score += (matchingWords.length / taskWords.length) * 0.4;
 
-  // Check if tool matches required actions
+  // Domain rule: action_weight - 30% weight for action verb matching
   const matchingActions = taskRequirements.actions.filter(
     (action) => lowerToolDesc.includes(action) || lowerToolName.includes(action)
   );
   score += (matchingActions.length / Math.max(taskRequirements.actions.length, 1)) * 0.3;
 
-  // Check if tool matches domain
+  // Domain rule: domain_weight - 30% weight for domain/category matching
   const matchingDomains = taskRequirements.domains.filter(
     (domain) => lowerToolDesc.includes(domain) || lowerToolName.includes(domain)
   );
@@ -213,6 +221,7 @@ function planToolUsage(
       stepNumber: 1,
       toolName: topTool.tool.name,
       purpose: `Use ${topTool.tool.name} to ${task}`,
+      rationale: `Selected ${topTool.tool.name} because it has the highest relevance score (${Math.round(topTool.score * 100)}%) for this simple task`,
       inputSources: ['task input'],
       expectedOutput: 'task result',
     });
@@ -233,6 +242,7 @@ function planToolUsage(
         stepNumber: index + 1,
         toolName: scoredTool.tool.name,
         purpose: `Step ${index + 1}: ${scoredTool.tool.description}`,
+        rationale: `Step ${index + 1} uses ${scoredTool.tool.name} (relevance: ${Math.round(scoredTool.score * 100)}%) to handle part of the moderate-complexity task`,
         inputSources: index === 0 ? ['task input'] : [`output from step ${index}`],
         expectedOutput: `intermediate result ${index + 1}`,
         dependencies: index > 0 ? [index] : undefined,
@@ -268,6 +278,7 @@ function planToolUsage(
         stepNumber: stepNum++,
         toolName: fetchTool.tool.name,
         purpose: `Fetch/retrieve data: ${fetchTool.tool.description}`,
+        rationale: `First step uses ${fetchTool.tool.name} to fetch/retrieve data, as it matches the fetch/get/retrieve pattern in the task`,
         inputSources: ['task input'],
         expectedOutput: 'raw data',
       });
@@ -279,6 +290,7 @@ function planToolUsage(
         stepNumber: stepNum++,
         toolName: st.tool.name,
         purpose: `Process data: ${st.tool.description}`,
+        rationale: `Processing step ${index + 1} uses ${st.tool.name} to transform/analyze data from the previous step`,
         inputSources: [`output from step ${stepNum - 2}`],
         expectedOutput: `processed data ${index + 1}`,
         dependencies: [stepNum - 2],
@@ -292,6 +304,7 @@ function planToolUsage(
         stepNumber: stepNum++,
         toolName: outputTool.tool.name,
         purpose: `Output result: ${outputTool.tool.description}`,
+        rationale: `Final step uses ${outputTool.tool.name} to save/send/publish the processed results`,
         inputSources: [`output from step ${stepNum - 2}`],
         expectedOutput: 'final result',
         dependencies: [stepNum - 2],
@@ -305,6 +318,7 @@ function planToolUsage(
           stepNumber: index + 1,
           toolName: st.tool.name,
           purpose: st.tool.description,
+          rationale: `Fallback selection: ${st.tool.name} has relevance score of ${Math.round(st.score * 100)}%`,
           inputSources: index === 0 ? ['task input'] : [`output from step ${index}`],
           expectedOutput: `result ${index + 1}`,
           dependencies: index > 0 ? [index] : undefined,

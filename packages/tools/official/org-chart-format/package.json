@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/official-org-chart-format",
+  "version": "0.1.0",
+  "description": "Formats organizational hierarchy data into structured org chart representation",
+  "type": "module",
+  "keywords": ["tpmjs", "hr", "org-chart", "hierarchy", "organization"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/org-chart-format"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "hr",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "orgChartFormatTool",
+        "description": "Formats organizational hierarchy data into structured org chart representation",
+        "parameters": [
+          {
+            "name": "employees",
+            "type": "object[]",
+            "description": "Employee data with manager relationships",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "OrgChart",
+          "description": "Structured organizational chart with hierarchy"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

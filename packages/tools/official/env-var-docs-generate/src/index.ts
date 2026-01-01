@@ -1,202 +1,74 @@
 /**
  * Environment Variable Documentation Generator Tool for TPMJS
- * Parses .env files and generates structured documentation with
- * variable names, descriptions, required status, and default values.
+ * Generates environment variable documentation table from schema.
  */
 
 import { jsonSchema, tool } from 'ai';
 
 /**
- * Represents a single environment variable
+ * Represents a single environment variable definition
  */
-export interface EnvVariable {
+export interface EnvVariableDefinition {
   name: string;
   description: string;
-  required: boolean;
+  required?: boolean;
   default?: string;
   example?: string;
+  type?: string;
 }
 
 /**
  * Output interface for environment variable documentation
  */
 export interface EnvVarDocs {
-  variables: EnvVariable[];
-  markdown: string;
+  docs: string;
   totalVariables: number;
   requiredCount: number;
   optionalCount: number;
 }
 
 type EnvVarDocsInput = {
-  envContent: string;
+  vars: EnvVariableDefinition[];
 };
 
 /**
- * Parses a single line from a .env file
- * Supports various comment formats:
- * - # Comment before variable
- * - # REQUIRED: Description
- * - # OPTIONAL: Description
- * - VAR_NAME=value # inline comment
+ * Generates markdown table documentation from environment variable definitions
  */
-function parseEnvLine(
-  line: string,
-  previousComment: string
-): { variable: EnvVariable | null; comment: string } {
-  const trimmed = line.trim();
-
-  // Skip empty lines
-  if (!trimmed) {
-    return { variable: null, comment: '' };
+function generateMarkdownTable(vars: EnvVariableDefinition[]): string {
+  if (vars.length === 0) {
+    return '# Environment Variables\n\nNo environment variables defined.\n';
   }
 
-  // Handle comment lines
-  if (trimmed.startsWith('#')) {
-    const comment = trimmed.substring(1).trim();
-    return { variable: null, comment };
-  }
-
-  // Handle variable assignment
-  const match = trimmed.match(/^([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/i);
-  if (!match) {
-    return { variable: null, comment: '' };
-  }
-
-  const name = match[1];
-  const value = match[2];
-
-  if (!name || value === undefined) {
-    return { variable: null, comment: '' };
-  }
-
-  // Extract inline comment if present
-  let actualValue = value;
-  let inlineComment = '';
-  const hashIndex = value.indexOf('#');
-  if (hashIndex > 0) {
-    actualValue = value.substring(0, hashIndex).trim();
-    inlineComment = value.substring(hashIndex + 1).trim();
-  }
-
-  // Remove quotes from value
-  actualValue = actualValue.replace(/^["']|["']$/g, '');
-
-  // Determine description from comments
-  let description = previousComment || inlineComment || 'No description provided';
-  let required = false;
-
-  // Check for REQUIRED/OPTIONAL markers
-  const requiredMatch = description.match(/^REQUIRED:?\s*(.+)/i);
-  const optionalMatch = description.match(/^OPTIONAL:?\s*(.+)/i);
-
-  if (requiredMatch?.[1]) {
-    description = requiredMatch[1].trim();
-    required = true;
-  } else if (optionalMatch?.[1]) {
-    description = optionalMatch[1].trim();
-    required = false;
-  } else {
-    // Default: treat as required if no default value, optional if has value
-    required = !actualValue;
-  }
-
-  const variable: EnvVariable = {
-    name,
-    description,
-    required,
-  };
-
-  // Add default value if present
-  if (actualValue) {
-    variable.default = actualValue;
-  }
-
-  // Generate example if it looks like a template
-  if (actualValue && /^(your|example|change|replace|enter)/i.test(actualValue)) {
-    variable.example = actualValue;
-  }
-
-  return { variable, comment: '' };
-}
-
-/**
- * Parses .env file content and extracts all variables
- */
-function parseEnvContent(content: string): EnvVariable[] {
-  const lines = content.split('\n');
-  const variables: EnvVariable[] = [];
-  let previousComment = '';
-
-  for (const line of lines) {
-    const { variable, comment } = parseEnvLine(line, previousComment);
-
-    if (variable) {
-      variables.push(variable);
-      previousComment = ''; // Reset after using
-    } else if (comment) {
-      // Accumulate multi-line comments
-      previousComment = previousComment ? `${previousComment} ${comment}` : comment;
-    } else {
-      // Empty line resets comment accumulator
-      previousComment = '';
-    }
-  }
-
-  return variables;
-}
-
-/**
- * Generates markdown documentation from environment variables
- */
-function generateMarkdown(variables: EnvVariable[]): string {
-  if (variables.length === 0) {
-    return '# Environment Variables\n\nNo environment variables found.\n';
-  }
-
-  const required = variables.filter((v) => v.required);
-  const optional = variables.filter((v) => !v.required);
+  const required = vars.filter((v) => v.required !== false);
+  const optional = vars.filter((v) => v.required === false);
 
   let markdown = '# Environment Variables\n\n';
 
   // Summary
-  markdown += `Total: ${variables.length} variables (${required.length} required, ${optional.length} optional)\n\n`;
+  markdown += `Total: ${vars.length} variables (${required.length} required, ${optional.length} optional)\n\n`;
 
-  // Required variables section
-  if (required.length > 0) {
-    markdown += '## Required Variables\n\n';
-    markdown += 'These variables must be set for the application to function:\n\n';
-    markdown += '| Variable | Description | Example |\n';
-    markdown += '|----------|-------------|----------|\n';
+  // Main table
+  markdown += '| Variable | Required | Type | Description | Default | Example |\n';
+  markdown += '|----------|----------|------|-------------|---------|----------|\n';
 
-    for (const v of required) {
-      const example = v.example || v.default || '-';
-      markdown += `| \`${v.name}\` | ${v.description} | \`${example}\` |\n`;
-    }
-    markdown += '\n';
+  for (const v of vars) {
+    const isRequired = v.required !== false ? '✅ Yes' : '❌ No';
+    const type = v.type || 'string';
+    const description = v.description || '-';
+    const defaultVal = v.default || '-';
+    const example = v.example || '-';
+
+    markdown += `| \`${v.name}\` | ${isRequired} | \`${type}\` | ${description} | \`${defaultVal}\` | \`${example}\` |\n`;
   }
 
-  // Optional variables section
-  if (optional.length > 0) {
-    markdown += '## Optional Variables\n\n';
-    markdown += 'These variables have default values and can be customized:\n\n';
-    markdown += '| Variable | Description | Default |\n';
-    markdown += '|----------|-------------|----------|\n';
-
-    for (const v of optional) {
-      const defaultVal = v.default || 'Not set';
-      markdown += `| \`${v.name}\` | ${v.description} | \`${defaultVal}\` |\n`;
-    }
-    markdown += '\n';
-  }
+  markdown += '\n';
 
   // Example .env section
   markdown += '## Example .env File\n\n';
   markdown += '```bash\n';
-  for (const v of variables) {
-    if (v.description !== 'No description provided') {
-      markdown += `# ${v.required ? 'REQUIRED: ' : ''}${v.description}\n`;
-    }
+  for (const v of vars) {
+    const reqLabel = v.required !== false ? 'REQUIRED' : 'OPTIONAL';
+    markdown += `# ${reqLabel}: ${v.description || v.name}\n`;
     const value = v.example || v.default || '';
     markdown += `${v.name}=${value}\n\n`;
   }
@@ -207,46 +79,82 @@ function generateMarkdown(variables: EnvVariable[]): string {
 
 /**
  * Environment Variable Documentation Generator Tool
- * Parses .env file content and generates structured documentation
+ * Generates environment variable documentation table from schema
  */
 export const envVarDocsGenerate = tool({
   description:
-    'Parse .env file content and generate structured documentation with variable names, descriptions, required status, and default values. Supports comment-based documentation and REQUIRED/OPTIONAL markers.',
+    'Generate markdown documentation table for environment variables from schema definitions. Indicates required vs optional variables and includes example values.',
   inputSchema: jsonSchema<EnvVarDocsInput>({
     type: 'object',
     properties: {
-      envContent: {
-        type: 'string',
-        description: 'The content of the .env file to parse and document',
+      vars: {
+        type: 'array',
+        description: 'Environment variable definitions',
+        items: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Variable name',
+            },
+            description: {
+              type: 'string',
+              description: 'Variable description',
+            },
+            required: {
+              type: 'boolean',
+              description: 'Whether the variable is required (default: true)',
+            },
+            default: {
+              type: 'string',
+              description: 'Default value',
+            },
+            example: {
+              type: 'string',
+              description: 'Example value',
+            },
+            type: {
+              type: 'string',
+              description: 'Variable type (default: string)',
+            },
+          },
+          required: ['name', 'description'],
+        },
       },
     },
-    required: ['envContent'],
+    required: ['vars'],
     additionalProperties: false,
   }),
-  async execute({ envContent }): Promise<EnvVarDocs> {
+  async execute({ vars }): Promise<EnvVarDocs> {
     // Validate input
-    if (!envContent || typeof envContent !== 'string') {
-      throw new Error('envContent is required and must be a string');
+    if (!vars || !Array.isArray(vars)) {
+      throw new Error('vars is required and must be an array');
     }
 
-    if (envContent.trim().length === 0) {
-      throw new Error('envContent cannot be empty');
+    if (vars.length === 0) {
+      throw new Error('vars array cannot be empty');
     }
 
-    // Parse the .env content
-    const variables = parseEnvContent(envContent);
+    // Validate each variable definition
+    for (const v of vars) {
+      if (!v.name || typeof v.name !== 'string') {
+        throw new Error('Each variable must have a name string');
+      }
+      if (!v.description || typeof v.description !== 'string') {
+        throw new Error('Each variable must have a description string');
+      }
+    }
 
     // Generate markdown documentation
-    const markdown = generateMarkdown(variables);
+    const docs = generateMarkdownTable(vars);
 
     // Calculate statistics
-    const requiredCount = variables.filter((v) => v.required).length;
-    const optionalCount = variables.filter((v) => !v.required).length;
+    const requiredCount = vars.filter((v) => v.required !== false).length;
+    const optionalCount = vars.filter((v) => v.required === false).length;
 
     return {
-      variables,
-      markdown,
-      totalVariables: variables.length,
+      docs,
+      totalVariables: vars.length,
       requiredCount,
       optionalCount,
     };

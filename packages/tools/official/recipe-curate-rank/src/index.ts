@@ -5,6 +5,7 @@
  * @requires Node.js 18+
  */
 
+import { createHash } from 'node:crypto';
 import { jsonSchema, tool } from 'ai';
 
 /**
@@ -103,6 +104,38 @@ function validateRecipes(recipes: Recipe[]): void {
 }
 
 /**
+ * Calculates hash for a recipe to enable deduplication
+ * Domain rule: recipe_deduplication - Generate deterministic hash from canonical recipe representation
+ */
+function calculateRecipeHash(recipe: Recipe): string {
+  // Create a canonical representation for hashing
+  // Domain rule: canonical_recipe_format - Use name and steps only for hash consistency
+  const canonical = {
+    name: recipe.name,
+    steps: recipe.steps?.map((s) => ({ action: s.action, details: s.details })) || [],
+  };
+  return createHash('sha256').update(JSON.stringify(canonical)).digest('hex').substring(0, 16);
+}
+
+/**
+ * Deduplicates recipes by hash
+ */
+function deduplicateRecipes(recipes: Recipe[]): Recipe[] {
+  const seen = new Set<string>();
+  const unique: Recipe[] = [];
+
+  for (const recipe of recipes) {
+    const hash = calculateRecipeHash(recipe);
+    if (!seen.has(hash)) {
+      seen.add(hash);
+      unique.push(recipe);
+    }
+  }
+
+  return unique;
+}
+
+/**
  * Normalizes a value to 0-1 range using min-max normalization
  */
 function normalizeValue(value: number, min: number, max: number): number {
@@ -179,8 +212,10 @@ function calculateCriterionScore(recipe: Recipe, criterionName: string): number 
 
 /**
  * Ranks recipes based on weighted criteria
+ * Domain rule: weighted_ranking - Calculate weighted scores from multiple criteria with normalized weights
  */
 function rankRecipes(recipes: Recipe[], criteria: RankingCriterion[]): RankedRecipe[] {
+  // Domain rule: weight_normalization - Normalize weights to sum to 1.0 for consistent scoring
   const totalWeight = criteria.reduce((sum, c) => sum + c.weight, 0);
 
   const scored = recipes.map((recipe) => {
@@ -306,8 +341,11 @@ export const recipeCurateRankTool = tool({
     validateRecipes(recipes);
     validateCriteria(criteria);
 
+    // Deduplicate recipes by hash
+    const uniqueRecipes = deduplicateRecipes(recipes);
+
     // Rank the recipes
-    const ranked = rankRecipes(recipes, criteria);
+    const ranked = rankRecipes(uniqueRecipes, criteria);
 
     // Build scores array
     const scores = ranked.map((r) => ({

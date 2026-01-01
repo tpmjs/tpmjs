@@ -53,27 +53,28 @@ type ErrorLogTriageInput = {
 /**
  * Normalizes an error message to extract the pattern
  * Removes specific values like IDs, paths, timestamps to group similar errors
+ * Domain rule: pattern_matching - Matches common error patterns by normalizing variable data
  */
 function normalizeErrorMessage(message: string): string {
   return (
     message
-      // Remove file paths
+      // Domain rule: pattern_matching - Remove file paths (Unix and Windows)
       .replace(/\/[\w\-/.]+/g, '[PATH]')
       .replace(/[A-Z]:\\[\w\-\\/.]+/g, '[PATH]')
-      // Remove UUIDs and IDs
+      // Domain rule: pattern_matching - Remove UUIDs and IDs
       .replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '[UUID]')
       .replace(/\b(id|ID|Id)[:=]\s*\d+/g, 'id=[ID]')
       .replace(/\b\d{8,}\b/g, '[ID]')
-      // Remove timestamps
+      // Domain rule: pattern_matching - Remove timestamps
       .replace(/\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(\.\d+)?/g, '[TIMESTAMP]')
-      // Remove URLs
+      // Domain rule: pattern_matching - Remove URLs
       .replace(/https?:\/\/[^\s]+/g, '[URL]')
-      // Remove IP addresses
+      // Domain rule: pattern_matching - Remove IP addresses
       .replace(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g, '[IP]')
-      // Remove line numbers
+      // Domain rule: pattern_matching - Remove line numbers
       .replace(/:\d+:\d+/g, ':[LINE]')
       .replace(/line \d+/gi, 'line [NUM]')
-      // Remove generic numbers
+      // Domain rule: pattern_matching - Remove generic numbers
       .replace(/\b\d+\b/g, '[NUM]')
       // Normalize whitespace
       .replace(/\s+/g, ' ')
@@ -83,10 +84,12 @@ function normalizeErrorMessage(message: string): string {
 
 /**
  * Maps log levels to severity (normalizes common variations)
+ * Domain rule: categorization - Categorizes by severity (critical, error, warning, info)
  */
 function mapSeverity(level: string): 'critical' | 'error' | 'warning' | 'info' {
   const normalized = level.toLowerCase();
 
+  // Domain rule: categorization - Critical includes fatal, emergency
   if (
     normalized.includes('crit') ||
     normalized.includes('fatal') ||
@@ -94,12 +97,15 @@ function mapSeverity(level: string): 'critical' | 'error' | 'warning' | 'info' {
   ) {
     return 'critical';
   }
+  // Domain rule: categorization - Error severity
   if (normalized.includes('err')) {
     return 'error';
   }
+  // Domain rule: categorization - Warning severity
   if (normalized.includes('warn')) {
     return 'warning';
   }
+  // Domain rule: categorization - Info severity (default)
   return 'info';
 }
 
@@ -121,6 +127,7 @@ function groupLogsByPattern(logs: LogEntry[]): Map<string, LogEntry[]> {
 
 /**
  * Generates recommendations based on error patterns
+ * Domain rule: recommendations - Provides actionable next steps based on patterns
  */
 function generateRecommendations(groups: ErrorGroup[]): string[] {
   const recommendations: string[] = [];
@@ -135,7 +142,7 @@ function generateRecommendations(groups: ErrorGroup[]): string[] {
     return b.count - a.count;
   });
 
-  // Critical errors first
+  // Domain rule: recommendations - Prioritize critical errors
   const criticalGroups = sortedGroups.filter((g) => g.severity === 'critical');
   if (criticalGroups.length > 0) {
     recommendations.push(
@@ -177,7 +184,8 @@ function generateRecommendations(groups: ErrorGroup[]): string[] {
     );
   }
 
-  // Specific pattern recommendations
+  // Domain rule: recommendations - Specific actionable next steps by error category
+  // Domain rule: categorization - Categories include timeout, auth, network, schema, etc.
   for (const group of sortedGroups.slice(0, 3)) {
     const pattern = group.pattern.toLowerCase();
 

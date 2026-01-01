@@ -2,6 +2,11 @@
  * Dependency Audit Lite Tool for TPMJS
  * Performs a lightweight audit of package.json dependencies to identify
  * common issues like outdated patterns, deprecated names, and version issues.
+ *
+ * Domain rule: deprecated-package-detection - Identifies deprecated npm packages (node-sass, request, moment, etc.)
+ * Domain rule: semver-validation - Validates semantic versioning patterns (wildcards, ^0.x unstable versions, unbounded ranges)
+ * Domain rule: dependency-misplacement - Detects build tools and test frameworks incorrectly placed in production dependencies
+ * Domain rule: duplicate-dependency-detection - Identifies packages appearing with different versions across dependency groups
  */
 
 import { jsonSchema, tool } from 'ai';
@@ -116,6 +121,60 @@ function parsePackageJson(input: string | Record<string, unknown>): PackageJson 
     }
   }
   return input as PackageJson;
+}
+
+/**
+ * Detects duplicate packages at different versions across dependency groups
+ */
+function detectDuplicates(pkg: PackageJson): DependencyIssue[] {
+  const issues: DependencyIssue[] = [];
+  const packageVersions = new Map<string, Array<{ version: string; type: string }>>();
+
+  // Collect all package names and versions
+  const deps = pkg.dependencies || {};
+  const devDeps = pkg.devDependencies || {};
+  const peerDeps = pkg.peerDependencies || {};
+
+  for (const [name, version] of Object.entries(deps)) {
+    if (!packageVersions.has(name)) {
+      packageVersions.set(name, []);
+    }
+    packageVersions.get(name)!.push({ version, type: 'dependencies' });
+  }
+
+  for (const [name, version] of Object.entries(devDeps)) {
+    if (!packageVersions.has(name)) {
+      packageVersions.set(name, []);
+    }
+    packageVersions.get(name)!.push({ version, type: 'devDependencies' });
+  }
+
+  for (const [name, version] of Object.entries(peerDeps)) {
+    if (!packageVersions.has(name)) {
+      packageVersions.set(name, []);
+    }
+    packageVersions.get(name)!.push({ version, type: 'peerDependencies' });
+  }
+
+  // Find duplicates with different versions
+  for (const [name, versions] of packageVersions.entries()) {
+    if (versions.length > 1) {
+      // Check if versions are actually different
+      const uniqueVersions = new Set(versions.map((v) => v.version));
+      if (uniqueVersions.size > 1) {
+        const versionList = versions.map((v) => `${v.version} (${v.type})`).join(', ');
+        issues.push({
+          type: 'duplicate-package',
+          severity: 'warning',
+          package: name,
+          message: `Package '${name}' appears with different versions: ${versionList}`,
+          suggestion: 'Consolidate to a single version across all dependency groups',
+        });
+      }
+    }
+  }
+
+  return issues;
 }
 
 /**
@@ -331,6 +390,9 @@ export const dependencyAuditLite = tool({
 
     // Collect all issues
     const issues: DependencyIssue[] = [];
+
+    // Detect duplicate packages first
+    issues.push(...detectDuplicates(pkg));
 
     // Audit dependencies
     const deps = pkg.dependencies || {};

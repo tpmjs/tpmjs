@@ -2,10 +2,14 @@
  * HTML to Markdown Tool for TPMJS
  * Converts HTML to markdown using turndown
  *
+ * Domain rule: html_to_markdown_conversion - Uses turndown library for HTML to Markdown conversion
+ * Domain rule: configurable_formatting - Supports customizable heading styles and list markers
+ *
  * @requires Node.js 18+
  */
 
 import { jsonSchema, tool } from 'ai';
+// Domain rule: html_to_markdown_conversion - turndown for HTML to Markdown conversion
 import TurndownService from 'turndown';
 
 /**
@@ -89,7 +93,8 @@ export const htmlToMarkdownTool = tool({
       throw new Error('HTML input must be a string');
     }
 
-    // Create turndown service with options
+    // Domain rule: html_to_markdown_conversion - Create turndown service with options
+    // Domain rule: configurable_formatting - Configure heading styles and list markers
     const turndownService = new TurndownService({
       headingStyle: options?.headingStyle || 'atx',
       bulletListMarker: options?.bulletListMarker || '-',
@@ -98,7 +103,7 @@ export const htmlToMarkdownTool = tool({
       strongDelimiter: '**',
     });
 
-    // Convert HTML to markdown
+    // Domain rule: html_to_markdown_conversion - Convert HTML to markdown using turndown
     let markdown: string;
     try {
       markdown = turndownService.turndown(html);

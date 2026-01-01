@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-job-description-draft",
+  "version": "0.1.0",
+  "description": "Generates job descriptions from role requirements with responsibilities, qualifications, and benefits",
+  "type": "module",
+  "keywords": ["tpmjs", "hr", "ai", "job-description", "recruiting", "hiring"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/job-description-draft"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "hr",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "jobDescriptionDraftTool",
+        "description": "Generates professional job descriptions from role requirements with inclusive, bias-free language",
+        "parameters": [
+          {
+            "name": "title",
+            "type": "string",
+            "description": "Job title",
+            "required": true
+          },
+          {
+            "name": "requirements",
+            "type": "object",
+            "description": "Role requirements including responsibilities and required skills",
+            "required": true
+          },
+          {
+            "name": "companyInfo",
+            "type": "object",
+            "description": "Optional company details for context",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "JobDescription",
+          "description": "Complete job description with formatted markdown output"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

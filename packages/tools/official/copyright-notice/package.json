@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/tools-copyright-notice",
+  "version": "0.1.0",
+  "description": "Generates appropriate copyright notices for different content types and jurisdictions",
+  "type": "module",
+  "keywords": ["tpmjs", "copyright", "legal", "intellectual-property"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/copyright-notice"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "legal",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "copyrightNoticeTool",
+        "description": "Generates properly formatted copyright notices for different content types and jurisdictions",
+        "parameters": [
+          {
+            "name": "owner",
+            "type": "string",
+            "description": "Copyright owner name",
+            "required": true
+          },
+          {
+            "name": "year",
+            "type": "number",
+            "description": "Copyright year",
+            "required": false
+          },
+          {
+            "name": "contentType",
+            "type": "string",
+            "description": "Type of content (software, text, media, etc.)",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "CopyrightNotice",
+          "description": "Formatted copyright notice with components and recommendations"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}

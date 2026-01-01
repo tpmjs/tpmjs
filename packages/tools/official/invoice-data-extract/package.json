@@ -1,0 +1,60 @@
+{
+  "name": "@tpmjs/tools-invoice-data-extract",
+  "version": "0.1.0",
+  "description": "Extracts structured data from invoice text including vendor, line items, totals",
+  "type": "module",
+  "keywords": ["tpmjs", "finance", "invoice", "accounting", "data-extraction"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/invoice-data-extract"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "finance",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      {
+        "name": "invoiceDataExtractTool",
+        "description": "Extracts structured data from invoice text with validation",
+        "parameters": [
+          {
+            "name": "invoiceText",
+            "type": "string",
+            "description": "Invoice text content",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "ExtractedInvoice",
+          "description": "Structured invoice data with vendor, items, totals, and validation results"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.0-beta.124"
+  }
+}
