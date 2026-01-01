@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "3.0.1",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "@prisma/client": "^6.19.0",
     "@tpmjs/db": "workspace:*",
     "@tpmjs/env": "workspace:*",
