@@ -6,6 +6,7 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { AppHeader } from '~/components/AppHeader';
 import { AddToolSearch } from '~/components/collections/AddToolSearch';
 import { CollectionForm } from '~/components/collections/CollectionForm';
 import { CollectionToolList } from '~/components/collections/CollectionToolList';
@@ -221,6 +222,7 @@ export default function CollectionDetailPage(): React.ReactElement {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
+        <AppHeader />
         <div className="max-w-4xl mx-auto py-12 px-4">
           <div className="animate-pulse">
             <div className="h-8 bg-surface-secondary rounded w-48 mb-4" />
@@ -240,6 +242,7 @@ export default function CollectionDetailPage(): React.ReactElement {
   if (error || !collection) {
     return (
       <div className="min-h-screen bg-background">
+        <AppHeader />
         <div className="max-w-4xl mx-auto py-12 px-4">
           <div className="text-center py-16">
             <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
@@ -258,6 +261,7 @@ export default function CollectionDetailPage(): React.ReactElement {
 
   return (
     <div className="min-h-screen bg-background">
+      <AppHeader />
       <div className="max-w-4xl mx-auto py-12 px-4">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">

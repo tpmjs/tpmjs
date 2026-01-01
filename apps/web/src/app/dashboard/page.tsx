@@ -1,3 +1,4 @@
+import { AppHeader } from '@/components/AppHeader';
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { auth } from '@/lib/auth';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
@@ -16,6 +17,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <AppHeader />
       <div className="max-w-4xl mx-auto py-12 px-4">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
