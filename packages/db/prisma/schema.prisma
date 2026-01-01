@@ -313,3 +313,76 @@ model StatsSnapshot {
   @@index([date])
   @@map("stats_snapshots")
 }
+
+// ============================================================================
+// Better Auth Models
+// ============================================================================
+
+/// User table - stores authenticated users
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false) @map("email_verified")
+  image         String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sessions Session[]
+  accounts Account[]
+
+  @@map("users")
+}
+
+/// Session table - stores user sessions
+model Session {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// Account table - stores auth provider accounts (including email/password)
+model Account {
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  accountId    String    @map("account_id")
+  providerId   String    @map("provider_id")
+  accessToken  String?   @map("access_token") @db.Text
+  refreshToken String?   @map("refresh_token") @db.Text
+  idToken      String?   @map("id_token") @db.Text
+  expiresAt    DateTime? @map("expires_at")
+  password     String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+/// Verification table - stores email verification tokens
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("verifications")
+}

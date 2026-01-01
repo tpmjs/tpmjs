@@ -9,4 +9,11 @@ export const env = createEnv({
     .string()
     .url()
     .default('https://endearing-commitment-production.up.railway.app'), // Railway service for health checks
+
+  // Better Auth
+  BETTER_AUTH_SECRET: z.string().min(32).optional(), // Required for session encryption
+  BETTER_AUTH_URL: z.string().url().optional(), // Base URL for auth callbacks
+
+  // Resend (Email)
+  RESEND_API_KEY: z.string().startsWith('re_').optional(), // Resend API key for sending emails
 });
