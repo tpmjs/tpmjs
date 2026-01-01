@@ -16,21 +16,40 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      const { data, error } = await signIn.email({
-        email,
-        password,
-      });
+      const result = await signIn.email(
+        {
+          email,
+          password,
+        },
+        {
+          onSuccess: () => {
+            // Redirect on successful sign-in
+            window.location.href = '/dashboard';
+          },
+          onError: (ctx) => {
+            console.error('Sign in error:', ctx.error);
+            setError(ctx.error.message || 'Failed to sign in');
+            setLoading(false);
+          },
+        }
+      );
 
-      if (error) {
-        console.error('Sign in error:', error);
-        setError(error.message || 'Failed to sign in');
+      // Handle case where no callback was triggered
+      if (result.error) {
+        console.error('Sign in error:', result.error);
+        setError(result.error.message || 'Failed to sign in');
         setLoading(false);
         return;
       }
 
-      if (data) {
-        // Successfully signed in - redirect to dashboard
+      // If we have data but onSuccess didn't fire, redirect manually
+      if (result.data) {
         window.location.href = '/dashboard';
+      } else {
+        // Neither data nor error - something unexpected happened
+        console.error('Sign in returned no data or error:', result);
+        setError('Sign in failed. Please try again.');
+        setLoading(false);
       }
     } catch (err) {
       console.error('Sign in exception:', err);
