@@ -25,17 +25,17 @@ export default async function DashboardPage() {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-foreground-secondary">Name</label>
+              <span className="block text-sm text-foreground-secondary">Name</span>
               <p className="text-foreground font-medium">{session.user.name}</p>
             </div>
 
             <div>
-              <label className="block text-sm text-foreground-secondary">Email</label>
+              <span className="block text-sm text-foreground-secondary">Email</span>
               <p className="text-foreground font-medium">{session.user.email}</p>
             </div>
 
             <div>
-              <label className="block text-sm text-foreground-secondary">Email Verified</label>
+              <span className="block text-sm text-foreground-secondary">Email Verified</span>
               <p className="text-foreground font-medium">
                 {session.user.emailVerified ? (
                   <span className="text-green-600">Verified</span>
