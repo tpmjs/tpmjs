@@ -1,5 +1,19 @@
 # @tpmjs/types
 
+## 0.2.0
+
+### Minor Changes
+
+- Add new tool categories for 100+ official tools
+
+  Added core categories used by the official TPMJS tools:
+
+  - research, web, data, documentation, engineering
+  - security, statistics, ops, agent, utilities
+  - html, compliance, doc, text
+
+  This fixes sync validation failures for tools using these categories.
+
 ## 0.1.2
 
 ### Patch Changes
