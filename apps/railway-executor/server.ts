@@ -203,6 +203,7 @@ function sanitizeJsonSchema(schema: any): any {
   // Sanitize anyOf/oneOf/allOf
   for (const key of ['anyOf', 'oneOf', 'allOf']) {
     if (Array.isArray(sanitized[key])) {
+      // biome-ignore lint/suspicious/noExplicitAny: JSON Schema types are dynamic
       sanitized[key] = sanitized[key].map((s: any) => sanitizeJsonSchema(s));
     }
   }
@@ -414,12 +415,16 @@ async function loadAndDescribe(req: Request): Promise<Response> {
           const zod = await import('https://esm.sh/zod@4');
           if (zod.toJSONSchema) {
             rawJsonSchema = zod.toJSONSchema(toolModule.inputSchema);
-            console.log(`✅ Successfully converted Zod v4 schema using z.toJSONSchema for ${cacheKey}`);
+            console.log(
+              `✅ Successfully converted Zod v4 schema using z.toJSONSchema for ${cacheKey}`
+            );
           } else if (zod.default?.toJSONSchema) {
             rawJsonSchema = zod.default.toJSONSchema(toolModule.inputSchema);
-            console.log(`✅ Successfully converted Zod v4 schema using z.default.toJSONSchema for ${cacheKey}`);
+            console.log(
+              `✅ Successfully converted Zod v4 schema using z.default.toJSONSchema for ${cacheKey}`
+            );
           } else {
-            console.warn(`⚠️  Zod v4 toJSONSchema not found. Available exports:`, Object.keys(zod));
+            console.warn('⚠️  Zod v4 toJSONSchema not found. Available exports:', Object.keys(zod));
           }
         } catch (error) {
           console.warn(`⚠️  Zod v4 toJSONSchema conversion failed for ${cacheKey}:`, error);

@@ -38,6 +38,7 @@ export function MessageBubble({
     if (!message.parts || isUser) return;
 
     const currentPartsKey = JSON.stringify(
+      // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
       message.parts.map((p: any) => ({
         type: p.type,
         id: p.toolCallId || p.type,
@@ -55,6 +56,8 @@ export function MessageBubble({
     setPartTimings((prev) => {
       const updated = new Map(prev);
 
+      // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex part timing logic for streaming messages
       message.parts?.forEach((part: any, idx: number) => {
         const partKey = part.toolCallId || `${part.type}-${idx}`;
         const existing = updated.get(partKey);
@@ -85,6 +88,7 @@ export function MessageBubble({
   }, [message.parts, isStreaming, isUser]);
 
   // Get timing for a specific part
+  // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
   const getPartTiming = (part: any, idx: number): PartTiming | undefined => {
     const partKey = part.toolCallId || `${part.type}-${idx}`;
     return partTimings.get(partKey);
@@ -140,7 +144,7 @@ export function MessageBubble({
               // Render tool calls (type starts with 'tool-')
               if (part.type.startsWith('tool-')) {
                 const toolName = part.type.replace('tool-', '');
-                // Type assertion for tool parts
+                // biome-ignore lint/suspicious/noExplicitAny: Tool part properties vary by AI SDK version
                 const toolPart = part as any;
                 const timing = getPartTiming(part, idx);
                 const isResult = toolPart.state === 'result';

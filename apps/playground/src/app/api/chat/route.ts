@@ -10,6 +10,13 @@ import {
 } from '~/lib/dynamic-tool-loader';
 import { loadAllTools, sanitizeToolName } from '~/lib/tool-loader';
 
+interface ToolSearchResult {
+  query: string;
+  matchCount: number;
+  // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool registry result type - tools have varying shapes
+  tools: any[];
+}
+
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes for complex tool loading
@@ -22,6 +29,7 @@ const conversationStates = new Map<string, { loadedTools: Record<string, any> }>
  * POST /api/chat
  * Chat with AI agent that can execute TPMJS tools
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex chat handler with tool loading requires this complexity
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -89,6 +97,7 @@ export async function POST(request: NextRequest) {
     let userQuery = '';
     if (lastMessage?.role === 'user') {
       // Extract text from message parts
+      // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
       const parts = (lastMessage as any).parts || [];
       for (const part of parts) {
         if (part.type === 'text') {
@@ -104,6 +113,7 @@ export async function POST(request: NextRequest) {
       .slice(-3)
       .map((msg) => {
         // Extract text from parts
+        // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
         const parts = (msg as any).parts || [];
         for (const part of parts) {
           if (part.type === 'text') {
@@ -129,27 +139,26 @@ export async function POST(request: NextRequest) {
             limit: 5, // Get top 5 relevant tools
             recentMessages: recentUserMessages,
           },
+          // biome-ignore lint/suspicious/noExplicitAny: AI SDK execute context type is complex
           {} as any
         );
 
         // Type assertion: searchTpmjsToolsTool returns direct result, not AsyncIterable
-        const searchResult = result as {
-          query: string;
-          matchCount: number;
-          tools: any[];
-        };
+        const searchResult = result as ToolSearchResult;
 
         console.log(`📦 Found ${searchResult.matchCount} matching tools`);
 
         if (searchResult.tools && searchResult.tools.length > 0) {
           console.log(
             '🔧 Tools found:',
+            // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool registry result type
             searchResult.tools.map((t: any) => `${t.packageName}/${t.name}`)
           );
 
           // Dynamically load tools from esm.sh
           console.log(`📥 Loading ${searchResult.tools.length} tools dynamically...`);
 
+          // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool registry result type
           const toolsToLoad = searchResult.tools.map((meta: any) => ({
             packageName: meta.packageName,
             name: meta.name,

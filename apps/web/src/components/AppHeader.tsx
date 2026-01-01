@@ -1,11 +1,11 @@
 'use client';
 
+import { useSession } from '@/lib/auth-client';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Header } from '@tpmjs/ui/Header/Header';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useSession } from '@/lib/auth-client';
 import { MobileMenu } from './MobileMenu';
 
 /**
@@ -100,13 +100,21 @@ export function AppHeader(): React.ReactElement {
               </a>
               {session ? (
                 <Link href="/dashboard">
-                  <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-foreground hover:text-foreground"
+                  >
                     Dashboard
                   </Button>
                 </Link>
               ) : (
                 <Link href="/sign-in">
-                  <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-foreground hover:text-foreground"
+                  >
                     Sign In
                   </Button>
                 </Link>
@@ -133,7 +141,11 @@ export function AppHeader(): React.ReactElement {
       />
 
       {/* Mobile Menu Drawer */}
-      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} session={session} />
+      <MobileMenu
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        session={session}
+      />
     </>
   );
 }

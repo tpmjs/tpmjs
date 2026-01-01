@@ -29,7 +29,11 @@ const socialLinks = [
   { href: 'https://github.com/tpmjs/tpmjs', icon: 'github' as const, label: 'GitHub' },
 ];
 
-export function MobileMenu({ isOpen, onClose, session }: MobileMenuProps): React.ReactElement | null {
+export function MobileMenu({
+  isOpen,
+  onClose,
+  session,
+}: MobileMenuProps): React.ReactElement | null {
   // Lock body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
