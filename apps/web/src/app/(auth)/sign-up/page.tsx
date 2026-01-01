@@ -26,7 +26,8 @@ export default function SignUpPage() {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Failed to create account');
+        console.error('Sign up error:', result.error);
+        setError(result.error.message || result.error.code || 'Failed to create account');
         return;
       }
 

@@ -43,3 +43,4 @@ storybook-static
 .changeset/*.md
 !.changeset/README.md
 .vercel
+packages/tool-ideas/data/tools-export.json

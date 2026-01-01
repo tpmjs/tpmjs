@@ -24,7 +24,8 @@ export default function SignInPage() {
       });
 
       if (result.error) {
-        setError(result.error.message || 'Failed to sign in');
+        console.error('Sign in error:', result.error);
+        setError(result.error.message || result.error.code || 'Failed to sign in');
         return;
       }
 
