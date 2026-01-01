@@ -57,7 +57,8 @@ function loadToolIdeas(): ToolIdeasData {
   }
 
   try {
-    const filePath = join(process.cwd(), 'data', 'tools-export.json');
+    // On Vercel, public files are in the project root under 'public'
+    const filePath = join(process.cwd(), 'public', 'tools-export.json');
     const fileContent = readFileSync(filePath, 'utf-8');
     cachedData = JSON.parse(fileContent) as ToolIdeasData;
     return cachedData;
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest) {
   const category = searchParams.get('category') || '';
   const minQuality = Number.parseFloat(searchParams.get('minQuality') || '0');
   const verb = searchParams.get('verb') || '';
-  const limit = Math.min(Number.parseInt(searchParams.get('limit') || '100'), 1000);
+  const limit = Math.min(Number.parseInt(searchParams.get('limit') || '100'), 10000);
   const offset = Number.parseInt(searchParams.get('offset') || '0');
 
   const data = loadToolIdeas();
