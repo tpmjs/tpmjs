@@ -243,7 +243,9 @@ export const sloDraftTool = tool({
             },
             target: {
               type: 'number',
-              description: 'Target percentage (e.g., 99.9 for 99.9%)',
+              description: 'Target percentage (e.g., 99.9 for 99.9%). Must be between 0 and 100.',
+              minimum: 0,
+              maximum: 100,
             },
             window: {
               type: 'string',
