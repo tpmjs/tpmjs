@@ -4,6 +4,20 @@ import { z } from 'zod';
  * Valid tool categories for TPMJS registry
  */
 export const TPMJS_CATEGORIES = [
+  // Core categories
+  'research',
+  'web',
+  'data',
+  'documentation',
+  'engineering',
+  'security',
+  'statistics',
+  'ops',
+  'agent',
+  'utilities',
+  'html',
+  'compliance',
+  // Legacy categories (kept for backward compatibility)
   'web-scraping',
   'data-processing',
   'file-operations',
@@ -14,9 +28,10 @@ export const TPMJS_CATEGORIES = [
   'text-analysis',
   'automation',
   'ai-ml',
-  'security',
   'monitoring',
-  'research',
+  // Aliases
+  'doc',
+  'text',
 ] as const;
 
 export type TpmjsCategory = (typeof TPMJS_CATEGORIES)[number];
