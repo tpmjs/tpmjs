@@ -18,28 +18,25 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      await signIn.email(
-        {
-          email,
-          password,
-          callbackURL: '/dashboard',
-        },
-        {
-          onSuccess: () => {
-            router.refresh();
-            router.push('/dashboard');
-          },
-          onError: (ctx) => {
-            console.error('Sign in error:', ctx.error);
-            setError(ctx.error.message || 'Failed to sign in');
-          },
-        }
-      );
-      return; // onSuccess/onError handle the flow
+      const { data, error } = await signIn.email({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Sign in error:', error);
+        setError(error.message || 'Failed to sign in');
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        // Successfully signed in - redirect to dashboard
+        window.location.href = '/dashboard';
+      }
     } catch (err) {
       console.error('Sign in exception:', err);
       setError('An unexpected error occurred');
-    } finally {
       setLoading(false);
     }
   }
