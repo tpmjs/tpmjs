@@ -1,9 +1,20 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy initialization to avoid build-time errors when RESEND_API_KEY is not set
+let resend: Resend | null = null;
+
+function getResend(): Resend {
+  if (!resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
 
 export async function sendVerificationEmail(to: string, verificationUrl: string) {
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     from: 'TPMJS <noreply@tpmjs.com>',
     to,
     subject: 'Verify your email - TPMJS',
