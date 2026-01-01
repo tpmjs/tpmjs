@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate --schema=../../packages/db/prisma/schema.prisma",
     "dev": "npx @react-grab/claude-code@latest && next dev",
-    "build": "next build",
+    "build": "prisma generate --schema=../../packages/db/prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
@@ -15,6 +16,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "3.0.1",
+    "@prisma/client": "^6.19.0",
     "@tpmjs/db": "workspace:*",
     "@tpmjs/env": "workspace:*",
     "@tpmjs/npm-client": "workspace:*",
@@ -34,6 +36,7 @@
     "next": "^16.0.8",
     "next-themes": "^0.4.6",
     "openai": "^6.9.1",
+    "prisma": "^6.19.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
