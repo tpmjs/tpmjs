@@ -5,6 +5,7 @@ import { Header } from '@tpmjs/ui/Header/Header';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession } from '@/lib/auth-client';
 import { MobileMenu } from './MobileMenu';
 
 /**
@@ -12,6 +13,7 @@ import { MobileMenu } from './MobileMenu';
  */
 export function AppHeader(): React.ReactElement {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: session } = useSession();
 
   return (
     <>
@@ -96,6 +98,19 @@ export function AppHeader(): React.ReactElement {
               >
                 <Icon icon="github" size="md" />
               </a>
+              {session ? (
+                <Link href="/dashboard">
+                  <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/sign-in">
+                  <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                    Sign In
+                  </Button>
+                </Link>
+              )}
               <Link href="/publish">
                 <Button variant="default" size="sm">
                   Publish Tool
@@ -118,7 +133,7 @@ export function AppHeader(): React.ReactElement {
       />
 
       {/* Mobile Menu Drawer */}
-      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} session={session} />
     </>
   );
 }

@@ -8,6 +8,7 @@ import { useEffect } from 'react';
 interface MobileMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  session: { user: { name: string; email: string } } | null;
 }
 
 const navLinks = [
@@ -28,7 +29,7 @@ const socialLinks = [
   { href: 'https://github.com/tpmjs/tpmjs', icon: 'github' as const, label: 'GitHub' },
 ];
 
-export function MobileMenu({ isOpen, onClose }: MobileMenuProps): React.ReactElement | null {
+export function MobileMenu({ isOpen, onClose, session }: MobileMenuProps): React.ReactElement | null {
   // Lock body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
@@ -137,6 +138,34 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps): React.ReactEle
 
           {/* Divider */}
           <div className="my-4 border-t border-border" />
+
+          {/* Auth links */}
+          {session ? (
+            <Link
+              href="/dashboard"
+              className="block px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors mb-4"
+              onClick={onClose}
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <div className="space-y-1 mb-4">
+              <Link
+                href="/sign-in"
+                className="block px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors"
+                onClick={onClose}
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="block px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors"
+                onClick={onClose}
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
 
           {/* Publish button */}
           <Link href="/publish" onClick={onClose}>
