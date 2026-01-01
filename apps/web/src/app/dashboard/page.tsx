@@ -1,6 +1,8 @@
 import { SignOutButton } from '@/components/auth/SignOutButton';
 import { auth } from '@/lib/auth';
+import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { headers } from 'next/headers';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 export default async function DashboardPage() {
@@ -20,6 +22,26 @@ export default async function DashboardPage() {
           <SignOutButton />
         </div>
 
+        {/* Quick Actions */}
+        <div className="grid gap-4 sm:grid-cols-2 mb-8">
+          <Link href="/dashboard/collections" className="block">
+            <div className="bg-background border border-border rounded-lg p-6 hover:border-foreground/20 transition-colors group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Icon icon="folder" size="md" className="text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-medium text-foreground">My Collections</h2>
+                  <p className="text-sm text-foreground-secondary">
+                    Organize and share your favorite tools
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Profile Section */}
         <div className="bg-background border border-border rounded-lg p-6">
           <h2 className="text-lg font-medium text-foreground mb-4">Profile</h2>
 

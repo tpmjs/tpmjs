@@ -95,6 +95,7 @@ model Tool {
   // Relations
   simulations  Simulation[]
   healthChecks HealthCheck[]
+  collections  CollectionTool[]
 
   @@unique([packageId, name])
   @@index([qualityScore])
@@ -329,8 +330,9 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  sessions Session[]
-  accounts Account[]
+  sessions    Session[]
+  accounts    Account[]
+  collections Collection[]
 
   @@map("users")
 }
@@ -385,4 +387,62 @@ model Verification {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("verifications")
+}
+
+// ============================================================================
+// Collection Models
+// ============================================================================
+
+/// Collection - user-created groups of tools
+model Collection {
+  id          String   @id @default(cuid())
+
+  // Owner relationship
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Collection metadata
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(500)
+  isPublic    Boolean  @default(false) @map("is_public")
+
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  tools       CollectionTool[]
+
+  // Unique constraint: user can't have duplicate collection names
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([isPublic])
+  @@index([createdAt])
+  @@map("collections")
+}
+
+/// CollectionTool - junction table for many-to-many relationship between collections and tools
+model CollectionTool {
+  id           String     @id @default(cuid())
+
+  // Relationships
+  collectionId String     @map("collection_id")
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  toolId       String     @map("tool_id")
+  tool         Tool       @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Ordering - allows users to reorder tools within a collection
+  position     Int        @default(0)
+
+  // Optional user notes about why this tool is in the collection
+  note         String?    @db.VarChar(500)
+
+  // Timestamps
+  addedAt      DateTime   @default(now()) @map("added_at")
+
+  // Unique constraint: tool can only be in a collection once
+  @@unique([collectionId, toolId])
+  @@index([collectionId])
+  @@index([toolId])
+  @@map("collection_tools")
 }

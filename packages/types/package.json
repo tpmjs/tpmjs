@@ -24,6 +24,10 @@
     "./tpmjs": {
       "types": "./dist/tpmjs.d.ts",
       "default": "./dist/tpmjs.js"
+    },
+    "./collection": {
+      "types": "./dist/collection.d.ts",
+      "default": "./dist/collection.js"
     }
   },
   "files": ["dist"],

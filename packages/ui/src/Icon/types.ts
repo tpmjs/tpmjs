@@ -14,7 +14,7 @@ export interface IconProps extends Omit<SVGAttributes<SVGSVGElement>, 'children'
    * Size of the icon
    * @default 'md'
    */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
 }
 
 /**
