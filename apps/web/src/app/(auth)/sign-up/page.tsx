@@ -19,19 +19,24 @@ export default function SignUpPage() {
     setLoading(true);
 
     try {
-      const result = await signUp.email({
-        name,
-        email,
-        password,
-      });
-
-      if (result.error) {
-        console.error('Sign up error:', result.error);
-        setError(result.error.message || result.error.code || 'Failed to create account');
-        return;
-      }
-
-      router.push('/verify-email');
+      await signUp.email(
+        {
+          name,
+          email,
+          password,
+          callbackURL: '/verify-email',
+        },
+        {
+          onSuccess: () => {
+            router.push('/verify-email');
+          },
+          onError: (ctx) => {
+            console.error('Sign up error:', ctx.error);
+            setError(ctx.error.message || 'Failed to create account');
+          },
+        }
+      );
+      return; // onSuccess/onError handle the flow
     } catch {
       setError('An unexpected error occurred');
     } finally {
