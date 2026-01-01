@@ -17,6 +17,8 @@ export const auth = betterAuth({
     sendVerificationEmail: async ({ user, url }) => {
       await sendVerificationEmail(user.email, url);
     },
+    autoSignInAfterVerification: true,
+    sendOnSignUp: true,
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
