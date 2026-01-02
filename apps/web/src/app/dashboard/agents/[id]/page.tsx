@@ -6,7 +6,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 
 interface Agent {
@@ -27,6 +27,42 @@ interface Agent {
   updatedAt: string;
 }
 
+interface AgentTool {
+  id: string;
+  toolId: string;
+  tool: {
+    id: string;
+    name: string;
+    npmPackageName: string;
+    description: string | null;
+  };
+}
+
+interface AgentCollection {
+  id: string;
+  collectionId: string;
+  collection: {
+    id: string;
+    name: string;
+    description: string | null;
+    toolCount: number;
+  };
+}
+
+interface SearchTool {
+  id: string;
+  name: string;
+  npmPackageName: string;
+  description: string | null;
+}
+
+interface SearchCollection {
+  id: string;
+  name: string;
+  description: string | null;
+  toolCount: number;
+}
+
 const PROVIDER_DISPLAY_NAMES: Record<AIProvider, string> = {
   OPENAI: 'OpenAI',
   ANTHROPIC: 'Anthropic',
@@ -35,6 +71,7 @@ const PROVIDER_DISPLAY_NAMES: Record<AIProvider, string> = {
   MISTRAL: 'Mistral',
 };
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Agent detail page has multiple interconnected features
 export default function AgentDetailPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
@@ -45,6 +82,22 @@ export default function AgentDetailPage(): React.ReactElement {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Tools state
+  const [agentTools, setAgentTools] = useState<AgentTool[]>([]);
+  const [toolSearch, setToolSearch] = useState('');
+  const [toolSearchResults, setToolSearchResults] = useState<SearchTool[]>([]);
+  const [isSearchingTools, setIsSearchingTools] = useState(false);
+  const [showToolSearch, setShowToolSearch] = useState(false);
+  const toolSearchRef = useRef<HTMLDivElement>(null);
+
+  // Collections state
+  const [agentCollections, setAgentCollections] = useState<AgentCollection[]>([]);
+  const [collectionSearch, setCollectionSearch] = useState('');
+  const [collectionSearchResults, setCollectionSearchResults] = useState<SearchCollection[]>([]);
+  const [isSearchingCollections, setIsSearchingCollections] = useState(false);
+  const [showCollectionSearch, setShowCollectionSearch] = useState(false);
+  const collectionSearchRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -91,9 +144,216 @@ export default function AgentDetailPage(): React.ReactElement {
     }
   }, [agentId, router]);
 
+  // Fetch tools attached to agent
+  const fetchAgentTools = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/agents/${agentId}/tools`);
+      const data = await response.json();
+      if (data.success) {
+        setAgentTools(data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch agent tools:', err);
+    }
+  }, [agentId]);
+
+  // Fetch collections attached to agent
+  const fetchAgentCollections = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/agents/${agentId}/collections`);
+      const data = await response.json();
+      if (data.success) {
+        setAgentCollections(data.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch agent collections:', err);
+    }
+  }, [agentId]);
+
   useEffect(() => {
     fetchAgent();
   }, [fetchAgent]);
+
+  useEffect(() => {
+    if (agent) {
+      fetchAgentTools();
+      fetchAgentCollections();
+    }
+  }, [agent, fetchAgentTools, fetchAgentCollections]);
+
+  // Click outside handler for search dropdowns
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (toolSearchRef.current && !toolSearchRef.current.contains(event.target as Node)) {
+        setShowToolSearch(false);
+      }
+      if (
+        collectionSearchRef.current &&
+        !collectionSearchRef.current.contains(event.target as Node)
+      ) {
+        setShowCollectionSearch(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Search tools
+  const searchTools = useCallback(
+    async (query: string) => {
+      if (!query.trim()) {
+        setToolSearchResults([]);
+        return;
+      }
+      setIsSearchingTools(true);
+      try {
+        const response = await fetch(`/api/tools/search?q=${encodeURIComponent(query)}&limit=10`);
+        const data = await response.json();
+        if (data.success) {
+          // Filter out tools already attached
+          const attachedToolIds = new Set(agentTools.map((t) => t.toolId));
+          const filtered = (data.data || []).filter((t: SearchTool) => !attachedToolIds.has(t.id));
+          setToolSearchResults(filtered);
+        }
+      } catch (err) {
+        console.error('Failed to search tools:', err);
+      } finally {
+        setIsSearchingTools(false);
+      }
+    },
+    [agentTools]
+  );
+
+  // Search collections
+  const searchCollections = useCallback(
+    async (query: string) => {
+      if (!query.trim()) {
+        setCollectionSearchResults([]);
+        return;
+      }
+      setIsSearchingCollections(true);
+      try {
+        const response = await fetch(
+          `/api/collections?search=${encodeURIComponent(query)}&limit=10`
+        );
+        const data = await response.json();
+        if (data.success) {
+          // Filter out collections already attached
+          const attachedCollectionIds = new Set(agentCollections.map((c) => c.collectionId));
+          const filtered = (data.data || []).filter(
+            (c: SearchCollection) => !attachedCollectionIds.has(c.id)
+          );
+          setCollectionSearchResults(filtered);
+        }
+      } catch (err) {
+        console.error('Failed to search collections:', err);
+      } finally {
+        setIsSearchingCollections(false);
+      }
+    },
+    [agentCollections]
+  );
+
+  // Debounced search effects
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (toolSearch) searchTools(toolSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [toolSearch, searchTools]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (collectionSearch) searchCollections(collectionSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [collectionSearch, searchCollections]);
+
+  // Add tool to agent
+  const addTool = async (toolId: string) => {
+    try {
+      const response = await fetch(`/api/agents/${agentId}/tools`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toolId }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchAgentTools();
+        await fetchAgent();
+        setToolSearch('');
+        setToolSearchResults([]);
+        setShowToolSearch(false);
+      } else {
+        alert(data.error || 'Failed to add tool');
+      }
+    } catch (err) {
+      console.error('Failed to add tool:', err);
+      alert('Failed to add tool');
+    }
+  };
+
+  // Remove tool from agent
+  const removeTool = async (toolId: string) => {
+    try {
+      const response = await fetch(`/api/agents/${agentId}/tools/${toolId}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchAgentTools();
+        await fetchAgent();
+      } else {
+        alert(data.error || 'Failed to remove tool');
+      }
+    } catch (err) {
+      console.error('Failed to remove tool:', err);
+      alert('Failed to remove tool');
+    }
+  };
+
+  // Add collection to agent
+  const addCollection = async (collectionId: string) => {
+    try {
+      const response = await fetch(`/api/agents/${agentId}/collections`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collectionId }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchAgentCollections();
+        await fetchAgent();
+        setCollectionSearch('');
+        setCollectionSearchResults([]);
+        setShowCollectionSearch(false);
+      } else {
+        alert(data.error || 'Failed to add collection');
+      }
+    } catch (err) {
+      console.error('Failed to add collection:', err);
+      alert('Failed to add collection');
+    }
+  };
+
+  // Remove collection from agent
+  const removeCollection = async (collectionId: string) => {
+    try {
+      const response = await fetch(`/api/agents/${agentId}/collections/${collectionId}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchAgentCollections();
+        await fetchAgent();
+      } else {
+        alert(data.error || 'Failed to remove collection');
+      }
+    } catch (err) {
+      console.error('Failed to remove collection:', err);
+      alert('Failed to remove collection');
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -282,6 +542,198 @@ export default function AgentDetailPage(): React.ReactElement {
             >
               <Icon icon="copy" size="xs" />
             </Button>
+          </div>
+        </div>
+
+        {/* Tools Section */}
+        <div className="bg-background border border-border rounded-lg p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium text-foreground">Tools</h2>
+            <span className="text-sm text-foreground-tertiary">{agentTools.length} attached</span>
+          </div>
+
+          {/* Current Tools */}
+          {agentTools.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {agentTools.map((at) => (
+                <div
+                  key={at.id}
+                  className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon
+                      icon="puzzle"
+                      size="sm"
+                      className="text-foreground-tertiary flex-shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{at.tool.name}</p>
+                      <p className="text-xs text-foreground-tertiary truncate font-mono">
+                        {at.tool.npmPackageName}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeTool(at.toolId)}
+                    className="p-1 text-foreground-tertiary hover:text-red-500 transition-colors flex-shrink-0"
+                    title="Remove tool"
+                  >
+                    <Icon icon="x" size="xs" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add Tool Search */}
+          <div ref={toolSearchRef} className="relative">
+            <div className="relative">
+              <Icon
+                icon="search"
+                size="xs"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary"
+              />
+              <input
+                type="text"
+                value={toolSearch}
+                onChange={(e) => {
+                  setToolSearch(e.target.value);
+                  setShowToolSearch(true);
+                }}
+                onFocus={() => setShowToolSearch(true)}
+                placeholder="Search tools to add..."
+                className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              />
+              {isSearchingTools && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+
+            {/* Search Results Dropdown */}
+            {showToolSearch && toolSearch && (
+              <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                {toolSearchResults.length > 0 ? (
+                  toolSearchResults.map((tool) => (
+                    <button
+                      type="button"
+                      key={tool.id}
+                      onClick={() => addTool(tool.id)}
+                      className="w-full px-3 py-2 text-left hover:bg-surface-secondary transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    >
+                      <p className="text-sm font-medium text-foreground">{tool.name}</p>
+                      <p className="text-xs text-foreground-tertiary font-mono">
+                        {tool.npmPackageName}
+                      </p>
+                    </button>
+                  ))
+                ) : !isSearchingTools ? (
+                  <div className="px-3 py-4 text-center text-sm text-foreground-tertiary">
+                    No tools found
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Collections Section */}
+        <div className="bg-background border border-border rounded-lg p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium text-foreground">Collections</h2>
+            <span className="text-sm text-foreground-tertiary">
+              {agentCollections.length} attached
+            </span>
+          </div>
+
+          {/* Current Collections */}
+          {agentCollections.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {agentCollections.map((ac) => (
+                <div
+                  key={ac.id}
+                  className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Icon
+                      icon="folder"
+                      size="sm"
+                      className="text-foreground-tertiary flex-shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {ac.collection.name}
+                      </p>
+                      <p className="text-xs text-foreground-tertiary">
+                        {ac.collection.toolCount} tools
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeCollection(ac.collectionId)}
+                    className="p-1 text-foreground-tertiary hover:text-red-500 transition-colors flex-shrink-0"
+                    title="Remove collection"
+                  >
+                    <Icon icon="x" size="xs" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add Collection Search */}
+          <div ref={collectionSearchRef} className="relative">
+            <div className="relative">
+              <Icon
+                icon="search"
+                size="xs"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary"
+              />
+              <input
+                type="text"
+                value={collectionSearch}
+                onChange={(e) => {
+                  setCollectionSearch(e.target.value);
+                  setShowCollectionSearch(true);
+                }}
+                onFocus={() => setShowCollectionSearch(true)}
+                placeholder="Search collections to add..."
+                className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              />
+              {isSearchingCollections && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+
+            {/* Search Results Dropdown */}
+            {showCollectionSearch && collectionSearch && (
+              <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                {collectionSearchResults.length > 0 ? (
+                  collectionSearchResults.map((collection) => (
+                    <button
+                      type="button"
+                      key={collection.id}
+                      onClick={() => addCollection(collection.id)}
+                      className="w-full px-3 py-2 text-left hover:bg-surface-secondary transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    >
+                      <p className="text-sm font-medium text-foreground">{collection.name}</p>
+                      <p className="text-xs text-foreground-tertiary">
+                        {collection.toolCount} tools
+                      </p>
+                    </button>
+                  ))
+                ) : !isSearchingCollections ? (
+                  <div className="px-3 py-4 text-center text-sm text-foreground-tertiary">
+                    No collections found
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
         </div>
 

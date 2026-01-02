@@ -13,6 +13,72 @@ type RouteContext = {
 };
 
 /**
+ * GET /api/agents/[id]/tools
+ * List tools attached to an agent
+ */
+export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    const { id } = await context.params;
+
+    const agent = await prisma.agent.findUnique({
+      where: { id },
+      select: { userId: true, isPublic: true },
+    });
+
+    if (!agent) {
+      return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+    }
+
+    const isOwner = session?.user?.id === agent.userId;
+    if (!isOwner && !agent.isPublic) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
+
+    const tools = await prisma.agentTool.findMany({
+      where: { agentId: id },
+      include: {
+        tool: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            package: {
+              select: {
+                npmPackageName: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { position: 'asc' },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: tools.map((at) => ({
+        id: at.id,
+        toolId: at.toolId,
+        position: at.position,
+        addedAt: at.addedAt,
+        tool: {
+          id: at.tool.id,
+          name: at.tool.name,
+          description: at.tool.description,
+          npmPackageName: at.tool.package.npmPackageName,
+        },
+      })),
+    });
+  } catch (error) {
+    console.error('Failed to get agent tools:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to get agent tools' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/agents/[id]/tools
  * Add an individual tool to an agent
  */

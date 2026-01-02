@@ -13,6 +13,68 @@ type RouteContext = {
 };
 
 /**
+ * GET /api/agents/[id]/collections
+ * List collections attached to an agent
+ */
+export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    const { id } = await context.params;
+
+    const agent = await prisma.agent.findUnique({
+      where: { id },
+      select: { userId: true, isPublic: true },
+    });
+
+    if (!agent) {
+      return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+    }
+
+    const isOwner = session?.user?.id === agent.userId;
+    if (!isOwner && !agent.isPublic) {
+      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+    }
+
+    const collections = await prisma.agentCollection.findMany({
+      where: { agentId: id },
+      include: {
+        collection: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            _count: { select: { tools: true } },
+          },
+        },
+      },
+      orderBy: { position: 'asc' },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: collections.map((ac) => ({
+        id: ac.id,
+        collectionId: ac.collectionId,
+        position: ac.position,
+        addedAt: ac.addedAt,
+        collection: {
+          id: ac.collection.id,
+          name: ac.collection.name,
+          description: ac.collection.description,
+          toolCount: ac.collection._count.tools,
+        },
+      })),
+    });
+  } catch (error) {
+    console.error('Failed to get agent collections:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to get agent collections' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/agents/[id]/collections
  * Add a collection to an agent
  */
