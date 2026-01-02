@@ -102,9 +102,12 @@ export async function handleToolsCall(
   }
 
   // Execute via sandbox
+  console.log('[MCP] Executing tool:', parsed.packageName, parsed.toolName);
+  console.log('[MCP] SANDBOX_EXECUTOR_URL:', process.env.SANDBOX_EXECUTOR_URL);
   const result = await executePackage(parsed.packageName, parsed.toolName, params.arguments ?? {}, {
     timeout: 30000,
   });
+  console.log('[MCP] Result:', JSON.stringify(result));
 
   if (!result.success) {
     return {
