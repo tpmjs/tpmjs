@@ -36,14 +36,15 @@ export async function executePackage(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    const response = await fetch(`${SANDBOX_URL}/execute`, {
+    const response = await fetch(`${SANDBOX_URL}/execute-tool`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         packageName,
-        functionName,
+        name: functionName,
+        version: 'latest',
         params,
       }),
       signal: controller.signal,
