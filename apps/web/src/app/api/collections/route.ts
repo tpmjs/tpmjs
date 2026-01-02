@@ -58,14 +58,23 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       );
     }
 
-    // Parse pagination params
+    // Parse pagination and search params
     const searchParams = request.nextUrl.searchParams;
     const limit = Math.min(Math.max(Number.parseInt(searchParams.get('limit') || '20', 10), 1), 50);
     const offset = Math.max(Number.parseInt(searchParams.get('offset') || '0', 10), 0);
+    const search = searchParams.get('search')?.trim();
 
     // Fetch collections with tool count
     const collections = await prisma.collection.findMany({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        }),
+      },
       include: {
         _count: { select: { tools: true } },
       },

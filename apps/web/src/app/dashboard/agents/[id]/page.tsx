@@ -209,10 +209,24 @@ export default function AgentDetailPage(): React.ReactElement {
       try {
         const response = await fetch(`/api/tools/search?q=${encodeURIComponent(query)}&limit=10`);
         const data = await response.json();
-        if (data.success) {
-          // Filter out tools already attached
+        if (data.success && data.results?.tools) {
+          // Filter out tools already attached and map to expected shape
           const attachedToolIds = new Set(agentTools.map((t) => t.toolId));
-          const filtered = (data.data || []).filter((t: SearchTool) => !attachedToolIds.has(t.id));
+          const filtered = data.results.tools
+            .filter((t: { id: string }) => !attachedToolIds.has(t.id))
+            .map(
+              (t: {
+                id: string;
+                name: string;
+                description: string | null;
+                package: { npmPackageName: string };
+              }) => ({
+                id: t.id,
+                name: t.name,
+                description: t.description,
+                npmPackageName: t.package.npmPackageName,
+              })
+            );
           setToolSearchResults(filtered);
         }
       } catch (err) {
