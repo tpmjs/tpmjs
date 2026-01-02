@@ -7,7 +7,7 @@ import type { ExecutionResult, ExecutorOptions } from './types.js';
 
 const DEFAULT_TIMEOUT = 10000; // 10 seconds
 
-// Ensure URL has protocol
+// Get sandbox URL at runtime (not build time) for serverless environments
 function getSandboxUrl(): string {
   const url = process.env.SANDBOX_EXECUTOR_URL || 'http://localhost:3000';
   // If URL doesn't start with http:// or https://, add https://
@@ -16,8 +16,6 @@ function getSandboxUrl(): string {
   }
   return url;
 }
-
-const SANDBOX_URL = getSandboxUrl();
 
 /**
  * Execute a package function with parameters via remote sandbox
@@ -36,7 +34,7 @@ export async function executePackage(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    const response = await fetch(`${SANDBOX_URL}/execute-tool`, {
+    const response = await fetch(`${getSandboxUrl()}/execute-tool`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -102,7 +100,7 @@ export async function executePackage(
  */
 export async function clearCache(): Promise<void> {
   try {
-    const response = await fetch(`${SANDBOX_URL}/cache/clear`, {
+    const response = await fetch(`${getSandboxUrl()}/cache/clear`, {
       method: 'POST',
     });
 
@@ -120,7 +118,7 @@ export async function clearCache(): Promise<void> {
  */
 export async function checkHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${SANDBOX_URL}/health`, {
+    const response = await fetch(`${getSandboxUrl()}/health`, {
       method: 'GET',
     });
 
