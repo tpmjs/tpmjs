@@ -13,6 +13,7 @@ interface MobileMenuProps {
 
 const navLinks = [
   { href: '/tool/tool-search', label: 'Tools' },
+  { href: '/dashboard/agents', label: 'Agents' },
   { href: '/docs', label: 'Docs' },
   { href: '/how-it-works', label: 'How It Works' },
   { href: '/integrations', label: 'Integrations' },

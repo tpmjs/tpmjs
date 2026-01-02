@@ -15,6 +15,10 @@
     "generate-og": "tsx scripts/generate-og-images.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.2",
+    "@ai-sdk/google": "^3.0.2",
+    "@ai-sdk/groq": "^3.0.2",
+    "@ai-sdk/mistral": "^3.0.2",
     "@ai-sdk/openai": "3.0.1",
     "@modelcontextprotocol/sdk": "^1.25.1",
     "@prisma/client": "^6.19.0",

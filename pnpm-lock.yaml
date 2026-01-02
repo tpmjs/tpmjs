@@ -223,6 +223,18 @@ importers:
 
   apps/web:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^3.0.2
+        version: 3.0.2(zod@4.1.13)
+      '@ai-sdk/google':
+        specifier: ^3.0.2
+        version: 3.0.2(zod@4.1.13)
+      '@ai-sdk/groq':
+        specifier: ^3.0.2
+        version: 3.0.2(zod@4.1.13)
+      '@ai-sdk/mistral':
+        specifier: ^3.0.2
+        version: 3.0.2(zod@4.1.13)
       '@ai-sdk/openai':
         specifier: 3.0.1
         version: 3.0.1(zod@4.1.13)
@@ -3609,6 +3621,18 @@ packages:
 
   '@ai-sdk/google@3.0.2':
     resolution: {integrity: sha512-KyV4AR8fBKVCABfav3zGn/PY7cMDMt9m7yYhH+FJ7jLfBrEVdjT4sM0ojPFRHYUelXHl42oOAgpy3GWkeG6vtw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/groq@3.0.2':
+    resolution: {integrity: sha512-Gs7Ir9cUSYlbDIArNMt3+0Ql+OrEKELQhYfji5CCxQ8MdcJGbhbyPf9AQralu9PMxq/QEy2JSOgYW5zOnHDd2g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/mistral@3.0.2':
+    resolution: {integrity: sha512-I2wPbhh3uzSqPA/OdU+PNOT5RZMhnJz86wHhMq8KEDSQEo6kDt82X5OlpL3LFdG0wlPYfZZnWhKpDFn7lcy/2Q==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -11036,6 +11060,12 @@ snapshots:
       '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
       zod: 3.25.76
 
+  '@ai-sdk/anthropic@3.0.2(zod@4.1.13)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.1
+      '@ai-sdk/provider-utils': 4.0.2(zod@4.1.13)
+      zod: 4.1.13
+
   '@ai-sdk/gateway@2.0.0-beta.68(effect@3.18.4)(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.0-beta.22
@@ -11095,6 +11125,24 @@ snapshots:
       '@ai-sdk/provider': 3.0.1
       '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
       zod: 3.25.76
+
+  '@ai-sdk/google@3.0.2(zod@4.1.13)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.1
+      '@ai-sdk/provider-utils': 4.0.2(zod@4.1.13)
+      zod: 4.1.13
+
+  '@ai-sdk/groq@3.0.2(zod@4.1.13)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.1
+      '@ai-sdk/provider-utils': 4.0.2(zod@4.1.13)
+      zod: 4.1.13
+
+  '@ai-sdk/mistral@3.0.2(zod@4.1.13)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.1
+      '@ai-sdk/provider-utils': 4.0.2(zod@4.1.13)
+      zod: 4.1.13
 
   '@ai-sdk/openai@3.0.1(zod@3.25.76)':
     dependencies:
@@ -11169,6 +11217,13 @@ snapshots:
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.6
       zod: 3.25.76
+
+  '@ai-sdk/provider-utils@4.0.2(zod@4.1.13)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.1
+      '@standard-schema/spec': 1.1.0
+      eventsource-parser: 3.0.6
+      zod: 4.1.13
 
   '@ai-sdk/provider@1.1.3':
     dependencies:

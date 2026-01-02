@@ -37,6 +37,11 @@ export function AppHeader(): React.ReactElement {
                   Tools
                 </Button>
               </Link>
+              <Link href="/dashboard/agents">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Agents
+                </Button>
+              </Link>
               <Link href="/docs">
                 <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
                   Docs

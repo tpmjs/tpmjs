@@ -28,6 +28,10 @@
     "./collection": {
       "types": "./dist/collection.d.ts",
       "default": "./dist/collection.js"
+    },
+    "./agent": {
+      "types": "./dist/agent.d.ts",
+      "default": "./dist/agent.js"
     }
   },
   "files": ["dist"],

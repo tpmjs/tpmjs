@@ -25,7 +25,23 @@ export default async function DashboardPage() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 sm:grid-cols-2 mb-8">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-8">
+          <Link href="/dashboard/agents" className="block">
+            <div className="bg-background border border-border rounded-lg p-6 hover:border-foreground/20 transition-colors group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Icon icon="terminal" size="md" className="text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-medium text-foreground">My Agents</h2>
+                  <p className="text-sm text-foreground-secondary">
+                    Create and manage AI agents with tools
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Link>
+
           <Link href="/dashboard/collections" className="block">
             <div className="bg-background border border-border rounded-lg p-6 hover:border-foreground/20 transition-colors group">
               <div className="flex items-center gap-4">
@@ -36,6 +52,22 @@ export default async function DashboardPage() {
                   <h2 className="text-lg font-medium text-foreground">My Collections</h2>
                   <p className="text-sm text-foreground-secondary">
                     Organize and share your favorite tools
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/dashboard/settings/api-keys" className="block">
+            <div className="bg-background border border-border rounded-lg p-6 hover:border-foreground/20 transition-colors group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Icon icon="key" size="md" className="text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-medium text-foreground">API Keys</h2>
+                  <p className="text-sm text-foreground-secondary">
+                    Manage AI provider credentials
                   </p>
                 </div>
               </div>

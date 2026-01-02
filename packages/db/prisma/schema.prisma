@@ -96,6 +96,7 @@ model Tool {
   simulations  Simulation[]
   healthChecks HealthCheck[]
   collections  CollectionTool[]
+  agents       AgentTool[]
 
   @@unique([packageId, name])
   @@index([qualityScore])
@@ -333,6 +334,8 @@ model User {
   sessions    Session[]
   accounts    Account[]
   collections Collection[]
+  agents      Agent[]
+  apiKeys     UserApiKey[]
 
   @@map("users")
 }
@@ -412,6 +415,7 @@ model Collection {
 
   // Relations
   tools       CollectionTool[]
+  agents      AgentCollection[]
 
   // Unique constraint: user can't have duplicate collection names
   @@unique([userId, name])
@@ -445,4 +449,194 @@ model CollectionTool {
   @@index([collectionId])
   @@index([toolId])
   @@map("collection_tools")
+}
+
+// ============================================================================
+// Agent Models
+// ============================================================================
+
+/// AI Provider enum - supported LLM providers
+enum AIProvider {
+  OPENAI
+  ANTHROPIC
+  GOOGLE
+  GROQ
+  MISTRAL
+}
+
+/// Message role enum - conversation message types
+enum MessageRole {
+  USER
+  ASSISTANT
+  TOOL
+  SYSTEM
+}
+
+/// Agent - user-owned AI agent configurations
+model Agent {
+  id                   String     @id @default(cuid())
+
+  // Owner relationship
+  userId               String     @map("user_id")
+  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Agent identity
+  uid                  String     @unique @db.VarChar(50) // URL-friendly identifier
+  name                 String     @db.VarChar(100)
+  description          String?    @db.VarChar(500)
+
+  // Model configuration
+  provider             AIProvider
+  modelId              String     @map("model_id") @db.VarChar(100)
+  systemPrompt         String?    @map("system_prompt") @db.Text
+  temperature          Float      @default(0.7)
+  maxToolCallsPerTurn  Int        @default(20) @map("max_tool_calls_per_turn")
+  maxMessagesInContext Int        @default(10) @map("max_messages_in_context")
+
+  // Visibility
+  isPublic             Boolean    @default(false) @map("is_public")
+
+  // Timestamps
+  createdAt            DateTime   @default(now()) @map("created_at")
+  updatedAt            DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  collections          AgentCollection[]
+  tools                AgentTool[]
+  conversations        Conversation[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([uid])
+  @@index([isPublic])
+  @@index([createdAt])
+  @@map("agents")
+}
+
+/// AgentCollection - junction table for Agent -> Collection (many-to-many)
+model AgentCollection {
+  id           String     @id @default(cuid())
+
+  // Relationships
+  agentId      String     @map("agent_id")
+  agent        Agent      @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  collectionId String     @map("collection_id")
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  // Ordering
+  position     Int        @default(0)
+
+  // Timestamps
+  addedAt      DateTime   @default(now()) @map("added_at")
+
+  @@unique([agentId, collectionId])
+  @@index([agentId])
+  @@index([collectionId])
+  @@map("agent_collections")
+}
+
+/// AgentTool - junction table for Agent -> Tool (many-to-many)
+model AgentTool {
+  id        String   @id @default(cuid())
+
+  // Relationships
+  agentId   String   @map("agent_id")
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  toolId    String   @map("tool_id")
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Ordering
+  position  Int      @default(0)
+
+  // Timestamps
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  @@unique([agentId, toolId])
+  @@index([agentId])
+  @@index([toolId])
+  @@map("agent_tools")
+}
+
+/// UserApiKey - encrypted API keys per user per provider
+model UserApiKey {
+  id           String     @id @default(cuid())
+
+  // Owner relationship
+  userId       String     @map("user_id")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Provider identification
+  provider     AIProvider
+
+  // Encrypted key storage
+  encryptedKey String     @map("encrypted_key") @db.Text
+  keyIv        String     @map("key_iv") @db.VarChar(32)
+  keyHint      String?    @map("key_hint") @db.VarChar(10) // Last 4 chars
+
+  // Timestamps
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@unique([userId, provider])
+  @@index([userId])
+  @@map("user_api_keys")
+}
+
+/// Conversation - chat session with an agent
+model Conversation {
+  id          String    @id @default(cuid())
+
+  // Agent relationship
+  agentId     String    @map("agent_id")
+  agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Conversation identity
+  slug        String    @db.VarChar(100) // User-chosen unique ID
+
+  // Metadata
+  title       String?   @db.VarChar(200)
+
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  messages    Message[]
+
+  @@unique([agentId, slug])
+  @@index([agentId])
+  @@index([createdAt])
+  @@map("conversations")
+}
+
+/// Message - individual message in a conversation
+model Message {
+  id             String       @id @default(cuid())
+
+  // Conversation relationship
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Message content
+  role           MessageRole
+  content        String       @db.Text
+
+  // Tool call metadata (for role=ASSISTANT with tool calls)
+  toolCalls      Json?        @map("tool_calls") @db.JsonB
+
+  // Tool result metadata (for role=TOOL)
+  toolCallId     String?      @map("tool_call_id") @db.VarChar(100)
+  toolName       String?      @map("tool_name") @db.VarChar(200)
+  toolResult     Json?        @map("tool_result") @db.JsonB
+
+  // Token tracking
+  inputTokens    Int?         @map("input_tokens")
+  outputTokens   Int?         @map("output_tokens")
+
+  // Timestamps
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("messages")
 }
