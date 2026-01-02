@@ -6,6 +6,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { AppFooter } from '~/components/AppFooter';
 import { AppHeader } from '~/components/AppHeader';
 
 const NAV_SECTIONS = [
@@ -24,17 +25,6 @@ const NAV_SECTIONS = [
       { id: 'registry-search', label: 'registrySearchTool' },
       { id: 'registry-execute', label: 'registryExecuteTool' },
       { id: 'passing-api-keys', label: 'Passing API Keys' },
-    ],
-  },
-  {
-    title: 'AI Agents',
-    items: [
-      { id: 'agents-overview', label: 'Overview' },
-      { id: 'agents-api-keys', label: 'API Keys Setup' },
-      { id: 'agents-creating', label: 'Creating Agents' },
-      { id: 'agents-tools', label: 'Attaching Tools' },
-      { id: 'agents-chat', label: 'Chat Interface' },
-      { id: 'agents-api', label: 'Conversation API' },
     ],
   },
   {
@@ -616,499 +606,24 @@ const result = streamText({
               </DocSubSection>
             </DocSection>
 
-            {/* ==================== AI AGENTS ==================== */}
-            <DocSection id="agents-overview" title="AI Agents Overview">
-              <p className="text-foreground-secondary mb-6">
-                TPMJS Agents let you create custom AI assistants powered by any LLM provider. Build
-                agents with custom system prompts, attach tools from the registry, and have
-                persistent conversations through a streaming API.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <InfoCard icon="🤖" title="Multi-Provider">
-                  Support for OpenAI, Anthropic, Google, Groq, and Mistral - bring your own API keys
-                </InfoCard>
-                <InfoCard icon="🔧" title="Tool Integration">
-                  Attach individual tools or entire collections to give your agent capabilities
-                </InfoCard>
-                <InfoCard icon="💬" title="Persistent Conversations">
-                  Full conversation history with streaming responses and tool call visualization
-                </InfoCard>
+            {/* AI Agents - Separate documentation page */}
+            <section className="mb-16 p-6 border border-primary/30 rounded-lg bg-primary/5">
+              <div className="flex items-start gap-4">
+                <span className="text-3xl">🤖</span>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground mb-2">AI Agents</h2>
+                  <p className="text-foreground-secondary mb-4">
+                    Create custom AI assistants with multi-provider support, tool integration, and
+                    persistent conversations. Agents have their own dedicated documentation.
+                  </p>
+                  <Link href="/docs/agents">
+                    <Button variant="default" size="sm">
+                      View Agents Documentation →
+                    </Button>
+                  </Link>
+                </div>
               </div>
-              <p className="text-foreground-secondary">
-                Agents are user-owned and require authentication. Each agent gets a unique UID that
-                can be used in API calls.
-              </p>
-              <div className="mt-6">
-                <Link href="/dashboard/agents">
-                  <Button variant="default">Go to Agents Dashboard</Button>
-                </Link>
-              </div>
-            </DocSection>
-
-            <DocSection id="agents-api-keys" title="API Keys Setup">
-              <p className="text-foreground-secondary mb-6">
-                Before creating agents, you need to add your AI provider API keys. Keys are
-                encrypted using AES-256 and stored securely.
-              </p>
-              <DocSubSection title="1. Navigate to API Keys Settings">
-                <p className="text-foreground-secondary mb-4">
-                  Go to{' '}
-                  <Link
-                    href="/dashboard/settings/api-keys"
-                    className="text-primary hover:underline"
-                  >
-                    Dashboard → Settings → API Keys
-                  </Link>{' '}
-                  to manage your provider keys.
-                </p>
-              </DocSubSection>
-              <DocSubSection title="2. Add Your Provider Keys">
-                <p className="text-foreground-secondary mb-4">
-                  Click &quot;Add Key&quot; for each provider you want to use:
-                </p>
-                <div className="space-y-3">
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-foreground">OpenAI</span>
-                    </div>
-                    <p className="text-sm text-foreground-secondary">
-                      GPT-4o, GPT-4 Turbo, GPT-3.5 Turbo -{' '}
-                      <a
-                        href="https://platform.openai.com/api-keys"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        Get key
-                      </a>
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-foreground">Anthropic</span>
-                    </div>
-                    <p className="text-sm text-foreground-secondary">
-                      Claude 3.5 Sonnet, Claude 3 Opus, Claude 3.5 Haiku -{' '}
-                      <a
-                        href="https://console.anthropic.com/settings/keys"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        Get key
-                      </a>
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-foreground">Google</span>
-                    </div>
-                    <p className="text-sm text-foreground-secondary">
-                      Gemini 2.0 Flash, Gemini 1.5 Pro -{' '}
-                      <a
-                        href="https://aistudio.google.com/apikey"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        Get key
-                      </a>
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-foreground">Groq</span>
-                    </div>
-                    <p className="text-sm text-foreground-secondary">
-                      Llama 3.3 70B, Llama 3.1 8B, Mixtral 8x7B -{' '}
-                      <a
-                        href="https://console.groq.com/keys"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        Get key
-                      </a>
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-foreground">Mistral</span>
-                    </div>
-                    <p className="text-sm text-foreground-secondary">
-                      Mistral Large, Mistral Small -{' '}
-                      <a
-                        href="https://console.mistral.ai/api-keys"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        Get key
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </DocSubSection>
-              <DocSubSection title="Security">
-                <div className="p-4 border border-primary/30 rounded-lg bg-primary/5">
-                  <p className="text-sm text-foreground-secondary">
-                    <strong className="text-foreground">🔐 Encryption:</strong> Your API keys are
-                    encrypted using AES-256-GCM before being stored. Only you can use your keys, and
-                    they&apos;re never exposed in API responses - only a hint of the last 4
-                    characters is shown.
-                  </p>
-                </div>
-              </DocSubSection>
-            </DocSection>
-
-            <DocSection id="agents-creating" title="Creating Agents">
-              <p className="text-foreground-secondary mb-6">
-                Create an agent to customize its behavior with a system prompt, choose the AI model,
-                and configure execution parameters.
-              </p>
-              <DocSubSection title="Basic Information">
-                <ParamTable
-                  params={[
-                    {
-                      name: 'Name',
-                      type: 'string',
-                      required: true,
-                      description: 'Display name for your agent (max 100 chars)',
-                    },
-                    {
-                      name: 'UID',
-                      type: 'string',
-                      required: false,
-                      description:
-                        'URL-friendly identifier (auto-generated from name). Used in API calls.',
-                    },
-                    {
-                      name: 'Description',
-                      type: 'string',
-                      required: false,
-                      description: 'Brief description of what the agent does (max 500 chars)',
-                    },
-                  ]}
-                />
-              </DocSubSection>
-              <DocSubSection title="Model Configuration">
-                <ParamTable
-                  params={[
-                    {
-                      name: 'Provider',
-                      type: 'enum',
-                      required: true,
-                      description: 'AI provider (OpenAI, Anthropic, Google, Groq, Mistral)',
-                    },
-                    {
-                      name: 'Model',
-                      type: 'string',
-                      required: true,
-                      description: 'Specific model ID (e.g., gpt-4o, claude-sonnet-4-20250514)',
-                    },
-                    {
-                      name: 'System Prompt',
-                      type: 'string',
-                      required: false,
-                      description:
-                        'Instructions that define how the agent behaves (max 10,000 chars)',
-                    },
-                    {
-                      name: 'Temperature',
-                      type: 'number',
-                      required: false,
-                      description:
-                        'Response randomness (0 = deterministic, 2 = creative). Default: 0.7',
-                    },
-                  ]}
-                />
-              </DocSubSection>
-              <DocSubSection title="Execution Limits">
-                <ParamTable
-                  params={[
-                    {
-                      name: 'Max Tool Calls',
-                      type: 'number',
-                      required: false,
-                      description:
-                        'Maximum tool calls per response turn. Prevents runaway loops. Default: 20',
-                    },
-                    {
-                      name: 'Context Messages',
-                      type: 'number',
-                      required: false,
-                      description:
-                        'Number of recent messages included in context window. Default: 10',
-                    },
-                  ]}
-                />
-              </DocSubSection>
-              <DocSubSection title="Example System Prompt">
-                <CodeBlock
-                  language="text"
-                  code={`You are a helpful research assistant specializing in web scraping and data analysis.
-
-When asked to research a topic:
-1. Use available web scraping tools to gather information
-2. Analyze and synthesize the data
-3. Present findings in a clear, structured format
-
-Always cite your sources and be transparent about limitations.`}
-                />
-              </DocSubSection>
-            </DocSection>
-
-            <DocSection id="agents-tools" title="Attaching Tools">
-              <p className="text-foreground-secondary mb-6">
-                Give your agent capabilities by attaching tools from the TPMJS registry. You can
-                attach individual tools or entire collections.
-              </p>
-              <DocSubSection title="Adding Individual Tools">
-                <p className="text-foreground-secondary mb-4">
-                  From your agent&apos;s detail page, use the &quot;Add Tool&quot; button to search
-                  and attach specific tools from the registry. Each tool appears with its name,
-                  description, and any required environment variables.
-                </p>
-                <CodeBlock
-                  language="text"
-                  code={`Example tools you might attach:
-- @firecrawl/ai-sdk::scrapeTool - Web scraping
-- @exalabs/ai-sdk::webSearch - Web search
-- @tpmjs/hello::helloWorldTool - Simple test tool`}
-                />
-              </DocSubSection>
-              <DocSubSection title="Adding Collections">
-                <p className="text-foreground-secondary mb-4">
-                  Collections let you attach multiple related tools at once. If you&apos;ve created
-                  MCP collections, you can attach the entire collection to your agent.
-                </p>
-              </DocSubSection>
-              <DocSubSection title="Tool Order">
-                <p className="text-foreground-secondary">
-                  Tools are presented to the AI model in the order they appear. You can drag to
-                  reorder tools to prioritize certain capabilities.
-                </p>
-              </DocSubSection>
-              <DocSubSection title="Required API Keys">
-                <div className="p-4 border border-border rounded-lg bg-surface">
-                  <p className="text-sm text-foreground-secondary">
-                    <strong className="text-foreground">Note:</strong> Some tools require API keys
-                    (e.g., Firecrawl, Exa). You&apos;ll need to add these keys in your API Keys
-                    settings. The required environment variables are shown on each tool&apos;s card.
-                  </p>
-                </div>
-              </DocSubSection>
-            </DocSection>
-
-            <DocSection id="agents-chat" title="Chat Interface">
-              <p className="text-foreground-secondary mb-6">
-                Interact with your agents through the built-in chat interface with streaming
-                responses and tool call visualization.
-              </p>
-              <DocSubSection title="Starting a Conversation">
-                <p className="text-foreground-secondary mb-4">
-                  Click &quot;Chat with Agent&quot; from your agent&apos;s detail page or navigate
-                  directly to{' '}
-                  <code className="text-primary bg-surface px-1.5 py-0.5 rounded">
-                    /dashboard/agents/[id]/chat
-                  </code>
-                  .
-                </p>
-              </DocSubSection>
-              <DocSubSection title="Features">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <InfoCard icon="💬" title="Conversation History">
-                    Previous conversations appear in the sidebar. Click to resume any conversation.
-                  </InfoCard>
-                  <InfoCard icon="⚡" title="Streaming Responses">
-                    Responses stream in real-time as the AI generates them.
-                  </InfoCard>
-                  <InfoCard icon="🔧" title="Tool Calls">
-                    When the agent uses a tool, you&apos;ll see the tool name and can expand to view
-                    parameters.
-                  </InfoCard>
-                  <InfoCard icon="📊" title="Token Usage">
-                    Token counts are tracked and displayed for monitoring usage.
-                  </InfoCard>
-                </div>
-              </DocSubSection>
-              <DocSubSection title="Keyboard Shortcuts">
-                <div className="space-y-2 text-foreground-secondary text-sm">
-                  <p>
-                    <code className="text-primary bg-surface px-1.5 py-0.5 rounded">Enter</code> -
-                    Send message
-                  </p>
-                  <p>
-                    <code className="text-primary bg-surface px-1.5 py-0.5 rounded">
-                      Shift + Enter
-                    </code>{' '}
-                    - New line
-                  </p>
-                </div>
-              </DocSubSection>
-            </DocSection>
-
-            <DocSection id="agents-api" title="Conversation API">
-              <p className="text-foreground-secondary mb-6">
-                Integrate agent conversations into your own applications using the streaming API.
-              </p>
-              <DocSubSection title="Endpoint">
-                <CodeBlock
-                  language="text"
-                  code="POST /api/agents/[uid]/conversation/[conversationId]"
-                />
-                <div className="mt-4 space-y-2 text-foreground-secondary text-sm">
-                  <p>
-                    <strong className="text-foreground">uid:</strong> Your agent&apos;s unique
-                    identifier
-                  </p>
-                  <p>
-                    <strong className="text-foreground">conversationId:</strong> Unique ID for the
-                    conversation (create your own or use a new ID to start a new conversation)
-                  </p>
-                </div>
-              </DocSubSection>
-              <DocSubSection title="Request Body">
-                <ParamTable
-                  params={[
-                    {
-                      name: 'message',
-                      type: 'string',
-                      required: true,
-                      description: 'The user message to send to the agent',
-                    },
-                    {
-                      name: 'env',
-                      type: 'object',
-                      required: false,
-                      description: 'Additional environment variables for tool execution',
-                    },
-                  ]}
-                />
-              </DocSubSection>
-              <DocSubSection title="SSE Events">
-                <div className="space-y-4">
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <code className="text-primary font-mono">chunk</code>
-                    <p className="text-sm text-foreground-secondary mt-1">
-                      Streaming text content:{' '}
-                      <code className="text-primary">{`{ "text": "..." }`}</code>
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <code className="text-primary font-mono">tool_call</code>
-                    <p className="text-sm text-foreground-secondary mt-1">
-                      Tool invocation:{' '}
-                      <code className="text-primary">{`{ "toolCallId": "...", "toolName": "...", "input": {...} }`}</code>
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <code className="text-primary font-mono">tool_result</code>
-                    <p className="text-sm text-foreground-secondary mt-1">
-                      Tool result:{' '}
-                      <code className="text-primary">{`{ "toolCallId": "...", "result": {...} }`}</code>
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <code className="text-primary font-mono">complete</code>
-                    <p className="text-sm text-foreground-secondary mt-1">
-                      Response complete:{' '}
-                      <code className="text-primary">{`{ "conversationId": "...", "inputTokens": 150, "outputTokens": 300 }`}</code>
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <code className="text-primary font-mono">error</code>
-                    <p className="text-sm text-foreground-secondary mt-1">
-                      Error occurred: <code className="text-primary">{`{ "message": "..." }`}</code>
-                    </p>
-                  </div>
-                </div>
-              </DocSubSection>
-              <DocSubSection title="Example: JavaScript Client">
-                <CodeBlock
-                  language="typescript"
-                  code={`const conversationId = 'conv-' + Date.now();
-
-const response = await fetch(
-  \`https://tpmjs.com/api/agents/\${agentUid}/conversation/\${conversationId}\`,
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: 'Search for AI tools' }),
-  }
-);
-
-const reader = response.body?.getReader();
-const decoder = new TextDecoder();
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-
-  const chunk = decoder.decode(value);
-  const lines = chunk.split('\\n');
-
-  for (const line of lines) {
-    if (line.startsWith('event: ')) {
-      const event = line.slice(7);
-      console.log('Event:', event);
-    }
-    if (line.startsWith('data: ')) {
-      const data = JSON.parse(line.slice(6));
-      if (event === 'chunk') {
-        process.stdout.write(data.text);
-      }
-    }
-  }
-}`}
-                />
-              </DocSubSection>
-              <DocSubSection title="Get Conversation History">
-                <CodeBlock
-                  language="text"
-                  code="GET /api/agents/[uid]/conversation/[conversationId]"
-                />
-                <p className="text-foreground-secondary mt-4">
-                  Returns the full conversation with all messages:
-                </p>
-                <CodeBlock
-                  language="json"
-                  code={`{
-  "success": true,
-  "data": {
-    "id": "...",
-    "slug": "conv-1234567890",
-    "title": "AI Tools Search",
-    "messages": [
-      { "role": "USER", "content": "Search for AI tools" },
-      { "role": "ASSISTANT", "content": "I found several..." }
-    ]
-  }
-}`}
-                />
-              </DocSubSection>
-              <DocSubSection title="List All Conversations">
-                <CodeBlock language="text" code="GET /api/agents/[uid]/conversations" />
-                <p className="text-foreground-secondary mt-4">
-                  Returns a list of all conversations for the agent:
-                </p>
-                <CodeBlock
-                  language="json"
-                  code={`{
-  "success": true,
-  "data": [
-    {
-      "id": "...",
-      "slug": "conv-1234567890",
-      "title": "AI Tools Search",
-      "messageCount": 5,
-      "updatedAt": "2024-12-15T10:30:00Z"
-    }
-  ]
-}`}
-                />
-              </DocSubSection>
-            </DocSection>
+            </section>
 
             {/* ==================== API REFERENCE ==================== */}
             <DocSection id="api-overview" title="API Overview">
@@ -1769,141 +1284,67 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
               <DocSubSection title="Endpoint Format">
                 <CodeBlock
                   language="text"
-                  code="https://tpmjs.com/api/collections/<collection-id>/mcp/<transport>"
+                  code="POST https://tpmjs.com/api/collections/<collection-id>/mcp/http"
                 />
-                <div className="mt-4 space-y-2 text-foreground-secondary text-sm">
+              </DocSubSection>
+              <DocSubSection title="Request Headers">
+                <div className="space-y-2 text-foreground-secondary text-sm">
                   <p>
-                    <strong className="text-foreground">Transport options:</strong>
+                    <code className="text-primary">Content-Type: application/json</code>
                   </p>
-                  <ul className="list-disc list-inside ml-4">
-                    <li>
-                      <code className="text-primary">http</code> - Streamable HTTP transport
-                      (recommended)
-                    </li>
-                    <li>
-                      <code className="text-primary">sse</code> - Server-Sent Events transport
-                    </li>
-                  </ul>
+                  <p>
+                    <code className="text-primary">
+                      Accept: application/json, text/event-stream
+                    </code>
+                  </p>
                 </div>
               </DocSubSection>
               <DocSubSection title="Supported Methods">
-                <div className="space-y-4">
-                  <div className="p-4 border border-border rounded-lg bg-surface">
-                    <code className="text-primary font-mono">initialize</code>
-                    <p className="text-sm text-foreground-secondary mt-2">
-                      Initialize the MCP session. Returns server info and capabilities.
-                    </p>
-                    <CodeBlock
-                      language="json"
-                      code={`{
-  "jsonrpc": "2.0",
-  "method": "initialize",
-  "params": {
-    "protocolVersion": "2024-11-05",
-    "clientInfo": { "name": "my-client", "version": "1.0.0" }
-  },
-  "id": 1
-}`}
-                    />
-                  </div>
-                  <div className="p-4 border border-border rounded-lg bg-surface">
+                <div className="space-y-3">
+                  <div className="p-3 border border-border rounded-lg bg-surface">
                     <code className="text-primary font-mono">tools/list</code>
-                    <p className="text-sm text-foreground-secondary mt-2">
-                      List all tools in the collection with their schemas.
+                    <p className="text-sm text-foreground-secondary mt-1">
+                      Returns all tools in the collection with their schemas and descriptions.
                     </p>
-                    <CodeBlock
-                      language="json"
-                      code={`{
-  "jsonrpc": "2.0",
-  "method": "tools/list",
-  "params": {},
-  "id": 2
-}`}
-                    />
                   </div>
-                  <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="p-3 border border-border rounded-lg bg-surface">
                     <code className="text-primary font-mono">tools/call</code>
-                    <p className="text-sm text-foreground-secondary mt-2">
-                      Execute a tool with the given arguments.
+                    <p className="text-sm text-foreground-secondary mt-1">
+                      Executes a tool with the provided arguments. Supports streaming responses.
                     </p>
-                    <CodeBlock
-                      language="json"
-                      code={`{
-  "jsonrpc": "2.0",
-  "method": "tools/call",
-  "params": {
-    "name": "tpmjs-hello--helloWorldTool",
-    "arguments": { "name": "World" }
-  },
-  "id": 3
-}`}
-                    />
                   </div>
                 </div>
               </DocSubSection>
-              <DocSubSection title="Tool Name Format">
-                <p className="text-foreground-secondary mb-4">
-                  Tool names in MCP follow a sanitized format to comply with MCP naming
-                  requirements:
-                </p>
-                <CodeBlock
-                  language="text"
-                  code={`Package: @tpmjs/hello
-Tool:    helloWorldTool
-MCP Name: tpmjs-hello--helloWorldTool
-
-Format: <sanitized-package>--<tool-name>
-- @ prefix is removed
-- / becomes -
-- -- separates package from tool name`}
-                />
-              </DocSubSection>
-              <DocSubSection title="Example Response">
-                <p className="text-foreground-secondary mb-4">
-                  Here&apos;s an example response from{' '}
-                  <code className="text-primary">tools/call</code>:
-                </p>
+              <DocSubSection title="Example: List Tools">
                 <CodeBlock
                   language="json"
                   code={`{
   "jsonrpc": "2.0",
-  "id": 3,
-  "result": {
-    "content": [
-      {
-        "type": "text",
-        "text": "Hello, World!"
-      }
-    ]
+  "id": 1,
+  "method": "tools/list",
+  "params": {}
+}`}
+                />
+              </DocSubSection>
+              <DocSubSection title="Example: Call Tool">
+                <CodeBlock
+                  language="json"
+                  code={`{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "webSearch",
+    "arguments": {
+      "query": "TPMJS documentation"
+    }
   }
 }`}
                 />
               </DocSubSection>
-              <DocSubSection title="Testing with curl">
-                <p className="text-foreground-secondary mb-4">
-                  You can test your MCP endpoint directly with curl:
-                </p>
-                <CodeBlock
-                  language="bash"
-                  code={`# Initialize the session
-curl -X POST https://tpmjs.com/api/collections/<id>/mcp/http \\
-  -H "Content-Type: application/json" \\
-  -d '{"jsonrpc":"2.0","method":"initialize","params":{},"id":1}'
-
-# List available tools
-curl -X POST https://tpmjs.com/api/collections/<id>/mcp/http \\
-  -H "Content-Type: application/json" \\
-  -d '{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}'
-
-# Call a tool
-curl -X POST https://tpmjs.com/api/collections/<id>/mcp/http \\
-  -H "Content-Type: application/json" \\
-  -d '{"jsonrpc":"2.0","method":"tools/call","params":{"name":"tpmjs-hello--helloWorldTool","arguments":{}},"id":3}'`}
-                />
-              </DocSubSection>
             </DocSection>
 
-            {/* ==================== RESOURCES ==================== */}
+            {/* ==================== FAQ & SUPPORT ==================== */}
             <DocSection id="faq" title="FAQ">
               <div className="space-y-6">
                 {[
@@ -2007,6 +1448,7 @@ curl -X POST https://tpmjs.com/api/collections/<id>/mcp/http \\
           </div>
         </main>
       </div>
+      <AppFooter />
     </div>
   );
 }
