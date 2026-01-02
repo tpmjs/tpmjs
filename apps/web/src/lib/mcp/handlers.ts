@@ -1,7 +1,43 @@
 import { prisma } from '@tpmjs/db';
-import { executePackage } from '@tpmjs/package-executor';
 
 import { convertToMcpTool, parseToolName } from './tool-converter';
+
+const SANDBOX_URL = 'https://executor.tpmjs.com';
+
+interface ExecutionResult {
+  success: boolean;
+  output?: unknown;
+  error?: string;
+  executionTimeMs?: number;
+}
+
+async function executePackageDirect(
+  packageName: string,
+  toolName: string,
+  params: Record<string, unknown>
+): Promise<ExecutionResult> {
+  try {
+    const response = await fetch(`${SANDBOX_URL}/execute-tool`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageName,
+        name: toolName,
+        version: 'latest',
+        params,
+      }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      return { success: false, error: `Sandbox error ${response.status}: ${text}` };
+    }
+
+    return await response.json();
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
 
 type JsonRpcId = string | number | null;
 
@@ -101,13 +137,12 @@ export async function handleToolsCall(
     };
   }
 
-  // Execute via sandbox
-  console.log('[MCP] Executing tool:', parsed.packageName, parsed.toolName);
-  console.log('[MCP] SANDBOX_EXECUTOR_URL:', process.env.SANDBOX_EXECUTOR_URL);
-  const result = await executePackage(parsed.packageName, parsed.toolName, params.arguments ?? {}, {
-    timeout: 30000,
-  });
-  console.log('[MCP] Result:', JSON.stringify(result));
+  // Execute via sandbox (direct call with hardcoded URL)
+  const result = await executePackageDirect(
+    parsed.packageName,
+    parsed.toolName,
+    params.arguments ?? {}
+  );
 
   if (!result.success) {
     return {
