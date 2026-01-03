@@ -80,6 +80,7 @@ interface AgentStats {
  * GET /api/agents/[id]/stats
  * Retrieve aggregated statistics for an agent (accepts id or uid)
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex aggregation queries needed for stats
 export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
   const { id: idOrUid } = await context.params;
 
