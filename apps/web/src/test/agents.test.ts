@@ -91,30 +91,42 @@ describe('Agent Endpoints', () => {
     }
 
     // Find the test agent in the database
-    testAgent = await prisma.agent.findUnique({
-      where: { uid: TEST_AGENT_UID },
-      select: {
-        id: true,
-        uid: true,
-        name: true,
-        userId: true,
-        provider: true,
-      },
-    });
+    try {
+      testAgent = await prisma.agent.findUnique({
+        where: { uid: TEST_AGENT_UID },
+        select: {
+          id: true,
+          uid: true,
+          name: true,
+          userId: true,
+          provider: true,
+        },
+      });
 
-    if (!testAgent) {
-      console.warn(`⚠️  Test agent "${TEST_AGENT_UID}" not found. Skipping agent tests.`);
+      if (!testAgent) {
+        console.warn(`⚠️  Test agent "${TEST_AGENT_UID}" not found. Skipping agent tests.`);
+      }
+    } catch (error) {
+      console.warn('⚠️  Could not connect to database. Skipping agent tests.', error);
+      serverAvailable = false;
     }
   });
 
   afterAll(async () => {
-    // Clean up test conversation
-    if (testConversationId) {
-      await prisma.conversation.deleteMany({
-        where: { id: testConversationId },
-      });
+    // Only clean up if we have a connection
+    if (!serverAvailable) return;
+
+    try {
+      // Clean up test conversation
+      if (testConversationId) {
+        await prisma.conversation.deleteMany({
+          where: { id: testConversationId },
+        });
+      }
+      await prisma.$disconnect();
+    } catch {
+      // Ignore cleanup errors
     }
-    await prisma.$disconnect();
   });
 
   describe('POST /api/agents/[id]/conversation/[conversationId]', () => {
