@@ -22,8 +22,127 @@ interface Message {
   role: 'USER' | 'ASSISTANT' | 'TOOL';
   content: string;
   toolName?: string;
+  toolCallId?: string;
   toolResult?: unknown;
   createdAt: string;
+}
+
+interface ToolCall {
+  toolCallId: string;
+  toolName: string;
+  input?: unknown;
+  output?: unknown;
+  status: 'pending' | 'running' | 'success' | 'error';
+}
+
+/**
+ * Sexy tool call debug card component
+ */
+function ToolCallCard({
+  toolCall,
+  isExpanded,
+  onToggle,
+}: {
+  toolCall: ToolCall;
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const statusColors = {
+    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    running: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+    success: 'bg-green-500/20 text-green-400 border-green-500/30',
+    error: 'bg-red-500/20 text-red-400 border-red-500/30',
+  };
+
+  const statusIcons: Record<ToolCall['status'], 'loader' | 'check' | 'alertCircle' | 'info'> = {
+    pending: 'info',
+    running: 'loader',
+    success: 'check',
+    error: 'alertCircle',
+  };
+
+  const formatJson = (data: unknown): React.ReactNode => {
+    try {
+      return JSON.stringify(data, null, 2);
+    } catch {
+      return String(data);
+    }
+  };
+
+  return (
+    <div className="rounded-lg border border-border bg-surface-secondary/50 overflow-hidden font-mono text-xs">
+      {/* Header */}
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full flex items-center gap-3 p-3 hover:bg-surface-secondary/80 transition-colors"
+      >
+        <div className={`p-1.5 rounded ${statusColors[toolCall.status]}`}>
+          <Icon
+            icon={statusIcons[toolCall.status]}
+            size="xs"
+            className={toolCall.status === 'running' ? 'animate-spin' : ''}
+          />
+        </div>
+        <div className="flex-1 text-left">
+          <div className="flex items-center gap-2">
+            <span className="text-foreground font-semibold">{toolCall.toolName}</span>
+            <span className="text-foreground-tertiary text-[10px]">
+              {toolCall.toolCallId.slice(0, 8)}...
+            </span>
+          </div>
+        </div>
+        <Icon
+          icon="chevronRight"
+          size="xs"
+          className={`text-foreground-tertiary transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+        />
+      </button>
+
+      {/* Expanded Content */}
+      {isExpanded && (
+        <div className="border-t border-border">
+          {/* Input Section */}
+          {toolCall.input !== undefined && toolCall.input !== null ? (
+            <div className="p-3 border-b border-border/50">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] uppercase tracking-wider text-foreground-tertiary">
+                  Input
+                </span>
+                <div className="flex-1 h-px bg-border/50" />
+              </div>
+              <pre className="text-[11px] text-foreground-secondary overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
+                {formatJson(toolCall.input)}
+              </pre>
+            </div>
+          ) : null}
+
+          {/* Output Section */}
+          {toolCall.output !== undefined && toolCall.output !== null ? (
+            <div className="p-3">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] uppercase tracking-wider text-foreground-tertiary">
+                  Output
+                </span>
+                <div className="flex-1 h-px bg-border/50" />
+              </div>
+              <pre className="text-[11px] text-green-400 overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
+                {formatJson(toolCall.output)}
+              </pre>
+            </div>
+          ) : null}
+
+          {/* Status indicator for running */}
+          {toolCall.status === 'running' && !toolCall.output && (
+            <div className="p-3 flex items-center gap-2 text-foreground-tertiary">
+              <Icon icon="loader" size="xs" className="animate-spin" />
+              <span>Executing...</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }
 
 interface Conversation {
@@ -56,9 +175,23 @@ export default function AgentChatPage(): React.ReactElement {
   const [isSending, setIsSending] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
+  const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const toggleToolCall = (toolCallId: string) => {
+    setExpandedToolCalls((prev) => {
+      const next = new Set(prev);
+      if (next.has(toolCallId)) {
+        next.delete(toolCallId);
+      } else {
+        next.add(toolCallId);
+      }
+      return next;
+    });
+  };
 
   // Fetch agent data
   const fetchAgent = useCallback(async () => {
@@ -106,7 +239,13 @@ export default function AgentChatPage(): React.ReactElement {
       const data = await response.json();
 
       if (data.success) {
-        setMessages(data.data.messages || []);
+        const msgs = data.data.messages || [];
+        console.log(
+          '[fetchMessages] Received messages:',
+          msgs.length,
+          msgs.map((m: Message) => ({ role: m.role, toolName: m.toolName }))
+        );
+        setMessages(msgs);
       }
     } catch (err) {
       console.error('Failed to fetch messages:', err);
@@ -151,6 +290,7 @@ export default function AgentChatPage(): React.ReactElement {
     setIsSending(true);
     setStreamingContent('');
     setError(null);
+    setToolCalls([]);
 
     // Create new conversation if needed
     const conversationId = activeConversationId || generateConversationId();
@@ -208,17 +348,37 @@ export default function AgentChatPage(): React.ReactElement {
                 setStreamingContent((prev) => prev + data.text);
                 break;
               case 'tool_call':
-                // Add tool call indicator
-                setStreamingContent((prev) => `${prev}\n[Calling tool: ${data.toolName}...]\n`);
+                // Add tool call to tracking
+                setToolCalls((prev) => [
+                  ...prev,
+                  {
+                    toolCallId: data.toolCallId,
+                    toolName: data.toolName,
+                    input: data.input,
+                    status: 'running',
+                  },
+                ]);
+                // Auto-expand new tool calls
+                setExpandedToolCalls((prev) => new Set([...prev, data.toolCallId]));
                 break;
               case 'tool_result':
-                // Tool result received
+                // Update tool call with result
+                setToolCalls((prev) =>
+                  prev.map((tc) =>
+                    tc.toolCallId === data.toolCallId
+                      ? { ...tc, output: data.output, status: 'success' as const }
+                      : tc
+                  )
+                );
                 break;
               case 'complete':
                 // Refresh messages
+                console.log('[SSE] Complete event received, fetching messages...');
                 await fetchMessages();
                 await fetchConversations();
                 setStreamingContent('');
+                setToolCalls([]);
+                console.log('[SSE] Messages and conversations refreshed');
                 break;
               case 'error':
                 throw new Error(data.message);
@@ -365,30 +525,66 @@ export default function AgentChatPage(): React.ReactElement {
               </div>
             )}
 
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
-              >
+            {messages.map((message) => {
+              // Parse tool output safely
+              const getToolOutput = () => {
+                if (message.toolResult) return message.toolResult;
+                try {
+                  return JSON.parse(message.content || '{}');
+                } catch {
+                  return { result: message.content };
+                }
+              };
+
+              return (
                 <div
-                  className={`max-w-[80%] rounded-lg p-4 ${
-                    message.role === 'USER'
-                      ? 'bg-primary text-primary-foreground'
-                      : message.role === 'TOOL'
-                        ? 'bg-surface-secondary border border-border'
-                        : 'bg-surface-secondary'
-                  }`}
+                  key={message.id}
+                  className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
                 >
-                  {message.role === 'TOOL' && (
-                    <div className="flex items-center gap-2 text-xs text-foreground-tertiary mb-2">
-                      <Icon icon="puzzle" size="xs" />
-                      <span>{message.toolName}</span>
+                  {message.role === 'TOOL' ? (
+                    <div className="max-w-[80%]">
+                      <ToolCallCard
+                        toolCall={{
+                          toolCallId: message.toolCallId || message.id,
+                          toolName: message.toolName || 'Unknown Tool',
+                          output: getToolOutput(),
+                          status: 'success',
+                        }}
+                        isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
+                        onToggle={() => toggleToolCall(message.toolCallId || message.id)}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`max-w-[80%] rounded-lg p-4 ${
+                        message.role === 'USER'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-surface-secondary'
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap text-sm">{message.content}</p>
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap text-sm">{message.content}</p>
                 </div>
+              );
+            })}
+
+            {/* Live tool calls during streaming */}
+            {toolCalls.length > 0 && (
+              <div className="space-y-2">
+                {toolCalls.map((tc) => (
+                  <div key={tc.toolCallId} className="flex justify-start">
+                    <div className="max-w-[80%]">
+                      <ToolCallCard
+                        toolCall={tc}
+                        isExpanded={expandedToolCalls.has(tc.toolCallId)}
+                        onToggle={() => toggleToolCall(tc.toolCallId)}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
 
             {streamingContent && (
               <div className="flex justify-start">
@@ -399,7 +595,7 @@ export default function AgentChatPage(): React.ReactElement {
               </div>
             )}
 
-            {isSending && !streamingContent && (
+            {isSending && !streamingContent && toolCalls.length === 0 && (
               <div className="flex justify-start">
                 <div className="rounded-lg p-4 bg-surface-secondary">
                   <div className="flex items-center gap-2 text-foreground-secondary">

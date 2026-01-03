@@ -10,7 +10,7 @@ import { decryptApiKey } from '@/lib/crypto/api-keys';
 import { Prisma, prisma } from '@tpmjs/db';
 import type { AIProvider } from '@tpmjs/types/agent';
 import { SendMessageSchema } from '@tpmjs/types/agent';
-import type { LanguageModel } from 'ai';
+import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
@@ -165,8 +165,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     // Build AI SDK messages from conversation history
     const { streamText, stepCountIs } = await import('ai');
 
-    // biome-ignore lint/suspicious/noExplicitAny: AI SDK message types
-    const messages: any[] = [];
+    const messages: ModelMessage[] = [];
 
     // Add system prompt if defined
     if (agent.systemPrompt) {
@@ -176,25 +175,55 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       });
     }
 
-    // Add conversation history
+    // Add conversation history - properly format for AI SDK
     for (const msg of recentMessages) {
       if (msg.role === 'USER') {
         messages.push({ role: 'user', content: msg.content });
       } else if (msg.role === 'ASSISTANT') {
-        const assistantMsg: { role: string; content: string; toolCalls?: unknown[] } = {
-          role: 'assistant',
-          content: msg.content,
-        };
-        if (msg.toolCalls) {
-          assistantMsg.toolCalls = msg.toolCalls as unknown[];
+        // For assistant messages with tool calls, include ToolCallParts in content
+        if (msg.toolCalls && Array.isArray(msg.toolCalls) && msg.toolCalls.length > 0) {
+          const toolCallParts = (
+            msg.toolCalls as Array<{ toolCallId: string; toolName: string; args: unknown }>
+          ).map((tc) => ({
+            type: 'tool-call' as const,
+            toolCallId: tc.toolCallId,
+            toolName: tc.toolName,
+            input: tc.args,
+          }));
+          // Content includes text (if any) plus tool call parts
+          const content: Array<
+            | { type: 'text'; text: string }
+            | { type: 'tool-call'; toolCallId: string; toolName: string; input: unknown }
+          > = [];
+          if (msg.content) {
+            content.push({ type: 'text', text: msg.content });
+          }
+          content.push(...toolCallParts);
+          messages.push({
+            role: 'assistant',
+            content,
+          });
+        } else {
+          messages.push({
+            role: 'assistant',
+            content: msg.content,
+          });
         }
-        messages.push(assistantMsg);
       } else if (msg.role === 'TOOL') {
+        // Tool results use the 'tool' role with content array
         messages.push({
           role: 'tool',
-          toolCallId: msg.toolCallId,
-          toolName: msg.toolName,
-          result: msg.toolResult,
+          content: [
+            {
+              type: 'tool-result' as const,
+              toolCallId: msg.toolCallId || '',
+              toolName: msg.toolName || '',
+              output: {
+                type: 'json' as const,
+                value: msg.toolResult,
+              },
+            },
+          ],
         });
       }
     }
@@ -403,6 +432,19 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       );
     }
 
+    const mappedMessages = conversation.messages.map((m) => ({
+      id: m.id,
+      role: m.role,
+      content: m.content,
+      toolCalls: m.toolCalls,
+      toolCallId: m.toolCallId,
+      toolName: m.toolName,
+      toolResult: m.toolResult,
+      inputTokens: m.inputTokens,
+      outputTokens: m.outputTokens,
+      createdAt: m.createdAt,
+    }));
+
     return NextResponse.json({
       success: true,
       data: {
@@ -411,18 +453,7 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
         title: conversation.title,
         createdAt: conversation.createdAt,
         updatedAt: conversation.updatedAt,
-        messages: conversation.messages.map((m) => ({
-          id: m.id,
-          role: m.role,
-          content: m.content,
-          toolCalls: m.toolCalls,
-          toolCallId: m.toolCallId,
-          toolName: m.toolName,
-          toolResult: m.toolResult,
-          inputTokens: m.inputTokens,
-          outputTokens: m.outputTokens,
-          createdAt: m.createdAt,
-        })),
+        messages: mappedMessages,
       },
     });
   } catch (error) {
