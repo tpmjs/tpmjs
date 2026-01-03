@@ -6,6 +6,10 @@
  * - Tool calls and execution
  * - Conversation history persistence
  * - Database state verification
+ *
+ * NOTE: These are integration tests that require a running server.
+ * Run `pnpm dev --filter=@tpmjs/web` first, then run tests.
+ * Tests will be skipped if server is not available.
  */
 
 import { prisma } from '@tpmjs/db';
@@ -14,6 +18,16 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
 const TEST_AGENT_UID = 'omega'; // The test agent UID
 const TEST_CONVERSATION_SLUG = `test-conv-${Date.now()}`;
+
+// Check if server is available before running tests
+async function isServerAvailable(): Promise<boolean> {
+  try {
+    const response = await fetch(`${BASE_URL}/api/health`, { signal: AbortSignal.timeout(2000) });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
 
 interface SSEEvent {
   event: string;
@@ -66,8 +80,16 @@ describe('Agent Endpoints', () => {
   } | null = null;
 
   let testConversationId: string | null = null;
+  let serverAvailable = false;
 
   beforeAll(async () => {
+    // Check if server is running
+    serverAvailable = await isServerAvailable();
+    if (!serverAvailable) {
+      console.warn('⚠️  Server not available at', BASE_URL, '- skipping agent integration tests');
+      return;
+    }
+
     // Find the test agent in the database
     testAgent = await prisma.agent.findUnique({
       where: { uid: TEST_AGENT_UID },
@@ -97,8 +119,8 @@ describe('Agent Endpoints', () => {
 
   describe('POST /api/agents/[id]/conversation/[conversationId]', () => {
     it('should create a new conversation and receive a response', async () => {
-      if (!testAgent) {
-        console.log('Skipping: No test agent available');
+      if (!serverAvailable || !testAgent) {
+        console.log('Skipping: Server not available or no test agent');
         return;
       }
 
@@ -144,8 +166,8 @@ describe('Agent Endpoints', () => {
     });
 
     it('should persist conversation in database', async () => {
-      if (!testAgent || !testConversationId) {
-        console.log('Skipping: No test conversation available');
+      if (!serverAvailable || !testAgent || !testConversationId) {
+        console.log('Skipping: Server not available or no test conversation');
         return;
       }
 
@@ -174,8 +196,8 @@ describe('Agent Endpoints', () => {
     });
 
     it('should maintain conversation history on follow-up messages', async () => {
-      if (!testAgent) {
-        console.log('Skipping: No test agent available');
+      if (!serverAvailable || !testAgent) {
+        console.log('Skipping: Server not available or no test agent');
         return;
       }
 
@@ -207,8 +229,8 @@ describe('Agent Endpoints', () => {
     });
 
     it('should execute tool calls when requested', async () => {
-      if (!testAgent) {
-        console.log('Skipping: No test agent available');
+      if (!serverAvailable || !testAgent) {
+        console.log('Skipping: Server not available or no test agent');
         return;
       }
 
@@ -270,8 +292,8 @@ describe('Agent Endpoints', () => {
 
   describe('GET /api/agents/[id]/conversation/[conversationId]', () => {
     it('should retrieve conversation history', async () => {
-      if (!testAgent || !testConversationId) {
-        console.log('Skipping: No test conversation available');
+      if (!serverAvailable || !testAgent || !testConversationId) {
+        console.log('Skipping: Server not available or no test conversation');
         return;
       }
 
@@ -291,8 +313,8 @@ describe('Agent Endpoints', () => {
     });
 
     it('should return 404 for non-existent conversation', async () => {
-      if (!testAgent) {
-        console.log('Skipping: No test agent available');
+      if (!serverAvailable || !testAgent) {
+        console.log('Skipping: Server not available or no test agent');
         return;
       }
 
@@ -307,8 +329,8 @@ describe('Agent Endpoints', () => {
 
   describe('GET /api/agents/[id]/conversations', () => {
     it('should list all conversations for an agent', async () => {
-      if (!testAgent) {
-        console.log('Skipping: No test agent available');
+      if (!serverAvailable || !testAgent) {
+        console.log('Skipping: Server not available or no test agent');
         return;
       }
 
@@ -330,8 +352,8 @@ describe('Agent Endpoints', () => {
     });
 
     it('should support pagination', async () => {
-      if (!testAgent) {
-        console.log('Skipping: No test agent available');
+      if (!serverAvailable || !testAgent) {
+        console.log('Skipping: Server not available or no test agent');
         return;
       }
 
@@ -350,8 +372,8 @@ describe('Agent Endpoints', () => {
 
   describe('Database State Verification', () => {
     it('should have correct message token counts', async () => {
-      if (!testConversationId) {
-        console.log('Skipping: No test conversation available');
+      if (!serverAvailable || !testConversationId) {
+        console.log('Skipping: Server not available or no test conversation');
         return;
       }
 
@@ -369,8 +391,8 @@ describe('Agent Endpoints', () => {
     });
 
     it('should correctly track tool calls in messages', async () => {
-      if (!testConversationId) {
-        console.log('Skipping: No test conversation available');
+      if (!serverAvailable || !testConversationId) {
+        console.log('Skipping: Server not available or no test conversation');
         return;
       }
 
@@ -391,8 +413,8 @@ describe('Agent Endpoints', () => {
 
   describe('Agent with lookup by ID or UID', () => {
     it('should accept agent ID in URL', async () => {
-      if (!testAgent) {
-        console.log('Skipping: No test agent available');
+      if (!serverAvailable || !testAgent) {
+        console.log('Skipping: Server not available or no test agent');
         return;
       }
 
@@ -406,8 +428,8 @@ describe('Agent Endpoints', () => {
     });
 
     it('should accept agent UID in URL', async () => {
-      if (!testAgent) {
-        console.log('Skipping: No test agent available');
+      if (!serverAvailable || !testAgent) {
+        console.log('Skipping: Server not available or no test agent');
         return;
       }
 
