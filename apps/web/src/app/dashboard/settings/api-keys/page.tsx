@@ -1,6 +1,7 @@
 'use client';
 
 import type { AIProvider } from '@tpmjs/types/agent';
+import { SUPPORTED_PROVIDERS } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
@@ -9,13 +10,20 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 
 interface ApiKeyInfo {
-  provider: string;
+  provider: AIProvider;
   keyHint: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-// Map env var names to provider codes
+const PROVIDER_NAMES: Record<AIProvider, string> = {
+  OPENAI: 'OpenAI',
+  ANTHROPIC: 'Anthropic',
+  GOOGLE: 'Google',
+  GROQ: 'Groq',
+  MISTRAL: 'Mistral',
+};
+
 const ENV_VAR_MAP: Record<string, AIProvider> = {
   OPENAI_API_KEY: 'OPENAI',
   ANTHROPIC_API_KEY: 'ANTHROPIC',
@@ -30,16 +38,29 @@ export default function ApiKeysPage(): React.ReactElement {
   const [apiKeys, setApiKeys] = useState<ApiKeyInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Individual key inputs
+  const [keyInputs, setKeyInputs] = useState<Record<AIProvider, string>>({
+    OPENAI: '',
+    ANTHROPIC: '',
+    GOOGLE: '',
+    GROQ: '',
+    MISTRAL: '',
+  });
+  const [savingProvider, setSavingProvider] = useState<AIProvider | null>(null);
+  const [savedProvider, setSavedProvider] = useState<AIProvider | null>(null);
+  const [deletingProvider, setDeletingProvider] = useState<AIProvider | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // .env import
+  const [showEnvImport, setShowEnvImport] = useState(false);
   const [envText, setEnvText] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveResult, setSaveResult] = useState<{ success: number; failed: number } | null>(null);
-  const [deletingKey, setDeletingKey] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const fetchApiKeys = useCallback(async () => {
     try {
       const response = await fetch('/api/user/api-keys');
       const data = await response.json();
-
       if (data.success) {
         setApiKeys(data.data);
       } else {
@@ -61,81 +82,106 @@ export default function ApiKeysPage(): React.ReactElement {
     fetchApiKeys();
   }, [fetchApiKeys]);
 
-  const parseAndSave = useCallback(async () => {
+  const saveKey = useCallback(async (provider: AIProvider, apiKey: string) => {
+    setSavingProvider(provider);
+    setSavedProvider(null);
+    setSaveError(null);
+
+    try {
+      console.log('[saveKey] Saving key for provider:', provider, 'key length:', apiKey.length);
+      const response = await fetch('/api/user/api-keys', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider, apiKey }),
+      });
+
+      const result = await response.json();
+      console.log('[saveKey] Response:', result);
+
+      if (result.success) {
+        setApiKeys((prev) => {
+          const idx = prev.findIndex((k) => k.provider === provider);
+          if (idx >= 0) {
+            const updated = [...prev];
+            updated[idx] = result.data;
+            return updated;
+          }
+          return [...prev, result.data];
+        });
+        setKeyInputs((prev) => ({ ...prev, [provider]: '' }));
+        setSavedProvider(provider);
+        setTimeout(() => setSavedProvider(null), 2000);
+        return true;
+      } else {
+        console.error('[saveKey] Error:', result.error);
+        setSaveError(result.error || 'Failed to save');
+        return false;
+      }
+    } catch (err) {
+      console.error('[saveKey] Network error:', err);
+      setSaveError('Network error');
+      return false;
+    } finally {
+      setSavingProvider(null);
+    }
+  }, []);
+
+  const handleSave = useCallback((provider: AIProvider) => {
+    const value = keyInputs[provider]?.trim();
+    if (value) {
+      saveKey(provider, value);
+    }
+  }, [keyInputs, saveKey]);
+
+  const handleDelete = useCallback(async (provider: AIProvider) => {
+    if (!confirm(`Delete ${PROVIDER_NAMES[provider]} API key?`)) return;
+
+    setDeletingProvider(provider);
+    try {
+      const response = await fetch(`/api/user/api-keys/${provider}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (result.success) {
+        setApiKeys((prev) => prev.filter((k) => k.provider !== provider));
+      }
+    } catch (err) {
+      console.error('Failed to delete:', err);
+    } finally {
+      setDeletingProvider(null);
+    }
+  }, []);
+
+  const handleEnvImport = useCallback(async () => {
     const lines = envText.split('\n');
     const keysToSave: { provider: AIProvider; apiKey: string }[] = [];
 
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
-
       const match = trimmed.match(/^([A-Z_]+)\s*=\s*["']?([^"'\n]+)["']?$/);
       if (match) {
         const [, envVar, value] = match;
-        if (!envVar || !value) continue;
-        const provider = ENV_VAR_MAP[envVar];
-        if (provider) {
-          keysToSave.push({ provider, apiKey: value.trim() });
+        if (envVar && value) {
+          const provider = ENV_VAR_MAP[envVar];
+          if (provider) {
+            keysToSave.push({ provider, apiKey: value.trim() });
+          }
         }
       }
     }
 
-    if (keysToSave.length === 0) {
-      setSaveResult({ success: 0, failed: 0 });
-      return;
-    }
+    if (keysToSave.length === 0) return;
 
-    setIsSaving(true);
-    let success = 0;
-    let failed = 0;
-
+    setImporting(true);
     for (const { provider, apiKey } of keysToSave) {
-      try {
-        const response = await fetch('/api/user/api-keys', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ provider, apiKey }),
-        });
-        const result = await response.json();
-        if (result.success) {
-          success++;
-        } else {
-          failed++;
-        }
-      } catch {
-        failed++;
-      }
+      await saveKey(provider, apiKey);
     }
-
-    setSaveResult({ success, failed });
-    setIsSaving(false);
+    setImporting(false);
     setEnvText('');
-    fetchApiKeys();
+    setShowEnvImport(false);
+  }, [envText, saveKey]);
 
-    setTimeout(() => setSaveResult(null), 3000);
-  }, [envText, fetchApiKeys]);
-
-  const handleDelete = useCallback(
-    async (provider: string) => {
-      if (!confirm(`Delete this API key?`)) return;
-
-      setDeletingKey(provider);
-      try {
-        const response = await fetch(`/api/user/api-keys/${provider}`, {
-          method: 'DELETE',
-        });
-        const result = await response.json();
-        if (result.success) {
-          setApiKeys((prev) => prev.filter((k) => k.provider !== provider));
-        }
-      } catch (err) {
-        console.error('Failed to delete:', err);
-      } finally {
-        setDeletingKey(null);
-      }
-    },
-    []
-  );
+  const hasKey = (provider: AIProvider) => apiKeys.some((k) => k.provider === provider);
+  const getKeyHint = (provider: AIProvider) => apiKeys.find((k) => k.provider === provider)?.keyHint;
 
   if (isLoading) {
     return (
@@ -144,7 +190,8 @@ export default function ApiKeysPage(): React.ReactElement {
         <div className="max-w-2xl mx-auto py-12 px-4">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-surface-secondary rounded w-32" />
-            <div className="h-32 bg-surface-secondary rounded" />
+            <div className="h-16 bg-surface-secondary rounded" />
+            <div className="h-16 bg-surface-secondary rounded" />
           </div>
         </div>
       </div>
@@ -167,83 +214,111 @@ export default function ApiKeysPage(): React.ReactElement {
     <div className="min-h-screen bg-background">
       <AppHeader />
       <div className="max-w-2xl mx-auto py-12 px-4">
-        <div className="flex items-center gap-3 mb-8">
-          <Link href="/dashboard" className="text-foreground-secondary hover:text-foreground">
-            <Icon icon="arrowLeft" size="sm" />
-          </Link>
-          <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard" className="text-foreground-secondary hover:text-foreground">
+              <Icon icon="arrowLeft" size="sm" />
+            </Link>
+            <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowEnvImport(!showEnvImport)}
+            className="text-sm text-primary hover:underline"
+          >
+            {showEnvImport ? 'Hide' : 'Import from .env'}
+          </button>
         </div>
 
-        {/* Paste .env */}
-        <div className="mb-8">
-          <textarea
-            value={envText}
-            onChange={(e) => setEnvText(e.target.value)}
-            placeholder="Paste your .env file or API keys here...
-
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_API_KEY=...
-GROQ_API_KEY=gsk_...
-MISTRAL_API_KEY=..."
-            rows={6}
-            className="w-full px-4 py-3 bg-surface-secondary border border-border rounded-lg text-foreground font-mono text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
-          />
-          <div className="mt-3 flex items-center gap-3">
-            <Button onClick={parseAndSave} disabled={isSaving || !envText.trim()}>
-              {isSaving ? 'Saving...' : 'Save Keys'}
+        {/* .env Import */}
+        {showEnvImport && (
+          <div className="mb-6 p-4 bg-surface-secondary border border-border rounded-lg">
+            <textarea
+              value={envText}
+              onChange={(e) => setEnvText(e.target.value)}
+              placeholder="OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-..."
+              rows={4}
+              className="w-full px-3 py-2 bg-background border border-border rounded text-foreground font-mono text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+            />
+            <Button
+              size="sm"
+              onClick={handleEnvImport}
+              disabled={importing || !envText.trim()}
+              className="mt-2"
+            >
+              {importing ? 'Importing...' : 'Import Keys'}
             </Button>
-            {saveResult && (
-              <span className="text-sm text-foreground-secondary">
-                {saveResult.success > 0 && (
-                  <span className="text-green-500">{saveResult.success} saved</span>
-                )}
-                {saveResult.failed > 0 && (
-                  <span className="text-red-500 ml-2">{saveResult.failed} failed</span>
-                )}
-                {saveResult.success === 0 && saveResult.failed === 0 && (
-                  <span>No recognized keys found</span>
-                )}
-              </span>
-            )}
           </div>
-        </div>
+        )}
 
-        {/* Stored keys */}
-        {apiKeys.length > 0 && (
-          <div>
-            <h2 className="text-sm font-medium text-foreground-secondary mb-3">Stored Keys</h2>
-            <div className="space-y-2">
-              {apiKeys.map((key) => (
-                <div
-                  key={key.provider}
-                  className="flex items-center justify-between px-4 py-3 bg-surface-secondary border border-border rounded-lg"
-                >
-                  <div>
-                    <span className="font-medium text-foreground">{key.provider}</span>
-                    <span className="text-foreground-tertiary ml-2 text-sm">
-                      ...{key.keyHint}
-                    </span>
+        {/* Error message */}
+        {saveError && (
+          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm">
+            {saveError}
+          </div>
+        )}
+
+        {/* Provider list */}
+        <div className="space-y-3">
+          {SUPPORTED_PROVIDERS.map((provider) => {
+            const configured = hasKey(provider);
+            const hint = getKeyHint(provider);
+            const isSaving = savingProvider === provider;
+            const isSaved = savedProvider === provider;
+            const isDeleting = deletingProvider === provider;
+            const inputValue = keyInputs[provider] || '';
+
+            return (
+              <div
+                key={provider}
+                className="p-4 bg-surface-secondary border border-border rounded-lg"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-foreground">{PROVIDER_NAMES[provider]}</span>
+                    {configured && (
+                      <span className="text-xs text-foreground-tertiary">...{hint}</span>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(key.provider)}
-                    disabled={deletingKey === key.provider}
-                    className="text-foreground-tertiary hover:text-red-500 disabled:opacity-50"
-                  >
-                    <Icon icon="trash" size="sm" />
-                  </button>
+                  {configured && (
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(provider)}
+                      disabled={isDeleting}
+                      className="text-foreground-tertiary hover:text-red-500 disabled:opacity-50"
+                    >
+                      <Icon icon="trash" size="xs" />
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {apiKeys.length === 0 && (
-          <p className="text-center text-foreground-tertiary py-8">
-            No API keys stored yet. Paste your .env above to add keys.
-          </p>
-        )}
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={inputValue}
+                    onChange={(e) => setKeyInputs((prev) => ({ ...prev, [provider]: e.target.value }))}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSave(provider)}
+                    placeholder={configured ? 'Enter new key to update...' : 'Paste API key...'}
+                    className="flex-1 px-3 py-2 bg-background border border-border rounded text-foreground text-sm font-mono placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => handleSave(provider)}
+                    disabled={isSaving || !inputValue.trim()}
+                  >
+                    {isSaving ? (
+                      <Icon icon="loader" size="xs" className="animate-spin" />
+                    ) : isSaved ? (
+                      <Icon icon="check" size="xs" />
+                    ) : (
+                      'Save'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
