@@ -816,4 +816,69 @@ export const manualTools: ManualTool[] = [
     apiKeyUrl: 'https://app.airweave.ai/settings/api-keys',
     websiteUrl: 'https://airweave.ai',
   },
+  {
+    npmPackageName: '@tpmjs/createblogpost',
+    category: 'text-analysis',
+    frameworks: ['vercel-ai'],
+    name: 'createBlogPostTool',
+    description:
+      'Creates structured blog posts with customizable frontmatter, content sections, and SEO metadata. Supports multiple output formats including Markdown and MDX.',
+    tags: ['blog', 'content', 'writing', 'markdown', 'mdx'],
+    parameters: [
+      {
+        name: 'title',
+        type: 'string',
+        description: 'The title of the blog post',
+        required: true,
+      },
+      {
+        name: 'author',
+        type: 'string',
+        description: 'The author of the blog post',
+        required: true,
+      },
+      {
+        name: 'content',
+        type: 'string',
+        description: 'The main content of the blog post',
+        required: true,
+      },
+      {
+        name: 'tags',
+        type: 'string[]',
+        description: 'Array of tags for categorization',
+        required: false,
+      },
+      {
+        name: 'format',
+        type: "'markdown' | 'mdx'",
+        description: 'Output format for the blog post',
+        required: false,
+      },
+      {
+        name: 'excerpt',
+        type: 'string',
+        description: 'Short excerpt or summary of the post',
+        required: false,
+      },
+    ],
+    returns: {
+      type: 'BlogPost',
+      description:
+        'A structured blog post object with frontmatter, content, and metadata including slug, wordCount, readingTime, and formattedOutput',
+    },
+    aiAgent: {
+      useCase:
+        'Use this tool when users need to generate blog posts, articles, or structured content with proper frontmatter and metadata. Ideal for content management systems, static site generators, and documentation sites.',
+      limitations:
+        'Does not include AI content generation - you must provide the content. Only formats and structures existing content.',
+      examples: [
+        'Create a blog post about TypeScript best practices',
+        'Generate a tutorial post with code examples',
+        'Format an article with SEO metadata',
+      ],
+    },
+    websiteUrl: 'https://tpmjs.com',
+    docsUrl: 'https://tpmjs.com/tool/@tpmjs/createblogpost/createBlogPostTool',
+  },
 ];

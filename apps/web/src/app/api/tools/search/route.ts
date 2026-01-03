@@ -81,7 +81,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q') || '';
+    // Accept both 'q' and 'query' parameters for flexibility
+    const query = searchParams.get('q') || searchParams.get('query') || '';
     const category = searchParams.get('category');
     const limit = Math.min(Number.parseInt(searchParams.get('limit') || '10'), 50);
 
