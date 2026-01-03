@@ -135,9 +135,12 @@ export async function fetchAgentByIdOrUidWithTools(
 
 /**
  * Sanitize npm package name to valid tool name
+ * OpenAI limits tool names to 64 characters
  */
 function sanitizeToolName(name: string): string {
-  return name.replace(/[@/]/g, '-').replace(/^-+/, '');
+  const sanitized = name.replace(/[@/]/g, '-').replace(/^-+/, '');
+  // Truncate to 64 chars (OpenAI limit)
+  return sanitized.slice(0, 64);
 }
 
 /**
