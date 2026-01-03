@@ -35,19 +35,31 @@ export function encryptApiKey(apiKey: string): { encrypted: string; iv: string }
  * Decrypts an API key using AES-256-GCM
  */
 export function decryptApiKey(encrypted: string, iv: string): string {
-  const key = getEncryptionKey();
+  try {
+    const key = getEncryptionKey();
 
-  // Extract the auth tag (last 32 hex chars = 16 bytes)
-  const authTag = Buffer.from(encrypted.slice(-32), 'hex');
-  const encryptedData = encrypted.slice(0, -32);
+    // Extract the auth tag (last 32 hex chars = 16 bytes)
+    const authTag = Buffer.from(encrypted.slice(-32), 'hex');
+    const encryptedData = encrypted.slice(0, -32);
 
-  const decipher = createDecipheriv(ALGORITHM, key, Buffer.from(iv, 'hex'));
-  decipher.setAuthTag(authTag);
+    const decipher = createDecipheriv(ALGORITHM, key, Buffer.from(iv, 'hex'));
+    decipher.setAuthTag(authTag);
 
-  let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
+    let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
 
-  return decrypted;
+    return decrypted;
+  } catch (error) {
+    // Provide a more helpful error message
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    if (message.includes('Unsupported state') || message.includes('unable to authenticate')) {
+      throw new Error(
+        'API key decryption failed. The encryption secret may have changed. ' +
+          'Please re-save your API key in Settings > API Keys.'
+      );
+    }
+    throw error;
+  }
 }
 
 /**
