@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes for long agentic runs
 
 type RouteContext = {
-  params: Promise<{ uid: string; conversationId: string }>;
+  params: Promise<{ id: string; conversationId: string }>;
 };
 
 /**
@@ -56,11 +56,12 @@ async function getProviderModel(
 }
 
 /**
- * POST /api/agents/[uid]/conversation/[conversationId]
+ * POST /api/agents/[id]/conversation/[conversationId]
  * Send a message and stream the AI response via SSE
+ * Accepts either agent id (cuid) or uid
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
-  const { uid, conversationId } = await context.params;
+  const { id: idOrUid, conversationId } = await context.params;
 
   try {
     const body = await request.json();
@@ -72,20 +73,39 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
-    // Fetch agent with all tool relations
-    const { fetchAgentByUidWithTools, buildAgentTools } = await import('@/lib/agents/build-tools');
-    const agent = await fetchAgentByUidWithTools(uid);
+    // Fetch agent with all tool relations (accepts id or uid)
+    const { fetchAgentByIdOrUidWithTools, buildAgentTools } = await import(
+      '@/lib/agents/build-tools'
+    );
+    const agent = await fetchAgentByIdOrUidWithTools(idOrUid);
 
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
     }
 
+    // Map provider to expected key name format
+    const providerKeyNames: Record<string, string> = {
+      OPENAI: 'OPENAI_API_KEY',
+      ANTHROPIC: 'ANTHROPIC_API_KEY',
+      GOOGLE: 'GOOGLE_API_KEY',
+      GROQ: 'GROQ_API_KEY',
+      MISTRAL: 'MISTRAL_API_KEY',
+    };
+    const keyName = providerKeyNames[agent.provider];
+
+    if (!keyName) {
+      return NextResponse.json(
+        { success: false, error: `Unsupported provider: ${agent.provider}` },
+        { status: 400 }
+      );
+    }
+
     // Get user's API key for this provider
     const userApiKey = await prisma.userApiKey.findUnique({
       where: {
-        userId_provider: {
+        userId_keyName: {
           userId: agent.userId,
-          provider: agent.provider,
+          keyName,
         },
       },
     });
@@ -342,16 +362,18 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 }
 
 /**
- * GET /api/agents/[uid]/conversation/[conversationId]
- * Retrieve conversation history
+ * GET /api/agents/[id]/conversation/[conversationId]
+ * Retrieve conversation history (accepts id or uid)
  */
 export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
-  const { uid, conversationId } = await context.params;
+  const { id: idOrUid, conversationId } = await context.params;
 
   try {
-    // Fetch agent
-    const agent = await prisma.agent.findUnique({
-      where: { uid },
+    // Fetch agent by id or uid
+    const agent = await prisma.agent.findFirst({
+      where: {
+        OR: [{ id: idOrUid }, { uid: idOrUid }],
+      },
       select: { id: true },
     });
 
@@ -413,16 +435,18 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
 }
 
 /**
- * DELETE /api/agents/[uid]/conversation/[conversationId]
- * Delete a conversation
+ * DELETE /api/agents/[id]/conversation/[conversationId]
+ * Delete a conversation (accepts id or uid)
  */
 export async function DELETE(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
-  const { uid, conversationId } = await context.params;
+  const { id: idOrUid, conversationId } = await context.params;
 
   try {
-    // Fetch agent
-    const agent = await prisma.agent.findUnique({
-      where: { uid },
+    // Fetch agent by id or uid
+    const agent = await prisma.agent.findFirst({
+      where: {
+        OR: [{ id: idOrUid }, { uid: idOrUid }],
+      },
       select: { id: true },
     });
 

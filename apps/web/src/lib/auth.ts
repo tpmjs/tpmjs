@@ -8,6 +8,8 @@ import { sendVerificationEmail } from './email';
 // So we prioritize BETTER_AUTH_URL or fall back to the production domain
 const getBaseURL = () => {
   if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL;
+  // Local development
+  if (process.env.NODE_ENV === 'development') return 'http://localhost:3000';
   // In production, always use the custom domain, not VERCEL_URL
   if (process.env.VERCEL_ENV === 'production') return 'https://tpmjs.com';
   // For preview deployments, use the Vercel URL
@@ -40,11 +42,11 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
-  trustedOrigins: ['https://tpmjs.com'],
+  trustedOrigins: ['https://tpmjs.com', 'http://localhost:3000'],
   advanced: {
     defaultCookieAttributes: {
       sameSite: 'lax',
-      secure: true,
+      secure: process.env.NODE_ENV !== 'development',
       httpOnly: true,
     },
   },

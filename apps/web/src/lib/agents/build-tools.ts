@@ -93,6 +93,47 @@ export async function fetchAgentByUidWithTools(uid: string): Promise<AgentWithRe
 }
 
 /**
+ * Fetch an agent by ID or UID with all tool relations
+ * Accepts either the cuid or the user-friendly uid
+ */
+export async function fetchAgentByIdOrUidWithTools(
+  idOrUid: string
+): Promise<AgentWithRelations | null> {
+  return prisma.agent.findFirst({
+    where: {
+      OR: [{ id: idOrUid }, { uid: idOrUid }],
+    },
+    include: {
+      collections: {
+        include: {
+          collection: {
+            include: {
+              tools: {
+                include: {
+                  tool: {
+                    include: { package: true },
+                  },
+                },
+                orderBy: { position: 'asc' },
+              },
+            },
+          },
+        },
+        orderBy: { position: 'asc' },
+      },
+      tools: {
+        include: {
+          tool: {
+            include: { package: true },
+          },
+        },
+        orderBy: { position: 'asc' },
+      },
+    },
+  });
+}
+
+/**
  * Sanitize npm package name to valid tool name
  */
 function sanitizeToolName(name: string): string {

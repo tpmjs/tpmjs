@@ -1,5 +1,3 @@
-import type { AIProvider } from '@prisma/client';
-
 import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -14,8 +12,8 @@ type RouteContext = {
 };
 
 /**
- * DELETE /api/user/api-keys/[provider]
- * Remove an API key for a provider
+ * DELETE /api/user/api-keys/[keyName]
+ * Remove an API key by name
  */
 export async function DELETE(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
   try {
@@ -24,18 +22,12 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { provider } = await context.params;
-
-    // Validate provider is a valid enum value
-    const validProviders = ['OPENAI', 'ANTHROPIC', 'GOOGLE', 'GROQ', 'MISTRAL'];
-    if (!validProviders.includes(provider.toUpperCase())) {
-      return NextResponse.json({ success: false, error: 'Invalid provider' }, { status: 400 });
-    }
+    const { provider: keyName } = await context.params;
 
     await prisma.userApiKey.deleteMany({
       where: {
         userId: session.user.id,
-        provider: provider.toUpperCase() as AIProvider,
+        keyName,
       },
     });
 

@@ -557,27 +557,27 @@ model AgentTool {
   @@map("agent_tools")
 }
 
-/// UserApiKey - encrypted API keys per user per provider
+/// UserApiKey - encrypted API keys/env vars per user
 model UserApiKey {
-  id           String     @id @default(cuid())
+  id           String   @id @default(cuid())
 
   // Owner relationship
-  userId       String     @map("user_id")
-  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Provider identification
-  provider     AIProvider
+  // Key identification (e.g. OPENAI_API_KEY, MY_SECRET, etc.)
+  keyName      String   @map("key_name") @db.VarChar(100)
 
   // Encrypted key storage
-  encryptedKey String     @map("encrypted_key") @db.Text
-  keyIv        String     @map("key_iv") @db.VarChar(32)
-  keyHint      String?    @map("key_hint") @db.VarChar(10) // Last 4 chars
+  encryptedKey String   @map("encrypted_key") @db.Text
+  keyIv        String   @map("key_iv") @db.VarChar(32)
+  keyHint      String?  @map("key_hint") @db.VarChar(10) // Last 4 chars
 
   // Timestamps
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  @@unique([userId, provider])
+  @@unique([userId, keyName])
   @@index([userId])
   @@map("user_api_keys")
 }

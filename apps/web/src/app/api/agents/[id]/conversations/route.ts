@@ -12,24 +12,26 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
 
 type RouteContext = {
-  params: Promise<{ uid: string }>;
+  params: Promise<{ id: string }>;
 };
 
 /**
- * GET /api/agents/[uid]/conversations
- * List all conversations for an agent
+ * GET /api/agents/[id]/conversations
+ * List all conversations for an agent (accepts id or uid)
  */
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
-  const { uid } = await context.params;
+  const { id: idOrUid } = await context.params;
   const { searchParams } = new URL(request.url);
 
   const limit = Math.min(Number.parseInt(searchParams.get('limit') || '20', 10), 100);
   const offset = Number.parseInt(searchParams.get('offset') || '0', 10);
 
   try {
-    // Fetch agent
-    const agent = await prisma.agent.findUnique({
-      where: { uid },
+    // Fetch agent by id or uid
+    const agent = await prisma.agent.findFirst({
+      where: {
+        OR: [{ id: idOrUid }, { uid: idOrUid }],
+      },
       select: { id: true },
     });
 

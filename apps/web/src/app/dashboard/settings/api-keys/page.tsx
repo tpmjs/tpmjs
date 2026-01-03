@@ -1,7 +1,5 @@
 'use client';
 
-import type { AIProvider } from '@tpmjs/types/agent';
-import { SUPPORTED_PROVIDERS } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
@@ -10,161 +8,117 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 
 interface ApiKeyInfo {
-  provider: AIProvider;
+  id: string;
+  keyName: string;
   keyHint: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-const PROVIDER_NAMES: Record<AIProvider, string> = {
-  OPENAI: 'OpenAI',
-  ANTHROPIC: 'Anthropic',
-  GOOGLE: 'Google',
-  GROQ: 'Groq',
-  MISTRAL: 'Mistral',
-};
-
-const ENV_VAR_MAP: Record<string, AIProvider> = {
-  OPENAI_API_KEY: 'OPENAI',
-  ANTHROPIC_API_KEY: 'ANTHROPIC',
-  GOOGLE_API_KEY: 'GOOGLE',
-  GOOGLE_GENERATIVE_AI_API_KEY: 'GOOGLE',
-  GROQ_API_KEY: 'GROQ',
-  MISTRAL_API_KEY: 'MISTRAL',
-};
-
 export default function ApiKeysPage(): React.ReactElement {
   const router = useRouter();
-  const [apiKeys, setApiKeys] = useState<ApiKeyInfo[]>([]);
+  const [keys, setKeys] = useState<ApiKeyInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Individual key inputs
-  const [keyInputs, setKeyInputs] = useState<Record<AIProvider, string>>({
-    OPENAI: '',
-    ANTHROPIC: '',
-    GOOGLE: '',
-    GROQ: '',
-    MISTRAL: '',
-  });
-  const [savingProvider, setSavingProvider] = useState<AIProvider | null>(null);
-  const [savedProvider, setSavedProvider] = useState<AIProvider | null>(null);
-  const [deletingProvider, setDeletingProvider] = useState<AIProvider | null>(null);
+  // Add new key form
+  const [newKeyName, setNewKeyName] = useState('');
+  const [newKeyValue, setNewKeyValue] = useState('');
+  const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
   // .env import
-  const [showEnvImport, setShowEnvImport] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [envText, setEnvText] = useState('');
   const [importing, setImporting] = useState(false);
 
-  const fetchApiKeys = useCallback(async () => {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const fetchKeys = useCallback(async () => {
     try {
       const response = await fetch('/api/user/api-keys');
       const data = await response.json();
       if (data.success) {
-        setApiKeys(data.data);
+        setKeys(data.data);
       } else {
         if (response.status === 401) {
           router.push('/sign-in');
           return;
         }
-        setError(data.error || 'Failed to fetch API keys');
+        setError(data.error || 'Failed to fetch keys');
       }
     } catch (err) {
-      console.error('Failed to fetch API keys:', err);
-      setError('Failed to fetch API keys');
+      console.error('Failed to fetch keys:', err);
+      setError('Failed to fetch keys');
     } finally {
       setIsLoading(false);
     }
   }, [router]);
 
   useEffect(() => {
-    fetchApiKeys();
-  }, [fetchApiKeys]);
+    fetchKeys();
+  }, [fetchKeys]);
 
-  const saveKey = useCallback(async (provider: AIProvider, apiKey: string) => {
-    setSavingProvider(provider);
-    setSavedProvider(null);
-    setSaveError(null);
-
-    try {
-      console.log('[saveKey] Saving key for provider:', provider, 'key length:', apiKey.length);
-      const response = await fetch('/api/user/api-keys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider, apiKey }),
-      });
-
-      const result = await response.json();
-      console.log('[saveKey] Response:', result);
-
-      if (result.success) {
-        setApiKeys((prev) => {
-          const idx = prev.findIndex((k) => k.provider === provider);
-          if (idx >= 0) {
-            const updated = [...prev];
-            updated[idx] = result.data;
-            return updated;
-          }
-          return [...prev, result.data];
-        });
-        setKeyInputs((prev) => ({ ...prev, [provider]: '' }));
-        setSavedProvider(provider);
-        setTimeout(() => setSavedProvider(null), 2000);
-        return true;
-      } else {
-        console.error('[saveKey] Error:', result.error);
-        setSaveError(result.error || 'Failed to save');
-        return false;
-      }
-    } catch (err) {
-      console.error('[saveKey] Network error:', err);
-      setSaveError('Network error');
-      return false;
-    } finally {
-      setSavingProvider(null);
-    }
+  const saveKey = useCallback(async (keyName: string, keyValue: string) => {
+    const response = await fetch('/api/user/api-keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keyName, keyValue }),
+    });
+    const result = await response.json();
+    return result;
   }, []);
 
-  const handleSave = useCallback((provider: AIProvider) => {
-    const value = keyInputs[provider]?.trim();
-    if (value) {
-      saveKey(provider, value);
+  const handleAddKey = useCallback(async () => {
+    if (!newKeyName.trim() || !newKeyValue.trim()) return;
+
+    setSaving(true);
+    setSaveError(null);
+
+    const result = await saveKey(newKeyName.trim(), newKeyValue.trim());
+
+    if (result.success) {
+      setNewKeyName('');
+      setNewKeyValue('');
+      fetchKeys();
+    } else {
+      setSaveError(result.error || 'Failed to save');
     }
-  }, [keyInputs, saveKey]);
 
-  const handleDelete = useCallback(async (provider: AIProvider) => {
-    if (!confirm(`Delete ${PROVIDER_NAMES[provider]} API key?`)) return;
+    setSaving(false);
+  }, [newKeyName, newKeyValue, saveKey, fetchKeys]);
 
-    setDeletingProvider(provider);
+  const handleDelete = useCallback(async (keyName: string, id: string) => {
+    if (!confirm(`Delete ${keyName}?`)) return;
+
+    setDeletingId(id);
     try {
-      const response = await fetch(`/api/user/api-keys/${provider}`, { method: 'DELETE' });
+      const response = await fetch(`/api/user/api-keys/${encodeURIComponent(keyName)}`, {
+        method: 'DELETE',
+      });
       const result = await response.json();
       if (result.success) {
-        setApiKeys((prev) => prev.filter((k) => k.provider !== provider));
+        setKeys((prev) => prev.filter((k) => k.id !== id));
       }
     } catch (err) {
       console.error('Failed to delete:', err);
     } finally {
-      setDeletingProvider(null);
+      setDeletingId(null);
     }
   }, []);
 
-  const handleEnvImport = useCallback(async () => {
+  const handleImport = useCallback(async () => {
     const lines = envText.split('\n');
-    const keysToSave: { provider: AIProvider; apiKey: string }[] = [];
+    const keysToSave: { keyName: string; keyValue: string }[] = [];
 
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
-      const match = trimmed.match(/^([A-Z_]+)\s*=\s*["']?([^"'\n]+)["']?$/);
+      const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*["']?(.+?)["']?$/);
       if (match) {
-        const [, envVar, value] = match;
-        if (envVar && value) {
-          const provider = ENV_VAR_MAP[envVar];
-          if (provider) {
-            keysToSave.push({ provider, apiKey: value.trim() });
-          }
+        const [, keyName, keyValue] = match;
+        if (keyName && keyValue) {
+          keysToSave.push({ keyName, keyValue: keyValue.trim() });
         }
       }
     }
@@ -172,16 +126,14 @@ export default function ApiKeysPage(): React.ReactElement {
     if (keysToSave.length === 0) return;
 
     setImporting(true);
-    for (const { provider, apiKey } of keysToSave) {
-      await saveKey(provider, apiKey);
+    for (const { keyName, keyValue } of keysToSave) {
+      await saveKey(keyName, keyValue);
     }
     setImporting(false);
     setEnvText('');
-    setShowEnvImport(false);
-  }, [envText, saveKey]);
-
-  const hasKey = (provider: AIProvider) => apiKeys.some((k) => k.provider === provider);
-  const getKeyHint = (provider: AIProvider) => apiKeys.find((k) => k.provider === provider)?.keyHint;
+    setShowImport(false);
+    fetchKeys();
+  }, [envText, saveKey, fetchKeys]);
 
   if (isLoading) {
     return (
@@ -190,7 +142,6 @@ export default function ApiKeysPage(): React.ReactElement {
         <div className="max-w-2xl mx-auto py-12 px-4">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-surface-secondary rounded w-32" />
-            <div className="h-16 bg-surface-secondary rounded" />
             <div className="h-16 bg-surface-secondary rounded" />
           </div>
         </div>
@@ -204,7 +155,7 @@ export default function ApiKeysPage(): React.ReactElement {
         <AppHeader />
         <div className="max-w-2xl mx-auto py-12 px-4 text-center">
           <p className="text-error mb-4">{error}</p>
-          <Button onClick={fetchApiKeys}>Retry</Button>
+          <Button onClick={fetchKeys}>Retry</Button>
         </div>
       </div>
     );
@@ -219,106 +170,98 @@ export default function ApiKeysPage(): React.ReactElement {
             <Link href="/dashboard" className="text-foreground-secondary hover:text-foreground">
               <Icon icon="arrowLeft" size="sm" />
             </Link>
-            <h1 className="text-2xl font-bold text-foreground">API Keys</h1>
+            <h1 className="text-2xl font-bold text-foreground">Environment Variables</h1>
           </div>
           <button
             type="button"
-            onClick={() => setShowEnvImport(!showEnvImport)}
+            onClick={() => setShowImport(!showImport)}
             className="text-sm text-primary hover:underline"
           >
-            {showEnvImport ? 'Hide' : 'Import from .env'}
+            {showImport ? 'Hide' : 'Import .env'}
           </button>
         </div>
 
-        {/* .env Import */}
-        {showEnvImport && (
+        {/* Import from .env */}
+        {showImport && (
           <div className="mb-6 p-4 bg-surface-secondary border border-border rounded-lg">
             <textarea
               value={envText}
               onChange={(e) => setEnvText(e.target.value)}
-              placeholder="OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-..."
-              rows={4}
+              placeholder="Paste .env content here...
+MY_API_KEY=abc123
+ANOTHER_SECRET=xyz789"
+              rows={5}
               className="w-full px-3 py-2 bg-background border border-border rounded text-foreground font-mono text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
             />
             <Button
               size="sm"
-              onClick={handleEnvImport}
+              onClick={handleImport}
               disabled={importing || !envText.trim()}
               className="mt-2"
             >
-              {importing ? 'Importing...' : 'Import Keys'}
+              {importing ? 'Importing...' : 'Import'}
             </Button>
           </div>
         )}
 
-        {/* Error message */}
-        {saveError && (
-          <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm">
-            {saveError}
+        {/* Add new key */}
+        <div className="mb-6 p-4 bg-surface-secondary border border-border rounded-lg">
+          <h2 className="text-sm font-medium text-foreground mb-3">Add New Key</h2>
+          {saveError && (
+            <p className="text-red-500 text-sm mb-2">{saveError}</p>
+          )}
+          <div className="flex gap-2 mb-2">
+            <input
+              type="text"
+              value={newKeyName}
+              onChange={(e) => setNewKeyName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))}
+              placeholder="KEY_NAME"
+              className="flex-1 px-3 py-2 bg-background border border-border rounded text-foreground text-sm font-mono placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
           </div>
-        )}
-
-        {/* Provider list */}
-        <div className="space-y-3">
-          {SUPPORTED_PROVIDERS.map((provider) => {
-            const configured = hasKey(provider);
-            const hint = getKeyHint(provider);
-            const isSaving = savingProvider === provider;
-            const isSaved = savedProvider === provider;
-            const isDeleting = deletingProvider === provider;
-            const inputValue = keyInputs[provider] || '';
-
-            return (
-              <div
-                key={provider}
-                className="p-4 bg-surface-secondary border border-border rounded-lg"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{PROVIDER_NAMES[provider]}</span>
-                    {configured && (
-                      <span className="text-xs text-foreground-tertiary">...{hint}</span>
-                    )}
-                  </div>
-                  {configured && (
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(provider)}
-                      disabled={isDeleting}
-                      className="text-foreground-tertiary hover:text-red-500 disabled:opacity-50"
-                    >
-                      <Icon icon="trash" size="xs" />
-                    </button>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="password"
-                    value={inputValue}
-                    onChange={(e) => setKeyInputs((prev) => ({ ...prev, [provider]: e.target.value }))}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSave(provider)}
-                    placeholder={configured ? 'Enter new key to update...' : 'Paste API key...'}
-                    className="flex-1 px-3 py-2 bg-background border border-border rounded text-foreground text-sm font-mono placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => handleSave(provider)}
-                    disabled={isSaving || !inputValue.trim()}
-                  >
-                    {isSaving ? (
-                      <Icon icon="loader" size="xs" className="animate-spin" />
-                    ) : isSaved ? (
-                      <Icon icon="check" size="xs" />
-                    ) : (
-                      'Save'
-                    )}
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+          <div className="flex gap-2">
+            <input
+              type="password"
+              value={newKeyValue}
+              onChange={(e) => setNewKeyValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddKey()}
+              placeholder="Value"
+              className="flex-1 px-3 py-2 bg-background border border-border rounded text-foreground text-sm font-mono placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
+            <Button onClick={handleAddKey} disabled={saving || !newKeyName.trim() || !newKeyValue.trim()}>
+              {saving ? 'Saving...' : 'Add'}
+            </Button>
+          </div>
         </div>
+
+        {/* Keys list */}
+        {keys.length > 0 ? (
+          <div className="space-y-2">
+            {keys.map((key) => (
+              <div
+                key={key.id}
+                className="flex items-center justify-between px-4 py-3 bg-surface-secondary border border-border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-sm text-foreground">{key.keyName}</span>
+                  <span className="text-xs text-foreground-tertiary">...{key.keyHint}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(key.keyName, key.id)}
+                  disabled={deletingId === key.id}
+                  className="text-foreground-tertiary hover:text-red-500 disabled:opacity-50"
+                >
+                  <Icon icon="trash" size="sm" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-foreground-tertiary py-8">
+            No environment variables stored yet.
+          </p>
+        )}
       </div>
     </div>
   );
