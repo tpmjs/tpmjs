@@ -13,6 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
 import { CopyButton } from '~/components/CopyButton';
+import { LikeButton } from '~/components/LikeButton';
 import {
   PackageManagerSelector,
   getInstallCommand,
@@ -220,10 +221,13 @@ export default function ToolSearchPage(): React.ReactElement {
             {formatDownloads(tool.package.npmDownloadsLastMonth)}
           </td>
           <td className="px-4 py-3 text-right">
-            <span className="inline-flex items-center gap-1 text-sm text-foreground-secondary">
-              <Icon icon="heart" size="xs" />
-              {tool.likeCount ?? 0}
-            </span>
+            <LikeButton
+              entityType="tool"
+              entityId={tool.id}
+              initialCount={tool.likeCount ?? 0}
+              size="sm"
+              showCount={true}
+            />
           </td>
           <td className="px-4 py-3 text-right">
             <CopyButton text={installCommand} label="Copy" size="xs" />

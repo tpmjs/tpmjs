@@ -35,6 +35,7 @@ export function LikeButton({
   const [count, setCount] = useState(initialCount);
   const [isLoading, setIsLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // Fetch initial like status when user is logged in
   useEffect(() => {
@@ -68,8 +69,9 @@ export function LikeButton({
 
   const handleClick = useCallback(async () => {
     if (!session) {
-      // Redirect to sign in
-      window.location.href = '/sign-in';
+      // Show tooltip instead of redirecting
+      setShowTooltip(true);
+      setTimeout(() => setShowTooltip(false), 2000);
       return;
     }
 
@@ -111,21 +113,34 @@ export function LikeButton({
   }, [session, liked, count, isLoading, entityType, entityId, onLikeChange]);
 
   return (
-    <Button
-      variant={variant}
-      size={size}
-      onClick={handleClick}
-      disabled={isLoading}
-      className={className}
-      aria-label={liked ? `Unlike this ${entityType}` : `Like this ${entityType}`}
-    >
-      <Icon
-        icon={liked ? 'heartFilled' : 'heart'}
-        size="sm"
-        className={liked ? 'text-red-500' : ''}
-      />
-      {showCount && <span className="ml-1">{count}</span>}
-    </Button>
+    <div className="relative inline-block">
+      <Button
+        variant={variant}
+        size={size}
+        onClick={handleClick}
+        disabled={isLoading}
+        className={className}
+        aria-label={liked ? `Unlike this ${entityType}` : `Like this ${entityType}`}
+      >
+        <Icon
+          icon={liked ? 'heartFilled' : 'heart'}
+          size="sm"
+          className={liked ? 'text-red-500' : ''}
+        />
+        {showCount && <span className="ml-1">{count}</span>}
+      </Button>
+      {showTooltip && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-surface-secondary border border-border rounded-lg shadow-lg text-xs text-foreground whitespace-nowrap z-50 animate-in fade-in slide-in-from-bottom-1 duration-200">
+          <a href="/sign-in" className="text-primary hover:underline">
+            Sign in
+          </a>{' '}
+          to like
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+            <div className="border-4 border-transparent border-t-border" />
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
