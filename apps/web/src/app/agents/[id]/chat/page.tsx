@@ -213,8 +213,12 @@ export default function PublicAgentChatPage(): React.ReactElement {
     return searchParams.get('c') || generateConversationId();
   }, [searchParams]);
 
-  // Track if we've updated the URL with conversation ID
-  const hasUpdatedUrl = useRef(false);
+  // Immediately update URL with conversation ID if not present
+  useEffect(() => {
+    if (!searchParams.get('c')) {
+      router.replace(`/agents/${agentId}/chat?c=${conversationId}`, { scroll: false });
+    }
+  }, [searchParams, agentId, conversationId, router]);
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -370,12 +374,6 @@ export default function PublicAgentChatPage(): React.ReactElement {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to send message');
-      }
-
-      // Update URL with conversation ID so refresh preserves chat history
-      if (!hasUpdatedUrl.current && !searchParams.get('c')) {
-        hasUpdatedUrl.current = true;
-        router.replace(`/agents/${agentId}/chat?c=${conversationId}`, { scroll: false });
       }
 
       // Handle SSE stream

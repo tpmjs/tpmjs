@@ -4,7 +4,7 @@ import type { AIProvider } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
@@ -161,14 +161,24 @@ const PROVIDER_DISPLAY_NAMES: Record<AIProvider, string> = {
   MISTRAL: 'Mistral',
 };
 
+function generateConversationId(): string {
+  return `conv-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
+
 export default function AgentChatPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const agentId = params.id as string;
+
+  // Get conversation ID from URL or generate new one
+  const urlConversationId = searchParams.get('c');
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(
+    urlConversationId
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -278,9 +288,22 @@ export default function AgentChatPage(): React.ReactElement {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   });
 
-  const generateConversationId = () => {
-    return `conv-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-  };
+  // Sync URL with active conversation ID
+  useEffect(() => {
+    if (activeConversationId && activeConversationId !== urlConversationId) {
+      router.replace(`/dashboard/agents/${agentId}/chat?c=${activeConversationId}`, {
+        scroll: false,
+      });
+    }
+  }, [activeConversationId, urlConversationId, agentId, router]);
+
+  // If no conversation ID in URL, generate one immediately
+  useEffect(() => {
+    if (!urlConversationId && !activeConversationId) {
+      const newId = generateConversationId();
+      setActiveConversationId(newId);
+    }
+  }, [urlConversationId, activeConversationId]);
 
   const handleSend = async () => {
     if (!input.trim() || !agent || isSending) return;
@@ -292,7 +315,7 @@ export default function AgentChatPage(): React.ReactElement {
     setError(null);
     setToolCalls([]);
 
-    // Create new conversation if needed
+    // Use active conversation ID (always set by this point)
     const conversationId = activeConversationId || generateConversationId();
     if (!activeConversationId) {
       setActiveConversationId(conversationId);
@@ -406,7 +429,8 @@ export default function AgentChatPage(): React.ReactElement {
   };
 
   const startNewConversation = () => {
-    setActiveConversationId(null);
+    const newId = generateConversationId();
+    setActiveConversationId(newId);
     setMessages([]);
     inputRef.current?.focus();
   };
