@@ -714,7 +714,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
                     navigator.clipboard.writeText(JSON.stringify(messages, null, 2));
                   }}
                 >
-                  <Icon icon="clipboard" size="xs" className="mr-2" />
+                  <Icon icon="copy" size="xs" className="mr-2" />
                   Copy JSON
                 </Button>
               </div>
