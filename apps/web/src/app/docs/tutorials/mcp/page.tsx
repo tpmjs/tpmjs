@@ -74,7 +74,7 @@ const slides: Slide[] = [
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-red-500 mt-0.5">✗</span>
-                <span>Can't take real actions</span>
+                <span>Can&apos;t take real actions</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-red-500 mt-0.5">✗</span>
@@ -145,7 +145,8 @@ const slides: Slide[] = [
             <div>
               <p className="text-foreground font-medium">Create New Collection</p>
               <p className="text-foreground-secondary text-sm">
-                Give it a name like "My Development Tools" or "Research Assistant"
+                Give it a name like &quot;My Development Tools&quot; or &quot;Research
+                Assistant&quot;
               </p>
             </div>
           </div>
@@ -205,7 +206,7 @@ const slides: Slide[] = [
             <code className="bg-background px-1.5 py-0.5 rounded text-xs">
               tpmjs.com/mcp/c/{'{collection-uid}'}
             </code>
-            — you can also find it on your collection's detail page.
+            — you can also find it on your collection&apos;s detail page.
           </p>
         </div>
       </div>
@@ -309,7 +310,8 @@ const slides: Slide[] = [
         <div className="max-w-2xl mx-auto p-4 bg-primary/5 border border-primary/20 rounded-lg">
           <p className="text-sm text-foreground">
             <strong>Any MCP client works!</strong> The URL format is the same regardless of which
-            client you're using. Check your client's documentation for config file location.
+            client you&apos;re using. Check your client&apos;s documentation for config file
+            location.
           </p>
         </div>
       </div>
@@ -339,7 +341,8 @@ const slides: Slide[] = [
               <div className="flex justify-end">
                 <div className="bg-primary text-primary-foreground rounded-lg px-4 py-2 max-w-[80%]">
                   <p className="text-sm">
-                    Run this Python code and show me the output: print("Hello from TPMJS!")
+                    Run this Python code and show me the output: print(&quot;Hello from
+                    TPMJS!&quot;)
                   </p>
                 </div>
               </div>
@@ -348,7 +351,7 @@ const slides: Slide[] = [
                   <p className="text-xs text-primary mb-2">
                     Using tool: unsandbox-executeCodeAsync
                   </p>
-                  <p className="text-sm text-foreground">Here's the result:</p>
+                  <p className="text-sm text-foreground">Here&apos;s the result:</p>
                   <pre className="mt-2 p-2 bg-surface-secondary rounded text-xs font-mono">
                     Hello from TPMJS!
                   </pre>
@@ -382,7 +385,7 @@ const slides: Slide[] = [
     content: (
       <div className="space-y-8 text-center">
         <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
-          That's it! Your AI assistant can now use any tool in your TPMJS collection.
+          That&apos;s it! Your AI assistant can now use any tool in your TPMJS collection.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link href="/dashboard/collections">

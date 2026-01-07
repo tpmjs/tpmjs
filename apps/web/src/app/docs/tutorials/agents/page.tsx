@@ -25,7 +25,7 @@ const slides: Slide[] = [
       <div className="text-center space-y-6">
         <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
           AI Agents are custom assistants that can use tools from TPMJS to accomplish tasks. In just
-          5 steps, you'll have your own agent up and running.
+          5 steps, you&apos;ll have your own agent up and running.
         </p>
         <div className="flex flex-wrap justify-center gap-4 mt-8">
           <div className="flex items-center gap-2 px-4 py-2 bg-surface-secondary rounded-full">
@@ -123,9 +123,11 @@ const slides: Slide[] = [
               2
             </div>
             <div>
-              <p className="text-foreground font-medium">Click "Add Key" for your provider</p>
+              <p className="text-foreground font-medium">
+                Click &quot;Add Key&quot; for your provider
+              </p>
               <p className="text-foreground-secondary text-sm">
-                Each provider card has an "Add Key" button
+                Each provider card has an &quot;Add Key&quot; button
               </p>
             </div>
           </div>
@@ -163,7 +165,7 @@ const slides: Slide[] = [
               <div className="p-3 bg-surface-secondary rounded-lg">
                 <p className="text-sm font-medium text-foreground">Name</p>
                 <p className="text-sm text-foreground-tertiary">
-                  e.g., "Code Helper", "Data Analyst"
+                  e.g., &quot;Code Helper&quot;, &quot;Data Analyst&quot;
                 </p>
               </div>
               <div className="p-3 bg-surface-secondary rounded-lg">
@@ -184,7 +186,7 @@ const slides: Slide[] = [
               <div className="p-3 bg-surface-secondary rounded-lg">
                 <p className="text-sm font-medium text-foreground">System Prompt</p>
                 <p className="text-sm text-foreground-tertiary">
-                  Define your agent's personality & capabilities
+                  Define your agent&apos;s personality &amp; capabilities
                 </p>
               </div>
             </div>
@@ -272,8 +274,8 @@ const slides: Slide[] = [
     content: (
       <div className="space-y-8">
         <p className="text-lg text-foreground-secondary text-center max-w-2xl mx-auto">
-          Click the "Chat" button on your agent to start a conversation. Your agent will use its
-          tools to help you.
+          Click the &quot;Chat&quot; button on your agent to start a conversation. Your agent will
+          use its tools to help you.
         </p>
         <div className="max-w-2xl mx-auto bg-surface-secondary rounded-lg border border-border overflow-hidden">
           <div className="p-4 bg-background border-b border-border">
@@ -336,7 +338,7 @@ const slides: Slide[] = [
           </Link>
         </div>
         <div className="max-w-2xl mx-auto pt-8 border-t border-border mt-8">
-          <h4 className="text-lg font-semibold text-foreground mb-4">What's Next?</h4>
+          <h4 className="text-lg font-semibold text-foreground mb-4">What&apos;s Next?</h4>
           <div className="grid md:grid-cols-3 gap-4 text-left">
             <div className="p-4 bg-surface-secondary rounded-lg">
               <p className="font-medium text-foreground">Use the API</p>

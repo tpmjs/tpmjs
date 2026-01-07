@@ -259,13 +259,16 @@ export class BatchProcessor {
         : new Map();
 
     return skeletons
-      .map((s) => {
+      .map((s): SkeletonWithRelations | null => {
         const category = categoryMap.get(s.categoryId);
         const verb = verbMap.get(s.verbId);
         const object = objectMap.get(s.objectId);
         if (!category || !verb || !object) return null;
         return {
-          ...s,
+          id: s.id,
+          hash: s.hash,
+          rawName: s.rawName,
+          compatibilityScore: s.compatibilityScore,
           category,
           verb,
           object,
