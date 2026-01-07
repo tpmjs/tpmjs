@@ -34,6 +34,8 @@ interface DashboardLayoutProps {
   showBackButton?: boolean;
   /** Custom back URL (defaults to parent route) */
   backUrl?: string;
+  /** Whether to use full height layout (for chat interfaces) - removes padding and fills viewport */
+  fullHeight?: boolean;
 }
 
 export function DashboardLayout({
@@ -43,6 +45,7 @@ export function DashboardLayout({
   actions,
   showBackButton,
   backUrl,
+  fullHeight,
 }: DashboardLayoutProps): React.ReactElement {
   const pathname = usePathname();
   const router = useRouter();
@@ -158,9 +161,13 @@ export function DashboardLayout({
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 min-w-0">
+        <main
+          className={`flex-1 min-w-0 ${fullHeight ? 'flex flex-col h-[calc(100vh-64px)]' : ''}`}
+        >
           {/* Content header */}
-          <div className="sticky top-16 z-10 bg-background border-b border-border">
+          <div
+            className={`${fullHeight ? '' : 'sticky top-16'} z-10 bg-background border-b border-border`}
+          >
             <div className="px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -198,7 +205,7 @@ export function DashboardLayout({
           </div>
 
           {/* Page content */}
-          <div className="p-6">{children}</div>
+          <div className={fullHeight ? 'flex-1 overflow-hidden' : 'p-6'}>{children}</div>
         </main>
       </div>
     </div>

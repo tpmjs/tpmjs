@@ -6,7 +6,7 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppHeader } from '~/components/AppHeader';
+import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 interface Agent {
   id: string;
@@ -413,24 +413,24 @@ export default function AgentChatPage(): React.ReactElement {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="max-w-6xl mx-auto py-12 px-4">
-          <div className="animate-pulse">
-            <div className="h-8 bg-surface-secondary rounded w-48 mb-8" />
-            <div className="h-96 bg-surface-secondary rounded-lg" />
-          </div>
+      <DashboardLayout
+        title="Loading..."
+        showBackButton
+        backUrl={`/dashboard/agents/${agentId}`}
+        fullHeight
+      >
+        <div className="flex items-center justify-center h-full">
+          <Icon icon="loader" size="lg" className="animate-spin text-foreground-secondary" />
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (error && !agent) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="max-w-6xl mx-auto py-12 px-4">
-          <div className="text-center py-16">
+      <DashboardLayout title="Error" showBackButton backUrl="/dashboard/agents" fullHeight>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
             <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
             <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
             <p className="text-foreground-secondary mb-4">{error}</p>
@@ -439,71 +439,65 @@ export default function AgentChatPage(): React.ReactElement {
             </Link>
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (!agent) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+      <DashboardLayout
+        title="Loading..."
+        showBackButton
+        backUrl={`/dashboard/agents/${agentId}`}
+        fullHeight
+      >
+        <div className="flex items-center justify-center h-full">
           <Icon icon="loader" size="lg" className="animate-spin text-foreground-secondary" />
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <AppHeader />
-
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <div className="w-64 border-r border-border flex flex-col bg-surface-secondary/50">
-          {/* Agent Info */}
-          <div className="p-4 border-b border-border">
-            <Link
-              href={`/dashboard/agents/${agent.id}`}
-              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-            >
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Icon icon="terminal" size="sm" className="text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-medium text-foreground truncate">{agent.name}</h2>
-                <p className="text-xs text-foreground-tertiary">
-                  {PROVIDER_DISPLAY_NAMES[agent.provider]}
-                </p>
-              </div>
-            </Link>
-          </div>
-
-          {/* New Conversation Button */}
-          <div className="p-4">
-            <Button className="w-full" onClick={startNewConversation}>
-              <Icon icon="plus" size="xs" className="mr-2" />
-              New Chat
-            </Button>
-          </div>
-
+    <DashboardLayout
+      title={`Chat with ${agent.name}`}
+      subtitle={PROVIDER_DISPLAY_NAMES[agent.provider]}
+      showBackButton
+      backUrl={`/dashboard/agents/${agent.id}`}
+      fullHeight
+      actions={
+        <Button variant="outline" size="sm" onClick={startNewConversation}>
+          <Icon icon="plus" size="xs" className="mr-2" />
+          New Chat
+        </Button>
+      }
+    >
+      <div className="flex h-full overflow-hidden">
+        {/* Conversations Sidebar */}
+        <div className="w-64 border-r border-border flex flex-col bg-surface-secondary/30 hidden md:flex">
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto p-2">
-            {conversations.map((conv) => (
-              <button
-                key={conv.id}
-                type="button"
-                onClick={() => setActiveConversationId(conv.slug)}
-                className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition-colors ${
-                  activeConversationId === conv.slug
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground-secondary hover:bg-surface-secondary'
-                }`}
-              >
-                <p className="text-sm font-medium truncate">{conv.title || 'Untitled Chat'}</p>
-                <p className="text-xs text-foreground-tertiary">{conv.messageCount} messages</p>
-              </button>
-            ))}
+            {conversations.length === 0 ? (
+              <p className="text-sm text-foreground-tertiary text-center py-4">
+                No conversations yet
+              </p>
+            ) : (
+              conversations.map((conv) => (
+                <button
+                  key={conv.id}
+                  type="button"
+                  onClick={() => setActiveConversationId(conv.slug)}
+                  className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition-colors ${
+                    activeConversationId === conv.slug
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-foreground-secondary hover:bg-surface-secondary'
+                  }`}
+                >
+                  <p className="text-sm font-medium truncate">{conv.title || 'Untitled Chat'}</p>
+                  <p className="text-xs text-foreground-tertiary">{conv.messageCount} messages</p>
+                </button>
+              ))
+            )}
           </div>
         </div>
 
@@ -647,6 +641,6 @@ export default function AgentChatPage(): React.ReactElement {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
