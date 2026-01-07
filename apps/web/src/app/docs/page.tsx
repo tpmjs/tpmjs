@@ -1408,17 +1408,12 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
             </DocSection>
 
             <DocSection id="changelog" title="Changelog">
-              <div className="space-y-4">
-                <div className="p-4 border border-border rounded-lg bg-surface">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant="default">v1.0.0</Badge>
-                    <span className="text-sm text-foreground-tertiary">December 2024</span>
-                  </div>
-                  <p className="text-sm text-foreground-secondary">
-                    Initial release with registrySearchTool and registryExecuteTool
-                  </p>
-                </div>
-              </div>
+              <p className="text-foreground-secondary mb-4">
+                View the full changelog for version history, new features, and updates.
+              </p>
+              <Link href="/changelog">
+                <Button variant="outline">View Full Changelog →</Button>
+              </Link>
             </DocSection>
 
             {/* CTA */}
