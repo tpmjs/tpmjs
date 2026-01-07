@@ -1,4 +1,3 @@
-import type { JsonValue } from '@prisma/client/runtime/library';
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '~/lib/rate-limit';
@@ -11,7 +10,7 @@ export const maxDuration = 30;
  * Convert JSON Schema to a simplified parameters array format
  * Useful for clients that want a flat list of parameter definitions
  */
-function extractParametersFromSchema(inputSchema: JsonValue): Array<{
+function extractParametersFromSchema(inputSchema: unknown): Array<{
   name: string;
   type: string;
   description?: string;
