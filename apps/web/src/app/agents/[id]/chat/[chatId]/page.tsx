@@ -697,14 +697,26 @@ export default function PublicAgentChatPage(): React.ReactElement {
           {/* Debug JSON View */}
           {viewMode === 'debug' && (
             <div className="flex-1 overflow-auto p-4 bg-background">
-              <div className="mb-4">
-                <h2 className="text-sm font-medium text-foreground mb-2">
-                  Raw Messages Array ({messages.length} messages)
-                </h2>
-                <p className="text-xs text-foreground-tertiary mb-4">
-                  Messages are ordered by createdAt. Each message includes role, content, and tool
-                  call data.
-                </p>
+              <div className="mb-4 flex items-start justify-between">
+                <div>
+                  <h2 className="text-sm font-medium text-foreground mb-2">
+                    Raw Messages Array ({messages.length} messages)
+                  </h2>
+                  <p className="text-xs text-foreground-tertiary">
+                    Messages are ordered by createdAt. Each message includes role, content, and tool
+                    call data.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(JSON.stringify(messages, null, 2));
+                  }}
+                >
+                  <Icon icon="clipboard" size="xs" className="mr-2" />
+                  Copy JSON
+                </Button>
               </div>
               <pre className="text-xs font-mono bg-surface-secondary border border-border rounded-lg p-4 overflow-x-auto whitespace-pre-wrap">
                 {JSON.stringify(messages, null, 2)}
