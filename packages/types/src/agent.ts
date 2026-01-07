@@ -33,7 +33,7 @@ export const CreateAgentSchema = z.object({
   temperature: z.number().min(0).max(2).default(0.7),
   maxToolCallsPerTurn: z.number().int().min(1).max(100).default(20),
   maxMessagesInContext: z.number().int().min(1).max(100).default(10),
-  isPublic: z.boolean().default(false),
+  isPublic: z.boolean().default(true),
   collectionIds: z.array(z.string()).optional(),
   toolIds: z.array(z.string()).optional(),
 });

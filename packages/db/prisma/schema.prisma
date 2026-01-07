@@ -503,7 +503,7 @@ model Agent {
   maxMessagesInContext Int        @default(10) @map("max_messages_in_context")
 
   // Visibility
-  isPublic             Boolean    @default(false) @map("is_public")
+  isPublic             Boolean    @default(true) @map("is_public")
   likeCount            Int        @default(0) @map("like_count")
 
   // Timestamps

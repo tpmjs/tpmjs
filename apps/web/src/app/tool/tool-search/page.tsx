@@ -47,6 +47,11 @@ function formatDownloads(count: number): string {
   return count.toString();
 }
 
+function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength).trim()}...`;
+}
+
 /** Sort tools by criterion, pushing broken tools to the bottom */
 function sortTools(tools: Tool[], sortBy: SortOption): Tool[] {
   return [...tools].sort((a, b) => {
@@ -166,11 +171,12 @@ export default function ToolSearchPage(): React.ReactElement {
   const TableHeader = useCallback(
     () => (
       <tr className="bg-surface text-left text-sm font-medium text-foreground-secondary">
-        <th className="px-4 py-3 w-[300px]">Name</th>
-        <th className="px-4 py-3 w-[120px]">Category</th>
-        <th className="px-4 py-3 w-[100px] text-right">Downloads</th>
-        <th className="px-4 py-3 w-[80px] text-right">Likes</th>
-        <th className="px-4 py-3 w-[120px] text-right">Install</th>
+        <th className="px-4 py-3 w-[250px]">Name</th>
+        <th className="px-4 py-3 w-[300px]">Description</th>
+        <th className="px-4 py-3 w-[100px]">Category</th>
+        <th className="px-4 py-3 w-[80px] text-right">Downloads</th>
+        <th className="px-4 py-3 w-[60px] text-right">Likes</th>
+        <th className="px-4 py-3 w-[100px] text-right">Install</th>
       </tr>
     ),
     []
@@ -197,10 +203,13 @@ export default function ToolSearchPage(): React.ReactElement {
                   </Badge>
                 )}
               </div>
-              <div className="text-xs text-foreground-tertiary truncate max-w-[280px]">
+              <div className="text-xs text-foreground-tertiary truncate max-w-[230px]">
                 {tool.package.npmPackageName}
               </div>
             </Link>
+          </td>
+          <td className="px-4 py-3 text-sm text-foreground-secondary">
+            {tool.description ? truncateText(tool.description, 60) : '—'}
           </td>
           <td className="px-4 py-3">
             <Badge variant="secondary" size="sm">
