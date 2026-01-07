@@ -12,17 +12,19 @@ interface MobileMenuProps {
 }
 
 const navLinks = [
+  // Core Product Links
   { href: '/tool/tool-search', label: 'Tools' },
   { href: '/dashboard/agents', label: 'Agents' },
-  { href: '/docs', label: 'Docs' },
   { href: '/how-it-works', label: 'How It Works' },
-  { href: '/integrations', label: 'Integrations' },
   { href: 'https://playground.tpmjs.com', label: 'Playground', external: true },
-  { href: '/spec', label: 'Spec' },
+  { href: '/integrations', label: 'Integrations' },
+  // Developer Section
+  { href: '/docs', label: 'Docs' },
   { href: '/sdk', label: 'SDK' },
+  { href: '/spec', label: 'Spec' },
+  { href: '/changelog', label: 'Changelog' },
   { href: '/faq', label: 'FAQ' },
   { href: '/stats', label: 'Stats' },
-  { href: '/changelog', label: 'Changelog' },
 ];
 
 const socialLinks = [

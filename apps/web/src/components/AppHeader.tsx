@@ -32,19 +32,23 @@ export function AppHeader(): React.ReactElement {
           <>
             {/* Desktop Navigation - hidden on mobile */}
             <div className="hidden md:flex items-center gap-4">
+              {/* Core Product Links */}
               <Link href="/tool/tool-search">
-                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-foreground hover:text-foreground font-semibold"
+                >
                   Tools
                 </Button>
               </Link>
               <Link href="/dashboard/agents">
-                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-foreground hover:text-foreground font-semibold"
+                >
                   Agents
-                </Button>
-              </Link>
-              <Link href="/docs">
-                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                  Docs
                 </Button>
               </Link>
               <Link href="/how-it-works">
@@ -52,24 +56,39 @@ export function AppHeader(): React.ReactElement {
                   How It Works
                 </Button>
               </Link>
-              <Link href="/integrations">
-                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                  Integrations
-                </Button>
-              </Link>
               <a href="https://playground.tpmjs.com" target="_blank" rel="noopener noreferrer">
                 <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
                   Playground
                 </Button>
               </a>
-              <Link href="/spec">
+              <Link href="/integrations">
                 <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                  Spec
+                  Integrations
+                </Button>
+              </Link>
+
+              {/* Separator */}
+              <span className="text-foreground-tertiary">|</span>
+
+              {/* Developer Section */}
+              <Link href="/docs">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Docs
                 </Button>
               </Link>
               <Link href="/sdk">
                 <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
                   SDK
+                </Button>
+              </Link>
+              <Link href="/spec">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Spec
+                </Button>
+              </Link>
+              <Link href="/changelog">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Changelog
                 </Button>
               </Link>
               <Link href="/faq">
@@ -80,11 +99,6 @@ export function AppHeader(): React.ReactElement {
               <Link href="/stats">
                 <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
                   Stats
-                </Button>
-              </Link>
-              <Link href="/changelog">
-                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                  Changelog
                 </Button>
               </Link>
               <a
