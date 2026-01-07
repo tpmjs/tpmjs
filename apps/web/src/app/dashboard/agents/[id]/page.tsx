@@ -82,272 +82,155 @@ const PROVIDER_DISPLAY_NAMES: Record<AIProvider, string> = {
   MISTRAL: 'Mistral',
 };
 
-const CODE_TABS = [
+const API_SECTION_TABS = [
+  { id: 'send', label: 'Send Message' },
+  { id: 'fetch', label: 'Fetch Conversations' },
+];
+
+const LANG_TABS = [
   { id: 'curl', label: 'cURL' },
   { id: 'typescript', label: 'TypeScript' },
   { id: 'python', label: 'Python' },
   { id: 'aisdk', label: 'AI SDK' },
 ];
 
-const FETCH_TABS = [
+const FETCH_LANG_TABS = [
   { id: 'curl', label: 'cURL' },
   { id: 'typescript', label: 'TypeScript' },
   { id: 'python', label: 'Python' },
 ];
 
-function ConversationFetchSection({ agent }: { agent: Agent }) {
-  const [activeTab, setActiveTab] = useState('curl');
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
-  const listEndpoint = `${baseUrl}/api/agents/${agent.uid}/conversations`;
-  const getEndpoint = `${baseUrl}/api/agents/${agent.uid}/conversation/my-conv-1`;
-
-  const codeExamples: Record<string, { language: string; code: string }> = {
-    curl: {
-      language: 'bash',
-      code: `# List all conversations (with pagination)
-curl '${listEndpoint}?limit=20&offset=0'
-
-# Get a specific conversation with messages
-curl '${getEndpoint}?limit=50&offset=0'
-
-# Delete a conversation
-curl -X DELETE '${getEndpoint}'`,
-    },
-    typescript: {
-      language: 'typescript',
-      code: `// List all conversations with pagination
-const listConversations = async (limit = 20, offset = 0) => {
-  const response = await fetch(
-    \`${listEndpoint}?limit=\${limit}&offset=\${offset}\`
-  );
-  const data = await response.json();
-
-  // data.data: [{ id, slug, title, messageCount, createdAt, updatedAt }]
-  // data.pagination: { limit, offset, hasMore }
-  return data;
-};
-
-// Get conversation with paginated messages
-const getConversation = async (
-  conversationId: string,
-  limit = 50,
-  offset = 0
-) => {
-  const response = await fetch(
-    \`${baseUrl}/api/agents/${agent.uid}/conversation/\${conversationId}?limit=\${limit}&offset=\${offset}\`
-  );
-  const data = await response.json();
-
-  // data.data: { id, slug, title, messages: [...], createdAt, updatedAt }
-  // data.pagination: { limit, offset, hasMore }
-  return data;
-};
-
-// Fetch all messages (handling pagination)
-const getAllMessages = async (conversationId: string) => {
-  const messages = [];
-  let offset = 0;
-  const limit = 50;
-
-  while (true) {
-    const { data, pagination } = await getConversation(
-      conversationId, limit, offset
-    );
-    messages.push(...data.messages);
-
-    if (!pagination.hasMore) break;
-    offset += limit;
-  }
-
-  return messages;
-};`,
-    },
-    python: {
-      language: 'python',
-      code: `import requests
-
-BASE_URL = '${baseUrl}/api/agents/${agent.uid}'
-
-# List all conversations with pagination
-def list_conversations(limit=20, offset=0):
-    response = requests.get(
-        f'{BASE_URL}/conversations',
-        params={'limit': limit, 'offset': offset}
-    )
-    return response.json()
-
-# Get conversation with paginated messages
-def get_conversation(conversation_id, limit=50, offset=0):
-    response = requests.get(
-        f'{BASE_URL}/conversation/{conversation_id}',
-        params={'limit': limit, 'offset': offset}
-    )
-    return response.json()
-
-# Fetch all messages (handling pagination)
-def get_all_messages(conversation_id):
-    messages = []
-    offset = 0
-    limit = 50
-
-    while True:
-        result = get_conversation(conversation_id, limit, offset)
-        messages.extend(result['data']['messages'])
-
-        if not result['pagination']['hasMore']:
-            break
-        offset += limit
-
-    return messages
-
-# Example usage
-conversations = list_conversations()
-for conv in conversations['data']:
-    print(f"{conv['slug']}: {conv['title']} ({conv['messageCount']} messages)")`,
-    },
-  };
-
-  const currentExample = codeExamples[activeTab] ?? {
-    language: 'bash',
-    code: codeExamples.curl?.code ?? '',
-  };
-
-  return (
-    <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <h2 className="text-lg font-medium text-foreground">Fetch Conversations</h2>
-        <code className="text-xs text-foreground-secondary font-mono bg-surface px-2 py-1 rounded">
-          GET /api/agents/{agent.uid}/conversations
-        </code>
-      </div>
-
-      <div className="border-b border-border px-4 py-2">
-        <Tabs tabs={FETCH_TABS} activeTab={activeTab} onTabChange={setActiveTab} size="sm" />
-      </div>
-
-      <div className="p-4">
-        <CodeBlock language={currentExample.language} showCopy code={currentExample.code} />
-      </div>
-
-      <div className="px-4 pb-4">
-        <p className="text-xs text-foreground-tertiary">
-          Use <code className="bg-surface px-1 rounded">limit</code> and{' '}
-          <code className="bg-surface px-1 rounded">offset</code> query params for pagination. Check{' '}
-          <code className="bg-surface px-1 rounded">hasMore</code> to know if more results exist.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function ApiUsageSection({ agent, agentTools }: { agent: Agent; agentTools: AgentTool[] }) {
-  const [activeTab, setActiveTab] = useState('curl');
+function ApiDocsSection({ agent, agentTools }: { agent: Agent; agentTools: AgentTool[] }) {
+  const [activeSection, setActiveSection] = useState('send');
+  const [activeLang, setActiveLang] = useState('curl');
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
   const endpoint = `${baseUrl}/api/agents/${agent.uid}/conversation/my-conv-1`;
-
+  const listEndpoint = `${baseUrl}/api/agents/${agent.uid}/conversations`;
   const toolPackages = agentTools.map((t) => t.tool.npmPackageName).join(' ') || '@tpmjs/hello';
 
-  const codeExamples: Record<string, { language: string; code: string }> = {
+  const sendExamples: Record<string, { language: string; code: string }> = {
     curl: {
       language: 'bash',
       code: `curl -X POST '${endpoint}' \\
   -H 'Content-Type: application/json' \\
-  -d '{
-    "message": "Hello, what can you help me with?"
-  }'`,
+  -d '{ "message": "Hello, what can you help me with?" }'`,
     },
     typescript: {
       language: 'typescript',
-      code: `const response = await fetch(
-  '${endpoint}',
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      message: 'Hello, what can you help me with?'
-    })
-  }
-);
+      code: `const response = await fetch('${endpoint}', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ message: 'Hello, what can you help me with?' })
+});
 
-// The response is a streaming SSE response
+// Stream SSE response
 const reader = response.body?.getReader();
 const decoder = new TextDecoder();
-
 while (true) {
   const { done, value } = await reader!.read();
   if (done) break;
-
-  const chunk = decoder.decode(value);
-  // Parse SSE events: data: {...}
-  console.log(chunk);
+  console.log(decoder.decode(value));
 }`,
     },
     python: {
       language: 'python',
       code: `import requests
 
-response = requests.post(
-    '${endpoint}',
-    json={
-        'message': 'Hello, what can you help me with?'
-    },
-    stream=True
-)
+response = requests.post('${endpoint}',
+    json={'message': 'Hello, what can you help me with?'},
+    stream=True)
 
-# Process streaming response
 for line in response.iter_lines():
-    if line:
-        # Parse SSE events: data: {...}
-        print(line.decode('utf-8'))`,
+    if line: print(line.decode('utf-8'))`,
     },
     aisdk: {
       language: 'typescript',
       code: `import { streamText } from 'ai';
-
-// Option 1: Use the hosted agent directly via fetch
-const response = await fetch(
-  '${endpoint}',
-  {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message: 'Hello!' })
-  }
-);
-
-// Option 2: Build your own agent with the same tools
-// Install tools: npm install ${toolPackages}
 import { createAnthropic } from '@ai-sdk/anthropic';
 
+// Option 1: Use hosted agent via fetch
+const response = await fetch('${endpoint}', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ message: 'Hello!' })
+});
+
+// Option 2: Build your own with same tools
+// npm install ${toolPackages}
 const { textStream } = streamText({
   model: createAnthropic()('${agent.modelId}'),
   system: \`${agent.systemPrompt || 'You are a helpful assistant.'}\`,
-  prompt: 'Hello, what can you help me with?',
-  // Add your tools here
-});
-
-for await (const text of textStream) {
-  process.stdout.write(text);
-}`,
+  prompt: 'Hello!',
+});`,
     },
   };
 
-  // Default to curl example if activeTab is not found (should not happen with controlled state)
-  const currentExample = codeExamples[activeTab] ?? {
-    language: 'bash',
-    code: codeExamples.curl?.code ?? '',
+  const fetchExamples: Record<string, { language: string; code: string }> = {
+    curl: {
+      language: 'bash',
+      code: `# List conversations
+curl '${listEndpoint}?limit=20&offset=0'
+
+# Get conversation with messages
+curl '${endpoint}?limit=50&offset=0'
+
+# Delete conversation
+curl -X DELETE '${endpoint}'`,
+    },
+    typescript: {
+      language: 'typescript',
+      code: `// List conversations
+const list = await fetch('${listEndpoint}?limit=20&offset=0');
+const { data, pagination } = await list.json();
+// data: [{ id, slug, title, messageCount }], pagination: { hasMore }
+
+// Get conversation with messages
+const conv = await fetch('${endpoint}?limit=50&offset=0');
+const { data: conversation } = await conv.json();
+// conversation: { id, slug, title, messages: [...] }`,
+    },
+    python: {
+      language: 'python',
+      code: `import requests
+
+# List conversations
+resp = requests.get('${listEndpoint}', params={'limit': 20, 'offset': 0})
+data = resp.json()  # data['data'], data['pagination']['hasMore']
+
+# Get conversation with messages
+resp = requests.get('${endpoint}', params={'limit': 50, 'offset': 0})
+conv = resp.json()  # conv['data']['messages']`,
+    },
   };
+
+  const isSend = activeSection === 'send';
+  const examples = isSend ? sendExamples : fetchExamples;
+  const langTabs = isSend ? LANG_TABS : FETCH_LANG_TABS;
+  const effectiveLang = isSend || activeLang !== 'aisdk' ? activeLang : 'curl';
+  const currentExample = examples[effectiveLang] ?? examples.curl ?? { language: 'bash', code: '' };
 
   return (
     <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
       <div className="flex items-center justify-between p-4 border-b border-border">
-        <h2 className="text-lg font-medium text-foreground">API Usage</h2>
+        <h2 className="text-lg font-medium text-foreground">API Reference</h2>
         <code className="text-xs text-foreground-secondary font-mono bg-surface px-2 py-1 rounded">
-          POST /api/agents/{agent.uid}/conversation/:id
+          {isSend
+            ? `POST /api/agents/${agent.uid}/conversation/:id`
+            : `GET /api/agents/${agent.uid}/conversations`}
         </code>
       </div>
 
       <div className="border-b border-border px-4 py-2">
-        <Tabs tabs={CODE_TABS} activeTab={activeTab} onTabChange={setActiveTab} size="sm" />
+        <Tabs
+          tabs={API_SECTION_TABS}
+          activeTab={activeSection}
+          onTabChange={setActiveSection}
+          size="sm"
+        />
+      </div>
+
+      <div className="border-b border-border px-4 py-2 bg-surface-secondary/30">
+        <Tabs tabs={langTabs} activeTab={effectiveLang} onTabChange={setActiveLang} size="sm" />
       </div>
 
       <div className="p-4">
@@ -356,7 +239,9 @@ for await (const text of textStream) {
 
       <div className="px-4 pb-4">
         <p className="text-xs text-foreground-tertiary">
-          Use any unique string as the conversation ID to maintain chat history across requests.
+          {isSend
+            ? 'Use any unique string as the conversation ID to maintain chat history across requests.'
+            : 'Use limit and offset query params for pagination. Check hasMore to know if more results exist.'}
         </p>
       </div>
     </div>
@@ -802,11 +687,8 @@ export default function AgentDetailPage(): React.ReactElement {
         </div>
       </div>
 
-      {/* API Usage */}
-      <ApiUsageSection agent={agent} agentTools={agentTools} />
-
-      {/* Fetch Conversations */}
-      <ConversationFetchSection agent={agent} />
+      {/* API Reference */}
+      <ApiDocsSection agent={agent} agentTools={agentTools} />
 
       {/* Tools Section */}
       <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
