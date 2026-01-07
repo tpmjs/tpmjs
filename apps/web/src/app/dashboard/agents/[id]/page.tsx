@@ -5,6 +5,7 @@ import { PROVIDER_MODELS, SUPPORTED_PROVIDERS } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Switch } from '@tpmjs/ui/Switch/Switch';
 import {
   Table,
   TableBody,
@@ -293,6 +294,7 @@ export default function AgentDetailPage(): React.ReactElement {
     temperature: 0.7,
     maxToolCallsPerTurn: 20,
     maxMessagesInContext: 10,
+    isPublic: true,
   });
 
   const fetchAgent = useCallback(async () => {
@@ -312,6 +314,7 @@ export default function AgentDetailPage(): React.ReactElement {
           temperature: data.data.temperature,
           maxToolCallsPerTurn: data.data.maxToolCallsPerTurn,
           maxMessagesInContext: data.data.maxMessagesInContext,
+          isPublic: data.data.isPublic,
         });
       } else {
         if (response.status === 401) {
@@ -584,6 +587,7 @@ export default function AgentDetailPage(): React.ReactElement {
           maxMessagesInContext: Number.parseInt(formData.maxMessagesInContext.toString(), 10),
           description: formData.description || null,
           systemPrompt: formData.systemPrompt || null,
+          isPublic: formData.isPublic,
         }),
       });
 
@@ -846,6 +850,19 @@ export default function AgentDetailPage(): React.ReactElement {
               </div>
             </div>
 
+            <div className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">
+              <div>
+                <p className="text-sm font-medium text-foreground">Public Visibility</p>
+                <p className="text-xs text-foreground-secondary">
+                  Make this agent visible on the public agents page
+                </p>
+              </div>
+              <Switch
+                checked={formData.isPublic}
+                onChange={(checked) => setFormData((prev) => ({ ...prev, isPublic: checked }))}
+              />
+            </div>
+
             <div className="flex items-center justify-end gap-2 pt-4">
               <Button
                 variant="outline"
@@ -861,6 +878,7 @@ export default function AgentDetailPage(): React.ReactElement {
                     temperature: agent.temperature,
                     maxToolCallsPerTurn: agent.maxToolCallsPerTurn,
                     maxMessagesInContext: agent.maxMessagesInContext,
+                    isPublic: agent.isPublic,
                   });
                 }}
               >
@@ -888,6 +906,17 @@ export default function AgentDetailPage(): React.ReactElement {
             <div>
               <dt className="text-sm text-foreground-secondary">Context Messages</dt>
               <dd className="text-foreground">{agent.maxMessagesInContext}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-foreground-secondary">Visibility</dt>
+              <dd className="text-foreground flex items-center gap-2">
+                <Icon
+                  icon={agent.isPublic ? 'globe' : 'key'}
+                  size="xs"
+                  className={agent.isPublic ? 'text-green-500' : 'text-foreground-tertiary'}
+                />
+                {agent.isPublic ? 'Public' : 'Private'}
+              </dd>
             </div>
             <div className="sm:col-span-2">
               <dt className="text-sm text-foreground-secondary">System Prompt</dt>
