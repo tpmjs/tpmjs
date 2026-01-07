@@ -6,7 +6,6 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AppFooter } from '~/components/AppFooter';
 import { AppHeader } from '~/components/AppHeader';
 
 const NAV_SECTIONS = [
@@ -351,6 +350,7 @@ export default function DocsPage(): React.ReactElement {
                 <CodeBlock
                   language="typescript"
                   code={`import { streamText } from 'ai';
+// Import AI SDK provider for your selected model (OpenAI, Anthropic, Google, etc.)
 import { anthropic } from '@ai-sdk/anthropic';
 import { registrySearchTool } from '@tpmjs/registry-search';
 import { registryExecuteTool } from '@tpmjs/registry-execute';
@@ -591,6 +591,8 @@ export const registryExecute = tool({
                 <CodeBlock
                   language="typescript"
                   code={`import { streamText } from 'ai';
+// Import AI SDK provider for your selected model (OpenAI, Anthropic, Google, etc.)
+import { anthropic } from '@ai-sdk/anthropic';
 import { registrySearchTool } from '@tpmjs/registry-search';
 import { registryExecute } from './tools';  // Your wrapped version
 
@@ -1443,7 +1445,6 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
           </div>
         </main>
       </div>
-      <AppFooter />
     </div>
   );
 }

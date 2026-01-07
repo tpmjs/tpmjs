@@ -121,7 +121,7 @@ export default function SpecPage(): React.ReactElement {
               </div>
 
               {/* View Toggle */}
-              <div className="flex gap-1 p-1 bg-surface rounded-lg border border-border">
+              <div className="flex gap-1 p-1 bg-surface rounded-lg border border-border self-center md:self-auto">
                 <button
                   type="button"
                   onClick={() => setView('spec')}

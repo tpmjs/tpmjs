@@ -76,7 +76,9 @@ export function EcosystemDiagram(): React.ReactElement {
     const updateDimensions = () => {
       if (containerRef.current) {
         const width = containerRef.current.clientWidth;
-        const height = Math.min(500, Math.max(400, width * 0.5));
+        const isMobile = width < 600;
+        // Mobile needs more height for vertical layout (5 nodes stacked)
+        const height = isMobile ? 480 : Math.min(500, Math.max(400, width * 0.5));
         setDimensions({ width, height });
       }
     };
@@ -414,47 +416,71 @@ export function EcosystemDiagram(): React.ReactElement {
       });
     });
 
-    // Add legend
-    const legend = svg.append('g').attr('transform', `translate(${width - 160}, 20)`);
-
+    // Add legend - positioned differently for mobile vs desktop
     const legendItems = [
       { label: 'BlocksAI', color: colors.blocksai },
       { label: 'TPMJS', color: colors.tpmjs },
       { label: 'HLLM', color: colors.hllm },
     ];
 
-    legendItems.forEach((item, i) => {
-      const y = i * 22;
-      legend
-        .append('rect')
-        .attr('x', 0)
-        .attr('y', y)
-        .attr('width', 14)
-        .attr('height', 14)
-        .attr('rx', 3)
-        .attr('fill', item.color.fill)
-        .attr('stroke', item.color.stroke)
-        .attr('stroke-width', 1.5);
+    if (isMobile) {
+      // Mobile: horizontal legend at bottom
+      const legend = svg
+        .append('g')
+        .attr('transform', `translate(${width / 2 - 100}, ${height - 30})`);
 
-      legend
-        .append('text')
-        .attr('x', 20)
-        .attr('y', y + 11)
-        .attr('font-size', '11px')
-        .attr('fill', '#64748b')
-        .text(item.label);
-    });
+      legendItems.forEach((item, i) => {
+        const x = i * 70;
+        legend
+          .append('rect')
+          .attr('x', x)
+          .attr('y', 0)
+          .attr('width', 12)
+          .attr('height', 12)
+          .attr('rx', 3)
+          .attr('fill', item.color.fill)
+          .attr('stroke', item.color.stroke)
+          .attr('stroke-width', 1.5);
+
+        legend
+          .append('text')
+          .attr('x', x + 16)
+          .attr('y', 10)
+          .attr('font-size', '10px')
+          .attr('fill', '#64748b')
+          .text(item.label);
+      });
+    } else {
+      // Desktop: vertical legend at top right
+      const legend = svg.append('g').attr('transform', `translate(${width - 160}, 20)`);
+
+      legendItems.forEach((item, i) => {
+        const y = i * 22;
+        legend
+          .append('rect')
+          .attr('x', 0)
+          .attr('y', y)
+          .attr('width', 14)
+          .attr('height', 14)
+          .attr('rx', 3)
+          .attr('fill', item.color.fill)
+          .attr('stroke', item.color.stroke)
+          .attr('stroke-width', 1.5);
+
+        legend
+          .append('text')
+          .attr('x', 20)
+          .attr('y', y + 11)
+          .attr('font-size', '11px')
+          .attr('fill', '#64748b')
+          .text(item.label);
+      });
+    }
   }, [dimensions]);
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <svg
-        ref={svgRef}
-        width={dimensions.width}
-        height={dimensions.height}
-        className="w-full"
-        style={{ minHeight: '400px' }}
-      />
+      <svg ref={svgRef} width={dimensions.width} height={dimensions.height} className="w-full" />
 
       {/* Tooltip */}
       {tooltip.visible && (

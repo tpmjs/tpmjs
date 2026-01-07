@@ -117,6 +117,7 @@ export default function SDKPage(): React.ReactElement {
                 <CodeBlock
                   language="typescript"
                   code={`import { streamText } from 'ai';
+// Import AI SDK provider for your selected model (OpenAI, Anthropic, Google, etc.)
 import { anthropic } from '@ai-sdk/anthropic';
 import { registrySearchTool } from '@tpmjs/registry-search';
 import { registryExecuteTool } from '@tpmjs/registry-execute';
@@ -518,6 +519,7 @@ export const registryExecute = tool({
                 <CodeBlock
                   language="typescript"
                   code={`import { streamText } from 'ai';
+// Import AI SDK provider for your selected model (OpenAI, Anthropic, Google, etc.)
 import { anthropic } from '@ai-sdk/anthropic';
 import { registrySearchTool } from '@tpmjs/registry-search';
 import { registryExecute } from './tools';  // Your wrapped version

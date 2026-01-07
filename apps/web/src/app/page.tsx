@@ -104,15 +104,15 @@ export default async function HomePage(): Promise<React.ReactElement> {
                     className="group"
                   >
                     <div className="p-6 border border-border rounded-lg bg-surface hover:border-foreground transition-colors h-full flex flex-col">
-                      <div className="flex items-start justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-foreground group-hover:text-brutalist-accent transition-colors">
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <h3 className="text-lg font-semibold text-foreground group-hover:text-brutalist-accent transition-colors min-w-0 break-words">
                           {tool.package.npmPackageName}
                           <span className="text-xs text-foreground-tertiary ml-2">
                             ({tool.name})
                           </span>
                         </h3>
                         {tool.package.isOfficial && (
-                          <Badge variant="default" size="sm">
+                          <Badge variant="default" size="sm" className="flex-shrink-0">
                             Official
                           </Badge>
                         )}
