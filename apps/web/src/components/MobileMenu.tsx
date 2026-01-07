@@ -4,6 +4,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useEffect } from 'react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -125,23 +126,28 @@ export function MobileMenu({
           {/* Divider */}
           <div className="my-4 border-t border-border" />
 
-          {/* Social links */}
-          <ul className="space-y-1">
-            {socialLinks.map((link) => (
-              <li key={link.href}>
+          {/* Social links and theme toggle */}
+          <div className="flex items-center justify-between px-3 py-3">
+            <div className="flex items-center gap-4">
+              {socialLinks.map((link) => (
                 <a
+                  key={link.href}
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors"
+                  className="text-foreground hover:text-foreground-secondary transition-colors"
                   onClick={onClose}
+                  aria-label={link.label}
                 >
                   <Icon icon={link.icon} size="md" />
-                  {link.label}
                 </a>
-              </li>
-            ))}
-          </ul>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-foreground-secondary">Theme</span>
+              <ThemeToggle />
+            </div>
+          </div>
 
           {/* Divider */}
           <div className="my-4 border-t border-border" />

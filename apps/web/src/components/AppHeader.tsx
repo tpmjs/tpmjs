@@ -7,6 +7,7 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useState } from 'react';
 import { MobileMenu } from './MobileMenu';
+import { ThemeToggle } from './ThemeToggle';
 
 /**
  * Shared application header used across all pages
@@ -117,6 +118,7 @@ export function AppHeader(): React.ReactElement {
               >
                 <Icon icon="github" size="md" />
               </a>
+              <ThemeToggle />
               {session ? (
                 <Link href="/dashboard">
                   <Button
