@@ -4,7 +4,7 @@ import type { AIProvider } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
@@ -165,6 +165,7 @@ function generateConversationId(): string {
 
 export default function PublicAgentChatPage(): React.ReactElement {
   const params = useParams();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const agentId = params.id as string;
 
@@ -172,6 +173,9 @@ export default function PublicAgentChatPage(): React.ReactElement {
   const conversationId = useMemo(() => {
     return searchParams.get('c') || generateConversationId();
   }, [searchParams]);
+
+  // Track if we've updated the URL with conversation ID
+  const hasUpdatedUrl = useRef(false);
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -326,6 +330,12 @@ export default function PublicAgentChatPage(): React.ReactElement {
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to send message');
+      }
+
+      // Update URL with conversation ID so refresh preserves chat history
+      if (!hasUpdatedUrl.current && !searchParams.get('c')) {
+        hasUpdatedUrl.current = true;
+        router.replace(`/agents/${agentId}/chat?c=${conversationId}`, { scroll: false });
       }
 
       // Handle SSE stream
