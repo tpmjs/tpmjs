@@ -12,20 +12,42 @@ interface MobileMenuProps {
   session: { user: { name: string; email: string } } | null;
 }
 
-const navLinks = [
-  // Core Product Links
-  { href: '/tool/tool-search', label: 'Tools' },
-  { href: '/dashboard/agents', label: 'Agents' },
-  { href: '/how-it-works', label: 'How It Works' },
-  { href: 'https://playground.tpmjs.com', label: 'Playground', external: true },
-  { href: '/integrations', label: 'Integrations' },
-  // Developer Section
-  { href: '/docs', label: 'Docs' },
-  { href: '/sdk', label: 'SDK' },
-  { href: '/spec', label: 'Spec' },
-  { href: '/changelog', label: 'Changelog' },
-  { href: '/faq', label: 'FAQ' },
-  { href: '/stats', label: 'Stats' },
+interface NavSection {
+  title: string;
+  links: { href: string; label: string; description?: string; external?: boolean }[];
+}
+
+const navSections: NavSection[] = [
+  {
+    title: 'Explore',
+    links: [
+      { href: '/tool/tool-search', label: 'Tools', description: 'Browse all tools' },
+      {
+        href: 'https://playground.tpmjs.com',
+        label: 'Playground',
+        description: 'Try tools live',
+        external: true,
+      },
+    ],
+  },
+  {
+    title: 'Developers',
+    links: [
+      { href: '/docs', label: 'Documentation', description: 'Guides and tutorials' },
+      { href: '/sdk', label: 'SDK', description: 'Build with our SDK' },
+      { href: '/spec', label: 'Specification', description: 'TPMJS tool format' },
+      { href: '/integrations', label: 'Integrations', description: 'Connect your tools' },
+    ],
+  },
+  {
+    title: 'Resources',
+    links: [
+      { href: '/how-it-works', label: 'How It Works', description: 'Learn the basics' },
+      { href: '/faq', label: 'FAQ', description: 'Common questions' },
+      { href: '/changelog', label: 'Changelog', description: 'Latest updates' },
+      { href: '/stats', label: 'Stats', description: 'Platform metrics' },
+    ],
+  },
 ];
 
 const socialLinks = [
@@ -94,36 +116,54 @@ export function MobileMenu({
           </Button>
         </div>
 
-        {/* Navigation links */}
-        <nav className="p-4">
-          <ul className="space-y-1">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                {link.external ? (
-                  <a
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors"
-                    onClick={onClose}
-                  >
-                    {link.label}
-                    <Icon icon="externalLink" size="sm" className="text-foreground-tertiary" />
-                  </a>
-                ) : (
-                  <Link
-                    href={link.href}
-                    className="block px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors"
-                    onClick={onClose}
-                  >
-                    {link.label}
-                  </Link>
-                )}
-              </li>
-            ))}
-          </ul>
+        {/* Navigation sections */}
+        <nav className="p-4 overflow-y-auto max-h-[calc(100vh-80px)]">
+          {navSections.map((section, index) => (
+            <div key={section.title}>
+              <h3 className="px-3 py-2 text-xs font-semibold text-foreground-tertiary uppercase tracking-wider">
+                {section.title}
+              </h3>
+              <ul className="space-y-1 mb-4">
+                {section.links.map((link) => (
+                  <li key={link.href}>
+                    {link.external ? (
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between px-3 py-2.5 text-foreground hover:bg-surface rounded-md transition-colors"
+                        onClick={onClose}
+                      >
+                        <div>
+                          <div className="font-medium">{link.label}</div>
+                          {link.description && (
+                            <div className="text-xs text-foreground-tertiary">
+                              {link.description}
+                            </div>
+                          )}
+                        </div>
+                        <Icon icon="externalLink" size="sm" className="text-foreground-tertiary" />
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        className="block px-3 py-2.5 text-foreground hover:bg-surface rounded-md transition-colors"
+                        onClick={onClose}
+                      >
+                        <div className="font-medium">{link.label}</div>
+                        {link.description && (
+                          <div className="text-xs text-foreground-tertiary">{link.description}</div>
+                        )}
+                      </Link>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              {index < navSections.length - 1 && <div className="my-3 border-t border-border" />}
+            </div>
+          ))}
 
-          {/* Divider */}
+          {/* Divider before utilities */}
           <div className="my-4 border-t border-border" />
 
           {/* Social links and theme toggle */}
@@ -149,43 +189,71 @@ export function MobileMenu({
             </div>
           </div>
 
-          {/* Divider */}
+          {/* Divider before auth */}
           <div className="my-4 border-t border-border" />
 
-          {/* Auth links */}
+          {/* Auth Section - Segmented based on login status */}
+          <h3 className="px-3 py-2 text-xs font-semibold text-foreground-tertiary uppercase tracking-wider">
+            Account
+          </h3>
           {session ? (
-            <Link
-              href="/dashboard"
-              className="block px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors mb-4"
-              onClick={onClose}
-            >
-              Dashboard
-            </Link>
-          ) : (
             <div className="space-y-1 mb-4">
               <Link
-                href="/sign-in"
-                className="block px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors"
+                href="/dashboard"
+                className="block px-3 py-2.5 text-foreground hover:bg-surface rounded-md transition-colors"
                 onClick={onClose}
               >
-                Sign In
+                <div className="font-medium">Dashboard</div>
+                <div className="text-xs text-foreground-tertiary">Your overview</div>
               </Link>
               <Link
-                href="/sign-up"
-                className="block px-3 py-3 text-foreground hover:bg-surface rounded-md transition-colors"
+                href="/dashboard/agents"
+                className="block px-3 py-2.5 text-foreground hover:bg-surface rounded-md transition-colors"
                 onClick={onClose}
               >
-                Sign Up
+                <div className="font-medium">My Agents</div>
+                <div className="text-xs text-foreground-tertiary">Manage your agents</div>
+              </Link>
+              <Link
+                href="/dashboard/collections"
+                className="block px-3 py-2.5 text-foreground hover:bg-surface rounded-md transition-colors"
+                onClick={onClose}
+              >
+                <div className="font-medium">Collections</div>
+                <div className="text-xs text-foreground-tertiary">Organize your tools</div>
+              </Link>
+              <Link
+                href="/dashboard/settings/api-keys"
+                className="block px-3 py-2.5 text-foreground hover:bg-surface rounded-md transition-colors"
+                onClick={onClose}
+              >
+                <div className="font-medium">API Keys</div>
+                <div className="text-xs text-foreground-tertiary">Manage credentials</div>
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-2 mb-4 px-3">
+              <Link href="/sign-in" onClick={onClose} className="block">
+                <Button variant="outline" size="md" className="w-full">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/sign-up" onClick={onClose} className="block">
+                <Button variant="ghost" size="md" className="w-full">
+                  Create Account
+                </Button>
               </Link>
             </div>
           )}
 
-          {/* Publish button */}
-          <Link href="/publish" onClick={onClose}>
-            <Button variant="default" size="lg" className="w-full">
-              Publish Tool
-            </Button>
-          </Link>
+          {/* Primary CTA */}
+          <div className="px-3 mt-4">
+            <Link href="/publish" onClick={onClose} className="block">
+              <Button variant="default" size="lg" className="w-full">
+                Publish Tool
+              </Button>
+            </Link>
+          </div>
         </nav>
       </div>
     </>
