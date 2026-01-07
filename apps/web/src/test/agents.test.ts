@@ -10,10 +10,16 @@
  * NOTE: These are integration tests that require a running server.
  * Run `pnpm dev --filter=@tpmjs/web` first, then run tests.
  * Tests will be skipped if server is not available.
+ *
+ * To run integration tests manually:
+ *   INTEGRATION_TESTS=true pnpm --filter=@tpmjs/web test
  */
 
 import { prisma } from '@tpmjs/db';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+
+// Skip integration tests unless explicitly enabled
+const INTEGRATION_TESTS_ENABLED = process.env.INTEGRATION_TESTS === 'true';
 
 const BASE_URL = process.env.TEST_BASE_URL || 'http://localhost:3000';
 const TEST_AGENT_UID = 'omega'; // The test agent UID
@@ -21,6 +27,9 @@ const TEST_CONVERSATION_SLUG = `test-conv-${Date.now()}`;
 
 // Check if server is available before running tests
 async function isServerAvailable(): Promise<boolean> {
+  if (!INTEGRATION_TESTS_ENABLED) {
+    return false;
+  }
   try {
     const response = await fetch(`${BASE_URL}/api/health`, { signal: AbortSignal.timeout(2000) });
     return response.ok;
@@ -70,7 +79,8 @@ function parseSSEResponse(text: string): SSEEvent[] {
   return events;
 }
 
-describe('Agent Endpoints', () => {
+// Skip entire test suite if integration tests are not enabled
+describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
   let testAgent: {
     id: string;
     uid: string;
