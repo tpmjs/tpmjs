@@ -269,6 +269,12 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           // Accumulate tool calls with their input args
           const toolCallsMap: Map<string, { toolCallId: string; toolName: string; args: unknown }> =
             new Map();
+          // Collect tool results to save AFTER assistant message (for correct chronological order)
+          const pendingToolResults: Array<{
+            toolCallId: string;
+            toolName: string;
+            output: unknown;
+          }> = [];
           let inputTokens = 0;
           let outputTokens = 0;
 
@@ -312,7 +318,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                 }
               }
 
-              // Send tool results
+              // Send tool results via SSE but don't save yet (save after assistant message for correct order)
               if (toolResults && toolResults.length > 0) {
                 for (const tr of toolResults) {
                   sendEvent('tool_result', {
@@ -320,16 +326,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                     output: tr.output,
                   });
 
-                  // Save tool message to database
-                  await prisma.message.create({
-                    data: {
-                      conversationId: conversation.id,
-                      role: 'TOOL',
-                      content: JSON.stringify(tr.output),
-                      toolCallId: tr.toolCallId,
-                      toolName: tr.toolName,
-                      toolResult: tr.output as object,
-                    },
+                  // Collect tool results to save after assistant message
+                  pendingToolResults.push({
+                    toolCallId: tr.toolCallId,
+                    toolName: tr.toolName,
+                    output: tr.output,
                   });
                 }
               }
@@ -360,7 +361,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             outputTokens = finalUsage.outputTokens ?? outputTokens;
           }
 
-          // Save assistant message
+          // Save assistant message FIRST (so it has earlier createdAt than tool results)
           const assistantMessage = await prisma.message.create({
             data: {
               conversationId: conversation.id,
@@ -375,6 +376,20 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
               outputTokens,
             },
           });
+
+          // Now save TOOL messages (after assistant, for correct chronological order)
+          for (const tr of pendingToolResults) {
+            await prisma.message.create({
+              data: {
+                conversationId: conversation.id,
+                role: 'TOOL',
+                content: JSON.stringify(tr.output),
+                toolCallId: tr.toolCallId,
+                toolName: tr.toolName,
+                toolResult: tr.output as object,
+              },
+            });
+          }
 
           // Update conversation timestamp
           await prisma.conversation.update({

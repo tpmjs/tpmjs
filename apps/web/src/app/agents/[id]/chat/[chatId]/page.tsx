@@ -227,6 +227,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [viewMode, setViewMode] = useState<'chat' | 'debug'>('chat');
 
   // Track first item index for prepending (Virtuoso pattern)
   const [firstItemIndex, setFirstItemIndex] = useState(10000);
@@ -643,32 +644,80 @@ export default function PublicAgentChatPage(): React.ReactElement {
         {/* Main Chat Area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Chat Header */}
-          <div className="border-b border-border bg-surface/50 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="border-b border-border bg-surface/50 px-4 py-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="p-2 hover:bg-surface-secondary rounded-lg transition-colors"
+                  title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+                >
+                  <Icon icon="menu" size="sm" />
+                </button>
+                <div>
+                  <h1 className="text-lg font-semibold text-foreground">{agent.name}</h1>
+                  <p className="text-sm text-foreground-tertiary">
+                    {PROVIDER_DISPLAY_NAMES[agent.provider]} • {agent.modelId}
+                  </p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" onClick={startNewConversation}>
+                <Icon icon="plus" size="xs" className="mr-2" />
+                New Chat
+              </Button>
+            </div>
+            {/* View Mode Tabs */}
+            <div className="flex gap-1 mt-3">
               <button
                 type="button"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 hover:bg-surface-secondary rounded-lg transition-colors"
-                title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+                onClick={() => setViewMode('chat')}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  viewMode === 'chat'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground-secondary hover:text-foreground hover:bg-surface-secondary'
+                }`}
               >
-                <Icon icon="menu" size="sm" />
+                Chat
               </button>
-              <div>
-                <h1 className="text-lg font-semibold text-foreground">{agent.name}</h1>
-                <p className="text-sm text-foreground-tertiary">
-                  {PROVIDER_DISPLAY_NAMES[agent.provider]} • {agent.modelId}
-                </p>
-              </div>
+              <button
+                type="button"
+                onClick={() => setViewMode('debug')}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  viewMode === 'debug'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground-secondary hover:text-foreground hover:bg-surface-secondary'
+                }`}
+              >
+                Debug JSON
+              </button>
             </div>
-            <Button variant="outline" size="sm" onClick={startNewConversation}>
-              <Icon icon="plus" size="xs" className="mr-2" />
-              New Chat
-            </Button>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-hidden">
-            {messages.length === 0 && !streamingContent ? (
+          {/* Debug JSON View */}
+          {viewMode === 'debug' && (
+            <div className="flex-1 overflow-auto p-4 bg-background">
+              <div className="mb-4">
+                <h2 className="text-sm font-medium text-foreground mb-2">
+                  Raw Messages Array ({messages.length} messages)
+                </h2>
+                <p className="text-xs text-foreground-tertiary mb-4">
+                  Messages are ordered by createdAt. Each message includes role, content, and tool
+                  call data.
+                </p>
+              </div>
+              <pre className="text-xs font-mono bg-surface-secondary border border-border rounded-lg p-4 overflow-x-auto whitespace-pre-wrap">
+                {JSON.stringify(messages, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          {/* Chat View */}
+          {viewMode === 'chat' && (
+            <>
+              {/* Messages */}
+              <div className="flex-1 overflow-hidden">
+                {messages.length === 0 && !streamingContent ? (
               <div className="h-full flex items-center justify-center p-4">
                 <div className="text-center">
                   <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
@@ -897,6 +946,8 @@ export default function PublicAgentChatPage(): React.ReactElement {
               Press Enter to send, Shift+Enter for new line
             </p>
           </div>
+            </>
+          )}
         </div>
       </div>
     </div>
