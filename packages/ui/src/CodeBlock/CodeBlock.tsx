@@ -1,5 +1,5 @@
 import { cn } from '@tpmjs/utils/cn';
-import { forwardRef, useState } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 // eslint-disable-next-line import/no-internal-modules -- react-syntax-highlighter requires deep import for styles
 import { prism, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -10,6 +10,33 @@ import {
   codeBlockContainerVariants,
   codeBlockCopyButtonVariants,
 } from './variants';
+
+/**
+ * Hook to detect if dark mode is active by checking for .dark class on html element
+ */
+function useDarkMode(): boolean {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    // Check initial state
+    const checkDarkMode = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+
+    checkDarkMode();
+
+    // Watch for class changes on html element
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+}
 
 /**
  * CodeBlock component
@@ -35,11 +62,12 @@ import {
  * ```
  */
 export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>(
-  (
-    { className, code, language = 'text', size = 'md', showCopy = true, theme = 'light', ...props },
-    ref
-  ) => {
+  ({ className, code, language = 'text', size = 'md', showCopy = true, theme, ...props }, ref) => {
     const [copied, setCopied] = useState(false);
+    const isDarkMode = useDarkMode();
+
+    // Use provided theme or auto-detect from system
+    const effectiveTheme = theme ?? (isDarkMode ? 'dark' : 'light');
 
     const handleCopy = async () => {
       try {
@@ -71,7 +99,7 @@ export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>(
         <div className={codeBlockCodeVariants({ size })} data-language={normalizedLanguage}>
           <SyntaxHighlighter
             language={normalizedLanguage}
-            style={theme === 'dark' ? vscDarkPlus : prism}
+            style={effectiveTheme === 'dark' ? vscDarkPlus : prism}
             customStyle={{
               margin: 0,
               padding: 0,
@@ -82,7 +110,6 @@ export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>(
             codeTagProps={{
               style: {
                 fontFamily: 'inherit',
-                color: '#24292e', // Darker text color for better contrast
               },
             }}
           >

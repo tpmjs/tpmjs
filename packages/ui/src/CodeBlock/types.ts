@@ -29,7 +29,7 @@ export interface CodeBlockProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
 
   /**
    * Color theme for syntax highlighting
-   * @default 'light'
+   * If not provided, auto-detects from .dark class on html element
    */
   theme?: 'light' | 'dark';
 }
