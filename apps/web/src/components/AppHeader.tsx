@@ -156,6 +156,9 @@ export function AppHeader(): React.ReactElement {
                 </Button>
               </a>
 
+              {/* Separator */}
+              <span className="text-foreground-tertiary mx-2">|</span>
+
               {/* Dropdown Menus */}
               <NavDropdown label="Developers" items={developerItems} />
               <NavDropdown label="Resources" items={resourceItems} />
