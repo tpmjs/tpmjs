@@ -81,6 +81,7 @@ model Tool {
 
   // Tool Metrics
   qualityScore Decimal? @map("quality_score") @db.Decimal(3, 2) // 0.00 to 1.00
+  likeCount    Int      @default(0) @map("like_count")
 
   // Health Status Fields
   importHealth     HealthStatus? @default(UNKNOWN) @map("import_health")
@@ -97,9 +98,11 @@ model Tool {
   healthChecks HealthCheck[]
   collections  CollectionTool[]
   agents       AgentTool[]
+  likes        ToolLike[]
 
   @@unique([packageId, name])
   @@index([qualityScore])
+  @@index([likeCount])
   @@index([importHealth])
   @@index([executionHealth])
   @@index([lastHealthCheck])
@@ -331,11 +334,14 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  sessions    Session[]
-  accounts    Account[]
-  collections Collection[]
-  agents      Agent[]
-  apiKeys     UserApiKey[]
+  sessions        Session[]
+  accounts        Account[]
+  collections     Collection[]
+  agents          Agent[]
+  apiKeys         UserApiKey[]
+  toolLikes       ToolLike[]
+  collectionLikes CollectionLike[]
+  agentLikes      AgentLike[]
 
   @@map("users")
 }
@@ -408,6 +414,7 @@ model Collection {
   name        String   @db.VarChar(100)
   description String?  @db.VarChar(500)
   isPublic    Boolean  @default(false) @map("is_public")
+  likeCount   Int      @default(0) @map("like_count")
 
   // Timestamps
   createdAt   DateTime @default(now()) @map("created_at")
@@ -416,11 +423,13 @@ model Collection {
   // Relations
   tools       CollectionTool[]
   agents      AgentCollection[]
+  likes       CollectionLike[]
 
   // Unique constraint: user can't have duplicate collection names
   @@unique([userId, name])
   @@index([userId])
   @@index([isPublic])
+  @@index([likeCount])
   @@index([createdAt])
   @@map("collections")
 }
@@ -495,6 +504,7 @@ model Agent {
 
   // Visibility
   isPublic             Boolean    @default(false) @map("is_public")
+  likeCount            Int        @default(0) @map("like_count")
 
   // Timestamps
   createdAt            DateTime   @default(now()) @map("created_at")
@@ -504,11 +514,13 @@ model Agent {
   collections          AgentCollection[]
   tools                AgentTool[]
   conversations        Conversation[]
+  likes                AgentLike[]
 
   @@unique([userId, name])
   @@index([userId])
   @@index([uid])
   @@index([isPublic])
+  @@index([likeCount])
   @@index([createdAt])
   @@map("agents")
 }
@@ -639,4 +651,65 @@ model Message {
   @@index([conversationId])
   @@index([createdAt])
   @@map("messages")
+}
+
+// ============================================================================
+// Like Models
+// ============================================================================
+
+/// ToolLike - tracks users who liked a tool
+model ToolLike {
+  id        String   @id @default(cuid())
+
+  // Relationships
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolId    String   @map("tool_id")
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, toolId])
+  @@index([toolId])
+  @@index([userId])
+  @@map("tool_likes")
+}
+
+/// CollectionLike - tracks users who liked a collection
+model CollectionLike {
+  id           String     @id @default(cuid())
+
+  // Relationships
+  userId       String     @map("user_id")
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String     @map("collection_id")
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@unique([userId, collectionId])
+  @@index([collectionId])
+  @@index([userId])
+  @@map("collection_likes")
+}
+
+/// AgentLike - tracks users who liked an agent
+model AgentLike {
+  id        String   @id @default(cuid())
+
+  // Relationships
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId   String   @map("agent_id")
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, agentId])
+  @@index([agentId])
+  @@index([userId])
+  @@map("agent_likes")
 }

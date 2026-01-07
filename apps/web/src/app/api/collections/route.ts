@@ -199,14 +199,27 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       );
     }
 
-    // Create collection
-    const collection = await prisma.collection.create({
-      data: {
-        userId: session.user.id,
-        name,
-        description: description || null,
-        isPublic,
-      },
+    // Create collection with auto-like (user likes their own collection)
+    const collection = await prisma.$transaction(async (tx) => {
+      const newCollection = await tx.collection.create({
+        data: {
+          userId: session.user.id,
+          name,
+          description: description || null,
+          isPublic,
+          likeCount: 1, // Start with 1 like (from owner)
+        },
+      });
+
+      // Auto-like the collection
+      await tx.collectionLike.create({
+        data: {
+          userId: session.user.id,
+          collectionId: newCollection.id,
+        },
+      });
+
+      return newCollection;
     });
 
     return NextResponse.json(

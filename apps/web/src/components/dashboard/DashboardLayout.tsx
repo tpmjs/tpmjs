@@ -22,6 +22,12 @@ const navItems: NavItem[] = [
   { href: '/dashboard/settings/api-keys', label: 'API Keys', icon: 'key' },
 ];
 
+const likesNavItems: NavItem[] = [
+  { href: '/dashboard/likes/tools', label: 'Tools', icon: 'puzzle' },
+  { href: '/dashboard/likes/collections', label: 'Collections', icon: 'folder' },
+  { href: '/dashboard/likes/agents', label: 'Agents', icon: 'terminal' },
+];
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
   /** Title displayed in the header */
@@ -51,6 +57,25 @@ export function DashboardLayout({
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [likesExpanded, setLikesExpanded] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('dashboard-likes-expanded');
+      return stored === 'true';
+    }
+    return false;
+  });
+
+  // Persist likes expanded state
+  useEffect(() => {
+    localStorage.setItem('dashboard-likes-expanded', String(likesExpanded));
+  }, [likesExpanded]);
+
+  // Auto-expand if on a likes page
+  useEffect(() => {
+    if (pathname.startsWith('/dashboard/likes')) {
+      setLikesExpanded(true);
+    }
+  }, [pathname]);
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -71,6 +96,8 @@ export function DashboardLayout({
     }
     return pathname.startsWith(href);
   };
+
+  const isLikesActive = pathname.startsWith('/dashboard/likes');
 
   const getBackUrl = () => {
     if (backUrl) return backUrl;
@@ -142,6 +169,52 @@ export function DashboardLayout({
                 )}
               </Link>
             ))}
+
+            {/* Likes Section - Collapsible */}
+            <div className="pt-2 mt-2 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setLikesExpanded(!likesExpanded)}
+                className={`
+                  w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                  ${
+                    isLikesActive
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+                  }
+                `}
+              >
+                <Icon icon="heart" size="sm" />
+                <span>Likes</span>
+                <Icon
+                  icon={likesExpanded ? 'chevronDown' : 'chevronRight'}
+                  size="xs"
+                  className="ml-auto"
+                />
+              </button>
+
+              {likesExpanded && (
+                <div className="ml-4 mt-1 space-y-1">
+                  {likesNavItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`
+                        flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm transition-colors
+                        ${
+                          isActive(item.href)
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+                        }
+                      `}
+                    >
+                      <Icon icon={item.icon} size="xs" />
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* User section at bottom */}

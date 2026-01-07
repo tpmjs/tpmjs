@@ -140,6 +140,16 @@ export function AppHeader(): React.ReactElement {
                   Tools
                 </Button>
               </Link>
+              <Link href="/collections">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Collections
+                </Button>
+              </Link>
+              <Link href="/agents">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Agents
+                </Button>
+              </Link>
               <a href="https://playground.tpmjs.com" target="_blank" rel="noopener noreferrer">
                 <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
                   Playground

@@ -154,57 +154,71 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const agent = await prisma.agent.create({
-      data: {
-        userId: session.user.id,
-        uid: finalUid,
-        name,
-        description,
-        provider,
-        modelId,
-        systemPrompt,
-        temperature,
-        maxToolCallsPerTurn,
-        maxMessagesInContext,
-        isPublic,
-        collections: collectionIds?.length
-          ? {
-              create: collectionIds.map((collectionId, index) => ({
-                collectionId,
-                position: index,
-              })),
-            }
-          : undefined,
-        tools: toolIds?.length
-          ? {
-              create: toolIds.map((toolId, index) => ({
-                toolId,
-                position: index,
-              })),
-            }
-          : undefined,
-      },
-      select: {
-        id: true,
-        uid: true,
-        name: true,
-        description: true,
-        provider: true,
-        modelId: true,
-        systemPrompt: true,
-        temperature: true,
-        maxToolCallsPerTurn: true,
-        maxMessagesInContext: true,
-        isPublic: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            tools: true,
-            collections: true,
+    // Create agent with auto-like (user likes their own agent)
+    const agent = await prisma.$transaction(async (tx) => {
+      const newAgent = await tx.agent.create({
+        data: {
+          userId: session.user.id,
+          uid: finalUid,
+          name,
+          description,
+          provider,
+          modelId,
+          systemPrompt,
+          temperature,
+          maxToolCallsPerTurn,
+          maxMessagesInContext,
+          isPublic,
+          likeCount: 1, // Start with 1 like (from owner)
+          collections: collectionIds?.length
+            ? {
+                create: collectionIds.map((collectionId, index) => ({
+                  collectionId,
+                  position: index,
+                })),
+              }
+            : undefined,
+          tools: toolIds?.length
+            ? {
+                create: toolIds.map((toolId, index) => ({
+                  toolId,
+                  position: index,
+                })),
+              }
+            : undefined,
+        },
+        select: {
+          id: true,
+          uid: true,
+          name: true,
+          description: true,
+          provider: true,
+          modelId: true,
+          systemPrompt: true,
+          temperature: true,
+          maxToolCallsPerTurn: true,
+          maxMessagesInContext: true,
+          isPublic: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              tools: true,
+              collections: true,
+            },
           },
         },
-      },
+      });
+
+      // Auto-like the agent
+      await tx.agentLike.create({
+        data: {
+          userId: session.user.id,
+          agentId: newAgent.id,
+        },
+      });
+
+      return newAgent;
     });
 
     return NextResponse.json(
