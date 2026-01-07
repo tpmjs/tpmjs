@@ -44,14 +44,18 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
           <Icon icon="link" size="sm" className="text-primary" />
         </div>
         <h3 className="font-semibold text-foreground">MCP Server URLs</h3>
-        <Badge variant="secondary" size="sm">Public</Badge>
+        <Badge variant="secondary" size="sm">
+          Public
+        </Badge>
       </div>
 
       <div className="space-y-3">
         {/* HTTP Transport */}
         <div className="group">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">HTTP Transport</span>
+            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
+              HTTP Transport
+            </span>
             <span className="text-xs text-foreground-tertiary">(recommended)</span>
           </div>
           <div className="flex items-center gap-2">
@@ -73,7 +77,9 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
         {/* SSE Transport */}
         <div className="group">
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">SSE Transport</span>
+            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
+              SSE Transport
+            </span>
             <span className="text-xs text-foreground-tertiary">(streaming)</span>
           </div>
           <div className="flex items-center gap-2">

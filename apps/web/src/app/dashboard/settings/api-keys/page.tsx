@@ -207,14 +207,14 @@ ANOTHER_SECRET=xyz789"
         {/* Add new key */}
         <div className="mb-6 p-4 bg-surface-secondary border border-border rounded-lg">
           <h2 className="text-sm font-medium text-foreground mb-3">Add New Key</h2>
-          {saveError && (
-            <p className="text-red-500 text-sm mb-2">{saveError}</p>
-          )}
+          {saveError && <p className="text-red-500 text-sm mb-2">{saveError}</p>}
           <div className="flex gap-2 mb-2">
             <input
               type="text"
               value={newKeyName}
-              onChange={(e) => setNewKeyName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))}
+              onChange={(e) =>
+                setNewKeyName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))
+              }
               placeholder="KEY_NAME"
               className="flex-1 px-3 py-2 bg-background border border-border rounded text-foreground text-sm font-mono placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
@@ -228,7 +228,10 @@ ANOTHER_SECRET=xyz789"
               placeholder="Value"
               className="flex-1 px-3 py-2 bg-background border border-border rounded text-foreground text-sm font-mono placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
-            <Button onClick={handleAddKey} disabled={saving || !newKeyName.trim() || !newKeyValue.trim()}>
+            <Button
+              onClick={handleAddKey}
+              disabled={saving || !newKeyName.trim() || !newKeyValue.trim()}
+            >
               {saving ? 'Saving...' : 'Add'}
             </Button>
           </div>
