@@ -4,6 +4,15 @@ import type { AIProvider } from '@tpmjs/types/agent';
 import { PROVIDER_MODELS, SUPPORTED_PROVIDERS } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@tpmjs/ui/Table/Table';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -534,48 +543,14 @@ export default function AgentDetailPage(): React.ReactElement {
       </div>
 
       {/* Tools Section */}
-      <div className="bg-background border border-border rounded-lg p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-medium text-foreground">Tools</h2>
           <span className="text-sm text-foreground-tertiary">{agentTools.length} attached</span>
         </div>
 
-        {/* Current Tools */}
-        {agentTools.length > 0 && (
-          <div className="space-y-2 mb-4">
-            {agentTools.map((at) => (
-              <div
-                key={at.id}
-                className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <Icon
-                    icon="puzzle"
-                    size="sm"
-                    className="text-foreground-tertiary flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{at.tool.name}</p>
-                    <p className="text-xs text-foreground-tertiary truncate font-mono">
-                      {at.tool.npmPackageName}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeTool(at.toolId)}
-                  className="p-1 text-foreground-tertiary hover:text-red-500 transition-colors flex-shrink-0"
-                  title="Remove tool"
-                >
-                  <Icon icon="x" size="xs" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* Add Tool Search */}
-        <div ref={toolSearchRef} className="relative">
+        <div ref={toolSearchRef} className="relative p-4 border-b border-border">
           <div className="relative">
             <Icon
               icon="search"
@@ -591,7 +566,7 @@ export default function AgentDetailPage(): React.ReactElement {
               }}
               onFocus={() => setShowToolSearch(true)}
               placeholder="Search tools to add..."
-              className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
             />
             {isSearchingTools && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -602,7 +577,7 @@ export default function AgentDetailPage(): React.ReactElement {
 
           {/* Search Results Dropdown */}
           {showToolSearch && toolSearch && (
-            <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+            <div className="absolute z-10 left-4 right-4 mt-1 bg-background border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
               {toolSearchResults.length > 0 ? (
                 toolSearchResults.map((tool) => (
                   <button
@@ -625,55 +600,74 @@ export default function AgentDetailPage(): React.ReactElement {
             </div>
           )}
         </div>
+
+        {/* Tools Table */}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tool</TableHead>
+              <TableHead>Package</TableHead>
+              <TableHead className="w-[80px] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {agentTools.length === 0 ? (
+              <TableEmpty
+                colSpan={3}
+                icon={
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Icon icon="puzzle" size="md" className="text-primary" />
+                  </div>
+                }
+                title="No tools attached"
+                description="Search above to add tools to this agent"
+              />
+            ) : (
+              agentTools.map((at) => (
+                <TableRow key={at.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon icon="puzzle" size="sm" className="text-primary" />
+                      </div>
+                      <span className="font-medium text-foreground">{at.tool.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-foreground-secondary font-mono text-sm">
+                      {at.tool.npmPackageName}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removeTool(at.toolId)}
+                        title="Remove tool"
+                      >
+                        <Icon icon="trash" size="xs" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Collections Section */}
-      <div className="bg-background border border-border rounded-lg p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-medium text-foreground">Collections</h2>
           <span className="text-sm text-foreground-tertiary">
             {agentCollections.length} attached
           </span>
         </div>
 
-        {/* Current Collections */}
-        {agentCollections.length > 0 && (
-          <div className="space-y-2 mb-4">
-            {agentCollections.map((ac) => (
-              <div
-                key={ac.id}
-                className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <Icon
-                    icon="folder"
-                    size="sm"
-                    className="text-foreground-tertiary flex-shrink-0"
-                  />
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {ac.collection.name}
-                    </p>
-                    <p className="text-xs text-foreground-tertiary">
-                      {ac.collection.toolCount} tools
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeCollection(ac.collectionId)}
-                  className="p-1 text-foreground-tertiary hover:text-red-500 transition-colors flex-shrink-0"
-                  title="Remove collection"
-                >
-                  <Icon icon="x" size="xs" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         {/* Add Collection Search */}
-        <div ref={collectionSearchRef} className="relative">
+        <div ref={collectionSearchRef} className="relative p-4 border-b border-border">
           <div className="relative">
             <Icon
               icon="search"
@@ -689,7 +683,7 @@ export default function AgentDetailPage(): React.ReactElement {
               }}
               onFocus={() => setShowCollectionSearch(true)}
               placeholder="Search collections to add..."
-              className="w-full pl-9 pr-3 py-2 bg-background border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
             />
             {isSearchingCollections && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -700,7 +694,7 @@ export default function AgentDetailPage(): React.ReactElement {
 
           {/* Search Results Dropdown */}
           {showCollectionSearch && collectionSearch && (
-            <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+            <div className="absolute z-10 left-4 right-4 mt-1 bg-background border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
               {collectionSearchResults.length > 0 ? (
                 collectionSearchResults.map((collection) => (
                   <button
@@ -721,6 +715,61 @@ export default function AgentDetailPage(): React.ReactElement {
             </div>
           )}
         </div>
+
+        {/* Collections Table */}
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Collection</TableHead>
+              <TableHead>Tools</TableHead>
+              <TableHead className="w-[80px] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {agentCollections.length === 0 ? (
+              <TableEmpty
+                colSpan={3}
+                icon={
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Icon icon="folder" size="md" className="text-primary" />
+                  </div>
+                }
+                title="No collections attached"
+                description="Search above to add collections to this agent"
+              />
+            ) : (
+              agentCollections.map((ac) => (
+                <TableRow key={ac.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon icon="folder" size="sm" className="text-primary" />
+                      </div>
+                      <span className="font-medium text-foreground">{ac.collection.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-foreground-secondary text-sm">
+                      {ac.collection.toolCount} tools
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removeCollection(ac.collectionId)}
+                        title="Remove collection"
+                      >
+                        <Icon icon="trash" size="xs" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       {/* Configuration */}
