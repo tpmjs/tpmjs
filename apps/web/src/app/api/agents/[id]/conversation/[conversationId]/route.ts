@@ -266,8 +266,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
         try {
           const startTime = Date.now();
           let fullContent = '';
-          // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool call structure
-          let allToolCalls: any[] = [];
+          // Accumulate tool calls with their input args
+          const toolCallsMap: Map<string, { toolCallId: string; toolName: string; args: unknown }> =
+            new Map();
           let inputTokens = 0;
           let outputTokens = 0;
 
@@ -278,16 +279,39 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             tools,
             stopWhen: stepCountIs(agent.maxToolCallsPerTurn),
             onChunk: async ({ chunk }) => {
-              // Stream tool calls as they come in
+              // Stream tool calls as they come in and capture their inputs
               if (chunk.type === 'tool-call') {
+                const input = 'args' in chunk ? chunk.args : chunk.input;
+                // Store tool call with input for later persistence
+                toolCallsMap.set(chunk.toolCallId, {
+                  toolCallId: chunk.toolCallId,
+                  toolName: chunk.toolName,
+                  args: input,
+                });
                 sendEvent('tool_call', {
                   toolCallId: chunk.toolCallId,
                   toolName: chunk.toolName,
-                  input: 'args' in chunk ? chunk.args : chunk.input,
+                  input,
                 });
               }
             },
-            onStepFinish: async ({ toolResults, usage }) => {
+            onStepFinish: async ({ toolCalls, toolResults, usage }) => {
+              // Capture tool calls from step finish (backup in case onChunk missed any)
+              if (toolCalls && Array.isArray(toolCalls)) {
+                for (const tc of toolCalls) {
+                  if (!toolCallsMap.has(tc.toolCallId)) {
+                    // Use 'input' from DynamicToolCall or fall back to type assertion for typed calls
+                    const args =
+                      'input' in tc ? tc.input : 'args' in tc ? (tc as { args: unknown }).args : {};
+                    toolCallsMap.set(tc.toolCallId, {
+                      toolCallId: tc.toolCallId,
+                      toolName: tc.toolName,
+                      args,
+                    });
+                  }
+                }
+              }
+
               // Send tool results
               if (toolResults && toolResults.length > 0) {
                 for (const tr of toolResults) {
@@ -325,17 +349,10 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           }
 
           // Get final response data
-          const finalResponse = await result.response;
           const finalUsage = await result.usage;
 
-          // Extract tool calls from final response
-          if (finalResponse.messages) {
-            for (const msg of finalResponse.messages) {
-              if ('toolCalls' in msg && msg.toolCalls && Array.isArray(msg.toolCalls)) {
-                allToolCalls = [...allToolCalls, ...(msg.toolCalls as unknown[])];
-              }
-            }
-          }
+          // Convert tool calls map to array for storage
+          const allToolCalls = Array.from(toolCallsMap.values());
 
           // Update token counts from final usage
           if (finalUsage) {
@@ -349,7 +366,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
               conversationId: conversation.id,
               role: 'ASSISTANT',
               content: fullContent,
-              toolCalls: allToolCalls.length > 0 ? allToolCalls : Prisma.JsonNull,
+              // Cast to Prisma-compatible JSON type
+              toolCalls:
+                allToolCalls.length > 0
+                  ? (allToolCalls as unknown as Prisma.InputJsonValue)
+                  : Prisma.JsonNull,
               inputTokens,
               outputTokens,
             },

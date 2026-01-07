@@ -69,6 +69,13 @@ interface Message {
   toolName?: string;
   toolCallId?: string;
   toolResult?: unknown;
+  toolCalls?: Array<{
+    toolCallId: string;
+    toolName: string;
+    args: unknown;
+  }>;
+  inputTokens?: number;
+  outputTokens?: number;
   createdAt: string;
 }
 
@@ -754,17 +761,34 @@ export default function PublicAgentChatPage(): React.ReactElement {
                     }
                   };
 
+                  // Build a lookup map for tool call inputs from ASSISTANT messages
+                  // This allows us to show the input args when rendering TOOL messages
+                  const getToolCallInput = (toolCallId: string): unknown => {
+                    for (const msg of messages) {
+                      if (msg.role === 'ASSISTANT' && msg.toolCalls) {
+                        const tc = msg.toolCalls.find((t) => t.toolCallId === toolCallId);
+                        if (tc) return tc.args;
+                      }
+                    }
+                    return undefined;
+                  };
+
+                  // Check if a tool call has a corresponding TOOL message (meaning it completed)
+                  const hasToolResult = (toolCallId: string): boolean => {
+                    return messages.some((m) => m.role === 'TOOL' && m.toolCallId === toolCallId);
+                  };
+
                   return (
                     <div className="px-4 py-2">
-                      <div
-                        className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        {message.role === 'TOOL' ? (
+                      {/* TOOL message - shows the result of a tool call */}
+                      {message.role === 'TOOL' && (
+                        <div className="flex justify-start">
                           <div className="max-w-[80%]">
                             <ToolCallCard
                               toolCall={{
                                 toolCallId: message.toolCallId || message.id,
                                 toolName: message.toolName || 'Unknown Tool',
+                                input: getToolCallInput(message.toolCallId || ''),
                                 output: getToolOutput(),
                                 status: 'success',
                               }}
@@ -772,18 +796,64 @@ export default function PublicAgentChatPage(): React.ReactElement {
                               onToggle={() => toggleToolCall(message.toolCallId || message.id)}
                             />
                           </div>
-                        ) : (
-                          <div
-                            className={`max-w-[80%] rounded-lg p-4 ${
-                              message.role === 'USER'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-surface-secondary'
-                            }`}
-                          >
+                        </div>
+                      )}
+
+                      {/* USER message */}
+                      {message.role === 'USER' && (
+                        <div className="flex justify-end">
+                          <div className="max-w-[80%] rounded-lg p-4 bg-primary text-primary-foreground">
                             <p className="whitespace-pre-wrap text-sm">{message.content}</p>
                           </div>
-                        )}
-                      </div>
+                        </div>
+                      )}
+
+                      {/* ASSISTANT message - may contain text and/or tool calls */}
+                      {message.role === 'ASSISTANT' && (
+                        <div className="space-y-2">
+                          {/* Assistant text content */}
+                          {message.content && (
+                            <div className="flex justify-start">
+                              <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
+                                <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                                {/* Token usage for debugging */}
+                                {(message.inputTokens || message.outputTokens) && (
+                                  <div className="mt-2 pt-2 border-t border-border/50 text-[10px] text-foreground-tertiary font-mono">
+                                    {message.inputTokens && <span>In: {message.inputTokens}</span>}
+                                    {message.inputTokens && message.outputTokens && (
+                                      <span> • </span>
+                                    )}
+                                    {message.outputTokens && (
+                                      <span>Out: {message.outputTokens}</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Show tool calls from this assistant message that don't have results yet */}
+                          {message.toolCalls &&
+                            message.toolCalls
+                              .filter((tc) => !hasToolResult(tc.toolCallId))
+                              .map((tc) => (
+                                <div key={tc.toolCallId} className="flex justify-start">
+                                  <div className="max-w-[80%]">
+                                    <ToolCallCard
+                                      toolCall={{
+                                        toolCallId: tc.toolCallId,
+                                        toolName: tc.toolName,
+                                        input: tc.args,
+                                        status: 'pending',
+                                      }}
+                                      isExpanded={expandedToolCalls.has(tc.toolCallId)}
+                                      onToggle={() => toggleToolCall(tc.toolCallId)}
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                        </div>
+                      )}
                     </div>
                   );
                 }}
