@@ -392,10 +392,18 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
 /**
  * GET /api/agents/[id]/conversation/[conversationId]
- * Retrieve conversation history (accepts id or uid)
+ * Retrieve conversation history with pagination (accepts id or uid)
+ *
+ * Query params:
+ * - limit: Max messages to return (default: 50, max: 100)
+ * - offset: Number of messages to skip (default: 0)
  */
-export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
   const { id: idOrUid, conversationId } = await context.params;
+  const { searchParams } = new URL(request.url);
+
+  const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50', 10), 100);
+  const offset = Number.parseInt(searchParams.get('offset') || '0', 10);
 
   try {
     // Fetch agent by id or uid
@@ -410,17 +418,12 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
     }
 
-    // Fetch conversation with messages
+    // Fetch conversation
     const conversation = await prisma.conversation.findUnique({
       where: {
         agentId_slug: {
           agentId: agent.id,
           slug: conversationId,
-        },
-      },
-      include: {
-        messages: {
-          orderBy: { createdAt: 'asc' },
         },
       },
     });
@@ -432,7 +435,18 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       );
     }
 
-    const mappedMessages = conversation.messages.map((m) => ({
+    // Fetch messages with pagination
+    const messages = await prisma.message.findMany({
+      where: { conversationId: conversation.id },
+      orderBy: { createdAt: 'asc' },
+      take: limit + 1,
+      skip: offset,
+    });
+
+    const hasMore = messages.length > limit;
+    const paginatedMessages = hasMore ? messages.slice(0, limit) : messages;
+
+    const mappedMessages = paginatedMessages.map((m) => ({
       id: m.id,
       role: m.role,
       content: m.content,
@@ -454,6 +468,11 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
         createdAt: conversation.createdAt,
         updatedAt: conversation.updatedAt,
         messages: mappedMessages,
+      },
+      pagination: {
+        limit,
+        offset,
+        hasMore,
       },
     });
   } catch (error) {

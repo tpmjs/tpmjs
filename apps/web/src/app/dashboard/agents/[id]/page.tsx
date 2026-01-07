@@ -89,6 +89,157 @@ const CODE_TABS = [
   { id: 'aisdk', label: 'AI SDK' },
 ];
 
+const FETCH_TABS = [
+  { id: 'curl', label: 'cURL' },
+  { id: 'typescript', label: 'TypeScript' },
+  { id: 'python', label: 'Python' },
+];
+
+function ConversationFetchSection({ agent }: { agent: Agent }) {
+  const [activeTab, setActiveTab] = useState('curl');
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
+  const listEndpoint = `${baseUrl}/api/agents/${agent.uid}/conversations`;
+  const getEndpoint = `${baseUrl}/api/agents/${agent.uid}/conversation/my-conv-1`;
+
+  const codeExamples: Record<string, { language: string; code: string }> = {
+    curl: {
+      language: 'bash',
+      code: `# List all conversations (with pagination)
+curl '${listEndpoint}?limit=20&offset=0'
+
+# Get a specific conversation with messages
+curl '${getEndpoint}?limit=50&offset=0'
+
+# Delete a conversation
+curl -X DELETE '${getEndpoint}'`,
+    },
+    typescript: {
+      language: 'typescript',
+      code: `// List all conversations with pagination
+const listConversations = async (limit = 20, offset = 0) => {
+  const response = await fetch(
+    \`${listEndpoint}?limit=\${limit}&offset=\${offset}\`
+  );
+  const data = await response.json();
+
+  // data.data: [{ id, slug, title, messageCount, createdAt, updatedAt }]
+  // data.pagination: { limit, offset, hasMore }
+  return data;
+};
+
+// Get conversation with paginated messages
+const getConversation = async (
+  conversationId: string,
+  limit = 50,
+  offset = 0
+) => {
+  const response = await fetch(
+    \`${baseUrl}/api/agents/${agent.uid}/conversation/\${conversationId}?limit=\${limit}&offset=\${offset}\`
+  );
+  const data = await response.json();
+
+  // data.data: { id, slug, title, messages: [...], createdAt, updatedAt }
+  // data.pagination: { limit, offset, hasMore }
+  return data;
+};
+
+// Fetch all messages (handling pagination)
+const getAllMessages = async (conversationId: string) => {
+  const messages = [];
+  let offset = 0;
+  const limit = 50;
+
+  while (true) {
+    const { data, pagination } = await getConversation(
+      conversationId, limit, offset
+    );
+    messages.push(...data.messages);
+
+    if (!pagination.hasMore) break;
+    offset += limit;
+  }
+
+  return messages;
+};`,
+    },
+    python: {
+      language: 'python',
+      code: `import requests
+
+BASE_URL = '${baseUrl}/api/agents/${agent.uid}'
+
+# List all conversations with pagination
+def list_conversations(limit=20, offset=0):
+    response = requests.get(
+        f'{BASE_URL}/conversations',
+        params={'limit': limit, 'offset': offset}
+    )
+    return response.json()
+
+# Get conversation with paginated messages
+def get_conversation(conversation_id, limit=50, offset=0):
+    response = requests.get(
+        f'{BASE_URL}/conversation/{conversation_id}',
+        params={'limit': limit, 'offset': offset}
+    )
+    return response.json()
+
+# Fetch all messages (handling pagination)
+def get_all_messages(conversation_id):
+    messages = []
+    offset = 0
+    limit = 50
+
+    while True:
+        result = get_conversation(conversation_id, limit, offset)
+        messages.extend(result['data']['messages'])
+
+        if not result['pagination']['hasMore']:
+            break
+        offset += limit
+
+    return messages
+
+# Example usage
+conversations = list_conversations()
+for conv in conversations['data']:
+    print(f"{conv['slug']}: {conv['title']} ({conv['messageCount']} messages)")`,
+    },
+  };
+
+  const currentExample = codeExamples[activeTab] ?? {
+    language: 'bash',
+    code: codeExamples.curl?.code ?? '',
+  };
+
+  return (
+    <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h2 className="text-lg font-medium text-foreground">Fetch Conversations</h2>
+        <code className="text-xs text-foreground-secondary font-mono bg-surface px-2 py-1 rounded">
+          GET /api/agents/{agent.uid}/conversations
+        </code>
+      </div>
+
+      <div className="border-b border-border px-4 py-2">
+        <Tabs tabs={FETCH_TABS} activeTab={activeTab} onTabChange={setActiveTab} size="sm" />
+      </div>
+
+      <div className="p-4">
+        <CodeBlock language={currentExample.language} showCopy code={currentExample.code} />
+      </div>
+
+      <div className="px-4 pb-4">
+        <p className="text-xs text-foreground-tertiary">
+          Use <code className="bg-surface px-1 rounded">limit</code> and{' '}
+          <code className="bg-surface px-1 rounded">offset</code> query params for pagination. Check{' '}
+          <code className="bg-surface px-1 rounded">hasMore</code> to know if more results exist.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function ApiUsageSection({ agent, agentTools }: { agent: Agent; agentTools: AgentTool[] }) {
   const [activeTab, setActiveTab] = useState('curl');
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
@@ -653,6 +804,9 @@ export default function AgentDetailPage(): React.ReactElement {
 
       {/* API Usage */}
       <ApiUsageSection agent={agent} agentTools={agentTools} />
+
+      {/* Fetch Conversations */}
+      <ConversationFetchSection agent={agent} />
 
       {/* Tools Section */}
       <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
