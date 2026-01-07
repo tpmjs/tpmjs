@@ -6,10 +6,10 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { AppHeader } from '~/components/AppHeader';
 import { AddToolSearch } from '~/components/collections/AddToolSearch';
 import { CollectionForm } from '~/components/collections/CollectionForm';
 import { CollectionToolList } from '~/components/collections/CollectionToolList';
+import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 function McpUrlSection({ collectionId }: { collectionId: string }) {
   const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
@@ -351,145 +351,118 @@ export default function CollectionDetailPage(): React.ReactElement {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="max-w-4xl mx-auto py-12 px-4">
-          <div className="animate-pulse">
-            <div className="h-8 bg-surface-secondary rounded w-48 mb-4" />
-            <div className="h-4 bg-surface-secondary rounded w-96 mb-8" />
-            <div className="h-12 bg-surface-secondary rounded mb-6" />
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-24 bg-surface-secondary rounded" />
-              ))}
-            </div>
+      <DashboardLayout title="Loading..." showBackButton backUrl="/dashboard/collections">
+        <div className="animate-pulse">
+          <div className="h-8 bg-surface-secondary rounded w-48 mb-4" />
+          <div className="h-4 bg-surface-secondary rounded w-96 mb-8" />
+          <div className="h-12 bg-surface-secondary rounded mb-6" />
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-24 bg-surface-secondary rounded" />
+            ))}
           </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (error || !collection) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="max-w-4xl mx-auto py-12 px-4">
-          <div className="text-center py-16">
-            <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
-            <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
-            <p className="text-foreground-secondary mb-4">{error || 'Collection not found'}</p>
-            <Link href="/dashboard/collections">
-              <Button>Back to Collections</Button>
-            </Link>
-          </div>
+      <DashboardLayout title="Error" showBackButton backUrl="/dashboard/collections">
+        <div className="text-center py-16">
+          <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
+          <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
+          <p className="text-foreground-secondary mb-4">{error || 'Collection not found'}</p>
+          <Link href="/dashboard/collections">
+            <Button>Back to Collections</Button>
+          </Link>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   const existingToolIds = collection.tools.map((t) => t.toolId);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      <div className="max-w-4xl mx-auto py-12 px-4">
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Link
-            href="/dashboard/collections"
-            className="text-foreground-secondary hover:text-foreground transition-colors"
-          >
-            <Icon icon="arrowLeft" size="sm" />
-          </Link>
-          <div className="flex-1">
-            {isEditing ? (
-              <div className="bg-background border border-border rounded-lg p-6">
-                <h2 className="text-lg font-medium text-foreground mb-4">Edit Collection</h2>
-                <CollectionForm
-                  initialData={{
-                    name: collection.name,
-                    description: collection.description,
-                    isPublic: collection.isPublic,
-                  }}
-                  onSubmit={handleUpdate}
-                  onCancel={() => setIsEditing(false)}
-                  isSubmitting={isUpdating}
-                  submitLabel="Save Changes"
-                />
-              </div>
-            ) : (
-              <>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold text-foreground">{collection.name}</h1>
-                  {collection.isPublic && (
-                    <Badge variant="secondary" size="sm">
-                      <Icon icon="globe" size="sm" className="mr-1" />
-                      Public
-                    </Badge>
-                  )}
-                </div>
-                {collection.description && (
-                  <p className="text-foreground-secondary">{collection.description}</p>
-                )}
-              </>
-            )}
+    <DashboardLayout
+      title={isEditing ? 'Edit Collection' : collection.name}
+      subtitle={
+        !isEditing
+          ? `${collection.toolCount} ${collection.toolCount === 1 ? 'tool' : 'tools'}${collection.isPublic ? ' • Public' : ''}`
+          : undefined
+      }
+      showBackButton
+      backUrl="/dashboard/collections"
+      actions={
+        collection.isOwner &&
+        !isEditing && (
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
+              <Icon icon="edit" size="sm" className="mr-1" />
+              Edit
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDelete}
+              loading={isDeleting}
+              disabled={isDeleting}
+              className="text-error hover:text-error hover:bg-error/10"
+            >
+              <Icon icon="trash" size="sm" className="mr-1" />
+              Delete
+            </Button>
           </div>
-          {collection.isOwner && !isEditing && (
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
-                <Icon icon="edit" size="sm" className="mr-1" />
-                Edit
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDelete}
-                loading={isDeleting}
-                disabled={isDeleting}
-                className="text-error hover:text-error hover:bg-error/10"
-              >
-                <Icon icon="trash" size="sm" className="mr-1" />
-                Delete
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Stats */}
-        <div className="flex items-center gap-4 text-sm text-foreground-secondary mb-8">
-          <span className="flex items-center gap-1">
-            <Icon icon="box" size="sm" />
-            {collection.toolCount} {collection.toolCount === 1 ? 'tool' : 'tools'}
-          </span>
-          <span>Updated {new Date(collection.updatedAt).toLocaleDateString()}</span>
-        </div>
-
-        {/* MCP URLs - only for public collections */}
-        {collection.isPublic && <McpUrlSection collectionId={collection.id} />}
-
-        {/* Add Tool Search */}
-        {collection.isOwner && (
-          <div className="mb-6">
-            <h2 className="text-sm font-medium text-foreground mb-2">Add Tools</h2>
-            <AddToolSearch
-              collectionId={collection.id}
-              existingToolIds={existingToolIds}
-              onToolAdded={handleToolAdded}
-            />
-          </div>
-        )}
-
-        {/* Tools List */}
-        <div>
-          <h2 className="text-sm font-medium text-foreground mb-3">Tools in this Collection</h2>
-          <CollectionToolList
-            tools={collection.tools}
-            onRemove={collection.isOwner ? handleRemoveTool : undefined}
-            removingId={removingToolId}
-            isOwner={collection.isOwner}
+        )
+      }
+    >
+      {/* Edit Form */}
+      {isEditing && (
+        <div className="bg-background border border-border rounded-lg p-6 mb-8">
+          <CollectionForm
+            initialData={{
+              name: collection.name,
+              description: collection.description,
+              isPublic: collection.isPublic,
+            }}
+            onSubmit={handleUpdate}
+            onCancel={() => setIsEditing(false)}
+            isSubmitting={isUpdating}
+            submitLabel="Save Changes"
           />
         </div>
+      )}
+
+      {/* Description */}
+      {!isEditing && collection.description && (
+        <p className="text-foreground-secondary mb-8">{collection.description}</p>
+      )}
+
+      {/* MCP URLs - only for public collections */}
+      {collection.isPublic && <McpUrlSection collectionId={collection.id} />}
+
+      {/* Add Tool Search */}
+      {collection.isOwner && (
+        <div className="mb-6">
+          <h2 className="text-sm font-medium text-foreground mb-2">Add Tools</h2>
+          <AddToolSearch
+            collectionId={collection.id}
+            existingToolIds={existingToolIds}
+            onToolAdded={handleToolAdded}
+          />
+        </div>
+      )}
+
+      {/* Tools List */}
+      <div>
+        <h2 className="text-sm font-medium text-foreground mb-3">Tools in this Collection</h2>
+        <CollectionToolList
+          tools={collection.tools}
+          onRemove={collection.isOwner ? handleRemoveTool : undefined}
+          removingId={removingToolId}
+          isOwner={collection.isOwner}
+        />
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
