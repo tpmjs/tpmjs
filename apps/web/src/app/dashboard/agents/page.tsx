@@ -247,7 +247,11 @@ export default function AgentsPage(): React.ReactElement {
                   </TableCell>
                   <TableCell>
                     <span className="text-foreground-secondary">
-                      {agent.toolCount + agent.collectionCount * 5}
+                      {agent.toolCount > 0 && agent.collectionCount > 0
+                        ? `${agent.toolCount} + ${agent.collectionCount} collections`
+                        : agent.collectionCount > 0
+                          ? `${agent.collectionCount} collection${agent.collectionCount !== 1 ? 's' : ''}`
+                          : agent.toolCount}
                     </span>
                   </TableCell>
                   <TableCell>

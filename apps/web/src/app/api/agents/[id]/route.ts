@@ -1,8 +1,18 @@
 import { prisma } from '@tpmjs/db';
 import { UpdateAgentSchema } from '@tpmjs/types/agent';
 import { headers } from 'next/headers';
-import { type NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
+import { logActivity } from '~/lib/activity';
+import {
+  apiConflict,
+  apiForbidden,
+  apiInternalError,
+  apiNotFound,
+  apiSuccess,
+  apiUnauthorized,
+  apiValidationError,
+} from '~/lib/api-response';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -16,7 +26,9 @@ type RouteContext = {
  * GET /api/agents/[id]
  * Get a single agent's details
  */
-export async function GET(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function GET(_request: NextRequest, context: RouteContext) {
+  const requestId = crypto.randomUUID();
+
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     const { id } = await context.params;
@@ -35,6 +47,7 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
             },
           },
           orderBy: { position: 'asc' },
+          take: 50, // Limit to prevent excessive data fetch
         },
         tools: {
           include: {
@@ -53,6 +66,7 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
             },
           },
           orderBy: { position: 'asc' },
+          take: 100, // Limit to prevent excessive data fetch
         },
         _count: {
           select: {
@@ -65,18 +79,17 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
     });
 
     if (!agent) {
-      return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+      return apiNotFound('Agent', requestId);
     }
 
     // Check access - owner or public
     const isOwner = session?.user?.id === agent.userId;
     if (!isOwner && !agent.isPublic) {
-      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      return apiForbidden('Access denied', requestId);
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
+    return apiSuccess(
+      {
         ...agent,
         isOwner,
         toolCount: agent._count.tools,
@@ -101,10 +114,11 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
         })),
         _count: undefined,
       },
-    });
+      { requestId }
+    );
   } catch (error) {
     console.error('Failed to get agent:', error);
-    return NextResponse.json({ success: false, error: 'Failed to get agent' }, { status: 500 });
+    return apiInternalError('Failed to get agent', requestId);
   }
 }
 
@@ -112,20 +126,23 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
  * PATCH /api/agents/[id]
  * Update an agent's configuration
  */
-export async function PATCH(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  const requestId = crypto.randomUUID();
+
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      return apiUnauthorized('Authentication required', requestId);
     }
 
     const { id } = await context.params;
     const body = await request.json();
     const parsed = UpdateAgentSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid request', details: parsed.error.flatten() },
-        { status: 400 }
+      return apiValidationError(
+        'Invalid request body',
+        { errors: parsed.error.flatten().fieldErrors },
+        requestId
       );
     }
 
@@ -135,10 +152,10 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
       select: { userId: true },
     });
     if (!existing) {
-      return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+      return apiNotFound('Agent', requestId);
     }
     if (existing.userId !== session.user.id) {
-      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      return apiForbidden('Access denied', requestId);
     }
 
     // Check UID uniqueness if being changed
@@ -147,7 +164,7 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
         where: { uid: parsed.data.uid, id: { not: id } },
       });
       if (existingByUid) {
-        return NextResponse.json({ success: false, error: 'UID already in use' }, { status: 409 });
+        return apiConflict('UID already in use', requestId);
       }
     }
 
@@ -157,10 +174,7 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
         where: { userId: session.user.id, name: parsed.data.name, id: { not: id } },
       });
       if (existingByName) {
-        return NextResponse.json(
-          { success: false, error: 'An agent with this name already exists' },
-          { status: 409 }
-        );
+        return apiConflict('An agent with this name already exists', requestId);
       }
     }
 
@@ -190,18 +204,27 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: {
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'AGENT_UPDATED',
+      targetName: agent.name,
+      targetType: 'agent',
+      agentId: agent.id,
+    });
+
+    return apiSuccess(
+      {
         ...agent,
         toolCount: agent._count.tools,
         collectionCount: agent._count.collections,
         _count: undefined,
       },
-    });
+      { requestId }
+    );
   } catch (error) {
     console.error('Failed to update agent:', error);
-    return NextResponse.json({ success: false, error: 'Failed to update agent' }, { status: 500 });
+    return apiInternalError('Failed to update agent', requestId);
   }
 }
 
@@ -209,35 +232,42 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
  * DELETE /api/agents/[id]
  * Delete an agent and all its conversations
  */
-export async function DELETE(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
+export async function DELETE(_request: NextRequest, context: RouteContext) {
+  const requestId = crypto.randomUUID();
+
   try {
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      return apiUnauthorized('Authentication required', requestId);
     }
 
     const { id } = await context.params;
 
-    // Check ownership
+    // Check ownership and get name for activity log
     const existing = await prisma.agent.findUnique({
       where: { id },
-      select: { userId: true },
+      select: { userId: true, name: true },
     });
     if (!existing) {
-      return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+      return apiNotFound('Agent', requestId);
     }
     if (existing.userId !== session.user.id) {
-      return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+      return apiForbidden('Access denied', requestId);
     }
 
     await prisma.agent.delete({ where: { id } });
 
-    return NextResponse.json({
-      success: true,
-      data: { deleted: true },
+    // Log activity (fire-and-forget) - note: agentId is not included since agent is deleted
+    logActivity({
+      userId: session.user.id,
+      type: 'AGENT_DELETED',
+      targetName: existing.name,
+      targetType: 'agent',
     });
+
+    return apiSuccess({ deleted: true }, { requestId });
   } catch (error) {
     console.error('Failed to delete agent:', error);
-    return NextResponse.json({ success: false, error: 'Failed to delete agent' }, { status: 500 });
+    return apiInternalError('Failed to delete agent', requestId);
   }
 }

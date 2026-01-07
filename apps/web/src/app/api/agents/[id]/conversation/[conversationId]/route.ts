@@ -12,6 +12,16 @@ import type { AIProvider } from '@tpmjs/types/agent';
 import { SendMessageSchema } from '@tpmjs/types/agent';
 import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
+import { type RateLimitConfig, checkRateLimitDistributed } from '~/lib/rate-limit';
+
+/**
+ * Rate limit for chat messages: 30 requests per minute
+ * This is stricter than default because chat involves expensive LLM calls
+ */
+const CHAT_RATE_LIMIT: RateLimitConfig = {
+  limit: 30,
+  windowSeconds: 60,
+};
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -61,6 +71,12 @@ async function getProviderModel(
  * Accepts either agent id (cuid) or uid
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
+  // Check rate limit first to prevent expensive LLM calls (uses distributed KV when available)
+  const rateLimitResponse = await checkRateLimitDistributed(request, CHAT_RATE_LIMIT);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
   const { id: idOrUid, conversationId } = await context.params;
 
   try {

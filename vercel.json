@@ -56,6 +56,10 @@
     {
       "path": "/api/sync/stats-snapshot",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/sync/cleanup-activity",
+      "schedule": "0 3 * * *"
     }
   ]
 }

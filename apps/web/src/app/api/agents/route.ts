@@ -3,6 +3,7 @@ import { AGENT_LIMITS, CreateAgentSchema } from '@tpmjs/types/agent';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { logActivity } from '~/lib/activity';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -219,6 +220,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       });
 
       return newAgent;
+    });
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'AGENT_CREATED',
+      targetName: agent.name,
+      targetType: 'agent',
+      agentId: agent.id,
     });
 
     return NextResponse.json(

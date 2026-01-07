@@ -87,21 +87,59 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Number.parseInt(searchParams.get('limit') || '10'), 50);
 
     // Get recent messages for context (passed as JSON in 'messages' param)
+    // Wrap in try-catch to handle malformed JSON gracefully
     const messagesParam = searchParams.get('messages');
-    const recentMessages = messagesParam ? JSON.parse(messagesParam) : [];
+    let recentMessages: string[] = [];
+    if (messagesParam) {
+      try {
+        const parsed = JSON.parse(messagesParam);
+        if (Array.isArray(parsed)) {
+          recentMessages = parsed.filter((m): m is string => typeof m === 'string');
+        }
+      } catch {
+        console.warn('[SEARCH API] Failed to parse messages param, ignoring');
+      }
+    }
 
     console.log(
       `🔎 [SEARCH API] Query: "${query}", Category: ${category}, Limit: ${limit}, Messages: ${recentMessages.length}`
     );
 
-    // Fetch all tools with package info
+    // Extract search tokens for database-level pre-filtering
+    const searchTokens = tokenize(query).filter((t) => t.length >= 2);
+    const hasSearchQuery = searchTokens.length > 0;
+
+    // Build database filter - pre-filter at DB level to reduce in-memory processing
+    // Use OR conditions to find tools that match ANY search token
+    const dbFilter = {
+      ...(category && { package: { category } }),
+      ...(hasSearchQuery && {
+        OR: [
+          // Match tool name
+          { name: { contains: query, mode: 'insensitive' as const } },
+          // Match tool description
+          { description: { contains: query, mode: 'insensitive' as const } },
+          // Match package name
+          { package: { npmPackageName: { contains: query, mode: 'insensitive' as const } } },
+          // Match package description
+          { package: { npmDescription: { contains: query, mode: 'insensitive' as const } } },
+          // Also try individual tokens for partial matches
+          ...searchTokens
+            .slice(0, 3)
+            .flatMap((token) => [
+              { name: { contains: token, mode: 'insensitive' as const } },
+              { description: { contains: token, mode: 'insensitive' as const } },
+            ]),
+        ],
+      }),
+    };
+
+    // Fetch filtered tools with package info (max 500 for BM25 scoring)
     const tools = await prisma.tool.findMany({
       include: { package: true },
-      where: category
-        ? {
-            package: { category },
-          }
-        : undefined,
+      where: dbFilter,
+      take: hasSearchQuery ? 500 : 100, // Limit results for performance
+      orderBy: hasSearchQuery ? undefined : { qualityScore: 'desc' },
     });
 
     console.log(`📊 [SEARCH API] Found ${tools.length} tools in database`);

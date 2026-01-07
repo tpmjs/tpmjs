@@ -3,6 +3,7 @@ import { AGENT_LIMITS, AddCollectionToAgentSchema } from '@tpmjs/types/agent';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { logActivity } from '~/lib/activity';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     // Check agent ownership
     const agent = await prisma.agent.findUnique({
       where: { id },
-      select: { userId: true, _count: { select: { collections: true } } },
+      select: { userId: true, name: true, _count: { select: { collections: true } } },
     });
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
@@ -174,6 +175,17 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           },
         },
       },
+    });
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'AGENT_COLLECTION_ADDED',
+      targetName: agent.name,
+      targetType: 'agent',
+      agentId: id,
+      collectionId: agentCollection.collectionId,
+      metadata: { collectionName: agentCollection.collection.name },
     });
 
     return NextResponse.json(

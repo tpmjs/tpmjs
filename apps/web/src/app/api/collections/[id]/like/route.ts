@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { logActivity } from '~/lib/activity';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -168,6 +169,15 @@ export async function POST(
       }),
     ]);
 
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'COLLECTION_LIKED',
+      targetName: collection.name,
+      targetType: 'collection',
+      collectionId: id,
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -242,6 +252,12 @@ export async function DELETE(
       });
     }
 
+    // Get collection name for activity log
+    const collection = await prisma.collection.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
     // Delete like and decrement count atomically
     const [, updatedCollection] = await prisma.$transaction([
       prisma.collectionLike.delete({
@@ -257,6 +273,17 @@ export async function DELETE(
         data: { likeCount: { decrement: 1 } },
       }),
     ]);
+
+    // Log activity (fire-and-forget)
+    if (collection) {
+      logActivity({
+        userId: session.user.id,
+        type: 'COLLECTION_UNLIKED',
+        targetName: collection.name,
+        targetType: 'collection',
+        collectionId: id,
+      });
+    }
 
     return NextResponse.json({
       success: true,

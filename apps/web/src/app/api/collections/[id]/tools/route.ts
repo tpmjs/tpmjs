@@ -2,6 +2,7 @@ import { prisma } from '@tpmjs/db';
 import { AddToolToCollectionSchema, COLLECTION_LIMITS } from '@tpmjs/types/collection';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { logActivity } from '~/lib/activity';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -182,6 +183,17 @@ export async function POST(
         note: note || null,
         position: maxPosition,
       },
+    });
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'COLLECTION_TOOL_ADDED',
+      targetName: collection.name,
+      targetType: 'collection',
+      collectionId,
+      toolId,
+      metadata: { toolName: tool.name },
     });
 
     return NextResponse.json(

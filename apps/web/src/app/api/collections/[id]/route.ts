@@ -2,6 +2,7 @@ import { prisma } from '@tpmjs/db';
 import { UpdateCollectionSchema } from '@tpmjs/types/collection';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { logActivity } from '~/lib/activity';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -32,13 +33,25 @@ interface RouteContext {
 /**
  * GET /api/collections/[id]
  * Get a single collection with its tools
+ *
+ * Query params:
+ * - toolsLimit: Max tools to return (default: 50, max: 100)
+ * - toolsOffset: Offset for tools pagination (default: 0)
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   context: RouteContext
 ): Promise<NextResponse<ApiResponse>> {
   const requestId = crypto.randomUUID();
   const { id } = await context.params;
+
+  // Parse pagination params for tools
+  const { searchParams } = new URL(request.url);
+  const toolsLimit = Math.min(
+    Math.max(Number.parseInt(searchParams.get('toolsLimit') || '50', 10), 1),
+    100
+  );
+  const toolsOffset = Math.max(Number.parseInt(searchParams.get('toolsOffset') || '0', 10), 0);
 
   try {
     // Check authentication
@@ -57,7 +70,7 @@ export async function GET(
       );
     }
 
-    // Fetch collection with tools
+    // Fetch collection with paginated tools
     const collection = await prisma.collection.findUnique({
       where: { id },
       include: {
@@ -76,6 +89,8 @@ export async function GET(
             },
           },
           orderBy: { position: 'asc' },
+          take: toolsLimit + 1, // Fetch one extra to check hasMore
+          skip: toolsOffset,
         },
         _count: { select: { tools: true } },
       },
@@ -104,6 +119,10 @@ export async function GET(
       );
     }
 
+    // Check if there are more tools
+    const hasMoreTools = collection.tools.length > toolsLimit;
+    const paginatedTools = hasMoreTools ? collection.tools.slice(0, toolsLimit) : collection.tools;
+
     return NextResponse.json({
       success: true,
       data: {
@@ -115,7 +134,7 @@ export async function GET(
         createdAt: collection.createdAt,
         updatedAt: collection.updatedAt,
         isOwner: collection.userId === session.user.id,
-        tools: collection.tools.map((ct) => ({
+        tools: paginatedTools.map((ct) => ({
           id: ct.id,
           toolId: ct.toolId,
           position: ct.position,
@@ -130,6 +149,12 @@ export async function GET(
         })),
       },
       meta: { version: API_VERSION, timestamp: new Date().toISOString(), requestId },
+      pagination: {
+        toolsLimit,
+        toolsOffset,
+        toolsReturned: paginatedTools.length,
+        hasMoreTools,
+      },
     });
   } catch (error) {
     console.error('[API Error] GET /api/collections/[id]:', error);
@@ -258,6 +283,15 @@ export async function PATCH(
       },
     });
 
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'COLLECTION_UPDATED',
+      targetName: collection.name,
+      targetType: 'collection',
+      collectionId: collection.id,
+    });
+
     return NextResponse.json({
       success: true,
       data: {
@@ -339,9 +373,20 @@ export async function DELETE(
       );
     }
 
+    // Store name for activity log before deletion
+    const collectionName = collection.name;
+
     // Delete collection (cascade will delete CollectionTools)
     await prisma.collection.delete({
       where: { id },
+    });
+
+    // Log activity (fire-and-forget) - note: collectionId not included since it's deleted
+    logActivity({
+      userId: session.user.id,
+      type: 'COLLECTION_DELETED',
+      targetName: collectionName,
+      targetType: 'collection',
     });
 
     return NextResponse.json({

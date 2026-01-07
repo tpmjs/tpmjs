@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { logActivity } from '~/lib/activity';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -117,9 +118,10 @@ export async function POST(
       );
     }
 
-    // Check agent exists
+    // Check agent exists and get name for activity log
     const agent = await prisma.agent.findUnique({
       where: { id },
+      select: { id: true, name: true, likeCount: true },
     });
 
     if (!agent) {
@@ -167,6 +169,15 @@ export async function POST(
         data: { likeCount: { increment: 1 } },
       }),
     ]);
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'AGENT_LIKED',
+      targetName: agent.name,
+      targetType: 'agent',
+      agentId: id,
+    });
 
     return NextResponse.json({
       success: true,
@@ -216,7 +227,7 @@ export async function DELETE(
       );
     }
 
-    // Check if liked
+    // Check if liked and get agent info for activity log
     const existingLike = await prisma.agentLike.findUnique({
       where: {
         userId_agentId: {
@@ -242,6 +253,12 @@ export async function DELETE(
       });
     }
 
+    // Get agent name for activity log
+    const agent = await prisma.agent.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
     // Delete like and decrement count atomically
     const [, updatedAgent] = await prisma.$transaction([
       prisma.agentLike.delete({
@@ -257,6 +274,17 @@ export async function DELETE(
         data: { likeCount: { decrement: 1 } },
       }),
     ]);
+
+    // Log activity (fire-and-forget)
+    if (agent) {
+      logActivity({
+        userId: session.user.id,
+        type: 'AGENT_UNLIKED',
+        targetName: agent.name,
+        targetType: 'agent',
+        agentId: id,
+      });
+    }
 
     return NextResponse.json({
       success: true,

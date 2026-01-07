@@ -2,6 +2,7 @@ import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { logActivity } from '~/lib/activity';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -24,10 +25,10 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
 
     const { id, collectionId } = await context.params;
 
-    // Check agent ownership
+    // Check agent ownership and get agent name for activity log
     const agent = await prisma.agent.findUnique({
       where: { id },
-      select: { userId: true },
+      select: { userId: true, name: true },
     });
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
@@ -36,9 +37,26 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
+    // Get collection name for activity log
+    const collection = await prisma.collection.findUnique({
+      where: { id: collectionId },
+      select: { name: true },
+    });
+
     // Delete the agent-collection link
     await prisma.agentCollection.deleteMany({
       where: { agentId: id, collectionId },
+    });
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'AGENT_COLLECTION_REMOVED',
+      targetName: agent.name,
+      targetType: 'agent',
+      agentId: id,
+      collectionId,
+      metadata: collection ? { collectionName: collection.name } : undefined,
     });
 
     return NextResponse.json({

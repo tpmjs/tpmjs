@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
+import { logActivity } from '~/lib/activity';
 import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
@@ -83,12 +84,17 @@ export async function DELETE(
       );
     }
 
-    // Find the collection-tool entry
+    // Find the collection-tool entry with tool info for activity log
     const collectionTool = await prisma.collectionTool.findUnique({
       where: {
         collectionId_toolId: {
           collectionId,
           toolId,
+        },
+      },
+      include: {
+        tool: {
+          select: { name: true },
         },
       },
     });
@@ -107,6 +113,17 @@ export async function DELETE(
     // Delete the entry
     await prisma.collectionTool.delete({
       where: { id: collectionTool.id },
+    });
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'COLLECTION_TOOL_REMOVED',
+      targetName: collection.name,
+      targetType: 'collection',
+      collectionId,
+      toolId,
+      metadata: { toolName: collectionTool.tool.name },
     });
 
     return NextResponse.json({

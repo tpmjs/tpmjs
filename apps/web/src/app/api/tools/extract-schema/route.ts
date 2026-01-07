@@ -53,19 +53,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Tool not found' }, { status: 404 });
     }
 
-    // Rate limit: 1 minute cooldown
-    if (tool.schemaExtractedAt) {
-      const timeSinceLastExtraction = Date.now() - tool.schemaExtractedAt.getTime();
-      const cooldownMs = 60000; // 1 minute
+    // Rate limiting based on last attempt
+    // - If last attempt succeeded: 1 hour cooldown (re-extraction rarely needed)
+    // - If last attempt failed: 1 minute cooldown (allow retry)
+    // - If no previous attempt: no cooldown
+    if (tool.schemaExtractionAttemptAt) {
+      const timeSinceLastAttempt = Date.now() - tool.schemaExtractionAttemptAt.getTime();
+      const lastAttemptFailed = !!tool.schemaExtractionError;
+      const cooldownMs = lastAttemptFailed ? 60_000 : 3600_000; // 1 min if failed, 1 hour if succeeded
 
-      if (timeSinceLastExtraction < cooldownMs) {
-        const retryAfter = Math.ceil((cooldownMs - timeSinceLastExtraction) / 1000);
+      if (timeSinceLastAttempt < cooldownMs) {
+        const retryAfter = Math.ceil((cooldownMs - timeSinceLastAttempt) / 1000);
         return NextResponse.json(
           {
             success: false,
             error: 'Rate limited',
-            message: `Please wait ${retryAfter} seconds before trying again`,
+            message: lastAttemptFailed
+              ? `Please wait ${retryAfter} seconds before retrying failed extraction`
+              : `Schema was recently extracted. Please wait ${Math.ceil(retryAfter / 60)} minutes before re-extracting`,
             retryAfter,
+            lastAttemptFailed,
           },
           { status: 429 }
         );
@@ -88,6 +95,7 @@ export async function POST(request: NextRequest) {
 
     if (schemaResult.success) {
       // Update tool with extracted schema
+      const now = new Date();
       const updatedTool = await prisma.tool.update({
         where: { id: tool.id },
         data: {
@@ -97,7 +105,9 @@ export async function POST(request: NextRequest) {
           // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
           parameters: convertJsonSchemaToParameters(schemaResult.inputSchema) as any,
           schemaSource: 'extracted',
-          schemaExtractedAt: new Date(),
+          schemaExtractedAt: now,
+          schemaExtractionAttemptAt: now, // Track attempt for rate limiting
+          schemaExtractionError: null, // Clear any previous error on success
         },
         select: {
           id: true,
@@ -130,11 +140,13 @@ export async function POST(request: NextRequest) {
       error: schemaResult.error,
     });
 
-    // Update tool to mark extraction attempt
+    // Update tool to mark extraction attempt and store error (allows retry after 1 min cooldown)
     await prisma.tool.update({
       where: { id: tool.id },
       data: {
-        schemaExtractedAt: new Date(), // Update timestamp even on failure for rate limiting
+        schemaExtractionAttemptAt: new Date(), // Track attempt for rate limiting
+        schemaExtractionError: schemaResult.error || 'Unknown extraction error', // Store error to enable retry
+        // Note: schemaExtractedAt is NOT updated - it only tracks successful extractions
       },
     });
 
@@ -143,6 +155,7 @@ export async function POST(request: NextRequest) {
       error: 'Schema extraction failed',
       message: schemaResult.error,
       schemaSource: tool.schemaSource,
+      canRetryAfter: 60, // Inform client they can retry after 1 minute
     });
   } catch (error) {
     console.error('[Extract Schema] Error:', error);

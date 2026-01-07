@@ -3,6 +3,7 @@
 import { useSession } from '@/lib/auth-client';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
+import { DashboardActivityStream } from '~/components/DashboardActivityStream';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 export default function DashboardPage(): React.ReactElement {
@@ -59,31 +60,40 @@ export default function DashboardPage(): React.ReactElement {
         </Link>
       </div>
 
-      {/* Profile Section */}
-      <div className="bg-background border border-border rounded-lg p-6">
-        <h2 className="text-lg font-medium text-foreground mb-4">Profile</h2>
+      {/* Two-column layout for Profile and Activity */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Profile Section */}
+        <div className="bg-background border border-border rounded-lg p-6">
+          <h2 className="text-lg font-medium text-foreground mb-4">Profile</h2>
 
-        <div className="space-y-4">
-          <div>
-            <span className="block text-sm text-foreground-secondary">Name</span>
-            <p className="text-foreground font-medium">{session?.user?.name || 'User'}</p>
-          </div>
+          <div className="space-y-4">
+            <div>
+              <span className="block text-sm text-foreground-secondary">Name</span>
+              <p className="text-foreground font-medium">{session?.user?.name || 'User'}</p>
+            </div>
 
-          <div>
-            <span className="block text-sm text-foreground-secondary">Email</span>
-            <p className="text-foreground font-medium">{session?.user?.email}</p>
-          </div>
+            <div>
+              <span className="block text-sm text-foreground-secondary">Email</span>
+              <p className="text-foreground font-medium">{session?.user?.email}</p>
+            </div>
 
-          <div>
-            <span className="block text-sm text-foreground-secondary">Email Verified</span>
-            <p className="text-foreground font-medium">
-              {session?.user?.emailVerified ? (
-                <span className="text-success">Verified</span>
-              ) : (
-                <span className="text-warning">Not verified</span>
-              )}
-            </p>
+            <div>
+              <span className="block text-sm text-foreground-secondary">Email Verified</span>
+              <p className="text-foreground font-medium">
+                {session?.user?.emailVerified ? (
+                  <span className="text-success">Verified</span>
+                ) : (
+                  <span className="text-warning">Not verified</span>
+                )}
+              </p>
+            </div>
           </div>
+        </div>
+
+        {/* Activity Stream Section */}
+        <div className="bg-background border border-border rounded-lg p-6">
+          <h2 className="text-lg font-medium text-foreground mb-4">Recent Activity</h2>
+          <DashboardActivityStream autoRefreshInterval={30000} />
         </div>
       </div>
     </DashboardLayout>

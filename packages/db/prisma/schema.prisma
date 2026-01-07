@@ -72,9 +72,11 @@ model Tool {
   aiAgent     Json?  @map("ai_agent") @db.JsonB // @deprecated - will be auto-extracted in future
 
   // Schema Extraction Fields
-  inputSchema       Json?     @map("input_schema") @db.JsonB // Full JSON Schema from executor
-  schemaSource      String?   @map("schema_source") @db.VarChar(20) // 'extracted' | 'author' | null
-  schemaExtractedAt DateTime? @map("schema_extracted_at")
+  inputSchema                Json?     @map("input_schema") @db.JsonB // Full JSON Schema from executor
+  schemaSource               String?   @map("schema_source") @db.VarChar(20) // 'extracted' | 'author' | null
+  schemaExtractedAt          DateTime? @map("schema_extracted_at") // Only updated on successful extraction
+  schemaExtractionAttemptAt  DateTime? @map("schema_extraction_attempt_at") // Updated on every attempt (for rate limiting)
+  schemaExtractionError      String?   @map("schema_extraction_error") @db.Text // Error message from last failed attempt
 
   // Tool Discovery Fields
   toolDiscoverySource String? @map("tool_discovery_source") @db.VarChar(20) // 'auto' | 'manual' | null
@@ -342,6 +344,7 @@ model User {
   toolLikes       ToolLike[]
   collectionLikes CollectionLike[]
   agentLikes      AgentLike[]
+  activities      UserActivity[]
 
   @@map("users")
 }
@@ -712,4 +715,63 @@ model AgentLike {
   @@index([agentId])
   @@index([userId])
   @@map("agent_likes")
+}
+
+// ============================================================================
+// Activity Stream Models
+// ============================================================================
+
+/// Activity type enum - types of user activities tracked
+enum ActivityType {
+  AGENT_CREATED
+  AGENT_UPDATED
+  AGENT_DELETED
+  AGENT_TOOL_ADDED
+  AGENT_TOOL_REMOVED
+  AGENT_COLLECTION_ADDED
+  AGENT_COLLECTION_REMOVED
+  COLLECTION_CREATED
+  COLLECTION_UPDATED
+  COLLECTION_DELETED
+  COLLECTION_TOOL_ADDED
+  COLLECTION_TOOL_REMOVED
+  TOOL_LIKED
+  TOOL_UNLIKED
+  COLLECTION_LIKED
+  COLLECTION_UNLIKED
+  AGENT_LIKED
+  AGENT_UNLIKED
+}
+
+/// UserActivity - tracks user actions for activity stream
+model UserActivity {
+  id           String       @id @default(cuid())
+
+  // Owner relationship
+  userId       String       @map("user_id")
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Activity type
+  type         ActivityType
+
+  // Optional entity references (for linking to entities if they still exist)
+  agentId      String?      @map("agent_id")
+  collectionId String?      @map("collection_id")
+  toolId       String?      @map("tool_id")
+
+  // Denormalized fields (stored at creation time for display even after entity deletion)
+  targetName   String       @map("target_name") @db.VarChar(200)
+  targetType   String       @map("target_type") @db.VarChar(50) // 'agent' | 'collection' | 'tool'
+
+  // Additional context (e.g., toolName when adding to collection)
+  metadata     Json?        @db.JsonB
+
+  // Timestamps
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([type])
+  @@index([createdAt])
+  @@map("user_activities")
 }
