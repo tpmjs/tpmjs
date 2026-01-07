@@ -1,10 +1,10 @@
 import { writeFileSync } from 'node:fs';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { and, desc, eq, gte, inArray, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray } from 'drizzle-orm';
 import ora from 'ora';
 import { getDatabase } from '../db/client.js';
-import { categories, contexts, objects, toolIdeas, toolSkeletons, verbs } from '../db/schema.js';
+import { contexts, objects, toolIdeas, toolSkeletons, verbs } from '../db/schema.js';
 
 interface ExportedTool {
   name: string;
@@ -46,17 +46,13 @@ export const exportCommand = new Command('export')
       }
 
       // Query tools with skeleton relations
-      let query = db
+      const baseQuery = db
         .select()
         .from(toolIdeas)
         .where(and(...conditions))
         .orderBy(desc(toolIdeas.qualityScore));
 
-      if (limit > 0) {
-        query = query.limit(limit);
-      }
-
-      const tools = query.all();
+      const tools = limit > 0 ? baseQuery.limit(limit).all() : baseQuery.all();
 
       spinner.text = `Found ${tools.length} tools to export`;
 
@@ -121,11 +117,11 @@ export const exportCommand = new Command('export')
             name: tool.name,
             description: tool.description,
             category,
-            parameters: JSON.parse(tool.parametersJson),
-            returns: JSON.parse(tool.returnsJson),
-            aiAgent: JSON.parse(tool.aiAgentJson),
-            tags: JSON.parse(tool.tagsJson),
-            examples: JSON.parse(tool.examplesJson),
+            parameters: JSON.parse(tool.parametersJson ?? '[]'),
+            returns: JSON.parse(tool.returnsJson ?? '{}'),
+            aiAgent: JSON.parse(tool.aiAgentJson ?? '{}'),
+            tags: JSON.parse(tool.tagsJson ?? '[]'),
+            examples: JSON.parse(tool.examplesJson ?? '[]'),
             qualityScore: tool.qualityScore,
             skeleton: {
               verb: verb.name,

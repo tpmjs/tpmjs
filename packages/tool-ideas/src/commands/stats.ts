@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import { desc, eq, sql } from 'drizzle-orm';
 import { getDatabase } from '../db/client.js';
-import { toolIdeas, toolSkeletons } from '../db/schema.js';
+import { toolIdeas } from '../db/schema.js';
 import { getEnrichmentStats } from '../enrichment/batch-processor.js';
 import { getSkeletonStats } from '../generators/skeleton-generator.js';
 import { getVocabularyStats } from '../generators/vocabulary.js';

@@ -1,6 +1,6 @@
 import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
-import { and, eq, inArray, sql } from 'drizzle-orm';
+import { eq, inArray, sql } from 'drizzle-orm';
 import pLimit from 'p-limit';
 import { getDatabase } from '../db/client.js';
 import {
@@ -9,14 +9,13 @@ import {
   categories,
   contexts,
   objects,
-  processingBatches,
   processingErrors,
   toolIdeas,
   toolSkeletons,
   verbs,
 } from '../db/schema.js';
 import { type SkeletonWithRelations, createEnrichmentPrompt } from './prompts.js';
-import { type EnrichedTool, EnrichedToolSchema } from './schemas.js';
+import { EnrichedToolSchema } from './schemas.js';
 
 // =============================================================================
 // BATCH PROCESSOR OPTIONS
@@ -259,13 +258,21 @@ export class BatchProcessor {
           )
         : new Map();
 
-    return skeletons.map((s) => ({
-      ...s,
-      category: categoryMap.get(s.categoryId)!,
-      verb: verbMap.get(s.verbId)!,
-      object: objectMap.get(s.objectId)!,
-      context: s.contextId ? (contextMap.get(s.contextId) ?? null) : null,
-    }));
+    return skeletons
+      .map((s) => {
+        const category = categoryMap.get(s.categoryId);
+        const verb = verbMap.get(s.verbId);
+        const object = objectMap.get(s.objectId);
+        if (!category || !verb || !object) return null;
+        return {
+          ...s,
+          category,
+          verb,
+          object,
+          context: s.contextId ? (contextMap.get(s.contextId) ?? null) : null,
+        };
+      })
+      .filter((s): s is SkeletonWithRelations => s !== null);
   }
 
   /**
@@ -295,8 +302,8 @@ export class BatchProcessor {
 
       const enriched = result.object;
       const processingTime = Date.now() - startTime;
-      const promptTokens = result.usage?.promptTokens ?? 0;
-      const completionTokens = result.usage?.completionTokens ?? 0;
+      const promptTokens = result.usage?.inputTokens ?? 0;
+      const completionTokens = result.usage?.outputTokens ?? 0;
       const cost = calculateCost(promptTokens, completionTokens);
 
       // Save enriched tool
