@@ -6,6 +6,7 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
 
 interface Agent {
@@ -181,8 +182,13 @@ export default function PublicAgentChatPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
   const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Track first item index for prepending (Virtuoso pattern)
+  const [firstItemIndex, setFirstItemIndex] = useState(10000);
+
+  const virtuosoRef = useRef<VirtuosoHandle>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const toggleToolCall = (toolCallId: string) => {
@@ -214,25 +220,68 @@ export default function PublicAgentChatPage(): React.ReactElement {
     }
   }, [agentId]);
 
-  // Fetch messages for conversation
+  // Fetch messages for conversation (initial load - gets most recent 50)
   const fetchMessages = useCallback(async () => {
     if (!agent) return;
 
     try {
-      const response = await fetch(`/api/agents/${agent.uid}/conversation/${conversationId}`);
+      const response = await fetch(
+        `/api/agents/${agent.uid}/conversation/${conversationId}?limit=50`
+      );
       if (response.status === 404) {
         // Conversation doesn't exist yet, that's fine
+        setHasMoreMessages(false);
         return;
       }
       const data = await response.json();
 
       if (data.success) {
-        setMessages(data.data.messages || []);
+        const msgs = data.data.messages || [];
+        setMessages(msgs);
+        setHasMoreMessages(data.pagination?.hasMore ?? false);
+        // Reset first item index when loading fresh
+        setFirstItemIndex(10000);
       }
     } catch (err) {
       console.error('Failed to fetch messages:', err);
     }
   }, [agent, conversationId]);
+
+  // Load older messages when scrolling up
+  const loadMoreMessages = useCallback(async () => {
+    if (!agent || isLoadingMore || !hasMoreMessages || messages.length === 0) return;
+
+    setIsLoadingMore(true);
+    try {
+      // Get the timestamp of the oldest message we have
+      const oldestMessage = messages[0];
+      const beforeTimestamp = oldestMessage?.createdAt;
+
+      if (!beforeTimestamp) return;
+
+      const response = await fetch(
+        `/api/agents/${agent.uid}/conversation/${conversationId}?limit=50&before=${encodeURIComponent(beforeTimestamp)}`
+      );
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+
+      if (data.success) {
+        const olderMessages = data.data.messages || [];
+        if (olderMessages.length > 0) {
+          // Prepend older messages and adjust firstItemIndex
+          setFirstItemIndex((prev) => prev - olderMessages.length);
+          setMessages((prev) => [...olderMessages, ...prev]);
+        }
+        setHasMoreMessages(data.pagination?.hasMore ?? false);
+      }
+    } catch (err) {
+      console.error('Failed to load more messages:', err);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [agent, conversationId, isLoadingMore, hasMoreMessages, messages]);
 
   useEffect(() => {
     const init = async () => {
@@ -247,10 +296,6 @@ export default function PublicAgentChatPage(): React.ReactElement {
       fetchMessages();
     }
   }, [agent, fetchMessages]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  });
 
   const handleSend = async () => {
     if (!input.trim() || !agent || isSending) return;
@@ -441,106 +486,136 @@ export default function PublicAgentChatPage(): React.ReactElement {
       </div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full">
+      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full overflow-hidden">
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 && !streamingContent && (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Icon icon="message" size="lg" className="text-primary" />
-                </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">Start a conversation</h3>
-                <p className="text-foreground-secondary max-w-sm">
-                  Send a message to start chatting with {agent.name}.
-                </p>
+        {messages.length === 0 && !streamingContent ? (
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Icon icon="message" size="lg" className="text-primary" />
               </div>
+              <h3 className="text-lg font-medium text-foreground mb-2">Start a conversation</h3>
+              <p className="text-foreground-secondary max-w-sm">
+                Send a message to start chatting with {agent.name}.
+              </p>
             </div>
-          )}
-
-          {messages.map((message) => {
-            // Parse tool output safely
-            const getToolOutput = () => {
-              if (message.toolResult) return message.toolResult;
-              try {
-                return JSON.parse(message.content || '{}');
-              } catch {
-                return { result: message.content };
-              }
-            };
-
-            return (
-              <div
-                key={message.id}
-                className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
-              >
-                {message.role === 'TOOL' ? (
-                  <div className="max-w-[80%]">
-                    <ToolCallCard
-                      toolCall={{
-                        toolCallId: message.toolCallId || message.id,
-                        toolName: message.toolName || 'Unknown Tool',
-                        output: getToolOutput(),
-                        status: 'success',
-                      }}
-                      isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
-                      onToggle={() => toggleToolCall(message.toolCallId || message.id)}
-                    />
+          </div>
+        ) : (
+          <Virtuoso
+            ref={virtuosoRef}
+            className="flex-1"
+            data={messages}
+            firstItemIndex={firstItemIndex}
+            initialTopMostItemIndex={messages.length - 1}
+            startReached={loadMoreMessages}
+            followOutput="smooth"
+            components={{
+              Header: () =>
+                hasMoreMessages ? (
+                  <div className="flex justify-center py-4">
+                    {isLoadingMore ? (
+                      <div className="flex items-center gap-2 text-foreground-secondary">
+                        <Icon icon="loader" size="sm" className="animate-spin" />
+                        <span className="text-sm">Loading older messages...</span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={loadMoreMessages}
+                        className="text-sm text-primary hover:text-primary/80 transition-colors"
+                      >
+                        Load older messages
+                      </button>
+                    )}
                   </div>
-                ) : (
+                ) : null,
+              Footer: () => (
+                <div className="px-4 pb-4 space-y-4">
+                  {/* Live tool calls during streaming */}
+                  {toolCalls.length > 0 && (
+                    <div className="space-y-2">
+                      {toolCalls.map((tc) => (
+                        <div key={tc.toolCallId} className="flex justify-start">
+                          <div className="max-w-[80%]">
+                            <ToolCallCard
+                              toolCall={tc}
+                              isExpanded={expandedToolCalls.has(tc.toolCallId)}
+                              onToggle={() => toggleToolCall(tc.toolCallId)}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {streamingContent && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
+                        <p className="whitespace-pre-wrap text-sm">{streamingContent}</p>
+                        <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
+                      </div>
+                    </div>
+                  )}
+
+                  {isSending && !streamingContent && toolCalls.length === 0 && (
+                    <div className="flex justify-start">
+                      <div className="rounded-lg p-4 bg-surface-secondary">
+                        <div className="flex items-center gap-2 text-foreground-secondary">
+                          <Icon icon="loader" size="sm" className="animate-spin" />
+                          <span className="text-sm">Thinking...</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ),
+            }}
+            itemContent={(_index, message) => {
+              // Parse tool output safely
+              const getToolOutput = () => {
+                if (message.toolResult) return message.toolResult;
+                try {
+                  return JSON.parse(message.content || '{}');
+                } catch {
+                  return { result: message.content };
+                }
+              };
+
+              return (
+                <div className="px-4 py-2">
                   <div
-                    className={`max-w-[80%] rounded-lg p-4 ${
-                      message.role === 'USER'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-surface-secondary'
-                    }`}
+                    className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {/* Live tool calls during streaming */}
-          {toolCalls.length > 0 && (
-            <div className="space-y-2">
-              {toolCalls.map((tc) => (
-                <div key={tc.toolCallId} className="flex justify-start">
-                  <div className="max-w-[80%]">
-                    <ToolCallCard
-                      toolCall={tc}
-                      isExpanded={expandedToolCalls.has(tc.toolCallId)}
-                      onToggle={() => toggleToolCall(tc.toolCallId)}
-                    />
+                    {message.role === 'TOOL' ? (
+                      <div className="max-w-[80%]">
+                        <ToolCallCard
+                          toolCall={{
+                            toolCallId: message.toolCallId || message.id,
+                            toolName: message.toolName || 'Unknown Tool',
+                            output: getToolOutput(),
+                            status: 'success',
+                          }}
+                          isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
+                          onToggle={() => toggleToolCall(message.toolCallId || message.id)}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className={`max-w-[80%] rounded-lg p-4 ${
+                          message.role === 'USER'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-surface-secondary'
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {streamingContent && (
-            <div className="flex justify-start">
-              <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
-                <p className="whitespace-pre-wrap text-sm">{streamingContent}</p>
-                <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
-              </div>
-            </div>
-          )}
-
-          {isSending && !streamingContent && toolCalls.length === 0 && (
-            <div className="flex justify-start">
-              <div className="rounded-lg p-4 bg-surface-secondary">
-                <div className="flex items-center gap-2 text-foreground-secondary">
-                  <Icon icon="loader" size="sm" className="animate-spin" />
-                  <span className="text-sm">Thinking...</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
+              );
+            }}
+          />
+        )}
 
         {/* Error Message */}
         {error && (

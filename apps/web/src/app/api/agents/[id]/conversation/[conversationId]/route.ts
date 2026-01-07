@@ -396,14 +396,20 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
  *
  * Query params:
  * - limit: Max messages to return (default: 50, max: 100)
- * - offset: Number of messages to skip (default: 0)
+ * - before: Fetch messages created before this ISO timestamp (for loading older messages)
+ * - after: Fetch messages created after this ISO timestamp (for loading newer messages)
+ *
+ * Default behavior (no before/after): Returns the most recent messages
+ * With before: Returns messages older than the timestamp (for scrolling up)
+ * With after: Returns messages newer than the timestamp (for refreshing)
  */
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
   const { id: idOrUid, conversationId } = await context.params;
   const { searchParams } = new URL(request.url);
 
   const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50', 10), 100);
-  const offset = Number.parseInt(searchParams.get('offset') || '0', 10);
+  const before = searchParams.get('before');
+  const after = searchParams.get('after');
 
   try {
     // Fetch agent by id or uid
@@ -435,16 +441,37 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       );
     }
 
-    // Fetch messages with pagination
+    // Build the where clause based on cursor
+    const whereClause: {
+      conversationId: string;
+      createdAt?: { lt?: Date; gt?: Date };
+    } = { conversationId: conversation.id };
+
+    if (before) {
+      whereClause.createdAt = { lt: new Date(before) };
+    } else if (after) {
+      whereClause.createdAt = { gt: new Date(after) };
+    }
+
+    // Determine fetch order:
+    // - Default (no cursor) or "before": Fetch desc (newest first), then reverse for chronological order
+    // - "after": Fetch asc (oldest first) to get messages after the cursor
+    const shouldFetchDesc = !after;
+
+    // Fetch messages
     const messages = await prisma.message.findMany({
-      where: { conversationId: conversation.id },
-      orderBy: { createdAt: 'asc' },
+      where: whereClause,
+      orderBy: { createdAt: shouldFetchDesc ? 'desc' : 'asc' },
       take: limit + 1,
-      skip: offset,
     });
 
     const hasMore = messages.length > limit;
-    const paginatedMessages = hasMore ? messages.slice(0, limit) : messages;
+    let paginatedMessages = hasMore ? messages.slice(0, limit) : messages;
+
+    // Reverse if we fetched in desc order to maintain chronological order
+    if (shouldFetchDesc) {
+      paginatedMessages = paginatedMessages.reverse();
+    }
 
     const mappedMessages = paginatedMessages.map((m) => ({
       id: m.id,
@@ -471,8 +498,9 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       },
       pagination: {
         limit,
-        offset,
         hasMore,
+        ...(before && { before }),
+        ...(after && { after }),
       },
     });
   } catch (error) {
