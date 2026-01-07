@@ -669,29 +669,234 @@ export default function AgentDetailPage(): React.ReactElement {
         </Link>
       }
     >
-      {/* Quick Stats */}
-      <div className="grid gap-4 sm:grid-cols-3 mb-8">
-        <div className="bg-background border border-border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-foreground-secondary mb-1">
-            <Icon icon="puzzle" size="xs" />
-            <span className="text-sm">Tools</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">{agent.toolCount}</p>
+      {/* Configuration */}
+      <div className="bg-background border border-border rounded-lg p-6 mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-medium text-foreground">Configuration</h2>
+          {!isEditing && (
+            <Button size="sm" variant="secondary" onClick={() => setIsEditing(true)}>
+              <Icon icon="edit" size="xs" className="mr-1" />
+              Edit
+            </Button>
+          )}
         </div>
-        <div className="bg-background border border-border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-foreground-secondary mb-1">
-            <Icon icon="folder" size="xs" />
-            <span className="text-sm">Collections</span>
+
+        {isEditing ? (
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                />
+              </div>
+              <div>
+                <label htmlFor="uid" className="block text-sm font-medium text-foreground mb-1">
+                  UID
+                </label>
+                <input
+                  type="text"
+                  id="uid"
+                  name="uid"
+                  value={formData.uid}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Description
+              </label>
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                rows={2}
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="provider"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Provider
+                </label>
+                <select
+                  id="provider"
+                  name="provider"
+                  value={formData.provider}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                >
+                  {SUPPORTED_PROVIDERS.map((p) => (
+                    <option key={p} value={p}>
+                      {PROVIDER_DISPLAY_NAMES[p]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="modelId" className="block text-sm font-medium text-foreground mb-1">
+                  Model
+                </label>
+                <select
+                  id="modelId"
+                  name="modelId"
+                  value={formData.modelId}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                >
+                  {models.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="systemPrompt"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                System Prompt
+              </label>
+              <textarea
+                id="systemPrompt"
+                name="systemPrompt"
+                value={formData.systemPrompt}
+                onChange={handleChange}
+                rows={6}
+                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+              />
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div>
+                <label
+                  htmlFor="temperature"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Temperature
+                </label>
+                <input
+                  type="number"
+                  id="temperature"
+                  name="temperature"
+                  value={formData.temperature}
+                  onChange={handleChange}
+                  min={0}
+                  max={2}
+                  step={0.1}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="maxToolCallsPerTurn"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Max Tool Calls
+                </label>
+                <input
+                  type="number"
+                  id="maxToolCallsPerTurn"
+                  name="maxToolCallsPerTurn"
+                  value={formData.maxToolCallsPerTurn}
+                  onChange={handleChange}
+                  min={1}
+                  max={100}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="maxMessagesInContext"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Context Messages
+                </label>
+                <input
+                  type="number"
+                  id="maxMessagesInContext"
+                  name="maxMessagesInContext"
+                  value={formData.maxMessagesInContext}
+                  onChange={handleChange}
+                  min={1}
+                  max={100}
+                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditing(false);
+                  setFormData({
+                    name: agent.name,
+                    uid: agent.uid,
+                    description: agent.description || '',
+                    provider: agent.provider,
+                    modelId: agent.modelId,
+                    systemPrompt: agent.systemPrompt || '',
+                    temperature: agent.temperature,
+                    maxToolCallsPerTurn: agent.maxToolCallsPerTurn,
+                    maxMessagesInContext: agent.maxMessagesInContext,
+                  });
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleSave} disabled={isSaving}>
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
           </div>
-          <p className="text-2xl font-bold text-foreground">{agent.collectionCount}</p>
-        </div>
-        <div className="bg-background border border-border rounded-lg p-4">
-          <div className="flex items-center gap-2 text-foreground-secondary mb-1">
-            <Icon icon="terminal" size="xs" />
-            <span className="text-sm">Max Tool Calls</span>
-          </div>
-          <p className="text-2xl font-bold text-foreground">{agent.maxToolCallsPerTurn}</p>
-        </div>
+        ) : (
+          <dl className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm text-foreground-secondary">Description</dt>
+              <dd className="text-foreground">{agent.description || '-'}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-foreground-secondary">UID</dt>
+              <dd className="text-foreground font-mono text-sm">{agent.uid}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-foreground-secondary">Temperature</dt>
+              <dd className="text-foreground">{agent.temperature}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-foreground-secondary">Context Messages</dt>
+              <dd className="text-foreground">{agent.maxMessagesInContext}</dd>
+            </div>
+            <div className="sm:col-span-2">
+              <dt className="text-sm text-foreground-secondary">System Prompt</dt>
+              <dd className="text-foreground font-mono text-sm whitespace-pre-wrap bg-surface-secondary rounded-lg p-3 mt-1">
+                {agent.systemPrompt || '(No system prompt)'}
+              </dd>
+            </div>
+          </dl>
+        )}
       </div>
 
       {/* API Reference */}
@@ -925,236 +1130,6 @@ export default function AgentDetailPage(): React.ReactElement {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Configuration */}
-      <div className="bg-background border border-border rounded-lg p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-foreground">Configuration</h2>
-          {!isEditing && (
-            <Button size="sm" variant="secondary" onClick={() => setIsEditing(true)}>
-              <Icon icon="edit" size="xs" className="mr-1" />
-              Edit
-            </Button>
-          )}
-        </div>
-
-        {isEditing ? (
-          <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label htmlFor="uid" className="block text-sm font-medium text-foreground mb-1">
-                  UID
-                </label>
-                <input
-                  type="text"
-                  id="uid"
-                  name="uid"
-                  value={formData.uid}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-foreground mb-1"
-              >
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={2}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="provider"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Provider
-                </label>
-                <select
-                  id="provider"
-                  name="provider"
-                  value={formData.provider}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                >
-                  {SUPPORTED_PROVIDERS.map((p) => (
-                    <option key={p} value={p}>
-                      {PROVIDER_DISPLAY_NAMES[p]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="modelId" className="block text-sm font-medium text-foreground mb-1">
-                  Model
-                </label>
-                <select
-                  id="modelId"
-                  name="modelId"
-                  value={formData.modelId}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                >
-                  {models.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="systemPrompt"
-                className="block text-sm font-medium text-foreground mb-1"
-              >
-                System Prompt
-              </label>
-              <textarea
-                id="systemPrompt"
-                name="systemPrompt"
-                value={formData.systemPrompt}
-                onChange={handleChange}
-                rows={6}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <label
-                  htmlFor="temperature"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Temperature
-                </label>
-                <input
-                  type="number"
-                  id="temperature"
-                  name="temperature"
-                  value={formData.temperature}
-                  onChange={handleChange}
-                  min={0}
-                  max={2}
-                  step={0.1}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="maxToolCallsPerTurn"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Max Tool Calls
-                </label>
-                <input
-                  type="number"
-                  id="maxToolCallsPerTurn"
-                  name="maxToolCallsPerTurn"
-                  value={formData.maxToolCallsPerTurn}
-                  onChange={handleChange}
-                  min={1}
-                  max={100}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="maxMessagesInContext"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Context Messages
-                </label>
-                <input
-                  type="number"
-                  id="maxMessagesInContext"
-                  name="maxMessagesInContext"
-                  value={formData.maxMessagesInContext}
-                  onChange={handleChange}
-                  min={1}
-                  max={100}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEditing(false);
-                  setFormData({
-                    name: agent.name,
-                    uid: agent.uid,
-                    description: agent.description || '',
-                    provider: agent.provider,
-                    modelId: agent.modelId,
-                    systemPrompt: agent.systemPrompt || '',
-                    temperature: agent.temperature,
-                    maxToolCallsPerTurn: agent.maxToolCallsPerTurn,
-                    maxMessagesInContext: agent.maxMessagesInContext,
-                  });
-                }}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <dl className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-foreground-secondary">Description</dt>
-              <dd className="text-foreground">{agent.description || '-'}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-foreground-secondary">UID</dt>
-              <dd className="text-foreground font-mono text-sm">{agent.uid}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-foreground-secondary">Temperature</dt>
-              <dd className="text-foreground">{agent.temperature}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-foreground-secondary">Context Messages</dt>
-              <dd className="text-foreground">{agent.maxMessagesInContext}</dd>
-            </div>
-            <div className="sm:col-span-2">
-              <dt className="text-sm text-foreground-secondary">System Prompt</dt>
-              <dd className="text-foreground font-mono text-sm whitespace-pre-wrap bg-surface-secondary rounded-lg p-3 mt-1">
-                {agent.systemPrompt || '(No system prompt)'}
-              </dd>
-            </div>
-          </dl>
-        )}
       </div>
 
       {/* Danger Zone */}
