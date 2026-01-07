@@ -87,14 +87,14 @@ const API_SECTION_TABS = [
   { id: 'fetch', label: 'Fetch Conversations' },
 ];
 
-const LANG_TABS = [
+const LANG_OPTIONS = [
   { id: 'curl', label: 'cURL' },
   { id: 'typescript', label: 'TypeScript' },
   { id: 'python', label: 'Python' },
   { id: 'aisdk', label: 'AI SDK' },
 ];
 
-const FETCH_LANG_TABS = [
+const FETCH_LANG_OPTIONS = [
   { id: 'curl', label: 'cURL' },
   { id: 'typescript', label: 'TypeScript' },
   { id: 'python', label: 'Python' },
@@ -205,7 +205,7 @@ conv = resp.json()  # conv['data']['messages']`,
 
   const isSend = activeSection === 'send';
   const examples = isSend ? sendExamples : fetchExamples;
-  const langTabs = isSend ? LANG_TABS : FETCH_LANG_TABS;
+  const langOptions = isSend ? LANG_OPTIONS : FETCH_LANG_OPTIONS;
   const effectiveLang = isSend || activeLang !== 'aisdk' ? activeLang : 'curl';
   const currentExample = examples[effectiveLang] ?? examples.curl ?? { language: 'bash', code: '' };
 
@@ -220,17 +220,24 @@ conv = resp.json()  # conv['data']['messages']`,
         </code>
       </div>
 
-      <div className="border-b border-border px-4 py-2">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2">
         <Tabs
           tabs={API_SECTION_TABS}
           activeTab={activeSection}
           onTabChange={setActiveSection}
           size="sm"
         />
-      </div>
-
-      <div className="border-b border-border px-4 py-2 bg-surface-secondary/30">
-        <Tabs tabs={langTabs} activeTab={effectiveLang} onTabChange={setActiveLang} size="sm" />
+        <select
+          value={effectiveLang}
+          onChange={(e) => setActiveLang(e.target.value)}
+          className="px-2 py-1 text-sm bg-surface border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+        >
+          {langOptions.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="p-4">
