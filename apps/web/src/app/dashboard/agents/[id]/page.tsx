@@ -3,6 +3,7 @@
 import type { AIProvider } from '@tpmjs/types/agent';
 import { PROVIDER_MODELS, SUPPORTED_PROVIDERS } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
+import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import {
   Table,
@@ -13,6 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tpmjs/ui/Table/Table';
+import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -79,6 +81,136 @@ const PROVIDER_DISPLAY_NAMES: Record<AIProvider, string> = {
   GROQ: 'Groq',
   MISTRAL: 'Mistral',
 };
+
+const CODE_TABS = [
+  { id: 'curl', label: 'cURL' },
+  { id: 'typescript', label: 'TypeScript' },
+  { id: 'python', label: 'Python' },
+  { id: 'aisdk', label: 'AI SDK' },
+];
+
+function ApiUsageSection({ agent, agentTools }: { agent: Agent; agentTools: AgentTool[] }) {
+  const [activeTab, setActiveTab] = useState('curl');
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
+  const endpoint = `${baseUrl}/api/agents/${agent.uid}/conversation/my-conv-1`;
+
+  const toolPackages = agentTools.map((t) => t.tool.npmPackageName).join(' ') || '@tpmjs/hello';
+
+  const codeExamples: Record<string, { language: string; code: string }> = {
+    curl: {
+      language: 'bash',
+      code: `curl -X POST '${endpoint}' \\
+  -H 'Content-Type: application/json' \\
+  -d '{
+    "message": "Hello, what can you help me with?"
+  }'`,
+    },
+    typescript: {
+      language: 'typescript',
+      code: `const response = await fetch(
+  '${endpoint}',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      message: 'Hello, what can you help me with?'
+    })
+  }
+);
+
+// The response is a streaming SSE response
+const reader = response.body?.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader!.read();
+  if (done) break;
+
+  const chunk = decoder.decode(value);
+  // Parse SSE events: data: {...}
+  console.log(chunk);
+}`,
+    },
+    python: {
+      language: 'python',
+      code: `import requests
+
+response = requests.post(
+    '${endpoint}',
+    json={
+        'message': 'Hello, what can you help me with?'
+    },
+    stream=True
+)
+
+# Process streaming response
+for line in response.iter_lines():
+    if line:
+        # Parse SSE events: data: {...}
+        print(line.decode('utf-8'))`,
+    },
+    aisdk: {
+      language: 'typescript',
+      code: `import { streamText } from 'ai';
+
+// Option 1: Use the hosted agent directly via fetch
+const response = await fetch(
+  '${endpoint}',
+  {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: 'Hello!' })
+  }
+);
+
+// Option 2: Build your own agent with the same tools
+// Install tools: npm install ${toolPackages}
+import { createAnthropic } from '@ai-sdk/anthropic';
+
+const { textStream } = streamText({
+  model: createAnthropic()('${agent.modelId}'),
+  system: \`${agent.systemPrompt || 'You are a helpful assistant.'}\`,
+  prompt: 'Hello, what can you help me with?',
+  // Add your tools here
+});
+
+for await (const text of textStream) {
+  process.stdout.write(text);
+}`,
+    },
+  };
+
+  // Default to curl example if activeTab is not found (should not happen with controlled state)
+  const currentExample = codeExamples[activeTab] ?? {
+    language: 'bash',
+    code: codeExamples.curl?.code ?? '',
+  };
+
+  return (
+    <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h2 className="text-lg font-medium text-foreground">API Usage</h2>
+        <code className="text-xs text-foreground-secondary font-mono bg-surface px-2 py-1 rounded">
+          POST /api/agents/{agent.uid}/conversation/:id
+        </code>
+      </div>
+
+      <div className="border-b border-border px-4 py-2">
+        <Tabs tabs={CODE_TABS} activeTab={activeTab} onTabChange={setActiveTab} size="sm" />
+      </div>
+
+      <div className="p-4">
+        <CodeBlock language={currentExample.language} showCopy code={currentExample.code} />
+      </div>
+
+      <div className="px-4 pb-4">
+        <p className="text-xs text-foreground-tertiary">
+          Use any unique string as the conversation ID to maintain chat history across requests.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Agent detail page has multiple interconnected features
 export default function AgentDetailPage(): React.ReactElement {
@@ -519,28 +651,8 @@ export default function AgentDetailPage(): React.ReactElement {
         </div>
       </div>
 
-      {/* API Endpoint */}
-      <div className="bg-background border border-border rounded-lg p-4 mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-foreground">API Endpoint</p>
-            <code className="text-sm text-foreground-secondary font-mono">
-              POST /api/agents/{agent.uid}/conversation/{'<conversation-id>'}
-            </code>
-          </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => {
-              navigator.clipboard.writeText(
-                `${window.location.origin}/api/agents/${agent.uid}/conversation/<conversation-id>`
-              );
-            }}
-          >
-            <Icon icon="copy" size="xs" />
-          </Button>
-        </div>
-      </div>
+      {/* API Usage */}
+      <ApiUsageSection agent={agent} agentTools={agentTools} />
 
       {/* Tools Section */}
       <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
