@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { AppHeader } from '~/components/AppHeader';
 import { AnimatedCounter } from '~/components/stats/AnimatedCounter';
 import { AreaChart } from '~/components/stats/AreaChart';
 import { BarChart } from '~/components/stats/BarChart';
@@ -144,6 +145,7 @@ export default function StatsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Stats page has complex data fetching logic
     async function fetchData() {
       try {
         const [statsRes, execRes, historyRes] = await Promise.all([
@@ -242,7 +244,9 @@ export default function StatsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      <AppHeader />
+
+      {/* Page Title */}
       <div className="bg-surface-secondary border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="text-3xl font-bold text-foreground">Registry Statistics</h1>
@@ -511,9 +515,9 @@ export default function StatsPage() {
           <h2 className="text-xl font-semibold text-foreground mb-4">Sync Operations</h2>
           <div className="bg-surface border border-border rounded-xl p-6">
             <div className="space-y-4">
-              {stats.sync.recentOperations.slice(0, 5).map((op, i) => (
+              {stats.sync.recentOperations.slice(0, 5).map((op) => (
                 <div
-                  key={i}
+                  key={`${op.source}-${op.timestamp}`}
                   className="flex items-center justify-between p-3 bg-surface-secondary rounded-lg"
                 >
                   <div className="flex items-center gap-3">
