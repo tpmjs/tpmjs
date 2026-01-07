@@ -134,6 +134,7 @@ export default function PublicAgentsPage(): React.ReactElement {
         <th className="px-4 py-3 w-[80px] text-center">Tools</th>
         <th className="px-4 py-3 w-[80px] text-center">Likes</th>
         <th className="px-4 py-3 w-[150px]">Creator</th>
+        <th className="px-4 py-3 w-[80px] text-center">Chat</th>
         <th className="px-4 py-3 w-[100px] text-right">Copy</th>
       </tr>
     ),
@@ -190,6 +191,15 @@ export default function PublicAgentsPage(): React.ReactElement {
               {agent.createdBy.name}
             </span>
           </div>
+        </td>
+        <td className="px-4 py-3 text-center">
+          <Link
+            href={`/agents/${agent.id}/chat`}
+            className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
+          >
+            <Icon icon="message" size="xs" />
+            Chat
+          </Link>
         </td>
         <td className="px-4 py-3 text-right">
           <CopyDropdown options={getAgentCopyOptions(agent.uid, agent.name)} buttonLabel="Copy" />
