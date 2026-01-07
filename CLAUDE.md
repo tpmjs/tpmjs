@@ -1098,3 +1098,43 @@ Potential enhancements to the sync system:
 - [ ] Support GitHub stars syncing (requires GitHub API integration)
 - [ ] Add sync metrics to Vercel Analytics
 - [ ] Implement differential sync to reduce database writes
+
+---
+
+## Verifying Production Deployments
+
+To verify that a deployment has been successfully pushed to production, fetch the `/api/health` endpoint:
+
+```bash
+curl https://tpmjs.com/api/health
+```
+
+**Response format:**
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-01-07T13:30:00.000Z",
+  "build": {
+    "commitSha": "efb2802",
+    "commitMessage": "feat: add public chat page for agents",
+    "deploymentUrl": "tpmjs-xyz123.vercel.app"
+  },
+  "env": {
+    "hasDatabase": true,
+    "nodeEnv": "production"
+  }
+}
+```
+
+**Key fields:**
+- `commitSha` - The short git commit hash (7 chars) of the deployed code
+- `commitMessage` - The commit message of the deployed commit
+- `deploymentUrl` - The Vercel deployment URL
+
+**Verification workflow:**
+1. After pushing, check the latest commit: `git log --oneline -1`
+2. Wait for CI and Vercel deployment to complete
+3. Fetch `/api/health` and compare `commitSha` with your local commit
+4. If they match, the deployment is live
+
+**Note:** Vercel provides these values via environment variables (`VERCEL_GIT_COMMIT_SHA`, `VERCEL_GIT_COMMIT_MESSAGE`, `VERCEL_URL`) which are automatically available at runtime.
