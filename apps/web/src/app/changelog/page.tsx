@@ -89,52 +89,73 @@ function parseChangelog(content: string, packageName: string): PackageChangelog 
   return { name: packageName, entries };
 }
 
+function discoverPackagesWithChangelog(baseDir: string, namePrefix: string): PackageChangelog[] {
+  const results: PackageChangelog[] = [];
+
+  if (!fs.existsSync(baseDir)) {
+    return results;
+  }
+
+  const entries = fs.readdirSync(baseDir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name === 'node_modules') {
+      continue;
+    }
+
+    const pkgDir = path.join(baseDir, entry.name);
+    const changelogPath = path.join(pkgDir, 'CHANGELOG.md');
+    const packageJsonPath = path.join(pkgDir, 'package.json');
+
+    if (fs.existsSync(changelogPath) && fs.existsSync(packageJsonPath)) {
+      try {
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
+        const content = fs.readFileSync(changelogPath, 'utf-8');
+        const changelog = parseChangelog(
+          content,
+          packageJson.name || `${namePrefix}/${entry.name}`
+        );
+        if (changelog.entries.length > 0) {
+          results.push(changelog);
+        }
+      } catch {
+        // Skip packages with invalid package.json
+      }
+    }
+  }
+
+  return results;
+}
+
 function getChangelogs(): { sdk: PackageChangelog[]; tools: PackageChangelog[] } {
   const monorepoRoot = path.resolve(process.cwd(), '../..');
 
-  const sdkPackages = [
-    { dir: 'packages/ui', name: '@tpmjs/ui' },
-    { dir: 'packages/types', name: '@tpmjs/types' },
-    { dir: 'packages/utils', name: '@tpmjs/utils' },
-    { dir: 'packages/env', name: '@tpmjs/env' },
-  ];
+  // Discover SDK packages dynamically
+  const sdkPackages = discoverPackagesWithChangelog(
+    path.join(monorepoRoot, 'packages'),
+    '@tpmjs'
+  ).filter(
+    (pkg) =>
+      pkg.name.startsWith('@tpmjs/') &&
+      !pkg.name.includes('tools') &&
+      !pkg.name.includes('config') &&
+      !pkg.name.includes('storybook')
+  );
 
-  const toolPackages = [
-    { dir: 'packages/tools/registrySearch', name: '@tpmjs/registrySearch' },
-    { dir: 'packages/tools/registryExecute', name: '@tpmjs/registryExecute' },
-    { dir: 'packages/tools/create-basic-tools', name: '@tpmjs/create-basic-tools' },
-    { dir: 'packages/tools/hello', name: '@tpmjs/hello' },
-    { dir: 'packages/tools/emoji-magic', name: '@tpmjs/emoji-magic' },
-    { dir: 'packages/tools/markdown-formatter', name: '@tpmjs/markdown-formatter' },
-    { dir: 'packages/tools/createBlogPost', name: '@tpmjs/createBlogPost' },
-  ];
+  // Discover tool packages from multiple locations
+  const toolsDir = path.join(monorepoRoot, 'packages/tools');
+  const officialToolsDir = path.join(monorepoRoot, 'packages/tools/official');
 
-  const sdk: PackageChangelog[] = [];
-  const tools: PackageChangelog[] = [];
+  const directTools = discoverPackagesWithChangelog(toolsDir, '@tpmjs');
+  const officialTools = discoverPackagesWithChangelog(officialToolsDir, '@tpmjs');
 
-  for (const pkg of sdkPackages) {
-    const changelogPath = path.join(monorepoRoot, pkg.dir, 'CHANGELOG.md');
-    if (fs.existsSync(changelogPath)) {
-      const content = fs.readFileSync(changelogPath, 'utf-8');
-      const changelog = parseChangelog(content, pkg.name);
-      if (changelog.entries.length > 0) {
-        sdk.push(changelog);
-      }
-    }
+  // Combine and dedupe tools
+  const toolsMap = new Map<string, PackageChangelog>();
+  for (const tool of [...directTools, ...officialTools]) {
+    toolsMap.set(tool.name, tool);
   }
+  const tools = Array.from(toolsMap.values());
 
-  for (const pkg of toolPackages) {
-    const changelogPath = path.join(monorepoRoot, pkg.dir, 'CHANGELOG.md');
-    if (fs.existsSync(changelogPath)) {
-      const content = fs.readFileSync(changelogPath, 'utf-8');
-      const changelog = parseChangelog(content, pkg.name);
-      if (changelog.entries.length > 0) {
-        tools.push(changelog);
-      }
-    }
-  }
-
-  return { sdk, tools };
+  return { sdk: sdkPackages, tools };
 }
 
 function VersionBadge({ type }: { type: 'major' | 'minor' | 'patch' }) {
