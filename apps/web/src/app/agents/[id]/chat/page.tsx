@@ -1,6 +1,7 @@
 'use client';
 
 import type { AIProvider } from '@tpmjs/types/agent';
+import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
@@ -8,6 +9,36 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
+import { LikeButton } from '~/components/LikeButton';
+
+interface AgentTool {
+  id: string;
+  toolId: string;
+  position: number;
+  tool: {
+    id: string;
+    name: string;
+    description: string;
+    likeCount: number;
+    package: {
+      id: string;
+      npmPackageName: string;
+      category: string;
+    };
+  };
+}
+
+interface AgentCollection {
+  id: string;
+  collectionId: string;
+  position: number;
+  collection: {
+    id: string;
+    name: string;
+    description: string | null;
+    toolCount: number;
+  };
+}
 
 interface Agent {
   id: string;
@@ -16,11 +47,19 @@ interface Agent {
   description: string | null;
   provider: AIProvider;
   modelId: string;
+  systemPrompt: string | null;
+  temperature: number;
+  maxToolCallsPerTurn: number;
+  likeCount: number;
+  toolCount: number;
+  collectionCount: number;
   createdBy: {
     id: string;
     name: string;
     image: string | null;
   };
+  tools: AgentTool[];
+  collections: AgentCollection[];
 }
 
 interface Message {
@@ -188,6 +227,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
   const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   // Track first item index for prepending (Virtuoso pattern)
   const [firstItemIndex, setFirstItemIndex] = useState(10000);
@@ -471,197 +511,336 @@ export default function PublicAgentChatPage(): React.ReactElement {
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
 
-      {/* Chat Header */}
-      <div className="border-b border-border bg-surface/50">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href={`/agents/${agentId}`}
-              className="text-foreground-secondary hover:text-foreground transition-colors"
-            >
-              <Icon icon="arrowLeft" size="sm" />
-            </Link>
-            <div>
-              <h1 className="text-lg font-semibold text-foreground">{agent.name}</h1>
-              <p className="text-sm text-foreground-tertiary">
-                {PROVIDER_DISPLAY_NAMES[agent.provider]} • Created by {agent.createdBy.name}
-              </p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" onClick={startNewConversation}>
-            <Icon icon="plus" size="xs" className="mr-2" />
-            New Chat
-          </Button>
-        </div>
-      </div>
-
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col max-w-4xl mx-auto w-full overflow-hidden">
-        {/* Messages */}
-        {messages.length === 0 && !streamingContent ? (
-          <div className="flex-1 flex items-center justify-center p-4">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Icon icon="message" size="lg" className="text-primary" />
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar */}
+        <div
+          className={`${sidebarOpen ? 'w-80' : 'w-0'} transition-all duration-300 border-r border-border bg-surface/30 overflow-hidden flex-shrink-0`}
+        >
+          <div className="w-80 h-full overflow-y-auto p-4">
+            {/* Agent Header */}
+            <div className="mb-6">
+              <Link
+                href={`/agents/${agentId}`}
+                className="inline-flex items-center gap-1 text-sm text-foreground-secondary hover:text-foreground mb-3"
+              >
+                <Icon icon="arrowLeft" size="xs" />
+                Back to Agent
+              </Link>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">{agent.name}</h2>
+                  {agent.description && (
+                    <p className="text-sm text-foreground-secondary mt-1 line-clamp-2">
+                      {agent.description}
+                    </p>
+                  )}
+                </div>
               </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">Start a conversation</h3>
-              <p className="text-foreground-secondary max-w-sm">
-                Send a message to start chatting with {agent.name}.
-              </p>
+              <div className="flex items-center gap-2 mt-3">
+                <LikeButton
+                  entityType="agent"
+                  entityId={agent.id}
+                  initialCount={agent.likeCount}
+                  size="sm"
+                  showCount={true}
+                />
+              </div>
             </div>
-          </div>
-        ) : (
-          <Virtuoso
-            ref={virtuosoRef}
-            className="flex-1"
-            data={messages}
-            firstItemIndex={firstItemIndex}
-            initialTopMostItemIndex={messages.length - 1}
-            startReached={loadMoreMessages}
-            followOutput="smooth"
-            components={{
-              Header: () =>
-                hasMoreMessages ? (
-                  <div className="flex justify-center py-4">
-                    {isLoadingMore ? (
-                      <div className="flex items-center gap-2 text-foreground-secondary">
-                        <Icon icon="loader" size="sm" className="animate-spin" />
-                        <span className="text-sm">Loading older messages...</span>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={loadMoreMessages}
-                        className="text-sm text-primary hover:text-primary/80 transition-colors"
-                      >
-                        Load older messages
-                      </button>
-                    )}
-                  </div>
-                ) : null,
-              Footer: () => (
-                <div className="px-4 pb-4 space-y-4">
-                  {/* Live tool calls during streaming */}
-                  {toolCalls.length > 0 && (
-                    <div className="space-y-2">
-                      {toolCalls.map((tc) => (
-                        <div key={tc.toolCallId} className="flex justify-start">
-                          <div className="max-w-[80%]">
-                            <ToolCallCard
-                              toolCall={tc}
-                              isExpanded={expandedToolCalls.has(tc.toolCallId)}
-                              onToggle={() => toggleToolCall(tc.toolCallId)}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
 
-                  {streamingContent && (
-                    <div className="flex justify-start">
-                      <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
-                        <p className="whitespace-pre-wrap text-sm">{streamingContent}</p>
-                        <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
-                      </div>
-                    </div>
-                  )}
-
-                  {isSending && !streamingContent && toolCalls.length === 0 && (
-                    <div className="flex justify-start">
-                      <div className="rounded-lg p-4 bg-surface-secondary">
-                        <div className="flex items-center gap-2 text-foreground-secondary">
-                          <Icon icon="loader" size="sm" className="animate-spin" />
-                          <span className="text-sm">Thinking...</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+            {/* Configuration */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                <Icon icon="box" size="xs" className="text-foreground-tertiary" />
+                Configuration
+              </h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-foreground-tertiary">Provider</span>
+                  <Badge variant="secondary" size="sm">
+                    {PROVIDER_DISPLAY_NAMES[agent.provider]}
+                  </Badge>
                 </div>
-              ),
-            }}
-            itemContent={(_index, message) => {
-              // Parse tool output safely
-              const getToolOutput = () => {
-                if (message.toolResult) return message.toolResult;
-                try {
-                  return JSON.parse(message.content || '{}');
-                } catch {
-                  return { result: message.content };
-                }
-              };
-
-              return (
-                <div className="px-4 py-2">
-                  <div
-                    className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {message.role === 'TOOL' ? (
-                      <div className="max-w-[80%]">
-                        <ToolCallCard
-                          toolCall={{
-                            toolCallId: message.toolCallId || message.id,
-                            toolName: message.toolName || 'Unknown Tool',
-                            output: getToolOutput(),
-                            status: 'success',
-                          }}
-                          isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
-                          onToggle={() => toggleToolCall(message.toolCallId || message.id)}
-                        />
-                      </div>
-                    ) : (
-                      <div
-                        className={`max-w-[80%] rounded-lg p-4 ${
-                          message.role === 'USER'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-surface-secondary'
-                        }`}
-                      >
-                        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex justify-between">
+                  <span className="text-foreground-tertiary">Model</span>
+                  <span className="text-foreground font-mono text-xs">{agent.modelId}</span>
                 </div>
-              );
-            }}
-          />
-        )}
+                <div className="flex justify-between">
+                  <span className="text-foreground-tertiary">Temperature</span>
+                  <span className="text-foreground">{agent.temperature}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-foreground-tertiary">Max Tool Calls</span>
+                  <span className="text-foreground">{agent.maxToolCallsPerTurn}</span>
+                </div>
+              </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              {agent.systemPrompt && (
+                <div className="mt-3">
+                  <span className="text-xs text-foreground-tertiary block mb-1">System Prompt</span>
+                  <pre className="p-2 bg-background border border-border rounded text-xs text-foreground-secondary whitespace-pre-wrap font-mono max-h-32 overflow-y-auto">
+                    {agent.systemPrompt}
+                  </pre>
+                </div>
+              )}
+            </div>
+
+            {/* Tools */}
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                <Icon icon="puzzle" size="xs" className="text-foreground-tertiary" />
+                Tools ({agent.tools.length})
+              </h3>
+              {agent.tools.length === 0 ? (
+                <p className="text-sm text-foreground-tertiary">No tools configured</p>
+              ) : (
+                <div className="space-y-2">
+                  {agent.tools.map((at) => (
+                    <Link
+                      key={at.id}
+                      href={`/tool/${at.tool.package.npmPackageName}/${at.tool.name}`}
+                      className="block p-2 bg-background border border-border rounded hover:border-foreground/20 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {at.tool.name}
+                          </p>
+                          <p className="text-xs text-foreground-tertiary truncate">
+                            {at.tool.package.npmPackageName}
+                          </p>
+                        </div>
+                        <Badge variant="secondary" size="sm" className="ml-2 flex-shrink-0">
+                          {at.tool.package.category}
+                        </Badge>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Collections */}
+            {agent.collections.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-foreground mb-3 flex items-center gap-2">
+                  <Icon icon="folder" size="xs" className="text-foreground-tertiary" />
+                  Collections ({agent.collections.length})
+                </h3>
+                <div className="space-y-2">
+                  {agent.collections.map((ac) => (
+                    <Link
+                      key={ac.id}
+                      href={`/collections/${ac.collection.id}`}
+                      className="block p-2 bg-background border border-border rounded hover:border-foreground/20 transition-colors"
+                    >
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {ac.collection.name}
+                      </p>
+                      <p className="text-xs text-foreground-tertiary">
+                        {ac.collection.toolCount} tools
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
-        {/* Input Area */}
-        <div className="border-t border-border p-4">
-          <div className="flex items-end gap-2">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              rows={1}
-              className="flex-1 px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none min-h-[48px] max-h-[200px]"
-              style={{
-                height: 'auto',
-                minHeight: '48px',
-              }}
-              onInput={(e) => {
-                const target = e.target as HTMLTextAreaElement;
-                target.style.height = 'auto';
-                target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-              }}
-            />
-            <Button onClick={handleSend} disabled={isSending || !input.trim()}>
-              <Icon icon="send" size="sm" />
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Chat Header */}
+          <div className="border-b border-border bg-surface/50 px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 hover:bg-surface-secondary rounded-lg transition-colors"
+                title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+              >
+                <Icon icon="menu" size="sm" />
+              </button>
+              <div>
+                <h1 className="text-lg font-semibold text-foreground">{agent.name}</h1>
+                <p className="text-sm text-foreground-tertiary">
+                  {PROVIDER_DISPLAY_NAMES[agent.provider]} • {agent.modelId}
+                </p>
+              </div>
+            </div>
+            <Button variant="outline" size="sm" onClick={startNewConversation}>
+              <Icon icon="plus" size="xs" className="mr-2" />
+              New Chat
             </Button>
           </div>
-          <p className="text-xs text-foreground-tertiary mt-2">
-            Press Enter to send, Shift+Enter for new line
-          </p>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-hidden">
+            {messages.length === 0 && !streamingContent ? (
+              <div className="h-full flex items-center justify-center p-4">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                    <Icon icon="message" size="lg" className="text-primary" />
+                  </div>
+                  <h3 className="text-lg font-medium text-foreground mb-2">Start a conversation</h3>
+                  <p className="text-foreground-secondary max-w-sm">
+                    Send a message to start chatting with {agent.name}.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <Virtuoso
+                ref={virtuosoRef}
+                className="h-full"
+                data={messages}
+                firstItemIndex={firstItemIndex}
+                initialTopMostItemIndex={messages.length - 1}
+                startReached={loadMoreMessages}
+                followOutput="smooth"
+                components={{
+                  Header: () =>
+                    hasMoreMessages ? (
+                      <div className="flex justify-center py-4">
+                        {isLoadingMore ? (
+                          <div className="flex items-center gap-2 text-foreground-secondary">
+                            <Icon icon="loader" size="sm" className="animate-spin" />
+                            <span className="text-sm">Loading older messages...</span>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={loadMoreMessages}
+                            className="text-sm text-primary hover:text-primary/80 transition-colors"
+                          >
+                            Load older messages
+                          </button>
+                        )}
+                      </div>
+                    ) : null,
+                  Footer: () => (
+                    <div className="px-4 pb-4 space-y-4">
+                      {/* Live tool calls during streaming */}
+                      {toolCalls.length > 0 && (
+                        <div className="space-y-2">
+                          {toolCalls.map((tc) => (
+                            <div key={tc.toolCallId} className="flex justify-start">
+                              <div className="max-w-[80%]">
+                                <ToolCallCard
+                                  toolCall={tc}
+                                  isExpanded={expandedToolCalls.has(tc.toolCallId)}
+                                  onToggle={() => toggleToolCall(tc.toolCallId)}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {streamingContent && (
+                        <div className="flex justify-start">
+                          <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
+                            <p className="whitespace-pre-wrap text-sm">{streamingContent}</p>
+                            <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
+                          </div>
+                        </div>
+                      )}
+
+                      {isSending && !streamingContent && toolCalls.length === 0 && (
+                        <div className="flex justify-start">
+                          <div className="rounded-lg p-4 bg-surface-secondary">
+                            <div className="flex items-center gap-2 text-foreground-secondary">
+                              <Icon icon="loader" size="sm" className="animate-spin" />
+                              <span className="text-sm">Thinking...</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ),
+                }}
+                itemContent={(_index, message) => {
+                  // Parse tool output safely
+                  const getToolOutput = () => {
+                    if (message.toolResult) return message.toolResult;
+                    try {
+                      return JSON.parse(message.content || '{}');
+                    } catch {
+                      return { result: message.content };
+                    }
+                  };
+
+                  return (
+                    <div className="px-4 py-2">
+                      <div
+                        className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        {message.role === 'TOOL' ? (
+                          <div className="max-w-[80%]">
+                            <ToolCallCard
+                              toolCall={{
+                                toolCallId: message.toolCallId || message.id,
+                                toolName: message.toolName || 'Unknown Tool',
+                                output: getToolOutput(),
+                                status: 'success',
+                              }}
+                              isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
+                              onToggle={() => toggleToolCall(message.toolCallId || message.id)}
+                            />
+                          </div>
+                        ) : (
+                          <div
+                            className={`max-w-[80%] rounded-lg p-4 ${
+                              message.role === 'USER'
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-surface-secondary'
+                            }`}
+                          >
+                            <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }}
+              />
+            )}
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
+
+          {/* Input Area */}
+          <div className="border-t border-border p-4">
+            <div className="flex items-end gap-2">
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a message..."
+                rows={1}
+                className="flex-1 px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none min-h-[48px] max-h-[200px]"
+                style={{
+                  height: 'auto',
+                  minHeight: '48px',
+                }}
+                onInput={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  target.style.height = 'auto';
+                  target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                }}
+              />
+              <Button onClick={handleSend} disabled={isSending || !input.trim()}>
+                <Icon icon="send" size="sm" />
+              </Button>
+            </div>
+            <p className="text-xs text-foreground-tertiary mt-2">
+              Press Enter to send, Shift+Enter for new line
+            </p>
+          </div>
         </div>
       </div>
     </div>

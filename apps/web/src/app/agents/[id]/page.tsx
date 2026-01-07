@@ -160,13 +160,21 @@ export default function PublicAgentDetailPage(): React.ReactElement {
             <h1 className="text-3xl font-bold text-foreground mb-2">{agent.name}</h1>
             {agent.description && <p className="text-foreground-secondary">{agent.description}</p>}
           </div>
-          <LikeButton
-            entityType="agent"
-            entityId={agent.id}
-            initialCount={agent.likeCount}
-            showCount={true}
-            variant="outline"
-          />
+          <div className="flex items-center gap-3">
+            <LikeButton
+              entityType="agent"
+              entityId={agent.id}
+              initialCount={agent.likeCount}
+              showCount={true}
+              variant="outline"
+            />
+            <Link href={`/agents/${agentId}/chat`}>
+              <Button>
+                <Icon icon="message" size="sm" className="mr-2" />
+                Chat
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Meta info */}
