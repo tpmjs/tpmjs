@@ -11,6 +11,7 @@
     "./search": "./src/search.ts",
     "./package": "./src/package.ts",
     "./stats": "./src/stats.ts",
+    "./github": "./src/github.ts",
     "./rate-limiter": "./src/rate-limiter.ts"
   },
   "scripts": {

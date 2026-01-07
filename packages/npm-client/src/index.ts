@@ -36,5 +36,13 @@ export {
 // Download statistics
 export { fetchDownloadStats, fetchBulkDownloadStats, type DownloadsResponse } from './stats';
 
+// GitHub statistics
+export {
+  fetchGitHubStars,
+  fetchGitHubStarsFromRepository,
+  parseGitHubUrl,
+  type GitHubRepoResponse,
+} from './github';
+
 // Rate limiting
 export { delay, RateLimiter, npmRateLimiter, retryWithBackoff } from './rate-limiter';

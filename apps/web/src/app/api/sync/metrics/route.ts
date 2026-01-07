@@ -1,5 +1,5 @@
 import { prisma } from '@tpmjs/db';
-import { fetchDownloadStats } from '@tpmjs/npm-client';
+import { fetchDownloadStats, fetchGitHubStarsFromRepository } from '@tpmjs/npm-client';
 import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '~/env';
 
@@ -44,12 +44,17 @@ export async function POST(request: NextRequest) {
         // Fetch download stats from NPM (package-level metric)
         const downloads = await fetchDownloadStats(pkg.npmPackageName);
 
+        // Fetch GitHub stars if repository is available
+        const githubStars = await fetchGitHubStarsFromRepository(
+          pkg.npmRepository as { type?: string; url?: string } | string | null
+        );
+
         // Update package metrics
         await prisma.package.update({
           where: { id: pkg.id },
           data: {
             npmDownloadsLastMonth: downloads,
-            // githubStars would be updated here if we had GitHub API integration
+            githubStars,
           },
         });
 
@@ -58,7 +63,7 @@ export async function POST(request: NextRequest) {
           const qualityScore = calculateQualityScore({
             tier: pkg.tier, // Tier is at package level
             downloads, // Package downloads
-            githubStars: pkg.githubStars || 0, // Package stars
+            githubStars, // Use freshly fetched stars
             hasParameters: !!tool.parameters,
             hasReturns: !!tool.returns,
             hasAiAgent: !!tool.aiAgent,
