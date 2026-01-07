@@ -369,7 +369,7 @@ export default function ToolSearchPage(): React.ReactElement {
               <CardContent className="pt-6 pb-6 text-center space-y-6">
                 {/* Icon/Visual Element */}
                 <div className="flex justify-center">
-                  <div className="w-16 h-16 rounded-full bg-foreground-quaternary/50 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
                     <Icon icon="x" size="lg" className="text-foreground-tertiary" />
                   </div>
                 </div>

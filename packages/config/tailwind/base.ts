@@ -25,6 +25,7 @@ export default {
         // Backgrounds & Surfaces
         background: 'hsl(var(--background))',
         surface: 'hsl(var(--surface))',
+        'surface-secondary': 'hsl(var(--surface-secondary))',
         'surface-elevated': 'hsl(var(--surface-elevated))',
         'surface-overlay': 'hsl(var(--surface-overlay))',
 

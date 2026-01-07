@@ -1,12 +1,22 @@
 'use client';
 
 import type { AIProvider } from '@tpmjs/types/agent';
+import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@tpmjs/ui/Table/Table';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { AppHeader } from '~/components/AppHeader';
+import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 interface Agent {
   id: string;
@@ -28,6 +38,23 @@ const PROVIDER_DISPLAY_NAMES: Record<AIProvider, string> = {
   GROQ: 'Groq',
   MISTRAL: 'Mistral',
 };
+
+const PROVIDER_COLORS: Record<AIProvider, 'default' | 'secondary' | 'outline'> = {
+  OPENAI: 'default',
+  ANTHROPIC: 'secondary',
+  GOOGLE: 'outline',
+  GROQ: 'outline',
+  MISTRAL: 'outline',
+};
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
 
 export default function AgentsPage(): React.ReactElement {
   const router = useRouter();
@@ -62,7 +89,8 @@ export default function AgentsPage(): React.ReactElement {
     fetchAgents();
   }, [fetchAgents]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!confirm('Are you sure you want to delete this agent? This action cannot be undone.')) {
       return;
     }
@@ -88,144 +116,172 @@ export default function AgentsPage(): React.ReactElement {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="max-w-6xl mx-auto py-12 px-4">
-          <div className="animate-pulse">
-            <div className="h-8 bg-surface-secondary rounded w-48 mb-8" />
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-48 bg-surface-secondary rounded-lg" />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="max-w-6xl mx-auto py-12 px-4">
-          <div className="text-center py-16">
-            <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
-            <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
-            <p className="text-foreground-secondary mb-4">{error}</p>
-            <Button onClick={fetchAgents}>Try Again</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      <div className="max-w-6xl mx-auto py-12 px-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="text-foreground-secondary hover:text-foreground transition-colors"
-            >
-              <Icon icon="arrowLeft" size="sm" />
-            </Link>
-            <h1 className="text-2xl font-bold text-foreground">My Agents</h1>
-          </div>
+      <DashboardLayout
+        title="Agents"
+        actions={
           <Link href="/dashboard/agents/new">
             <Button>
               <Icon icon="plus" size="sm" className="mr-2" />
               New Agent
             </Button>
           </Link>
+        }
+      >
+        <div className="text-center py-16">
+          <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
+          <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
+          <p className="text-foreground-secondary mb-4">{error}</p>
+          <Button onClick={fetchAgents}>Try Again</Button>
         </div>
+      </DashboardLayout>
+    );
+  }
 
-        {/* Empty State */}
-        {agents.length === 0 && (
-          <div className="text-center py-16 bg-background border border-border rounded-lg">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Icon icon="terminal" size="lg" className="text-primary" />
-            </div>
-            <h2 className="text-lg font-medium text-foreground mb-2">No agents yet</h2>
-            <p className="text-foreground-secondary mb-6 max-w-md mx-auto">
-              Create your first AI agent to start chatting with tools. Agents can use any tools from
-              your collections or individual tools.
-            </p>
-            <Link href="/dashboard/agents/new">
-              <Button>
-                <Icon icon="plus" size="sm" className="mr-2" />
-                Create Your First Agent
-              </Button>
-            </Link>
-          </div>
-        )}
-
-        {/* Agents Grid */}
-        {agents.length > 0 && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {agents.map((agent) => (
-              <div
-                key={agent.id}
-                className="bg-background border border-border rounded-lg p-6 hover:border-foreground/20 transition-colors group"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Icon icon="terminal" size="sm" className="text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-foreground">{agent.name}</h3>
-                      <p className="text-xs text-foreground-tertiary">
-                        {PROVIDER_DISPLAY_NAMES[agent.provider]} / {agent.modelId}
-                      </p>
-                    </div>
+  return (
+    <DashboardLayout
+      title="Agents"
+      subtitle={
+        agents.length > 0 ? `${agents.length} agent${agents.length !== 1 ? 's' : ''}` : undefined
+      }
+      actions={
+        <Link href="/dashboard/agents/new">
+          <Button>
+            <Icon icon="plus" size="sm" className="mr-2" />
+            New Agent
+          </Button>
+        </Link>
+      }
+    >
+      <div className="bg-background border border-border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[300px]">Name</TableHead>
+              <TableHead>Provider</TableHead>
+              <TableHead>Tools</TableHead>
+              <TableHead>Updated</TableHead>
+              <TableHead className="w-[140px] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              // Loading skeleton
+              <>
+                {[0, 1, 2].map((idx) => (
+                  <TableRow key={`agent-skeleton-${idx}`}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-surface-secondary animate-pulse" />
+                        <div className="space-y-1.5">
+                          <div className="h-4 w-32 bg-surface-secondary rounded animate-pulse" />
+                          <div className="h-3 w-48 bg-surface-secondary rounded animate-pulse" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-5 w-20 bg-surface-secondary rounded animate-pulse" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-12 bg-surface-secondary rounded animate-pulse" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-24 bg-surface-secondary rounded animate-pulse" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-8 w-24 bg-surface-secondary rounded animate-pulse ml-auto" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
+            ) : agents.length === 0 ? (
+              <TableEmpty
+                colSpan={5}
+                icon={
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Icon icon="terminal" size="lg" className="text-primary" />
                   </div>
-                </div>
-
-                {agent.description && (
-                  <p className="text-sm text-foreground-secondary mb-4 line-clamp-2">
-                    {agent.description}
-                  </p>
-                )}
-
-                <div className="flex items-center gap-4 text-sm text-foreground-tertiary mb-4">
-                  <span className="flex items-center gap-1">
-                    <Icon icon="puzzle" size="xs" />
-                    {agent.toolCount + agent.collectionCount * 5} tools
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2 pt-4 border-t border-border">
-                  <Link href={`/dashboard/agents/${agent.id}/chat`} className="flex-1">
-                    <Button size="sm" className="w-full">
-                      <Icon icon="message" size="xs" className="mr-1" />
-                      Chat
+                }
+                title="No agents yet"
+                description="Create your first AI agent to start chatting with tools. Agents can use any tools from your collections or individual tools."
+                action={
+                  <Link href="/dashboard/agents/new">
+                    <Button>
+                      <Icon icon="plus" size="sm" className="mr-2" />
+                      Create Your First Agent
                     </Button>
                   </Link>
-                  <Link href={`/dashboard/agents/${agent.id}`}>
-                    <Button size="sm" variant="secondary">
-                      <Icon icon="edit" size="xs" />
-                    </Button>
-                  </Link>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleDelete(agent.id)}
-                    disabled={deletingId === agent.id}
-                  >
-                    <Icon icon="trash" size="xs" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                }
+              />
+            ) : (
+              agents.map((agent) => (
+                <TableRow
+                  key={agent.id}
+                  interactive
+                  onClick={() => router.push(`/dashboard/agents/${agent.id}`)}
+                  className="cursor-pointer"
+                >
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon icon="terminal" size="sm" className="text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground truncate">{agent.name}</p>
+                        {agent.description && (
+                          <p className="text-sm text-foreground-tertiary truncate max-w-[250px]">
+                            {agent.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={PROVIDER_COLORS[agent.provider]} size="sm">
+                        {PROVIDER_DISPLAY_NAMES[agent.provider]}
+                      </Badge>
+                      <span className="text-xs text-foreground-tertiary">{agent.modelId}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-foreground-secondary">
+                      {agent.toolCount + agent.collectionCount * 5}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-foreground-secondary text-sm">
+                      {formatDate(agent.updatedAt)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-1">
+                      <Link
+                        href={`/dashboard/agents/${agent.id}/chat`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button size="sm" variant="default">
+                          <Icon icon="message" size="xs" className="mr-1" />
+                          Chat
+                        </Button>
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => handleDelete(agent.id, e)}
+                        disabled={deletingId === agent.id}
+                      >
+                        <Icon icon="trash" size="xs" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

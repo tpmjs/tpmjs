@@ -156,6 +156,10 @@
     "./ToolHealthBanner/ToolHealthBanner": {
       "types": "./dist/ToolHealthBanner/ToolHealthBanner.d.ts",
       "default": "./dist/ToolHealthBanner/ToolHealthBanner.js"
+    },
+    "./Table/Table": {
+      "types": "./dist/Table/Table.d.ts",
+      "default": "./dist/Table/Table.js"
     }
   },
   "files": ["dist"],
