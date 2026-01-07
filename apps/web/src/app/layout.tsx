@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { Space_Grotesk, Space_Mono } from 'next/font/google';
 import Script from 'next/script';
+import { Toaster } from 'sonner';
 import { AppFooter } from '../components/AppFooter';
 import { ThemeProvider } from '../components/providers/ThemeProvider';
 import './globals.css';
@@ -160,6 +161,7 @@ export default function RootLayout({
             <div className="flex-1">{children}</div>
             <AppFooter />
           </div>
+          <Toaster position="bottom-right" richColors closeButton />
         </ThemeProvider>
         <Analytics />
       </body>

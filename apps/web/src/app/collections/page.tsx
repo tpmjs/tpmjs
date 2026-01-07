@@ -1,10 +1,16 @@
 'use client';
 
+import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Input } from '@tpmjs/ui/Input/Input';
+import { Select } from '@tpmjs/ui/Select/Select';
+import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { TableVirtuoso } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
+import { CopyDropdown, getCollectionCopyOptions } from '~/components/CopyDropdown';
 import { LikeButton } from '~/components/LikeButton';
 
 interface PublicCollection {
@@ -23,31 +29,52 @@ interface PublicCollection {
 
 type SortOption = 'likes' | 'recent' | 'tools';
 
+function sortCollections(collections: PublicCollection[], sortBy: SortOption): PublicCollection[] {
+  return [...collections].sort((a, b) => {
+    switch (sortBy) {
+      case 'likes':
+        return b.likeCount - a.likeCount;
+      case 'recent':
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case 'tools':
+        return b.toolCount - a.toolCount;
+      default:
+        return 0;
+    }
+  });
+}
+
+function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength).trim()}...`;
+}
+
 export default function PublicCollectionsPage(): React.ReactElement {
   const [collections, setCollections] = useState<PublicCollection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
-  const [offset, setOffset] = useState(0);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('likes');
-  const limit = 20;
+  const loadingMore = useRef(false);
 
   const fetchCollections = useCallback(
-    async (currentOffset: number, resetList = false) => {
+    async (offset: number, resetList = false) => {
       try {
+        if (loadingMore.current && !resetList) return;
+        loadingMore.current = true;
+
         const params = new URLSearchParams({
-          limit: String(limit),
-          offset: String(currentOffset),
+          limit: '100',
+          offset: String(offset),
           sort,
-          ...(search && { search }),
         });
 
         const response = await fetch(`/api/public/collections?${params}`);
         const data = await response.json();
 
         if (data.success) {
-          if (resetList || currentOffset === 0) {
+          if (resetList || offset === 0) {
             setCollections(data.data);
           } else {
             setCollections((prev) => [...prev, ...data.data]);
@@ -61,29 +88,105 @@ export default function PublicCollectionsPage(): React.ReactElement {
         setError('Failed to fetch collections');
       } finally {
         setIsLoading(false);
+        loadingMore.current = false;
       }
     },
-    [sort, search]
+    [sort]
   );
 
   useEffect(() => {
-    setOffset(0);
     setIsLoading(true);
     fetchCollections(0, true);
   }, [fetchCollections]);
 
-  const loadMore = () => {
-    const newOffset = offset + limit;
-    setOffset(newOffset);
-    fetchCollections(newOffset);
-  };
+  const loadMore = useCallback(() => {
+    if (!hasMore || loadingMore.current) return;
+    fetchCollections(collections.length);
+  }, [hasMore, collections.length, fetchCollections]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setOffset(0);
-    setIsLoading(true);
-    fetchCollections(0, true);
-  };
+  // Filter and sort collections
+  const filteredCollections = useMemo(() => {
+    let result = collections;
+
+    if (search) {
+      const query = search.toLowerCase();
+      result = result.filter(
+        (c) => c.name.toLowerCase().includes(query) || c.description?.toLowerCase().includes(query)
+      );
+    }
+
+    return sortCollections(result, sort);
+  }, [collections, search, sort]);
+
+  const TableHeader = useCallback(
+    () => (
+      <tr className="bg-surface text-left text-sm font-medium text-foreground-secondary">
+        <th className="px-4 py-3 w-[250px]">Name</th>
+        <th className="px-4 py-3 w-[300px]">Description</th>
+        <th className="px-4 py-3 w-[80px] text-center">Tools</th>
+        <th className="px-4 py-3 w-[80px] text-center">Likes</th>
+        <th className="px-4 py-3 w-[150px]">Creator</th>
+        <th className="px-4 py-3 w-[100px] text-right">Copy</th>
+      </tr>
+    ),
+    []
+  );
+
+  const TableRow = useCallback((_index: number, collection: PublicCollection) => {
+    return (
+      <>
+        <td className="px-4 py-3">
+          <Link
+            href={`/collections/${collection.id}`}
+            className="font-medium text-foreground hover:text-primary transition-colors"
+          >
+            {collection.name}
+          </Link>
+        </td>
+        <td className="px-4 py-3 text-sm text-foreground-secondary">
+          {collection.description ? truncateText(collection.description, 60) : '—'}
+        </td>
+        <td className="px-4 py-3 text-center">
+          <Badge variant="secondary" size="sm">
+            {collection.toolCount}
+          </Badge>
+        </td>
+        <td className="px-4 py-3 text-center">
+          <LikeButton
+            entityType="collection"
+            entityId={collection.id}
+            initialCount={collection.likeCount}
+            size="sm"
+            showCount={true}
+          />
+        </td>
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            {collection.createdBy.image ? (
+              <img
+                src={collection.createdBy.image}
+                alt={collection.createdBy.name}
+                className="w-5 h-5 rounded-full"
+              />
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
+                <Icon icon="user" size="xs" className="text-primary" />
+              </div>
+            )}
+            <span className="text-sm text-foreground-secondary truncate max-w-[100px]">
+              {collection.createdBy.name}
+            </span>
+          </div>
+        </td>
+        <td className="px-4 py-3 text-right">
+          <CopyDropdown
+            options={getCollectionCopyOptions(collection.id, collection.name)}
+            buttonLabel="Copy"
+          />
+        </td>
+      </>
+    );
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,34 +203,26 @@ export default function PublicCollectionsPage(): React.ReactElement {
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <form onSubmit={handleSearch} className="flex-1">
-            <div className="relative">
-              <Icon
-                icon="search"
-                size="sm"
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary"
-              />
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search collections..."
-                className="w-full pl-10 pr-4 py-2 bg-surface border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-          </form>
+          <div className="flex-1">
+            <Input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search collections..."
+            />
+          </div>
 
           <div className="flex items-center gap-2">
             <span className="text-sm text-foreground-secondary">Sort:</span>
-            <select
+            <Select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortOption)}
-              className="px-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-            >
-              <option value="likes">Most Liked</option>
-              <option value="recent">Most Recent</option>
-              <option value="tools">Most Tools</option>
-            </select>
+              options={[
+                { value: 'likes', label: 'Most Liked' },
+                { value: 'recent', label: 'Most Recent' },
+                { value: 'tools', label: 'Most Tools' },
+              ]}
+            />
           </div>
         </div>
 
@@ -140,20 +235,13 @@ export default function PublicCollectionsPage(): React.ReactElement {
             <Button onClick={() => fetchCollections(0, true)}>Try Again</Button>
           </div>
         ) : isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div
-                key={i}
-                className="bg-background border border-border rounded-lg p-6 animate-pulse"
-              >
-                <div className="h-6 bg-surface-secondary rounded w-3/4 mb-3" />
-                <div className="h-4 bg-surface-secondary rounded w-full mb-2" />
-                <div className="h-4 bg-surface-secondary rounded w-2/3 mb-4" />
-                <div className="h-4 bg-surface-secondary rounded w-1/3" />
-              </div>
-            ))}
+          <div className="flex items-center justify-center py-24 gap-4">
+            <Spinner size="lg" />
+            <span className="text-foreground-secondary font-mono text-sm">
+              Loading collections...
+            </span>
           </div>
-        ) : collections.length === 0 ? (
+        ) : filteredCollections.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Icon icon="folder" size="lg" className="text-primary" />
@@ -167,68 +255,42 @@ export default function PublicCollectionsPage(): React.ReactElement {
           </div>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {collections.map((collection) => (
-                <div
-                  key={collection.id}
-                  className="bg-background border border-border rounded-lg p-6 hover:border-foreground/20 transition-colors"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <Link
-                      href={`/collections/${collection.id}`}
-                      className="text-lg font-medium text-foreground hover:text-primary transition-colors"
-                    >
-                      {collection.name}
-                    </Link>
-                    <LikeButton
-                      entityType="collection"
-                      entityId={collection.id}
-                      initialCount={collection.likeCount}
-                      size="sm"
+            <div className="border border-border rounded-lg overflow-hidden">
+              <TableVirtuoso
+                style={{ height: 'calc(100vh - 350px)', minHeight: '400px' }}
+                data={filteredCollections}
+                overscan={30}
+                endReached={loadMore}
+                fixedHeaderContent={TableHeader}
+                itemContent={TableRow}
+                components={{
+                  Table: (props) => (
+                    <table
+                      {...props}
+                      className="w-full border-collapse text-sm"
+                      style={{ tableLayout: 'fixed' }}
                     />
-                  </div>
-
-                  {collection.description && (
-                    <p className="text-sm text-foreground-secondary line-clamp-2 mb-4">
-                      {collection.description}
-                    </p>
-                  )}
-
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-3 text-foreground-tertiary">
-                      <span className="flex items-center gap-1">
-                        <Icon icon="puzzle" size="xs" />
-                        {collection.toolCount} tool{collection.toolCount !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {collection.createdBy.image ? (
-                        <img
-                          src={collection.createdBy.image}
-                          alt={collection.createdBy.name}
-                          className="w-5 h-5 rounded-full"
-                        />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Icon icon="user" size="xs" className="text-primary" />
-                        </div>
-                      )}
-                      <span className="text-xs text-foreground-tertiary">
-                        {collection.createdBy.name}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  ),
+                  TableHead: (props) => (
+                    <thead {...props} className="bg-surface sticky top-0 z-10" />
+                  ),
+                  TableBody: (props) => <tbody {...props} />,
+                  TableRow: (props) => (
+                    <tr
+                      {...props}
+                      className="border-b border-border hover:bg-surface/50 transition-colors"
+                    />
+                  ),
+                }}
+              />
             </div>
 
-            {hasMore && (
-              <div className="mt-8 text-center">
-                <Button variant="outline" onClick={loadMore}>
-                  Load More
-                </Button>
-              </div>
-            )}
+            <div className="mt-4 text-sm text-foreground-tertiary">
+              Showing {filteredCollections.length} collection
+              {filteredCollections.length !== 1 ? 's' : ''}
+              {search && ` matching "${search}"`}
+              {hasMore && ' (scroll for more)'}
+            </div>
           </>
         )}
       </main>

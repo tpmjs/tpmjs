@@ -894,14 +894,15 @@ export const manualTools: ManualTool[] = [
         type: 'object',
         description: 'An object containing file paths as keys and file contents as values.',
         required: true,
-      }
+      },
     ],
     returns: {
       type: 'object',
       description: 'An object containing the tools available in the created bash environment.',
     },
     aiAgent: {
-      useCase: 'Use this tool to execute bash commands and manipulate files within a sandboxed environment.',
+      useCase:
+        'Use this tool to execute bash commands and manipulate files within a sandboxed environment.',
       examples: ['Create a bash environment with specific files and execute commands.'],
     },
     docsUrl: 'https://github.com/vercel/bash-tool',
