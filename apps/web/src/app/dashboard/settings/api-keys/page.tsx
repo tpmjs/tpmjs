@@ -190,7 +190,7 @@ export default function ApiKeysPage(): React.ReactElement {
     >
       {/* Import from .env */}
       {showImport && (
-        <div className="bg-white border border-border rounded-lg p-6 mb-6">
+        <div className="bg-surface border border-border rounded-lg p-6 mb-6">
           <h2 className="text-lg font-medium text-foreground mb-4">Import from .env</h2>
           <textarea
             value={envText}
@@ -214,7 +214,7 @@ ANOTHER_SECRET=xyz789"
 
       {/* Add new key form */}
       {showAddForm && (
-        <div className="bg-white border border-border rounded-lg p-6 mb-6">
+        <div className="bg-surface border border-border rounded-lg p-6 mb-6">
           <h2 className="text-lg font-medium text-foreground mb-4">Add New Key</h2>
           {saveError && <p className="text-error text-sm mb-3">{saveError}</p>}
           <div className="space-y-3">
@@ -251,7 +251,7 @@ ANOTHER_SECRET=xyz789"
       )}
 
       {/* Keys Table */}
-      <div className="bg-white border border-border rounded-lg overflow-hidden">
+      <div className="bg-surface border border-border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
