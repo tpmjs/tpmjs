@@ -46,6 +46,7 @@ export const ACTIVITY_MESSAGES: Record<
   AGENT_CREATED: (name) => `Created agent "${name}"`,
   AGENT_UPDATED: (name) => `Updated agent "${name}"`,
   AGENT_DELETED: (name) => `Deleted agent "${name}"`,
+  AGENT_CLONED: (name) => `Cloned agent "${name}"`,
   AGENT_TOOL_ADDED: (name, meta) =>
     meta?.toolName
       ? `Added tool "${meta.toolName}" to agent "${name}"`
@@ -65,6 +66,7 @@ export const ACTIVITY_MESSAGES: Record<
   COLLECTION_CREATED: (name) => `Created collection "${name}"`,
   COLLECTION_UPDATED: (name) => `Updated collection "${name}"`,
   COLLECTION_DELETED: (name) => `Deleted collection "${name}"`,
+  COLLECTION_CLONED: (name) => `Cloned collection "${name}"`,
   COLLECTION_TOOL_ADDED: (name, meta) =>
     meta?.toolName
       ? `Added tool "${meta.toolName}" to collection "${name}"`
@@ -88,6 +90,7 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
   AGENT_CREATED: 'plus',
   AGENT_UPDATED: 'pencil',
   AGENT_DELETED: 'trash',
+  AGENT_CLONED: 'copy',
   AGENT_TOOL_ADDED: 'link',
   AGENT_TOOL_REMOVED: 'unlink',
   AGENT_COLLECTION_ADDED: 'folderPlus',
@@ -95,6 +98,7 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
   COLLECTION_CREATED: 'folderPlus',
   COLLECTION_UPDATED: 'pencil',
   COLLECTION_DELETED: 'trash',
+  COLLECTION_CLONED: 'copy',
   COLLECTION_TOOL_ADDED: 'link',
   COLLECTION_TOOL_REMOVED: 'unlink',
   TOOL_LIKED: 'heart',

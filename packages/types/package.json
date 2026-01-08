@@ -32,6 +32,10 @@
     "./agent": {
       "types": "./dist/agent.d.ts",
       "default": "./dist/agent.js"
+    },
+    "./user": {
+      "types": "./dist/user.d.ts",
+      "default": "./dist/user.js"
     }
   },
   "files": ["dist"],

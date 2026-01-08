@@ -12,6 +12,51 @@ export const maxDuration = 60;
 const API_VERSION = '1.0.0';
 
 /**
+ * Generate a URL-friendly slug from a name
+ */
+function slugify(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special chars
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Remove consecutive hyphens
+    .replace(/^-+|-+$/g, '') // Trim hyphens
+    .slice(0, 50);
+}
+
+/**
+ * Generate a unique slug for a collection within a user's scope
+ */
+async function generateUniqueSlug(userId: string, baseName: string): Promise<string> {
+  let slug = slugify(baseName);
+  if (!slug) slug = 'collection';
+
+  // Check if slug exists for this user
+  const existing = await prisma.collection.findFirst({
+    where: { userId, slug },
+    select: { id: true },
+  });
+
+  if (!existing) return slug;
+
+  // Append numbers until unique
+  let counter = 1;
+  while (counter < 1000) {
+    const candidate = `${slug.slice(0, 46)}-${counter}`;
+    const exists = await prisma.collection.findFirst({
+      where: { userId, slug: candidate },
+      select: { id: true },
+    });
+    if (!exists) return candidate;
+    counter++;
+  }
+
+  // Fallback: use random suffix
+  return `${slug.slice(0, 42)}-${Date.now().toString(36)}`;
+}
+
+/**
  * Standard API response structure
  */
 interface ApiResponse<T = unknown> {
@@ -92,6 +137,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       data: data.map((c) => ({
         id: c.id,
         name: c.name,
+        slug: c.slug,
         description: c.description,
         isPublic: c.isPublic,
         toolCount: c._count.tools,
@@ -200,12 +246,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       );
     }
 
+    // Generate unique slug for the collection
+    const slug = await generateUniqueSlug(session.user.id, name);
+
     // Create collection with auto-like (user likes their own collection)
     const collection = await prisma.$transaction(async (tx) => {
       const newCollection = await tx.collection.create({
         data: {
           userId: session.user.id,
           name,
+          slug,
           description: description || null,
           isPublic,
           likeCount: 1, // Start with 1 like (from owner)
@@ -238,6 +288,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         data: {
           id: collection.id,
           name: collection.name,
+          slug: collection.slug,
           description: collection.description,
           isPublic: collection.isPublic,
           toolCount: 0,

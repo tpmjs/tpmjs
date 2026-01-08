@@ -4,7 +4,7 @@ import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 import { LikeButton } from '~/components/LikeButton';
@@ -57,6 +57,7 @@ interface PublicAgent {
   updatedAt: string;
   createdBy: {
     id: string;
+    username: string | null;
     name: string;
     image: string | null;
   };
@@ -66,6 +67,7 @@ interface PublicAgent {
 
 export default function PublicAgentDetailPage(): React.ReactElement {
   const params = useParams();
+  const router = useRouter();
   const agentId = params.id as string;
 
   const [agent, setAgent] = useState<PublicAgent | null>(null);
@@ -78,6 +80,11 @@ export default function PublicAgentDetailPage(): React.ReactElement {
       const data = await response.json();
 
       if (data.success) {
+        // Redirect to pretty URL if username is available
+        if (data.data.createdBy?.username && data.data.uid) {
+          router.replace(`/${data.data.createdBy.username}/agents/${data.data.uid}`);
+          return;
+        }
         setAgent(data.data);
       } else {
         if (data.error?.code === 'NOT_FOUND' || data.error?.code === 'FORBIDDEN') {
@@ -92,7 +99,7 @@ export default function PublicAgentDetailPage(): React.ReactElement {
     } finally {
       setIsLoading(false);
     }
-  }, [agentId]);
+  }, [agentId, router]);
 
   useEffect(() => {
     fetchAgent();

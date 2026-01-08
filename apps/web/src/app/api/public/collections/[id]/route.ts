@@ -44,6 +44,7 @@ export async function GET(
         user: {
           select: {
             id: true,
+            username: true,
             name: true,
             image: true,
           },
@@ -94,6 +95,7 @@ export async function GET(
       success: true,
       data: {
         id: collection.id,
+        slug: collection.slug,
         name: collection.name,
         description: collection.description,
         likeCount: collection.likeCount,

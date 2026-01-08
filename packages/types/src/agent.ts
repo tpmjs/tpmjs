@@ -62,6 +62,20 @@ export const AddToolToAgentSchema = z.object({
 });
 
 // ============================================================================
+// Clone Schemas
+// ============================================================================
+
+export const CloneAgentSchema = z.object({
+  name: z.string().min(1).max(100).optional(), // If not provided, will append "(copy)"
+  uid: z
+    .string()
+    .min(1)
+    .max(50)
+    .regex(UID_REGEX, 'UID must be lowercase alphanumeric with hyphens')
+    .optional(), // If not provided, will generate from name
+});
+
+// ============================================================================
 // User API Key Schemas
 // ============================================================================
 
@@ -165,6 +179,7 @@ export type CreateAgentInput = z.infer<typeof CreateAgentSchema>;
 export type UpdateAgentInput = z.infer<typeof UpdateAgentSchema>;
 export type AddCollectionToAgentInput = z.infer<typeof AddCollectionToAgentSchema>;
 export type AddToolToAgentInput = z.infer<typeof AddToolToAgentSchema>;
+export type CloneAgentInput = z.infer<typeof CloneAgentSchema>;
 export type AddApiKeyInput = z.infer<typeof AddApiKeySchema>;
 export type ApiKeyInfo = z.infer<typeof ApiKeyInfoSchema>;
 export type CreateConversationInput = z.infer<typeof CreateConversationSchema>;

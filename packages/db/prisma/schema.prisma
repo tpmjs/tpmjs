@@ -332,6 +332,7 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false) @map("email_verified")
   image         String?
+  username      String?   @unique @db.VarChar(30) // URL-friendly username (nullable for migration)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -346,6 +347,7 @@ model User {
   agentLikes      AgentLike[]
   activities      UserActivity[]
 
+  @@index([username])
   @@map("users")
 }
 
@@ -415,6 +417,7 @@ model Collection {
 
   // Collection metadata
   name        String   @db.VarChar(100)
+  slug        String?  @db.VarChar(50) // URL-friendly identifier (nullable for migration)
   description String?  @db.VarChar(500)
   isPublic    Boolean  @default(false) @map("is_public")
   likeCount   Int      @default(0) @map("like_count")
@@ -428,9 +431,10 @@ model Collection {
   agents      AgentCollection[]
   likes       CollectionLike[]
 
-  // Unique constraint: user can't have duplicate collection names
-  @@unique([userId, name])
+  // Unique constraint: user can't have duplicate collection slugs
+  @@unique([userId, slug])
   @@index([userId])
+  @@index([slug])
   @@index([isPublic])
   @@index([likeCount])
   @@index([createdAt])
@@ -726,6 +730,7 @@ enum ActivityType {
   AGENT_CREATED
   AGENT_UPDATED
   AGENT_DELETED
+  AGENT_CLONED
   AGENT_TOOL_ADDED
   AGENT_TOOL_REMOVED
   AGENT_COLLECTION_ADDED
@@ -733,6 +738,7 @@ enum ActivityType {
   COLLECTION_CREATED
   COLLECTION_UPDATED
   COLLECTION_DELETED
+  COLLECTION_CLONED
   COLLECTION_TOOL_ADDED
   COLLECTION_TOOL_REMOVED
   TOOL_LIKED

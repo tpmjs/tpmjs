@@ -52,12 +52,26 @@ export const ReorderToolsSchema = z.object({
 });
 
 // ============================================================================
+// Clone Schemas
+// ============================================================================
+
+export const CloneCollectionSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Name is required')
+    .max(100, 'Name must be 100 characters or less')
+    .regex(NAME_REGEX, 'Name can only contain letters, numbers, spaces, hyphens, and underscores')
+    .optional(), // If not provided, will use original name or append "(copy)"
+});
+
+// ============================================================================
 // Response Types (for API responses)
 // ============================================================================
 
 export const CollectionSchema = z.object({
   id: z.string(),
   name: z.string(),
+  slug: z.string().nullable(),
   description: z.string().nullable(),
   isPublic: z.boolean(),
   toolCount: z.number(),
@@ -96,6 +110,7 @@ export type UpdateCollectionInput = z.infer<typeof UpdateCollectionSchema>;
 export type AddToolToCollectionInput = z.infer<typeof AddToolToCollectionSchema>;
 export type UpdateCollectionToolInput = z.infer<typeof UpdateCollectionToolSchema>;
 export type ReorderToolsInput = z.infer<typeof ReorderToolsSchema>;
+export type CloneCollectionInput = z.infer<typeof CloneCollectionSchema>;
 export type Collection = z.infer<typeof CollectionSchema>;
 export type CollectionTool = z.infer<typeof CollectionToolSchema>;
 export type CollectionWithTools = z.infer<typeof CollectionWithToolsSchema>;

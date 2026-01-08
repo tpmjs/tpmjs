@@ -4,7 +4,7 @@ import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 import { LikeButton } from '~/components/LikeButton';
@@ -30,6 +30,7 @@ interface CollectionTool {
 
 interface PublicCollection {
   id: string;
+  slug: string | null;
   name: string;
   description: string | null;
   likeCount: number;
@@ -38,6 +39,7 @@ interface PublicCollection {
   updatedAt: string;
   createdBy: {
     id: string;
+    username: string | null;
     name: string;
     image: string | null;
   };
@@ -173,6 +175,7 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
 
 export default function PublicCollectionDetailPage(): React.ReactElement {
   const params = useParams();
+  const router = useRouter();
   const collectionId = params.id as string;
 
   const [collection, setCollection] = useState<PublicCollection | null>(null);
@@ -185,6 +188,11 @@ export default function PublicCollectionDetailPage(): React.ReactElement {
       const data = await response.json();
 
       if (data.success) {
+        // Redirect to pretty URL if username and slug are available
+        if (data.data.createdBy?.username && data.data.slug) {
+          router.replace(`/${data.data.createdBy.username}/collections/${data.data.slug}`);
+          return;
+        }
         setCollection(data.data);
       } else {
         if (data.error?.code === 'NOT_FOUND' || data.error?.code === 'FORBIDDEN') {
@@ -199,7 +207,7 @@ export default function PublicCollectionDetailPage(): React.ReactElement {
     } finally {
       setIsLoading(false);
     }
-  }, [collectionId]);
+  }, [collectionId, router]);
 
   useEffect(() => {
     fetchCollection();

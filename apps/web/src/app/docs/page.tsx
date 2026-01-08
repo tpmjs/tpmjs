@@ -627,6 +627,25 @@ const result = streamText({
               </div>
             </section>
 
+            {/* Sharing & URLs - Separate documentation page */}
+            <section className="mb-16 p-6 border border-border rounded-lg bg-surface">
+              <div className="flex items-start gap-4">
+                <span className="text-3xl">🔗</span>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground mb-2">Sharing & URLs</h2>
+                  <p className="text-foreground-secondary mb-4">
+                    Learn how to share your agents, collections, and profile using human-readable
+                    URLs. Clone public agents and collections to customize them.
+                  </p>
+                  <Link href="/docs/sharing">
+                    <Button variant="outline" size="sm">
+                      View Sharing Documentation →
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </section>
+
             {/* ==================== API REFERENCE ==================== */}
             <DocSection id="api-overview" title="API Overview">
               <p className="text-foreground-secondary mb-6">
