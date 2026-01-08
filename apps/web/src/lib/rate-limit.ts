@@ -106,11 +106,20 @@ export const STRICT_RATE_LIMIT: RateLimitConfig = {
 };
 
 /**
- * Get rate limit entry from Vercel KV
+ * Helper to add timeout to promises
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
+  const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
+  return Promise.race([promise, timeout]);
+}
+
+/**
+ * Get rate limit entry from Vercel KV (with timeout)
  */
 async function getKVEntry(key: string): Promise<RateLimitEntry | null> {
   try {
-    return await kv.get<RateLimitEntry>(key);
+    const result = await withTimeout(kv.get<RateLimitEntry>(key), 2000);
+    return result;
   } catch (error) {
     console.error('[Rate Limit] KV get error:', error);
     return null;
@@ -118,11 +127,12 @@ async function getKVEntry(key: string): Promise<RateLimitEntry | null> {
 }
 
 /**
- * Set rate limit entry in Vercel KV
+ * Set rate limit entry in Vercel KV (with timeout, fire-and-forget)
  */
 async function setKVEntry(key: string, entry: RateLimitEntry, ttlSeconds: number): Promise<void> {
   try {
-    await kv.set(key, entry, { ex: ttlSeconds });
+    // Fire and forget - don't wait for result, just timeout if slow
+    withTimeout(kv.set(key, entry, { ex: ttlSeconds }), 2000);
   } catch (error) {
     console.error('[Rate Limit] KV set error:', error);
   }
