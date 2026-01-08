@@ -95,7 +95,7 @@ export default function LikesOverviewPage(): React.ReactElement {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {sections.map((section) => (
           <Link key={section.href} href={section.href} className="block">
-            <div className="bg-background border border-border rounded-lg p-6 hover:border-foreground/20 transition-colors group h-full">
+            <div className="bg-white border border-border rounded-lg p-6 hover:border-foreground/20 hover:shadow-sm transition-all group h-full">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                   <Icon icon={section.icon} size="md" className="text-primary" />

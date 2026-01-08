@@ -59,7 +59,7 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
             <span className="text-xs text-foreground-tertiary">(recommended)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-background border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
+            <div className="flex-1 px-3 py-2 bg-white border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
               {httpUrl}
             </div>
             <Button
@@ -83,7 +83,7 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
             <span className="text-xs text-foreground-tertiary">(streaming)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-background border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
+            <div className="flex-1 px-3 py-2 bg-white border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
               {sseUrl}
             </div>
             <Button
@@ -112,7 +112,7 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
 
         {showConfig && (
           <div className="mt-3 relative">
-            <pre className="p-4 bg-background border border-border rounded-lg text-xs font-mono text-foreground-secondary overflow-x-auto">
+            <pre className="p-4 bg-white border border-border rounded-lg text-xs font-mono text-foreground-secondary overflow-x-auto">
               {configSnippet}
             </pre>
             <Button
@@ -418,7 +418,7 @@ export default function CollectionDetailPage(): React.ReactElement {
     >
       {/* Edit Form */}
       {isEditing && (
-        <div className="bg-background border border-border rounded-lg p-6 mb-8">
+        <div className="bg-white border border-border rounded-lg p-6 mb-8">
           <CollectionForm
             initialData={{
               name: collection.name,

@@ -89,7 +89,7 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
             <span className="text-xs text-foreground-tertiary">(recommended)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-background border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
+            <div className="flex-1 px-3 py-2 bg-white border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
               {httpUrl}
             </div>
             <Button
@@ -113,7 +113,7 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
             <span className="text-xs text-foreground-tertiary">(streaming)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-background border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
+            <div className="flex-1 px-3 py-2 bg-white border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
               {sseUrl}
             </div>
             <Button
@@ -142,7 +142,7 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
 
         {showConfig && (
           <div className="mt-3 relative">
-            <pre className="p-4 bg-background border border-border rounded-lg text-xs font-mono text-foreground-secondary overflow-x-auto">
+            <pre className="p-4 bg-white border border-border rounded-lg text-xs font-mono text-foreground-secondary overflow-x-auto">
               {configSnippet}
             </pre>
             <Button
@@ -308,7 +308,7 @@ export default function PublicCollectionDetailPage(): React.ReactElement {
           <h2 className="text-lg font-semibold text-foreground mb-4">Tools in this Collection</h2>
 
           {collection.tools.length === 0 ? (
-            <div className="text-center py-12 bg-surface/50 border border-border rounded-lg">
+            <div className="text-center py-12 bg-white border border-border rounded-lg">
               <Icon icon="puzzle" size="lg" className="mx-auto text-foreground-tertiary mb-2" />
               <p className="text-foreground-secondary">No tools in this collection yet</p>
             </div>
@@ -317,7 +317,7 @@ export default function PublicCollectionDetailPage(): React.ReactElement {
               {collection.tools.map((ct) => (
                 <div
                   key={ct.id}
-                  className="bg-background border border-border rounded-lg p-4 hover:border-foreground/20 transition-colors"
+                  className="bg-white border border-border rounded-lg p-4 hover:border-foreground/20 hover:shadow-sm transition-all"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div>

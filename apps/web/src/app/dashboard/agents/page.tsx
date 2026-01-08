@@ -154,7 +154,7 @@ export default function AgentsPage(): React.ReactElement {
         </Link>
       }
     >
-      <div className="bg-background border border-border rounded-lg overflow-hidden">
+      <div className="bg-white border border-border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>

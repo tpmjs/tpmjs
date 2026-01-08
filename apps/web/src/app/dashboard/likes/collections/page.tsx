@@ -97,10 +97,7 @@ export default function LikedCollectionsPage(): React.ReactElement {
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="bg-background border border-border rounded-lg p-4 animate-pulse"
-            >
+            <div key={i} className="bg-white border border-border rounded-lg p-4 animate-pulse">
               <div className="h-5 bg-surface-secondary rounded w-3/4 mb-2" />
               <div className="h-4 bg-surface-secondary rounded w-full mb-1" />
               <div className="h-4 bg-surface-secondary rounded w-2/3" />
@@ -126,7 +123,7 @@ export default function LikedCollectionsPage(): React.ReactElement {
             {collections.map((item) => (
               <div
                 key={item.id}
-                className="bg-background border border-border rounded-lg p-4 hover:border-foreground/20 transition-colors"
+                className="bg-white border border-border rounded-lg p-4 hover:border-foreground/20 hover:shadow-sm transition-all"
               >
                 <div className="flex items-start justify-between mb-2">
                   <Link

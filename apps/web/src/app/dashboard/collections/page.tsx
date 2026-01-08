@@ -166,7 +166,7 @@ export default function CollectionsPage(): React.ReactElement {
     >
       {/* Create Form */}
       {showCreateForm && (
-        <div className="bg-background border border-border rounded-lg p-6 mb-6">
+        <div className="bg-white border border-border rounded-lg p-6 mb-6">
           <h2 className="text-lg font-medium text-foreground mb-4">Create New Collection</h2>
           <CollectionForm
             onSubmit={handleCreate}
@@ -178,7 +178,7 @@ export default function CollectionsPage(): React.ReactElement {
       )}
 
       {/* Collections Table */}
-      <div className="bg-background border border-border rounded-lg overflow-hidden">
+      <div className="bg-white border border-border rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
