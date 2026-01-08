@@ -292,6 +292,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
   }, [agent, conversationId]);
 
   // Load older messages when scrolling up
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Virtuoso scroll handler with pagination logic
   const loadMoreMessages = useCallback(async () => {
     if (!agent || isLoadingMore || !hasMoreMessages || messages.length === 0) return;
 
@@ -341,6 +342,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
     }
   }, [agent, fetchMessages]);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Chat send handler with streaming and tool calls
   const handleSend = async () => {
     if (!input.trim() || !agent || isSending) return;
 
@@ -730,234 +732,242 @@ export default function PublicAgentChatPage(): React.ReactElement {
               {/* Messages */}
               <div className="flex-1 overflow-hidden">
                 {messages.length === 0 && !streamingContent ? (
-              <div className="h-full flex items-center justify-center p-4">
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                    <Icon icon="message" size="lg" className="text-primary" />
-                  </div>
-                  <h3 className="text-lg font-medium text-foreground mb-2">Start a conversation</h3>
-                  <p className="text-foreground-secondary max-w-sm">
-                    Send a message to start chatting with {agent.name}.
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <Virtuoso
-                ref={virtuosoRef}
-                className="h-full"
-                data={messages}
-                firstItemIndex={firstItemIndex}
-                initialTopMostItemIndex={messages.length - 1}
-                startReached={loadMoreMessages}
-                followOutput="smooth"
-                components={{
-                  Header: () =>
-                    hasMoreMessages ? (
-                      <div className="flex justify-center py-4">
-                        {isLoadingMore ? (
-                          <div className="flex items-center gap-2 text-foreground-secondary">
-                            <Icon icon="loader" size="sm" className="animate-spin" />
-                            <span className="text-sm">Loading older messages...</span>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={loadMoreMessages}
-                            className="text-sm text-primary hover:text-primary/80 transition-colors"
-                          >
-                            Load older messages
-                          </button>
-                        )}
+                  <div className="h-full flex items-center justify-center p-4">
+                    <div className="text-center">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <Icon icon="message" size="lg" className="text-primary" />
                       </div>
-                    ) : null,
-                  Footer: () => (
-                    <div className="px-4 pb-4 space-y-4">
-                      {/* Live tool calls during streaming */}
-                      {toolCalls.length > 0 && (
-                        <div className="space-y-2">
-                          {toolCalls.map((tc) => (
-                            <div key={tc.toolCallId} className="flex justify-start">
-                              <div className="max-w-[80%]">
-                                <ToolCallCard
-                                  toolCall={tc}
-                                  isExpanded={expandedToolCalls.has(tc.toolCallId)}
-                                  onToggle={() => toggleToolCall(tc.toolCallId)}
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {streamingContent && (
-                        <div className="flex justify-start">
-                          <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
-                            <p className="whitespace-pre-wrap text-sm">{streamingContent}</p>
-                            <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
-                          </div>
-                        </div>
-                      )}
-
-                      {isSending && !streamingContent && toolCalls.length === 0 && (
-                        <div className="flex justify-start">
-                          <div className="rounded-lg p-4 bg-surface-secondary">
-                            <div className="flex items-center gap-2 text-foreground-secondary">
-                              <Icon icon="loader" size="sm" className="animate-spin" />
-                              <span className="text-sm">Thinking...</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                      <h3 className="text-lg font-medium text-foreground mb-2">
+                        Start a conversation
+                      </h3>
+                      <p className="text-foreground-secondary max-w-sm">
+                        Send a message to start chatting with {agent.name}.
+                      </p>
                     </div>
-                  ),
-                }}
-                itemContent={(_index, message) => {
-                  // Parse tool output safely
-                  const getToolOutput = () => {
-                    if (message.toolResult) return message.toolResult;
-                    try {
-                      return JSON.parse(message.content || '{}');
-                    } catch {
-                      return { result: message.content };
-                    }
-                  };
-
-                  // Build a lookup map for tool call inputs from ASSISTANT messages
-                  // This allows us to show the input args when rendering TOOL messages
-                  const getToolCallInput = (toolCallId: string): unknown => {
-                    for (const msg of messages) {
-                      if (msg.role === 'ASSISTANT' && msg.toolCalls) {
-                        const tc = msg.toolCalls.find((t) => t.toolCallId === toolCallId);
-                        if (tc) return tc.args;
-                      }
-                    }
-                    return undefined;
-                  };
-
-                  // Check if a tool call has a corresponding TOOL message (meaning it completed)
-                  const hasToolResult = (toolCallId: string): boolean => {
-                    return messages.some((m) => m.role === 'TOOL' && m.toolCallId === toolCallId);
-                  };
-
-                  return (
-                    <div className="px-4 py-2">
-                      {/* TOOL message - shows the result of a tool call */}
-                      {message.role === 'TOOL' && (
-                        <div className="flex justify-start">
-                          <div className="max-w-[80%]">
-                            <ToolCallCard
-                              toolCall={{
-                                toolCallId: message.toolCallId || message.id,
-                                toolName: message.toolName || 'Unknown Tool',
-                                input: getToolCallInput(message.toolCallId || ''),
-                                output: getToolOutput(),
-                                status: 'success',
-                              }}
-                              isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
-                              onToggle={() => toggleToolCall(message.toolCallId || message.id)}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* USER message */}
-                      {message.role === 'USER' && (
-                        <div className="flex justify-end">
-                          <div className="max-w-[80%] rounded-lg p-4 bg-primary text-primary-foreground">
-                            <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* ASSISTANT message - may contain text and/or tool calls */}
-                      {message.role === 'ASSISTANT' && (
-                        <div className="space-y-2">
-                          {/* Assistant text content */}
-                          {message.content && (
-                            <div className="flex justify-start">
-                              <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
-                                <p className="whitespace-pre-wrap text-sm">{message.content}</p>
-                                {/* Token usage for debugging */}
-                                {(message.inputTokens || message.outputTokens) && (
-                                  <div className="mt-2 pt-2 border-t border-border/50 text-[10px] text-foreground-tertiary font-mono">
-                                    {message.inputTokens && <span>In: {message.inputTokens}</span>}
-                                    {message.inputTokens && message.outputTokens && (
-                                      <span> • </span>
-                                    )}
-                                    {message.outputTokens && (
-                                      <span>Out: {message.outputTokens}</span>
-                                    )}
-                                  </div>
-                                )}
+                  </div>
+                ) : (
+                  <Virtuoso
+                    ref={virtuosoRef}
+                    className="h-full"
+                    data={messages}
+                    firstItemIndex={firstItemIndex}
+                    initialTopMostItemIndex={messages.length - 1}
+                    startReached={loadMoreMessages}
+                    followOutput="smooth"
+                    components={{
+                      Header: () =>
+                        hasMoreMessages ? (
+                          <div className="flex justify-center py-4">
+                            {isLoadingMore ? (
+                              <div className="flex items-center gap-2 text-foreground-secondary">
+                                <Icon icon="loader" size="sm" className="animate-spin" />
+                                <span className="text-sm">Loading older messages...</span>
                               </div>
-                            </div>
-                          )}
-
-                          {/* Show tool calls from this assistant message that don't have results yet */}
-                          {message.toolCalls &&
-                            message.toolCalls
-                              .filter((tc) => !hasToolResult(tc.toolCallId))
-                              .map((tc) => (
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={loadMoreMessages}
+                                className="text-sm text-primary hover:text-primary/80 transition-colors"
+                              >
+                                Load older messages
+                              </button>
+                            )}
+                          </div>
+                        ) : null,
+                      Footer: () => (
+                        <div className="px-4 pb-4 space-y-4">
+                          {/* Live tool calls during streaming */}
+                          {toolCalls.length > 0 && (
+                            <div className="space-y-2">
+                              {toolCalls.map((tc) => (
                                 <div key={tc.toolCallId} className="flex justify-start">
                                   <div className="max-w-[80%]">
                                     <ToolCallCard
-                                      toolCall={{
-                                        toolCallId: tc.toolCallId,
-                                        toolName: tc.toolName,
-                                        input: tc.args,
-                                        status: 'pending',
-                                      }}
+                                      toolCall={tc}
                                       isExpanded={expandedToolCalls.has(tc.toolCallId)}
                                       onToggle={() => toggleToolCall(tc.toolCallId)}
                                     />
                                   </div>
                                 </div>
                               ))}
+                            </div>
+                          )}
+
+                          {streamingContent && (
+                            <div className="flex justify-start">
+                              <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
+                                <p className="whitespace-pre-wrap text-sm">{streamingContent}</p>
+                                <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
+                              </div>
+                            </div>
+                          )}
+
+                          {isSending && !streamingContent && toolCalls.length === 0 && (
+                            <div className="flex justify-start">
+                              <div className="rounded-lg p-4 bg-surface-secondary">
+                                <div className="flex items-center gap-2 text-foreground-secondary">
+                                  <Icon icon="loader" size="sm" className="animate-spin" />
+                                  <span className="text-sm">Thinking...</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  );
-                }}
-              />
-            )}
-          </div>
+                      ),
+                    }}
+                    itemContent={(_index, message) => {
+                      // Parse tool output safely
+                      const getToolOutput = () => {
+                        if (message.toolResult) return message.toolResult;
+                        try {
+                          return JSON.parse(message.content || '{}');
+                        } catch {
+                          return { result: message.content };
+                        }
+                      };
 
-          {/* Error Message */}
-          {error && (
-            <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            </div>
-          )}
+                      // Build a lookup map for tool call inputs from ASSISTANT messages
+                      // This allows us to show the input args when rendering TOOL messages
+                      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Helper in virtuoso render callback
+                      const getToolCallInput = (toolCallId: string): unknown => {
+                        for (const msg of messages) {
+                          if (msg.role === 'ASSISTANT' && msg.toolCalls) {
+                            const tc = msg.toolCalls.find((t) => t.toolCallId === toolCallId);
+                            if (tc) return tc.args;
+                          }
+                        }
+                        return undefined;
+                      };
 
-          {/* Input Area */}
-          <div className="border-t border-border p-4">
-            <div className="flex items-end gap-2">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type a message..."
-                rows={1}
-                className="flex-1 px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none min-h-[48px] max-h-[200px]"
-                style={{
-                  height: 'auto',
-                  minHeight: '48px',
-                }}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                  target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-                }}
-              />
-              <Button onClick={handleSend} disabled={isSending || !input.trim()}>
-                <Icon icon="send" size="sm" />
-              </Button>
-            </div>
-            <p className="text-xs text-foreground-tertiary mt-2">
-              Press Enter to send, Shift+Enter for new line
-            </p>
-          </div>
+                      // Check if a tool call has a corresponding TOOL message (meaning it completed)
+                      const hasToolResult = (toolCallId: string): boolean => {
+                        return messages.some(
+                          (m) => m.role === 'TOOL' && m.toolCallId === toolCallId
+                        );
+                      };
+
+                      return (
+                        <div className="px-4 py-2">
+                          {/* TOOL message - shows the result of a tool call */}
+                          {message.role === 'TOOL' && (
+                            <div className="flex justify-start">
+                              <div className="max-w-[80%]">
+                                <ToolCallCard
+                                  toolCall={{
+                                    toolCallId: message.toolCallId || message.id,
+                                    toolName: message.toolName || 'Unknown Tool',
+                                    input: getToolCallInput(message.toolCallId || ''),
+                                    output: getToolOutput(),
+                                    status: 'success',
+                                  }}
+                                  isExpanded={expandedToolCalls.has(
+                                    message.toolCallId || message.id
+                                  )}
+                                  onToggle={() => toggleToolCall(message.toolCallId || message.id)}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* USER message */}
+                          {message.role === 'USER' && (
+                            <div className="flex justify-end">
+                              <div className="max-w-[80%] rounded-lg p-4 bg-primary text-primary-foreground">
+                                <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* ASSISTANT message - may contain text and/or tool calls */}
+                          {message.role === 'ASSISTANT' && (
+                            <div className="space-y-2">
+                              {/* Assistant text content */}
+                              {message.content && (
+                                <div className="flex justify-start">
+                                  <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
+                                    <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                                    {/* Token usage for debugging */}
+                                    {(message.inputTokens || message.outputTokens) && (
+                                      <div className="mt-2 pt-2 border-t border-border/50 text-[10px] text-foreground-tertiary font-mono">
+                                        {message.inputTokens && (
+                                          <span>In: {message.inputTokens}</span>
+                                        )}
+                                        {message.inputTokens && message.outputTokens && (
+                                          <span> • </span>
+                                        )}
+                                        {message.outputTokens && (
+                                          <span>Out: {message.outputTokens}</span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Show tool calls from this assistant message that don't have results yet */}
+                              {message.toolCalls
+                                ?.filter((tc) => !hasToolResult(tc.toolCallId))
+                                .map((tc) => (
+                                  <div key={tc.toolCallId} className="flex justify-start">
+                                    <div className="max-w-[80%]">
+                                      <ToolCallCard
+                                        toolCall={{
+                                          toolCallId: tc.toolCallId,
+                                          toolName: tc.toolName,
+                                          input: tc.args,
+                                          status: 'pending',
+                                        }}
+                                        isExpanded={expandedToolCalls.has(tc.toolCallId)}
+                                        onToggle={() => toggleToolCall(tc.toolCallId)}
+                                      />
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
+                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                </div>
+              )}
+
+              {/* Input Area */}
+              <div className="border-t border-border p-4">
+                <div className="flex items-end gap-2">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type a message..."
+                    rows={1}
+                    className="flex-1 px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none min-h-[48px] max-h-[200px]"
+                    style={{
+                      height: 'auto',
+                      minHeight: '48px',
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                    }}
+                  />
+                  <Button onClick={handleSend} disabled={isSending || !input.trim()}>
+                    <Icon icon="send" size="sm" />
+                  </Button>
+                </div>
+                <p className="text-xs text-foreground-tertiary mt-2">
+                  Press Enter to send, Shift+Enter for new line
+                </p>
+              </div>
             </>
           )}
         </div>
