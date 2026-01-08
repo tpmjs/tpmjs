@@ -14,7 +14,7 @@ import type { AIProvider } from '@tpmjs/types/agent';
 import { SendMessageSchema } from '@tpmjs/types/agent';
 import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
-import { type RateLimitConfig, checkRateLimitDistributed } from '~/lib/rate-limit';
+import { type RateLimitConfig, checkRateLimit } from '~/lib/rate-limit';
 
 /**
  * Rate limit for chat messages: 30 requests per minute
@@ -85,8 +85,8 @@ async function getProviderModel(
  * Send a message and stream the AI response via SSE
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
-  // Check rate limit first to prevent expensive LLM calls (uses distributed KV when available)
-  const rateLimitResponse = await checkRateLimitDistributed(request, CHAT_RATE_LIMIT);
+  // Check rate limit first to prevent expensive LLM calls
+  const rateLimitResponse = checkRateLimit(request, CHAT_RATE_LIMIT);
   if (rateLimitResponse) {
     return rateLimitResponse;
   }
