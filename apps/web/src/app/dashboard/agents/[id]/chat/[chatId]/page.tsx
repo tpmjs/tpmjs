@@ -623,7 +623,7 @@ export default function AgentChatPage(): React.ReactElement {
                 onKeyDown={handleKeyDown}
                 placeholder="Type a message..."
                 rows={1}
-                className="flex-1 px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none min-h-[48px] max-h-[200px]"
+                className="flex-1 px-4 py-3 bg-white border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none min-h-[48px] max-h-[200px]"
                 style={{
                   height: 'auto',
                   minHeight: '48px',

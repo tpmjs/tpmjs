@@ -211,7 +211,7 @@ conv = resp.json()  # conv['data']['messages']`,
   const currentExample = examples[effectiveLang] ?? examples.curl ?? { language: 'bash', code: '' };
 
   return (
-    <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
+    <div className="bg-white border border-border rounded-lg overflow-hidden mb-8">
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h2 className="text-lg font-medium text-foreground">API Reference</h2>
         <code className="text-xs text-foreground-secondary font-mono bg-surface px-2 py-1 rounded">
@@ -674,7 +674,7 @@ export default function AgentDetailPage(): React.ReactElement {
       }
     >
       {/* Configuration */}
-      <div className="bg-background border border-border rounded-lg p-6 mb-8">
+      <div className="bg-white border border-border rounded-lg p-6 mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium text-foreground">Configuration</h2>
           {!isEditing && (
@@ -698,7 +698,7 @@ export default function AgentDetailPage(): React.ReactElement {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 />
               </div>
               <div>
@@ -711,7 +711,7 @@ export default function AgentDetailPage(): React.ReactElement {
                   name="uid"
                   value={formData.uid}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 />
               </div>
             </div>
@@ -729,7 +729,7 @@ export default function AgentDetailPage(): React.ReactElement {
                 value={formData.description}
                 onChange={handleChange}
                 rows={2}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
               />
             </div>
 
@@ -746,7 +746,7 @@ export default function AgentDetailPage(): React.ReactElement {
                   name="provider"
                   value={formData.provider}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 >
                   {SUPPORTED_PROVIDERS.map((p) => (
                     <option key={p} value={p}>
@@ -764,7 +764,7 @@ export default function AgentDetailPage(): React.ReactElement {
                   name="modelId"
                   value={formData.modelId}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 >
                   {models.map((m) => (
                     <option key={m.id} value={m.id}>
@@ -788,7 +788,7 @@ export default function AgentDetailPage(): React.ReactElement {
                 value={formData.systemPrompt}
                 onChange={handleChange}
                 rows={6}
-                className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
               />
             </div>
 
@@ -809,7 +809,7 @@ export default function AgentDetailPage(): React.ReactElement {
                   min={0}
                   max={2}
                   step={0.1}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 />
               </div>
               <div>
@@ -827,7 +827,7 @@ export default function AgentDetailPage(): React.ReactElement {
                   onChange={handleChange}
                   min={1}
                   max={100}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 />
               </div>
               <div>
@@ -845,7 +845,7 @@ export default function AgentDetailPage(): React.ReactElement {
                   onChange={handleChange}
                   min={1}
                   max={100}
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 />
               </div>
             </div>
@@ -932,7 +932,7 @@ export default function AgentDetailPage(): React.ReactElement {
       <ApiDocsSection agent={agent} agentTools={agentTools} />
 
       {/* Tools Section */}
-      <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
+      <div className="bg-white border border-border rounded-lg overflow-hidden mb-8">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-medium text-foreground">Tools</h2>
           <span className="text-sm text-foreground-tertiary">{agentTools.length} attached</span>
@@ -966,7 +966,7 @@ export default function AgentDetailPage(): React.ReactElement {
 
           {/* Search Results Dropdown */}
           {showToolSearch && toolSearch && (
-            <div className="absolute z-10 left-4 right-4 mt-1 bg-background border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+            <div className="absolute z-10 left-4 right-4 mt-1 bg-white border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
               {toolSearchResults.length > 0 ? (
                 toolSearchResults.map((tool) => (
                   <button
@@ -1047,7 +1047,7 @@ export default function AgentDetailPage(): React.ReactElement {
       </div>
 
       {/* Collections Section */}
-      <div className="bg-background border border-border rounded-lg overflow-hidden mb-8">
+      <div className="bg-white border border-border rounded-lg overflow-hidden mb-8">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-lg font-medium text-foreground">Collections</h2>
           <span className="text-sm text-foreground-tertiary">
@@ -1083,7 +1083,7 @@ export default function AgentDetailPage(): React.ReactElement {
 
           {/* Search Results Dropdown */}
           {showCollectionSearch && collectionSearch && (
-            <div className="absolute z-10 left-4 right-4 mt-1 bg-background border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+            <div className="absolute z-10 left-4 right-4 mt-1 bg-white border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
               {collectionSearchResults.length > 0 ? (
                 collectionSearchResults.map((collection) => (
                   <button
@@ -1162,7 +1162,7 @@ export default function AgentDetailPage(): React.ReactElement {
       </div>
 
       {/* Danger Zone */}
-      <div className="bg-background border border-red-200 dark:border-red-800 rounded-lg p-6">
+      <div className="bg-white border border-red-200 dark:border-red-800 rounded-lg p-6">
         <h2 className="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Danger Zone</h2>
         <p className="text-sm text-foreground-secondary mb-4">
           Once you delete an agent, there is no going back. Please be certain.

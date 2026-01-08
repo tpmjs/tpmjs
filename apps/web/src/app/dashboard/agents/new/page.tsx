@@ -128,7 +128,7 @@ export default function NewAgentPage(): React.ReactElement {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic Info */}
-          <div className="bg-background border border-border rounded-lg p-6">
+          <div className="bg-white border border-border rounded-lg p-6">
             <h2 className="text-lg font-medium text-foreground mb-4">Basic Information</h2>
 
             <div className="space-y-4">
@@ -145,7 +145,7 @@ export default function NewAgentPage(): React.ReactElement {
                   required
                   maxLength={100}
                   placeholder="My AI Agent"
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 />
               </div>
 
@@ -162,7 +162,7 @@ export default function NewAgentPage(): React.ReactElement {
                   maxLength={50}
                   pattern="[a-z0-9-]+"
                   placeholder="my-ai-agent"
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary font-mono text-sm"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary font-mono text-sm"
                 />
                 <p className="text-xs text-foreground-tertiary mt-1">
                   Used in API URLs. Lowercase letters, numbers, and hyphens only.
@@ -184,14 +184,14 @@ export default function NewAgentPage(): React.ReactElement {
                   maxLength={500}
                   rows={2}
                   placeholder="What does this agent do?"
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
                 />
               </div>
             </div>
           </div>
 
           {/* Model Configuration */}
-          <div className="bg-background border border-border rounded-lg p-6">
+          <div className="bg-white border border-border rounded-lg p-6">
             <h2 className="text-lg font-medium text-foreground mb-4">Model Configuration</h2>
 
             <div className="space-y-4">
@@ -209,7 +209,7 @@ export default function NewAgentPage(): React.ReactElement {
                     value={formData.provider}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   >
                     {SUPPORTED_PROVIDERS.map((provider) => (
                       <option key={provider} value={provider}>
@@ -232,7 +232,7 @@ export default function NewAgentPage(): React.ReactElement {
                     value={formData.modelId}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   >
                     {models.map((model) => (
                       <option key={model.id} value={model.id}>
@@ -258,7 +258,7 @@ export default function NewAgentPage(): React.ReactElement {
                   maxLength={10000}
                   rows={6}
                   placeholder="You are a helpful assistant that..."
-                  className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none font-mono text-sm"
+                  className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none font-mono text-sm"
                 />
                 <p className="text-xs text-foreground-tertiary mt-1">
                   Instructions that define how the agent behaves.
@@ -282,7 +282,7 @@ export default function NewAgentPage(): React.ReactElement {
                     min={0}
                     max={2}
                     step={0.1}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                   <p className="text-xs text-foreground-tertiary mt-1">
                     0 = deterministic, 2 = creative
@@ -304,7 +304,7 @@ export default function NewAgentPage(): React.ReactElement {
                     onChange={handleChange}
                     min={1}
                     max={100}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                   <p className="text-xs text-foreground-tertiary mt-1">Per response turn</p>
                 </div>
@@ -324,7 +324,7 @@ export default function NewAgentPage(): React.ReactElement {
                     onChange={handleChange}
                     min={1}
                     max={100}
-                    className="w-full px-3 py-2 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    className="w-full px-3 py-2 bg-white border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                   <p className="text-xs text-foreground-tertiary mt-1">
                     Recent messages to include
