@@ -28,6 +28,7 @@ interface PublicAgent {
     id: string;
     name: string;
     image: string | null;
+    username: string | null;
   };
 }
 
@@ -202,7 +203,12 @@ export default function PublicAgentsPage(): React.ReactElement {
           </Link>
         </td>
         <td className="px-4 py-3 text-right">
-          <CopyDropdown options={getAgentCopyOptions(agent.uid, agent.name)} buttonLabel="Copy" />
+          {agent.createdBy.username && (
+            <CopyDropdown
+              options={getAgentCopyOptions(agent.createdBy.username, agent.uid, agent.name)}
+              buttonLabel="Copy"
+            />
+          )}
         </td>
       </>
     );

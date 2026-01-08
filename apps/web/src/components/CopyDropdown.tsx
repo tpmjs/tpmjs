@@ -86,12 +86,13 @@ export function CopyDropdown({
 // Helper functions to generate copy options for different entity types
 
 export function getCollectionCopyOptions(
-  collectionId: string,
+  username: string,
+  slug: string,
   collectionName: string
 ): CopyOption[] {
   const baseUrl = 'https://tpmjs.com';
-  const mcpUrlHttp = `${baseUrl}/mcp/collections/${collectionId}`;
-  const mcpUrlSse = `${baseUrl}/mcp/collections/${collectionId}/sse`;
+  const mcpUrlHttp = `${baseUrl}/api/mcp/${username}/${slug}/http`;
+  const mcpUrlSse = `${baseUrl}/api/mcp/${username}/${slug}/sse`;
 
   const claudeConfig = JSON.stringify(
     {
@@ -117,16 +118,21 @@ export function getCollectionCopyOptions(
   ];
 }
 
-export function getAgentCopyOptions(agentUid: string, agentName: string): CopyOption[] {
+export function getAgentCopyOptions(
+  username: string,
+  agentUid: string,
+  agentName: string
+): CopyOption[] {
   const baseUrl = 'https://tpmjs.com';
-  const mcpUrl = `${baseUrl}/mcp/agents/${agentUid}`;
+  const mcpUrlHttp = `${baseUrl}/api/mcp/${username}/${agentUid}/http`;
+  const mcpUrlSse = `${baseUrl}/api/mcp/${username}/${agentUid}/sse`;
 
   const claudeConfig = JSON.stringify(
     {
       mcpServers: {
         [agentName.toLowerCase().replace(/\s+/g, '-')]: {
           command: 'npx',
-          args: ['-y', '@anthropic-ai/mcp-remote', mcpUrl],
+          args: ['-y', '@anthropic-ai/mcp-remote', mcpUrlSse],
         },
       },
     },
@@ -136,7 +142,8 @@ export function getAgentCopyOptions(agentUid: string, agentName: string): CopyOp
 
   return [
     { label: 'Agent UID', value: agentUid, description: agentUid },
-    { label: 'MCP URL', value: mcpUrl, description: mcpUrl },
+    { label: 'MCP URL (HTTP)', value: mcpUrlHttp, description: mcpUrlHttp },
+    { label: 'MCP URL (SSE)', value: mcpUrlSse, description: mcpUrlSse },
     {
       label: 'Claude Config',
       value: claudeConfig,

@@ -61,6 +61,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
             id: true,
             name: true,
             image: true,
+            username: true,
           },
         },
         _count: {

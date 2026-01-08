@@ -61,6 +61,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
             id: true,
             name: true,
             image: true,
+            username: true,
           },
         },
         _count: {
@@ -79,6 +80,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
       success: true,
       data: data.map((collection) => ({
         id: collection.id,
+        slug: collection.slug,
         name: collection.name,
         description: collection.description,
         likeCount: collection.likeCount,

@@ -15,6 +15,7 @@ import { LikeButton } from '~/components/LikeButton';
 
 interface PublicCollection {
   id: string;
+  slug: string;
   name: string;
   description: string | null;
   likeCount: number;
@@ -24,6 +25,7 @@ interface PublicCollection {
     id: string;
     name: string;
     image: string | null;
+    username: string | null;
   };
 }
 
@@ -179,10 +181,16 @@ export default function PublicCollectionsPage(): React.ReactElement {
           </div>
         </td>
         <td className="px-4 py-3 text-right">
-          <CopyDropdown
-            options={getCollectionCopyOptions(collection.id, collection.name)}
-            buttonLabel="Copy"
-          />
+          {collection.createdBy.username && (
+            <CopyDropdown
+              options={getCollectionCopyOptions(
+                collection.createdBy.username,
+                collection.slug,
+                collection.name
+              )}
+              buttonLabel="Copy"
+            />
+          )}
         </td>
       </>
     );
