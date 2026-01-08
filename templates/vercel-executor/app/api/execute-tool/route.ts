@@ -24,6 +24,7 @@ interface ExecuteToolResponse {
   success: boolean;
   output?: unknown;
   error?: string;
+  stderr?: string;
   executionTimeMs: number;
 }
 
@@ -60,169 +61,141 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExecuteToolRe
     }
 
     const packageSpec = `${packageName}@${version}`;
+    const cwd = '/vercel/sandbox';
 
     // Create sandbox with node22 runtime
     sandbox = await Sandbox.create({
       runtime: 'node22',
-      timeout: 2 * 60 * 1000, // 2 minute timeout for the sandbox
+      timeout: 2 * 60 * 1000, // 2 minute timeout
+      resources: { vcpus: 2 },
     });
 
-    // Install the npm package
-    await sandbox.runCommand({
+    // 1) Install the npm package
+    const install = await sandbox.runCommand({
       cmd: 'npm',
-      args: ['install', '--no-save', packageSpec],
-      cwd: '/vercel/sandbox',
+      args: ['install', '--no-save', '--omit=dev', '--no-audit', '--no-fund', packageSpec],
+      cwd,
     });
 
-    // Build environment setup code
+    const installStderr = await install.stderr();
+    if (install.exitCode !== 0) {
+      const installStdout = await install.stdout();
+      return NextResponse.json({
+        success: false,
+        error: `npm install failed with exit code ${install.exitCode}`,
+        stderr: installStderr || installStdout,
+        executionTimeMs: Date.now() - startTime,
+      });
+    }
+
+    // 2) Build environment setup for the script
     const envSetup = env
       ? Object.entries(env)
           .map(([key, value]) => `process.env[${JSON.stringify(key)}] = ${JSON.stringify(value)};`)
           .join('\n')
       : '';
 
-    // Create the execution script
+    // 3) Write the execution script (CommonJS for require())
     const script = `
 ${envSetup}
 
-const pkg = require('${packageName}');
-
-// Get the tool export
-let tool = pkg['${name}'] || pkg.default?.['${name}'] || pkg.default;
-
-if (!tool) {
-  console.log(JSON.stringify({ __tpmjs_error__: 'Tool "${name}" not found in package "${packageName}"' }));
-  process.exit(1);
-}
-
-// Handle factory functions (tools that need to be called to create the tool instance)
-async function resolveFactory(rawTool, envVars) {
-  if (typeof rawTool !== 'function' || rawTool.execute) {
-    return rawTool;
-  }
-
-  // Strategy 1: Try calling with no arguments
-  try {
-    const result = rawTool();
-    if (result && typeof result.execute === 'function') {
-      return result;
-    }
-  } catch {}
-
-  // Strategy 2: Try with env config object
-  if (envVars) {
-    const configVariations = [
-      envVars,
-      // Extract API key if present
-      (() => {
-        const entry = Object.entries(envVars).find(([k]) => k.toUpperCase().includes('API_KEY'));
-        return entry ? { apiKey: entry[1] } : null;
-      })(),
-    ].filter(Boolean);
-
-    for (const config of configVariations) {
-      try {
-        const result = rawTool(config);
-        if (result && typeof result.execute === 'function') {
-          return result;
-        }
-      } catch {}
-    }
-  }
-
-  return rawTool;
-}
-
 (async () => {
   try {
-    const envVars = ${env ? JSON.stringify(env) : 'null'};
-    const resolvedTool = await resolveFactory(tool, envVars);
+    const pkg = require(${JSON.stringify(packageName)});
 
-    if (!resolvedTool || typeof resolvedTool.execute !== 'function') {
-      console.log(JSON.stringify({ __tpmjs_error__: 'Tool "${name}" does not have an execute() function' }));
-      process.exit(1);
+    // Get the tool export
+    let tool = pkg[${JSON.stringify(name)}] || pkg.default?.[${JSON.stringify(name)}] || pkg.default;
+
+    if (!tool) {
+      throw new Error('Tool "${name}" not found in package "${packageName}"');
     }
 
-    const params = ${JSON.stringify(params)};
-    const result = await resolvedTool.execute(params);
+    // Handle factory functions
+    if (typeof tool === 'function' && !tool.execute) {
+      const envVars = ${env ? JSON.stringify(env) : 'null'};
 
-    console.log(JSON.stringify({ __tpmjs_result__: result }));
+      // Try no-arg call first
+      try {
+        const result = tool();
+        if (result && typeof result.execute === 'function') {
+          tool = result;
+        }
+      } catch {}
+
+      // Try with env config
+      if (typeof tool === 'function' && envVars) {
+        try {
+          const result = tool(envVars);
+          if (result && typeof result.execute === 'function') {
+            tool = result;
+          }
+        } catch {}
+      }
+    }
+
+    if (!tool || typeof tool.execute !== 'function') {
+      throw new Error('Tool "${name}" does not have an execute() function');
+    }
+
+    const result = await tool.execute(${JSON.stringify(params)});
+    process.stdout.write(JSON.stringify({ __tpmjs_result__: result }));
   } catch (err) {
-    console.log(JSON.stringify({ __tpmjs_error__: err.message || String(err) }));
-    process.exit(1);
+    process.stderr.write(JSON.stringify({ __tpmjs_error__: err.message || String(err) }));
+    process.exitCode = 1;
   }
 })();
-`;
+`.trim();
 
-    // Write the script to a file
-    await sandbox.writeFiles([
-      { path: '/vercel/sandbox/execute.cjs', content: Buffer.from(script) },
-    ]);
+    await sandbox.writeFiles([{ path: 'execute.cjs', content: Buffer.from(script, 'utf8') }]);
 
-    // Run the script and capture output
-    let stdout = '';
-    let stderr = '';
-
-    await sandbox.runCommand({
+    // 4) Run the script
+    const run = await sandbox.runCommand({
       cmd: 'node',
       args: ['execute.cjs'],
-      cwd: '/vercel/sandbox',
-      stdout: {
-        write(chunk: Buffer | string) {
-          stdout += chunk.toString();
-          return true;
-        },
-      } as NodeJS.WritableStream,
-      stderr: {
-        write(chunk: Buffer | string) {
-          stderr += chunk.toString();
-          return true;
-        },
-      } as NodeJS.WritableStream,
+      cwd,
+      env: env || {},
     });
 
-    // Parse the output to extract the result
-    const lines = stdout.split('\n');
-    for (const line of lines) {
-      if (line.includes('__tpmjs_result__')) {
-        try {
-          const parsed = JSON.parse(line);
-          return NextResponse.json({
-            success: true,
-            output: parsed.__tpmjs_result__,
-            executionTimeMs: Date.now() - startTime,
-          });
-        } catch {
-          // Continue searching
-        }
-      }
-      if (line.includes('__tpmjs_error__')) {
-        try {
-          const parsed = JSON.parse(line);
+    const stdout = await run.stdout();
+    const stderr = await run.stderr();
+
+    if (run.exitCode !== 0) {
+      // Try to parse error from stderr
+      try {
+        const errorObj = JSON.parse(stderr);
+        if (errorObj.__tpmjs_error__) {
           return NextResponse.json({
             success: false,
-            error: parsed.__tpmjs_error__,
+            error: errorObj.__tpmjs_error__,
             executionTimeMs: Date.now() - startTime,
           });
-        } catch {
-          // Continue searching
         }
-      }
-    }
+      } catch {}
 
-    // If we couldn't find structured output, check stderr
-    if (stderr) {
       return NextResponse.json({
         success: false,
-        error: stderr.trim(),
+        error: stderr || `Script exited with code ${run.exitCode}`,
         executionTimeMs: Date.now() - startTime,
       });
     }
 
-    // Return raw stdout if no structured result
+    // 5) Parse the result
+    try {
+      const parsed = JSON.parse(stdout);
+      if (parsed.__tpmjs_result__ !== undefined) {
+        return NextResponse.json({
+          success: true,
+          output: parsed.__tpmjs_result__,
+          executionTimeMs: Date.now() - startTime,
+        });
+      }
+    } catch {}
+
+    // If we couldn't parse structured output, return raw
     return NextResponse.json({
       success: true,
-      output: stdout.trim() || null,
+      output: stdout || null,
+      stderr: stderr || undefined,
       executionTimeMs: Date.now() - startTime,
     });
   } catch (error) {
@@ -232,7 +205,6 @@ async function resolveFactory(rawTool, envVars) {
       executionTimeMs: Date.now() - startTime,
     });
   } finally {
-    // Always stop the sandbox
     if (sandbox) {
       try {
         await sandbox.stop();
