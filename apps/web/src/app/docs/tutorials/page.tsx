@@ -31,6 +31,15 @@ const tutorials: Tutorial[] = [
     duration: '4 min',
     steps: 8,
   },
+  {
+    title: 'Deploy Your Own Executor',
+    description:
+      'Run TPMJS tools on your own infrastructure. Deploy a custom executor to Vercel in minutes for full privacy, control, and custom environment variables.',
+    icon: '🚀',
+    href: '/docs/tutorials/custom-executor',
+    duration: '10 min',
+    steps: 6,
+  },
 ];
 
 export default function TutorialsPage(): React.ReactElement {

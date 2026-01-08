@@ -50,6 +50,27 @@ export default function ExecutorsDocsPage(): React.ReactElement {
             </p>
           </div>
 
+          {/* Quick Start Banner */}
+          <section className="mb-12">
+            <Link
+              href="/docs/tutorials/custom-executor"
+              className="block p-4 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/30 rounded-lg hover:border-primary/50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className="text-3xl">🚀</div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground">
+                    New to custom executors? Start with the tutorial
+                  </p>
+                  <p className="text-sm text-foreground-secondary">
+                    Deploy your own executor in 10 minutes with our step-by-step guide
+                  </p>
+                </div>
+                <Icon icon="chevronRight" className="w-5 h-5 text-primary" />
+              </div>
+            </Link>
+          </section>
+
           {/* Overview Section */}
           <section className="mb-12">
             <h2 className="text-2xl font-semibold text-foreground mb-4">What is an Executor?</h2>
