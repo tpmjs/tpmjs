@@ -27,7 +27,7 @@ const CHAT_RATE_LIMIT: RateLimitConfig = {
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300; // 5 minutes for long agentic runs
+export const maxDuration = 60; // Vercel Hobby plan max
 
 type RouteContext = {
   params: Promise<{ username: string; uid: string; conversationId: string }>;

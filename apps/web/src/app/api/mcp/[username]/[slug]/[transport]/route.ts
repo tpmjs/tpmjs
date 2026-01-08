@@ -5,7 +5,7 @@ import { handleInitialize, handleToolsCall, handleToolsList } from '~/lib/mcp/ha
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 60; // Vercel Hobby plan max
 
 interface RouteContext {
   params: Promise<{ username: string; slug: string; transport: string }>;

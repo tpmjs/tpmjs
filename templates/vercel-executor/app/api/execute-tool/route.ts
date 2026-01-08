@@ -88,17 +88,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExecuteToolRe
       });
     }
 
-    // 2) Build environment setup for the script
-    const envSetup = env
-      ? Object.entries(env)
-          .map(([key, value]) => `process.env[${JSON.stringify(key)}] = ${JSON.stringify(value)};`)
-          .join('\n')
-      : '';
-
-    // 3) Write the execution script (CommonJS for require())
+    // 2) Write the execution script (CommonJS for require())
+    // Note: env vars are passed via runCommand's env option, not embedded in script
     const script = `
-${envSetup}
-
 (async () => {
   try {
     const pkg = require(${JSON.stringify(packageName)});
