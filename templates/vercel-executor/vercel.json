@@ -1,6 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": "nextjs",
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "vercel-deno@3.0.0"
+    }
+  },
   "headers": [
     {
       "source": "/api/(.*)",

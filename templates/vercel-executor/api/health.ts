@@ -1,14 +1,9 @@
 /**
- * Health Check Endpoint
+ * Health Check Endpoint (Deno Runtime)
  *
  * GET /api/health
  * Returns the health status of the executor
  */
-
-import { NextResponse } from 'next/server';
-
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
 
 interface HealthResponse {
   status: 'ok' | 'degraded' | 'error';
@@ -16,21 +11,18 @@ interface HealthResponse {
   info?: Record<string, unknown>;
 }
 
-export async function GET(): Promise<NextResponse<HealthResponse>> {
-  return NextResponse.json({
+export default function handler(_req: Request): Response {
+  const response: HealthResponse = {
     status: 'ok',
     version: '1.0.0',
     info: {
-      runtime: 'vercel-serverless',
+      runtime: 'deno',
+      httpImports: true,
       timestamp: new Date().toISOString(),
     },
-  });
-}
+  };
 
-// Handle OPTIONS for CORS preflight
-export async function OPTIONS(): Promise<NextResponse> {
-  return new NextResponse(null, {
-    status: 200,
+  return Response.json(response, {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',

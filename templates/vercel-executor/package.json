@@ -2,20 +2,11 @@
   "name": "tpmjs-executor",
   "version": "1.0.0",
   "private": true,
-  "description": "TPMJS Tool Executor - Deploy your own executor for running TPMJS tools",
+  "description": "TPMJS Tool Executor - Deploy your own executor using Deno on Vercel",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
-  },
-  "dependencies": {
-    "next": "^15.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "dev": "vercel dev"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/react": "^19.0.0",
-    "typescript": "^5.6.0"
+    "vercel": "^39.0.0"
   }
 }
