@@ -8,6 +8,7 @@ export default defineConfig({
     'src/collection.ts',
     'src/agent.ts',
     'src/user.ts',
+    'src/executor.ts',
   ],
   format: ['esm'],
   dts: true,

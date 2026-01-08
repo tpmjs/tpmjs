@@ -36,6 +36,10 @@
     "./user": {
       "types": "./dist/user.d.ts",
       "default": "./dist/user.js"
+    },
+    "./executor": {
+      "types": "./dist/executor.d.ts",
+      "default": "./dist/executor.js"
     }
   },
   "files": ["dist"],

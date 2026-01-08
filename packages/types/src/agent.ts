@@ -1,7 +1,18 @@
 import { z } from 'zod';
 
+import { ExecutorTypeSchema } from './executor';
+
 // Regex for valid agent UID: lowercase alphanumeric and hyphens
 const UID_REGEX = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
+
+// Executor config for updates (simplified schema that maps to database JSON)
+const ExecutorConfigUpdateSchema = z
+  .object({
+    url: z.string().url(),
+    apiKey: z.string().optional(),
+  })
+  .nullable()
+  .optional();
 
 // ============================================================================
 // Enums
@@ -49,6 +60,9 @@ export const UpdateAgentSchema = z.object({
   maxToolCallsPerTurn: z.number().int().min(1).max(100).optional(),
   maxMessagesInContext: z.number().int().min(1).max(100).optional(),
   isPublic: z.boolean().optional(),
+  // Executor configuration
+  executorType: ExecutorTypeSchema.nullable().optional(),
+  executorConfig: ExecutorConfigUpdateSchema,
 });
 
 export const AddCollectionToAgentSchema = z.object({

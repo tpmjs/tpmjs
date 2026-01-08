@@ -1,11 +1,13 @@
 'use client';
 
+import type { ExecutorConfig } from '@tpmjs/types/executor';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
 import { AddToolSearch } from '~/components/collections/AddToolSearch';
 import { CollectionForm } from '~/components/collections/CollectionForm';
 import { CollectionToolList } from '~/components/collections/CollectionToolList';
@@ -165,12 +167,15 @@ interface Collection {
   description: string | null;
   isPublic: boolean;
   toolCount: number;
+  executorType: string | null;
+  executorConfig: { url: string; apiKey?: string } | null;
   createdAt: string;
   updatedAt: string;
   isOwner: boolean;
   tools: CollectionTool[];
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Page component with multiple handlers
 export default function CollectionDetailPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
@@ -183,7 +188,9 @@ export default function CollectionDetailPage(): React.ReactElement {
   const [isUpdating, setIsUpdating] = useState(false);
   const [removingToolId, setRemovingToolId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [executorConfig, setExecutorConfig] = useState<ExecutorConfig | null>(null);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Fetch callback with error handling
   const fetchCollection = useCallback(async () => {
     try {
       const response = await fetch(`/api/collections/${collectionId}`);
@@ -191,6 +198,16 @@ export default function CollectionDetailPage(): React.ReactElement {
 
       if (data.success) {
         setCollection(data.data);
+        // Initialize executor config state from collection data
+        if (data.data.executorType === 'custom_url' && data.data.executorConfig) {
+          setExecutorConfig({
+            type: 'custom_url',
+            url: data.data.executorConfig.url,
+            apiKey: data.data.executorConfig.apiKey,
+          });
+        } else {
+          setExecutorConfig(data.data.executorType ? { type: 'default' } : null);
+        }
       } else {
         if (data.error?.code === 'UNAUTHORIZED') {
           router.push('/sign-in');
@@ -218,11 +235,28 @@ export default function CollectionDetailPage(): React.ReactElement {
     if (!collection) return;
     setIsUpdating(true);
 
+    // Build update payload including executor config
+    const updatePayload: Record<string, unknown> = { ...data };
+    if (executorConfig) {
+      updatePayload.executorType = executorConfig.type;
+      if (executorConfig.type === 'custom_url') {
+        updatePayload.executorConfig = {
+          url: executorConfig.url,
+          apiKey: executorConfig.apiKey,
+        };
+      } else {
+        updatePayload.executorConfig = null;
+      }
+    } else {
+      updatePayload.executorType = null;
+      updatePayload.executorConfig = null;
+    }
+
     try {
       const response = await fetch(`/api/collections/${collectionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(updatePayload),
       });
 
       const result = await response.json();
@@ -235,6 +269,8 @@ export default function CollectionDetailPage(): React.ReactElement {
                 name: result.data.name,
                 description: result.data.description,
                 isPublic: result.data.isPublic,
+                executorType: result.data.executorType,
+                executorConfig: result.data.executorConfig,
                 updatedAt: result.data.updatedAt,
               }
             : null
@@ -430,6 +466,15 @@ export default function CollectionDetailPage(): React.ReactElement {
             isSubmitting={isUpdating}
             submitLabel="Save Changes"
           />
+
+          {/* Executor Configuration */}
+          <div className="mt-6 pt-6 border-t border-border">
+            <ExecutorConfigPanel
+              value={executorConfig}
+              onChange={setExecutorConfig}
+              disabled={isUpdating}
+            />
+          </div>
         </div>
       )}
 

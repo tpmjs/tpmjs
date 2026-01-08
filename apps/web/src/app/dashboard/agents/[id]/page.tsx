@@ -2,6 +2,7 @@
 
 import type { AIProvider } from '@tpmjs/types/agent';
 import { PROVIDER_MODELS, SUPPORTED_PROVIDERS } from '@tpmjs/types/agent';
+import type { ExecutorConfig } from '@tpmjs/types/executor';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
@@ -19,6 +20,7 @@ import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 interface Agent {
@@ -33,6 +35,8 @@ interface Agent {
   maxToolCallsPerTurn: number;
   maxMessagesInContext: number;
   isPublic: boolean;
+  executorType: string | null;
+  executorConfig: { url: string; apiKey?: string } | null;
   toolCount: number;
   collectionCount: number;
   createdAt: string;
@@ -267,6 +271,7 @@ export default function AgentDetailPage(): React.ReactElement {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [executorConfig, setExecutorConfig] = useState<ExecutorConfig | null>(null);
 
   // Tools state
   const [agentTools, setAgentTools] = useState<AgentTool[]>([]);
@@ -316,6 +321,16 @@ export default function AgentDetailPage(): React.ReactElement {
           maxMessagesInContext: data.data.maxMessagesInContext,
           isPublic: data.data.isPublic,
         });
+        // Initialize executor config state from agent data
+        if (data.data.executorType === 'custom_url' && data.data.executorConfig) {
+          setExecutorConfig({
+            type: 'custom_url',
+            url: data.data.executorConfig.url,
+            apiKey: data.data.executorConfig.apiKey,
+          });
+        } else {
+          setExecutorConfig(data.data.executorType ? { type: 'default' } : null);
+        }
       } else {
         if (response.status === 401) {
           router.push('/sign-in');
@@ -576,19 +591,39 @@ export default function AgentDetailPage(): React.ReactElement {
 
   const handleSave = async () => {
     setIsSaving(true);
+
+    // Build update payload including executor config
+    const updatePayload: Record<string, unknown> = {
+      ...formData,
+      temperature: Number.parseFloat(formData.temperature.toString()),
+      maxToolCallsPerTurn: Number.parseInt(formData.maxToolCallsPerTurn.toString(), 10),
+      maxMessagesInContext: Number.parseInt(formData.maxMessagesInContext.toString(), 10),
+      description: formData.description || null,
+      systemPrompt: formData.systemPrompt || null,
+      isPublic: formData.isPublic,
+    };
+
+    // Add executor config
+    if (executorConfig) {
+      updatePayload.executorType = executorConfig.type;
+      if (executorConfig.type === 'custom_url') {
+        updatePayload.executorConfig = {
+          url: executorConfig.url,
+          apiKey: executorConfig.apiKey,
+        };
+      } else {
+        updatePayload.executorConfig = null;
+      }
+    } else {
+      updatePayload.executorType = null;
+      updatePayload.executorConfig = null;
+    }
+
     try {
       const response = await fetch(`/api/agents/${agentId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          temperature: Number.parseFloat(formData.temperature.toString()),
-          maxToolCallsPerTurn: Number.parseInt(formData.maxToolCallsPerTurn.toString(), 10),
-          maxMessagesInContext: Number.parseInt(formData.maxMessagesInContext.toString(), 10),
-          description: formData.description || null,
-          systemPrompt: formData.systemPrompt || null,
-          isPublic: formData.isPublic,
-        }),
+        body: JSON.stringify(updatePayload),
       });
 
       const result = await response.json();
@@ -863,6 +898,15 @@ export default function AgentDetailPage(): React.ReactElement {
               />
             </div>
 
+            {/* Executor Configuration */}
+            <div className="pt-4 border-t border-border">
+              <ExecutorConfigPanel
+                value={executorConfig}
+                onChange={setExecutorConfig}
+                disabled={isSaving}
+              />
+            </div>
+
             <div className="flex items-center justify-end gap-2 pt-4">
               <Button
                 variant="outline"
@@ -880,6 +924,16 @@ export default function AgentDetailPage(): React.ReactElement {
                     maxMessagesInContext: agent.maxMessagesInContext,
                     isPublic: agent.isPublic,
                   });
+                  // Reset executor config to agent's current value
+                  if (agent.executorType === 'custom_url' && agent.executorConfig) {
+                    setExecutorConfig({
+                      type: 'custom_url',
+                      url: agent.executorConfig.url,
+                      apiKey: agent.executorConfig.apiKey,
+                    });
+                  } else {
+                    setExecutorConfig(agent.executorType ? { type: 'default' } : null);
+                  }
                 }}
               >
                 Cancel

@@ -5,9 +5,11 @@
 
 import { openai } from '@ai-sdk/openai';
 import type { Package, Tool } from '@tpmjs/db';
-import { executePackage } from '@tpmjs/package-executor';
+import type { ExecutorConfig } from '@tpmjs/types/executor';
 import { type ModelMessage, generateText } from 'ai';
 import { z } from 'zod';
+
+import { executeWithExecutor } from '../executors';
 
 /**
  * Parameter from TPMJS metadata
@@ -91,8 +93,14 @@ export function tpmjsParamsToZodSchema(parameters: TPMJSParameter[]): z.ZodObjec
 /**
  * Create AI SDK v6 tool definition from TPMJS Tool
  * Requires Tool with Package relation
+ *
+ * @param tool - The tool with its package relation
+ * @param executorConfig - Optional executor config for custom executors
  */
-export function createToolDefinition(tool: Tool & { package: Package }) {
+export function createToolDefinition(
+  tool: Tool & { package: Package },
+  executorConfig?: ExecutorConfig | null
+) {
   const parameters = Array.isArray(tool.parameters)
     ? (tool.parameters as unknown as TPMJSParameter[])
     : [];
@@ -118,14 +126,13 @@ export function createToolDefinition(tool: Tool & { package: Package }) {
     execute: async (params: Record<string, unknown>) => {
       console.log('[Tool execute] Running:', sanitizedName, params);
 
-      // Execute the actual npm package in a sandbox
+      // Execute the actual npm package using resolved executor
       // Use the actual export name from the Tool record
-      const result = await executePackage(
-        tool.package.npmPackageName,
-        tool.name, // Use actual export name (e.g., "helloWorldTool", "default")
+      const result = await executeWithExecutor(executorConfig ?? null, {
+        packageName: tool.package.npmPackageName,
+        name: tool.name, // Use actual export name (e.g., "helloWorldTool", "default")
         params,
-        { timeout: 5000 }
-      );
+      });
 
       if (!result.success) {
         throw new Error(result.error || 'Package execution failed');

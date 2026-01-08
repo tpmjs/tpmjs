@@ -422,6 +422,10 @@ model Collection {
   isPublic    Boolean  @default(false) @map("is_public")
   likeCount   Int      @default(0) @map("like_count")
 
+  // Executor configuration (optional - uses system default if not set)
+  executorType   String? @map("executor_type") @db.VarChar(50)
+  executorConfig Json?   @map("executor_config") @db.JsonB
+
   // Timestamps
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -512,6 +516,11 @@ model Agent {
   // Visibility
   isPublic             Boolean    @default(true) @map("is_public")
   likeCount            Int        @default(0) @map("like_count")
+
+  // Executor configuration (optional - uses system default if not set)
+  // Agent executor overrides collection executor overrides system default
+  executorType         String?    @map("executor_type") @db.VarChar(50)
+  executorConfig       Json?      @map("executor_config") @db.JsonB
 
   // Timestamps
   createdAt            DateTime   @default(now()) @map("created_at")

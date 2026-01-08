@@ -1,4 +1,4 @@
-import { prisma } from '@tpmjs/db';
+import { Prisma, prisma } from '@tpmjs/db';
 import { UpdateCollectionSchema } from '@tpmjs/types/collection';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -243,7 +243,7 @@ export async function PATCH(
       );
     }
 
-    const { name, description, isPublic } = parseResult.data;
+    const { name, description, isPublic, executorType, executorConfig } = parseResult.data;
 
     // If name is being changed, check for duplicates
     if (name && name !== existingCollection.name) {
@@ -270,13 +270,17 @@ export async function PATCH(
       }
     }
 
-    // Update collection
+    // Update collection (transform null to Prisma.JsonNull for JSON fields)
     const collection = await prisma.collection.update({
       where: { id },
       data: {
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
         ...(isPublic !== undefined && { isPublic }),
+        ...(executorType !== undefined && { executorType }),
+        ...(executorConfig !== undefined && {
+          executorConfig: executorConfig === null ? Prisma.JsonNull : executorConfig,
+        }),
       },
       include: {
         _count: { select: { tools: true } },
@@ -300,6 +304,8 @@ export async function PATCH(
         description: collection.description,
         isPublic: collection.isPublic,
         toolCount: collection._count.tools,
+        executorType: collection.executorType,
+        executorConfig: collection.executorConfig,
         createdAt: collection.createdAt,
         updatedAt: collection.updatedAt,
       },

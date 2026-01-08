@@ -1,4 +1,4 @@
-import { prisma } from '@tpmjs/db';
+import { Prisma, prisma } from '@tpmjs/db';
 import { UpdateAgentSchema } from '@tpmjs/types/agent';
 import { headers } from 'next/headers';
 import type { NextRequest } from 'next/server';
@@ -178,23 +178,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    // Build update data, transforming executorConfig for Prisma (null -> Prisma.JsonNull)
+    const { executorConfig, ...restData } = parsed.data;
+    const updateData: Prisma.AgentUpdateInput = {
+      ...restData,
+      ...(executorConfig !== undefined && {
+        executorConfig: executorConfig === null ? Prisma.JsonNull : executorConfig,
+      }),
+    };
+
     const agent = await prisma.agent.update({
       where: { id },
-      data: parsed.data,
-      select: {
-        id: true,
-        uid: true,
-        name: true,
-        description: true,
-        provider: true,
-        modelId: true,
-        systemPrompt: true,
-        temperature: true,
-        maxToolCallsPerTurn: true,
-        maxMessagesInContext: true,
-        isPublic: true,
-        createdAt: true,
-        updatedAt: true,
+      data: updateData,
+      include: {
         _count: {
           select: {
             tools: true,

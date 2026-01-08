@@ -1,7 +1,18 @@
 import { z } from 'zod';
 
+import { ExecutorTypeSchema } from './executor';
+
 // Regex for valid collection names: letters, numbers, spaces, hyphens, underscores
 const NAME_REGEX = /^[a-zA-Z0-9\s\-_]+$/;
+
+// Executor config for updates (simplified schema that maps to database JSON)
+const ExecutorConfigUpdateSchema = z
+  .object({
+    url: z.string().url(),
+    apiKey: z.string().optional(),
+  })
+  .nullable()
+  .optional();
 
 // ============================================================================
 // Collection Schemas
@@ -30,6 +41,9 @@ export const UpdateCollectionSchema = z.object({
     .nullable()
     .optional(),
   isPublic: z.boolean().optional(),
+  // Executor configuration
+  executorType: ExecutorTypeSchema.nullable().optional(),
+  executorConfig: ExecutorConfigUpdateSchema,
 });
 
 // ============================================================================

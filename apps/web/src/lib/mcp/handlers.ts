@@ -1,43 +1,7 @@
 import { prisma } from '@tpmjs/db';
 
+import { executeWithExecutor, parseExecutorConfig } from '../executors';
 import { convertToMcpTool, parseToolName } from './tool-converter';
-
-const SANDBOX_URL = 'https://executor.tpmjs.com';
-
-interface ExecutionResult {
-  success: boolean;
-  output?: unknown;
-  error?: string;
-  executionTimeMs?: number;
-}
-
-async function executePackageDirect(
-  packageName: string,
-  toolName: string,
-  params: Record<string, unknown>
-): Promise<ExecutionResult> {
-  try {
-    const response = await fetch(`${SANDBOX_URL}/execute-tool`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        packageName,
-        name: toolName,
-        version: 'latest',
-        params,
-      }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      return { success: false, error: `Sandbox error ${response.status}: ${text}` };
-    }
-
-    return await response.json();
-  } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : String(error) };
-  }
-}
 
 type JsonRpcId = string | number | null;
 
@@ -114,10 +78,12 @@ export async function handleToolsCall(
     };
   }
 
-  // Verify tool exists in collection
+  // Verify tool exists in collection and get executor config
   const collection = await prisma.collection.findUnique({
     where: { id: collectionId },
-    include: {
+    select: {
+      executorType: true,
+      executorConfig: true,
       tools: {
         include: { tool: { include: { package: true } } },
       },
@@ -137,12 +103,15 @@ export async function handleToolsCall(
     };
   }
 
-  // Execute via sandbox (direct call with hardcoded URL)
-  const result = await executePackageDirect(
-    parsed.packageName,
-    parsed.toolName,
-    params.arguments ?? {}
-  );
+  // Resolve executor configuration (collection config only for MCP - no agent context)
+  const executorConfig = parseExecutorConfig(collection?.executorType, collection?.executorConfig);
+
+  // Execute via resolved executor
+  const result = await executeWithExecutor(executorConfig, {
+    packageName: parsed.packageName,
+    name: parsed.toolName,
+    params: params.arguments ?? {},
+  });
 
   if (!result.success) {
     return {

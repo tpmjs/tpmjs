@@ -6,7 +6,9 @@ import type { Agent, AgentCollection, AgentTool, Collection, Package, Tool } fro
 import { prisma } from '@tpmjs/db';
 
 import { createToolDefinition } from '../ai-agent/tool-executor-agent';
+import { parseExecutorConfig, resolveExecutorConfig } from '../executors';
 
+// Agent type includes executor config fields from Prisma schema
 type AgentWithRelations = Agent & {
   collections: (AgentCollection & {
     collection: Collection & {
@@ -22,6 +24,7 @@ type AgentWithRelations = Agent & {
 
 /**
  * Fetch a full agent with all tool relations
+ * Includes executor config for cascade resolution
  */
 export async function fetchAgentWithTools(agentId: string): Promise<AgentWithRelations | null> {
   return prisma.agent.findUnique({
@@ -58,6 +61,7 @@ export async function fetchAgentWithTools(agentId: string): Promise<AgentWithRel
 
 /**
  * Fetch an agent by UID with all tool relations
+ * Includes executor config for cascade resolution
  */
 export async function fetchAgentByUidWithTools(uid: string): Promise<AgentWithRelations | null> {
   return prisma.agent.findUnique({
@@ -95,6 +99,7 @@ export async function fetchAgentByUidWithTools(uid: string): Promise<AgentWithRe
 /**
  * Fetch an agent by ID or UID with all tool relations
  * Accepts either the cuid or the user-friendly uid
+ * Includes executor config for cascade resolution
  */
 export async function fetchAgentByIdOrUidWithTools(
   idOrUid: string
@@ -136,6 +141,7 @@ export async function fetchAgentByIdOrUidWithTools(
 /**
  * Fetch an agent by username and uid with all tool relations
  * Uses the username/uid pretty URL format
+ * Includes executor config for cascade resolution
  */
 export async function fetchAgentByUsernameAndUidWithTools(
   username: string,
@@ -189,6 +195,11 @@ function sanitizeToolName(name: string): string {
 /**
  * Build all tools from an agent's collections and individual tools
  * Returns a map of tool name -> AI SDK tool definition
+ *
+ * Executor config cascade: Agent → Collection → System Default
+ * - If agent has an executor config, it's used for all tools
+ * - If agent has no config but collection has one, collection's config is used for tools from that collection
+ * - If neither has config, system default is used
  */
 export function buildAgentTools(
   agent: AgentWithRelations
@@ -196,9 +207,23 @@ export function buildAgentTools(
   const tools: Record<string, ReturnType<typeof createToolDefinition>> = {};
   const seenTools = new Set<string>();
 
+  // Parse agent-level executor config
+  const agentExecutorConfig = parseExecutorConfig(agent.executorType, agent.executorConfig);
+
   // Add tools from collections first
   for (const agentCollection of agent.collections) {
-    for (const collectionTool of agentCollection.collection.tools) {
+    const collection = agentCollection.collection;
+
+    // Parse collection-level executor config
+    const collectionExecutorConfig = parseExecutorConfig(
+      collection.executorType,
+      collection.executorConfig
+    );
+
+    // Resolve executor config: Agent → Collection → Default
+    const resolvedConfig = resolveExecutorConfig(agentExecutorConfig, collectionExecutorConfig);
+
+    for (const collectionTool of collection.tools) {
       const tool = collectionTool.tool;
       const toolKey = `${tool.package.npmPackageName}::${tool.name}`;
 
@@ -207,11 +232,14 @@ export function buildAgentTools(
       seenTools.add(toolKey);
 
       const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
-      tools[toolName] = createToolDefinition(tool);
+      tools[toolName] = createToolDefinition(tool, resolvedConfig);
     }
   }
 
   // Add individual tools (may override collection tools)
+  // Individual tools use agent config or system default (no collection context)
+  const individualToolConfig = agentExecutorConfig ?? { type: 'default' as const };
+
   for (const agentTool of agent.tools) {
     const tool = agentTool.tool;
     const toolKey = `${tool.package.npmPackageName}::${tool.name}`;
@@ -221,7 +249,7 @@ export function buildAgentTools(
     seenTools.add(toolKey);
 
     const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
-    tools[toolName] = createToolDefinition(tool);
+    tools[toolName] = createToolDefinition(tool, individualToolConfig);
   }
 
   return tools;
