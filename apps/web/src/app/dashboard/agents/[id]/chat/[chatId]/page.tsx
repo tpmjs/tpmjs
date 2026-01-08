@@ -225,7 +225,7 @@ export default function AgentChatPage(): React.ReactElement {
     if (!agent) return;
 
     try {
-      const response = await fetch(`/api/agents/${agent.uid}/conversations`);
+      const response = await fetch(`/api/agents/${agentId}/conversations`);
       const data = await response.json();
 
       if (data.success) {
@@ -234,14 +234,14 @@ export default function AgentChatPage(): React.ReactElement {
     } catch (err) {
       console.error('Failed to fetch conversations:', err);
     }
-  }, [agent]);
+  }, [agent, agentId]);
 
   // Fetch messages for active conversation
   const fetchMessages = useCallback(async () => {
     if (!agent || !activeConversationId) return;
 
     try {
-      const response = await fetch(`/api/agents/${agent.uid}/conversation/${activeConversationId}`);
+      const response = await fetch(`/api/agents/${agentId}/conversation/${activeConversationId}`);
       const data = await response.json();
 
       if (data.success) {
@@ -256,7 +256,7 @@ export default function AgentChatPage(): React.ReactElement {
     } catch (err) {
       console.error('Failed to fetch messages:', err);
     }
-  }, [agent, activeConversationId]);
+  }, [agent, agentId, activeConversationId]);
 
   useEffect(() => {
     const init = async () => {
@@ -312,7 +312,7 @@ export default function AgentChatPage(): React.ReactElement {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const response = await fetch(`/api/agents/${agent.uid}/conversation/${conversationId}`, {
+      const response = await fetch(`/api/agents/${agentId}/conversation/${conversationId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: messageContent }),
