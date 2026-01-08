@@ -1,10 +1,10 @@
 # TPMJS Executor for Vercel
 
-Deploy your own TPMJS tool executor using the **Deno runtime** on Vercel for secure, isolated code execution.
+Deploy your own TPMJS tool executor using **Vercel Sandbox** for secure, isolated code execution.
 
 ## Features
 
-- **Native HTTP Imports**: Deno natively supports importing from esm.sh
+- **Secure Execution**: Tools run in isolated Vercel Sandbox VMs
 - **Full Control**: Your infrastructure, your environment variables
 - **Privacy**: No data passes through TPMJS servers
 - **One-Click Deploy**: Deploy to Vercel in minutes
@@ -15,14 +15,14 @@ Deploy your own TPMJS tool executor using the **Deno runtime** on Vercel for sec
 
 ## How It Works
 
-This executor uses the [Vercel Deno Runtime](https://github.com/vercel-community/deno) to:
+This executor uses [Vercel Sandbox](https://vercel.com/docs/vercel-sandbox) to:
 
-1. Receive tool execution requests via POST `/api/execute-tool`
-2. Dynamically import the npm package from esm.sh (Deno natively supports HTTP imports!)
+1. Create an isolated VM for each tool execution
+2. Install the npm package in the sandbox
 3. Execute the tool with your parameters
-4. Return the result
+4. Return the result and destroy the sandbox
 
-This provides the same execution model as the Railway executor, but deployed to your own Vercel account.
+This provides secure, isolated execution without the limitations of Node.js serverless functions.
 
 ## API Endpoints
 
@@ -40,8 +40,8 @@ curl https://your-executor.vercel.app/api/health
   "status": "ok",
   "version": "1.0.0",
   "info": {
-    "runtime": "deno",
-    "httpImports": true,
+    "runtime": "vercel-sandbox",
+    "region": "iad1",
     "timestamp": "2024-01-01T00:00:00.000Z"
   }
 }
@@ -56,7 +56,7 @@ curl -X POST https://your-executor.vercel.app/api/execute-tool \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer your-api-key" \
   -d '{
-    "packageName": "@anthropic-ai/tpmjs-hello",
+    "packageName": "@tpmjs/hello",
     "name": "helloWorld",
     "version": "latest",
     "params": { "name": "World" }
@@ -68,7 +68,7 @@ curl -X POST https://your-executor.vercel.app/api/execute-tool \
 {
   "success": true,
   "output": "Hello, World!",
-  "executionTimeMs": 234
+  "executionTimeMs": 2345
 }
 ```
 
@@ -99,45 +99,45 @@ Add custom environment variables for your tools (e.g., `MY_API_KEY`, `DATABASE_U
 ## Local Development
 
 ```bash
-# Install Vercel CLI
-npm install -g vercel
+# Install dependencies
+npm install
 
-# Login to Vercel
+# Login to Vercel (required for sandbox access)
 vercel login
 
+# Link to your Vercel project
+vercel link
+
+# Pull environment variables
+vercel env pull
+
 # Run development server
-vercel dev
+npm run dev
 
 # Test the health endpoint
 curl http://localhost:3000/api/health
 ```
 
-**Note:** Local development requires the Vercel CLI. Run `vercel login` first.
+**Note:** Vercel Sandbox requires authentication even in development. Run `vercel login` and `vercel link` first.
 
 ## Security
 
 - Set `EXECUTOR_API_KEY` to require authentication for all requests
-- Tools are loaded dynamically from esm.sh
-- Each request gets fresh environment variable injection
-- CORS headers allow cross-origin requests (configurable)
-
-## How It Compares to TPMJS Default Executor
-
-| Feature | TPMJS Default (Railway) | Your Vercel Executor |
-|---------|------------------------|---------------------|
-| Runtime | Deno on Railway | Deno on Vercel |
-| Cost | Free (TPMJS hosted) | Your Vercel usage |
-| Env Vars | Stored in TPMJS | Stored in your Vercel project |
-| Privacy | Requests go through TPMJS | Direct to your executor |
-| Control | Managed by TPMJS | Fully yours |
+- Tools run in isolated VMs with no access to your Vercel project
+- Each execution gets a fresh sandbox instance
+- Sandboxes are destroyed after execution completes
 
 ## Pricing
 
-Vercel's free tier includes generous limits for serverless functions. See [Vercel Pricing](https://vercel.com/pricing) for details.
+Vercel Sandbox usage is billed based on compute time. See [Vercel Sandbox Pricing](https://vercel.com/docs/vercel-sandbox/pricing) for details.
+
+- **Hobby**: 45 min max runtime
+- **Pro**: 5 hour max runtime
+- **Region**: Currently only available in `iad1`
 
 ## Support
 
 - [TPMJS Custom Executors Documentation](https://tpmjs.com/docs/executors)
 - [TPMJS Custom Executor Tutorial](https://tpmjs.com/docs/tutorials/custom-executor)
-- [Vercel Deno Runtime](https://github.com/vercel-community/deno)
+- [Vercel Sandbox Documentation](https://vercel.com/docs/vercel-sandbox)
 - [GitHub Issues](https://github.com/tpmjs/tpmjs/issues)
