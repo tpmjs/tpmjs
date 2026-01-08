@@ -567,13 +567,45 @@ Invalid usernames:
                         /ajax/collections/web-tools
                       </td>
                     </tr>
-                    <tr>
+                    <tr className="border-b border-border">
                       <td className="py-3 px-4 text-foreground">Tool</td>
                       <td className="py-3 px-4 font-mono text-primary text-xs">
                         /tool/{'{package}'}/{'{tool}'}
                       </td>
                       <td className="py-3 px-4 font-mono text-foreground-secondary text-xs">
                         /tool/@firecrawl/ai-sdk/scrape
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border bg-surface/50">
+                      <td className="py-3 px-4 text-foreground" colSpan={3}>
+                        <strong className="text-foreground-secondary">API Endpoints</strong>
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border">
+                      <td className="py-3 px-4 text-foreground">MCP Server (HTTP)</td>
+                      <td className="py-3 px-4 font-mono text-primary text-xs">
+                        /api/mcp/{'{username}'}/{'{slug}'}/http
+                      </td>
+                      <td className="py-3 px-4 font-mono text-foreground-secondary text-xs">
+                        /api/mcp/ajax/web-tools/http
+                      </td>
+                    </tr>
+                    <tr className="border-b border-border">
+                      <td className="py-3 px-4 text-foreground">MCP Server (SSE)</td>
+                      <td className="py-3 px-4 font-mono text-primary text-xs">
+                        /api/mcp/{'{username}'}/{'{slug}'}/sse
+                      </td>
+                      <td className="py-3 px-4 font-mono text-foreground-secondary text-xs">
+                        /api/mcp/ajax/web-tools/sse
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-3 px-4 text-foreground">Agent Conversation</td>
+                      <td className="py-3 px-4 font-mono text-primary text-xs">
+                        /api/agents/{'{username}'}/{'{uid}'}/conversation/{'{id}'}
+                      </td>
+                      <td className="py-3 px-4 font-mono text-foreground-secondary text-xs">
+                        /api/agents/ajax/research-bot/conversation/abc123
                       </td>
                     </tr>
                   </tbody>

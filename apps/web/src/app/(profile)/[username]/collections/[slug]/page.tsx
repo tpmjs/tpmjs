@@ -1,6 +1,8 @@
 'use client';
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
+import { Button } from '@tpmjs/ui/Button/Button';
+import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
@@ -41,6 +43,119 @@ interface PublicCollection {
     image: string | null;
   };
   tools: CollectionTool[];
+}
+
+function McpUrlSection({ username, slug }: { username: string; slug: string }) {
+  const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
+  const [showConfig, setShowConfig] = useState(false);
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
+  const httpUrl = `${baseUrl}/api/mcp/${username}/${slug}/http`;
+  const sseUrl = `${baseUrl}/api/mcp/${username}/${slug}/sse`;
+
+  const copyToClipboard = async (url: string, type: 'http' | 'sse') => {
+    await navigator.clipboard.writeText(url);
+    setCopiedUrl(type);
+    setTimeout(() => setCopiedUrl(null), 2000);
+  };
+
+  const configSnippet = `{
+  "mcpServers": {
+    "tpmjs-${slug}": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "${httpUrl}"
+      ]
+    }
+  }
+}`;
+
+  return (
+    <section className="p-4 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 border border-primary/20 rounded-xl">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="p-1.5 bg-primary/10 rounded-lg">
+          <Icon icon="link" className="w-4 h-4 text-primary" />
+        </div>
+        <h3 className="font-semibold text-foreground">MCP Server URLs</h3>
+      </div>
+
+      <div className="space-y-3">
+        {/* HTTP Transport */}
+        <div className="group">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
+              HTTP Transport
+            </span>
+            <span className="text-xs text-foreground-tertiary">(recommended)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
+              {httpUrl}
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => copyToClipboard(httpUrl, 'http')}
+              className="shrink-0"
+            >
+              <Icon icon={copiedUrl === 'http' ? 'check' : 'copy'} className="w-4 h-4 mr-1" />
+              {copiedUrl === 'http' ? 'Copied!' : 'Copy'}
+            </Button>
+          </div>
+        </div>
+
+        {/* SSE Transport */}
+        <div className="group">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
+              SSE Transport
+            </span>
+            <span className="text-xs text-foreground-tertiary">(streaming)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
+              {sseUrl}
+            </div>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => copyToClipboard(sseUrl, 'sse')}
+              className="shrink-0"
+            >
+              <Icon icon={copiedUrl === 'sse' ? 'check' : 'copy'} className="w-4 h-4 mr-1" />
+              {copiedUrl === 'sse' ? 'Copied!' : 'Copy'}
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Config snippet toggle */}
+      <div className="mt-4 pt-4 border-t border-border/50">
+        <button
+          type="button"
+          onClick={() => setShowConfig(!showConfig)}
+          className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+        >
+          <Icon icon={showConfig ? 'chevronDown' : 'chevronRight'} className="w-4 h-4" />
+          <span>Show Claude Desktop config</span>
+        </button>
+
+        {showConfig && (
+          <div className="mt-3">
+            <CodeBlock language="json" code={configSnippet} />
+          </div>
+        )}
+      </div>
+
+      <p className="mt-3 text-xs text-foreground-tertiary">
+        Use these URLs with{' '}
+        <Link href="/docs/sharing" className="text-primary hover:underline">
+          Claude Desktop, Cursor, or any MCP client
+        </Link>
+      </p>
+    </section>
+  );
 }
 
 export default function PrettyCollectionDetailPage(): React.ReactElement {
@@ -136,6 +251,9 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
                 {collection.likeCount} likes
               </span>
             </div>
+
+            {/* MCP Server URLs */}
+            <McpUrlSection username={username} slug={collection.slug} />
 
             {/* Tools */}
             {collection.tools.length > 0 ? (

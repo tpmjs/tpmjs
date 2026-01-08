@@ -134,6 +134,49 @@ export async function fetchAgentByIdOrUidWithTools(
 }
 
 /**
+ * Fetch an agent by username and uid with all tool relations
+ * Uses the username/uid pretty URL format
+ */
+export async function fetchAgentByUsernameAndUidWithTools(
+  username: string,
+  uid: string
+): Promise<AgentWithRelations | null> {
+  return prisma.agent.findFirst({
+    where: {
+      uid,
+      user: { username },
+    },
+    include: {
+      collections: {
+        include: {
+          collection: {
+            include: {
+              tools: {
+                include: {
+                  tool: {
+                    include: { package: true },
+                  },
+                },
+                orderBy: { position: 'asc' },
+              },
+            },
+          },
+        },
+        orderBy: { position: 'asc' },
+      },
+      tools: {
+        include: {
+          tool: {
+            include: { package: true },
+          },
+        },
+        orderBy: { position: 'asc' },
+      },
+    },
+  });
+}
+
+/**
  * Sanitize npm package name to valid tool name
  * OpenAI limits tool names to 64 characters
  */
