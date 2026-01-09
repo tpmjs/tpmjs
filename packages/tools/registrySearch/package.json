@@ -9,15 +9,24 @@
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs", "ai-sdk", "vercel-ai", "registry", "search"],
+  "keywords": [
+    "tpmjs",
+    "ai-sdk",
+    "vercel-ai",
+    "registry",
+    "search"
+  ],
   "dependencies": {
-    "ai": "6.0.0-beta.124"
+    "ai": "6.0.23"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -30,7 +39,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "api-integration",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "exportName": "registrySearchTool",

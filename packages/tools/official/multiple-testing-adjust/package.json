@@ -3,14 +3,22 @@
   "version": "0.2.0",
   "description": "Adjust p-values for multiple testing using Bonferroni, Benjamini-Hochberg, or Holm methods",
   "type": "module",
-  "keywords": ["tpmjs", "statistics", "ai", "multiple-testing", "p-value-adjustment"],
+  "keywords": [
+    "tpmjs",
+    "statistics",
+    "ai",
+    "multiple-testing",
+    "p-value-adjustment"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +27,7 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "tsup": "^8.3.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -34,7 +42,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "statistics",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "multipleTestingAdjustTool",
@@ -67,6 +77,6 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.124"
+    "ai": "6.0.23"
   }
 }

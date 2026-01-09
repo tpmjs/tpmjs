@@ -3,14 +3,23 @@
   "version": "0.1.0",
   "description": "Parse dates in various natural language formats using chrono-node",
   "type": "module",
-  "keywords": ["tpmjs", "date", "time", "parse", "chrono", "natural-language"],
+  "keywords": [
+    "tpmjs",
+    "date",
+    "time",
+    "parse",
+    "chrono",
+    "natural-language"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +28,7 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "tsup": "^8.3.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -34,7 +43,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "data",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "dateParseTool",
@@ -67,7 +78,7 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.124",
-    "chrono-node": "^2.7.9"
+    "ai": "6.0.23",
+    "chrono-node": "^2.9.0"
   }
 }

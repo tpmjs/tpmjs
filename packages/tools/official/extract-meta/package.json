@@ -3,14 +3,23 @@
   "version": "0.2.0",
   "description": "Extract meta tags from HTML pages (title, description, Open Graph, Twitter Cards)",
   "type": "module",
-  "keywords": ["tpmjs", "web", "meta", "og", "twitter", "seo"],
+  "keywords": [
+    "tpmjs",
+    "web",
+    "meta",
+    "og",
+    "twitter",
+    "seo"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,9 +28,9 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/cheerio": "^0.22.35",
-    "@types/node": "^22.0.0",
-    "tsup": "^8.3.5",
+    "@types/cheerio": "^1.0.0",
+    "@types/node": "^25.0.3",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -36,7 +45,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "web",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "extractMetaTool",
@@ -57,7 +68,7 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.124",
-    "cheerio": "^1.0.0"
+    "ai": "6.0.23",
+    "cheerio": "^1.0.0-rc.12"
   }
 }

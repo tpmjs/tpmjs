@@ -3,14 +3,23 @@
   "version": "0.2.0",
   "description": "Parse XML sitemaps and extract URLs from sitemap.xml files",
   "type": "module",
-  "keywords": ["tpmjs", "sitemap", "xml", "seo", "crawler", "web"],
+  "keywords": [
+    "tpmjs",
+    "sitemap",
+    "xml",
+    "seo",
+    "crawler",
+    "web"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,8 +28,8 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/node": "^22.0.0",
-    "tsup": "^8.3.5",
+    "@types/node": "^25.0.3",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -35,7 +44,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "web",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "sitemapReadTool",
@@ -56,7 +67,7 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.124",
-    "fast-xml-parser": "^4.5.0"
+    "ai": "6.0.23",
+    "fast-xml-parser": "^5.3.3"
   }
 }

@@ -10,7 +10,13 @@
     "directory": "packages/env"
   },
   "homepage": "https://tpmjs.com",
-  "keywords": ["tpmjs", "typescript", "environment", "zod", "validation"],
+  "keywords": [
+    "tpmjs",
+    "typescript",
+    "environment",
+    "zod",
+    "validation"
+  ],
   "type": "module",
   "exports": {
     ".": {
@@ -18,7 +24,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -26,12 +34,12 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "zod": "^4.1.13"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/node": "^22.10.2",
-    "tsup": "^8.3.5",
+    "@types/node": "^25.0.3",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {

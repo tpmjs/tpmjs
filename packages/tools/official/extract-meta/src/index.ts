@@ -8,6 +8,7 @@
  */
 
 import { jsonSchema, tool } from 'ai';
+import type { CheerioAPI, Element } from 'cheerio';
 import * as cheerio from 'cheerio';
 
 // Verify fetch is available (Node.js 18+)
@@ -52,10 +53,10 @@ function isValidUrl(urlString: string): boolean {
 /**
  * Extracts Open Graph meta tags
  */
-function extractOpenGraphTags($: cheerio.Root): Record<string, string> {
+function extractOpenGraphTags($: CheerioAPI): Record<string, string> {
   const ogTags: Record<string, string> = {};
 
-  $('meta[property^="og:"]').each((_: number, element: cheerio.Element) => {
+  $('meta[property^="og:"]').each((_: number, element: Element) => {
     const property = $(element).attr('property');
     const content = $(element).attr('content');
 
@@ -72,10 +73,10 @@ function extractOpenGraphTags($: cheerio.Root): Record<string, string> {
 /**
  * Extracts Twitter Card meta tags
  */
-function extractTwitterTags($: cheerio.Root): Record<string, string> {
+function extractTwitterTags($: CheerioAPI): Record<string, string> {
   const twitterTags: Record<string, string> = {};
 
-  $('meta[name^="twitter:"]').each((_: number, element: cheerio.Element) => {
+  $('meta[name^="twitter:"]').each((_: number, element: Element) => {
     const name = $(element).attr('name');
     const content = $(element).attr('content');
 

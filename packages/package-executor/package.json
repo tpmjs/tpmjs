@@ -10,13 +10,13 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "semver": "^7.6.0",
-    "zod": "^4.1.13"
+    "semver": "^7.7.3",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/node": "^22.10.2",
-    "@types/semver": "^7.5.6",
+    "@types/node": "^25.0.3",
+    "@types/semver": "^7.7.1",
     "typescript": "^5.9.3"
   }
 }

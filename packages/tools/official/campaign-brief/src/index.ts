@@ -633,7 +633,7 @@ function generateSuccessCriteria(campaignType: string): string[] {
 export const campaignBriefTool = tool({
   description:
     'Structure a comprehensive marketing campaign brief with objectives, target audience, messaging, channels, budget allocation, timeline, and KPIs. Provide the campaign goal, product name, and optional budget to generate a complete campaign strategy document.',
-  parameters: jsonSchema<CampaignBriefInput>({
+  inputSchema: jsonSchema<CampaignBriefInput>({
     type: 'object',
     properties: {
       campaignGoal: {

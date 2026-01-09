@@ -3,14 +3,21 @@
   "version": "0.2.0",
   "description": "Convert array of objects to CSV string using papaparse",
   "type": "module",
-  "keywords": ["tpmjs", "data", "csv", "stringify"],
+  "keywords": [
+    "tpmjs",
+    "data",
+    "csv",
+    "stringify"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,8 +26,8 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/papaparse": "^5.3.15",
-    "tsup": "^8.3.5",
+    "@types/papaparse": "^5.5.2",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -35,7 +42,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "data",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "csvStringifyTool",
@@ -62,7 +71,7 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.124",
-    "papaparse": "^5.4.1"
+    "ai": "6.0.23",
+    "papaparse": "^5.5.3"
   }
 }

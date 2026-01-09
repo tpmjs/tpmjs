@@ -3,14 +3,21 @@
   "version": "0.1.0",
   "description": "Generate structured sales proposal outlines from opportunity details and customer requirements",
   "type": "module",
-  "keywords": ["tpmjs", "sales", "proposal", "rfp"],
+  "keywords": [
+    "tpmjs",
+    "sales",
+    "proposal",
+    "rfp"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +26,7 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "tsup": "^8.3.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -34,7 +41,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "sales",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "proposalOutlineTool",
@@ -61,6 +70,6 @@
     ]
   },
   "dependencies": {
-    "ai": "^4.0.0"
+    "ai": "^6.0.23"
   }
 }

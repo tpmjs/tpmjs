@@ -291,7 +291,7 @@ function estimatePageCount(sections: ProposalSection[]): number {
 export const proposalOutlineTool = tool({
   description:
     'Generate a structured sales proposal outline from opportunity details. Provide customer information, requirements, budget, and timeline to create a comprehensive proposal outline with executive summary, solution description, implementation plan, pricing, and next steps. Supports multiple template types (standard, technical, executive).',
-  parameters: jsonSchema<ProposalOutlineInput>({
+  inputSchema: jsonSchema<ProposalOutlineInput>({
     type: 'object',
     properties: {
       opportunity: {

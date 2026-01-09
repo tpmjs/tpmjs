@@ -1,22 +1,24 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "root": false,
+  "$schema": "https://biomejs.dev/schemas/2.3.11/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true
   },
   "files": {
-    "ignore": [
-      "**/node_modules/**",
-      "**/dist/**",
-      "**/build/**",
-      "**/.next/**",
-      "**/out/**",
-      "**/coverage/**",
-      "**/.turbo/**",
-      "**/storybook-static/**",
-      "**/*.tsbuildinfo",
-      "**/next-env.d.ts"
+    "includes": [
+      "**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/build",
+      "!**/.next",
+      "!**/out",
+      "!**/coverage",
+      "!**/.turbo",
+      "!**/storybook-static",
+      "!**/*.tsbuildinfo",
+      "!**/next-env.d.ts"
     ]
   },
   "formatter": {
@@ -46,9 +48,7 @@
       }
     }
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "javascript": {
     "formatter": {
       "quoteStyle": "single",
@@ -58,7 +58,7 @@
   },
   "overrides": [
     {
-      "include": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
+      "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
       "linter": {
         "rules": {
           "style": {
@@ -68,7 +68,7 @@
       }
     },
     {
-      "include": ["**/layout.tsx", "**/page.tsx"],
+      "includes": ["**/layout.tsx", "**/page.tsx"],
       "linter": {
         "rules": {
           "security": {
@@ -78,7 +78,7 @@
       }
     },
     {
-      "include": ["**/MobileMenu.tsx"],
+      "includes": ["**/MobileMenu.tsx"],
       "linter": {
         "rules": {
           "a11y": {
@@ -88,7 +88,7 @@
       }
     },
     {
-      "include": ["**/MessageBubble.tsx"],
+      "includes": ["**/MessageBubble.tsx"],
       "linter": {
         "rules": {
           "complexity": {
@@ -98,7 +98,7 @@
       }
     },
     {
-      "include": ["**/railway-executor/server.ts"],
+      "includes": ["**/railway-executor/server.ts"],
       "linter": {
         "rules": {
           "complexity": {

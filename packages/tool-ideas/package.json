@@ -13,7 +13,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -21,23 +23,23 @@
     "cli": "tsx src/cli.ts"
   },
   "dependencies": {
-    "ai": "^6.0.3",
-    "@ai-sdk/openai": "^3.0.1",
-    "better-sqlite3": "^11.8.1",
-    "drizzle-orm": "^0.38.3",
-    "commander": "^13.0.0",
-    "p-limit": "^6.2.0",
-    "zod": "^3.24.1",
-    "ora": "^8.1.1",
-    "chalk": "^5.4.1"
+    "@ai-sdk/openai": "^3.0.7",
+    "ai": "^6.0.23",
+    "better-sqlite3": "^12.5.0",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.2",
+    "drizzle-orm": "^0.45.1",
+    "ora": "^9.0.0",
+    "p-limit": "^7.2.0",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/better-sqlite3": "^7.6.12",
-    "@types/node": "^22.10.5",
-    "drizzle-kit": "^0.30.1",
-    "tsup": "^8.3.5",
-    "tsx": "^4.19.2",
-    "typescript": "^5.7.2"
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.0.3",
+    "drizzle-kit": "^0.31.8",
+    "tsup": "^8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }

@@ -9,15 +9,24 @@
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs", "ai-sdk", "code-execution", "sandbox", "unsandbox"],
+  "keywords": [
+    "tpmjs",
+    "ai-sdk",
+    "code-execution",
+    "sandbox",
+    "unsandbox"
+  ],
   "dependencies": {
     "@thomasdavis/unsandbox": "^0.0.3"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -30,7 +39,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "ai-ml",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "env": [
       {
         "name": "UNSANDBOX_API_KEY",
@@ -156,7 +167,9 @@
         },
         "aiAgent": {
           "useCase": "Async version of runCode for long-running scripts.",
-          "examples": ["Run a long Python script asynchronously"]
+          "examples": [
+            "Run a long Python script asynchronously"
+          ]
         }
       },
       {
@@ -169,7 +182,9 @@
         },
         "aiAgent": {
           "useCase": "Check what async jobs are currently running or recently completed.",
-          "examples": ["List all my running code executions"]
+          "examples": [
+            "List all my running code executions"
+          ]
         }
       },
       {
@@ -189,7 +204,9 @@
         },
         "aiAgent": {
           "useCase": "Check if an async job has completed and get its output.",
-          "examples": ["Get results of job abc123"]
+          "examples": [
+            "Get results of job abc123"
+          ]
         }
       },
       {
@@ -209,7 +226,9 @@
         },
         "aiAgent": {
           "useCase": "Stop a long-running job that's no longer needed.",
-          "examples": ["Cancel job abc123"]
+          "examples": [
+            "Cancel job abc123"
+          ]
         }
       },
       {
@@ -222,7 +241,9 @@
         },
         "aiAgent": {
           "useCase": "Discover what languages are available before executing code.",
-          "examples": ["What languages can I execute?"]
+          "examples": [
+            "What languages can I execute?"
+          ]
         }
       }
     ]

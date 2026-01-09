@@ -9,18 +9,25 @@
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs", "ai", "search", "tool-registry"],
+  "keywords": [
+    "tpmjs",
+    "ai",
+    "search",
+    "tool-registry"
+  ],
   "dependencies": {
-    "ai": "6.0.0-beta.124",
-    "zod": "^3.23.0"
+    "ai": "6.0.23",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "typescript": "^5.7.2"
+    "typescript": "^5.9.3"
   },
   "tpmjs": {
     "category": "api-integration",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "exportName": "searchTpmjsToolsTool",

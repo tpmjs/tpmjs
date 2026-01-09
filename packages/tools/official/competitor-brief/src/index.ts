@@ -394,7 +394,7 @@ function generateOverview(competitorName: string, _sources: string[]): string {
 export const competitorBriefTool = tool({
   description:
     'Extract and structure competitor information from various sources into a comprehensive competitive brief. Provide competitor name and source texts (website copy, marketing materials, reviews) to generate a structured analysis including pricing, features, positioning, strengths, weaknesses, and a comparison matrix.',
-  parameters: jsonSchema<CompetitorBriefInput>({
+  inputSchema: jsonSchema<CompetitorBriefInput>({
     type: 'object',
     properties: {
       competitorName: {
@@ -414,7 +414,7 @@ export const competitorBriefTool = tool({
     required: ['competitorName', 'sources'],
     additionalProperties: false,
   }),
-  async execute({ competitorName, sources }): Promise<CompetitorBrief> {
+  async execute({ competitorName, sources }: CompetitorBriefInput): Promise<CompetitorBrief> {
     // Validate inputs
     if (
       !competitorName ||

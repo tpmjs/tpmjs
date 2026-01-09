@@ -10,7 +10,13 @@
     "directory": "packages/ui"
   },
   "homepage": "https://tpmjs.com",
-  "keywords": ["tpmjs", "react", "components", "typescript", "ui"],
+  "keywords": [
+    "tpmjs",
+    "react",
+    "components",
+    "typescript",
+    "ui"
+  ],
   "type": "module",
   "exports": {
     "./Button/Button": {
@@ -162,7 +168,9 @@
       "default": "./dist/Table/Table.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "NODE_OPTIONS='--max-old-space-size=4096' tsup",
     "dev": "tsup --watch",
@@ -179,26 +187,26 @@
   "dependencies": {
     "@tpmjs/utils": "workspace:*",
     "react-syntax-highlighter": "^16.1.0",
-    "zod": "^4.1.13"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.0",
+    "@testing-library/react": "^16.3.1",
     "@testing-library/user-event": "^14.6.1",
     "@tpmjs/eslint-config": "workspace:*",
     "@tpmjs/test": "workspace:*",
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
     "@types/react-syntax-highlighter": "^15.5.13",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.2",
     "glob": "^13.0.0",
-    "happy-dom": "^15.11.7",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "tsup": "^8.3.5",
+    "happy-dom": "^20.1.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.16"
   },
   "publishConfig": {
     "access": "public"

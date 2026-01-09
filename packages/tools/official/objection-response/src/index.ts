@@ -494,7 +494,7 @@ function getAvoidPhrases(category: ObjectionCategory): string[] {
 export const objectionResponseTool = tool({
   description:
     'Analyze sales objections and suggest effective response strategies. Provide the customer objection text and optional deal context (customer name, deal value, competitor mentioned) to get classified objection category, multiple response strategies with rationales, follow-up questions, and phrases to avoid.',
-  parameters: jsonSchema<ObjectionResponseInput>({
+  inputSchema: jsonSchema<ObjectionResponseInput>({
     type: 'object',
     properties: {
       objection: {
@@ -536,7 +536,7 @@ export const objectionResponseTool = tool({
     required: ['objection'],
     additionalProperties: false,
   }),
-  async execute({ objection, context }): Promise<ObjectionResponses> {
+  async execute({ objection, context }: ObjectionResponseInput): Promise<ObjectionResponses> {
     // Validate inputs
     if (!objection || typeof objection !== 'string' || objection.trim().length === 0) {
       throw new Error('Objection text is required and must be a non-empty string');

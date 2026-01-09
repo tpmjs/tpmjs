@@ -13,20 +13,31 @@
     "dev": "tsup --watch",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs", "ai-sdk", "generator", "cli", "scaffold", "boilerplate"],
+  "keywords": [
+    "tpmjs",
+    "ai-sdk",
+    "generator",
+    "cli",
+    "scaffold",
+    "boilerplate"
+  ],
   "dependencies": {
-    "@clack/prompts": "^0.7.0",
-    "commander": "^14.0.0",
-    "picocolors": "^1.0.0",
-    "validate-npm-package-name": "^5.0.0",
-    "zod": "^4.1.13"
+    "@clack/prompts": "^0.11.0",
+    "commander": "^14.0.2",
+    "picocolors": "^1.1.1",
+    "validate-npm-package-name": "^7.0.2",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
     "@tpmjs/types": "workspace:*",
     "@types/validate-npm-package-name": "^4.0.2",
-    "tsup": "^8.3.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
-  "files": ["dist", "templates", "README.md"]
+  "files": [
+    "dist",
+    "templates",
+    "README.md"
+  ]
 }

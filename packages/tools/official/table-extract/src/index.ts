@@ -8,6 +8,7 @@
  */
 
 import { jsonSchema, tool } from 'ai';
+import type { CheerioAPI, Element } from 'cheerio';
 import * as cheerio from 'cheerio';
 
 // Verify fetch is available (Node.js 18+)
@@ -90,7 +91,7 @@ function normalizeCellContent(text: string): string {
 /**
  * Domain rule: table_parsing - Extract structured data from a table element using cheerio
  */
-function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTable | null {
+function extractTableData($: CheerioAPI, table: Element): StructuredTable | null {
   const $table = $(table);
 
   // Skip nested tables - only process top-level content
@@ -110,7 +111,7 @@ function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTa
       .find('tr')
       .first()
       .find('th, td')
-      .each((_, cell) => {
+      .each((_: number, cell: Element) => {
         headers.push(normalizeCellContent($(cell).text()));
       });
   }
@@ -121,7 +122,7 @@ function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTa
     const $thCells = $firstRow.find('th');
 
     if ($thCells.length > 0) {
-      $thCells.each((_, cell) => {
+      $thCells.each((_: number, cell: Element) => {
         headers.push(normalizeCellContent($(cell).text()));
       });
     }
@@ -133,7 +134,7 @@ function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTa
 
   if (headers.length === 0 && $rows.length > 0) {
     const $firstRow = $rows.first();
-    $firstRow.find('td, th').each((i, cell) => {
+    $firstRow.find('td, th').each((i: number, cell: Element) => {
       const text = normalizeCellContent($(cell).text());
       headers.push(text || `column_${i + 1}`);
     });
@@ -146,7 +147,7 @@ function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTa
   if (headers.length === 0) {
     // Find the maximum number of columns
     let maxCols = 0;
-    $rows.each((_, row) => {
+    $rows.each((_: number, row: Element) => {
       const colCount = $(row).find('td, th').length;
       if (colCount > maxCols) maxCols = colCount;
     });
@@ -162,14 +163,14 @@ function extractTableData($: cheerio.Root, table: cheerio.Element): StructuredTa
 
   // Domain rule: table_parsing - Extract data rows and normalize cell content
   const rows: Array<Record<string, string>> = [];
-  $rows.each((_, row) => {
+  $rows.each((_: number, row: Element) => {
     const $cells = $(row).find('td, th');
 
     // Skip empty rows
     if ($cells.length === 0) return;
 
     const rowData: Record<string, string> = {};
-    $cells.each((i, cell) => {
+    $cells.each((i: number, cell: Element) => {
       const header = normalizedHeaders[i] || `column_${i + 1}`;
       // Domain rule: cell_normalization - Normalize each cell's content
       const value = normalizeCellContent($(cell).text());
@@ -293,7 +294,7 @@ export const tableExtractTool = tool({
     // Domain rule: table_parsing - Extract all table elements and parse structure
     const allTables: StructuredTable[] = [];
     $('table').each((_, table) => {
-      const structuredTable = extractTableData($, table as cheerio.Element);
+      const structuredTable = extractTableData($, table as Element);
       if (structuredTable) {
         allTables.push(structuredTable);
       }

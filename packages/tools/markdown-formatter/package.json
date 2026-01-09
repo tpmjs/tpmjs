@@ -9,10 +9,17 @@
     "build": "tsc",
     "type-check": "tsc --noEmit"
   },
-  "keywords": ["tpmjs", "markdown", "formatter", "text-processing"],
+  "keywords": [
+    "tpmjs",
+    "markdown",
+    "formatter",
+    "text-processing"
+  ],
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "exportName": "markdownToPlainText",
@@ -25,8 +32,8 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.131",
-    "zod": "^4.1.13"
+    "ai": "6.0.23",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",

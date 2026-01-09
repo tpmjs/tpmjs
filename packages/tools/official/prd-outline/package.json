@@ -3,14 +3,22 @@
   "version": "0.2.0",
   "description": "Create PRD (Product Requirements Document) outlines from problem statements and features",
   "type": "module",
-  "keywords": ["tpmjs", "documentation", "prd", "product", "requirements"],
+  "keywords": [
+    "tpmjs",
+    "documentation",
+    "prd",
+    "product",
+    "requirements"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +27,7 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "tsup": "^8.3.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -34,7 +42,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "documentation",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "prdOutlineTool",
@@ -73,6 +83,6 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.124"
+    "ai": "6.0.23"
   }
 }

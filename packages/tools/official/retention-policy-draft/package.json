@@ -3,14 +3,23 @@
   "version": "0.2.0",
   "description": "Drafts data retention policy documents from data types, retention periods, and justifications",
   "type": "module",
-  "keywords": ["tpmjs", "compliance", "ai", "data-retention", "gdpr", "privacy"],
+  "keywords": [
+    "tpmjs",
+    "compliance",
+    "ai",
+    "data-retention",
+    "gdpr",
+    "privacy"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +28,7 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "tsup": "^8.3.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -34,7 +43,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "compliance",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "retentionPolicyDraft",
@@ -67,6 +78,6 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.124"
+    "ai": "6.0.23"
   }
 }

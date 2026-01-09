@@ -3,14 +3,22 @@
   "version": "0.2.0",
   "description": "Trace all HTTP redirects from a URL to its final destination",
   "type": "module",
-  "keywords": ["tpmjs", "web", "redirects", "http", "trace"],
+  "keywords": [
+    "tpmjs",
+    "web",
+    "redirects",
+    "http",
+    "trace"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +27,7 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "tsup": "^8.3.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -34,7 +42,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "web",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "redirectTraceTool",
@@ -61,6 +71,6 @@
     ]
   },
   "dependencies": {
-    "ai": "6.0.0-beta.124"
+    "ai": "6.0.23"
   }
 }

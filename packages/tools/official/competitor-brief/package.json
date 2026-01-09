@@ -3,14 +3,21 @@
   "version": "0.1.0",
   "description": "Extract and structure competitor information from various sources into a competitive brief",
   "type": "module",
-  "keywords": ["tpmjs", "marketing", "competitive-analysis", "market-research"],
+  "keywords": [
+    "tpmjs",
+    "marketing",
+    "competitive-analysis",
+    "market-research"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -19,7 +26,7 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "tsup": "^8.3.5",
+    "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },
   "publishConfig": {
@@ -34,7 +41,9 @@
   "license": "MIT",
   "tpmjs": {
     "category": "marketing",
-    "frameworks": ["vercel-ai"],
+    "frameworks": [
+      "vercel-ai"
+    ],
     "tools": [
       {
         "name": "competitorBriefTool",
@@ -61,6 +70,6 @@
     ]
   },
   "dependencies": {
-    "ai": "^4.0.0"
+    "ai": "^6.0.23"
   }
 }

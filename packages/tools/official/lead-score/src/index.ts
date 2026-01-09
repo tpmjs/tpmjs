@@ -310,7 +310,7 @@ function generateRecommendation(_score: number, grade: string, breakdown: ScoreB
 export const leadScoreTool = tool({
   description:
     'Score leads based on engagement signals (email opens, page visits, form fills), company fit (size, revenue, industry), recency of activity, and lead source. Returns a score from 0-100, grade (A-F), detailed breakdown, and recommendations for sales follow-up.',
-  parameters: jsonSchema<LeadScoreInput>({
+  inputSchema: jsonSchema<LeadScoreInput>({
     type: 'object',
     properties: {
       lead: {
