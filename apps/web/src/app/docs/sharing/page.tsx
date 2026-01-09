@@ -602,10 +602,10 @@ Invalid usernames:
                     <tr>
                       <td className="py-3 px-4 text-foreground">Agent Conversation</td>
                       <td className="py-3 px-4 font-mono text-primary text-xs">
-                        /api/agents/{'{username}'}/{'{uid}'}/conversation/{'{id}'}
+                        /api/chat/{'{username}'}/{'{uid}'}/conversation/{'{id}'}
                       </td>
                       <td className="py-3 px-4 font-mono text-foreground-secondary text-xs">
-                        /api/agents/ajax/research-bot/conversation/abc123
+                        /api/chat/ajax/research-bot/conversation/abc123
                       </td>
                     </tr>
                   </tbody>

@@ -1,20 +1,21 @@
 /**
- * Agent Conversation Endpoint (Pretty URL version)
+ * Agent Conversation Endpoint
  *
  * POST: Send a message and stream the AI response
  * GET: Retrieve conversation history
  * DELETE: Delete a conversation
  *
- * This endpoint uses username/uid instead of agent id for cleaner URLs
+ * Route: /api/chat/[username]/[uid]/conversation/[conversationId]
+ * Uses username/uid instead of agent id for cleaner public URLs
  */
 
-import { decryptApiKey } from '@/lib/crypto/api-keys';
 import { Prisma, prisma } from '@tpmjs/db';
 import type { AIProvider } from '@tpmjs/types/agent';
 import { SendMessageSchema } from '@tpmjs/types/agent';
 import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
-import { type RateLimitConfig, checkRateLimit } from '~/lib/rate-limit';
+import { decryptApiKey } from '@/lib/crypto/api-keys';
+import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
 
 /**
  * Rate limit for chat messages: 30 requests per minute
@@ -81,7 +82,7 @@ async function getProviderModel(
 }
 
 /**
- * POST /api/agents/[username]/[uid]/conversation/[conversationId]
+ * POST /api/chat/[username]/[uid]/conversation/[conversationId]
  * Send a message and stream the AI response via SSE
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
@@ -457,7 +458,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 }
 
 /**
- * GET /api/agents/[username]/[uid]/conversation/[conversationId]
+ * GET /api/chat/[username]/[uid]/conversation/[conversationId]
  * Retrieve conversation history with pagination
  *
  * Query params:
@@ -574,7 +575,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
 }
 
 /**
- * DELETE /api/agents/[username]/[uid]/conversation/[conversationId]
+ * DELETE /api/chat/[username]/[uid]/conversation/[conversationId]
  * Delete a conversation
  */
 export async function DELETE(_request: NextRequest, context: RouteContext): Promise<NextResponse> {

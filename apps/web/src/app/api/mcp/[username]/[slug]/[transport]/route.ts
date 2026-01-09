@@ -5,7 +5,9 @@ import { handleInitialize, handleToolsCall, handleToolsList } from '~/lib/mcp/ha
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-export const maxDuration = 300;
+export const maxDuration = 60;
+
+const DB_TIMEOUT_MS = 10000; // 10 second timeout for database queries
 
 interface RouteContext {
   params: Promise<{ username: string; slug: string; transport: string }>;
@@ -19,17 +21,31 @@ interface JsonRpcRequest {
 }
 
 /**
+ * Wrap a promise with a timeout
+ */
+function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(errorMessage)), ms)),
+  ]);
+}
+
+/**
  * Find a public collection by username and slug
  */
 async function getPublicCollectionByUsernameAndSlug(username: string, slug: string) {
-  return prisma.collection.findFirst({
-    where: {
-      slug,
-      isPublic: true,
-      user: { username },
-    },
-    select: { id: true, name: true, description: true },
-  });
+  return withTimeout(
+    prisma.collection.findFirst({
+      where: {
+        slug,
+        isPublic: true,
+        user: { username },
+      },
+      select: { id: true, name: true, description: true },
+    }),
+    DB_TIMEOUT_MS,
+    `Database query timed out after ${DB_TIMEOUT_MS}ms`
+  );
 }
 
 interface JsonRpcResponse {
@@ -189,33 +205,42 @@ function handleSseGet(
  * MCP JSON-RPC endpoint for tool execution
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
-  const { username, slug, transport } = await context.params;
+  try {
+    const { username, slug, transport } = await context.params;
 
-  if (transport !== 'http' && transport !== 'sse') {
+    if (transport !== 'http' && transport !== 'sse') {
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          error: { code: -32001, message: `Invalid transport: ${transport}` },
+          id: null,
+        },
+        { status: 400 }
+      );
+    }
+
+    const collection = await getPublicCollectionByUsernameAndSlug(username, slug);
+
+    if (!collection) {
+      return NextResponse.json(
+        { jsonrpc: '2.0', error: { code: -32001, message: 'Collection not found' }, id: null },
+        { status: 404 }
+      );
+    }
+
+    if (transport === 'sse') {
+      return handleSseTransport(request, collection.id, collection.name);
+    }
+
+    return handleHttpTransport(request, collection.id, collection.name);
+  } catch (error) {
+    console.error('[MCP POST] Error:', error);
+    const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      {
-        jsonrpc: '2.0',
-        error: { code: -32001, message: `Invalid transport: ${transport}` },
-        id: null,
-      },
-      { status: 400 }
+      { jsonrpc: '2.0', error: { code: -32603, message }, id: null },
+      { status: 500 }
     );
   }
-
-  const collection = await getPublicCollectionByUsernameAndSlug(username, slug);
-
-  if (!collection) {
-    return NextResponse.json(
-      { jsonrpc: '2.0', error: { code: -32001, message: 'Collection not found' }, id: null },
-      { status: 404 }
-    );
-  }
-
-  if (transport === 'sse') {
-    return handleSseTransport(request, collection.id, collection.name);
-  }
-
-  return handleHttpTransport(request, collection.id, collection.name);
 }
 
 /**
@@ -223,28 +248,34 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
  * Returns server info (for http) or establishes SSE connection (for sse)
  */
 export async function GET(_request: NextRequest, context: RouteContext): Promise<Response> {
-  const { username, slug, transport } = await context.params;
+  try {
+    const { username, slug, transport } = await context.params;
 
-  if (transport !== 'http' && transport !== 'sse') {
-    return NextResponse.json({ error: `Invalid transport: ${transport}` }, { status: 400 });
+    if (transport !== 'http' && transport !== 'sse') {
+      return NextResponse.json({ error: `Invalid transport: ${transport}` }, { status: 400 });
+    }
+
+    const collection = await getPublicCollectionByUsernameAndSlug(username, slug);
+
+    if (!collection) {
+      return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
+    }
+
+    if (transport === 'sse') {
+      return handleSseGet(username, slug, collection.name, collection.description);
+    }
+
+    // HTTP transport - return server info
+    return NextResponse.json({
+      name: `TPMJS: ${collection.name}`,
+      description: collection.description,
+      protocol: 'mcp',
+      transport: 'http',
+      endpoint: `/api/mcp/${username}/${slug}/http`,
+    });
+  } catch (error) {
+    console.error('[MCP GET] Error:', error);
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const collection = await getPublicCollectionByUsernameAndSlug(username, slug);
-
-  if (!collection) {
-    return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
-  }
-
-  if (transport === 'sse') {
-    return handleSseGet(username, slug, collection.name, collection.description);
-  }
-
-  // HTTP transport - return server info
-  return NextResponse.json({
-    name: `TPMJS: ${collection.name}`,
-    description: collection.description,
-    protocol: 'mcp',
-    transport: 'http',
-    endpoint: `/api/mcp/${username}/${slug}/http`,
-  });
 }
