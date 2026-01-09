@@ -71,46 +71,25 @@ jobs:
             echo "❌ Database health check failed with status $HTTP_CODE"
           fi
 
-      - name: Check Public Collections API
-        id: collections-api
+      - name: Check Platform Stats API
+        id: stats-api
         run: |
-          echo "Testing: GET /api/collections/public"
-          RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/api/collections/public?limit=1" --connect-timeout 10 --max-time 30)
+          echo "Testing: GET /api/stats"
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/api/stats" --connect-timeout 10 --max-time 30)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | sed '$d')
 
           echo "HTTP Status: $HTTP_CODE"
           if [ "${{ inputs.verbose }}" = "true" ]; then
-            echo "Response: $BODY"
+            echo "Response: $BODY" | head -c 500
           fi
 
-          if [ "$HTTP_CODE" -eq 200 ]; then
+          if [ "$HTTP_CODE" -eq 200 ] && echo "$BODY" | grep -q '"success":true'; then
             echo "status=pass" >> $GITHUB_OUTPUT
-            echo "✅ Public collections API check passed"
+            echo "✅ Platform stats API check passed"
           else
             echo "status=fail" >> $GITHUB_OUTPUT
-            echo "❌ Public collections API check failed with status $HTTP_CODE"
-          fi
-
-      - name: Check Public Agents API
-        id: agents-api
-        run: |
-          echo "Testing: GET /api/agents/public"
-          RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/api/agents/public?limit=1" --connect-timeout 10 --max-time 30)
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-
-          echo "HTTP Status: $HTTP_CODE"
-          if [ "${{ inputs.verbose }}" = "true" ]; then
-            echo "Response: $BODY"
-          fi
-
-          if [ "$HTTP_CODE" -eq 200 ]; then
-            echo "status=pass" >> $GITHUB_OUTPUT
-            echo "✅ Public agents API check passed"
-          else
-            echo "status=fail" >> $GITHUB_OUTPUT
-            echo "❌ Public agents API check failed with status $HTTP_CODE"
+            echo "❌ Platform stats API check failed with status $HTTP_CODE"
           fi
 
       - name: Check MCP HTTP Transport - Initialize
@@ -247,8 +226,7 @@ jobs:
             "checks": {
               "basic_health": "${{ steps.basic-health.outputs.status }}",
               "database": "${{ steps.db-health.outputs.status }}",
-              "collections_api": "${{ steps.collections-api.outputs.status }}",
-              "agents_api": "${{ steps.agents-api.outputs.status }}",
+              "stats_api": "${{ steps.stats-api.outputs.status }}",
               "mcp_http_init": "${{ steps.mcp-http-init.outputs.status }}",
               "mcp_http_tools": "${{ steps.mcp-http-tools.outputs.status }}",
               "mcp_sse": "${{ steps.mcp-sse.outputs.status }}",
@@ -279,8 +257,7 @@ jobs:
           echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Basic Health | ${{ steps.basic-health.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Database | ${{ steps.db-health.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Collections API | ${{ steps.collections-api.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Agents API | ${{ steps.agents-api.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform Stats | ${{ steps.stats-api.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| MCP HTTP Init | ${{ steps.mcp-http-init.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| MCP HTTP Tools | ${{ steps.mcp-http-tools.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| MCP SSE | ${{ steps.mcp-sse.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY

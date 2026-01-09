@@ -51,8 +51,7 @@ const statusColors: Record<string, { bg: string; text: string; border: string }>
 const checkLabels: Record<string, string> = {
   basic_health: 'Basic Health',
   database: 'Database',
-  collections_api: 'Collections API',
-  agents_api: 'Agents API',
+  stats_api: 'Platform Stats',
   mcp_http_init: 'MCP HTTP Init',
   mcp_http_tools: 'MCP HTTP Tools',
   mcp_sse: 'MCP SSE',
