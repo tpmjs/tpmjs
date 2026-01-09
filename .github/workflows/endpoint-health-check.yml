@@ -1,0 +1,299 @@
+name: Endpoint Health Check
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      verbose:
+        description: 'Enable verbose output'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  BASE_URL: ${{ secrets.VERCEL_PRODUCTION_URL || 'https://tpmjs.com' }}
+  # Test data
+  TEST_USERNAME: ajax
+  TEST_COLLECTION_SLUG: ajax-collection-tbc
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Setup
+        run: |
+          echo "Starting health checks at $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "Base URL: $BASE_URL"
+
+      - name: Check Basic Health Endpoint
+        id: basic-health
+        run: |
+          echo "Testing: GET /api/health"
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/api/health" --connect-timeout 10 --max-time 30)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY"
+          fi
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ Basic health check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ Basic health check failed with status $HTTP_CODE"
+          fi
+
+      - name: Check Database Health
+        id: db-health
+        run: |
+          echo "Testing: GET /api/tools (database connectivity)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/api/tools?limit=1" --connect-timeout 10 --max-time 30)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY"
+          fi
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ Database health check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ Database health check failed with status $HTTP_CODE"
+          fi
+
+      - name: Check Public Collections API
+        id: collections-api
+        run: |
+          echo "Testing: GET /api/collections/public"
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/api/collections/public?limit=1" --connect-timeout 10 --max-time 30)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY"
+          fi
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ Public collections API check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ Public collections API check failed with status $HTTP_CODE"
+          fi
+
+      - name: Check Public Agents API
+        id: agents-api
+        run: |
+          echo "Testing: GET /api/agents/public"
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/api/agents/public?limit=1" --connect-timeout 10 --max-time 30)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY"
+          fi
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ Public agents API check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ Public agents API check failed with status $HTTP_CODE"
+          fi
+
+      - name: Check MCP HTTP Transport - Initialize
+        id: mcp-http-init
+        run: |
+          echo "Testing: POST /api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/http (initialize)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "$BASE_URL/api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/http" \
+            -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","id":1,"method":"initialize"}' \
+            --connect-timeout 15 --max-time 30)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY"
+          fi
+
+          # Check for successful JSON-RPC response
+          if [ "$HTTP_CODE" -eq 200 ] && echo "$BODY" | grep -q '"result"'; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ MCP HTTP initialize check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ MCP HTTP initialize check failed"
+          fi
+
+      - name: Check MCP HTTP Transport - Tools List
+        id: mcp-http-tools
+        run: |
+          echo "Testing: POST /api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/http (tools/list)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "$BASE_URL/api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/http" \
+            -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            --connect-timeout 15 --max-time 30)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY" | head -c 500
+          fi
+
+          # Check for successful JSON-RPC response with tools
+          if [ "$HTTP_CODE" -eq 200 ] && echo "$BODY" | grep -q '"tools"'; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ MCP HTTP tools/list check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ MCP HTTP tools/list check failed"
+          fi
+
+      - name: Check MCP SSE Transport
+        id: mcp-sse
+        run: |
+          echo "Testing: POST /api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/sse (initialize)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "$BASE_URL/api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/sse" \
+            -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","id":1,"method":"initialize"}' \
+            --connect-timeout 15 --max-time 30)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY"
+          fi
+
+          # Check for SSE response with data prefix
+          if [ "$HTTP_CODE" -eq 200 ] && echo "$BODY" | grep -q 'data:'; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ MCP SSE check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ MCP SSE check failed"
+          fi
+
+      - name: Check MCP Server Info (GET)
+        id: mcp-info
+        run: |
+          echo "Testing: GET /api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/http"
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            "$BASE_URL/api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/http" \
+            --connect-timeout 10 --max-time 20)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY"
+          fi
+
+          if [ "$HTTP_CODE" -eq 200 ] && echo "$BODY" | grep -q '"protocol":"mcp"'; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ MCP server info check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ MCP server info check failed"
+          fi
+
+      - name: Check Tool Health Stats
+        id: tool-health-stats
+        run: |
+          echo "Testing: GET /api/stats/health"
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$BASE_URL/api/stats/health" --connect-timeout 10 --max-time 30)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          if [ "${{ inputs.verbose }}" = "true" ]; then
+            echo "Response: $BODY" | head -c 500
+          fi
+
+          if [ "$HTTP_CODE" -eq 200 ] && echo "$BODY" | grep -q '"success":true'; then
+            echo "status=pass" >> $GITHUB_OUTPUT
+            echo "✅ Tool health stats check passed"
+          else
+            echo "status=fail" >> $GITHUB_OUTPUT
+            echo "❌ Tool health stats check failed"
+          fi
+
+      - name: Report Health Status to API
+        if: always()
+        run: |
+          # Collect all results
+          RESULTS=$(cat << EOF
+          {
+            "timestamp": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "source": "github-actions",
+            "runId": "${{ github.run_id }}",
+            "checks": {
+              "basic_health": "${{ steps.basic-health.outputs.status }}",
+              "database": "${{ steps.db-health.outputs.status }}",
+              "collections_api": "${{ steps.collections-api.outputs.status }}",
+              "agents_api": "${{ steps.agents-api.outputs.status }}",
+              "mcp_http_init": "${{ steps.mcp-http-init.outputs.status }}",
+              "mcp_http_tools": "${{ steps.mcp-http-tools.outputs.status }}",
+              "mcp_sse": "${{ steps.mcp-sse.outputs.status }}",
+              "mcp_info": "${{ steps.mcp-info.outputs.status }}",
+              "tool_health_stats": "${{ steps.tool-health-stats.outputs.status }}"
+            }
+          }
+          EOF
+          )
+
+          echo "Health Check Results:"
+          echo "$RESULTS" | jq .
+
+          # Report to the health status API if secret is available
+          if [ -n "${{ secrets.CRON_SECRET }}" ]; then
+            curl -s -X POST "$BASE_URL/api/health/report" \
+              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+              -H "Content-Type: application/json" \
+              -d "$RESULTS" || true
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Health Check Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Endpoint | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Basic Health | ${{ steps.basic-health.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Database | ${{ steps.db-health.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Collections API | ${{ steps.collections-api.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Agents API | ${{ steps.agents-api.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| MCP HTTP Init | ${{ steps.mcp-http-init.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| MCP HTTP Tools | ${{ steps.mcp-http-tools.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| MCP SSE | ${{ steps.mcp-sse.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| MCP Server Info | ${{ steps.mcp-info.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tool Health Stats | ${{ steps.tool-health-stats.outputs.status == 'pass' && '✅ Pass' || '❌ Fail' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if any check failed
+        if: |
+          steps.basic-health.outputs.status == 'fail' ||
+          steps.db-health.outputs.status == 'fail' ||
+          steps.mcp-http-init.outputs.status == 'fail' ||
+          steps.mcp-http-tools.outputs.status == 'fail' ||
+          steps.mcp-sse.outputs.status == 'fail'
+        run: |
+          echo "One or more critical health checks failed!"
+          exit 1

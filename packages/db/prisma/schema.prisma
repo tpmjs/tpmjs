@@ -790,3 +790,32 @@ model UserActivity {
   @@index([createdAt])
   @@map("user_activities")
 }
+
+// ============================================================================
+// Endpoint Health Monitoring Models
+// ============================================================================
+
+/// EndpointHealthReport - stores health check results from GitHub Actions or other monitoring
+model EndpointHealthReport {
+  id            String   @id @default(cuid())
+
+  // Report metadata
+  timestamp     DateTime
+  source        String   @db.VarChar(50) // 'github-actions' | 'manual' | 'uptime-robot' etc.
+  runId         String?  @map("run_id") @db.VarChar(100) // GitHub Actions run ID
+
+  // Check results
+  checks        Json     @db.JsonB // { check_name: 'pass' | 'fail' }
+  passCount     Int      @map("pass_count")
+  failCount     Int      @map("fail_count")
+  totalChecks   Int      @map("total_checks")
+  overallStatus String   @map("overall_status") @db.VarChar(20) // 'healthy' | 'degraded' | 'down'
+
+  // Timestamps
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([timestamp])
+  @@index([overallStatus])
+  @@index([source])
+  @@map("endpoint_health_reports")
+}
