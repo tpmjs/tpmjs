@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@tpmjs/ui/Button/Button';
-import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 interface ChatHeaderProps {
@@ -13,8 +13,9 @@ export function ChatHeader({ onClear }: ChatHeaderProps): React.ReactElement {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // Avoid hydration mismatch
+  // Avoid hydration mismatch - this is intentional for SSR
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

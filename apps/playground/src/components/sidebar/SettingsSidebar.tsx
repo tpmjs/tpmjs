@@ -22,6 +22,7 @@ export function SettingsSidebar(): React.ReactElement {
     try {
       const stored = localStorage.getItem(ENV_STORAGE_KEY);
       if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setEnvVars(JSON.parse(stored));
       }
     } catch (error) {

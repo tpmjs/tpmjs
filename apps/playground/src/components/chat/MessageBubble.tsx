@@ -53,6 +53,7 @@ export function MessageBubble({
 
     const now = Date.now();
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPartTimings((prev) => {
       const updated = new Map(prev);
 
