@@ -3,7 +3,7 @@
   "buildCommand": "pnpm run build:web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install",
-  "framework": "nextjs",
+  "framework": null,
   "git": {
     "deploymentEnabled": {
       "main": true
