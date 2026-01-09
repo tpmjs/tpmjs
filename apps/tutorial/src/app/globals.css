@@ -58,12 +58,16 @@
   }
 
   .glow-cyan {
-    box-shadow: 0 0 20px hsl(var(--accent-cyan) / 0.3), 0 0 40px hsl(var(--accent-cyan) / 0.2), 0 0
-      60px hsl(var(--accent-cyan) / 0.1);
+    box-shadow:
+      0 0 20px hsl(var(--accent-cyan) / 0.3),
+      0 0 40px hsl(var(--accent-cyan) / 0.2),
+      0 0 60px hsl(var(--accent-cyan) / 0.1);
   }
 
   .glow-purple {
-    box-shadow: 0 0 20px hsl(var(--accent-purple) / 0.3), 0 0 40px hsl(var(--accent-purple) / 0.2),
+    box-shadow:
+      0 0 20px hsl(var(--accent-purple) / 0.3),
+      0 0 40px hsl(var(--accent-purple) / 0.2),
       0 0 60px hsl(var(--accent-purple) / 0.1);
   }
 

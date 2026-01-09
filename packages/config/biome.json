@@ -56,6 +56,12 @@
       "semicolons": "always"
     }
   },
+  "css": {
+    "parser": {
+      "cssModules": true,
+      "tailwindDirectives": true
+    }
+  },
   "overrides": [
     {
       "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
