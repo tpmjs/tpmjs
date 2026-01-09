@@ -26,19 +26,21 @@ export function PackageManagerSelector({
 }: PackageManagerSelectorProps): React.ReactElement {
   const [selected, setSelected] = useState<PackageManager>('npm');
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount - intentional initial sync from browser storage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY) as PackageManager | null;
       if (stored && packageManagers.some((pm) => pm.id === stored)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelected(stored);
       }
     }
   }, []);
 
-  // Sync with controlled value
+  // Sync with controlled value - controlled component pattern
   useEffect(() => {
     if (value) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelected(value);
     }
   }, [value]);
@@ -94,10 +96,12 @@ export function getInstallCommand(packageName: string, manager: PackageManager):
 export function usePackageManager(): [PackageManager, (manager: PackageManager) => void] {
   const [manager, setManager] = useState<PackageManager>('npm');
 
+  // Load from localStorage on mount - intentional initial sync from browser storage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY) as PackageManager | null;
       if (stored && packageManagers.some((pm) => pm.id === stored)) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setManager(stored);
       }
     }

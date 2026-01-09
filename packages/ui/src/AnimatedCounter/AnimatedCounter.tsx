@@ -82,8 +82,9 @@ export const AnimatedCounter = forwardRef<HTMLSpanElement, AnimatedCounterProps>
     return (
       <span
         ref={(node) => {
-          // Assign to both refs
+          // Assign to both refs - this is a standard ref callback pattern for merging refs
           if (scrollRef) {
+            // eslint-disable-next-line react-hooks/immutability
             (scrollRef as React.MutableRefObject<HTMLSpanElement | null>).current = node;
           }
           if (typeof ref === 'function') {

@@ -1,11 +1,11 @@
 'use client';
 
-import { useSession } from '@/lib/auth-client';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon, type IconName } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useSession } from '@/lib/auth-client';
 import { AppHeader } from '../AppHeader';
 
 interface NavItem {
@@ -70,9 +70,10 @@ export function DashboardLayout({
     localStorage.setItem('dashboard-likes-expanded', String(likesExpanded));
   }, [likesExpanded]);
 
-  // Auto-expand if on a likes page
+  // Auto-expand if on a likes page - intentional route-based UI sync
   useEffect(() => {
     if (pathname.startsWith('/dashboard/likes')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLikesExpanded(true);
     }
   }, [pathname]);
@@ -84,9 +85,10 @@ export function DashboardLayout({
     }
   }, [isPending, session, router]);
 
-  // Close sidebar on route change - pathname dependency triggers this effect
+  // Close sidebar on route change - intentional route-based UI sync
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname triggers effect
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSidebarOpen(false);
   }, [pathname]);
 

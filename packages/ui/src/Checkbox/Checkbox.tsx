@@ -1,5 +1,5 @@
 import { cn } from '@tpmjs/utils/cn';
-import { forwardRef, useEffect, useRef } from 'react';
+import { forwardRef, useEffect, useId, useRef } from 'react';
 import type { CheckboxProps } from './types';
 import { checkboxLabelVariants, checkboxUIVariants, checkboxVariants } from './variants';
 
@@ -66,7 +66,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
     }, [indeterminate]);
 
     // Generate unique ID if not provided
-    const checkboxId = id || `checkbox-${Math.random().toString(36).substring(2, 9)}`;
+    const generatedId = useId();
+    const checkboxId = id || `checkbox-${generatedId}`;
 
     const checkboxInput = (
       <input

@@ -24,8 +24,8 @@ export function ProblemSection(): React.ReactElement {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {problemPoints.map((problem, index) => {
-            // Random rotation for chaos
-            const rotation = (index % 2 === 0 ? 1 : -1) * (Math.random() * 5 + 2);
+            // Deterministic rotation for chaos effect (stable across renders)
+            const rotation = (index % 2 === 0 ? 1 : -1) * (((index * 1.3) % 5) + 2);
 
             return (
               <div

@@ -70,8 +70,9 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
     return (
       <div
         ref={(node) => {
-          // Assign to both refs
+          // Assign to both refs - this is a standard ref callback pattern for merging refs
           if (scrollRef) {
+            // eslint-disable-next-line react-hooks/immutability
             (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
           }
           if (typeof ref === 'function') {

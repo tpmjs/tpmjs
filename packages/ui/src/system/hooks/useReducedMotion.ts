@@ -25,7 +25,8 @@ export function useReducedMotion(): boolean {
     // Create media query
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    // Set initial value
+    // Set initial value - intentional initial sync from browser API
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPrefersReducedMotion(mediaQuery.matches);
 
     // Update on change

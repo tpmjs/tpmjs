@@ -9,8 +9,9 @@ export function ThemeToggle(): React.ReactElement {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
-  // useEffect only runs on the client, so we can safely show the UI
+  // useEffect only runs on the client - intentional hydration safety pattern
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

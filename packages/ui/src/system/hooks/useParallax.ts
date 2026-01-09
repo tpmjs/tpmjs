@@ -58,7 +58,8 @@ export function useParallax(options: UseParallaxOptions = {}): React.CSSProperti
       }
     };
 
-    // Initial scroll position
+    // Initial scroll position - intentional initial sync from browser API
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setScrollY(window.scrollY);
 
     window.addEventListener('scroll', handleScroll, { passive: true });

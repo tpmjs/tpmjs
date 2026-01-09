@@ -1,5 +1,5 @@
 import { cn } from '@tpmjs/utils/cn';
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import { useControlled } from '../system/useControlled';
 import type { SwitchProps } from './types';
 import {
@@ -85,7 +85,8 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
     };
 
     // Generate unique ID if not provided
-    const switchId = id || `switch-${Math.random().toString(36).substring(2, 9)}`;
+    const generatedId = useId();
+    const switchId = id || `switch-${generatedId}`;
 
     // Determine data-state for styling
     const dataState = checked ? 'checked' : 'unchecked';

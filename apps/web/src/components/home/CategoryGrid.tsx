@@ -1,8 +1,8 @@
 'use client';
 
 import { Card, CardContent } from '@tpmjs/ui/Card/Card';
-import { Icon } from '@tpmjs/ui/Icon/Icon';
 import type { IconName } from '@tpmjs/ui/Icon/Icon';
+import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useScrollReveal } from '@tpmjs/ui/system/hooks/useScrollReveal';
 
 export interface Category {
@@ -32,7 +32,8 @@ export function CategoryGrid({ categories }: CategoryGridProps): React.ReactElem
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {categories.map((category, index) => {
         const randomHeight = heights[index % heights.length] || 'h-36';
-        const randomDelay = Math.random() * 400; // 0-400ms random delay
+        // Deterministic delay based on index for stable renders
+        const randomDelay = (index * 47) % 400;
 
         return (
           <CategoryTile
@@ -62,8 +63,9 @@ function CategoryTile({
     delay,
   });
 
-  // Random rotation for entrance animation
-  const randomRotation = (Math.random() - 0.5) * 20; // -10 to +10 degrees
+  // Deterministic rotation based on delay for stable entrance animation
+  // Creates -10 to +10 degrees based on delay value
+  const randomRotation = (delay % 20) - 10;
 
   return (
     <a
