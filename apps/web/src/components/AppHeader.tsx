@@ -1,11 +1,11 @@
 'use client';
 
-import { useSession } from '@/lib/auth-client';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Header } from '@tpmjs/ui/Header/Header';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
+import { useSession } from '@/lib/auth-client';
 import { MobileMenu } from './MobileMenu';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -94,6 +94,8 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
 
 const developerItems: DropdownItem[] = [
   { href: '/docs', label: 'Documentation', description: 'Guides and tutorials' },
+  { href: '/docs/api', label: 'API Reference', description: 'REST & MCP endpoints' },
+  { href: '/docs/executors', label: 'Custom Executors', description: 'Deploy your own' },
   { href: '/sdk', label: 'SDK', description: 'Build with our SDK' },
   { href: '/spec', label: 'Specification', description: 'TPMJS tool format' },
   { href: '/integrations', label: 'Integrations', description: 'Connect your tools' },

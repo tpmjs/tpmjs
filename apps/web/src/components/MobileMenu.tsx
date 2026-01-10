@@ -36,6 +36,8 @@ const navSections: NavSection[] = [
     title: 'Developers',
     links: [
       { href: '/docs', label: 'Documentation', description: 'Guides and tutorials' },
+      { href: '/docs/api', label: 'API Reference', description: 'REST & MCP endpoints' },
+      { href: '/docs/executors', label: 'Custom Executors', description: 'Deploy your own' },
       { href: '/sdk', label: 'SDK', description: 'Build with our SDK' },
       { href: '/spec', label: 'Specification', description: 'TPMJS tool format' },
       { href: '/integrations', label: 'Integrations', description: 'Connect your tools' },
@@ -91,14 +93,14 @@ export function MobileMenu({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop - clicking closes the menu */}
+      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Escape key handled globally via useEffect */}
       <div
         className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
-        onKeyDown={(e) => e.key === 'Escape' && onClose()}
-        role="presentation"
+        aria-hidden="true"
       />
 
       {/* Slide-out drawer */}
