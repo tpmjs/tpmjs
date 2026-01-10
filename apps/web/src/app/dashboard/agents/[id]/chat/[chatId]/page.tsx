@@ -17,6 +17,12 @@ interface Agent {
   modelId: string;
 }
 
+interface MessageToolCall {
+  toolCallId: string;
+  toolName: string;
+  args?: Record<string, unknown>;
+}
+
 interface Message {
   id: string;
   role: 'USER' | 'ASSISTANT' | 'TOOL';
@@ -24,6 +30,7 @@ interface Message {
   toolName?: string;
   toolCallId?: string;
   toolResult?: unknown;
+  toolCalls?: MessageToolCall[] | null;
   createdAt: string;
 }
 
@@ -608,35 +615,66 @@ export default function AgentChatPage(): React.ReactElement {
                 }
               };
 
+              // Check if this ASSISTANT message has embedded tool calls
+              const hasEmbeddedToolCalls =
+                message.role === 'ASSISTANT' &&
+                message.toolCalls &&
+                Array.isArray(message.toolCalls) &&
+                message.toolCalls.length > 0;
+
               return (
-                <div
-                  key={message.id}
-                  className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
-                >
-                  {message.role === 'TOOL' ? (
-                    <div className="max-w-[80%]">
-                      <ToolCallCard
-                        toolCall={{
-                          toolCallId: message.toolCallId || message.id,
-                          toolName: message.toolName || 'Unknown Tool',
-                          output: getToolOutput(),
-                          status: 'success',
-                        }}
-                        isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
-                        onToggle={() => toggleToolCall(message.toolCallId || message.id)}
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      className={`max-w-[80%] rounded-lg p-4 ${
-                        message.role === 'USER'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-surface-secondary'
-                      }`}
-                    >
-                      <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                <div key={message.id} className="space-y-2">
+                  {/* Render embedded tool calls from ASSISTANT messages */}
+                  {hasEmbeddedToolCalls && (
+                    <div className="space-y-2">
+                      {message.toolCalls!.map((tc) => (
+                        <div key={tc.toolCallId} className="flex justify-start">
+                          <div className="max-w-[80%]">
+                            <ToolCallCard
+                              toolCall={{
+                                toolCallId: tc.toolCallId,
+                                toolName: tc.toolName,
+                                input: tc.args,
+                                status: 'success',
+                              }}
+                              isExpanded={expandedToolCalls.has(tc.toolCallId)}
+                              onToggle={() => toggleToolCall(tc.toolCallId)}
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
+
+                  {/* Render the message content */}
+                  <div
+                    className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    {message.role === 'TOOL' ? (
+                      <div className="max-w-[80%]">
+                        <ToolCallCard
+                          toolCall={{
+                            toolCallId: message.toolCallId || message.id,
+                            toolName: message.toolName || 'Unknown Tool',
+                            output: getToolOutput(),
+                            status: 'success',
+                          }}
+                          isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
+                          onToggle={() => toggleToolCall(message.toolCallId || message.id)}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className={`max-w-[80%] rounded-lg p-4 ${
+                          message.role === 'USER'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-surface-secondary'
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
