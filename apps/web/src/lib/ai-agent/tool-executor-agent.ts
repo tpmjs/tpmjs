@@ -6,7 +6,7 @@
 import { openai } from '@ai-sdk/openai';
 import type { Package, Tool } from '@tpmjs/db';
 import type { ExecutorConfig } from '@tpmjs/types/executor';
-import { type ModelMessage, generateText } from 'ai';
+import { generateText, jsonSchema, type ModelMessage } from 'ai';
 import { z } from 'zod';
 
 import { executeWithExecutor } from '../executors';
@@ -101,21 +101,24 @@ export function createToolDefinition(
   tool: Tool & { package: Package },
   executorConfig?: ExecutorConfig | null
 ) {
-  const parameters = Array.isArray(tool.parameters)
-    ? (tool.parameters as unknown as TPMJSParameter[])
-    : [];
-
   console.log('[createToolDefinition] Tool:', tool.package.npmPackageName, '/', tool.name);
-  console.log('[createToolDefinition] Parameters array:', JSON.stringify(parameters));
-  console.log('[createToolDefinition] Parameters length:', parameters.length);
 
-  // Ensure we have a valid schema - if no parameters, use an empty object
+  // Prefer full inputSchema if available (has nested object/array structures)
+  // Fall back to legacy parameters array conversion if not
   const inputSchema =
-    parameters.length > 0
-      ? tpmjsParamsToZodSchema(parameters)
-      : z.object({}).describe('No parameters required');
-
-  console.log('[createToolDefinition] Created Zod schema:', inputSchema);
+    tool.inputSchema && typeof tool.inputSchema === 'object'
+      ? // Use full JSON Schema directly - preserves nested array/object structures
+        jsonSchema(tool.inputSchema as Parameters<typeof jsonSchema>[0])
+      : // Legacy: convert flattened parameters array to Zod schema
+        (() => {
+          const parameters = Array.isArray(tool.parameters)
+            ? (tool.parameters as unknown as TPMJSParameter[])
+            : [];
+          console.log('[createToolDefinition] Using legacy parameters:', parameters.length);
+          return parameters.length > 0
+            ? tpmjsParamsToZodSchema(parameters)
+            : z.object({}).describe('No parameters required');
+        })();
 
   const sanitizedName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
 
