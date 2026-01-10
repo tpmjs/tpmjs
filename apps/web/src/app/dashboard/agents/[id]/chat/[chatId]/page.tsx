@@ -36,6 +36,32 @@ interface ToolCall {
 }
 
 /**
+ * Check if a tool output contains an error
+ */
+function isToolError(output: unknown): boolean {
+  if (!output || typeof output !== 'object') return false;
+  const obj = output as Record<string, unknown>;
+  return (
+    obj.success === false ||
+    obj.error !== undefined ||
+    obj.__tpmjs_error__ !== undefined ||
+    (typeof obj.message === 'string' && obj.message.toLowerCase().includes('error'))
+  );
+}
+
+/**
+ * Extract error message from tool output
+ */
+function getErrorMessage(output: unknown): string | null {
+  if (!output || typeof output !== 'object') return null;
+  const obj = output as Record<string, unknown>;
+  if (typeof obj.error === 'string') return obj.error;
+  if (typeof obj.__tpmjs_error__ === 'string') return obj.__tpmjs_error__;
+  if (obj.success === false && typeof obj.message === 'string') return obj.message;
+  return null;
+}
+
+/**
  * Sexy tool call debug card component
  */
 function ToolCallCard({
@@ -47,6 +73,11 @@ function ToolCallCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
+  // Detect if the output contains an error
+  const hasError = Boolean(toolCall.output && isToolError(toolCall.output));
+  const errorMessage = hasError ? getErrorMessage(toolCall.output) : null;
+  const effectiveStatus = hasError ? 'error' : toolCall.status;
+
   const statusColors = {
     pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
     running: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
@@ -70,18 +101,20 @@ function ToolCallCard({
   };
 
   return (
-    <div className="rounded-lg border border-border bg-surface-secondary/50 overflow-hidden font-mono text-xs">
+    <div
+      className={`rounded-lg border overflow-hidden font-mono text-xs ${hasError ? 'border-red-500/50 bg-red-500/5' : 'border-border bg-surface-secondary/50'}`}
+    >
       {/* Header */}
       <button
         type="button"
         onClick={onToggle}
         className="w-full flex items-center gap-3 p-3 hover:bg-surface-secondary/80 transition-colors"
       >
-        <div className={`p-1.5 rounded ${statusColors[toolCall.status]}`}>
+        <div className={`p-1.5 rounded ${statusColors[effectiveStatus]}`}>
           <Icon
-            icon={statusIcons[toolCall.status]}
+            icon={statusIcons[effectiveStatus]}
             size="xs"
-            className={toolCall.status === 'running' ? 'animate-spin' : ''}
+            className={effectiveStatus === 'running' ? 'animate-spin' : ''}
           />
         </div>
         <div className="flex-1 text-left">
@@ -90,7 +123,18 @@ function ToolCallCard({
             <span className="text-foreground-tertiary text-[10px]">
               {toolCall.toolCallId.slice(0, 8)}...
             </span>
+            {hasError && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
+                ERROR
+              </span>
+            )}
           </div>
+          {/* Show error message preview in header */}
+          {hasError && errorMessage && !isExpanded && (
+            <div className="text-red-400 text-[10px] mt-1 truncate max-w-[300px]">
+              {errorMessage}
+            </div>
+          )}
         </div>
         <Icon
           icon="chevronRight"
@@ -117,16 +161,31 @@ function ToolCallCard({
             </div>
           ) : null}
 
+          {/* Error Message Section */}
+          {hasError && errorMessage && (
+            <div className="p-3 bg-red-500/10 border-b border-red-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Icon icon="alertCircle" size="xs" className="text-red-400" />
+                <span className="text-[10px] uppercase tracking-wider text-red-400 font-semibold">
+                  Error
+                </span>
+              </div>
+              <p className="text-[11px] text-red-400">{errorMessage}</p>
+            </div>
+          )}
+
           {/* Output Section */}
           {toolCall.output !== undefined && toolCall.output !== null ? (
             <div className="p-3">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[10px] uppercase tracking-wider text-foreground-tertiary">
-                  Output
+                  {hasError ? 'Full Response' : 'Output'}
                 </span>
                 <div className="flex-1 h-px bg-border/50" />
               </div>
-              <pre className="text-[11px] text-green-400 overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
+              <pre
+                className={`text-[11px] overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto ${hasError ? 'text-red-300' : 'text-green-400'}`}
+              >
                 {formatJson(toolCall.output)}
               </pre>
             </div>
@@ -469,10 +528,26 @@ export default function AgentChatPage(): React.ReactElement {
       backUrl={`/dashboard/agents/${agent.id}`}
       fullHeight
       actions={
-        <Button variant="outline" size="sm" onClick={startNewConversation}>
-          <Icon icon="plus" size="xs" className="mr-2" />
-          New Chat
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              window.open(
+                `/api/agents/${agentId}/conversation/${activeConversationId}?format=json`,
+                '_blank'
+              );
+            }}
+            title="View conversation as JSON"
+          >
+            <Icon icon="terminal" size="xs" className="mr-2" />
+            JSON
+          </Button>
+          <Button variant="outline" size="sm" onClick={startNewConversation}>
+            <Icon icon="plus" size="xs" className="mr-2" />
+            New Chat
+          </Button>
+        </div>
       }
     >
       <div className="flex h-full overflow-hidden">

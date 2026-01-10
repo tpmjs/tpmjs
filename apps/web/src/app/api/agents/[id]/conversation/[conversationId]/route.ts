@@ -8,13 +8,13 @@
  * This endpoint uses agent id directly for dashboard usage
  */
 
-import { decryptApiKey } from '@/lib/crypto/api-keys';
 import { Prisma, prisma } from '@tpmjs/db';
 import type { AIProvider } from '@tpmjs/types/agent';
 import { SendMessageSchema } from '@tpmjs/types/agent';
 import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
-import { type RateLimitConfig, checkRateLimit } from '~/lib/rate-limit';
+import { decryptApiKey } from '@/lib/crypto/api-keys';
+import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
 
 /**
  * Rate limit for chat messages: 30 requests per minute
@@ -449,6 +449,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
  * - limit: Max messages to return (default: 50, max: 100)
  * - before: Fetch messages created before this ISO timestamp (for loading older messages)
  * - after: Fetch messages created after this ISO timestamp (for loading newer messages)
+ * - format: 'json' for full debug view (no pagination, includes agent info)
  *
  * Default behavior (no before/after): Returns the most recent messages
  * With before: Returns messages older than the timestamp (for scrolling up)
@@ -458,15 +459,24 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   const { id: agentId, conversationId } = await context.params;
   const { searchParams } = new URL(request.url);
 
+  const format = searchParams.get('format');
   const limit = Math.min(Number.parseInt(searchParams.get('limit') || '50', 10), 100);
   const before = searchParams.get('before');
   const after = searchParams.get('after');
 
   try {
-    // Fetch agent by ID
+    // Fetch agent by ID with more details for JSON format
     const agent = await prisma.agent.findUnique({
       where: { id: agentId },
-      select: { id: true },
+      select: {
+        id: true,
+        uid: true,
+        name: true,
+        provider: true,
+        modelId: true,
+        executorType: true,
+        executorConfig: true,
+      },
     });
 
     if (!agent) {
@@ -490,7 +500,68 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       );
     }
 
-    // Build the where clause based on cursor
+    // For JSON format, return all messages with full details
+    if (format === 'json') {
+      const allMessages = await prisma.message.findMany({
+        where: { conversationId: conversation.id },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      const response = {
+        _meta: {
+          exportedAt: new Date().toISOString(),
+          format: 'tpmjs-conversation-log',
+          version: '1.0',
+        },
+        agent: {
+          id: agent.id,
+          uid: agent.uid,
+          name: agent.name,
+          provider: agent.provider,
+          modelId: agent.modelId,
+          executorType: agent.executorType,
+          executorConfig: agent.executorConfig,
+        },
+        conversation: {
+          id: conversation.id,
+          slug: conversation.slug,
+          title: conversation.title,
+          createdAt: conversation.createdAt,
+          updatedAt: conversation.updatedAt,
+          messageCount: allMessages.length,
+        },
+        messages: allMessages.map((m) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          toolCalls: m.toolCalls,
+          toolCallId: m.toolCallId,
+          toolName: m.toolName,
+          toolResult: m.toolResult,
+          inputTokens: m.inputTokens,
+          outputTokens: m.outputTokens,
+          createdAt: m.createdAt,
+        })),
+        stats: {
+          totalMessages: allMessages.length,
+          userMessages: allMessages.filter((m) => m.role === 'USER').length,
+          assistantMessages: allMessages.filter((m) => m.role === 'ASSISTANT').length,
+          toolResults: allMessages.filter((m) => m.role === 'TOOL').length,
+          totalInputTokens: allMessages.reduce((sum, m) => sum + (m.inputTokens || 0), 0),
+          totalOutputTokens: allMessages.reduce((sum, m) => sum + (m.outputTokens || 0), 0),
+        },
+      };
+
+      // Return pretty-printed JSON with proper content type
+      return new NextResponse(JSON.stringify(response, null, 2), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Disposition': `inline; filename="${conversation.slug}-logs.json"`,
+        },
+      });
+    }
+
+    // Standard paginated response
     const whereClause: {
       conversationId: string;
       createdAt?: { lt?: Date; gt?: Date };
