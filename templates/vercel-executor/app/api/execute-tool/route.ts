@@ -71,6 +71,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExecuteToolRe
     });
 
     // 1) Install the npm package
+    console.log(`[executor] Installing ${packageSpec}...`);
+    const installStart = Date.now();
+
     const install = await sandbox.runCommand({
       cmd: 'npm',
       args: ['install', '--no-save', '--omit=dev', '--no-audit', '--no-fund', packageSpec],
@@ -78,8 +81,17 @@ export async function POST(req: NextRequest): Promise<NextResponse<ExecuteToolRe
     });
 
     const installStderr = await install.stderr();
+    const installStdout = await install.stdout();
+    const installTime = Date.now() - installStart;
+
+    console.log(`[executor] npm install completed in ${installTime}ms (exit: ${install.exitCode})`);
+
     if (install.exitCode !== 0) {
-      const installStdout = await install.stdout();
+      console.error(`[executor] npm install failed:`, {
+        exitCode: install.exitCode,
+        stdout: installStdout?.slice(0, 500),
+        stderr: installStderr?.slice(0, 500),
+      });
       return NextResponse.json({
         success: false,
         error: `npm install failed with exit code ${install.exitCode}`,
@@ -149,6 +161,9 @@ ${envSetup}
     await sandbox.writeFiles([{ path: 'execute.cjs', content: Buffer.from(script, 'utf8') }]);
 
     // 4) Run the script
+    console.log(`[executor] Running tool ${packageName}/${name}...`);
+    const runStart = Date.now();
+
     const run = await sandbox.runCommand({
       cmd: 'node',
       args: ['execute.cjs'],
@@ -158,8 +173,17 @@ ${envSetup}
 
     const stdout = await run.stdout();
     const stderr = await run.stderr();
+    const runTime = Date.now() - runStart;
+
+    console.log(`[executor] Tool execution completed in ${runTime}ms (exit: ${run.exitCode})`);
 
     if (run.exitCode !== 0) {
+      console.error(`[executor] Tool execution failed:`, {
+        exitCode: run.exitCode,
+        stdout: stdout?.slice(0, 500),
+        stderr: stderr?.slice(0, 500),
+      });
+
       // Try to parse error from stderr
       try {
         const errorObj = JSON.parse(stderr);

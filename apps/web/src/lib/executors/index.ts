@@ -241,12 +241,13 @@ export async function testExecutor(
   apiKey?: string
 ): Promise<{ success: boolean; executionTimeMs: number; error?: string }> {
   const testRequest: ExecuteToolRequest = {
-    packageName: '@anthropic-ai/tpmjs-hello',
-    name: 'helloWorld',
-    params: { name: 'test' },
+    packageName: '@tpmjs/hello',
+    name: 'helloWorldTool',
+    version: '0.0.2',
+    params: { includeTimestamp: true },
   };
 
-  const result = await executeWithCustomUrl(url, apiKey, testRequest, 15000); // 15 second timeout for test
+  const result = await executeWithCustomUrl(url, apiKey, testRequest, 30000); // 30 second timeout for test (includes npm install)
 
   return {
     success: result.success,
