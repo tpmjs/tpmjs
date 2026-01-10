@@ -86,10 +86,14 @@ function ToolCallCard({
   const effectiveStatus = hasError ? 'error' : toolCall.status;
 
   const statusColors = {
-    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    running: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    success: 'bg-green-500/20 text-green-400 border-green-500/30',
-    error: 'bg-red-500/20 text-red-400 border-red-500/30',
+    pending:
+      'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-500/30',
+    running:
+      'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-500/30',
+    success:
+      'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border-green-300 dark:border-green-500/30',
+    error:
+      'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/30',
   };
 
   const statusIcons: Record<ToolCall['status'], 'loader' | 'check' | 'alertCircle' | 'info'> = {
@@ -109,13 +113,13 @@ function ToolCallCard({
 
   return (
     <div
-      className={`rounded-lg border overflow-hidden font-mono text-xs ${hasError ? 'border-red-500/50 bg-red-500/5' : 'border-border bg-surface-secondary/50'}`}
+      className={`rounded-lg border overflow-hidden font-mono text-xs ${hasError ? 'border-red-500/50 bg-red-50 dark:bg-red-500/5' : 'border-border bg-slate-50 dark:bg-surface-secondary/50'}`}
     >
       {/* Header */}
       <button
         type="button"
         onClick={onToggle}
-        className="w-full flex items-center gap-3 p-3 hover:bg-surface-secondary/80 transition-colors"
+        className="w-full flex items-center gap-3 p-3 hover:bg-slate-100 dark:hover:bg-surface-secondary/80 transition-colors"
       >
         <div className={`p-1.5 rounded ${statusColors[effectiveStatus]}`}>
           <Icon
@@ -131,14 +135,14 @@ function ToolCallCard({
               {toolCall.toolCallId.slice(0, 8)}...
             </span>
             {hasError && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400">
                 ERROR
               </span>
             )}
           </div>
           {/* Show error message preview in header */}
           {hasError && errorMessage && !isExpanded && (
-            <div className="text-red-400 text-[10px] mt-1 truncate max-w-[300px]">
+            <div className="text-red-600 dark:text-red-400 text-[10px] mt-1 truncate max-w-[300px]">
               {errorMessage}
             </div>
           )}
@@ -170,14 +174,14 @@ function ToolCallCard({
 
           {/* Error Message Section */}
           {hasError && errorMessage && (
-            <div className="p-3 bg-red-500/10 border-b border-red-500/20">
+            <div className="p-3 bg-red-100 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/20">
               <div className="flex items-center gap-2 mb-2">
-                <Icon icon="alertCircle" size="xs" className="text-red-400" />
-                <span className="text-[10px] uppercase tracking-wider text-red-400 font-semibold">
+                <Icon icon="alertCircle" size="xs" className="text-red-600 dark:text-red-400" />
+                <span className="text-[10px] uppercase tracking-wider text-red-600 dark:text-red-400 font-semibold">
                   Error
                 </span>
               </div>
-              <p className="text-[11px] text-red-400">{errorMessage}</p>
+              <p className="text-[11px] text-red-600 dark:text-red-400">{errorMessage}</p>
             </div>
           )}
 
@@ -191,7 +195,7 @@ function ToolCallCard({
                 <div className="flex-1 h-px bg-border/50" />
               </div>
               <pre
-                className={`text-[11px] overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto ${hasError ? 'text-red-300' : 'text-green-400'}`}
+                className={`text-[11px] overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto ${hasError ? 'text-red-600 dark:text-red-300' : 'text-emerald-700 dark:text-green-400'}`}
               >
                 {formatJson(toolCall.output)}
               </pre>
@@ -604,80 +608,84 @@ export default function AgentChatPage(): React.ReactElement {
               </div>
             )}
 
-            {messages.map((message) => {
-              // Parse tool output safely
-              const getToolOutput = () => {
-                if (message.toolResult) return message.toolResult;
-                try {
-                  return JSON.parse(message.content || '{}');
-                } catch {
-                  return { result: message.content };
+            {(() => {
+              // Build a map of toolCallId -> tool result from TOOL messages
+              const toolResultsMap = new Map<string, unknown>();
+              for (const msg of messages) {
+                if (msg.role === 'TOOL' && msg.toolCallId) {
+                  let output: unknown;
+                  if (msg.toolResult) {
+                    output = msg.toolResult;
+                  } else {
+                    try {
+                      output = JSON.parse(msg.content || '{}');
+                    } catch {
+                      output = { result: msg.content };
+                    }
+                  }
+                  toolResultsMap.set(msg.toolCallId, output);
                 }
-              };
+              }
 
-              // Check if this ASSISTANT message has embedded tool calls
-              const hasEmbeddedToolCalls =
-                message.role === 'ASSISTANT' &&
-                message.toolCalls &&
-                Array.isArray(message.toolCalls) &&
-                message.toolCalls.length > 0;
+              return messages.map((message) => {
+                // Check if this ASSISTANT message has embedded tool calls
+                const hasEmbeddedToolCalls =
+                  message.role === 'ASSISTANT' &&
+                  message.toolCalls &&
+                  Array.isArray(message.toolCalls) &&
+                  message.toolCalls.length > 0;
 
-              return (
-                <div key={message.id} className="space-y-2">
-                  {/* Render embedded tool calls from ASSISTANT messages */}
-                  {hasEmbeddedToolCalls && (
-                    <div className="space-y-2">
-                      {message.toolCalls!.map((tc) => (
-                        <div key={tc.toolCallId} className="flex justify-start">
-                          <div className="max-w-[80%]">
-                            <ToolCallCard
-                              toolCall={{
-                                toolCallId: tc.toolCallId,
-                                toolName: tc.toolName,
-                                input: tc.args,
-                                status: 'success',
-                              }}
-                              isExpanded={expandedToolCalls.has(tc.toolCallId)}
-                              onToggle={() => toggleToolCall(tc.toolCallId)}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                return (
+                  <div key={message.id} className="space-y-2">
+                    {/* Render embedded tool calls from ASSISTANT messages */}
+                    {hasEmbeddedToolCalls && (
+                      <div className="space-y-2">
+                        {message.toolCalls?.map((tc) => {
+                          // Look up the output for this tool call
+                          const toolOutput = toolResultsMap.get(tc.toolCallId);
+                          const hasOutput = toolOutput !== undefined;
 
-                  {/* Render the message content */}
-                  <div
-                    className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {message.role === 'TOOL' ? (
-                      <div className="max-w-[80%]">
-                        <ToolCallCard
-                          toolCall={{
-                            toolCallId: message.toolCallId || message.id,
-                            toolName: message.toolName || 'Unknown Tool',
-                            output: getToolOutput(),
-                            status: 'success',
-                          }}
-                          isExpanded={expandedToolCalls.has(message.toolCallId || message.id)}
-                          onToggle={() => toggleToolCall(message.toolCallId || message.id)}
-                        />
+                          return (
+                            <div key={tc.toolCallId} className="flex justify-start">
+                              <div className="max-w-[80%]">
+                                <ToolCallCard
+                                  toolCall={{
+                                    toolCallId: tc.toolCallId,
+                                    toolName: tc.toolName,
+                                    input: tc.args,
+                                    output: toolOutput,
+                                    status: hasOutput ? 'success' : 'pending',
+                                  }}
+                                  isExpanded={expandedToolCalls.has(tc.toolCallId)}
+                                  onToggle={() => toggleToolCall(tc.toolCallId)}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    ) : (
+                    )}
+
+                    {/* Render the message content - skip TOOL messages as they're shown with their calls */}
+                    {message.role !== 'TOOL' && (
                       <div
-                        className={`max-w-[80%] rounded-lg p-4 ${
-                          message.role === 'USER'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-surface-secondary'
-                        }`}
+                        className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                        <div
+                          className={`max-w-[80%] rounded-lg p-4 ${
+                            message.role === 'USER'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-surface-secondary'
+                          }`}
+                        >
+                          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                        </div>
                       </div>
                     )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              });
+            })()}
 
             {/* Live tool calls during streaming */}
             {toolCalls.length > 0 && (
