@@ -13,13 +13,13 @@ function ArchBox({
 }: {
   children: React.ReactNode;
   className?: string;
-  variant?: 'default' | 'primary' | 'muted' | 'header';
+  variant?: 'default' | 'muted' | 'header';
 }) {
   const variants = {
     default: 'border-border bg-surface',
-    primary: 'border-primary/50 bg-primary/5',
-    muted: 'border-border/50 bg-surface-secondary/50',
-    header: 'border-primary bg-primary/10 font-mono text-sm font-medium text-primary',
+    muted: 'border-border bg-surface-secondary/70',
+    header:
+      'border-border-strong bg-surface-secondary font-mono text-sm font-medium text-foreground',
   };
 
   return (
@@ -30,21 +30,15 @@ function ArchBox({
 }
 
 // Small cell for grid items
-function Cell({
-  children,
-  variant = 'default',
-}: {
-  children: React.ReactNode;
-  variant?: 'default' | 'accent' | 'muted';
-}) {
-  const variants = {
-    default: 'border-border bg-background text-foreground-secondary',
-    accent: 'border-primary/30 bg-primary/5 text-primary',
-    muted: 'border-border/50 bg-surface-secondary/30 text-foreground-tertiary',
-  };
-
+function Cell({ children, muted = false }: { children: React.ReactNode; muted?: boolean }) {
   return (
-    <div className={`border rounded px-2 py-1.5 text-xs font-mono ${variants[variant]}`}>
+    <div
+      className={`border rounded px-2 py-1.5 text-xs font-mono ${
+        muted
+          ? 'border-border/60 bg-surface-secondary/50 text-foreground-tertiary'
+          : 'border-border bg-background text-foreground-secondary'
+      }`}
+    >
       {children}
     </div>
   );
@@ -119,8 +113,8 @@ export default function ArchitecturePage(): React.ReactElement {
                     SDK Packages
                   </div>
                   <div className="space-y-2">
-                    <Cell variant="accent">@tpmjs/registry-search</Cell>
-                    <Cell variant="accent">@tpmjs/registry-execute</Cell>
+                    <Cell>@tpmjs/registry-search</Cell>
+                    <Cell>@tpmjs/registry-execute</Cell>
                     <Cell>@tpmjs/types</Cell>
                     <Cell>@tpmjs/ui</Cell>
                   </div>
@@ -132,9 +126,9 @@ export default function ArchitecturePage(): React.ReactElement {
                     MCP Protocol
                   </div>
                   <div className="space-y-2">
-                    <Cell variant="accent">Claude Desktop</Cell>
-                    <Cell variant="accent">Cursor</Cell>
-                    <Cell variant="accent">Claude Code</Cell>
+                    <Cell>Claude Desktop</Cell>
+                    <Cell>Cursor</Cell>
+                    <Cell>Claude Code</Cell>
                     <Cell>Any MCP Client</Cell>
                   </div>
                 </div>
@@ -151,9 +145,9 @@ export default function ArchitecturePage(): React.ReactElement {
                 <Cell>/api/tools/execute</Cell>
                 <Cell>/api/collections</Cell>
                 <Cell>/api/agents</Cell>
-                <Cell variant="accent">/api/mcp/*</Cell>
-                <Cell variant="muted">/api/sync/*</Cell>
-                <Cell variant="muted">/api/health</Cell>
+                <Cell>/api/mcp/*</Cell>
+                <Cell muted>/api/sync/*</Cell>
+                <Cell muted>/api/health</Cell>
               </div>
 
               {/* Bottom Layer - Infrastructure */}
@@ -168,7 +162,7 @@ export default function ArchitecturePage(): React.ReactElement {
                   </div>
                   <div className="space-y-2">
                     <Cell>PostgreSQL (Neon)</Cell>
-                    <Cell variant="muted">Prisma ORM</Cell>
+                    <Cell>Prisma ORM</Cell>
                   </div>
                 </ArchBox>
                 <ArchBox variant="muted" className="p-3">
@@ -176,8 +170,8 @@ export default function ArchitecturePage(): React.ReactElement {
                     Execution
                   </div>
                   <div className="space-y-2">
-                    <Cell variant="accent">Vercel Sandbox</Cell>
-                    <Cell variant="accent">Custom Executors</Cell>
+                    <Cell>Vercel Sandbox</Cell>
+                    <Cell>Custom Executors</Cell>
                   </div>
                 </ArchBox>
                 <ArchBox variant="muted" className="p-3">
@@ -186,7 +180,7 @@ export default function ArchitecturePage(): React.ReactElement {
                   </div>
                   <div className="space-y-2">
                     <Cell>npm Registry</Cell>
-                    <Cell variant="muted">esm.sh CDN</Cell>
+                    <Cell>esm.sh CDN</Cell>
                   </div>
                 </ArchBox>
               </div>
@@ -201,20 +195,20 @@ export default function ArchitecturePage(): React.ReactElement {
             <div className="border border-border rounded-xl p-4 md:p-6 bg-surface/50">
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 {/* Request */}
-                <ArchBox variant="primary" className="p-4">
+                <ArchBox className="p-4">
                   <div className="font-semibold text-foreground mb-3 text-center">1. REQUEST</div>
                   <div className="space-y-2 text-xs">
                     <div className="border border-border rounded p-2 bg-background">
                       <span className="text-foreground-tertiary">SDK:</span>
-                      <span className="text-primary ml-2">registryExecute()</span>
+                      <span className="text-foreground ml-2 font-medium">registryExecute()</span>
                     </div>
                     <div className="border border-border rounded p-2 bg-background">
                       <span className="text-foreground-tertiary">MCP:</span>
-                      <span className="text-primary ml-2">tools/call</span>
+                      <span className="text-foreground ml-2 font-medium">tools/call</span>
                     </div>
                     <div className="border border-border rounded p-2 bg-background">
                       <span className="text-foreground-tertiary">Agent:</span>
-                      <span className="text-primary ml-2">tool_call</span>
+                      <span className="text-foreground ml-2 font-medium">tool_call</span>
                     </div>
                   </div>
                 </ArchBox>
@@ -236,16 +230,16 @@ export default function ArchitecturePage(): React.ReactElement {
                 </ArchBox>
 
                 {/* Executor */}
-                <ArchBox variant="primary" className="p-4">
+                <ArchBox className="p-4">
                   <div className="font-semibold text-foreground mb-3 text-center">3. EXECUTE</div>
                   <div className="space-y-2 text-xs">
-                    <div className="border border-primary/20 rounded p-2 bg-primary/5 text-primary">
+                    <div className="border border-border rounded p-2 bg-background text-foreground-secondary">
                       npm install pkg
                     </div>
-                    <div className="border border-primary/20 rounded p-2 bg-primary/5 text-primary">
+                    <div className="border border-border rounded p-2 bg-background text-foreground-secondary">
                       tool.execute(params)
                     </div>
-                    <div className="border border-primary/20 rounded p-2 bg-primary/5 text-primary">
+                    <div className="border border-border rounded p-2 bg-background text-foreground-secondary">
                       Return result
                     </div>
                   </div>
@@ -297,26 +291,26 @@ export default function ArchitecturePage(): React.ReactElement {
 
                 <div className="space-y-2 text-sm text-foreground-secondary">
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">✓</span>
+                    <span className="text-foreground">✓</span>
                     Network isolated
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">✓</span>
+                    <span className="text-foreground">✓</span>
                     Per-request env injection
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">✓</span>
+                    <span className="text-foreground">✓</span>
                     Automatic npm install
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">✓</span>
+                    <span className="text-foreground">✓</span>
                     Cold start optimized
                   </div>
                 </div>
               </div>
 
               {/* Custom Executor */}
-              <div className="border border-primary/30 rounded-xl p-5 bg-primary/5">
+              <div className="border border-border rounded-xl p-5 bg-surface/50">
                 <div className="flex items-center gap-2 mb-4">
                   <Badge variant="secondary">Custom</Badge>
                   <span className="font-semibold text-foreground">User-Deployed</span>
@@ -327,28 +321,28 @@ export default function ArchitecturePage(): React.ReactElement {
                     User Infrastructure
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Cell variant="accent">Vercel</Cell>
-                    <Cell variant="accent">Railway</Cell>
-                    <Cell variant="accent">AWS Lambda</Cell>
-                    <Cell variant="accent">Self-hosted</Cell>
+                    <Cell>Vercel</Cell>
+                    <Cell>Railway</Cell>
+                    <Cell>AWS Lambda</Cell>
+                    <Cell>Self-hosted</Cell>
                   </div>
                 </ArchBox>
 
                 <div className="space-y-2 text-sm text-foreground-secondary">
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">★</span>
+                    <span className="text-foreground">★</span>
                     Custom dependencies pre-installed
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">★</span>
+                    <span className="text-foreground">★</span>
                     Your own API keys built-in
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">★</span>
+                    <span className="text-foreground">★</span>
                     Custom security policies
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-primary">★</span>
+                    <span className="text-foreground">★</span>
                     One-click deploy templates
                   </div>
                 </div>
@@ -362,7 +356,9 @@ export default function ArchitecturePage(): React.ReactElement {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <div className="text-sm text-primary mb-2 font-mono">POST /execute-tool</div>
+                  <div className="text-sm text-foreground font-medium mb-2 font-mono">
+                    POST /execute-tool
+                  </div>
                   <div className="space-y-1 text-xs text-foreground-secondary font-mono pl-3">
                     <div>packageName: string</div>
                     <div>name: string</div>
@@ -371,7 +367,7 @@ export default function ArchitecturePage(): React.ReactElement {
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-foreground-secondary mb-2 font-mono">Response</div>
+                  <div className="text-sm text-foreground font-medium mb-2 font-mono">Response</div>
                   <div className="space-y-1 text-xs text-foreground-secondary font-mono pl-3">
                     <div>success: boolean</div>
                     <div>output?: any</div>
@@ -409,7 +405,7 @@ export default function ArchitecturePage(): React.ReactElement {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-foreground-tertiary">tools[]</span>
-                      <span className="text-primary">CollectionTool[]</span>
+                      <span className="text-foreground">CollectionTool[]</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-foreground-tertiary">executorConfig</span>
@@ -423,14 +419,14 @@ export default function ArchitecturePage(): React.ReactElement {
                 </ArchBox>
 
                 <div className="space-y-2">
-                  <Cell variant="accent">/api/mcp/&#123;user&#125;/&#123;slug&#125;/http</Cell>
+                  <Cell>/api/mcp/&#123;user&#125;/&#123;slug&#125;/http</Cell>
                   <Cell>/api/collections/&#123;id&#125;</Cell>
-                  <Cell variant="muted">Tool-level env overrides</Cell>
+                  <Cell muted>Tool-level env overrides</Cell>
                 </div>
               </div>
 
               {/* Agents */}
-              <div className="border border-primary/30 rounded-xl p-5 bg-primary/5">
+              <div className="border border-border rounded-xl p-5 bg-surface/50">
                 <div className="flex items-center gap-2 mb-4">
                   <Badge variant="default">Agent</Badge>
                 </div>
@@ -453,7 +449,7 @@ export default function ArchitecturePage(): React.ReactElement {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-foreground-tertiary">collections[]</span>
-                      <span className="text-primary">Collection[]</span>
+                      <span className="text-foreground">Collection[]</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-foreground-tertiary">model</span>
@@ -463,9 +459,9 @@ export default function ArchitecturePage(): React.ReactElement {
                 </ArchBox>
 
                 <div className="space-y-2">
-                  <Cell variant="accent">/agents/&#123;id&#125;/chat</Cell>
-                  <Cell variant="accent">Streaming: SSE tool_call events</Cell>
-                  <Cell variant="muted">Persistent conversations</Cell>
+                  <Cell>/agents/&#123;id&#125;/chat</Cell>
+                  <Cell>Streaming: SSE tool_call events</Cell>
+                  <Cell muted>Persistent conversations</Cell>
                 </div>
               </div>
             </div>
@@ -484,13 +480,13 @@ export default function ArchitecturePage(): React.ReactElement {
                 <span className="text-foreground-tertiary md:hidden">↓</span>
                 <ArchBox className="px-4 py-2">
                   <div className="text-xs text-foreground-tertiary">Collection Config</div>
-                  <div className="text-sm text-primary">executorConfig</div>
+                  <div className="text-sm text-foreground font-medium">executorConfig</div>
                 </ArchBox>
                 <span className="text-foreground-tertiary hidden md:block">→</span>
                 <span className="text-foreground-tertiary md:hidden">↓</span>
-                <ArchBox variant="primary" className="px-4 py-2">
+                <ArchBox className="px-4 py-2">
                   <div className="text-xs text-foreground-tertiary">Agent Override</div>
-                  <div className="text-sm text-primary">agent.executorConfig</div>
+                  <div className="text-sm text-foreground font-medium">agent.executorConfig</div>
                 </ArchBox>
               </div>
               <p className="text-xs text-foreground-tertiary mt-4 text-center">
@@ -513,24 +509,24 @@ export default function ArchitecturePage(): React.ReactElement {
                   <div className="space-y-2">
                     <Cell>keyword: &quot;tpmjs&quot;</Cell>
                     <Cell>tpmjs field</Cell>
-                    <Cell variant="muted">package.json</Cell>
+                    <Cell muted>package.json</Cell>
                   </div>
                 </ArchBox>
 
                 <ArchBox className="p-3">
-                  <div className="text-xs text-primary mb-2 font-mono uppercase">Sync Jobs</div>
+                  <div className="text-xs text-foreground mb-2 font-mono uppercase">Sync Jobs</div>
                   <div className="space-y-2">
-                    <Cell variant="accent">Changes Feed (2min)</Cell>
+                    <Cell>Changes Feed (2min)</Cell>
                     <Cell>Keyword Search (15min)</Cell>
-                    <Cell variant="muted">Metrics Sync (1hr)</Cell>
+                    <Cell muted>Metrics Sync (1hr)</Cell>
                   </div>
                 </ArchBox>
 
                 <ArchBox className="p-3">
-                  <div className="text-xs text-primary mb-2 font-mono uppercase">Processing</div>
+                  <div className="text-xs text-foreground mb-2 font-mono uppercase">Processing</div>
                   <div className="space-y-2">
                     <Cell>Validate tpmjs field</Cell>
-                    <Cell variant="accent">Extract inputSchema</Cell>
+                    <Cell>Extract inputSchema</Cell>
                     <Cell>Calculate quality score</Cell>
                   </div>
                 </ArchBox>
@@ -542,7 +538,7 @@ export default function ArchitecturePage(): React.ReactElement {
                   <div className="space-y-2">
                     <Cell>Tool (metadata)</Cell>
                     <Cell>Package (npm info)</Cell>
-                    <Cell variant="accent">inputSchema (JSON)</Cell>
+                    <Cell>inputSchema (JSON)</Cell>
                   </div>
                 </ArchBox>
               </div>
@@ -561,7 +557,7 @@ export default function ArchitecturePage(): React.ReactElement {
                   <div className="font-semibold text-foreground mb-3">Package</div>
                   <div className="space-y-1 text-xs font-mono">
                     <div className="text-foreground-secondary">
-                      npmPackageName <span className="text-primary">PK</span>
+                      npmPackageName <span className="text-foreground-tertiary">PK</span>
                     </div>
                     <div className="text-foreground-tertiary">npmVersion</div>
                     <div className="text-foreground-tertiary">npmDownloadsLastMonth</div>
@@ -571,22 +567,22 @@ export default function ArchitecturePage(): React.ReactElement {
                 </ArchBox>
 
                 {/* Tool */}
-                <ArchBox variant="primary" className="p-4">
+                <ArchBox className="p-4">
                   <div className="font-semibold text-foreground mb-3">Tool</div>
                   <div className="space-y-1 text-xs font-mono">
-                    <div className="text-primary">
-                      id <span className="text-primary">PK</span>
+                    <div className="text-foreground">
+                      id <span className="text-foreground-tertiary">PK</span>
                     </div>
-                    <div className="text-primary">name</div>
-                    <div className="text-primary">description</div>
+                    <div className="text-foreground">name</div>
+                    <div className="text-foreground">description</div>
                     <div className="text-foreground">
                       inputSchema <span className="text-foreground-tertiary">JSON</span>
                     </div>
-                    <div className="text-primary">category</div>
+                    <div className="text-foreground">category</div>
                     <div className="text-foreground-secondary">qualityScore</div>
                     <div className="text-foreground-secondary">healthStatus</div>
                     <div className="text-foreground-tertiary">
-                      packageId <span className="text-primary">FK</span>
+                      packageId <span className="text-foreground-tertiary">FK</span>
                     </div>
                   </div>
                 </ArchBox>
@@ -596,10 +592,10 @@ export default function ArchitecturePage(): React.ReactElement {
                   <div className="font-semibold text-foreground mb-3">CollectionTool</div>
                   <div className="space-y-1 text-xs font-mono">
                     <div className="text-foreground">
-                      collectionId <span className="text-primary">FK</span>
+                      collectionId <span className="text-foreground-tertiary">FK</span>
                     </div>
                     <div className="text-foreground">
-                      toolId <span className="text-primary">FK</span>
+                      toolId <span className="text-foreground-tertiary">FK</span>
                     </div>
                     <div className="text-foreground-secondary">displayName</div>
                     <div className="text-foreground-secondary">
@@ -634,25 +630,29 @@ export default function ArchitecturePage(): React.ReactElement {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link
                 href="/docs"
-                className="border border-border rounded-lg p-4 bg-background hover:border-primary/50 transition-colors"
+                className="border border-border rounded-lg p-4 bg-background hover:border-foreground/30 transition-colors"
               >
-                <div className="text-primary text-sm font-mono mb-1">Documentation</div>
+                <div className="text-foreground text-sm font-mono font-medium mb-1">
+                  Documentation
+                </div>
                 <div className="text-xs text-foreground-tertiary">Full SDK and API reference</div>
               </Link>
               <Link
                 href="/docs/executors"
-                className="border border-border rounded-lg p-4 bg-background hover:border-primary/50 transition-colors"
+                className="border border-border rounded-lg p-4 bg-background hover:border-foreground/30 transition-colors"
               >
-                <div className="text-primary text-sm font-mono mb-1">Custom Executors</div>
+                <div className="text-foreground text-sm font-mono font-medium mb-1">
+                  Custom Executors
+                </div>
                 <div className="text-xs text-foreground-tertiary">
                   Deploy your own execution environment
                 </div>
               </Link>
               <Link
                 href="/docs/agents"
-                className="border border-border rounded-lg p-4 bg-background hover:border-primary/50 transition-colors"
+                className="border border-border rounded-lg p-4 bg-background hover:border-foreground/30 transition-colors"
               >
-                <div className="text-primary text-sm font-mono mb-1">Agent Docs</div>
+                <div className="text-foreground text-sm font-mono font-medium mb-1">Agent Docs</div>
                 <div className="text-xs text-foreground-tertiary">
                   Build AI assistants with tools
                 </div>
