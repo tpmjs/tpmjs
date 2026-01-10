@@ -1,0 +1,95 @@
+name: Sync Single Package
+
+on:
+  workflow_dispatch:
+    inputs:
+      packageName:
+        description: 'NPM package name to sync (e.g., fbx2vrma-converter)'
+        required: true
+        type: string
+
+jobs:
+  sync-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync package
+        id: sync
+        run: |
+          echo "Syncing package: ${{ inputs.packageName }}"
+
+          # Call the sync API and capture response
+          response=$(curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/package" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            -d '{"packageName": "${{ inputs.packageName }}"}' \
+            -s -S)
+
+          echo "Response: $response"
+
+          # Check if sync was successful
+          success=$(echo "$response" | jq -r '.success')
+
+          if [ "$success" = "true" ]; then
+            echo "status_emoji=✅" >> $GITHUB_OUTPUT
+            echo "status_color=5763719" >> $GITHUB_OUTPUT
+            echo "status_text=Success" >> $GITHUB_OUTPUT
+
+            # Extract data
+            packageId=$(echo "$response" | jq -r '.data.packageId')
+            version=$(echo "$response" | jq -r '.data.version')
+            toolCount=$(echo "$response" | jq -r '.data.toolCount')
+            tools=$(echo "$response" | jq -r '.data.tools | join(", ")')
+            author=$(echo "$response" | jq -r '.data.author')
+
+            echo "packageId=$packageId" >> $GITHUB_OUTPUT
+            echo "version=$version" >> $GITHUB_OUTPUT
+            echo "toolCount=$toolCount" >> $GITHUB_OUTPUT
+            echo "tools=$tools" >> $GITHUB_OUTPUT
+            echo "author=$author" >> $GITHUB_OUTPUT
+          else
+            echo "status_emoji=❌" >> $GITHUB_OUTPUT
+            echo "status_color=15158332" >> $GITHUB_OUTPUT
+            echo "status_text=Failed" >> $GITHUB_OUTPUT
+
+            error=$(echo "$response" | jq -r '.error // "Unknown error"')
+            echo "error=$error" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Discord notification
+        if: always()
+        run: |
+          if [ "${{ steps.sync.outputs.status_text }}" = "Success" ]; then
+            fields='[
+              { "name": "📦 Package", "value": "${{ inputs.packageName }}", "inline": true },
+              { "name": "🏷️ Version", "value": "${{ steps.sync.outputs.version }}", "inline": true },
+              { "name": "👤 Author", "value": "${{ steps.sync.outputs.author }}", "inline": true },
+              { "name": "🔧 Tools", "value": "${{ steps.sync.outputs.toolCount }}", "inline": true },
+              { "name": "📋 Tool Names", "value": "${{ steps.sync.outputs.tools }}", "inline": false },
+              { "name": "🔗 Run", "value": "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": true }
+            ]'
+          else
+            fields='[
+              { "name": "📦 Package", "value": "${{ inputs.packageName }}", "inline": true },
+              { "name": "❌ Error", "value": "${{ steps.sync.outputs.error }}", "inline": false },
+              { "name": "🔗 Run", "value": "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": true }
+            ]'
+          fi
+
+          payload=$(jq -n \
+            --arg title "${{ steps.sync.outputs.status_emoji }} Package Sync: ${{ inputs.packageName }}" \
+            --argjson color ${{ steps.sync.outputs.status_color }} \
+            --argjson fields "$fields" \
+            --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
+            '
+            {
+              embeds: [{
+                title: $title,
+                color: $color,
+                fields: $fields,
+                timestamp: $timestamp
+              }]
+            }')
+
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d "$payload"
