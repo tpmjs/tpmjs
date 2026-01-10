@@ -1,7 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { fetchLatestPackageWithMetadata, searchByKeyword } from '@tpmjs/npm-client';
-import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import type { TpmjsToolDefinition } from '@tpmjs/types/tpmjs';
+import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '~/env';
 import { performHealthCheck } from '~/lib/health-check/health-check-service';
@@ -71,33 +71,45 @@ export async function POST(request: NextRequest) {
               ? pkg.author.name
               : 'unknown';
 
-        // Check if package has tpmjs field
+        // Check if package has tpmjs field - if not, we'll auto-discover with defaults
+        let validation: ReturnType<typeof validateTpmjsField>;
+
         if (!pkg.tpmjs) {
-          skipped++;
-          skippedPackages.push({
-            name: pkg.name,
-            author: authorName,
-            reason: 'missing tpmjs field',
-          });
-          continue;
+          // No tpmjs field - use auto-discovery with default category
+          console.log(
+            `Package ${pkg.name} has tpmjs keyword but no tpmjs field - using auto-discovery`
+          );
+          validation = {
+            valid: true,
+            tier: 'minimal',
+            packageData: {
+              category: 'utilities', // Default category for keyword-only packages
+            },
+            tools: [],
+            needsAutoDiscovery: true,
+            wasLegacyFormat: false,
+          };
+        } else {
+          // Validate tpmjs field (supports both new multi-tool and legacy formats)
+          validation = validateTpmjsField(pkg.tpmjs);
+          if (!validation.valid || !validation.packageData) {
+            skipped++;
+            skippedPackages.push({
+              name: pkg.name,
+              author: authorName,
+              reason: 'invalid tpmjs field',
+            });
+            continue;
+          }
+
+          // Log auto-migration from legacy format
+          if (validation.wasLegacyFormat) {
+            console.log(`Auto-migrated legacy package: ${pkg.name}`);
+          }
         }
 
-        // Validate tpmjs field (supports both new multi-tool and legacy formats)
-        const validation = validateTpmjsField(pkg.tpmjs);
-        if (!validation.valid || !validation.packageData || !validation.tools) {
-          skipped++;
-          skippedPackages.push({
-            name: pkg.name,
-            author: authorName,
-            reason: 'invalid tpmjs field',
-          });
-          continue;
-        }
-
-        // Log auto-migration from legacy format
-        if (validation.wasLegacyFormat) {
-          console.log(`Auto-migrated legacy package: ${pkg.name}`);
-        }
+        // Extract packageData (guaranteed to exist at this point)
+        const packageData = validation.packageData!;
 
         // Extract repository URL and GitHub stars
         const githubStars: number | null = null;
@@ -117,9 +129,9 @@ export async function POST(request: NextRequest) {
             npmReadme: pkg.readme ?? undefined,
             npmAuthor: pkg.author ?? undefined,
             npmMaintainers: pkg.maintainers ?? undefined,
-            category: validation.packageData.category,
-            env: validation.packageData.env ?? undefined,
-            frameworks: validation.packageData.frameworks || [],
+            category: packageData.category,
+            env: packageData.env ?? undefined,
+            frameworks: packageData.frameworks || [],
             tier: validation.tier || 'minimal',
             discoveryMethod: 'keyword',
             isOfficial: pkg.keywords?.includes('tpmjs') || false,
@@ -137,9 +149,9 @@ export async function POST(request: NextRequest) {
             npmReadme: pkg.readme ?? undefined,
             npmAuthor: pkg.author ?? undefined,
             npmMaintainers: pkg.maintainers ?? undefined,
-            category: validation.packageData.category,
-            env: validation.packageData.env ?? undefined,
-            frameworks: validation.packageData.frameworks || [],
+            category: packageData.category,
+            env: packageData.env ?? undefined,
+            frameworks: packageData.frameworks || [],
             tier: validation.tier || 'minimal',
             isOfficial: pkg.keywords?.includes('tpmjs') || false,
           },
