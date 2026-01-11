@@ -5,7 +5,7 @@
 
 import type { ExecutionResult, ExecutorOptions } from './types.js';
 
-const DEFAULT_TIMEOUT = 10000; // 10 seconds
+const DEFAULT_TIMEOUT = 300000; // 5 minutes - some tools need significant time
 
 // Get sandbox URL at runtime (not build time) for serverless environments
 function getSandboxUrl(): string {

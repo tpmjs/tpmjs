@@ -13,7 +13,7 @@ import type {
   ExecutorHealthResponse,
 } from '@tpmjs/types/executor';
 
-const DEFAULT_TIMEOUT = 30000; // 30 seconds for custom executors
+const DEFAULT_TIMEOUT = 300000; // 5 minutes for custom executors
 
 /**
  * Resolve executor configuration using cascade:
