@@ -60,6 +60,10 @@
     {
       "path": "/api/sync/cleanup-activity",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/discord-summary",
+      "schedule": "0 9 * * *"
     }
   ]
 }

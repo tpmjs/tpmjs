@@ -1,0 +1,48 @@
+{
+  "name": "@tpmjs/discord-post",
+  "version": "0.2.0",
+  "description": "AI SDK tool to post messages to a Discord channel",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "tpmjs",
+    "discord",
+    "ai",
+    "communication"
+  ],
+  "tpmjs": {
+    "category": "communication",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "DISCORD_BOT_TOKEN",
+        "description": "Discord bot token with Send Messages permission",
+        "required": true
+      }
+    ],
+    "tools": [
+      {
+        "name": "discordPostTool",
+        "description": "Post a message or rich embed to a Discord channel. Supports plain text messages and formatted embeds with titles, descriptions, colors, and fields."
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
+}

@@ -426,6 +426,10 @@ model Collection {
   executorType   String? @map("executor_type") @db.VarChar(50)
   executorConfig Json?   @map("executor_config") @db.JsonB
 
+  // Tool environment variables (encrypted JSON: { "KEY": "value" })
+  // These are passed to tools when executed
+  envVars        Json?   @map("env_vars") @db.JsonB
+
   // Timestamps
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -521,6 +525,10 @@ model Agent {
   // Agent executor overrides collection executor overrides system default
   executorType         String?    @map("executor_type") @db.VarChar(50)
   executorConfig       Json?      @map("executor_config") @db.JsonB
+
+  // Tool environment variables (encrypted JSON: { "KEY": "value" })
+  // Agent env vars override collection env vars, otherwise merged
+  envVars              Json?      @map("env_vars") @db.JsonB
 
   // Timestamps
   createdAt            DateTime   @default(now()) @map("created_at")

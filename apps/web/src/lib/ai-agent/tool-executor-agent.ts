@@ -96,10 +96,12 @@ export function tpmjsParamsToZodSchema(parameters: TPMJSParameter[]): z.ZodObjec
  *
  * @param tool - The tool with its package relation
  * @param executorConfig - Optional executor config for custom executors
+ * @param envVars - Optional environment variables to pass to the tool
  */
 export function createToolDefinition(
   tool: Tool & { package: Package },
-  executorConfig?: ExecutorConfig | null
+  executorConfig?: ExecutorConfig | null,
+  envVars?: Record<string, string>
 ) {
   console.log('[createToolDefinition] Tool:', tool.package.npmPackageName, '/', tool.name);
 
@@ -128,6 +130,9 @@ export function createToolDefinition(
     inputSchema, // AI SDK v6 uses inputSchema
     execute: async (params: Record<string, unknown>) => {
       console.log('[Tool execute] Running:', sanitizedName, params);
+      if (envVars && Object.keys(envVars).length > 0) {
+        console.log('[Tool execute] With env vars:', Object.keys(envVars));
+      }
 
       // Execute the actual npm package using resolved executor
       // Use the actual export name from the Tool record
@@ -135,6 +140,7 @@ export function createToolDefinition(
         packageName: tool.package.npmPackageName,
         name: tool.name, // Use actual export name (e.g., "helloWorldTool", "default")
         params,
+        env: envVars && Object.keys(envVars).length > 0 ? envVars : undefined,
       });
 
       if (!result.success) {

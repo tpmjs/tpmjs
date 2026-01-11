@@ -63,6 +63,8 @@ export const UpdateAgentSchema = z.object({
   // Executor configuration
   executorType: ExecutorTypeSchema.nullable().optional(),
   executorConfig: ExecutorConfigUpdateSchema,
+  // Tool environment variables
+  envVars: z.record(z.string(), z.string()).nullable().optional(),
 });
 
 export const AddCollectionToAgentSchema = z.object({

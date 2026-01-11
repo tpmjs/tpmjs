@@ -7,11 +7,11 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
-import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
 import { AddToolSearch } from '~/components/collections/AddToolSearch';
 import { CollectionForm } from '~/components/collections/CollectionForm';
 import { CollectionToolList } from '~/components/collections/CollectionToolList';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
+import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
 
 function McpUrlSection({ collectionId }: { collectionId: string }) {
   const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
@@ -169,6 +169,7 @@ interface Collection {
   toolCount: number;
   executorType: string | null;
   executorConfig: { url: string; apiKey?: string } | null;
+  envVars: Record<string, string> | null;
   createdAt: string;
   updatedAt: string;
   isOwner: boolean;
@@ -190,6 +191,11 @@ export default function CollectionDetailPage(): React.ReactElement {
   const [isDeleting, setIsDeleting] = useState(false);
   const [executorConfig, setExecutorConfig] = useState<ExecutorConfig | null>(null);
 
+  // Environment variables state
+  const [envVars, setEnvVars] = useState<Array<{ key: string; value: string }>>([]);
+  const [newEnvKey, setNewEnvKey] = useState('');
+  const [newEnvValue, setNewEnvValue] = useState('');
+
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Fetch callback with error handling
   const fetchCollection = useCallback(async () => {
     try {
@@ -207,6 +213,17 @@ export default function CollectionDetailPage(): React.ReactElement {
           });
         } else {
           setExecutorConfig(data.data.executorType ? { type: 'default' } : null);
+        }
+        // Initialize env vars from collection data
+        if (data.data.envVars && typeof data.data.envVars === 'object') {
+          setEnvVars(
+            Object.entries(data.data.envVars).map(([key, value]) => ({
+              key,
+              value: String(value),
+            }))
+          );
+        } else {
+          setEnvVars([]);
         }
       } else {
         if (data.error?.code === 'UNAUTHORIZED') {
@@ -231,6 +248,7 @@ export default function CollectionDetailPage(): React.ReactElement {
     fetchCollection();
   }, [fetchCollection]);
 
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Multiple conditional fields in update payload
   const handleUpdate = async (data: { name: string; description?: string; isPublic: boolean }) => {
     if (!collection) return;
     setIsUpdating(true);
@@ -251,6 +269,15 @@ export default function CollectionDetailPage(): React.ReactElement {
       updatePayload.executorType = null;
       updatePayload.executorConfig = null;
     }
+
+    // Add env vars - convert array to object
+    const envVarsObject: Record<string, string> = {};
+    for (const { key, value } of envVars) {
+      if (key.trim()) {
+        envVarsObject[key.trim()] = value;
+      }
+    }
+    updatePayload.envVars = Object.keys(envVarsObject).length > 0 ? envVarsObject : null;
 
     try {
       const response = await fetch(`/api/collections/${collectionId}`, {
@@ -474,6 +501,93 @@ export default function CollectionDetailPage(): React.ReactElement {
               onChange={setExecutorConfig}
               disabled={isUpdating}
             />
+          </div>
+
+          {/* Environment Variables */}
+          <div className="mt-6 pt-6 border-t border-border">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-medium text-foreground">Environment Variables</h3>
+                <p className="text-xs text-foreground-tertiary mt-0.5">
+                  Passed to tools at runtime. Agent vars override collection vars.
+                </p>
+              </div>
+            </div>
+
+            {/* Existing env vars */}
+            {envVars.length > 0 && (
+              <div className="space-y-2 mb-3">
+                {envVars.map((env, index) => (
+                  <div key={`env-${env.key || index}`} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={env.key}
+                      onChange={(e) => {
+                        const updated = [...envVars];
+                        updated[index] = { key: e.target.value, value: env.value };
+                        setEnvVars(updated);
+                      }}
+                      placeholder="KEY"
+                      className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                    <input
+                      type="password"
+                      value={env.value}
+                      onChange={(e) => {
+                        const updated = [...envVars];
+                        updated[index] = { key: env.key, value: e.target.value };
+                        setEnvVars(updated);
+                      }}
+                      placeholder="value"
+                      className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                    />
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setEnvVars(envVars.filter((_, i) => i !== index));
+                      }}
+                      title="Remove"
+                    >
+                      <Icon icon="trash" size="xs" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add new env var */}
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newEnvKey}
+                onChange={(e) => setNewEnvKey(e.target.value.toUpperCase())}
+                placeholder="NEW_KEY"
+                className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              />
+              <input
+                type="text"
+                value={newEnvValue}
+                onChange={(e) => setNewEnvValue(e.target.value)}
+                placeholder="value"
+                className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              />
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => {
+                  if (newEnvKey.trim()) {
+                    setEnvVars([...envVars, { key: newEnvKey.trim(), value: newEnvValue }]);
+                    setNewEnvKey('');
+                    setNewEnvValue('');
+                  }
+                }}
+                disabled={!newEnvKey.trim()}
+              >
+                <Icon icon="plus" size="xs" className="mr-1" />
+                Add
+              </Button>
+            </div>
           </div>
         </div>
       )}

@@ -193,6 +193,38 @@ function sanitizeToolName(name: string): string {
 }
 
 /**
+ * Parse environment variables from JSON field
+ * Returns empty object if null/undefined or invalid
+ */
+function parseEnvVars(envVars: unknown): Record<string, string> {
+  if (!envVars || typeof envVars !== 'object') {
+    return {};
+  }
+  // Validate all values are strings
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(envVars)) {
+    if (typeof value === 'string') {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * Merge environment variables with agent envVars taking precedence
+ * Collection envVars are used as base, agent envVars override
+ */
+function mergeEnvVars(
+  collectionEnvVars: Record<string, string>,
+  agentEnvVars: Record<string, string>
+): Record<string, string> {
+  return {
+    ...collectionEnvVars,
+    ...agentEnvVars, // Agent overrides collection
+  };
+}
+
+/**
  * Build all tools from an agent's collections and individual tools
  * Returns a map of tool name -> AI SDK tool definition
  *
@@ -200,6 +232,11 @@ function sanitizeToolName(name: string): string {
  * - If agent has an executor config, it's used for all tools
  * - If agent has no config but collection has one, collection's config is used for tools from that collection
  * - If neither has config, system default is used
+ *
+ * Environment variables cascade: Agent → Collection (merged, agent overrides)
+ * - Collection env vars are used as base
+ * - Agent env vars override collection env vars for same keys
+ * - Both are merged together for unique keys
  */
 export function buildAgentTools(
   agent: AgentWithRelations
@@ -209,6 +246,9 @@ export function buildAgentTools(
 
   // Parse agent-level executor config
   const agentExecutorConfig = parseExecutorConfig(agent.executorType, agent.executorConfig);
+
+  // Parse agent-level env vars
+  const agentEnvVars = parseEnvVars(agent.envVars);
 
   // Add tools from collections first
   for (const agentCollection of agent.collections) {
@@ -223,6 +263,10 @@ export function buildAgentTools(
     // Resolve executor config: Agent → Collection → Default
     const resolvedConfig = resolveExecutorConfig(agentExecutorConfig, collectionExecutorConfig);
 
+    // Parse collection-level env vars and merge with agent env vars
+    const collectionEnvVars = parseEnvVars(collection.envVars);
+    const mergedEnvVars = mergeEnvVars(collectionEnvVars, agentEnvVars);
+
     for (const collectionTool of collection.tools) {
       const tool = collectionTool.tool;
       const toolKey = `${tool.package.npmPackageName}::${tool.name}`;
@@ -232,12 +276,13 @@ export function buildAgentTools(
       seenTools.add(toolKey);
 
       const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
-      tools[toolName] = createToolDefinition(tool, resolvedConfig);
+      tools[toolName] = createToolDefinition(tool, resolvedConfig, mergedEnvVars);
     }
   }
 
   // Add individual tools (may override collection tools)
   // Individual tools use agent config or system default (no collection context)
+  // Individual tools only use agent env vars (no collection context)
   const individualToolConfig = agentExecutorConfig ?? { type: 'default' as const };
 
   for (const agentTool of agent.tools) {
@@ -249,7 +294,7 @@ export function buildAgentTools(
     seenTools.add(toolKey);
 
     const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
-    tools[toolName] = createToolDefinition(tool, individualToolConfig);
+    tools[toolName] = createToolDefinition(tool, individualToolConfig, agentEnvVars);
   }
 
   return tools;

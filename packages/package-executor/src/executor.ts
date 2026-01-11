@@ -34,17 +34,23 @@ export async function executePackage(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+    // Build request body, only include env if provided
+    const requestBody: Record<string, unknown> = {
+      packageName,
+      name: functionName,
+      version: 'latest',
+      params,
+    };
+    if (options.env && Object.keys(options.env).length > 0) {
+      requestBody.env = options.env;
+    }
+
     const response = await fetch(`${getSandboxUrl()}/execute-tool`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        packageName,
-        name: functionName,
-        version: 'latest',
-        params,
-      }),
+      body: JSON.stringify(requestBody),
       signal: controller.signal,
     });
 

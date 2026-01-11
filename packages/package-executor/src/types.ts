@@ -18,4 +18,6 @@ export interface PackageInfo {
 export interface ExecutorOptions {
   timeout?: number; // Milliseconds
   cacheDir?: string;
+  /** Environment variables to inject during execution */
+  env?: Record<string, string>;
 }

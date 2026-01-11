@@ -173,6 +173,7 @@ export async function GET(
  * PATCH /api/collections/[id]
  * Update a collection
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Multiple validation checks required
 export async function PATCH(
   request: NextRequest,
   context: RouteContext
@@ -243,7 +244,7 @@ export async function PATCH(
       );
     }
 
-    const { name, description, isPublic, executorType, executorConfig } = parseResult.data;
+    const { name, description, isPublic, executorType, executorConfig, envVars } = parseResult.data;
 
     // If name is being changed, check for duplicates
     if (name && name !== existingCollection.name) {
@@ -280,6 +281,9 @@ export async function PATCH(
         ...(executorType !== undefined && { executorType }),
         ...(executorConfig !== undefined && {
           executorConfig: executorConfig === null ? Prisma.JsonNull : executorConfig,
+        }),
+        ...(envVars !== undefined && {
+          envVars: envVars === null ? Prisma.JsonNull : envVars,
         }),
       },
       include: {
