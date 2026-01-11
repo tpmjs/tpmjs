@@ -11,6 +11,7 @@ import { AddToolSearch } from '~/components/collections/AddToolSearch';
 import { CollectionForm } from '~/components/collections/CollectionForm';
 import { CollectionToolList } from '~/components/collections/CollectionToolList';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
+import { EnvVarsEditor } from '~/components/EnvVarsEditor';
 import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
 
 function McpUrlSection({ collectionId }: { collectionId: string }) {
@@ -191,10 +192,8 @@ export default function CollectionDetailPage(): React.ReactElement {
   const [isDeleting, setIsDeleting] = useState(false);
   const [executorConfig, setExecutorConfig] = useState<ExecutorConfig | null>(null);
 
-  // Environment variables state
-  const [envVars, setEnvVars] = useState<Array<{ key: string; value: string }>>([]);
-  const [newEnvKey, setNewEnvKey] = useState('');
-  const [newEnvValue, setNewEnvValue] = useState('');
+  // Environment variables state (stored as object for the EnvVarsEditor component)
+  const [envVars, setEnvVars] = useState<Record<string, string> | null>(null);
 
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Fetch callback with error handling
   const fetchCollection = useCallback(async () => {
@@ -216,14 +215,9 @@ export default function CollectionDetailPage(): React.ReactElement {
         }
         // Initialize env vars from collection data
         if (data.data.envVars && typeof data.data.envVars === 'object') {
-          setEnvVars(
-            Object.entries(data.data.envVars).map(([key, value]) => ({
-              key,
-              value: String(value),
-            }))
-          );
+          setEnvVars(data.data.envVars as Record<string, string>);
         } else {
-          setEnvVars([]);
+          setEnvVars(null);
         }
       } else {
         if (data.error?.code === 'UNAUTHORIZED') {
@@ -270,14 +264,8 @@ export default function CollectionDetailPage(): React.ReactElement {
       updatePayload.executorConfig = null;
     }
 
-    // Add env vars - convert array to object
-    const envVarsObject: Record<string, string> = {};
-    for (const { key, value } of envVars) {
-      if (key.trim()) {
-        envVarsObject[key.trim()] = value;
-      }
-    }
-    updatePayload.envVars = Object.keys(envVarsObject).length > 0 ? envVarsObject : null;
+    // Add env vars
+    updatePayload.envVars = envVars;
 
     try {
       const response = await fetch(`/api/collections/${collectionId}`, {
@@ -504,91 +492,14 @@ export default function CollectionDetailPage(): React.ReactElement {
           </div>
 
           {/* Environment Variables */}
-          <div className="mt-6 pt-6 border-t border-border">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h3 className="text-sm font-medium text-foreground">Environment Variables</h3>
-                <p className="text-xs text-foreground-tertiary mt-0.5">
-                  Passed to tools at runtime. Agent vars override collection vars.
-                </p>
-              </div>
-            </div>
-
-            {/* Existing env vars */}
-            {envVars.length > 0 && (
-              <div className="space-y-2 mb-3">
-                {envVars.map((env, index) => (
-                  <div key={`env-${env.key || index}`} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={env.key}
-                      onChange={(e) => {
-                        const updated = [...envVars];
-                        updated[index] = { key: e.target.value, value: env.value };
-                        setEnvVars(updated);
-                      }}
-                      placeholder="KEY"
-                      className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                    />
-                    <input
-                      type="password"
-                      value={env.value}
-                      onChange={(e) => {
-                        const updated = [...envVars];
-                        updated[index] = { key: env.key, value: e.target.value };
-                        setEnvVars(updated);
-                      }}
-                      placeholder="value"
-                      className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                    />
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setEnvVars(envVars.filter((_, i) => i !== index));
-                      }}
-                      title="Remove"
-                    >
-                      <Icon icon="trash" size="xs" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add new env var */}
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={newEnvKey}
-                onChange={(e) => setNewEnvKey(e.target.value.toUpperCase())}
-                placeholder="NEW_KEY"
-                className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-              />
-              <input
-                type="text"
-                value={newEnvValue}
-                onChange={(e) => setNewEnvValue(e.target.value)}
-                placeholder="value"
-                className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-              />
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => {
-                  if (newEnvKey.trim()) {
-                    setEnvVars([...envVars, { key: newEnvKey.trim(), value: newEnvValue }]);
-                    setNewEnvKey('');
-                    setNewEnvValue('');
-                  }
-                }}
-                disabled={!newEnvKey.trim()}
-              >
-                <Icon icon="plus" size="xs" className="mr-1" />
-                Add
-              </Button>
-            </div>
-          </div>
+          <EnvVarsEditor
+            value={envVars}
+            onChange={setEnvVars}
+            title="Environment Variables"
+            description="Passed to tools at runtime. Agent vars override collection vars."
+            disabled={isUpdating}
+            className="mt-6 pt-6 border-t border-border"
+          />
         </div>
       )}
 

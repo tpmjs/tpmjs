@@ -14,6 +14,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
+import { parseEnvString } from '~/lib/utils/env-parser';
 
 interface ApiKeyInfo {
   id: string;
@@ -128,26 +129,12 @@ export default function ApiKeysPage(): React.ReactElement {
   }, []);
 
   const handleImport = useCallback(async () => {
-    const lines = envText.split('\n');
-    const keysToSave: { keyName: string; keyValue: string }[] = [];
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
-      const match = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*["']?(.+?)["']?$/);
-      if (match) {
-        const [, keyName, keyValue] = match;
-        if (keyName && keyValue) {
-          keysToSave.push({ keyName, keyValue: keyValue.trim() });
-        }
-      }
-    }
-
-    if (keysToSave.length === 0) return;
+    const parsed = parseEnvString(envText);
+    if (parsed.length === 0) return;
 
     setImporting(true);
-    for (const { keyName, keyValue } of keysToSave) {
-      await saveKey(keyName, keyValue);
+    for (const { key, value } of parsed) {
+      await saveKey(key, value);
     }
     setImporting(false);
     setEnvText('');
