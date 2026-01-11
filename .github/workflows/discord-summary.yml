@@ -1,0 +1,42 @@
+name: Discord Daily Summary
+
+on:
+  schedule:
+    # Run daily at 9 AM UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    # Allow manual trigger
+
+jobs:
+  post-summary:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate conversation ID with date
+        id: conv-id
+        run: |
+          # Create a date-based conversation ID like "discord-summary-2026-01-11"
+          CONV_ID="discord-summary-$(date -u +%Y-%m-%d)"
+          echo "conv_id=$CONV_ID" >> $GITHUB_OUTPUT
+          echo "Generated conversation ID: $CONV_ID"
+
+      - name: Trigger Discord Summary Agent
+        run: |
+          echo "Triggering agent with conversation: ${{ steps.conv-id.outputs.conv_id }}"
+
+          # POST to the agent conversation endpoint
+          RESPONSE=$(curl -s -X POST \
+            "https://tpmjs.com/api/agents/${{ secrets.DISCORD_AGENT_ID }}/conversation/${{ steps.conv-id.outputs.conv_id }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "message": "Read the Discord server (guild ID 1349727923434815519) for the past 24 hours, excluding bots. Then post a detailed summary with an embed to channel 1442666515425132644. Include key discussions, announcements, and any action items."
+            }' \
+            --max-time 300)
+
+          echo "Response received"
+          # The response is SSE, so we just check if we got something back
+          if [ -z "$RESPONSE" ]; then
+            echo "Error: No response from agent"
+            exit 1
+          fi
+
+          echo "Summary triggered successfully"
