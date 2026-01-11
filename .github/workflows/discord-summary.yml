@@ -24,8 +24,9 @@ jobs:
           echo "Triggering agent with conversation: ${{ steps.conv-id.outputs.conv_id }}"
 
           # POST to the agent conversation endpoint
+          # Agent ID: Discord Daily Summary agent on tpmjs.com
           RESPONSE=$(curl -s -X POST \
-            "https://tpmjs.com/api/agents/${{ secrets.DISCORD_AGENT_ID }}/conversation/${{ steps.conv-id.outputs.conv_id }}" \
+            "https://tpmjs.com/api/agents/cmk9utpvg0001kz04csbisvf5/conversation/${{ steps.conv-id.outputs.conv_id }}" \
             -H "Content-Type: application/json" \
             -d '{
               "message": "Read the Discord server (guild ID 1349727923434815519) for the past 24 hours, excluding bots. Then post a detailed summary with an embed to channel 1442666515425132644. Include key discussions, announcements, and any action items."
