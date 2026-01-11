@@ -144,10 +144,19 @@ export function createToolDefinition(
       });
 
       if (!result.success) {
+        // Log detailed error for debugging
+        console.error('[Tool execute] FAILED:', sanitizedName, {
+          error: result.error,
+          executionTimeMs: result.executionTimeMs,
+          params: JSON.stringify(params).slice(0, 200),
+        });
         throw new Error(result.error || 'Package execution failed');
       }
 
-      console.log('[Tool execute] Result:', result.output);
+      console.log('[Tool execute] Success:', sanitizedName, {
+        executionTimeMs: result.executionTimeMs,
+        outputPreview: JSON.stringify(result.output).slice(0, 200),
+      });
       return result.output;
     },
   };

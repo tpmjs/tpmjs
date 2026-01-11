@@ -287,6 +287,14 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
               // Stream tool calls as they come in and capture their inputs
               if (chunk.type === 'tool-call') {
                 const input = 'args' in chunk ? chunk.args : chunk.input;
+
+                // Log tool call for debugging
+                console.log('[Agent] Tool call initiated:', {
+                  toolName: chunk.toolName,
+                  toolCallId: chunk.toolCallId,
+                  input: JSON.stringify(input).slice(0, 500),
+                });
+
                 // Store tool call with input for later persistence
                 toolCallsMap.set(chunk.toolCallId, {
                   toolCallId: chunk.toolCallId,
@@ -320,9 +328,29 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
               // Send tool results via SSE but don't save yet (save after assistant message for correct order)
               if (toolResults && toolResults.length > 0) {
                 for (const tr of toolResults) {
+                  // Check if this is an error result (AI SDK wraps errors in the output)
+                  const isError =
+                    tr.output && typeof tr.output === 'object' && 'error' in tr.output;
+
+                  // Log tool results for debugging
+                  if (isError) {
+                    console.error('[Agent] Tool execution failed:', {
+                      toolName: tr.toolName,
+                      toolCallId: tr.toolCallId,
+                      error: tr.output,
+                    });
+                  } else {
+                    console.log('[Agent] Tool execution success:', {
+                      toolName: tr.toolName,
+                      toolCallId: tr.toolCallId,
+                      outputPreview: JSON.stringify(tr.output).slice(0, 200),
+                    });
+                  }
+
                   sendEvent('tool_result', {
                     toolCallId: tr.toolCallId,
                     output: tr.output,
+                    isError,
                   });
 
                   // Collect tool results to save after assistant message
@@ -412,7 +440,13 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             executionTimeMs,
           });
         } catch (error) {
-          console.error('Agent conversation error:', error);
+          // Log detailed error for debugging
+          console.error('[Agent] Conversation stream error:', {
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            agentId: agent.id,
+            conversationId: conversation.id,
+          });
           sendEvent('error', {
             message: error instanceof Error ? error.message : 'Unknown error',
           });
