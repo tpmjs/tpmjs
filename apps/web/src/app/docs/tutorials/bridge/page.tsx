@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { AppFooter } from '~/components/AppFooter';
 import { AppHeader } from '~/components/AppHeader';
+import { BridgeArchitectureDiagram } from '~/components/docs/BridgeArchitectureDiagram';
 
 interface Slide {
   id: string;
@@ -129,32 +130,7 @@ const slides: Slide[] = [
       <div className="space-y-8">
         <div className="max-w-4xl mx-auto">
           <div className="bg-surface-secondary rounded-lg border border-border p-6">
-            <pre className="text-sm text-foreground-secondary font-mono overflow-x-auto whitespace-pre">
-              {`┌─────────────────────────────────────────────────────────────┐
-│                     Your Machine                             │
-│                                                              │
-│  ┌─────────────┐     ┌─────────────────────────────────┐    │
-│  │ Chrome MCP  │────▶│                                 │    │
-│  │   Server    │     │      @tpmjs/bridge CLI          │    │
-│  └─────────────┘     │                                 │    │
-│  ┌─────────────┐     │  • Connects to MCP servers      │    │
-│  │ Filesystem  │────▶│  • Registers tools with TPMJS   │    │
-│  │   Server    │     │  • Polls for tool calls         │    │
-│  └─────────────┘     │  • Returns results              │    │
-│  ┌─────────────┐     │                                 │    │
-│  │ Your Custom │────▶│                                 │    │
-│  │   Server    │     └──────────────┬──────────────────┘    │
-│  └─────────────┘                    │                        │
-└─────────────────────────────────────┼────────────────────────┘
-                                      │ HTTPS
-                                      ▼
-                            ┌─────────────────┐
-                            │   TPMJS Cloud   │
-                            │                 │
-                            │  Your AI uses   │
-                            │  bridge tools   │
-                            └─────────────────┘`}
-            </pre>
+            <BridgeArchitectureDiagram />
           </div>
         </div>
         <div className="max-w-2xl mx-auto text-center">
