@@ -1,9 +1,119 @@
+import type { ApiUsageSummary } from '@prisma/client';
 import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { API_KEY_SCOPES } from '~/lib/api-keys';
 import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
 import { auth } from '~/lib/auth';
+
+type Period = 'hourly' | 'daily' | 'monthly';
+
+interface AggregatedSummary {
+  periodStart: Date;
+  totalRequests: number;
+  successRequests: number;
+  errorRequests: number;
+  totalTokensIn: number;
+  totalTokensOut: number;
+  avgLatencyMs: number;
+  endpointCounts: Record<string, number>;
+  estimatedCostCents: number;
+}
+
+/**
+ * Aggregate hourly summaries into daily or monthly periods
+ */
+function aggregateSummaries(
+  hourlySummaries: ApiUsageSummary[],
+  period: Period
+): AggregatedSummary[] {
+  if (period === 'hourly') {
+    return hourlySummaries.map((s) => ({
+      periodStart: s.periodStart,
+      totalRequests: s.totalRequests,
+      successRequests: s.successRequests,
+      errorRequests: s.errorRequests,
+      totalTokensIn: s.totalTokensIn,
+      totalTokensOut: s.totalTokensOut,
+      avgLatencyMs: s.avgLatencyMs,
+      endpointCounts: s.endpointCounts as Record<string, number>,
+      estimatedCostCents: s.estimatedCostCents,
+    }));
+  }
+
+  // Group by period
+  const groups = new Map<string, ApiUsageSummary[]>();
+
+  for (const summary of hourlySummaries) {
+    const date = new Date(summary.periodStart);
+    let key: string;
+
+    if (period === 'daily') {
+      key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
+    } else {
+      // monthly
+      key = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+    }
+
+    const existing = groups.get(key) || [];
+    existing.push(summary);
+    groups.set(key, existing);
+  }
+
+  // Aggregate each group
+  const result: AggregatedSummary[] = [];
+
+  for (const [key, summaries] of groups) {
+    const [year, month, day] = key.split('-').map(Number) as [number, number, number | undefined];
+    const periodStart =
+      period === 'daily'
+        ? new Date(Date.UTC(year, month - 1, day ?? 1))
+        : new Date(Date.UTC(year, month - 1, 1));
+
+    const aggregated: AggregatedSummary = {
+      periodStart,
+      totalRequests: 0,
+      successRequests: 0,
+      errorRequests: 0,
+      totalTokensIn: 0,
+      totalTokensOut: 0,
+      avgLatencyMs: 0,
+      endpointCounts: {},
+      estimatedCostCents: 0,
+    };
+
+    let totalLatencyWeight = 0;
+
+    for (const s of summaries) {
+      aggregated.totalRequests += s.totalRequests;
+      aggregated.successRequests += s.successRequests;
+      aggregated.errorRequests += s.errorRequests;
+      aggregated.totalTokensIn += s.totalTokensIn;
+      aggregated.totalTokensOut += s.totalTokensOut;
+      aggregated.estimatedCostCents += s.estimatedCostCents;
+
+      // Weighted average for latency
+      totalLatencyWeight += s.avgLatencyMs * s.totalRequests;
+
+      // Merge endpoint counts
+      const counts = s.endpointCounts as Record<string, number>;
+      for (const [endpoint, count] of Object.entries(counts)) {
+        aggregated.endpointCounts[endpoint] = (aggregated.endpointCounts[endpoint] || 0) + count;
+      }
+    }
+
+    if (aggregated.totalRequests > 0) {
+      aggregated.avgLatencyMs = Math.round(totalLatencyWeight / aggregated.totalRequests);
+    }
+
+    result.push(aggregated);
+  }
+
+  // Sort by period start
+  result.sort((a, b) => a.periodStart.getTime() - b.periodStart.getTime());
+
+  return result;
+}
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -82,11 +192,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Fetch usage summaries
-    const summaries = await prisma.apiUsageSummary.findMany({
+    // Fetch hourly summaries (we always store hourly, then aggregate for daily/monthly)
+    const hourlySummaries = await prisma.apiUsageSummary.findMany({
       where: {
         userId,
-        periodType: period,
+        periodType: 'hourly',
         periodStart: {
           gte: start,
           lte: end,
@@ -95,6 +205,9 @@ export async function GET(request: NextRequest) {
       },
       orderBy: { periodStart: 'asc' },
     });
+
+    // Aggregate into requested period
+    const summaries = aggregateSummaries(hourlySummaries, period);
 
     // Calculate totals
     const totals = summaries.reduce(
