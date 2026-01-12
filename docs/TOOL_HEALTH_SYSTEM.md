@@ -159,8 +159,9 @@ This happened with the `startTime is not defined` bug. Our executor code had a b
 ### Investigating a Specific Tool
 
 ```bash
-# Check current health status
-curl -s 'https://tpmjs.com/api/tools?limit=50' | \
+# Check current health status (requires API key)
+curl -s 'https://tpmjs.com/api/tools?limit=50' \
+  -H 'Authorization: Bearer tpmjs_sk_your_api_key_here' | \
   jq '.data[] | select(.package.npmPackageName == "PACKAGE_NAME") | {
     packageName: .package.npmPackageName,
     exportName: .exportName,
@@ -179,10 +180,11 @@ cat package/dist/index.js
 
 ### Manually Updating Health Status
 
-For testing or correction:
+For testing or correction (requires API key with appropriate scope):
 
 ```bash
 curl -X POST 'https://tpmjs.com/api/tools/report-health' \
+  -H 'Authorization: Bearer tpmjs_sk_your_api_key_here' \
   -H 'Content-Type: application/json' \
   -d '{
     "packageName": "@scope/package",

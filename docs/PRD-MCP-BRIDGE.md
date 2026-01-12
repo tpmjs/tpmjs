@@ -648,7 +648,7 @@ npx @tpmjs/bridge <command>
 **~/.tpmjs/credentials.json**
 ```json
 {
-  "apiKey": "tpmjs_xxxxxxxxxxxxxxxxxxxx",
+  "apiKey": "tpmjs_sk_xxxxxxxxxxxxxxxxxxxx",
   "userId": "user_abc123",
   "email": "user@example.com",
   "expiresAt": "2026-01-12T00:00:00Z"
@@ -703,8 +703,10 @@ await manager.disconnect('chrome');
 #### Connection
 
 ```
-wss://tpmjs.com/api/bridge?token=tpmjs_xxxx
+wss://tpmjs.com/api/bridge?token=tpmjs_sk_your_api_key_here
 ```
+
+**Note:** All TPMJS API endpoints require authentication. Generate an API key from your dashboard at Settings > TPMJS API Keys. API keys use the `tpmjs_sk_` prefix.
 
 #### Messages: Bridge → TPMJS
 
@@ -907,15 +909,27 @@ ALTER TABLE "CollectionBridgeTool" ADD CONSTRAINT "CollectionBridgeTool_collecti
 **Endpoint**: `GET /api/bridge`
 
 **Query Parameters**:
-- `token` (required): User's API key
+- `token` (required): User's TPMJS API key (format: `tpmjs_sk_...`)
 
 **Upgrade**: WebSocket
 
-**Authentication**: Validates API key, returns 401 if invalid
+**Authentication**: Validates API key with `bridge:connect` scope, returns 401 if invalid
+
+**Example**:
+```bash
+# Connect via WebSocket with API key
+wscat -c 'wss://tpmjs.com/api/bridge?token=tpmjs_sk_your_api_key_here'
+```
 
 ### Bridge Status API
 
 **Endpoint**: `GET /api/user/bridge`
+
+**Authentication**: Requires API key with `bridge:connect` scope
+```bash
+curl https://tpmjs.com/api/user/bridge \
+  -H 'Authorization: Bearer tpmjs_sk_your_api_key_here'
+```
 
 **Response**:
 ```json
@@ -945,13 +959,18 @@ ALTER TABLE "CollectionBridgeTool" ADD CONSTRAINT "CollectionBridgeTool_collecti
 
 ### Collection Bridge Tools API
 
+All collection endpoints require API key with `collection:read` scope.
+
 **Add Tool**: `POST /api/collections/{id}/bridge-tools`
 
-```json
-{
-  "serverId": "chrome-devtools",
-  "toolName": "screenshot"
-}
+```bash
+curl -X POST 'https://tpmjs.com/api/collections/{id}/bridge-tools' \
+  -H 'Authorization: Bearer tpmjs_sk_your_api_key_here' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "serverId": "chrome-devtools",
+    "toolName": "screenshot"
+  }'
 ```
 
 **Remove Tool**: `DELETE /api/collections/{id}/bridge-tools/{toolId}`

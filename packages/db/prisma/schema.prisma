@@ -334,6 +334,9 @@ model User {
   image         String?
   username      String?   @unique @db.VarChar(30) // URL-friendly username (nullable for migration)
 
+  // Tier for rate limiting and feature access
+  tier          UserTier  @default(FREE)
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -347,6 +350,8 @@ model User {
   agentLikes       AgentLike[]
   activities       UserActivity[]
   bridgeConnection BridgeConnection?
+  tpmjsApiKeys     TpmjsApiKey[]     @relation("UserTpmjsApiKeys")
+  usageSummaries   ApiUsageSummary[] @relation("UserUsageSummaries")
 
   @@index([username])
   @@map("users")
@@ -885,4 +890,138 @@ model CollectionBridgeTool {
   @@unique([collectionId, serverId, toolName])
   @@index([collectionId])
   @@map("collection_bridge_tools")
+}
+
+// ============================================================================
+// API Key & Usage Tracking Models
+// ============================================================================
+
+/// User tier enum - determines rate limits and feature access
+enum UserTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+/// TpmjsApiKey - user-owned API keys for programmatic access
+model TpmjsApiKey {
+  id          String    @id @default(cuid())
+
+  // Owner relationship
+  userId      String    @map("user_id")
+  user        User      @relation("UserTpmjsApiKeys", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Key identification
+  name        String    @db.VarChar(100) // User-provided name (e.g., "Production Server")
+  keyHash     String    @unique @map("key_hash") @db.VarChar(64) // SHA-256 hash (never store raw keys)
+  keyPrefix   String    @map("key_prefix") @db.VarChar(20) // First 16 chars for identification (tpmjs_sk_abc123...)
+
+  // Permissions
+  scopes      String[]  @default([]) // ["mcp:execute", "agent:chat", "bridge:connect", "usage:read"]
+
+  // Rate limiting (overrides tier default if set)
+  rateLimit   Int?      @map("rate_limit") // Requests per hour (null = use tier default)
+
+  // Status
+  isActive    Boolean   @default(true) @map("is_active")
+  lastUsedAt  DateTime? @map("last_used_at")
+  expiresAt   DateTime? @map("expires_at")
+
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  usageRecords ApiUsageRecord[]
+
+  @@index([userId])
+  @@index([keyHash])
+  @@index([keyPrefix])
+  @@index([isActive])
+  @@map("tpmjs_api_keys")
+}
+
+/// ApiUsageRecord - individual API request logs (kept for 30 days)
+model ApiUsageRecord {
+  id           String      @id @default(cuid())
+
+  // API key relationship
+  apiKeyId     String      @map("api_key_id")
+  apiKey       TpmjsApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+
+  // Request details
+  endpoint     String      @db.VarChar(500)
+  method       String      @db.VarChar(10) // GET, POST, etc.
+  statusCode   Int         @map("status_code")
+  latencyMs    Int         @map("latency_ms")
+
+  // Resource tracking
+  resourceType String?     @map("resource_type") @db.VarChar(50) // "mcp" | "agent" | "bridge" | "collection"
+  resourceId   String?     @map("resource_id") @db.VarChar(100) // Collection ID, Agent ID, etc.
+
+  // LLM usage (if applicable)
+  tokensIn     Int?        @map("tokens_in")
+  tokensOut    Int?        @map("tokens_out")
+  model        String?     @db.VarChar(50) // e.g., "gpt-4o-mini"
+
+  // Error tracking
+  errorCode    String?     @map("error_code") @db.VarChar(50)
+  errorMessage String?     @map("error_message") @db.Text
+
+  // Client metadata
+  userAgent    String?     @map("user_agent") @db.VarChar(500)
+  ipAddress    String?     @map("ip_address") @db.VarChar(45) // IPv4 or IPv6
+
+  // Timestamps
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  @@index([apiKeyId])
+  @@index([createdAt])
+  @@index([endpoint])
+  @@index([resourceType, resourceId])
+  @@map("api_usage_records")
+}
+
+/// ApiUsageSummary - aggregated usage summaries (hourly/daily rollups)
+model ApiUsageSummary {
+  id                 String   @id @default(cuid())
+
+  // User relationship
+  userId             String   @map("user_id")
+  user               User     @relation("UserUsageSummaries", fields: [userId], references: [id], onDelete: Cascade)
+
+  // Optional API key (null for user-level summaries)
+  apiKeyId           String?  @map("api_key_id")
+
+  // Time period
+  periodType         String   @map("period_type") @db.VarChar(20) // "hourly" | "daily" | "monthly"
+  periodStart        DateTime @map("period_start")
+
+  // Request counts
+  totalRequests      Int      @default(0) @map("total_requests")
+  successRequests    Int      @default(0) @map("success_requests")
+  errorRequests      Int      @default(0) @map("error_requests")
+
+  // Endpoint breakdown (JSON: { "/api/mcp/...": 100, ... })
+  endpointCounts     Json     @default("{}") @map("endpoint_counts") @db.JsonB
+
+  // LLM usage totals
+  totalTokensIn      Int      @default(0) @map("total_tokens_in")
+  totalTokensOut     Int      @default(0) @map("total_tokens_out")
+
+  // Performance
+  avgLatencyMs       Float    @default(0) @map("avg_latency_ms")
+  p95LatencyMs       Float    @default(0) @map("p95_latency_ms")
+
+  // Cost estimation (in cents)
+  estimatedCostCents Int      @default(0) @map("estimated_cost_cents")
+
+  // Timestamps
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, apiKeyId, periodType, periodStart])
+  @@index([userId])
+  @@index([periodType, periodStart])
+  @@map("api_usage_summaries")
 }

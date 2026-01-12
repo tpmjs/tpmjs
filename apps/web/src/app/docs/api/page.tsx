@@ -308,8 +308,8 @@ export default function APIDocsPage(): React.ReactElement {
 
             <DocSection id="quick-start" title="Quick Start">
               <p className="text-foreground-secondary mb-6">
-                Try these examples to get started immediately. All public endpoints work without
-                authentication.
+                Try these examples to get started. All API endpoints require authentication via API
+                key. Generate one from <strong>Settings → TPMJS API Keys</strong> in your dashboard.
               </p>
 
               <div className="space-y-6">
@@ -317,7 +317,8 @@ export default function APIDocsPage(): React.ReactElement {
                   <h3 className="text-lg font-semibold text-foreground mb-3">1. List Tools</h3>
                   <CodeBlock
                     language="bash"
-                    code={`curl "https://tpmjs.com/api/tools?limit=5" | jq`}
+                    code={`curl "https://tpmjs.com/api/tools?limit=5" \\
+  -H "Authorization: Bearer tpmjs_sk_your_api_key_here" | jq`}
                   />
                 </div>
 
@@ -325,7 +326,8 @@ export default function APIDocsPage(): React.ReactElement {
                   <h3 className="text-lg font-semibold text-foreground mb-3">2. Search Tools</h3>
                   <CodeBlock
                     language="bash"
-                    code={`curl "https://tpmjs.com/api/tools/search?q=web+scraping&limit=3" | jq`}
+                    code={`curl "https://tpmjs.com/api/tools/search?q=web+scraping&limit=3" \\
+  -H "Authorization: Bearer tpmjs_sk_your_api_key_here" | jq`}
                   />
                 </div>
 
@@ -335,7 +337,8 @@ export default function APIDocsPage(): React.ReactElement {
                   </h3>
                   <CodeBlock
                     language="bash"
-                    code={`curl "https://tpmjs.com/api/tools/@tpmjs/hello/helloWorldTool" | jq`}
+                    code={`curl "https://tpmjs.com/api/tools/@tpmjs/hello/helloWorldTool" \\
+  -H "Authorization: Bearer tpmjs_sk_your_api_key_here" | jq`}
                   />
                 </div>
 
@@ -346,6 +349,7 @@ export default function APIDocsPage(): React.ReactElement {
                   <CodeBlock
                     language="bash"
                     code={`curl -X POST "https://tpmjs.com/api/mcp/ajax/ajax-collection-tbc/http" \\
+  -H "Authorization: Bearer tpmjs_sk_your_api_key_here" \\
   -H "Content-Type: application/json" \\
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}' | jq`}
                   />
@@ -355,29 +359,51 @@ export default function APIDocsPage(): React.ReactElement {
 
             <DocSection id="authentication" title="Authentication">
               <p className="text-foreground-secondary mb-6">
-                Most public endpoints don&apos;t require authentication. Private endpoints (creating
-                collections, managing agents) require a session cookie from signing in.
+                All API endpoints require authentication via TPMJS API keys. Generate an API key
+                from your dashboard at <strong>Settings → TPMJS API Keys</strong>.
               </p>
 
-              <div className="space-y-4">
-                <div className="p-4 border border-green-500/30 rounded-lg bg-green-500/5">
-                  <h3 className="font-semibold text-foreground mb-2">Public (No Auth)</h3>
-                  <ul className="text-sm text-foreground-secondary list-disc list-inside space-y-1">
-                    <li>GET /api/tools - List and search tools</li>
-                    <li>GET /api/public/collections - List public collections</li>
-                    <li>GET /api/public/agents - List public agents</li>
-                    <li>POST /api/mcp/[user]/[slug]/http - MCP protocol for public collections</li>
-                    <li>GET /api/stats - Platform statistics</li>
-                  </ul>
+              <div className="space-y-4 mb-6">
+                <div className="p-4 border border-primary/30 rounded-lg bg-primary/5">
+                  <h3 className="font-semibold text-foreground mb-2">API Key Format</h3>
+                  <p className="text-sm text-foreground-secondary mb-2">
+                    API keys use the <code className="text-primary">tpmjs_sk_</code> prefix and are
+                    passed in the Authorization header:
+                  </p>
+                  <CodeBlock
+                    language="bash"
+                    code={`curl "https://tpmjs.com/api/tools" \\
+  -H "Authorization: Bearer tpmjs_sk_your_api_key_here"`}
+                  />
                 </div>
 
                 <div className="p-4 border border-yellow-500/30 rounded-lg bg-yellow-500/5">
-                  <h3 className="font-semibold text-foreground mb-2">Authenticated</h3>
+                  <h3 className="font-semibold text-foreground mb-2">API Key Scopes</h3>
                   <ul className="text-sm text-foreground-secondary list-disc list-inside space-y-1">
-                    <li>POST /api/collections - Create collection</li>
-                    <li>POST /api/agents - Create agent</li>
-                    <li>PUT /api/collections/[id] - Update collection</li>
-                    <li>DELETE /api/agents/[id] - Delete agent</li>
+                    <li>
+                      <code className="text-primary">mcp:execute</code> - MCP tool execution
+                    </li>
+                    <li>
+                      <code className="text-primary">agent:chat</code> - Agent conversations
+                    </li>
+                    <li>
+                      <code className="text-primary">bridge:connect</code> - Bridge connections
+                    </li>
+                    <li>
+                      <code className="text-primary">collection:read</code> - Collection access
+                    </li>
+                    <li>
+                      <code className="text-primary">usage:read</code> - Usage analytics
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="p-4 border border-green-500/30 rounded-lg bg-green-500/5">
+                  <h3 className="font-semibold text-foreground mb-2">Rate Limits</h3>
+                  <ul className="text-sm text-foreground-secondary list-disc list-inside space-y-1">
+                    <li>FREE tier: 100 requests/hour</li>
+                    <li>PRO tier: 1,000 requests/hour</li>
+                    <li>ENTERPRISE tier: 10,000 requests/hour</li>
                   </ul>
                 </div>
               </div>
@@ -590,6 +616,9 @@ export default function APIDocsPage(): React.ReactElement {
                 <div className="p-4 border border-border rounded-lg bg-surface">
                   <h4 className="font-semibold text-foreground mb-2">Request Headers</h4>
                   <code className="text-sm text-foreground-secondary block">
+                    Authorization: Bearer tpmjs_sk_your_api_key_here
+                  </code>
+                  <code className="text-sm text-foreground-secondary block mt-1">
                     Content-Type: application/json
                   </code>
                 </div>
@@ -725,6 +754,7 @@ export default function APIDocsPage(): React.ReactElement {
                 <CodeBlock
                   language="bash"
                   code={`curl -X POST "https://tpmjs.com/api/mcp/ajax/ajax-collection-tbc/http" \\
+  -H "Authorization: Bearer tpmjs_sk_your_api_key_here" \\
   -H "Content-Type: application/json" \\
   -d '{
     "jsonrpc": "2.0",
@@ -813,7 +843,10 @@ export default function APIDocsPage(): React.ReactElement {
   'https://tpmjs.com/api/tools/execute/@tpmjs/hello/helloWorldTool',
   {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': 'Bearer tpmjs_sk_your_api_key_here',
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({ prompt: 'Say hello' }),
   }
 );

@@ -1,8 +1,11 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
+import { trackUsage } from '~/lib/api-keys/usage';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /**
  * Bridge Registration & Status API
@@ -10,30 +13,37 @@ export const dynamic = 'force-dynamic';
  * POST: Register bridge tools
  * GET: Get bridge status and pending tool calls
  * DELETE: Disconnect bridge
+ *
+ * Authentication: Supports both session auth and TPMJS API key auth.
+ * Requires 'bridge:connect' scope for API key access.
  */
-
-// Validate API key and get user
-async function validateApiKey(token: string | null | undefined) {
-  if (!token) return null;
-
-  // For now, use session-based auth
-  // In production, you'd want proper API key validation with encrypted keys
-  const session = await prisma.session.findUnique({
-    where: { token },
-    include: { user: true },
-  });
-
-  return session?.user || null;
-}
 
 // POST: Register bridge and its tools
 export async function POST(request: NextRequest) {
-  try {
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
+  const startTime = Date.now();
+  let authResult: Awaited<ReturnType<typeof authenticateRequest>> | null = null;
 
-    const user = await validateApiKey(token);
-    if (!user) {
+  try {
+    // Authenticate request (supports both session and API key)
+    authResult = await authenticateRequest();
+
+    if (!authResult.authenticated) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check scope for API key auth
+    if (authResult.authenticated && !authResult.isSessionAuth) {
+      if (!hasScope(authResult, 'bridge:connect')) {
+        return NextResponse.json(
+          { error: 'API key does not have bridge:connect scope' },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Get user for bridge operations
+    const userId = authResult.userId;
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -43,7 +53,7 @@ export async function POST(request: NextRequest) {
     if (type === 'register') {
       // Register bridge and tools
       await prisma.bridgeConnection.upsert({
-        where: { userId: user.id },
+        where: { userId },
         update: {
           status: 'connected',
           tools: tools || [],
@@ -52,13 +62,24 @@ export async function POST(request: NextRequest) {
           clientOS: body.clientOS,
         },
         create: {
-          userId: user.id,
+          userId,
           status: 'connected',
           tools: tools || [],
           lastSeen: new Date(),
           clientVersion: body.clientVersion,
           clientOS: body.clientOS,
         },
+      });
+
+      // Track usage
+      trackUsage({
+        apiKeyId: authResult?.apiKeyId ?? undefined,
+        userId,
+        endpoint: '/api/bridge',
+        method: 'POST',
+        statusCode: 200,
+        latencyMs: Date.now() - startTime,
+        resourceType: 'bridge',
       });
 
       return NextResponse.json({
@@ -80,7 +101,7 @@ export async function POST(request: NextRequest) {
     if (type === 'heartbeat') {
       // Update last seen
       await prisma.bridgeConnection.update({
-        where: { userId: user.id },
+        where: { userId },
         data: { lastSeen: new Date() },
       });
 
@@ -90,6 +111,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
   } catch (error) {
     console.error('Bridge POST error:', error);
+
+    // Track error
+    if (authResult?.userId) {
+      trackUsage({
+        apiKeyId: authResult?.apiKeyId ?? undefined,
+        userId: authResult.userId,
+        endpoint: '/api/bridge',
+        method: 'POST',
+        statusCode: 500,
+        latencyMs: Date.now() - startTime,
+        resourceType: 'bridge',
+        errorCode: 'INTERNAL_ERROR',
+        errorMessage: error instanceof Error ? error.message : 'Internal error',
+      });
+    }
+
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Internal error' },
       { status: 500 }
@@ -98,19 +135,31 @@ export async function POST(request: NextRequest) {
 }
 
 // GET: Get pending tool calls (polling)
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
+    // Authenticate request (supports both session and API key)
+    const authResult = await authenticateRequest();
 
-    const user = await validateApiKey(token);
-    if (!user) {
+    if (!authResult.authenticated) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check scope for API key auth
+    if (!authResult.isSessionAuth && !hasScope(authResult, 'bridge:connect')) {
+      return NextResponse.json(
+        { error: 'API key does not have bridge:connect scope' },
+        { status: 403 }
+      );
+    }
+
+    const userId = authResult.userId;
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get pending tool calls for this user
     const pendingCalls = Array.from(pendingToolCalls.entries())
-      .filter(([key]) => key.startsWith(`${user.id}:`))
+      .filter(([key]) => key.startsWith(`${userId}:`))
       .map(([key, value]) => {
         pendingToolCalls.delete(key); // Remove after returning
         return value;
@@ -118,7 +167,7 @@ export async function GET(request: NextRequest) {
 
     // Update last seen
     await prisma.bridgeConnection.update({
-      where: { userId: user.id },
+      where: { userId },
       data: { lastSeen: new Date() },
     });
 
@@ -136,18 +185,30 @@ export async function GET(request: NextRequest) {
 }
 
 // DELETE: Disconnect bridge
-export async function DELETE(request: NextRequest) {
+export async function DELETE(_request: NextRequest) {
   try {
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
+    // Authenticate request (supports both session and API key)
+    const authResult = await authenticateRequest();
 
-    const user = await validateApiKey(token);
-    if (!user) {
+    if (!authResult.authenticated) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check scope for API key auth
+    if (!authResult.isSessionAuth && !hasScope(authResult, 'bridge:connect')) {
+      return NextResponse.json(
+        { error: 'API key does not have bridge:connect scope' },
+        { status: 403 }
+      );
+    }
+
+    const userId = authResult.userId;
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await prisma.bridgeConnection.update({
-      where: { userId: user.id },
+      where: { userId },
       data: { status: 'disconnected' },
     });
 

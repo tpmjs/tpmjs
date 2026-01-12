@@ -1,6 +1,14 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { API_KEY_SCOPES } from '~/lib/api-keys';
+import { authenticateRequest, getClientMetadata, hasScope } from '~/lib/api-keys/middleware';
+import {
+  checkApiKeyRateLimit,
+  createRateLimitResponse,
+  getRateLimitHeaders,
+} from '~/lib/api-keys/rate-limit';
+import { trackUsage } from '~/lib/api-keys/usage';
 import { handleInitialize, handleToolsCall, handleToolsList } from '~/lib/mcp/handlers';
 
 export const runtime = 'nodejs';
@@ -8,6 +16,9 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const DB_TIMEOUT_MS = 10000; // 10 second timeout for database queries
+
+// Authentication is required for all MCP operations
+const REQUIRE_AUTH = true;
 
 interface RouteContext {
   params: Promise<{ username: string; slug: string; transport: string }>;
@@ -205,6 +216,9 @@ function handleSseGet(
  * MCP JSON-RPC endpoint for tool execution
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
+  const startTime = Date.now();
+  let authResult: Awaited<ReturnType<typeof authenticateRequest>> | null = null;
+
   try {
     const { username, slug, transport } = await context.params;
 
@@ -219,6 +233,53 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
+    // Authenticate the request
+    authResult = await authenticateRequest();
+
+    // Check if auth is required
+    if (REQUIRE_AUTH && !authResult.authenticated) {
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          error: { code: -32000, message: authResult.error || 'Authentication required' },
+          id: null,
+        },
+        { status: 401 }
+      );
+    }
+
+    // Check scope if authenticated
+    if (authResult.authenticated && !hasScope(authResult, API_KEY_SCOPES.MCP_EXECUTE)) {
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          error: { code: -32000, message: 'Missing required scope: mcp:execute' },
+          id: null,
+        },
+        { status: 403 }
+      );
+    }
+
+    // Rate limit if authenticated via API key
+    if (authResult.authenticated && authResult.apiKeyId) {
+      const rateLimitResult = await checkApiKeyRateLimit(
+        authResult.apiKeyId,
+        authResult.tier || 'FREE'
+      );
+
+      if (!rateLimitResult.allowed) {
+        return createRateLimitResponse(rateLimitResult);
+      }
+    }
+
+    // Log warning for unauthenticated requests (soft launch)
+    if (!authResult.authenticated && !REQUIRE_AUTH) {
+      console.warn(
+        `[MCP] Unauthenticated request to /${username}/${slug}/${transport} - ` +
+          'API key authentication will be required in a future update'
+      );
+    }
+
     const collection = await getPublicCollectionByUsernameAndSlug(username, slug);
 
     if (!collection) {
@@ -228,14 +289,66 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
+    let response: Response;
     if (transport === 'sse') {
-      return handleSseTransport(request, collection.id, collection.name);
+      response = await handleSseTransport(request, collection.id, collection.name);
+    } else {
+      response = await handleHttpTransport(request, collection.id, collection.name);
     }
 
-    return handleHttpTransport(request, collection.id, collection.name);
+    // Track usage for authenticated requests
+    if (authResult.authenticated && authResult.userId) {
+      const clientMeta = await getClientMetadata();
+      trackUsage({
+        apiKeyId: authResult.apiKeyId,
+        userId: authResult.userId,
+        endpoint: `/api/mcp/${username}/${slug}/${transport}`,
+        method: 'POST',
+        statusCode: response.status,
+        latencyMs: Date.now() - startTime,
+        resourceType: 'mcp',
+        resourceId: collection.id,
+        userAgent: clientMeta.userAgent,
+        ipAddress: clientMeta.ipAddress,
+      });
+    }
+
+    // Add rate limit headers for authenticated requests
+    if (authResult.authenticated && authResult.apiKeyId) {
+      const rateLimitResult = await checkApiKeyRateLimit(
+        authResult.apiKeyId,
+        authResult.tier || 'FREE'
+      );
+      const headers = getRateLimitHeaders(rateLimitResult);
+      for (const [key, value] of Object.entries(headers)) {
+        response.headers.set(key, value);
+      }
+    }
+
+    return response;
   } catch (error) {
     console.error('[MCP POST] Error:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
+
+    // Track error for authenticated requests
+    if (authResult?.authenticated && authResult.userId) {
+      const { username, slug, transport } = await context.params;
+      const clientMeta = await getClientMetadata();
+      trackUsage({
+        apiKeyId: authResult.apiKeyId,
+        userId: authResult.userId,
+        endpoint: `/api/mcp/${username}/${slug}/${transport}`,
+        method: 'POST',
+        statusCode: 500,
+        latencyMs: Date.now() - startTime,
+        resourceType: 'mcp',
+        errorCode: 'INTERNAL_ERROR',
+        errorMessage: message,
+        userAgent: clientMeta.userAgent,
+        ipAddress: clientMeta.ipAddress,
+      });
+    }
+
     return NextResponse.json(
       { jsonrpc: '2.0', error: { code: -32603, message }, id: null },
       { status: 500 }

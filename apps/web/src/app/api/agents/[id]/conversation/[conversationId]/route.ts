@@ -5,7 +5,10 @@
  * GET: Retrieve conversation history
  * DELETE: Delete a conversation
  *
- * This endpoint uses agent id directly for dashboard usage
+ * This endpoint uses agent id directly for dashboard usage.
+ *
+ * Authentication: Supports both session auth and TPMJS API key auth.
+ * Requires 'agent:chat' scope for API key access.
  */
 
 import { Prisma, prisma } from '@tpmjs/db';
@@ -14,6 +17,8 @@ import { SendMessageSchema } from '@tpmjs/types/agent';
 import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { decryptApiKey } from '@/lib/crypto/api-keys';
+import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
+import { trackUsage } from '~/lib/api-keys/usage';
 import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
 
 /**
@@ -72,7 +77,26 @@ async function getProviderModel(
  * Send a message and stream the AI response via SSE
  */
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
-  // Check rate limit first to prevent expensive LLM calls
+  const startTime = Date.now();
+
+  // Authenticate request (supports both session and API key)
+  const authResult = await authenticateRequest();
+
+  if (!authResult.authenticated) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Check scope for API key auth
+  if (authResult.authenticated && !authResult.isSessionAuth) {
+    if (!hasScope(authResult, 'agent:chat')) {
+      return NextResponse.json(
+        { error: 'API key does not have agent:chat scope' },
+        { status: 403 }
+      );
+    }
+  }
+
+  // Check rate limit (after auth so we can track by user if needed)
   const rateLimitResponse = checkRateLimit(request, CHAT_RATE_LIMIT);
   if (rateLimitResponse) {
     return rateLimitResponse;
@@ -439,6 +463,23 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             conversationId: conversation.id,
             executionTimeMs,
           });
+
+          // Track usage
+          if (authResult.userId) {
+            trackUsage({
+              apiKeyId: authResult.apiKeyId ?? undefined,
+              userId: authResult.userId,
+              endpoint: `/api/agents/${agentId}/conversation/${conversationId}`,
+              method: 'POST',
+              statusCode: 200,
+              latencyMs: executionTimeMs,
+              resourceType: 'agent',
+              resourceId: agentId,
+              tokensIn: inputTokens,
+              tokensOut: outputTokens,
+              model: agent.modelId,
+            });
+          }
         } catch (error) {
           // Log detailed error for debugging
           console.error('[Agent] Conversation stream error:', {
@@ -450,6 +491,22 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           sendEvent('error', {
             message: error instanceof Error ? error.message : 'Unknown error',
           });
+
+          // Track error
+          if (authResult.userId) {
+            trackUsage({
+              apiKeyId: authResult.apiKeyId ?? undefined,
+              userId: authResult.userId,
+              endpoint: `/api/agents/${agentId}/conversation/${conversationId}`,
+              method: 'POST',
+              statusCode: 500,
+              latencyMs: Date.now() - startTime,
+              resourceType: 'agent',
+              resourceId: agentId,
+              errorCode: 'STREAM_ERROR',
+              errorMessage: error instanceof Error ? error.message : 'Unknown error',
+            });
+          }
         } finally {
           controller.close();
         }

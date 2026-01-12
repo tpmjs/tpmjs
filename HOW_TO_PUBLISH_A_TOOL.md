@@ -217,7 +217,11 @@ Your tool will be automatically discovered through:
 
 After publishing, your tool should appear on https://tpmjs.com within 15 minutes!
 
-You can verify by searching: https://tpmjs.com/api/tools?q=yourpackagename
+You can verify by searching (requires API key):
+```bash
+curl "https://tpmjs.com/api/tools?q=yourpackagename" \
+  -H "Authorization: Bearer tpmjs_sk_your_api_key_here"
+```
 
 ## Real Example: @tpmjs/createblogpost
 
@@ -411,14 +415,15 @@ Or manually check the structure matches the examples above.
 - Add all Rich tier fields for maximum visibility
 
 **Want to force a sync?**
-You can manually trigger a sync (requires auth):
+You can manually trigger a sync (requires CRON_SECRET, not a user API key):
 ```bash
 curl -X POST "https://tpmjs.com/api/sync/keyword" \
-  -H "Authorization: Bearer YOUR_CRON_SECRET"
+  -H "Authorization: Bearer $CRON_SECRET"
 ```
 
 ## Support
 
 Questions or issues?
 - File an issue: https://github.com/ajaxdavis/tpmjs/issues
-- Check the API: https://tpmjs.com/api/tools
+- Check the API docs: https://tpmjs.com/docs/api
+- Generate an API key: https://tpmjs.com/dashboard/settings/tpmjs-api-keys

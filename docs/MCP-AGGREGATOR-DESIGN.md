@@ -401,9 +401,9 @@ class TPMJSBridge {
       })));
     }
 
-    // 3. Connect to TPMJS WebSocket
+    // 3. Connect to TPMJS WebSocket (requires API key with bridge:connect scope)
     this.ws = new WebSocket(
-      `${this.config.tpmjsUrl}/api/bridge?token=${this.config.apiKey}`
+      `${this.config.tpmjsUrl}/api/bridge?token=${this.config.apiKey}` // apiKey format: tpmjs_sk_...
     );
 
     this.ws.on('open', () => {
@@ -443,6 +443,7 @@ class TPMJSBridge {
 }
 
 // CLI entry point
+// API key is loaded from ~/.tpmjs/credentials.json (format: tpmjs_sk_...)
 const config = loadConfig(); // from ~/.tpmjs/bridge.json
 const bridge = new TPMJSBridge(config);
 bridge.start();
@@ -452,9 +453,12 @@ bridge.start();
 
 Server-side handler for bridge connections.
 
+**Authentication:** Requires TPMJS API key (format: `tpmjs_sk_...`) with `bridge:connect` scope.
+
 ```typescript
 // apps/web/src/app/api/bridge/route.ts
 import { prisma } from '@tpmjs/db';
+import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 
@@ -463,9 +467,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const token = searchParams.get('token');
 
-  // Validate API key
-  const user = await validateApiKey(token);
-  if (!user) {
+  // Validate API key (must have bridge:connect scope)
+  const authResult = await authenticateRequest();
+  if (!authResult.authenticated || !hasScope(authResult, 'bridge:connect')) {
     return new Response('Unauthorized', { status: 401 });
   }
 
@@ -715,11 +719,19 @@ interface ToolExecutionError {
 
 ### Security Considerations
 
-1. **API Key Authentication**: Bridge connections require valid API key
-2. **User Isolation**: Each user's bridge is isolated
-3. **Tool Whitelisting**: Users explicitly add tools to collections
-4. **Encrypted Credentials**: Remote MCP server credentials encrypted at rest
-5. **WebSocket Security**: WSS (TLS) required for bridge connections
+1. **API Key Authentication**: All API endpoints require a valid TPMJS API key (`tpmjs_sk_...` prefix)
+2. **Scope-Based Access**: API keys have specific scopes (e.g., `bridge:connect`, `mcp:execute`, `agent:chat`)
+3. **User Isolation**: Each user's bridge is isolated
+4. **Tool Whitelisting**: Users explicitly add tools to collections
+5. **Encrypted Credentials**: Remote MCP server credentials encrypted at rest
+6. **WebSocket Security**: WSS (TLS) required for bridge connections
+
+**Required API Key Scopes:**
+- `bridge:connect` - For bridge WebSocket connections
+- `mcp:execute` - For MCP tool execution
+- `collection:read` - For accessing collection data
+
+Generate API keys from Settings > TPMJS API Keys in the dashboard.
 
 ---
 
@@ -819,11 +831,16 @@ After setup, user only needs ONE MCP server in their config:
   "mcpServers": {
     "tpmjs": {
       "type": "url",
-      "url": "https://tpmjs.com/api/mcp/username/all-my-tools/http"
+      "url": "https://tpmjs.com/api/mcp/username/all-my-tools/http",
+      "headers": {
+        "Authorization": "Bearer tpmjs_sk_your_api_key_here"
+      }
     }
   }
 }
 ```
+
+**Note:** Generate your API key from Settings > TPMJS API Keys. The key requires `mcp:execute` scope.
 
 This single endpoint provides access to:
 - All npm tools in the collection
