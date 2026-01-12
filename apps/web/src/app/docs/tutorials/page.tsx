@@ -32,6 +32,15 @@ const tutorials: Tutorial[] = [
     steps: 8,
   },
   {
+    title: 'Connect Local Tools with Bridge',
+    description:
+      'Use the TPMJS Bridge to connect local MCP servers like Chrome DevTools, filesystem access, or custom tools to your TPMJS collections.',
+    icon: '🌉',
+    href: '/docs/tutorials/bridge',
+    duration: '6 min',
+    steps: 11,
+  },
+  {
     title: 'Deploy Your Own Executor',
     description:
       'Run TPMJS tools on your own infrastructure. Deploy a custom executor to Vercel in minutes for full privacy, control, and custom environment variables.',

@@ -337,15 +337,16 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  sessions        Session[]
-  accounts        Account[]
-  collections     Collection[]
-  agents          Agent[]
-  apiKeys         UserApiKey[]
-  toolLikes       ToolLike[]
-  collectionLikes CollectionLike[]
-  agentLikes      AgentLike[]
-  activities      UserActivity[]
+  sessions         Session[]
+  accounts         Account[]
+  collections      Collection[]
+  agents           Agent[]
+  apiKeys          UserApiKey[]
+  toolLikes        ToolLike[]
+  collectionLikes  CollectionLike[]
+  agentLikes       AgentLike[]
+  activities       UserActivity[]
+  bridgeConnection BridgeConnection?
 
   @@index([username])
   @@map("users")
@@ -438,6 +439,7 @@ model Collection {
   tools       CollectionTool[]
   agents      AgentCollection[]
   likes       CollectionLike[]
+  bridgeTools CollectionBridgeTool[]
 
   // Unique constraint: user can't have duplicate collection slugs
   @@unique([userId, slug])
@@ -826,4 +828,61 @@ model EndpointHealthReport {
   @@index([overallStatus])
   @@index([source])
   @@map("endpoint_health_reports")
+}
+
+// ============================================================================
+// MCP Bridge Models
+// ============================================================================
+
+/// BridgeConnection - tracks active bridge connections from users
+model BridgeConnection {
+  id            String    @id @default(cuid())
+
+  // Owner relationship
+  userId        String    @unique @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Connection state
+  status        String    @default("disconnected") @db.VarChar(20) // 'connected' | 'disconnected'
+  socketId      String?   @map("socket_id") @db.VarChar(100) // Internal socket identifier for routing
+
+  // Cached tool definitions from bridge
+  tools         Json      @default("[]") @db.JsonB
+
+  // Metadata
+  lastSeen      DateTime? @map("last_seen")
+  clientVersion String?   @map("client_version") @db.VarChar(20)
+  clientOS      String?   @map("client_os") @db.VarChar(50)
+
+  // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@map("bridge_connections")
+}
+
+/// CollectionBridgeTool - tracks which bridge tools are added to collections
+model CollectionBridgeTool {
+  id           String     @id @default(cuid())
+
+  // Collection relationship
+  collectionId String     @map("collection_id")
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  // Bridge tool reference
+  serverId     String     @map("server_id") @db.VarChar(100) // e.g., "chrome-devtools"
+  toolName     String     @map("tool_name") @db.VarChar(100) // e.g., "screenshot"
+
+  // Display customization
+  displayName  String?    @map("display_name") @db.VarChar(100) // Override tool name in MCP
+  note         String?    @db.VarChar(500) // User notes
+
+  // Timestamps
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@unique([collectionId, serverId, toolName])
+  @@index([collectionId])
+  @@map("collection_bridge_tools")
 }

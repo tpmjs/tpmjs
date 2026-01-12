@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/agents', label: 'Agents', icon: 'terminal' },
   { href: '/dashboard/collections', label: 'Collections', icon: 'folder' },
   { href: '/dashboard/settings/api-keys', label: 'API Keys', icon: 'key' },
+  { href: '/dashboard/settings/bridge', label: 'Bridge', icon: 'link' },
 ];
 
 const likesNavItems: NavItem[] = [

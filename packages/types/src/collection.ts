@@ -68,6 +68,22 @@ export const ReorderToolsSchema = z.object({
 });
 
 // ============================================================================
+// Bridge Tool Schemas
+// ============================================================================
+
+export const AddBridgeToolToCollectionSchema = z.object({
+  serverId: z.string().min(1, 'Server ID is required').max(100),
+  toolName: z.string().min(1, 'Tool name is required').max(100),
+  displayName: z.string().max(100).optional(),
+  note: z.string().max(500, 'Note must be 500 characters or less').optional(),
+});
+
+export const UpdateCollectionBridgeToolSchema = z.object({
+  displayName: z.string().max(100).nullable().optional(),
+  note: z.string().max(500, 'Note must be 500 characters or less').nullable().optional(),
+});
+
+// ============================================================================
 // Clone Schemas
 // ============================================================================
 
@@ -127,6 +143,8 @@ export type AddToolToCollectionInput = z.infer<typeof AddToolToCollectionSchema>
 export type UpdateCollectionToolInput = z.infer<typeof UpdateCollectionToolSchema>;
 export type ReorderToolsInput = z.infer<typeof ReorderToolsSchema>;
 export type CloneCollectionInput = z.infer<typeof CloneCollectionSchema>;
+export type AddBridgeToolToCollectionInput = z.infer<typeof AddBridgeToolToCollectionSchema>;
+export type UpdateCollectionBridgeToolInput = z.infer<typeof UpdateCollectionBridgeToolSchema>;
 export type Collection = z.infer<typeof CollectionSchema>;
 export type CollectionTool = z.infer<typeof CollectionToolSchema>;
 export type CollectionWithTools = z.infer<typeof CollectionWithToolsSchema>;
@@ -138,6 +156,7 @@ export type CollectionWithTools = z.infer<typeof CollectionWithToolsSchema>;
 export const COLLECTION_LIMITS = {
   MAX_COLLECTIONS_PER_USER: 50,
   MAX_TOOLS_PER_COLLECTION: 100,
+  MAX_BRIDGE_TOOLS_PER_COLLECTION: 50,
   MAX_NAME_LENGTH: 100,
   MAX_DESCRIPTION_LENGTH: 500,
   MAX_NOTE_LENGTH: 500,

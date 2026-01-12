@@ -1,0 +1,56 @@
+{
+  "name": "@tpmjs/bridge",
+  "version": "0.1.0",
+  "description": "Bridge CLI for connecting local MCP servers to TPMJS",
+  "author": "TPMJS",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/bridge"
+  },
+  "homepage": "https://tpmjs.com",
+  "keywords": [
+    "tpmjs",
+    "mcp",
+    "bridge",
+    "cli",
+    "model-context-protocol"
+  ],
+  "type": "module",
+  "bin": {
+    "tpmjs-bridge": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node dist/cli.js",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@tpmjs/mcp-client": "workspace:*",
+    "commander": "^14.0.0",
+    "picocolors": "^1.1.1",
+    "ws": "^8.18.2"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/node": "^22.15.29",
+    "@types/ws": "^8.18.1",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
