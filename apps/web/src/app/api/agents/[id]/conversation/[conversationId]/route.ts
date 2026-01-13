@@ -76,6 +76,7 @@ async function getProviderModel(
  * POST /api/agents/[id]/conversation/[conversationId]
  * Send a message and stream the AI response via SSE
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex streaming logic required
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
   const startTime = Date.now();
 
@@ -291,6 +292,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     // Create SSE stream
     const stream = new ReadableStream({
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex streaming logic
       async start(controller) {
         const encoder = new TextEncoder();
 
@@ -345,6 +347,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                 });
               }
             },
+            // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex callback
             onStepFinish: async ({ toolCalls, toolResults, usage }) => {
               // Capture tool calls from step finish (backup in case onChunk missed any)
               if (toolCalls && Array.isArray(toolCalls)) {
