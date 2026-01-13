@@ -4,7 +4,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 interface UserProfile {
@@ -21,10 +21,7 @@ interface UsernameCheckResult {
   reason?: string;
 }
 
-export default function ProfileSettingsPage(): React.ReactElement {
-  const searchParams = useSearchParams();
-  const isSetupMode = searchParams.get('setup') === '1';
-
+function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): React.ReactElement {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -333,5 +330,28 @@ export default function ProfileSettingsPage(): React.ReactElement {
         </form>
       </div>
     </DashboardLayout>
+  );
+}
+
+function ProfileSettingsWithSearchParams(): React.ReactElement {
+  const searchParams = useSearchParams();
+  const isSetupMode = searchParams.get('setup') === '1';
+  return <ProfileSettingsContent isSetupMode={isSetupMode} />;
+}
+
+export default function ProfileSettingsPage(): React.ReactElement {
+  return (
+    <Suspense
+      fallback={
+        <DashboardLayout title="Profile Settings" showBackButton backUrl="/dashboard">
+          <div className="animate-pulse">
+            <div className="h-8 bg-surface-secondary rounded w-48 mb-4" />
+            <div className="h-32 bg-surface-secondary rounded mb-6" />
+          </div>
+        </DashboardLayout>
+      }
+    >
+      <ProfileSettingsWithSearchParams />
+    </Suspense>
   );
 }
