@@ -34,7 +34,9 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
       "command": "npx",
       "args": [
         "mcp-remote",
-        "${httpUrl}"
+        "${httpUrl}",
+        "--header",
+        "Authorization: Bearer YOUR_TPMJS_API_KEY"
       ]
     }
   }
@@ -139,6 +141,11 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
         <Link href="/docs/tutorials/mcp" className="text-primary hover:underline">
           Claude Desktop, Cursor, or any MCP client
         </Link>
+        . Requires your{' '}
+        <Link href="/dashboard/settings" className="text-primary hover:underline">
+          TPMJS API key
+        </Link>{' '}
+        for authentication.
       </p>
     </div>
   );
