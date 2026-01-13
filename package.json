@@ -31,7 +31,8 @@
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
-    "build:web": "turbo run build --filter=@tpmjs/web",
+    "build:web": "turbo run build --filter=@tpmjs/web...",
+    "build:playground": "turbo run build --filter=@tpmjs/playground...",
     "test": "turbo test",
     "test:ui": "turbo test:ui",
     "lint": "turbo lint",
