@@ -64,7 +64,7 @@ describe('Agents CRUD Endpoints', () => {
       await ctx.factories.agent.create({ uid });
 
       // Try to create second with same uid
-      const result = await ctx.api.post<{ success: boolean; error?: string }>('/api/agents', {
+      const result = await ctx.apiKeyClient.post<{ success: boolean; error?: string }>('/api/agents', {
         uid,
         name: 'Duplicate UID Agent',
         provider: 'OPENAI',
@@ -76,11 +76,11 @@ describe('Agents CRUD Endpoints', () => {
   });
 
   describe('GET /api/agents', () => {
-    it('should list user agents with session auth', async () => {
+    it('should list user agents with API key auth', async () => {
       // Create a test agent first
       await ctx.factories.agent.create();
 
-      const result = await ctx.api.get<{
+      const result = await ctx.apiKeyClient.get<{
         success: boolean;
         data: AgentResponse[];
       }>('/api/agents');
@@ -106,7 +106,7 @@ describe('Agents CRUD Endpoints', () => {
         name: 'Specific Agent',
       });
 
-      const result = await ctx.api.get<{
+      const result = await ctx.apiKeyClient.get<{
         success: boolean;
         data: AgentResponse;
       }>(`/api/agents/${created.id}`);
@@ -119,7 +119,7 @@ describe('Agents CRUD Endpoints', () => {
     });
 
     it('should return 404 for non-existent agent', async () => {
-      const result = await ctx.api.get('/api/agents/nonexistent-id-12345');
+      const result = await ctx.apiKeyClient.get('/api/agents/nonexistent-id-12345');
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe(404);
@@ -133,7 +133,7 @@ describe('Agents CRUD Endpoints', () => {
         description: 'Original description',
       });
 
-      const result = await ctx.api.patch<{
+      const result = await ctx.apiKeyClient.patch<{
         success: boolean;
         data: AgentResponse;
       }>(`/api/agents/${created.id}`, {
@@ -164,11 +164,11 @@ describe('Agents CRUD Endpoints', () => {
     it('should delete an agent', async () => {
       const created = await ctx.factories.agent.create();
 
-      const deleteResult = await ctx.api.delete(`/api/agents/${created.id}`);
+      const deleteResult = await ctx.apiKeyClient.delete(`/api/agents/${created.id}`);
       expect(deleteResult.ok).toBe(true);
 
       // Verify it's deleted
-      const getResult = await ctx.api.get(`/api/agents/${created.id}`);
+      const getResult = await ctx.apiKeyClient.get(`/api/agents/${created.id}`);
       expect(getResult.ok).toBe(false);
       expect(getResult.status).toBe(404);
     });

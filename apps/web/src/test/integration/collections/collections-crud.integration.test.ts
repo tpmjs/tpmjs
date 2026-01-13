@@ -58,7 +58,7 @@ describe('Collections CRUD Endpoints', () => {
       await ctx.factories.collection.create({ slug });
 
       // Try to create second with same slug
-      const result = await ctx.api.post<{ success: boolean; error?: string }>('/api/collections', {
+      const result = await ctx.apiKeyClient.post<{ success: boolean; error?: string }>('/api/collections', {
         slug,
         name: 'Duplicate Slug',
       });
@@ -68,11 +68,11 @@ describe('Collections CRUD Endpoints', () => {
   });
 
   describe('GET /api/collections', () => {
-    it('should list user collections with session auth', async () => {
+    it('should list user collections with API key auth', async () => {
       // Create a test collection first
       await ctx.factories.collection.create();
 
-      const result = await ctx.api.get<{
+      const result = await ctx.apiKeyClient.get<{
         success: boolean;
         data: CollectionResponse[];
       }>('/api/collections');
@@ -98,7 +98,7 @@ describe('Collections CRUD Endpoints', () => {
         name: 'Specific Collection',
       });
 
-      const result = await ctx.api.get<{
+      const result = await ctx.apiKeyClient.get<{
         success: boolean;
         data: CollectionResponse;
       }>(`/api/collections/${created.id}`);
@@ -111,7 +111,7 @@ describe('Collections CRUD Endpoints', () => {
     });
 
     it('should return 404 for non-existent collection', async () => {
-      const result = await ctx.api.get('/api/collections/nonexistent-id-12345');
+      const result = await ctx.apiKeyClient.get('/api/collections/nonexistent-id-12345');
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe(404);
@@ -125,7 +125,7 @@ describe('Collections CRUD Endpoints', () => {
         description: 'Original description',
       });
 
-      const result = await ctx.api.patch<{
+      const result = await ctx.apiKeyClient.patch<{
         success: boolean;
         data: CollectionResponse;
       }>(`/api/collections/${created.id}`, {
@@ -156,11 +156,11 @@ describe('Collections CRUD Endpoints', () => {
     it('should delete a collection', async () => {
       const created = await ctx.factories.collection.create();
 
-      const deleteResult = await ctx.api.delete(`/api/collections/${created.id}`);
+      const deleteResult = await ctx.apiKeyClient.delete(`/api/collections/${created.id}`);
       expect(deleteResult.ok).toBe(true);
 
       // Verify it's deleted
-      const getResult = await ctx.api.get(`/api/collections/${created.id}`);
+      const getResult = await ctx.apiKeyClient.get(`/api/collections/${created.id}`);
       expect(getResult.ok).toBe(false);
       expect(getResult.status).toBe(404);
     });
