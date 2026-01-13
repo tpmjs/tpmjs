@@ -36,6 +36,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     const agent = await prisma.agent.findUnique({
       where: { id },
       include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
         collections: {
           include: {
             collection: {

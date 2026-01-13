@@ -43,6 +43,9 @@ interface Agent {
   collectionCount: number;
   createdAt: string;
   updatedAt: string;
+  user: {
+    username: string;
+  };
 }
 
 interface AgentTool {
@@ -111,8 +114,9 @@ function ApiDocsSection({ agent, agentTools }: { agent: Agent; agentTools: Agent
   const [activeSection, setActiveSection] = useState('send');
   const [activeLang, setActiveLang] = useState('curl');
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
-  const endpoint = `${baseUrl}/api/agents/${agent.uid}/conversation/my-conv-1`;
-  const listEndpoint = `${baseUrl}/api/agents/${agent.uid}/conversations`;
+  const username = agent.user.username;
+  const endpoint = `${baseUrl}/api/${username}/agents/${agent.uid}/conversation/my-conv-1`;
+  const listEndpoint = `${baseUrl}/api/${username}/agents/${agent.uid}/conversations`;
   const toolPackages = agentTools.map((t) => t.tool.npmPackageName).join(' ') || '@tpmjs/hello';
 
   const sendExamples: Record<string, { language: string; code: string }> = {
@@ -237,8 +241,8 @@ conv = resp.json()  # conv['data']['messages']`,
         <h2 className="text-lg font-medium text-foreground">API Reference</h2>
         <code className="text-xs text-foreground-secondary font-mono bg-surface px-2 py-1 rounded">
           {isSend
-            ? `POST /api/agents/${agent.uid}/conversation/:id`
-            : `GET /api/agents/${agent.uid}/conversations`}
+            ? `POST /api/${username}/agents/${agent.uid}/conversation/:id`
+            : `GET /api/${username}/agents/${agent.uid}/conversations`}
         </code>
       </div>
 

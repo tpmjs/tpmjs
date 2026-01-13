@@ -1,11 +1,12 @@
 /**
- * Agent Conversation Endpoint (ID-based version)
+ * Agent Conversation Endpoint (Username/Slug-based version)
  *
  * POST: Send a message and stream the AI response
  * GET: Retrieve conversation history
  * DELETE: Delete a conversation
  *
- * This endpoint uses agent id directly for dashboard usage.
+ * This endpoint uses username and agent slug for public-friendly URLs.
+ * Example: /api/ajax/agents/tpmjs-discord/conversation/my-conv-1
  *
  * Authentication: Supports both session auth and TPMJS API key auth.
  * Requires 'agent:chat' scope for API key access.
@@ -35,7 +36,7 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes for long agentic runs
 
 type RouteContext = {
-  params: Promise<{ id: string; conversationId: string }>;
+  params: Promise<{ username: string; agentSlug: string; conversationId: string }>;
 };
 
 /**
@@ -73,9 +74,10 @@ async function getProviderModel(
 }
 
 /**
- * POST /api/agents/[id]/conversation/[conversationId]
+ * POST /api/[username]/agents/[agentSlug]/conversation/[conversationId]
  * Send a message and stream the AI response via SSE
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex streaming logic required
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
   const startTime = Date.now();
 
@@ -102,7 +104,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     return rateLimitResponse;
   }
 
-  const { id: agentId, conversationId } = await context.params;
+  const { username, agentSlug, conversationId } = await context.params;
 
   try {
     const body = await request.json();
@@ -114,9 +116,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
-    // Fetch agent with all tool relations using agent ID
-    const { fetchAgentWithTools, buildAgentTools } = await import('@/lib/agents/build-tools');
-    const agent = await fetchAgentWithTools(agentId);
+    // Fetch agent by username and slug with all tool relations
+    const { fetchAgentByUsernameAndUidWithTools, buildAgentTools } = await import(
+      '@/lib/agents/build-tools'
+    );
+    const agent = await fetchAgentByUsernameAndUidWithTools(username, agentSlug);
 
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
@@ -291,6 +295,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     // Create SSE stream
     const stream = new ReadableStream({
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex streaming logic
       async start(controller) {
         const encoder = new TextEncoder();
 
@@ -345,6 +350,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                 });
               }
             },
+            // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex callback
             onStepFinish: async ({ toolCalls, toolResults, usage }) => {
               // Capture tool calls from step finish (backup in case onChunk missed any)
               if (toolCalls && Array.isArray(toolCalls)) {
@@ -482,12 +488,12 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             trackUsage({
               apiKeyId: authResult.apiKeyId ?? undefined,
               userId: authResult.userId,
-              endpoint: `/api/agents/${agentId}/conversation/${conversationId}`,
+              endpoint: `/api/${username}/agents/${agentSlug}/conversation/${conversationId}`,
               method: 'POST',
               statusCode: 200,
               latencyMs: executionTimeMs,
               resourceType: 'agent',
-              resourceId: agentId,
+              resourceId: agent.id,
               tokensIn: inputTokens,
               tokensOut: outputTokens,
               model: agent.modelId,
@@ -510,12 +516,12 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             trackUsage({
               apiKeyId: authResult.apiKeyId ?? undefined,
               userId: authResult.userId,
-              endpoint: `/api/agents/${agentId}/conversation/${conversationId}`,
+              endpoint: `/api/${username}/agents/${agentSlug}/conversation/${conversationId}`,
               method: 'POST',
               statusCode: 500,
               latencyMs: Date.now() - startTime,
               resourceType: 'agent',
-              resourceId: agentId,
+              resourceId: agent.id,
               errorCode: 'STREAM_ERROR',
               errorMessage: error instanceof Error ? error.message : 'Unknown error',
             });
@@ -546,21 +552,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 }
 
 /**
- * GET /api/agents/[id]/conversation/[conversationId]
+ * GET /api/[username]/agents/[agentSlug]/conversation/[conversationId]
  * Retrieve conversation history with pagination
- *
- * Query params:
- * - limit: Max messages to return (default: 50, max: 100)
- * - before: Fetch messages created before this ISO timestamp (for loading older messages)
- * - after: Fetch messages created after this ISO timestamp (for loading newer messages)
- * - format: 'json' for full debug view (no pagination, includes agent info)
- *
- * Default behavior (no before/after): Returns the most recent messages
- * With before: Returns messages older than the timestamp (for scrolling up)
- * With after: Returns messages newer than the timestamp (for refreshing)
  */
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
-  const { id: agentId, conversationId } = await context.params;
+  const { username, agentSlug, conversationId } = await context.params;
   const { searchParams } = new URL(request.url);
 
   const format = searchParams.get('format');
@@ -569,9 +565,12 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   const after = searchParams.get('after');
 
   try {
-    // Fetch agent by ID with more details for JSON format
-    const agent = await prisma.agent.findUnique({
-      where: { id: agentId },
+    // Fetch agent by username and slug
+    const agent = await prisma.agent.findFirst({
+      where: {
+        uid: agentSlug,
+        user: { username },
+      },
       select: {
         id: true,
         uid: true,
@@ -737,16 +736,19 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
 }
 
 /**
- * DELETE /api/agents/[id]/conversation/[conversationId]
+ * DELETE /api/[username]/agents/[agentSlug]/conversation/[conversationId]
  * Delete a conversation
  */
 export async function DELETE(_request: NextRequest, context: RouteContext): Promise<NextResponse> {
-  const { id: agentId, conversationId } = await context.params;
+  const { username, agentSlug, conversationId } = await context.params;
 
   try {
-    // Fetch agent by ID
-    const agent = await prisma.agent.findUnique({
-      where: { id: agentId },
+    // Fetch agent by username and slug
+    const agent = await prisma.agent.findFirst({
+      where: {
+        uid: agentSlug,
+        user: { username },
+      },
       select: { id: true },
     });
 
