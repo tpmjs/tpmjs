@@ -144,7 +144,7 @@ export default function ApiKeysPage(): React.ReactElement {
 
   if (error) {
     return (
-      <DashboardLayout title="API Keys">
+      <DashboardLayout title="AI Provider Keys">
         <div className="text-center py-16">
           <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
           <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
@@ -157,8 +157,8 @@ export default function ApiKeysPage(): React.ReactElement {
 
   return (
     <DashboardLayout
-      title="API Keys"
-      subtitle={keys.length > 0 ? `${keys.length} key${keys.length !== 1 ? 's' : ''}` : undefined}
+      title="AI Provider Keys"
+      subtitle="Credentials for OpenAI, Anthropic, Google, and other AI services"
       actions={
         !showAddForm &&
         !showImport && (
@@ -175,6 +175,22 @@ export default function ApiKeysPage(): React.ReactElement {
         )
       }
     >
+      {/* Info banner */}
+      <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4 mb-6">
+        <div className="flex gap-3">
+          <Icon icon="info" size="sm" className="text-blue-500 flex-shrink-0 mt-0.5" />
+          <div className="text-sm">
+            <p className="text-foreground font-medium mb-1">
+              These are your AI service credentials
+            </p>
+            <p className="text-foreground-secondary">
+              Add API keys from providers like OpenAI, Anthropic, or Google. Your agents use these
+              keys to make AI calls. Keys are encrypted and never exposed to clients.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Import from .env */}
       {showImport && (
         <div className="bg-surface border border-border rounded-lg p-6 mb-6">
@@ -272,16 +288,16 @@ ANOTHER_SECRET=xyz789"
               <TableEmpty
                 colSpan={4}
                 icon={
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon icon="key" size="lg" className="text-primary" />
+                  <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center">
+                    <Icon icon="puzzle" size="lg" className="text-blue-500" />
                   </div>
                 }
-                title="No API keys yet"
-                description="Add your AI provider API keys to enable agent functionality. Keys are encrypted and stored securely."
+                title="No AI provider keys yet"
+                description="Add your OpenAI, Anthropic, or other AI provider keys so your agents can make AI calls."
                 action={
                   <Button onClick={() => setShowAddForm(true)}>
                     <Icon icon="plus" size="sm" className="mr-2" />
-                    Add Your First Key
+                    Add Provider Key
                   </Button>
                 }
               />

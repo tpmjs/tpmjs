@@ -199,7 +199,7 @@ export default function TpmjsApiKeysPage(): React.ReactElement {
 
   if (error) {
     return (
-      <DashboardLayout title="TPMJS API Keys">
+      <DashboardLayout title="Platform API Keys">
         <div className="text-center py-16">
           <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
           <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
@@ -212,8 +212,8 @@ export default function TpmjsApiKeysPage(): React.ReactElement {
 
   return (
     <DashboardLayout
-      title="TPMJS API Keys"
-      subtitle={keys.length > 0 ? `${keys.length} key${keys.length !== 1 ? 's' : ''}` : undefined}
+      title="Platform API Keys"
+      subtitle="Authentication keys for accessing TPMJS programmatically"
       actions={
         !showCreateForm &&
         !newlyCreatedKey && (
@@ -230,11 +230,11 @@ export default function TpmjsApiKeysPage(): React.ReactElement {
           <Icon icon="info" size="sm" className="text-primary flex-shrink-0 mt-0.5" />
           <div className="text-sm">
             <p className="text-foreground font-medium mb-1">
-              Use API keys to access TPMJS programmatically
+              These keys authenticate you to the TPMJS platform
             </p>
             <p className="text-foreground-secondary">
-              API keys allow you to call MCP endpoints, chat with agents, and connect via the bridge
-              without a browser session. Keep your keys secure and never share them.
+              Use platform API keys (tpmjs_sk_...) to access MCP servers, chat with agents from scripts,
+              or connect via the bridge. These are different from AI provider keys which power the AI calls themselves.
             </p>
           </div>
         </div>
@@ -342,12 +342,12 @@ export default function TpmjsApiKeysPage(): React.ReactElement {
                     <Icon icon="key" size="lg" className="text-primary" />
                   </div>
                 }
-                title="No API keys yet"
-                description="Create an API key to access TPMJS programmatically from your applications, scripts, or CI/CD pipelines."
+                title="No platform API keys yet"
+                description="Create a key to access your TPMJS collections and agents programmatically from scripts or CI/CD pipelines."
                 action={
                   <Button onClick={() => setShowCreateForm(true)}>
                     <Icon icon="plus" size="sm" className="mr-2" />
-                    Create Your First Key
+                    Create Platform Key
                   </Button>
                 }
               />

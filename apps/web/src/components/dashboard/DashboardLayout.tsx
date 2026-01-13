@@ -15,15 +15,29 @@ interface NavItem {
   badge?: number;
 }
 
-const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Overview', icon: 'home' },
-  { href: '/dashboard/agents', label: 'Agents', icon: 'terminal' },
-  { href: '/dashboard/collections', label: 'Collections', icon: 'folder' },
-  { href: '/dashboard/usage', label: 'Usage', icon: 'globe' },
-  { href: '/dashboard/settings/profile', label: 'Profile', icon: 'user' },
-  { href: '/dashboard/settings/tpmjs-api-keys', label: 'TPMJS API Keys', icon: 'key' },
-  { href: '/dashboard/settings/api-keys', label: 'Provider Keys', icon: 'edit' },
-  { href: '/dashboard/settings/bridge', label: 'Bridge', icon: 'link' },
+interface NavSection {
+  title?: string;
+  items: NavItem[];
+}
+
+const navSections: NavSection[] = [
+  {
+    items: [
+      { href: '/dashboard', label: 'Overview', icon: 'home' },
+      { href: '/dashboard/agents', label: 'Agents', icon: 'terminal' },
+      { href: '/dashboard/collections', label: 'Collections', icon: 'folder' },
+    ],
+  },
+  {
+    title: 'Settings',
+    items: [
+      { href: '/dashboard/settings/profile', label: 'Profile', icon: 'user' },
+      { href: '/dashboard/settings/api-keys', label: 'AI Provider Keys', icon: 'puzzle' },
+      { href: '/dashboard/settings/tpmjs-api-keys', label: 'Platform API Keys', icon: 'key' },
+      { href: '/dashboard/settings/bridge', label: 'Bridge', icon: 'link' },
+      { href: '/dashboard/usage', label: 'Usage', icon: 'globe' },
+    ],
+  },
 ];
 
 const likesNavItems: NavItem[] = [
@@ -152,32 +166,43 @@ export function DashboardLayout({
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           `}
         >
-          <nav className="p-4 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                  ${
-                    isActive(item.href)
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
-                  }
-                `}
-              >
-                <Icon icon={item.icon} size="sm" />
-                <span>{item.label}</span>
-                {item.badge !== undefined && item.badge > 0 && (
-                  <span className="ml-auto text-xs bg-surface-secondary px-1.5 py-0.5 rounded-full">
-                    {item.badge}
-                  </span>
+          <nav className="p-4 space-y-6 overflow-y-auto h-[calc(100%-80px)]">
+            {navSections.map((section, sectionIdx) => (
+              <div key={section.title || `section-${sectionIdx}`}>
+                {section.title && (
+                  <h3 className="px-3 mb-2 text-xs font-semibold text-foreground-tertiary uppercase tracking-wider">
+                    {section.title}
+                  </h3>
                 )}
-              </Link>
+                <div className="space-y-1">
+                  {section.items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`
+                        flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                        ${
+                          isActive(item.href)
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+                        }
+                      `}
+                    >
+                      <Icon icon={item.icon} size="sm" />
+                      <span>{item.label}</span>
+                      {item.badge !== undefined && item.badge > 0 && (
+                        <span className="ml-auto text-xs bg-surface-secondary px-1.5 py-0.5 rounded-full">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              </div>
             ))}
 
             {/* Likes Section - Collapsible */}
-            <div className="pt-2 mt-2 border-t border-border">
+            <div>
               <button
                 type="button"
                 onClick={() => setLikesExpanded(!likesExpanded)}
@@ -224,7 +249,7 @@ export function DashboardLayout({
           </nav>
 
           {/* User section at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border bg-background">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                 <Icon icon="user" size="sm" className="text-primary" />
