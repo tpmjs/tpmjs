@@ -3,6 +3,7 @@
 import type { AIProvider } from '@tpmjs/types/agent';
 import { PROVIDER_MODELS, SUPPORTED_PROVIDERS } from '@tpmjs/types/agent';
 import type { ExecutorConfig } from '@tpmjs/types/executor';
+import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
@@ -18,11 +19,15 @@ import {
 } from '@tpmjs/ui/Table/Table';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { EnvVarsEditor } from '~/components/EnvVarsEditor';
 import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
+
+type PageTabId = 'tools' | 'collections' | 'api' | 'env-vars' | 'settings';
+
+const VALID_TABS: PageTabId[] = ['tools', 'collections', 'api', 'env-vars', 'settings'];
 
 interface Agent {
   id: string;
@@ -285,14 +290,35 @@ conv = resp.json()  # conv['data']['messages']`,
 export default function AgentDetailPage(): React.ReactElement {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const agentId = params.id as string;
+
+  // Get initial tab from URL or default to 'tools'
+  const tabFromUrl = searchParams.get('tab') as PageTabId | null;
+  const initialTab = tabFromUrl && VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'tools';
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [executorConfig, setExecutorConfig] = useState<ExecutorConfig | null>(null);
+  const [activeTab, setActiveTab] = useState<PageTabId>(initialTab);
+
+  // Update URL when tab changes
+  const handleTabChange = (tabId: string) => {
+    const newTab = tabId as PageTabId;
+    setActiveTab(newTab);
+    const newParams = new URLSearchParams(searchParams.toString());
+    if (newTab === 'tools') {
+      newParams.delete('tab');
+    } else {
+      newParams.set('tab', newTab);
+    }
+    const queryString = newParams.toString();
+    router.replace(`/dashboard/agents/${agentId}${queryString ? `?${queryString}` : ''}`, {
+      scroll: false,
+    });
+  };
 
   // Tools state
   const [agentTools, setAgentTools] = useState<AgentTool[]>([]);
@@ -665,7 +691,6 @@ export default function AgentDetailPage(): React.ReactElement {
 
       if (result.success) {
         setAgent(result.data);
-        setIsEditing(false);
       } else {
         throw new Error(result.error || 'Failed to update agent');
       }
@@ -728,6 +753,16 @@ export default function AgentDetailPage(): React.ReactElement {
     );
   }
 
+  const envVarsCount = envVars ? Object.keys(envVars).length : 0;
+
+  const pageTabs = [
+    { id: 'tools' as const, label: 'Tools', count: agentTools.length },
+    { id: 'collections' as const, label: 'Collections', count: agentCollections.length },
+    { id: 'api' as const, label: 'API' },
+    { id: 'env-vars' as const, label: 'Env Vars', count: envVarsCount > 0 ? envVarsCount : undefined },
+    { id: 'settings' as const, label: 'Settings' },
+  ];
+
   return (
     <DashboardLayout
       title={agent.name}
@@ -743,540 +778,479 @@ export default function AgentDetailPage(): React.ReactElement {
         </Link>
       }
     >
-      {/* Configuration */}
-      <div className="bg-surface border border-border rounded-lg p-6 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium text-foreground">Configuration</h2>
-          {!isEditing && (
-            <Button size="sm" variant="secondary" onClick={() => setIsEditing(true)}>
-              <Icon icon="edit" size="xs" className="mr-1" />
-              Edit
-            </Button>
-          )}
-        </div>
+      {/* Status badges */}
+      <div className="flex items-center gap-2 mb-6">
+        <Badge variant={agent.isPublic ? 'success' : 'secondary'}>
+          {agent.isPublic ? 'Public' : 'Private'}
+        </Badge>
+        {executorConfig?.type === 'custom_url' && <Badge variant="secondary">Custom Executor</Badge>}
+      </div>
 
-        {isEditing ? (
-          <div className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label htmlFor="uid" className="block text-sm font-medium text-foreground mb-1">
-                  UID
-                </label>
-                <input
-                  type="text"
-                  id="uid"
-                  name="uid"
-                  value={formData.uid}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-            </div>
+      {/* Tabs */}
+      <Tabs
+        tabs={pageTabs}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        className="mb-6"
+      />
 
-            <div>
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-foreground mb-1"
-              >
-                Description
-              </label>
-              <textarea
-                id="description"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={2}
-                className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+      {/* Tools Tab */}
+      {activeTab === 'tools' && (
+        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+          {/* Add Tool Search */}
+          <div ref={toolSearchRef} className="relative p-4 border-b border-border">
+            <div className="relative">
+              <Icon
+                icon="search"
+                size="xs"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary"
               />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label
-                  htmlFor="provider"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Provider
-                </label>
-                <select
-                  id="provider"
-                  name="provider"
-                  value={formData.provider}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                >
-                  {SUPPORTED_PROVIDERS.map((p) => (
-                    <option key={p} value={p}>
-                      {PROVIDER_DISPLAY_NAMES[p]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="modelId" className="block text-sm font-medium text-foreground mb-1">
-                  Model
-                </label>
-                <select
-                  id="modelId"
-                  name="modelId"
-                  value={formData.modelId}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                >
-                  {models.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="systemPrompt"
-                className="block text-sm font-medium text-foreground mb-1"
-              >
-                System Prompt
-              </label>
-              <textarea
-                id="systemPrompt"
-                name="systemPrompt"
-                value={formData.systemPrompt}
-                onChange={handleChange}
-                rows={6}
-                className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
-              />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <label
-                  htmlFor="temperature"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Temperature
-                </label>
-                <input
-                  type="number"
-                  id="temperature"
-                  name="temperature"
-                  value={formData.temperature}
-                  onChange={handleChange}
-                  min={0}
-                  max={2}
-                  step={0.1}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="maxToolCallsPerTurn"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Max Tool Calls
-                </label>
-                <input
-                  type="number"
-                  id="maxToolCallsPerTurn"
-                  name="maxToolCallsPerTurn"
-                  value={formData.maxToolCallsPerTurn}
-                  onChange={handleChange}
-                  min={1}
-                  max={100}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="maxMessagesInContext"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Context Messages
-                </label>
-                <input
-                  type="number"
-                  id="maxMessagesInContext"
-                  name="maxMessagesInContext"
-                  value={formData.maxMessagesInContext}
-                  onChange={handleChange}
-                  min={1}
-                  max={100}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-surface rounded-lg border border-border">
-              <div>
-                <p className="text-sm font-medium text-foreground">Public Visibility</p>
-                <p className="text-xs text-foreground-secondary">
-                  Make this agent visible on the public agents page
-                </p>
-              </div>
-              <Switch
-                checked={formData.isPublic}
-                onChange={(checked) => setFormData((prev) => ({ ...prev, isPublic: checked }))}
-              />
-            </div>
-
-            {/* Executor Configuration */}
-            <div className="pt-4 border-t border-border">
-              <ExecutorConfigPanel
-                value={executorConfig}
-                onChange={setExecutorConfig}
-                disabled={isSaving}
-              />
-            </div>
-
-            {/* Environment Variables */}
-            <EnvVarsEditor
-              value={envVars}
-              onChange={setEnvVars}
-              title="Environment Variables"
-              description="Passed to tools at runtime. Agent vars override collection vars."
-              disabled={isSaving}
-              className="pt-4 border-t border-border"
-            />
-
-            <div className="flex items-center justify-end gap-2 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEditing(false);
-                  setFormData({
-                    name: agent.name,
-                    uid: agent.uid,
-                    description: agent.description || '',
-                    provider: agent.provider,
-                    modelId: agent.modelId,
-                    systemPrompt: agent.systemPrompt || '',
-                    temperature: agent.temperature,
-                    maxToolCallsPerTurn: agent.maxToolCallsPerTurn,
-                    maxMessagesInContext: agent.maxMessagesInContext,
-                    isPublic: agent.isPublic,
-                  });
-                  // Reset executor config to agent's current value
-                  if (agent.executorType === 'custom_url' && agent.executorConfig) {
-                    setExecutorConfig({
-                      type: 'custom_url',
-                      url: agent.executorConfig.url,
-                      apiKey: agent.executorConfig.apiKey,
-                    });
-                  } else {
-                    setExecutorConfig(agent.executorType ? { type: 'default' } : null);
-                  }
-                  // Reset env vars to agent's current value
-                  if (agent.envVars && typeof agent.envVars === 'object') {
-                    setEnvVars(agent.envVars as Record<string, string>);
-                  } else {
-                    setEnvVars(null);
-                  }
+              <input
+                type="text"
+                value={toolSearch}
+                onChange={(e) => {
+                  setToolSearch(e.target.value);
+                  setShowToolSearch(true);
                 }}
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
-                {isSaving ? 'Saving...' : 'Save Changes'}
-              </Button>
+                onFocus={() => setShowToolSearch(true)}
+                placeholder="Search tools to add..."
+                className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              />
+              {isSearchingTools && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
             </div>
+
+            {/* Search Results Dropdown */}
+            {showToolSearch && toolSearch && (
+              <div className="absolute z-10 left-4 right-4 mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                {toolSearchResults.length > 0 ? (
+                  toolSearchResults.map((tool) => (
+                    <button
+                      type="button"
+                      key={tool.id}
+                      onClick={() => addTool(tool.id)}
+                      className="w-full px-3 py-2 text-left hover:bg-surface-secondary transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    >
+                      <p className="text-sm font-medium text-foreground">{tool.name}</p>
+                      <p className="text-xs text-foreground-tertiary font-mono">
+                        {tool.npmPackageName}
+                      </p>
+                    </button>
+                  ))
+                ) : !isSearchingTools ? (
+                  <div className="px-3 py-4 text-center text-sm text-foreground-tertiary">
+                    No tools found
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
-        ) : (
-          <dl className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <dt className="text-sm text-foreground-secondary">Description</dt>
-              <dd className="text-foreground">{agent.description || '-'}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-foreground-secondary">UID</dt>
-              <dd className="text-foreground font-mono text-sm">{agent.uid}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-foreground-secondary">Temperature</dt>
-              <dd className="text-foreground">{agent.temperature}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-foreground-secondary">Context Messages</dt>
-              <dd className="text-foreground">{agent.maxMessagesInContext}</dd>
-            </div>
-            <div>
-              <dt className="text-sm text-foreground-secondary">Visibility</dt>
-              <dd className="text-foreground flex items-center gap-2">
-                <Icon
-                  icon={agent.isPublic ? 'globe' : 'key'}
-                  size="xs"
-                  className={agent.isPublic ? 'text-green-500' : 'text-foreground-tertiary'}
+
+          {/* Tools Table */}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tool</TableHead>
+                <TableHead>Package</TableHead>
+                <TableHead className="w-[80px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {agentTools.length === 0 ? (
+                <TableEmpty
+                  colSpan={3}
+                  icon={
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Icon icon="puzzle" size="md" className="text-primary" />
+                    </div>
+                  }
+                  title="No tools attached"
+                  description="Search above to add tools to this agent"
                 />
-                {agent.isPublic ? 'Public' : 'Private'}
-              </dd>
-            </div>
-            <div className="sm:col-span-2">
-              <dt className="text-sm text-foreground-secondary">System Prompt</dt>
-              <dd className="text-foreground font-mono text-sm whitespace-pre-wrap bg-surface-secondary rounded-lg p-3 mt-1">
-                {agent.systemPrompt || '(No system prompt)'}
-              </dd>
-            </div>
-          </dl>
-        )}
-      </div>
-
-      {/* API Reference */}
-      <ApiDocsSection agent={agent} agentTools={agentTools} />
-
-      {/* Tools Section */}
-      <div className="bg-surface border border-border rounded-lg overflow-hidden mb-8">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-medium text-foreground">Tools</h2>
-          <span className="text-sm text-foreground-tertiary">{agentTools.length} attached</span>
+              ) : (
+                agentTools.map((at) => (
+                  <TableRow key={at.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Icon icon="puzzle" size="sm" className="text-primary" />
+                        </div>
+                        <span className="font-medium text-foreground">{at.tool.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-foreground-secondary font-mono text-sm">
+                        {at.tool.npmPackageName}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeTool(at.toolId)}
+                          title="Remove tool"
+                          className="text-error hover:text-error hover:bg-error/10"
+                        >
+                          <Icon icon="trash" size="xs" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
+      )}
 
-        {/* Add Tool Search */}
-        <div ref={toolSearchRef} className="relative p-4 border-b border-border">
-          <div className="relative">
-            <Icon
-              icon="search"
-              size="xs"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary"
-            />
-            <input
-              type="text"
-              value={toolSearch}
-              onChange={(e) => {
-                setToolSearch(e.target.value);
-                setShowToolSearch(true);
-              }}
-              onFocus={() => setShowToolSearch(true)}
-              placeholder="Search tools to add..."
-              className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-            />
-            {isSearchingTools && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      {/* Collections Tab */}
+      {activeTab === 'collections' && (
+        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+          {/* Add Collection Search */}
+          <div ref={collectionSearchRef} className="relative p-4 border-b border-border">
+            <div className="relative">
+              <Icon
+                icon="search"
+                size="xs"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary"
+              />
+              <input
+                type="text"
+                value={collectionSearch}
+                onChange={(e) => {
+                  setCollectionSearch(e.target.value);
+                  setShowCollectionSearch(true);
+                }}
+                onFocus={() => setShowCollectionSearch(true)}
+                placeholder="Search collections to add..."
+                className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+              />
+              {isSearchingCollections && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+
+            {/* Search Results Dropdown */}
+            {showCollectionSearch && collectionSearch && (
+              <div className="absolute z-10 left-4 right-4 mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                {collectionSearchResults.length > 0 ? (
+                  collectionSearchResults.map((collection) => (
+                    <button
+                      type="button"
+                      key={collection.id}
+                      onClick={() => addCollection(collection.id)}
+                      className="w-full px-3 py-2 text-left hover:bg-surface-secondary transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    >
+                      <p className="text-sm font-medium text-foreground">{collection.name}</p>
+                      <p className="text-xs text-foreground-tertiary">{collection.toolCount} tools</p>
+                    </button>
+                  ))
+                ) : !isSearchingCollections ? (
+                  <div className="px-3 py-4 text-center text-sm text-foreground-tertiary">
+                    No collections found
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
 
-          {/* Search Results Dropdown */}
-          {showToolSearch && toolSearch && (
-            <div className="absolute z-10 left-4 right-4 mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
-              {toolSearchResults.length > 0 ? (
-                toolSearchResults.map((tool) => (
-                  <button
-                    type="button"
-                    key={tool.id}
-                    onClick={() => addTool(tool.id)}
-                    className="w-full px-3 py-2 text-left hover:bg-surface-secondary transition-colors first:rounded-t-lg last:rounded-b-lg"
-                  >
-                    <p className="text-sm font-medium text-foreground">{tool.name}</p>
-                    <p className="text-xs text-foreground-tertiary font-mono">
-                      {tool.npmPackageName}
-                    </p>
-                  </button>
-                ))
-              ) : !isSearchingTools ? (
-                <div className="px-3 py-4 text-center text-sm text-foreground-tertiary">
-                  No tools found
-                </div>
-              ) : null}
-            </div>
-          )}
-        </div>
-
-        {/* Tools Table */}
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tool</TableHead>
-              <TableHead>Package</TableHead>
-              <TableHead className="w-[80px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {agentTools.length === 0 ? (
-              <TableEmpty
-                colSpan={3}
-                icon={
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon icon="puzzle" size="md" className="text-primary" />
-                  </div>
-                }
-                title="No tools attached"
-                description="Search above to add tools to this agent"
-              />
-            ) : (
-              agentTools.map((at) => (
-                <TableRow key={at.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Icon icon="puzzle" size="sm" className="text-primary" />
+          {/* Collections Table */}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Collection</TableHead>
+                <TableHead>Tools</TableHead>
+                <TableHead className="w-[80px] text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {agentCollections.length === 0 ? (
+                <TableEmpty
+                  colSpan={3}
+                  icon={
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Icon icon="folder" size="md" className="text-primary" />
+                    </div>
+                  }
+                  title="No collections attached"
+                  description="Search above to add collections to this agent"
+                />
+              ) : (
+                agentCollections.map((ac) => (
+                  <TableRow key={ac.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Icon icon="folder" size="sm" className="text-primary" />
+                        </div>
+                        <span className="font-medium text-foreground">{ac.collection.name}</span>
                       </div>
-                      <span className="font-medium text-foreground">{at.tool.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-foreground-secondary font-mono text-sm">
-                      {at.tool.npmPackageName}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeTool(at.toolId)}
-                        title="Remove tool"
-                      >
-                        <Icon icon="trash" size="xs" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Collections Section */}
-      <div className="bg-surface border border-border rounded-lg overflow-hidden mb-8">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-lg font-medium text-foreground">Collections</h2>
-          <span className="text-sm text-foreground-tertiary">
-            {agentCollections.length} attached
-          </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-foreground-secondary text-sm">
+                        {ac.collection.toolCount} tools
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-end">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => removeCollection(ac.collectionId)}
+                          title="Remove collection"
+                          className="text-error hover:text-error hover:bg-error/10"
+                        >
+                          <Icon icon="trash" size="xs" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
+      )}
 
-        {/* Add Collection Search */}
-        <div ref={collectionSearchRef} className="relative p-4 border-b border-border">
-          <div className="relative">
-            <Icon
-              icon="search"
-              size="xs"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary"
-            />
-            <input
-              type="text"
-              value={collectionSearch}
-              onChange={(e) => {
-                setCollectionSearch(e.target.value);
-                setShowCollectionSearch(true);
-              }}
-              onFocus={() => setShowCollectionSearch(true)}
-              placeholder="Search collections to add..."
-              className="w-full pl-9 pr-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-            />
-            {isSearchingCollections && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      {/* API Tab */}
+      {activeTab === 'api' && <ApiDocsSection agent={agent} agentTools={agentTools} />}
+
+      {/* Env Vars Tab */}
+      {activeTab === 'env-vars' && (
+        <div className="bg-surface border border-border rounded-lg p-6">
+          <EnvVarsEditor
+            value={envVars}
+            onChange={setEnvVars}
+            title="Environment Variables"
+            description="Passed to tools at runtime. Agent vars override collection vars."
+            disabled={isSaving}
+          />
+        </div>
+      )}
+
+      {/* Settings Tab */}
+      {activeTab === 'settings' && (
+        <div className="space-y-6">
+          {/* Agent Details */}
+          <div className="bg-surface border border-border rounded-lg p-6">
+            <h3 className="text-lg font-medium text-foreground mb-4">Agent Details</h3>
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="uid" className="block text-sm font-medium text-foreground mb-1">
+                    UID
+                  </label>
+                  <input
+                    type="text"
+                    id="uid"
+                    name="uid"
+                    value={formData.uid}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  />
+                </div>
               </div>
-            )}
+
+              <div>
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={2}
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="provider"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Provider
+                  </label>
+                  <select
+                    id="provider"
+                    name="provider"
+                    value={formData.provider}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  >
+                    {SUPPORTED_PROVIDERS.map((p) => (
+                      <option key={p} value={p}>
+                        {PROVIDER_DISPLAY_NAMES[p]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="modelId" className="block text-sm font-medium text-foreground mb-1">
+                    Model
+                  </label>
+                  <select
+                    id="modelId"
+                    name="modelId"
+                    value={formData.modelId}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  >
+                    {models.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="systemPrompt"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  System Prompt
+                </label>
+                <textarea
+                  id="systemPrompt"
+                  name="systemPrompt"
+                  value={formData.systemPrompt}
+                  onChange={handleChange}
+                  rows={6}
+                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <label
+                    htmlFor="temperature"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Temperature
+                  </label>
+                  <input
+                    type="number"
+                    id="temperature"
+                    name="temperature"
+                    value={formData.temperature}
+                    onChange={handleChange}
+                    min={0}
+                    max={2}
+                    step={0.1}
+                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="maxToolCallsPerTurn"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Max Tool Calls
+                  </label>
+                  <input
+                    type="number"
+                    id="maxToolCallsPerTurn"
+                    name="maxToolCallsPerTurn"
+                    value={formData.maxToolCallsPerTurn}
+                    onChange={handleChange}
+                    min={1}
+                    max={100}
+                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="maxMessagesInContext"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Context Messages
+                  </label>
+                  <input
+                    type="number"
+                    id="maxMessagesInContext"
+                    name="maxMessagesInContext"
+                    value={formData.maxMessagesInContext}
+                    onChange={handleChange}
+                    min={1}
+                    max={100}
+                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-surface-secondary rounded-lg border border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Public Visibility</p>
+                  <p className="text-xs text-foreground-secondary">
+                    Make this agent visible on the public agents page
+                  </p>
+                </div>
+                <Switch
+                  checked={formData.isPublic}
+                  onChange={(checked) => setFormData((prev) => ({ ...prev, isPublic: checked }))}
+                />
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button onClick={handleSave} disabled={isSaving}>
+                  {isSaving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </div>
+            </div>
           </div>
 
-          {/* Search Results Dropdown */}
-          {showCollectionSearch && collectionSearch && (
-            <div className="absolute z-10 left-4 right-4 mt-1 bg-surface border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto">
-              {collectionSearchResults.length > 0 ? (
-                collectionSearchResults.map((collection) => (
-                  <button
-                    type="button"
-                    key={collection.id}
-                    onClick={() => addCollection(collection.id)}
-                    className="w-full px-3 py-2 text-left hover:bg-surface-secondary transition-colors first:rounded-t-lg last:rounded-b-lg"
-                  >
-                    <p className="text-sm font-medium text-foreground">{collection.name}</p>
-                    <p className="text-xs text-foreground-tertiary">{collection.toolCount} tools</p>
-                  </button>
-                ))
-              ) : !isSearchingCollections ? (
-                <div className="px-3 py-4 text-center text-sm text-foreground-tertiary">
-                  No collections found
-                </div>
-              ) : null}
-            </div>
-          )}
+          {/* Executor Configuration */}
+          <div className="bg-surface border border-border rounded-lg p-6">
+            <ExecutorConfigPanel
+              value={executorConfig}
+              onChange={setExecutorConfig}
+              disabled={isSaving}
+            />
+          </div>
+
+          {/* Danger Zone */}
+          <div className="bg-surface border border-error/30 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-error mb-2">Danger Zone</h3>
+            <p className="text-sm text-foreground-secondary mb-4">
+              Once you delete an agent, there is no going back. Please be certain.
+            </p>
+            <Button
+              variant="outline"
+              onClick={handleDelete}
+              className="text-error border-error/50 hover:bg-error/10"
+            >
+              <Icon icon="trash" size="xs" className="mr-1" />
+              Delete Agent
+            </Button>
+          </div>
         </div>
-
-        {/* Collections Table */}
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Collection</TableHead>
-              <TableHead>Tools</TableHead>
-              <TableHead className="w-[80px] text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {agentCollections.length === 0 ? (
-              <TableEmpty
-                colSpan={3}
-                icon={
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Icon icon="folder" size="md" className="text-primary" />
-                  </div>
-                }
-                title="No collections attached"
-                description="Search above to add collections to this agent"
-              />
-            ) : (
-              agentCollections.map((ac) => (
-                <TableRow key={ac.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Icon icon="folder" size="sm" className="text-primary" />
-                      </div>
-                      <span className="font-medium text-foreground">{ac.collection.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-foreground-secondary text-sm">
-                      {ac.collection.toolCount} tools
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => removeCollection(ac.collectionId)}
-                        title="Remove collection"
-                      >
-                        <Icon icon="trash" size="xs" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Danger Zone */}
-      <div className="bg-surface border border-red-200 dark:border-red-800 rounded-lg p-6">
-        <h2 className="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Danger Zone</h2>
-        <p className="text-sm text-foreground-secondary mb-4">
-          Once you delete an agent, there is no going back. Please be certain.
-        </p>
-        <Button variant="outline" onClick={handleDelete}>
-          <Icon icon="trash" size="xs" className="mr-1" />
-          Delete Agent
-        </Button>
-      </div>
+      )}
     </DashboardLayout>
   );
 }
