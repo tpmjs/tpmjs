@@ -127,9 +127,12 @@ export default function CollectionDetailPage(): React.ReactElement {
       newParams.set('tab', newTab);
     }
     const queryString = newParams.toString();
-    router.replace(`/dashboard/collections/${collectionId}${queryString ? `?${queryString}` : ''}`, {
-      scroll: false,
-    });
+    router.replace(
+      `/dashboard/collections/${collectionId}${queryString ? `?${queryString}` : ''}`,
+      {
+        scroll: false,
+      }
+    );
   };
 
   const fetchCollection = useCallback(async () => {
@@ -385,7 +388,11 @@ export default function CollectionDetailPage(): React.ReactElement {
   const tabs = [
     { id: 'tools' as const, label: 'Tools', count: collection.toolCount },
     { id: 'connect' as const, label: 'Connect' },
-    { id: 'env-vars' as const, label: 'Env Vars', count: envVarsCount > 0 ? envVarsCount : undefined },
+    {
+      id: 'env-vars' as const,
+      label: 'Env Vars',
+      count: envVarsCount > 0 ? envVarsCount : undefined,
+    },
     { id: 'settings' as const, label: 'Settings' },
   ];
 
@@ -416,16 +423,13 @@ export default function CollectionDetailPage(): React.ReactElement {
         <Badge variant={collection.isPublic ? 'success' : 'secondary'}>
           {collection.isPublic ? 'Public' : 'Private'}
         </Badge>
-        {executorConfig?.type === 'custom_url' && <Badge variant="secondary">Custom Executor</Badge>}
+        {executorConfig?.type === 'custom_url' && (
+          <Badge variant="secondary">Custom Executor</Badge>
+        )}
       </div>
 
       {/* Tabs */}
-      <Tabs
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        className="mb-6"
-      />
+      <Tabs tabs={tabs} activeTab={activeTab} onTabChange={handleTabChange} className="mb-6" />
 
       {/* Tools Tab */}
       {activeTab === 'tools' && (
@@ -449,7 +453,9 @@ export default function CollectionDetailPage(): React.ReactElement {
                   <TableHead className="w-[250px]">Tool</TableHead>
                   <TableHead>Description</TableHead>
                   <TableHead className="w-[120px]">Category</TableHead>
-                  {collection.isOwner && <TableHead className="w-[80px] text-right">Actions</TableHead>}
+                  {collection.isOwner && (
+                    <TableHead className="w-[80px] text-right">Actions</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -523,7 +529,8 @@ export default function CollectionDetailPage(): React.ReactElement {
                 <div>
                   <h3 className="font-medium text-foreground">Set your username to enable MCP</h3>
                   <p className="text-sm text-foreground-secondary mt-1">
-                    You need to set a username before you can share this collection as an MCP server.
+                    You need to set a username before you can share this collection as an MCP
+                    server.
                   </p>
                   <Link href="/dashboard/settings/profile" className="inline-block mt-3">
                     <Button size="sm" variant="secondary">
@@ -599,7 +606,10 @@ export default function CollectionDetailPage(): React.ReactElement {
                   Claude Desktop, Cursor, or any MCP client
                 </Link>
                 . Requires your{' '}
-                <Link href="/dashboard/settings/tpmjs-api-keys" className="text-primary hover:underline">
+                <Link
+                  href="/dashboard/settings/tpmjs-api-keys"
+                  className="text-primary hover:underline"
+                >
                   TPMJS API key
                 </Link>{' '}
                 for authentication.
@@ -634,7 +644,9 @@ export default function CollectionDetailPage(): React.ReactElement {
       {activeTab === 'env-vars' && !collection.isOwner && (
         <div className="text-center py-16">
           <Icon icon="key" size="lg" className="mx-auto text-foreground-tertiary mb-4" />
-          <h2 className="text-lg font-medium text-foreground mb-2">Environment Variables Unavailable</h2>
+          <h2 className="text-lg font-medium text-foreground mb-2">
+            Environment Variables Unavailable
+          </h2>
           <p className="text-foreground-secondary">
             You can only view environment variables for collections you own.
           </p>
