@@ -114,9 +114,11 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
-    // Fetch agent with all tool relations using agent ID
-    const { fetchAgentWithTools, buildAgentTools } = await import('@/lib/agents/build-tools');
-    const agent = await fetchAgentWithTools(agentId);
+    // Fetch agent with all tool relations using agent ID or UID
+    const { fetchAgentByIdOrUidWithTools, buildAgentTools } = await import(
+      '@/lib/agents/build-tools'
+    );
+    const agent = await fetchAgentByIdOrUidWithTools(agentId);
 
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
@@ -569,9 +571,11 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   const after = searchParams.get('after');
 
   try {
-    // Fetch agent by ID with more details for JSON format
-    const agent = await prisma.agent.findUnique({
-      where: { id: agentId },
+    // Fetch agent by ID or UID with more details for JSON format
+    const agent = await prisma.agent.findFirst({
+      where: {
+        OR: [{ id: agentId }, { uid: agentId }],
+      },
       select: {
         id: true,
         uid: true,
@@ -744,9 +748,11 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
   const { id: agentId, conversationId } = await context.params;
 
   try {
-    // Fetch agent by ID
-    const agent = await prisma.agent.findUnique({
-      where: { id: agentId },
+    // Fetch agent by ID or UID
+    const agent = await prisma.agent.findFirst({
+      where: {
+        OR: [{ id: agentId }, { uid: agentId }],
+      },
       select: { id: true },
     });
 
