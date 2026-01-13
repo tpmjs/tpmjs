@@ -28,8 +28,8 @@ describe('User Profile Endpoints', () => {
   });
 
   describe('GET /api/user/profile', () => {
-    it('should return user profile with session auth', async () => {
-      const result = await ctx.api.get<{
+    it('should return user profile with API key auth', async () => {
+      const result = await ctx.apiKeyClient.get<{
         success: boolean;
         data: UserProfile;
       }>('/api/user/profile');
@@ -54,7 +54,7 @@ describe('User Profile Endpoints', () => {
   describe('PATCH /api/user/profile', () => {
     it('should update user profile', async () => {
       // First, get current profile
-      const profileResult = await ctx.api.get<{
+      const profileResult = await ctx.apiKeyClient.get<{
         success: boolean;
         data: UserProfile;
       }>('/api/user/profile');
@@ -65,7 +65,7 @@ describe('User Profile Endpoints', () => {
         const originalName = profileResult.data.data.name;
 
         // Update name
-        const updateResult = await ctx.api.patch<{
+        const updateResult = await ctx.apiKeyClient.patch<{
           success: boolean;
           data: UserProfile;
         }>('/api/user/profile', {
@@ -78,7 +78,7 @@ describe('User Profile Endpoints', () => {
         }
 
         // Restore original name
-        await ctx.api.patch('/api/user/profile', {
+        await ctx.apiKeyClient.patch('/api/user/profile', {
           name: originalName,
         });
       }

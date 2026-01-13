@@ -23,12 +23,14 @@ describe('Stats Endpoints', () => {
       const result = await ctx.publicClient.get<{
         success: boolean;
         data: {
-          totalTools: number;
-          totalPackages: number;
-          officialTools: number;
-          toolsWithSchema: number;
-          healthyTools: number;
-          brokenTools: number;
+          overview: {
+            totalTools: number;
+            totalPackages: number;
+            officialTools: number;
+          };
+          health: {
+            import: { healthy: number; broken: number };
+          };
         };
       }>('/api/stats');
 
@@ -36,8 +38,8 @@ describe('Stats Endpoints', () => {
       if (result.ok) {
         expect(result.data.success).toBe(true);
         expect(result.data.data).toBeDefined();
-        expect(result.data.data.totalTools).toBeGreaterThanOrEqual(0);
-        expect(result.data.data.totalPackages).toBeGreaterThanOrEqual(0);
+        expect(result.data.data.overview.totalTools).toBeGreaterThanOrEqual(0);
+        expect(result.data.data.overview.totalPackages).toBeGreaterThanOrEqual(0);
       }
     });
   });

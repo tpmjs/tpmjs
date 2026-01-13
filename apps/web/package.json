@@ -15,6 +15,7 @@
     "test:integration": "INTEGRATION_TESTS=true vitest run --config vitest.integration.config.ts",
     "test:integration:watch": "INTEGRATION_TESTS=true vitest --config vitest.integration.config.ts",
     "test:setup-credentials": "tsx src/test/integration/_helpers/setup-test-credentials.ts",
+    "test:setup-openai-key": "tsx src/test/integration/_helpers/setup-openai-key.ts",
     "test:cleanup-orphans": "tsx src/test/integration/_helpers/cleanup-orphans.ts",
     "generate-og": "tsx scripts/generate-og-images.ts"
   },

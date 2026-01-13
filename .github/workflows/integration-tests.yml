@@ -50,6 +50,14 @@ jobs:
           INTEGRATION_TEST_USER_ID: ${{ secrets.INTEGRATION_TEST_USER_ID }}
         run: pnpm --filter=@tpmjs/web test:cleanup-orphans
 
+      - name: Setup OpenAI key for test user
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_KEY_ENCRYPTION_SECRET: ${{ secrets.API_KEY_ENCRYPTION_SECRET }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          INTEGRATION_TEST_USER_ID: ${{ secrets.INTEGRATION_TEST_USER_ID }}
+        run: pnpm --filter=@tpmjs/web test:setup-openai-key
+
       - name: Wait for API
         run: |
           echo "Checking if API is available at $TEST_BASE_URL..."

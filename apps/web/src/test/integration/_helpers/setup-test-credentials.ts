@@ -117,7 +117,39 @@ async function main() {
     });
     console.log('   API key created');
 
-    // 4. Output credentials
+    // 4. Store OPENAI_API_KEY for agent conversations (if available)
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (openaiKey) {
+      console.log('\n📝 Storing OPENAI_API_KEY for agent conversations...');
+
+      // Import encryption function
+      const { encryptApiKey } = await import('@/lib/crypto/api-keys');
+
+      // Delete existing key if any
+      await prisma.userApiKey.deleteMany({
+        where: {
+          userId: user.id,
+          keyName: 'OPENAI_API_KEY',
+        },
+      });
+
+      // Encrypt and store the key
+      const { encrypted, iv } = encryptApiKey(openaiKey);
+      await prisma.userApiKey.create({
+        data: {
+          userId: user.id,
+          keyName: 'OPENAI_API_KEY',
+          encryptedKey: encrypted,
+          keyIv: iv,
+          keyHint: openaiKey.slice(-4),
+        },
+      });
+      console.log('   OPENAI_API_KEY stored');
+    } else {
+      console.log('\n⚠️  OPENAI_API_KEY not set - agent conversation tests will be skipped');
+    }
+
+    // 5. Output credentials
     console.log('\n' + '='.repeat(60));
     console.log('🎉 Integration test credentials generated!\n');
     console.log('Add these to your .env.local or GitHub secrets:\n');
