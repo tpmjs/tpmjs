@@ -120,13 +120,17 @@ function ApiDocsSection({ agent, agentTools }: { agent: Agent; agentTools: Agent
       language: 'bash',
       code: `curl -X POST '${endpoint}' \\
   -H 'Content-Type: application/json' \\
+  -H 'Authorization: Bearer YOUR_TPMJS_API_KEY' \\
   -d '{ "message": "Hello, what can you help me with?" }'`,
     },
     typescript: {
       language: 'typescript',
       code: `const response = await fetch('${endpoint}', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_TPMJS_API_KEY'
+  },
   body: JSON.stringify({ message: 'Hello, what can you help me with?' })
 });
 
@@ -144,6 +148,7 @@ while (true) {
       code: `import requests
 
 response = requests.post('${endpoint}',
+    headers={'Authorization': 'Bearer YOUR_TPMJS_API_KEY'},
     json={'message': 'Hello, what can you help me with?'},
     stream=True)
 
@@ -158,7 +163,10 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 // Option 1: Use hosted agent via fetch
 const response = await fetch('${endpoint}', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer YOUR_TPMJS_API_KEY'
+  },
   body: JSON.stringify({ message: 'Hello!' })
 });
 
@@ -176,23 +184,28 @@ const { textStream } = streamText({
     curl: {
       language: 'bash',
       code: `# List conversations
-curl '${listEndpoint}?limit=20&offset=0'
+curl -H 'Authorization: Bearer YOUR_TPMJS_API_KEY' \\
+  '${listEndpoint}?limit=20&offset=0'
 
 # Get conversation with messages
-curl '${endpoint}?limit=50&offset=0'
+curl -H 'Authorization: Bearer YOUR_TPMJS_API_KEY' \\
+  '${endpoint}?limit=50&offset=0'
 
 # Delete conversation
-curl -X DELETE '${endpoint}'`,
+curl -X DELETE -H 'Authorization: Bearer YOUR_TPMJS_API_KEY' \\
+  '${endpoint}'`,
     },
     typescript: {
       language: 'typescript',
-      code: `// List conversations
-const list = await fetch('${listEndpoint}?limit=20&offset=0');
+      code: `const headers = { 'Authorization': 'Bearer YOUR_TPMJS_API_KEY' };
+
+// List conversations
+const list = await fetch('${listEndpoint}?limit=20&offset=0', { headers });
 const { data, pagination } = await list.json();
 // data: [{ id, slug, title, messageCount }], pagination: { hasMore }
 
 // Get conversation with messages
-const conv = await fetch('${endpoint}?limit=50&offset=0');
+const conv = await fetch('${endpoint}?limit=50&offset=0', { headers });
 const { data: conversation } = await conv.json();
 // conversation: { id, slug, title, messages: [...] }`,
     },
@@ -200,12 +213,14 @@ const { data: conversation } = await conv.json();
       language: 'python',
       code: `import requests
 
+headers = {'Authorization': 'Bearer YOUR_TPMJS_API_KEY'}
+
 # List conversations
-resp = requests.get('${listEndpoint}', params={'limit': 20, 'offset': 0})
+resp = requests.get('${listEndpoint}', headers=headers, params={'limit': 20, 'offset': 0})
 data = resp.json()  # data['data'], data['pagination']['hasMore']
 
 # Get conversation with messages
-resp = requests.get('${endpoint}', params={'limit': 50, 'offset': 0})
+resp = requests.get('${endpoint}', headers=headers, params={'limit': 50, 'offset': 0})
 conv = resp.json()  # conv['data']['messages']`,
     },
   };
