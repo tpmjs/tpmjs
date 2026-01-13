@@ -45,14 +45,17 @@ describe('MCP HTTP Endpoint', () => {
 
       const result = await ctx.apiKeyClient.get<{
         name: string;
-        version: string;
-        protocolVersion: string;
+        description: string | null;
+        protocol: string;
+        transport: string;
+        endpoint: string;
       }>(`/api/mcp/${ctx.auth.username}/${testCollection.slug}/http`);
 
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data.name).toBeDefined();
-        expect(result.data.protocolVersion).toBeDefined();
+        expect(result.data.protocol).toBe('mcp');
+        expect(result.data.transport).toBe('http');
       }
     });
   });
