@@ -48,7 +48,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           INTEGRATION_TEST_USER_ID: ${{ secrets.INTEGRATION_TEST_USER_ID }}
-        run: pnpm --filter=@tpmjs/web tsx src/test/integration/_helpers/cleanup-orphans.ts
+        run: pnpm --filter=@tpmjs/web test:cleanup-orphans
 
       - name: Wait for API
         run: |
@@ -124,4 +124,4 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           INTEGRATION_TEST_USER_ID: ${{ secrets.INTEGRATION_TEST_USER_ID }}
-        run: pnpm --filter=@tpmjs/web tsx src/test/integration/_helpers/cleanup-orphans.ts
+        run: pnpm --filter=@tpmjs/web test:cleanup-orphans
