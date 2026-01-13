@@ -3,16 +3,22 @@
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
-import { Input } from '@tpmjs/ui/Input/Input';
-import Link from 'next/link';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableEmpty,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@tpmjs/ui/Table/Table';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { CollectionForm } from '~/components/collections/CollectionForm';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 interface Collection {
   id: string;
-  slug: string | null;
   name: string;
   description: string | null;
   toolCount: number;
@@ -20,172 +26,13 @@ interface Collection {
   updatedAt: string;
 }
 
-function formatRelativeDate(dateString: string): string {
+function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-  if (diffDays === 0) {
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    if (diffHours === 0) {
-      const diffMinutes = Math.floor(diffMs / (1000 * 60));
-      return diffMinutes <= 1 ? 'Just now' : `${diffMinutes}m ago`;
-    }
-    return `${diffHours}h ago`;
-  }
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function CollectionCard({
-  collection,
-  onDelete,
-  isDeleting,
-  username,
-}: {
-  collection: Collection;
-  onDelete: (id: string) => void;
-  isDeleting: boolean;
-  username: string | null;
-}) {
-  const router = useRouter();
-  const [showCopied, setShowCopied] = useState(false);
-
-  const mcpUrl = collection.slug && username
-    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/api/mcp/${username}/${collection.slug}/http`
-    : null;
-
-  const handleCopyMcpUrl = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (mcpUrl) {
-      navigator.clipboard.writeText(mcpUrl);
-      setShowCopied(true);
-      setTimeout(() => setShowCopied(false), 2000);
-    }
-  };
-
-  return (
-    <div
-      className="bg-surface border border-border rounded-xl p-5 hover:border-primary/50 hover:shadow-md transition-all cursor-pointer group"
-      onClick={() => router.push(`/dashboard/collections/${collection.id}`)}
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-            <Icon icon="folder" size="md" className="text-primary" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-              {collection.name}
-            </h3>
-            <div className="flex items-center gap-2 mt-0.5">
-              <Badge
-                variant={collection.isPublic ? 'default' : 'outline'}
-                size="sm"
-              >
-                {collection.isPublic ? 'Public' : 'Private'}
-              </Badge>
-            </div>
-          </div>
-        </div>
-        <span className="text-xs text-foreground-tertiary whitespace-nowrap">
-          {formatRelativeDate(collection.updatedAt)}
-        </span>
-      </div>
-
-      {/* Description */}
-      {collection.description ? (
-        <p className="text-sm text-foreground-secondary line-clamp-2 mb-4 min-h-[2.5rem]">
-          {collection.description}
-        </p>
-      ) : (
-        <p className="text-sm text-foreground-tertiary italic mb-4 min-h-[2.5rem]">
-          No description
-        </p>
-      )}
-
-      {/* Stats */}
-      <div className="flex items-center gap-4 mb-4 text-sm">
-        <div className="flex items-center gap-1.5">
-          <Icon icon="puzzle" size="xs" className="text-foreground-tertiary" />
-          <span className="text-foreground-secondary">
-            {collection.toolCount} tool{collection.toolCount !== 1 ? 's' : ''}
-          </span>
-        </div>
-        {mcpUrl && (
-          <div className="flex items-center gap-1.5">
-            <Icon icon="link" size="xs" className="text-foreground-tertiary" />
-            <span className="text-foreground-secondary">MCP Ready</span>
-          </div>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center gap-2 pt-4 border-t border-border">
-        {mcpUrl && (
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={handleCopyMcpUrl}
-            className="flex-1"
-          >
-            <Icon icon={showCopied ? 'check' : 'copy'} size="xs" className="mr-1.5" />
-            {showCopied ? 'Copied!' : 'Copy MCP URL'}
-          </Button>
-        )}
-        <Link
-          href={`/dashboard/collections/${collection.id}`}
-          onClick={(e) => e.stopPropagation()}
-          className={mcpUrl ? '' : 'flex-1'}
-        >
-          <Button size="sm" variant={mcpUrl ? 'secondary' : 'default'} className={mcpUrl ? '' : 'w-full'}>
-            <Icon icon="edit" size="xs" className={mcpUrl ? '' : 'mr-1.5'} />
-            {!mcpUrl && 'Manage'}
-          </Button>
-        </Link>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(collection.id);
-          }}
-          disabled={isDeleting}
-          className="text-foreground-tertiary hover:text-error"
-        >
-          <Icon icon="trash" size="xs" />
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function CollectionCardSkeleton() {
-  return (
-    <div className="bg-surface border border-border rounded-xl p-5">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-surface-secondary animate-pulse" />
-          <div className="space-y-2">
-            <div className="h-4 w-32 bg-surface-secondary rounded animate-pulse" />
-            <div className="h-4 w-16 bg-surface-secondary rounded animate-pulse" />
-          </div>
-        </div>
-        <div className="h-3 w-16 bg-surface-secondary rounded animate-pulse" />
-      </div>
-      <div className="h-10 bg-surface-secondary rounded animate-pulse mb-4" />
-      <div className="h-4 w-20 bg-surface-secondary rounded animate-pulse mb-4" />
-      <div className="flex gap-2 pt-4 border-t border-border">
-        <div className="flex-1 h-8 bg-surface-secondary rounded animate-pulse" />
-        <div className="h-8 w-8 bg-surface-secondary rounded animate-pulse" />
-        <div className="h-8 w-8 bg-surface-secondary rounded animate-pulse" />
-      </div>
-    </div>
-  );
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
 }
 
 export default function CollectionsPage(): React.ReactElement {
@@ -196,8 +43,6 @@ export default function CollectionsPage(): React.ReactElement {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [username, setUsername] = useState<string | null>(null);
 
   const fetchCollections = useCallback(async () => {
     try {
@@ -221,31 +66,9 @@ export default function CollectionsPage(): React.ReactElement {
     }
   }, [router]);
 
-  // Fetch user info for MCP URL
-  useEffect(() => {
-    fetch('/api/user/profile')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data?.username) {
-          setUsername(data.data.username);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
   useEffect(() => {
     fetchCollections();
   }, [fetchCollections]);
-
-  const filteredCollections = useMemo(() => {
-    if (!searchQuery.trim()) return collections;
-    const query = searchQuery.toLowerCase();
-    return collections.filter(
-      (collection) =>
-        collection.name.toLowerCase().includes(query) ||
-        collection.description?.toLowerCase().includes(query)
-    );
-  }, [collections, searchQuery]);
 
   const handleCreate = async (data: { name: string; description?: string; isPublic: boolean }) => {
     setIsCreating(true);
@@ -273,7 +96,8 @@ export default function CollectionsPage(): React.ReactElement {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
     if (
       !confirm('Are you sure you want to delete this collection? This action cannot be undone.')
     ) {
@@ -314,14 +138,10 @@ export default function CollectionsPage(): React.ReactElement {
         }
       >
         <div className="text-center py-16">
-          <div className="w-16 h-16 rounded-full bg-error/10 flex items-center justify-center mx-auto mb-4">
-            <Icon icon="alertCircle" size="lg" className="text-error" />
-          </div>
-          <h2 className="text-lg font-medium text-foreground mb-2">Something went wrong</h2>
-          <p className="text-foreground-secondary mb-6 max-w-md mx-auto">{error}</p>
-          <Button onClick={fetchCollections}>
-            Try Again
-          </Button>
+          <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
+          <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
+          <p className="text-foreground-secondary mb-4">{error}</p>
+          <Button onClick={fetchCollections}>Try Again</Button>
         </div>
       </DashboardLayout>
     );
@@ -330,7 +150,11 @@ export default function CollectionsPage(): React.ReactElement {
   return (
     <DashboardLayout
       title="Collections"
-      subtitle="Organize tools into shareable MCP servers"
+      subtitle={
+        collections.length > 0
+          ? `${collections.length} collection${collections.length !== 1 ? 's' : ''}`
+          : undefined
+      }
       actions={
         !showCreateForm && (
           <Button onClick={() => setShowCreateForm(true)}>
@@ -342,18 +166,8 @@ export default function CollectionsPage(): React.ReactElement {
     >
       {/* Create Form */}
       {showCreateForm && (
-        <div className="bg-surface border border-primary/30 rounded-xl p-6 mb-6 shadow-sm">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Icon icon="folder" size="md" className="text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Create New Collection</h2>
-              <p className="text-sm text-foreground-secondary">
-                Group tools together and share them as an MCP server
-              </p>
-            </div>
-          </div>
+        <div className="bg-surface border border-border rounded-lg p-6 mb-6">
+          <h2 className="text-lg font-medium text-foreground mb-4">Create New Collection</h2>
           <CollectionForm
             onSubmit={handleCreate}
             onCancel={() => setShowCreateForm(false)}
@@ -363,119 +177,119 @@ export default function CollectionsPage(): React.ReactElement {
         </div>
       )}
 
-      {/* Search */}
-      {(collections.length > 0 || searchQuery) && !showCreateForm && (
-        <div className="mb-6">
-          <div className="relative">
-            <Icon
-              icon="search"
-              size="sm"
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary"
-            />
-            <Input
-              type="text"
-              placeholder="Search collections by name or description..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {isLoading && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2, 3, 4, 5].map((idx) => (
-            <CollectionCardSkeleton key={`skeleton-${idx}`} />
-          ))}
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!isLoading && collections.length === 0 && !showCreateForm && (
-        <div className="text-center py-16 bg-surface border border-border rounded-xl">
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
-            <Icon icon="folder" size="lg" className="text-primary" />
-          </div>
-          <h2 className="text-xl font-semibold text-foreground mb-2">Create your first collection</h2>
-          <p className="text-foreground-secondary mb-8 max-w-md mx-auto">
-            Collections group related tools together and can be shared as MCP servers.
-            Connect them to Claude, Cursor, or any MCP-compatible client.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Button size="lg" onClick={() => setShowCreateForm(true)}>
-              <Icon icon="plus" size="sm" className="mr-2" />
-              Create Collection
-            </Button>
-            <Link href="/tool/tool-search">
-              <Button size="lg" variant="outline">
-                <Icon icon="search" size="sm" className="mr-2" />
-                Browse Tools
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* No Results State */}
-      {!isLoading && collections.length > 0 && filteredCollections.length === 0 && (
-        <div className="text-center py-16 bg-surface border border-border rounded-xl">
-          <div className="w-16 h-16 rounded-full bg-foreground/5 flex items-center justify-center mx-auto mb-4">
-            <Icon icon="search" size="lg" className="text-foreground-tertiary" />
-          </div>
-          <h2 className="text-lg font-medium text-foreground mb-2">No collections found</h2>
-          <p className="text-foreground-secondary mb-4">
-            No collections match "{searchQuery}"
-          </p>
-          <Button variant="secondary" onClick={() => setSearchQuery('')}>
-            Clear Search
-          </Button>
-        </div>
-      )}
-
-      {/* Collections Grid */}
-      {!isLoading && filteredCollections.length > 0 && (
-        <>
-          {searchQuery && (
-            <p className="text-sm text-foreground-tertiary mb-4">
-              Showing {filteredCollections.length} of {collections.length} collections
-            </p>
-          )}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredCollections.map((collection) => (
-              <CollectionCard
-                key={collection.id}
-                collection={collection}
-                onDelete={handleDelete}
-                isDeleting={deletingId === collection.id}
-                username={username}
+      {/* Collections Table */}
+      <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[350px]">Name</TableHead>
+              <TableHead>Tools</TableHead>
+              <TableHead>Visibility</TableHead>
+              <TableHead>Updated</TableHead>
+              <TableHead className="w-[100px] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              // Loading skeleton
+              <>
+                {[0, 1, 2].map((idx) => (
+                  <TableRow key={`collection-skeleton-${idx}`}>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-surface-secondary animate-pulse" />
+                        <div className="space-y-1.5">
+                          <div className="h-4 w-32 bg-surface-secondary rounded animate-pulse" />
+                          <div className="h-3 w-48 bg-surface-secondary rounded animate-pulse" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-12 bg-surface-secondary rounded animate-pulse" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-5 w-16 bg-surface-secondary rounded animate-pulse" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-4 w-24 bg-surface-secondary rounded animate-pulse" />
+                    </TableCell>
+                    <TableCell>
+                      <div className="h-8 w-8 bg-surface-secondary rounded animate-pulse ml-auto" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </>
+            ) : collections.length === 0 ? (
+              <TableEmpty
+                colSpan={5}
+                icon={
+                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Icon icon="folder" size="lg" className="text-primary" />
+                  </div>
+                }
+                title="No collections yet"
+                description="Create a collection to organize your tools. Collections make it easy to group related tools together and share them with your agents."
+                action={
+                  <Button onClick={() => setShowCreateForm(true)}>
+                    <Icon icon="plus" size="sm" className="mr-2" />
+                    Create Your First Collection
+                  </Button>
+                }
               />
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Help Section */}
-      {!isLoading && collections.length > 0 && !showCreateForm && (
-        <div className="mt-8 p-6 bg-surface/50 border border-border rounded-xl">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Icon icon="link" size="sm" className="text-primary" />
-            </div>
-            <div>
-              <h3 className="font-medium text-foreground mb-1">Connect to MCP clients</h3>
-              <p className="text-sm text-foreground-secondary mb-3">
-                Each public collection has an MCP URL you can use with Claude Desktop, Cursor,
-                Windsurf, or any MCP-compatible client. Copy the URL and add it to your client's configuration.
-              </p>
-              <Link href="/docs/tutorials/mcp" className="text-sm text-primary hover:underline">
-                Learn more about MCP integration →
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
+            ) : (
+              collections.map((collection) => (
+                <TableRow
+                  key={collection.id}
+                  interactive
+                  onClick={() => router.push(`/dashboard/collections/${collection.id}`)}
+                  className="cursor-pointer"
+                >
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon icon="folder" size="sm" className="text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground truncate">{collection.name}</p>
+                        {collection.description && (
+                          <p className="text-sm text-foreground-tertiary truncate max-w-[280px]">
+                            {collection.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-foreground-secondary">{collection.toolCount}</span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={collection.isPublic ? 'default' : 'outline'} size="sm">
+                      {collection.isPublic ? 'Public' : 'Private'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-foreground-secondary text-sm">
+                      {formatDate(collection.updatedAt)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={(e) => handleDelete(collection.id, e)}
+                        disabled={deletingId === collection.id}
+                      >
+                        <Icon icon="trash" size="xs" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </DashboardLayout>
   );
 }
