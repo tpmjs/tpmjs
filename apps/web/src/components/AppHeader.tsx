@@ -85,7 +85,7 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
   };
 
   return (
-    <div className="relative" ref={dropdownRef} onKeyDown={handleKeyDown}>
+    <div className="relative" ref={dropdownRef}>
       <Button
         ref={buttonRef}
         variant="ghost"
@@ -95,6 +95,7 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
           setIsOpen(!isOpen);
           if (!isOpen) setFocusedIndex(-1);
         }}
+        onKeyDown={handleKeyDown}
         aria-expanded={isOpen}
         aria-haspopup="menu"
       >
@@ -110,6 +111,8 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
           ref={menuRef}
           role="menu"
           aria-label={label}
+          tabIndex={-1}
+          onKeyDown={handleKeyDown}
           className="absolute top-full left-0 mt-1 w-56 bg-background border border-border rounded-lg shadow-lg py-1 z-50"
         >
           {items.map((item, index) =>
