@@ -233,8 +233,9 @@ export default function TpmjsApiKeysPage(): React.ReactElement {
               These keys authenticate you to the TPMJS platform
             </p>
             <p className="text-foreground-secondary">
-              Use platform API keys (tpmjs_sk_...) to access MCP servers, chat with agents from scripts,
-              or connect via the bridge. These are different from AI provider keys which power the AI calls themselves.
+              Use platform API keys (tpmjs_sk_...) to access MCP servers, chat with agents from
+              scripts, or connect via the bridge. These are different from AI provider keys which
+              power the AI calls themselves.
             </p>
           </div>
         </div>

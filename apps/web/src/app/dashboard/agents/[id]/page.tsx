@@ -759,7 +759,11 @@ export default function AgentDetailPage(): React.ReactElement {
     { id: 'tools' as const, label: 'Tools', count: agentTools.length },
     { id: 'collections' as const, label: 'Collections', count: agentCollections.length },
     { id: 'api' as const, label: 'API' },
-    { id: 'env-vars' as const, label: 'Env Vars', count: envVarsCount > 0 ? envVarsCount : undefined },
+    {
+      id: 'env-vars' as const,
+      label: 'Env Vars',
+      count: envVarsCount > 0 ? envVarsCount : undefined,
+    },
     { id: 'settings' as const, label: 'Settings' },
   ];
 
@@ -783,16 +787,13 @@ export default function AgentDetailPage(): React.ReactElement {
         <Badge variant={agent.isPublic ? 'success' : 'secondary'}>
           {agent.isPublic ? 'Public' : 'Private'}
         </Badge>
-        {executorConfig?.type === 'custom_url' && <Badge variant="secondary">Custom Executor</Badge>}
+        {executorConfig?.type === 'custom_url' && (
+          <Badge variant="secondary">Custom Executor</Badge>
+        )}
       </div>
 
       {/* Tabs */}
-      <Tabs
-        tabs={pageTabs}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-        className="mb-6"
-      />
+      <Tabs tabs={pageTabs} activeTab={activeTab} onTabChange={handleTabChange} className="mb-6" />
 
       {/* Tools Tab */}
       {activeTab === 'tools' && (
@@ -948,7 +949,9 @@ export default function AgentDetailPage(): React.ReactElement {
                       className="w-full px-3 py-2 text-left hover:bg-surface-secondary transition-colors first:rounded-t-lg last:rounded-b-lg"
                     >
                       <p className="text-sm font-medium text-foreground">{collection.name}</p>
-                      <p className="text-xs text-foreground-tertiary">{collection.toolCount} tools</p>
+                      <p className="text-xs text-foreground-tertiary">
+                        {collection.toolCount} tools
+                      </p>
                     </button>
                   ))
                 ) : !isSearchingCollections ? (
@@ -1110,7 +1113,10 @@ export default function AgentDetailPage(): React.ReactElement {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="modelId" className="block text-sm font-medium text-foreground mb-1">
+                  <label
+                    htmlFor="modelId"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
                     Model
                   </label>
                   <select
