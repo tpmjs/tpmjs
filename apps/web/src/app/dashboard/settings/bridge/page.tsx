@@ -191,7 +191,7 @@ export default function BridgePage(): React.ReactElement {
       </div>
 
       {/* Connected Servers Table */}
-      {!isLoading && bridgeStatus && bridgeStatus.servers.length > 0 && (
+      {!isLoading && bridgeStatus && bridgeStatus.servers && bridgeStatus.servers.length > 0 && (
         <div className="bg-surface border border-border rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-border">
             <h2 className="text-lg font-medium text-foreground">Connected MCP Servers</h2>
@@ -246,7 +246,7 @@ export default function BridgePage(): React.ReactElement {
       {!isLoading &&
         bridgeStatus &&
         bridgeStatus.status !== 'never_connected' &&
-        bridgeStatus.servers.length === 0 && (
+        (!bridgeStatus.servers || bridgeStatus.servers.length === 0) && (
           <div className="bg-surface border border-border rounded-lg overflow-hidden">
             <Table>
               <TableHeader>
