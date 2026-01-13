@@ -114,7 +114,7 @@ describe('Public Collections Endpoints', () => {
       const result = await ctx.publicClient.get<{
         success: boolean;
         data: PublicCollection;
-      }>(`/api/public/collections/${collection.createdBy.username}/${collection.slug}`);
+      }>(`/api/public/users/${collection.createdBy.username}/collections/${collection.slug}`);
 
       expect(result.ok).toBe(true);
       if (result.ok) {

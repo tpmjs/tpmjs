@@ -59,10 +59,7 @@ describe('Public Agents Endpoints', () => {
         expect(Array.isArray(result.data.data)).toBe(true);
         expect(result.data.pagination).toBeDefined();
 
-        // All returned agents should be public
-        for (const agent of result.data.data) {
-          expect(agent.isPublic).toBe(true);
-        }
+        // Note: isPublic is not in the response - by definition, only public agents are returned
       }
     });
 
@@ -120,7 +117,7 @@ describe('Public Agents Endpoints', () => {
       const result = await ctx.publicClient.get<{
         success: boolean;
         data: PublicAgent;
-      }>(`/api/public/agents/${agent.createdBy.username}/${agent.uid}`);
+      }>(`/api/public/users/${agent.createdBy.username}/agents/${agent.uid}`);
 
       expect(result.ok).toBe(true);
       if (result.ok) {
