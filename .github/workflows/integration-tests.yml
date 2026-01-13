@@ -44,6 +44,12 @@ jobs:
       - name: Build packages
         run: pnpm build
 
+      - name: Cleanup orphaned test data (pre-test)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          INTEGRATION_TEST_USER_ID: ${{ secrets.INTEGRATION_TEST_USER_ID }}
+        run: pnpm --filter=@tpmjs/web tsx src/test/integration/_helpers/cleanup-orphans.ts
+
       - name: Wait for API
         run: |
           echo "Checking if API is available at $TEST_BASE_URL..."
