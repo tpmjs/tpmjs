@@ -633,7 +633,7 @@ export default function CollectionDetailPage(): React.ReactElement {
       {/* Env Vars Tab - Not Owner */}
       {activeTab === 'env-vars' && !collection.isOwner && (
         <div className="text-center py-16">
-          <Icon icon="lock" size="lg" className="mx-auto text-foreground-tertiary mb-4" />
+          <Icon icon="key" size="lg" className="mx-auto text-foreground-tertiary mb-4" />
           <h2 className="text-lg font-medium text-foreground mb-2">Environment Variables Unavailable</h2>
           <p className="text-foreground-secondary">
             You can only view environment variables for collections you own.
@@ -696,7 +696,7 @@ export default function CollectionDetailPage(): React.ReactElement {
       {/* Settings Tab - Not Owner */}
       {activeTab === 'settings' && !collection.isOwner && (
         <div className="text-center py-16">
-          <Icon icon="lock" size="lg" className="mx-auto text-foreground-tertiary mb-4" />
+          <Icon icon="key" size="lg" className="mx-auto text-foreground-tertiary mb-4" />
           <h2 className="text-lg font-medium text-foreground mb-2">Settings Unavailable</h2>
           <p className="text-foreground-secondary">
             You can only view settings for collections you own.
