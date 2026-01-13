@@ -27,10 +27,10 @@ jobs:
 
           # POST to the agent conversation endpoint
           # Uses username/agent-slug URL format: /api/{username}/agents/{agent-slug}/conversation/{conv-id}
-          # Agent: ajax/tpmjs-discord-summary
+          # Agent: ajax/tpmjs-discord
           # Requires API key with agent:chat scope
           RESPONSE=$(curl -s -X POST \
-            "https://tpmjs.com/api/ajax/agents/tpmjs-discord-summary/conversation/${{ steps.conv-id.outputs.conv_id }}" \
+            "https://tpmjs.com/api/ajax/agents/tpmjs-discord/conversation/${{ steps.conv-id.outputs.conv_id }}" \
             -H "Authorization: Bearer $TPMJS_API_KEY" \
             -H "Content-Type: application/json" \
             -d '{
