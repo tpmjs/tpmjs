@@ -1,7 +1,6 @@
 import { prisma } from '@tpmjs/db';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
-import { auth } from '~/lib/auth';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -32,11 +31,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
   const requestId = crypto.randomUUID();
 
   try {
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const authResult = await authenticateRequest();
 
-    if (!session) {
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -52,7 +49,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
     const offset = Math.max(Number.parseInt(searchParams.get('offset') || '0', 10), 0);
 
     const likes = await prisma.toolLike.findMany({
-      where: { userId: session.user.id },
+      where: { userId: authResult.userId },
       include: {
         tool: {
           include: {

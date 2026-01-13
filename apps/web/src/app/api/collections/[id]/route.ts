@@ -1,9 +1,8 @@
 import { Prisma, prisma } from '@tpmjs/db';
 import { UpdateCollectionSchema } from '@tpmjs/types/collection';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { logActivity } from '~/lib/activity';
-import { auth } from '~/lib/auth';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -55,11 +54,9 @@ export async function GET(
 
   try {
     // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const authResult = await authenticateRequest();
 
-    if (!session) {
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -113,7 +110,7 @@ export async function GET(
     }
 
     // Check ownership (unless collection is public)
-    if (collection.userId !== session.user.id && !collection.isPublic) {
+    if (collection.userId !== authResult.userId && !collection.isPublic) {
       return NextResponse.json(
         {
           success: false,
@@ -139,7 +136,7 @@ export async function GET(
         toolCount: collection._count.tools,
         createdAt: collection.createdAt,
         updatedAt: collection.updatedAt,
-        isOwner: collection.userId === session.user.id,
+        isOwner: collection.userId === authResult.userId,
         user: {
           username: collection.user.username,
         },
@@ -192,11 +189,9 @@ export async function PATCH(
 
   try {
     // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const authResult = await authenticateRequest();
 
-    if (!session) {
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -223,7 +218,7 @@ export async function PATCH(
       );
     }
 
-    if (existingCollection.userId !== session.user.id) {
+    if (existingCollection.userId !== authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -259,7 +254,7 @@ export async function PATCH(
     if (name && name !== existingCollection.name) {
       const duplicateName = await prisma.collection.findFirst({
         where: {
-          userId: session.user.id,
+          userId: authResult.userId,
           name: { equals: name, mode: 'insensitive' },
           id: { not: id },
         },
@@ -302,7 +297,7 @@ export async function PATCH(
 
     // Log activity (fire-and-forget)
     logActivity({
-      userId: session.user.id,
+      userId: authResult.userId,
       type: 'COLLECTION_UPDATED',
       targetName: collection.name,
       targetType: 'collection',
@@ -350,11 +345,9 @@ export async function DELETE(
 
   try {
     // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const authResult = await authenticateRequest();
 
-    if (!session) {
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -381,7 +374,7 @@ export async function DELETE(
       );
     }
 
-    if (collection.userId !== session.user.id) {
+    if (collection.userId !== authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -402,7 +395,7 @@ export async function DELETE(
 
     // Log activity (fire-and-forget) - note: collectionId not included since it's deleted
     logActivity({
-      userId: session.user.id,
+      userId: authResult.userId,
       type: 'COLLECTION_DELETED',
       targetName: collectionName,
       targetType: 'collection',

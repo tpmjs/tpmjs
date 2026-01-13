@@ -1,9 +1,9 @@
 import { Prisma, prisma } from '@tpmjs/db';
 import { UpdateAgentSchema } from '@tpmjs/types/agent';
-import { headers } from 'next/headers';
 import type { NextRequest } from 'next/server';
 
 import { logActivity } from '~/lib/activity';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
 import {
   apiConflict,
   apiForbidden,
@@ -13,7 +13,6 @@ import {
   apiUnauthorized,
   apiValidationError,
 } from '~/lib/api-response';
-import { auth } from '~/lib/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,7 +29,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
   const requestId = crypto.randomUUID();
 
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
+    const authResult = await authenticateRequest();
     const { id } = await context.params;
 
     const agent = await prisma.agent.findUnique({
@@ -88,7 +87,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     }
 
     // Check access - owner or public
-    const isOwner = session?.user?.id === agent.userId;
+    const isOwner = authResult.userId === agent.userId;
     if (!isOwner && !agent.isPublic) {
       return apiForbidden('Access denied', requestId);
     }
@@ -135,8 +134,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   const requestId = crypto.randomUUID();
 
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
+    const authResult = await authenticateRequest();
+    if (!authResult.authenticated || !authResult.userId) {
       return apiUnauthorized('Authentication required', requestId);
     }
 
@@ -159,7 +158,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!existing) {
       return apiNotFound('Agent', requestId);
     }
-    if (existing.userId !== session.user.id) {
+    if (existing.userId !== authResult.userId) {
       return apiForbidden('Access denied', requestId);
     }
 
@@ -176,7 +175,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     // Check name uniqueness if being changed
     if (parsed.data.name) {
       const existingByName = await prisma.agent.findFirst({
-        where: { userId: session.user.id, name: parsed.data.name, id: { not: id } },
+        where: { userId: authResult.userId, name: parsed.data.name, id: { not: id } },
       });
       if (existingByName) {
         return apiConflict('An agent with this name already exists', requestId);
@@ -210,7 +209,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     // Log activity (fire-and-forget)
     logActivity({
-      userId: session.user.id,
+      userId: authResult.userId,
       type: 'AGENT_UPDATED',
       targetName: agent.name,
       targetType: 'agent',
@@ -240,8 +239,8 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
   const requestId = crypto.randomUUID();
 
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
+    const authResult = await authenticateRequest();
+    if (!authResult.authenticated || !authResult.userId) {
       return apiUnauthorized('Authentication required', requestId);
     }
 
@@ -255,7 +254,7 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
     if (!existing) {
       return apiNotFound('Agent', requestId);
     }
-    if (existing.userId !== session.user.id) {
+    if (existing.userId !== authResult.userId) {
       return apiForbidden('Access denied', requestId);
     }
 
@@ -263,7 +262,7 @@ export async function DELETE(_request: NextRequest, context: RouteContext) {
 
     // Log activity (fire-and-forget) - note: agentId is not included since agent is deleted
     logActivity({
-      userId: session.user.id,
+      userId: authResult.userId,
       type: 'AGENT_DELETED',
       targetName: existing.name,
       targetType: 'agent',

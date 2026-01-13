@@ -1,9 +1,8 @@
 import { prisma } from '@tpmjs/db';
 import { RESERVED_USERNAMES, USERNAME_REGEX, UpdateUserProfileSchema } from '@tpmjs/types/user';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { auth } from '~/lib/auth';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -14,13 +13,13 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
+    const authResult = await authenticateRequest();
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: authResult.userId },
       select: {
         id: true,
         name: true,
@@ -51,8 +50,8 @@ export async function GET(): Promise<NextResponse> {
  */
 export async function PATCH(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
+    const authResult = await authenticateRequest();
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -100,7 +99,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
       const existingUser = await prisma.user.findFirst({
         where: {
           username,
-          NOT: { id: session.user.id },
+          NOT: { id: authResult.userId },
         },
         select: { id: true },
       });
@@ -117,7 +116,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: authResult.userId },
       data: {
         ...(name !== undefined && { name }),
         ...(username !== undefined && { username }),

@@ -1,9 +1,8 @@
 import { prisma } from '@tpmjs/db';
 import { COLLECTION_LIMITS, CreateCollectionSchema } from '@tpmjs/types/collection';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { logActivity } from '~/lib/activity';
-import { auth } from '~/lib/auth';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -89,11 +88,9 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
 
   try {
     // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const authResult = await authenticateRequest();
 
-    if (!session) {
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -113,7 +110,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
     // Fetch collections with tool count
     const collections = await prisma.collection.findMany({
       where: {
-        userId: session.user.id,
+        userId: authResult.userId,
         ...(search && {
           OR: [
             { name: { contains: search, mode: 'insensitive' } },
@@ -169,11 +166,9 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
   try {
     // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const authResult = await authenticateRequest();
 
-    if (!session) {
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -183,6 +178,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
         { status: 401 }
       );
     }
+    const userId = authResult.userId;
 
     // Parse and validate request body
     const body = await request.json();
@@ -207,7 +203,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     // Check collection limit
     const existingCount = await prisma.collection.count({
-      where: { userId: session.user.id },
+      where: { userId },
     });
 
     if (existingCount >= COLLECTION_LIMITS.MAX_COLLECTIONS_PER_USER) {
@@ -227,7 +223,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     // Check for duplicate name (case-insensitive)
     const existingCollection = await prisma.collection.findFirst({
       where: {
-        userId: session.user.id,
+        userId,
         name: { equals: name, mode: 'insensitive' },
       },
     });
@@ -247,13 +243,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     }
 
     // Generate unique slug for the collection
-    const slug = await generateUniqueSlug(session.user.id, name);
+    const slug = await generateUniqueSlug(userId, name);
 
     // Create collection with auto-like (user likes their own collection)
     const collection = await prisma.$transaction(async (tx) => {
       const newCollection = await tx.collection.create({
         data: {
-          userId: session.user.id,
+          userId,
           name,
           slug,
           description: description || null,
@@ -265,7 +261,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
       // Auto-like the collection
       await tx.collectionLike.create({
         data: {
-          userId: session.user.id,
+          userId,
           collectionId: newCollection.id,
         },
       });
@@ -275,7 +271,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     // Log activity (fire-and-forget)
     logActivity({
-      userId: session.user.id,
+      userId,
       type: 'COLLECTION_CREATED',
       targetName: collection.name,
       targetType: 'collection',

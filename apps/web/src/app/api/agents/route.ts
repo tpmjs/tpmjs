@@ -1,10 +1,9 @@
 import { prisma } from '@tpmjs/db';
 import { AGENT_LIMITS, CreateAgentSchema } from '@tpmjs/types/agent';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { logActivity } from '~/lib/activity';
-import { auth } from '~/lib/auth';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,8 +27,8 @@ function generateUid(name: string): string {
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
+    const authResult = await authenticateRequest();
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -38,7 +37,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const offset = Number.parseInt(searchParams.get('offset') || '0');
 
     const agents = await prisma.agent.findMany({
-      where: { userId: session.user.id },
+      where: { userId: authResult.userId },
       select: {
         id: true,
         uid: true,
@@ -94,10 +93,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
+    const authResult = await authenticateRequest();
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
+    const userId = authResult.userId;
 
     const body = await request.json();
     const parsed = CreateAgentSchema.safeParse(body);
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check agent limit
     const agentCount = await prisma.agent.count({
-      where: { userId: session.user.id },
+      where: { userId },
     });
     if (agentCount >= AGENT_LIMITS.MAX_AGENTS_PER_USER) {
       return NextResponse.json(
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Check for name uniqueness within user's agents
     const existingByName = await prisma.agent.findFirst({
-      where: { userId: session.user.id, name },
+      where: { userId, name },
     });
     if (existingByName) {
       return NextResponse.json(
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const agent = await prisma.$transaction(async (tx) => {
       const newAgent = await tx.agent.create({
         data: {
-          userId: session.user.id,
+          userId,
           uid: finalUid,
           name,
           description,
@@ -214,7 +214,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // Auto-like the agent
       await tx.agentLike.create({
         data: {
-          userId: session.user.id,
+          userId,
           agentId: newAgent.id,
         },
       });
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Log activity (fire-and-forget)
     logActivity({
-      userId: session.user.id,
+      userId,
       type: 'AGENT_CREATED',
       targetName: agent.name,
       targetType: 'agent',
