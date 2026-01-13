@@ -88,10 +88,10 @@ export function getTestContext(): IntegrationTestContext {
   // Create tracker
   const tracker = new TestDataTracker();
 
-  // Create factories
+  // Create factories (use API key client since session auth requires better-auth sessions)
   const factories = {
-    agent: createAgentFactory(api, tracker),
-    collection: createCollectionFactory(api, tracker),
+    agent: createAgentFactory(apiKeyClient, tracker),
+    collection: createCollectionFactory(apiKeyClient, tracker),
   };
 
   cachedContext = {
@@ -143,9 +143,10 @@ export function createFreshTestContext(): IntegrationTestContext {
 
   const tracker = new TestDataTracker();
 
+  // Use API key client for factories since session auth requires better-auth sessions
   const factories = {
-    agent: createAgentFactory(api, tracker),
-    collection: createCollectionFactory(api, tracker),
+    agent: createAgentFactory(apiKeyClient, tracker),
+    collection: createCollectionFactory(apiKeyClient, tracker),
   };
 
   return {
