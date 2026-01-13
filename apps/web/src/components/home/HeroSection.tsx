@@ -65,7 +65,7 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
             className="mb-8 font-bold leading-none tracking-tight text-foreground"
             style={{ fontSize: 'clamp(48px, 10vw, 96px)' }}
           >
-            TOOL REGISTRY FOR AI AGENTS
+            THE NPM FOR AI TOOLS
           </h1>
 
           {/* Live Metrics Strip */}
@@ -83,7 +83,8 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
 
           {/* Subheading */}
           <p className="mb-12 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
-            The open registry for AI tools. Browse, publish, and integrate tools into your agents.
+            Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and
+            any MCP-compatible client.
           </p>
 
           {/* Brutalist Search Interface */}
@@ -122,8 +123,8 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
             {/* Helper Text */}
             <div className="mt-4 flex items-center gap-4 font-mono text-xs text-foreground-tertiary uppercase tracking-wider">
               <span>
-                Try: &ldquo;web-scraper&rdquo;, &ldquo;github-manager&rdquo;,
-                &ldquo;sql-query&rdquo;
+                Try: &ldquo;web scraper&rdquo;, &ldquo;discord&rdquo;, &ldquo;code
+                interpreter&rdquo;
               </span>
             </div>
           </div>

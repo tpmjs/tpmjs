@@ -91,7 +91,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
                 Featured Tools
               </h2>
               <p className="text-lg text-foreground-secondary max-w-2xl mx-auto mb-8">
-                Top-rated tools from our registry. Sorted by quality score and community adoption.
+                Production-ready tools you can use today. Add to your AI agent in one line.
               </p>
             </div>
 
@@ -129,12 +129,18 @@ export default async function HomePage(): Promise<React.ReactElement> {
                       </div>
 
                       <div className="mt-4 pt-4 border-t border-border flex items-center justify-between text-xs text-foreground-tertiary">
+                        {tool.qualityScore && Number(tool.qualityScore) > 0 ? (
+                          <span className="flex items-center gap-1">
+                            <span className="text-brutalist-accent">★</span>
+                            {Number(tool.qualityScore).toFixed(2)}
+                          </span>
+                        ) : (
+                          <span />
+                        )}
                         <span>
-                          Quality:{' '}
-                          {tool.qualityScore ? Number(tool.qualityScore).toFixed(2) : 'N/A'}
-                        </span>
-                        <span>
-                          {tool.package.npmDownloadsLastMonth?.toLocaleString() || '0'} downloads/mo
+                          {(tool.package.npmDownloadsLastMonth ?? 0) > 0
+                            ? `${tool.package.npmDownloadsLastMonth?.toLocaleString()} downloads/mo`
+                            : 'New'}
                         </span>
                       </div>
                     </div>
@@ -160,6 +166,62 @@ export default async function HomePage(): Promise<React.ReactElement> {
                   Search by Category
                 </Button>
               </Link>
+            </div>
+          </Container>
+        </section>
+
+        {/* Integration Section */}
+        <section className="py-16 bg-surface border-y border-border">
+          <Container size="xl" padding="lg">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                Works Everywhere
+              </h2>
+              <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
+                Use TPMJS tools with any MCP-compatible AI client. One URL, instant access.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              <div className="p-6 border border-border rounded-lg bg-background text-center">
+                <div className="text-2xl mb-3 font-mono text-brutalist-accent">Claude</div>
+                <p className="text-sm text-foreground-secondary">Desktop, Projects, and API</p>
+              </div>
+              <div className="p-6 border border-border rounded-lg bg-background text-center">
+                <div className="text-2xl mb-3 font-mono text-brutalist-accent">Cursor</div>
+                <p className="text-sm text-foreground-secondary">AI-powered code editor</p>
+              </div>
+              <div className="p-6 border border-border rounded-lg bg-background text-center">
+                <div className="text-2xl mb-3 font-mono text-brutalist-accent">Windsurf</div>
+                <p className="text-sm text-foreground-secondary">Agentic IDE</p>
+              </div>
+              <div className="p-6 border border-border rounded-lg bg-background text-center">
+                <div className="text-2xl mb-3 font-mono text-brutalist-accent">Any MCP</div>
+                <p className="text-sm text-foreground-secondary">Open protocol support</p>
+              </div>
+            </div>
+
+            {/* Code Example */}
+            <div className="max-w-2xl mx-auto">
+              <div className="bg-background border border-border rounded-lg overflow-hidden">
+                <div className="px-4 py-2 border-b border-border bg-surface-secondary text-xs font-mono text-foreground-secondary">
+                  claude_desktop_config.json
+                </div>
+                <pre className="p-4 text-sm font-mono text-foreground overflow-x-auto">
+                  <code>{`{
+  "mcpServers": {
+    "tpmjs": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-remote",
+        "https://tpmjs.com/api/mcp/ajax/ajax-collection/sse"]
+    }
+  }
+}`}</code>
+                </pre>
+              </div>
+              <p className="text-center mt-4 text-sm text-foreground-secondary">
+                Add this to your config and get instant access to 170+ tools.
+              </p>
             </div>
           </Container>
         </section>

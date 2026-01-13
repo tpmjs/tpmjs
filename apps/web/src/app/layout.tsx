@@ -23,11 +23,11 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://tpmjs.com'),
   title: {
-    default: 'TPMJS - Tool Package Manager for AI Agents',
+    default: 'TPMJS - The NPM for AI Tools',
     template: '%s | TPMJS',
   },
   description:
-    'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
+    'Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -55,9 +55,9 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://tpmjs.com',
     siteName: 'TPMJS',
-    title: 'TPMJS - Tool Package Manager for AI Agents',
+    title: 'TPMJS - The NPM for AI Tools',
     description:
-      'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
+      'Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
     images: [
       {
         url: '/api/og/home',
@@ -71,9 +71,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@tpmjs_registry',
     creator: '@tpmjs_registry',
-    title: 'TPMJS - Tool Package Manager for AI Agents',
+    title: 'TPMJS - The NPM for AI Tools',
     description:
-      'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
+      'Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
     images: ['/api/og/home'],
   },
   robots: {
@@ -101,7 +101,7 @@ export default function RootLayout({
     url: 'https://tpmjs.com',
     logo: 'https://tpmjs.com/logo.png',
     description:
-      'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
+      'The NPM for AI tools. Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
     sameAs: ['https://github.com/tpmjs/tpmjs', 'https://x.com/tpmjs_registry'],
   };
 
@@ -111,7 +111,7 @@ export default function RootLayout({
     name: 'TPMJS',
     url: 'https://tpmjs.com',
     description:
-      'Discover and use npm packages as AI agent tools. No config files, automatic discovery, works with any framework.',
+      'The NPM for AI tools. Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
     potentialAction: {
       '@type': 'SearchAction',
       target: {
