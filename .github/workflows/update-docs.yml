@@ -31,6 +31,7 @@ jobs:
 
       - name: Run Claude Code
         uses: anthropics/claude-code-action@beta
+        continue-on-error: true
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt: |

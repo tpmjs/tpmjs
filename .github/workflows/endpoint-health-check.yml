@@ -99,6 +99,7 @@ jobs:
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "$BASE_URL/api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/http" \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.INTEGRATION_TEST_API_KEY }}" \
             -d '{"jsonrpc":"2.0","id":1,"method":"initialize"}' \
             --connect-timeout 15 --max-time 30)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
@@ -125,6 +126,7 @@ jobs:
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "$BASE_URL/api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/http" \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.INTEGRATION_TEST_API_KEY }}" \
             -d '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
             --connect-timeout 15 --max-time 30)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
@@ -151,6 +153,7 @@ jobs:
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "$BASE_URL/api/mcp/$TEST_USERNAME/$TEST_COLLECTION_SLUG/sse" \
             -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.INTEGRATION_TEST_API_KEY }}" \
             -d '{"jsonrpc":"2.0","id":1,"method":"initialize"}' \
             --connect-timeout 15 --max-time 30)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
