@@ -20,10 +20,14 @@ interface ToolSearchResult {
 
 interface SearchResponse {
   success: boolean;
-  data: ToolSearchResult[];
+  query: string;
+  results: {
+    total: number;
+    returned: number;
+    tools: ToolSearchResult[];
+  };
   pagination?: {
     limit: number;
-    offset: number;
     hasMore: boolean;
   };
 }
@@ -48,7 +52,7 @@ describe('Tools Search Endpoint', () => {
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data.success).toBe(true);
-        expect(Array.isArray(result.data.data)).toBe(true);
+        expect(Array.isArray(result.data.results.tools)).toBe(true);
       }
     });
 
@@ -59,7 +63,7 @@ describe('Tools Search Endpoint', () => {
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.data.data.length).toBe(0);
+        expect(result.data.results.tools.length).toBe(0);
       }
     });
 
@@ -70,7 +74,7 @@ describe('Tools Search Endpoint', () => {
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.data.data.length).toBeLessThanOrEqual(3);
+        expect(result.data.results.tools.length).toBeLessThanOrEqual(3);
       }
     });
 
@@ -80,8 +84,8 @@ describe('Tools Search Endpoint', () => {
       });
 
       expect(result.ok).toBe(true);
-      if (result.ok && result.data.data.length > 0) {
-        const tool = result.data.data[0]!;
+      if (result.ok && result.data.results.tools.length > 0) {
+        const tool = result.data.results.tools[0]!;
         expect(tool.id).toBeDefined();
         expect(tool.name).toBeDefined();
         expect(tool.description).toBeDefined();

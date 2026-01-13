@@ -30,7 +30,7 @@ describe('User Usage Endpoints', () => {
 
   describe('GET /api/user/usage', () => {
     it('should return usage summary with session auth', async () => {
-      const result = await ctx.api.get<{
+      const result = await ctx.apiKeyClient.get<{
         success: boolean;
         data: {
           today: UsageSummary | null;
@@ -56,7 +56,7 @@ describe('User Usage Endpoints', () => {
 
   describe('GET /api/user/usage/history', () => {
     it('should return usage history', async () => {
-      const result = await ctx.api.get<{
+      const result = await ctx.apiKeyClient.get<{
         success: boolean;
         data: UsageSummary[];
       }>('/api/user/usage/history', {
@@ -71,7 +71,7 @@ describe('User Usage Endpoints', () => {
     });
 
     it('should support period filter', async () => {
-      const result = await ctx.api.get<{
+      const result = await ctx.apiKeyClient.get<{
         success: boolean;
         data: UsageSummary[];
       }>('/api/user/usage/history', {
