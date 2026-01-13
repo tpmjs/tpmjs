@@ -88,9 +88,9 @@ export default function DashboardPage(): React.ReactElement {
                 className="text-foreground-tertiary group-hover:text-primary group-hover:translate-x-1 transition-all"
               />
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-1">API Keys</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-1">Platform API Keys</h3>
             <p className="text-sm text-foreground-secondary">
-              Generate keys for programmatic API access
+              Generate keys to access TPMJS from scripts and CI/CD
             </p>
           </div>
         </Link>

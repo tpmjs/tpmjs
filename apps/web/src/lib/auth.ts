@@ -42,7 +42,7 @@ export const auth = betterAuth({
       maxAge: 60 * 5, // 5 minutes
     },
   },
-  trustedOrigins: ['https://tpmjs.com', 'http://localhost:3000'],
+  trustedOrigins: ['https://tpmjs.com', 'http://localhost:3000', 'http://localhost:3002'],
   advanced: {
     defaultCookieAttributes: {
       sameSite: 'lax',
