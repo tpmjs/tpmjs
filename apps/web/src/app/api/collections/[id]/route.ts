@@ -74,6 +74,11 @@ export async function GET(
     const collection = await prisma.collection.findUnique({
       where: { id },
       include: {
+        user: {
+          select: {
+            username: true,
+          },
+        },
         tools: {
           include: {
             tool: {
@@ -127,6 +132,7 @@ export async function GET(
       success: true,
       data: {
         id: collection.id,
+        slug: collection.slug,
         name: collection.name,
         description: collection.description,
         isPublic: collection.isPublic,
@@ -134,6 +140,9 @@ export async function GET(
         createdAt: collection.createdAt,
         updatedAt: collection.updatedAt,
         isOwner: collection.userId === session.user.id,
+        user: {
+          username: collection.user.username,
+        },
         tools: paginatedTools.map((ct) => ({
           id: ct.id,
           toolId: ct.toolId,

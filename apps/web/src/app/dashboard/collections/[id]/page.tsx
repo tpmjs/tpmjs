@@ -14,13 +14,13 @@ import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { EnvVarsEditor } from '~/components/EnvVarsEditor';
 import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
 
-function McpUrlSection({ collectionId }: { collectionId: string }) {
+function McpUrlSection({ username, slug }: { username: string; slug: string }) {
   const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
   const [showConfig, setShowConfig] = useState(false);
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
-  const httpUrl = `${baseUrl}/api/collections/${collectionId}/mcp/http`;
-  const sseUrl = `${baseUrl}/api/collections/${collectionId}/mcp/sse`;
+  const httpUrl = `${baseUrl}/api/mcp/${username}/${slug}/http`;
+  const sseUrl = `${baseUrl}/api/mcp/${username}/${slug}/sse`;
 
   const copyToClipboard = async (url: string, type: 'http' | 'sse') => {
     await navigator.clipboard.writeText(url);
@@ -171,6 +171,7 @@ interface CollectionTool {
 
 interface Collection {
   id: string;
+  slug: string;
   name: string;
   description: string | null;
   isPublic: boolean;
@@ -181,6 +182,9 @@ interface Collection {
   createdAt: string;
   updatedAt: string;
   isOwner: boolean;
+  user: {
+    username: string;
+  };
   tools: CollectionTool[];
 }
 
@@ -516,7 +520,9 @@ export default function CollectionDetailPage(): React.ReactElement {
       )}
 
       {/* MCP URLs - only for public collections */}
-      {collection.isPublic && <McpUrlSection collectionId={collection.id} />}
+      {collection.isPublic && collection.user.username && (
+        <McpUrlSection username={collection.user.username} slug={collection.slug} />
+      )}
 
       {/* Add Tool Search */}
       {collection.isOwner && (
