@@ -86,7 +86,7 @@ describe('Agents CRUD Endpoints', () => {
         expect(result.data.data.uid).not.toBe(uid);
         expect(result.data.data.uid).toMatch(new RegExp(`^${uid}-`));
         // Track for cleanup (use id, not uid)
-        ctx.tracker.trackAgent((result.data.data as { id: string }).id);
+        ctx.tracker.trackAgent((result.data.data as unknown as AgentResponse).id);
       }
     });
   });
