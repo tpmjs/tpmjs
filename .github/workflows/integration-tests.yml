@@ -1,0 +1,121 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      verbose:
+        description: 'Run tests in verbose mode'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+concurrency:
+  group: integration-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Wait for API
+        run: |
+          echo "Checking if API is available at $TEST_BASE_URL..."
+          for i in {1..30}; do
+            if curl -sf "$TEST_BASE_URL/api/health" > /dev/null 2>&1; then
+              echo "✅ API is available"
+              exit 0
+            fi
+            echo "Attempt $i/30: API not ready yet, waiting..."
+            sleep 2
+          done
+          echo "❌ API is not available after 60 seconds"
+          exit 1
+        env:
+          TEST_BASE_URL: ${{ secrets.TEST_BASE_URL }}
+
+      - name: Run integration tests
+        env:
+          INTEGRATION_TESTS: 'true'
+          TEST_BASE_URL: ${{ secrets.TEST_BASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          INTEGRATION_TEST_USER_ID: ${{ secrets.INTEGRATION_TEST_USER_ID }}
+          INTEGRATION_TEST_USERNAME: ${{ secrets.INTEGRATION_TEST_USERNAME }}
+          INTEGRATION_TEST_SESSION_TOKEN: ${{ secrets.INTEGRATION_TEST_SESSION_TOKEN }}
+          INTEGRATION_TEST_API_KEY: ${{ secrets.INTEGRATION_TEST_API_KEY }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ "${{ github.event.inputs.verbose }}" = "true" ]; then
+            pnpm --filter=@tpmjs/web test:integration -- --reporter=verbose
+          else
+            pnpm --filter=@tpmjs/web test:integration
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: |
+            apps/web/test-results/
+            apps/web/coverage/
+          retention-days: 7
+
+  cleanup:
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build @tpmjs/db
+        run: pnpm --filter=@tpmjs/db build
+
+      - name: Cleanup orphaned test data
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          INTEGRATION_TEST_USER_ID: ${{ secrets.INTEGRATION_TEST_USER_ID }}
+        run: pnpm --filter=@tpmjs/web tsx src/test/integration/_helpers/cleanup-orphans.ts

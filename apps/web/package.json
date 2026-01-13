@@ -12,6 +12,9 @@
     "clean": "rm -rf .next .turbo",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "INTEGRATION_TESTS=true vitest run --config vitest.integration.config.ts",
+    "test:integration:watch": "INTEGRATION_TESTS=true vitest --config vitest.integration.config.ts",
+    "test:setup-credentials": "tsx src/test/integration/_helpers/setup-test-credentials.ts",
     "generate-og": "tsx scripts/generate-og-images.ts"
   },
   "dependencies": {
