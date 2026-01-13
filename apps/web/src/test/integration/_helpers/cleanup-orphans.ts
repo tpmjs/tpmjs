@@ -36,15 +36,11 @@ async function main() {
   try {
     // Count existing test data
     const testAgentCount = await prisma.agent.count({
-      where: userId
-        ? { userId, uid: { startsWith: 'test-' } }
-        : { uid: { startsWith: 'test-' } },
+      where: userId ? { userId, uid: { startsWith: 'test-' } } : { uid: { startsWith: 'test-' } },
     });
 
     const testCollectionCount = await prisma.collection.count({
-      where: userId
-        ? { userId, slug: { startsWith: 'test-' } }
-        : { slug: { startsWith: 'test-' } },
+      where: userId ? { userId, slug: { startsWith: 'test-' } } : { slug: { startsWith: 'test-' } },
     });
 
     console.log(`Found ${testAgentCount} test agent(s)`);
@@ -58,9 +54,7 @@ async function main() {
     // Clean up test conversations (depend on agents)
     const convDeleteResult = await prisma.conversation.deleteMany({
       where: {
-        agent: userId
-          ? { userId, uid: { startsWith: 'test-' } }
-          : { uid: { startsWith: 'test-' } },
+        agent: userId ? { userId, uid: { startsWith: 'test-' } } : { uid: { startsWith: 'test-' } },
       },
     });
     console.log(`Deleted ${convDeleteResult.count} conversation(s)`);
@@ -68,9 +62,7 @@ async function main() {
     // Clean up agent-tool associations
     const agentToolResult = await prisma.agentTool.deleteMany({
       where: {
-        agent: userId
-          ? { userId, uid: { startsWith: 'test-' } }
-          : { uid: { startsWith: 'test-' } },
+        agent: userId ? { userId, uid: { startsWith: 'test-' } } : { uid: { startsWith: 'test-' } },
       },
     });
     console.log(`Deleted ${agentToolResult.count} agent-tool association(s)`);
@@ -78,18 +70,14 @@ async function main() {
     // Clean up agent-collection associations
     const agentCollResult = await prisma.agentCollection.deleteMany({
       where: {
-        agent: userId
-          ? { userId, uid: { startsWith: 'test-' } }
-          : { uid: { startsWith: 'test-' } },
+        agent: userId ? { userId, uid: { startsWith: 'test-' } } : { uid: { startsWith: 'test-' } },
       },
     });
     console.log(`Deleted ${agentCollResult.count} agent-collection association(s)`);
 
     // Clean up test agents
     const agentResult = await prisma.agent.deleteMany({
-      where: userId
-        ? { userId, uid: { startsWith: 'test-' } }
-        : { uid: { startsWith: 'test-' } },
+      where: userId ? { userId, uid: { startsWith: 'test-' } } : { uid: { startsWith: 'test-' } },
     });
     console.log(`Deleted ${agentResult.count} agent(s)`);
 
@@ -105,9 +93,7 @@ async function main() {
 
     // Clean up test collections
     const collResult = await prisma.collection.deleteMany({
-      where: userId
-        ? { userId, slug: { startsWith: 'test-' } }
-        : { slug: { startsWith: 'test-' } },
+      where: userId ? { userId, slug: { startsWith: 'test-' } } : { slug: { startsWith: 'test-' } },
     });
     console.log(`Deleted ${collResult.count} collection(s)`);
 

@@ -5,7 +5,11 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { cleanupTestContext, getTestContext, type IntegrationTestContext } from '../_helpers/test-context';
+import {
+  cleanupTestContext,
+  getTestContext,
+  type IntegrationTestContext,
+} from '../_helpers/test-context';
 
 interface CollectionResponse {
   id: string;
@@ -59,9 +63,12 @@ describe('Collections CRUD Endpoints', () => {
       await ctx.factories.collection.create({ name: uniqueName });
 
       // Try to create second with same name
-      const result = await ctx.apiKeyClient.post<{ success: boolean; error?: { code: string } }>('/api/collections', {
-        name: uniqueName,
-      });
+      const result = await ctx.apiKeyClient.post<{ success: boolean; error?: { code: string } }>(
+        '/api/collections',
+        {
+          name: uniqueName,
+        }
+      );
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe(409);

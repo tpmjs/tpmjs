@@ -5,7 +5,11 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { cleanupTestContext, getTestContext, type IntegrationTestContext } from '../_helpers/test-context';
+import {
+  cleanupTestContext,
+  getTestContext,
+  type IntegrationTestContext,
+} from '../_helpers/test-context';
 
 interface AgentResponse {
   id: string;
@@ -66,12 +70,15 @@ describe('Agents CRUD Endpoints', () => {
       expect(firstAgent.uid).toBe(uid);
 
       // Create second with same uid - should succeed with modified uid
-      const result = await ctx.apiKeyClient.post<{ success: boolean; data: { uid: string } }>('/api/agents', {
-        uid,
-        name: `Duplicate UID Agent ${Date.now()}`,
-        provider: 'OPENAI',
-        modelId: 'gpt-4o-mini',
-      });
+      const result = await ctx.apiKeyClient.post<{ success: boolean; data: { uid: string } }>(
+        '/api/agents',
+        {
+          uid,
+          name: `Duplicate UID Agent ${Date.now()}`,
+          provider: 'OPENAI',
+          modelId: 'gpt-4o-mini',
+        }
+      );
 
       expect(result.ok).toBe(true);
       if (result.ok) {

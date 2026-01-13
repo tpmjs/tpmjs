@@ -533,7 +533,10 @@ export default function CollectionDetailPage(): React.ReactElement {
               <h3 className="font-semibold text-amber-900">Set your username to enable MCP</h3>
               <p className="text-sm text-amber-700 mt-1">
                 You need to set a username before you can share this collection as an MCP server.
-                Your MCP endpoint URL will be: <code className="bg-amber-100 px-1 rounded">tpmjs.com/api/mcp/your-username/{collection.slug}/http</code>
+                Your MCP endpoint URL will be:{' '}
+                <code className="bg-amber-100 px-1 rounded">
+                  tpmjs.com/api/mcp/your-username/{collection.slug}/http
+                </code>
               </p>
               <Link href="/dashboard/settings/profile" className="inline-block mt-3">
                 <Button size="sm" variant="secondary">

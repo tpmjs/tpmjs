@@ -197,7 +197,8 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
               <div>
                 <p className="font-medium">Complete your account setup</p>
                 <p className="text-amber-700 mt-1">
-                  Please set your username to complete your account setup. This is required to use MCP endpoints and public profiles.
+                  Please set your username to complete your account setup. This is required to use
+                  MCP endpoints and public profiles.
                 </p>
               </div>
             </div>
@@ -260,7 +261,11 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
               {/* Status indicator */}
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                 {checkingUsername && (
-                  <Icon icon="loader" size="sm" className="animate-spin text-foreground-secondary" />
+                  <Icon
+                    icon="loader"
+                    size="sm"
+                    className="animate-spin text-foreground-secondary"
+                  />
                 )}
                 {!checkingUsername && usernameCheck?.available && (
                   <Icon icon="check" size="sm" className="text-green-500" />
@@ -297,9 +302,7 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
               disabled
               className="w-full px-3 py-2 border border-border rounded-lg bg-surface-secondary text-foreground-secondary cursor-not-allowed"
             />
-            <p className="mt-1 text-xs text-foreground-tertiary">
-              Email cannot be changed
-            </p>
+            <p className="mt-1 text-xs text-foreground-tertiary">Email cannot be changed</p>
           </div>
 
           {/* MCP URL Preview */}

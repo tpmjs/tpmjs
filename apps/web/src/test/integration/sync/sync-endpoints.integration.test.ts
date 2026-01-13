@@ -5,7 +5,11 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { cleanupTestContext, getTestContext, type IntegrationTestContext } from '../_helpers/test-context';
+import {
+  cleanupTestContext,
+  getTestContext,
+  type IntegrationTestContext,
+} from '../_helpers/test-context';
 
 // Skip if CRON_SECRET is not configured
 const CRON_SECRET_CONFIGURED = !!process.env.CRON_SECRET;

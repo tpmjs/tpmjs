@@ -93,7 +93,10 @@ export function createAgentFactory(api: ApiClient, tracker: TestDataTracker) {
     /**
      * Create multiple test agents
      */
-    async createMany(count: number, options: CreateAgentOptions = {}): Promise<AgentFactoryResult[]> {
+    async createMany(
+      count: number,
+      options: CreateAgentOptions = {}
+    ): Promise<AgentFactoryResult[]> {
       const agents: AgentFactoryResult[] = [];
       for (let i = 0; i < count; i++) {
         const agent = await this.create({
@@ -110,7 +113,9 @@ export function createAgentFactory(api: ApiClient, tracker: TestDataTracker) {
      * Get an agent by ID
      */
     async get(id: string): Promise<AgentFactoryResult | null> {
-      const result = await api.get<{ success: boolean; data: AgentFactoryResult }>(`/api/agents/${id}`);
+      const result = await api.get<{ success: boolean; data: AgentFactoryResult }>(
+        `/api/agents/${id}`
+      );
       if (!result.ok) {
         return null;
       }
@@ -120,10 +125,7 @@ export function createAgentFactory(api: ApiClient, tracker: TestDataTracker) {
     /**
      * Update an agent
      */
-    async update(
-      id: string,
-      updates: Partial<CreateAgentOptions>
-    ): Promise<AgentFactoryResult> {
+    async update(id: string, updates: Partial<CreateAgentOptions>): Promise<AgentFactoryResult> {
       const result = await api.patch<{ success: boolean; data: AgentFactoryResult }>(
         `/api/agents/${id}`,
         updates

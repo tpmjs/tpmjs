@@ -5,7 +5,11 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { cleanupTestContext, getTestContext, type IntegrationTestContext } from '../_helpers/test-context';
+import {
+  cleanupTestContext,
+  getTestContext,
+  type IntegrationTestContext,
+} from '../_helpers/test-context';
 
 interface PublicAgent {
   id: string;
@@ -126,7 +130,9 @@ describe('Public Agents Endpoints', () => {
     });
 
     it('should return 404 for non-existent agent', async () => {
-      const result = await ctx.publicClient.get('/api/public/agents/nonexistent-user/nonexistent-agent');
+      const result = await ctx.publicClient.get(
+        '/api/public/agents/nonexistent-user/nonexistent-agent'
+      );
 
       expect(result.ok).toBe(false);
       expect(result.status).toBe(404);

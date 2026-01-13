@@ -14,7 +14,11 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { cleanupTestContext, getTestContext, type IntegrationTestContext } from '../_helpers/test-context';
+import {
+  cleanupTestContext,
+  getTestContext,
+  type IntegrationTestContext,
+} from '../_helpers/test-context';
 import { extractTextFromChunks, findSSEEvent, filterSSEEvents } from '../_helpers/sse-parser';
 
 describe('Agent Conversations Endpoints', () => {
