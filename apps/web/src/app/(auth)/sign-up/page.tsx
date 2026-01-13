@@ -112,19 +112,47 @@ export default function SignUpPage() {
       }
 
       if (data) {
-        // Account created - now set the username
-        try {
-          const profileResponse = await fetch('/api/user/profile', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username }),
-          });
+        // Account created - now set the username (REQUIRED)
+        let usernameSet = false;
+        let retries = 3;
 
-          if (!profileResponse.ok) {
-            console.warn('Failed to set username, user can set it later');
+        while (!usernameSet && retries > 0) {
+          try {
+            const profileResponse = await fetch('/api/user/profile', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ username }),
+            });
+
+            if (profileResponse.ok) {
+              usernameSet = true;
+            } else {
+              const errorData = await profileResponse.json();
+              if (errorData.error === 'This username is already taken') {
+                // Username was taken between check and signup
+                setError('Username was taken. Please choose a different one and try signing in.');
+                setLoading(false);
+                return;
+              }
+              retries--;
+              if (retries > 0) {
+                await new Promise((resolve) => setTimeout(resolve, 500));
+              }
+            }
+          } catch {
+            retries--;
+            if (retries > 0) {
+              await new Promise((resolve) => setTimeout(resolve, 500));
+            }
           }
-        } catch {
-          console.warn('Failed to set username, user can set it later');
+        }
+
+        if (!usernameSet) {
+          // Critical: Username couldn't be set, but account exists
+          // Redirect to profile page to set it manually
+          console.error('Failed to set username after retries');
+          window.location.href = '/dashboard/settings/profile?setup=1';
+          return;
         }
 
         // Redirect to verify email page

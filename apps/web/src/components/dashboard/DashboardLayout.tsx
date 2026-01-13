@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/agents', label: 'Agents', icon: 'terminal' },
   { href: '/dashboard/collections', label: 'Collections', icon: 'folder' },
   { href: '/dashboard/usage', label: 'Usage', icon: 'globe' },
+  { href: '/dashboard/settings/profile', label: 'Profile', icon: 'user' },
   { href: '/dashboard/settings/tpmjs-api-keys', label: 'TPMJS API Keys', icon: 'key' },
   { href: '/dashboard/settings/api-keys', label: 'Provider Keys', icon: 'edit' },
   { href: '/dashboard/settings/bridge', label: 'Bridge', icon: 'link' },

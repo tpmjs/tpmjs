@@ -42,20 +42,32 @@ function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): 
 }
 
 /**
- * Find a public collection by username and slug or ID
- * Supports both human-readable slugs and collection IDs for flexibility
+ * Find a user by username
  */
-async function getPublicCollectionByUsernameAndSlugOrId(username: string, slugOrId: string) {
+async function getUserByUsername(username: string) {
+  return withTimeout(
+    prisma.user.findUnique({
+      where: { username },
+      select: { id: true, username: true },
+    }),
+    DB_TIMEOUT_MS,
+    `Database query timed out after ${DB_TIMEOUT_MS}ms`
+  );
+}
+
+/**
+ * Find a collection by user ID and slug or collection ID
+ * Supports both human-readable slugs and collection IDs for flexibility
+ * Returns the collection regardless of public/private status - authorization is checked separately
+ */
+async function getCollectionByUserIdAndSlugOrId(userId: string, slugOrId: string) {
   return withTimeout(
     prisma.collection.findFirst({
       where: {
-        OR: [
-          { slug: slugOrId, user: { username } },
-          { id: slugOrId, user: { username } },
-        ],
-        isPublic: true,
+        userId,
+        OR: [{ slug: slugOrId }, { id: slugOrId }],
       },
-      select: { id: true, name: true, description: true, userId: true },
+      select: { id: true, name: true, description: true, userId: true, isPublic: true },
     }),
     DB_TIMEOUT_MS,
     `Database query timed out after ${DB_TIMEOUT_MS}ms`
@@ -283,17 +295,54 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
-    const collection = await getPublicCollectionByUsernameAndSlugOrId(username, slug);
+    // First, find the user by username
+    const user = await getUserByUsername(username);
 
-    if (!collection) {
+    if (!user) {
       return NextResponse.json(
-        { jsonrpc: '2.0', error: { code: -32001, message: 'Collection not found' }, id: null },
+        {
+          jsonrpc: '2.0',
+          error: {
+            code: -32001,
+            message: `User '${username}' not found. Check the username in your MCP endpoint URL.`,
+          },
+          id: null,
+        },
         { status: 404 }
       );
     }
 
-    // Owner-only enforcement: Only the collection owner can execute tools via MCP
-    if (authResult.userId !== collection.userId) {
+    // Then find the collection by user ID and slug/ID
+    const collection = await getCollectionByUserIdAndSlugOrId(user.id, slug);
+
+    if (!collection) {
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          error: {
+            code: -32001,
+            message: `Collection '${slug}' not found for user '${username}'.`,
+          },
+          id: null,
+        },
+        { status: 404 }
+      );
+    }
+
+    // Authorization check:
+    // - Owners can always access their own collections (public or private)
+    // - Non-owners can only access public collections (and must fork to use)
+    const isOwner = authResult.userId === collection.userId;
+
+    if (!isOwner) {
+      if (!collection.isPublic) {
+        // Private collection, not the owner - don't reveal existence
+        return NextResponse.json(
+          { jsonrpc: '2.0', error: { code: -32001, message: 'Collection not found' }, id: null },
+          { status: 404 }
+        );
+      }
+      // Public collection but not the owner - they need to fork it
       return NextResponse.json(
         {
           jsonrpc: '2.0',
@@ -379,6 +428,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 /**
  * GET /api/mcp/[username]/[slug]/[transport]
  * Returns server info (for http) or establishes SSE connection (for sse)
+ * Allows owners to access their private collections when authenticated
  */
 export async function GET(_request: NextRequest, context: RouteContext): Promise<Response> {
   try {
@@ -388,10 +438,35 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       return NextResponse.json({ error: `Invalid transport: ${transport}` }, { status: 400 });
     }
 
-    const collection = await getPublicCollectionByUsernameAndSlugOrId(username, slug);
+    // First, find the user by username
+    const user = await getUserByUsername(username);
+
+    if (!user) {
+      return NextResponse.json(
+        { error: `User '${username}' not found. Check the username in your MCP endpoint URL.` },
+        { status: 404 }
+      );
+    }
+
+    // Then find the collection
+    const collection = await getCollectionByUserIdAndSlugOrId(user.id, slug);
 
     if (!collection) {
-      return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: `Collection '${slug}' not found for user '${username}'.` },
+        { status: 404 }
+      );
+    }
+
+    // For GET requests, check if user can access this collection:
+    // - Public collections are accessible to anyone
+    // - Private collections are only accessible to the owner (when authenticated)
+    if (!collection.isPublic) {
+      const authResult = await authenticateRequest();
+      if (!authResult.authenticated || authResult.userId !== collection.userId) {
+        // Don't reveal existence of private collections
+        return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
+      }
     }
 
     if (transport === 'sse') {

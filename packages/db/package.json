@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
+    "db:backfill-usernames": "tsx prisma/backfill-usernames.ts",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
