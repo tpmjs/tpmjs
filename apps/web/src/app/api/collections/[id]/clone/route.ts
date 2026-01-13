@@ -1,5 +1,5 @@
 import { prisma } from '@tpmjs/db';
-import { COLLECTION_LIMITS, CloneCollectionSchema } from '@tpmjs/types/collection';
+import { CloneCollectionSchema, COLLECTION_LIMITS } from '@tpmjs/types/collection';
 import { headers } from 'next/headers';
 import type { NextRequest } from 'next/server';
 
@@ -135,18 +135,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const name = customName || `${sourceCollection.name} (copy)`;
     const slug = await generateUniqueSlug(session.user.id, name);
 
-    // Create the cloned collection with all its tools
-    const clonedCollection = await prisma.$transaction(async (tx) => {
-      // Create the collection
+    // Create the forked collection with all its tools
+    // NOTE: envVars and executorConfig are NOT copied - user must add their own
+    const forkedCollection = await prisma.$transaction(async (tx) => {
+      // Create the collection with fork reference
       const newCollection = await tx.collection.create({
         data: {
           userId: session.user.id,
           name,
           slug,
           description: sourceCollection.description,
-          isPublic: false, // Cloned collections start as private
+          isPublic: false, // Forked collections start as private
           likeCount: 1, // Start with 1 like (from owner)
+          forkedFromId: sourceCollection.id, // Track fork origin
+          // NOTE: envVars is intentionally NOT copied - user adds their own API keys
+          // NOTE: executorConfig is intentionally NOT copied - user configures their own
         },
+      });
+
+      // Increment fork count on source collection
+      await tx.collection.update({
+        where: { id: sourceCollection.id },
+        data: { forkCount: { increment: 1 } },
       });
 
       // Auto-like the collection
@@ -172,25 +182,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return newCollection;
     });
 
-    // Log activity
+    // Log activity as FORK
     logActivity({
       userId: session.user.id,
-      type: 'COLLECTION_CLONED',
-      targetName: clonedCollection.name,
+      type: 'COLLECTION_FORKED',
+      targetName: forkedCollection.name,
       targetType: 'collection',
-      collectionId: clonedCollection.id,
-      metadata: { sourceCollectionId: sourceCollection.id },
+      collectionId: forkedCollection.id,
+      metadata: {
+        sourceCollectionId: sourceCollection.id,
+        sourceCollectionName: sourceCollection.name,
+      },
     });
 
     return apiSuccess(
       {
-        id: clonedCollection.id,
-        name: clonedCollection.name,
-        slug: clonedCollection.slug,
-        description: clonedCollection.description,
-        isPublic: clonedCollection.isPublic,
+        id: forkedCollection.id,
+        name: forkedCollection.name,
+        slug: forkedCollection.slug,
+        description: forkedCollection.description,
+        isPublic: forkedCollection.isPublic,
+        forkedFromId: forkedCollection.forkedFromId,
         toolCount: sourceCollection.tools.length,
-        createdAt: clonedCollection.createdAt,
+        createdAt: forkedCollection.createdAt,
       },
       { requestId, status: 201 }
     );

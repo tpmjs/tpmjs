@@ -179,7 +179,9 @@ export default async function HomePage(): Promise<React.ReactElement> {
               {/* Generator Highlight Box */}
               <div className="mb-12 p-6 border-2 border-primary/50 rounded-lg bg-primary/5 text-left">
                 <div className="flex flex-col sm:flex-row items-start gap-4">
-                  <div className="text-3xl sm:text-4xl">✨</div>
+                  <div className="text-3xl sm:text-4xl" aria-hidden="true">
+                    ✨
+                  </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold mb-2 text-foreground">
                       Start with Our Package Generator
@@ -208,21 +210,27 @@ export default async function HomePage(): Promise<React.ReactElement> {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
                 <div className="p-4">
-                  <div className="text-3xl mb-2">🚀</div>
+                  <div className="text-3xl mb-2" aria-hidden="true">
+                    🚀
+                  </div>
                   <h3 className="font-semibold mb-1 text-foreground">Quick Setup</h3>
                   <p className="text-sm text-foreground-secondary">
                     Add one keyword to package.json and publish to NPM
                   </p>
                 </div>
                 <div className="p-4">
-                  <div className="text-3xl mb-2">⚡</div>
+                  <div className="text-3xl mb-2" aria-hidden="true">
+                    ⚡
+                  </div>
                   <h3 className="font-semibold mb-1 text-foreground">Auto Discovery</h3>
                   <p className="text-sm text-foreground-secondary">
                     Your tool appears on tpmjs.com within 15 minutes
                   </p>
                 </div>
                 <div className="p-4">
-                  <div className="text-3xl mb-2">📊</div>
+                  <div className="text-3xl mb-2" aria-hidden="true">
+                    📊
+                  </div>
                   <h3 className="font-semibold mb-1 text-foreground">Quality Metrics</h3>
                   <p className="text-sm text-foreground-secondary">
                     Automatic scoring based on docs, downloads, and stars

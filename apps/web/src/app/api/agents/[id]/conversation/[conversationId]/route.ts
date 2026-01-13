@@ -122,6 +122,19 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
     }
 
+    // Owner-only enforcement: Only the agent owner can chat with the agent
+    if (authResult.userId !== agent.userId) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            'Fork this agent to use it. Only the agent owner can chat with agents. ' +
+            'Visit the agent page to fork it to your account.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Map provider to expected key name format
     const providerKeyNames: Record<string, string> = {
       OPENAI: 'OPENAI_API_KEY',

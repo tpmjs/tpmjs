@@ -57,7 +57,7 @@ export function convertToMcpTool(tool: Tool & { package: Package }): McpToolDefi
  * Parsed tool name result - either a registry tool or a bridge tool
  */
 export type ParsedToolName =
-  | { type: 'registry'; packageName: string; toolName: string }
+  | { type: 'registry'; packageName: string; literalPackageName: string; toolName: string }
   | { type: 'bridge'; serverId: string; toolName: string };
 
 /**
@@ -70,7 +70,7 @@ export type ParsedToolName =
 export function parseToolName(mcpName: string): ParsedToolName | null {
   // Check if it's a bridge tool
   const bridgeMatch = mcpName.match(/^bridge--([^-]+(?:-[^-]+)*)--(.+)$/);
-  if (bridgeMatch && bridgeMatch[1] && bridgeMatch[2]) {
+  if (bridgeMatch?.[1] && bridgeMatch[2]) {
     return {
       type: 'bridge',
       serverId: bridgeMatch[1],
@@ -85,11 +85,19 @@ export function parseToolName(mcpName: string): ParsedToolName | null {
   const pkg = match[1];
   const toolName = match[2];
 
-  // Reconstruct @scope/name format if it looks scoped
+  // Try to reconstruct @scope/name format if it looks scoped
   // tpmjs-hello → @tpmjs/hello (first dash becomes @scope/)
-  const packageName = pkg.includes('-') ? `@${pkg.replace('-', '/')}` : pkg;
+  // But also keep the original for non-scoped packages like firecrawl-aisdk
+  const scopedPackageName = pkg.includes('-') ? `@${pkg.replace('-', '/')}` : pkg;
+  const literalPackageName = pkg;
 
-  return { type: 'registry', packageName, toolName };
+  // Return both possible interpretations - the handler will try both
+  return {
+    type: 'registry',
+    packageName: scopedPackageName,
+    literalPackageName,
+    toolName,
+  };
 }
 
 /**

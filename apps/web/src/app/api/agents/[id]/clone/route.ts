@@ -151,9 +151,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
-    // Create the cloned agent with all its relationships
-    const clonedAgent = await prisma.$transaction(async (tx) => {
-      // Create the agent
+    // Create the forked agent with all its relationships
+    // NOTE: envVars and executorConfig are NOT copied - user must add their own
+    const forkedAgent = await prisma.$transaction(async (tx) => {
+      // Create the agent with fork reference
       const newAgent = await tx.agent.create({
         data: {
           userId: session.user.id,
@@ -166,9 +167,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
           temperature: sourceAgent.temperature,
           maxToolCallsPerTurn: sourceAgent.maxToolCallsPerTurn,
           maxMessagesInContext: sourceAgent.maxMessagesInContext,
-          isPublic: false, // Cloned agents start as private
+          isPublic: false, // Forked agents start as private
           likeCount: 1, // Start with 1 like (from owner)
+          forkedFromId: sourceAgent.id, // Track fork origin
+          // NOTE: envVars is intentionally NOT copied - user adds their own API keys
+          // NOTE: executorConfig is intentionally NOT copied - user configures their own
         },
+      });
+
+      // Increment fork count on source agent
+      await tx.agent.update({
+        where: { id: sourceAgent.id },
+        data: { forkCount: { increment: 1 } },
       });
 
       // Auto-like the agent
@@ -215,24 +225,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return newAgent;
     });
 
-    // Log activity
+    // Log activity as FORK
     logActivity({
       userId: session.user.id,
-      type: 'AGENT_CLONED',
-      targetName: clonedAgent.name,
+      type: 'AGENT_FORKED',
+      targetName: forkedAgent.name,
       targetType: 'agent',
-      agentId: clonedAgent.id,
-      metadata: { sourceAgentId: sourceAgent.id },
+      agentId: forkedAgent.id,
+      metadata: {
+        sourceAgentId: sourceAgent.id,
+        sourceAgentName: sourceAgent.name,
+      },
     });
 
     return apiSuccess(
       {
-        id: clonedAgent.id,
-        uid: clonedAgent.uid,
-        name: clonedAgent.name,
-        description: clonedAgent.description,
-        isPublic: clonedAgent.isPublic,
-        createdAt: clonedAgent.createdAt,
+        id: forkedAgent.id,
+        uid: forkedAgent.uid,
+        name: forkedAgent.name,
+        description: forkedAgent.description,
+        isPublic: forkedAgent.isPublic,
+        forkedFromId: forkedAgent.forkedFromId,
+        createdAt: forkedAgent.createdAt,
       },
       { requestId, status: 201 }
     );

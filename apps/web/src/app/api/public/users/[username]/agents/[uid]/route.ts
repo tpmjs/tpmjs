@@ -71,6 +71,16 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           orderBy: { position: 'asc' },
           take: 20,
         },
+        forkedFrom: {
+          select: {
+            id: true,
+            name: true,
+            uid: true,
+            user: {
+              select: { username: true },
+            },
+          },
+        },
         _count: {
           select: { tools: true, collections: true },
         },
@@ -97,6 +107,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         systemPrompt: agent.systemPrompt,
         temperature: agent.temperature,
         likeCount: agent.likeCount,
+        forkCount: agent.forkCount,
         toolCount: agent._count.tools,
         collectionCount: agent._count.collections,
         createdAt: agent.createdAt.toISOString(),
@@ -122,6 +133,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
             toolCount: ac.collection._count.tools,
           },
         })),
+        forkedFromId: agent.forkedFromId,
+        forkedFrom: agent.forkedFrom,
       },
       { requestId }
     );

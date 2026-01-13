@@ -90,7 +90,10 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
           <div className="max-w-3xl">
             <div className="relative">
               {/* Command Line Prompt */}
-              <div className="absolute left-0 top-0 bottom-0 flex items-center pl-6 font-mono text-brutalist-accent text-lg font-bold pointer-events-none">
+              <div
+                aria-hidden="true"
+                className="absolute left-0 top-0 bottom-0 flex items-center pl-6 font-mono text-brutalist-accent text-lg font-bold pointer-events-none"
+              >
                 $
               </div>
 
@@ -100,6 +103,7 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="search tools..."
+                aria-label="Search tools"
                 className="brutalist-border h-16 md:h-20 pl-14 pr-36 md:pr-40 text-lg md:text-xl font-mono placeholder:text-foreground-tertiary placeholder:uppercase focus:ring-4 focus:ring-brutalist-accent focus:ring-offset-0 bg-background"
                 style={{ borderRadius: 0 }}
               />
@@ -126,7 +130,10 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-pulse">
+        <div
+          aria-hidden="true"
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-pulse motion-reduce:animate-none"
+        >
           <span className="font-mono text-xs uppercase tracking-widest text-foreground-tertiary">
             Scroll
           </span>

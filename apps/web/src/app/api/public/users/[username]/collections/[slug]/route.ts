@@ -58,6 +58,16 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           orderBy: { position: 'asc' },
           take: 100,
         },
+        forkedFrom: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            user: {
+              select: { username: true },
+            },
+          },
+        },
         _count: {
           select: { tools: true },
         },
@@ -80,6 +90,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         name: collection.name,
         description: collection.description,
         likeCount: collection.likeCount,
+        forkCount: collection.forkCount,
         toolCount: collection._count.tools,
         createdAt: collection.createdAt.toISOString(),
         createdBy: {
@@ -95,6 +106,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           note: ct.note,
           tool: ct.tool,
         })),
+        forkedFromId: collection.forkedFromId,
+        forkedFrom: collection.forkedFrom,
       },
       { requestId }
     );

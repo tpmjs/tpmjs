@@ -7,8 +7,10 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
-import { CloneButton } from '~/components/CloneButton';
+import { ForkButton } from '~/components/ForkButton';
+import { ForkedFromBadge } from '~/components/ForkedFromBadge';
 import { LikeButton } from '~/components/LikeButton';
+import { useSession } from '~/lib/auth-client';
 
 interface AgentTool {
   id: string;
@@ -46,6 +48,7 @@ interface PublicAgent {
   systemPrompt: string | null;
   temperature: number;
   likeCount: number;
+  forkCount: number;
   toolCount: number;
   collectionCount: number;
   createdAt: string;
@@ -57,6 +60,15 @@ interface PublicAgent {
   };
   tools: AgentTool[];
   collections: AgentCollection[];
+  forkedFromId: string | null;
+  forkedFrom: {
+    id: string;
+    name: string;
+    uid: string;
+    user: {
+      username: string;
+    };
+  } | null;
 }
 
 export default function PrettyAgentDetailPage(): React.ReactElement {
@@ -64,10 +76,14 @@ export default function PrettyAgentDetailPage(): React.ReactElement {
   const rawUsername = params.username as string;
   const username = rawUsername.startsWith('@') ? rawUsername.slice(1) : rawUsername;
   const uid = params.uid as string;
+  const { data: session } = useSession();
 
   const [agent, setAgent] = useState<PublicAgent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if current user is the owner
+  const isOwner = session?.user?.id && agent?.createdBy?.id === session.user.id;
 
   const fetchAgent = useCallback(async () => {
     try {
@@ -123,22 +139,29 @@ export default function PrettyAgentDetailPage(): React.ReactElement {
                 {agent.description && (
                   <p className="text-foreground-secondary">{agent.description}</p>
                 )}
-                <Link
-                  href={`/${username}`}
-                  className="text-sm text-foreground-tertiary hover:text-foreground-secondary mt-2 inline-flex items-center gap-1"
-                >
-                  by @{agent.createdBy.username}
-                </Link>
+                <div className="flex items-center gap-3 mt-2">
+                  <Link
+                    href={`/${username}`}
+                    className="text-sm text-foreground-tertiary hover:text-foreground-secondary inline-flex items-center gap-1"
+                  >
+                    by @{agent.createdBy.username}
+                  </Link>
+                  {agent.forkedFrom && (
+                    <ForkedFromBadge type="agent" forkedFrom={agent.forkedFrom} />
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <LikeButton entityType="agent" entityId={agent.id} initialCount={agent.likeCount} />
-                <CloneButton type="agent" sourceId={agent.id} sourceName={agent.name} />
-                <Link href={`/${username}/agents/${uid}/chat`}>
-                  <Button>
-                    <Icon icon="message" className="w-4 h-4 mr-2" />
-                    Chat
-                  </Button>
-                </Link>
+                <ForkButton type="agent" sourceId={agent.id} sourceName={agent.name} />
+                {isOwner && (
+                  <Link href={`/${username}/agents/${uid}/chat`}>
+                    <Button>
+                      <Icon icon="message" className="w-4 h-4 mr-2" />
+                      Chat
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -152,9 +175,20 @@ export default function PrettyAgentDetailPage(): React.ReactElement {
                 <Icon icon="folder" className="w-4 h-4" />
                 {agent.collectionCount} collections
               </span>
+              {agent.forkCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <Icon icon="gitFork" className="w-4 h-4" />
+                  {agent.forkCount} forks
+                </span>
+              )}
               <span>Model: {agent.modelId}</span>
               <span>Temperature: {agent.temperature}</span>
             </div>
+
+            {/* Fork CTA for non-owners */}
+            {!isOwner && (
+              <ForkButton type="agent" sourceId={agent.id} sourceName={agent.name} variant="full" />
+            )}
 
             {/* System Prompt */}
             {agent.systemPrompt && (

@@ -169,6 +169,8 @@ export const AgentSchema = z.object({
   isPublic: z.boolean(),
   toolCount: z.number(),
   collectionCount: z.number(),
+  forkCount: z.number().default(0),
+  forkedFromId: z.string().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

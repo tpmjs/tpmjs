@@ -436,6 +436,12 @@ model Collection {
   // These are passed to tools when executed
   envVars        Json?   @map("env_vars") @db.JsonB
 
+  // Fork tracking - for "fork to use" model
+  forkedFromId String?     @map("forked_from_id")
+  forkedFrom   Collection? @relation("CollectionForks", fields: [forkedFromId], references: [id], onDelete: SetNull)
+  forks        Collection[] @relation("CollectionForks")
+  forkCount    Int         @default(0) @map("fork_count")
+
   // Timestamps
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
@@ -453,6 +459,8 @@ model Collection {
   @@index([isPublic])
   @@index([likeCount])
   @@index([createdAt])
+  @@index([forkedFromId])
+  @@index([forkCount])
   @@map("collections")
 }
 
@@ -537,6 +545,12 @@ model Agent {
   // Agent env vars override collection env vars, otherwise merged
   envVars              Json?      @map("env_vars") @db.JsonB
 
+  // Fork tracking - for "fork to use" model
+  forkedFromId         String?    @map("forked_from_id")
+  forkedFrom           Agent?     @relation("AgentForks", fields: [forkedFromId], references: [id], onDelete: SetNull)
+  forks                Agent[]    @relation("AgentForks")
+  forkCount            Int        @default(0) @map("fork_count")
+
   // Timestamps
   createdAt            DateTime   @default(now()) @map("created_at")
   updatedAt            DateTime   @updatedAt @map("updated_at")
@@ -553,6 +567,8 @@ model Agent {
   @@index([isPublic])
   @@index([likeCount])
   @@index([createdAt])
+  @@index([forkedFromId])
+  @@index([forkCount])
   @@map("agents")
 }
 
@@ -755,6 +771,7 @@ enum ActivityType {
   AGENT_UPDATED
   AGENT_DELETED
   AGENT_CLONED
+  AGENT_FORKED
   AGENT_TOOL_ADDED
   AGENT_TOOL_REMOVED
   AGENT_COLLECTION_ADDED
@@ -763,6 +780,7 @@ enum ActivityType {
   COLLECTION_UPDATED
   COLLECTION_DELETED
   COLLECTION_CLONED
+  COLLECTION_FORKED
   COLLECTION_TOOL_ADDED
   COLLECTION_TOOL_REMOVED
   TOOL_LIKED

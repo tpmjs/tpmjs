@@ -8,8 +8,10 @@ import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
-import { CloneButton } from '~/components/CloneButton';
+import { ForkButton } from '~/components/ForkButton';
+import { ForkedFromBadge } from '~/components/ForkedFromBadge';
 import { LikeButton } from '~/components/LikeButton';
+import { useSession } from '~/lib/auth-client';
 
 interface CollectionTool {
   id: string;
@@ -35,6 +37,7 @@ interface PublicCollection {
   description: string | null;
   likeCount: number;
   toolCount: number;
+  forkCount: number;
   createdAt: string;
   createdBy: {
     id: string;
@@ -43,6 +46,15 @@ interface PublicCollection {
     image: string | null;
   };
   tools: CollectionTool[];
+  forkedFromId: string | null;
+  forkedFrom: {
+    id: string;
+    name: string;
+    slug: string;
+    user: {
+      username: string;
+    };
+  } | null;
 }
 
 function McpUrlSection({ username, slug }: { username: string; slug: string }) {
@@ -163,10 +175,14 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
   const rawUsername = params.username as string;
   const username = rawUsername.startsWith('@') ? rawUsername.slice(1) : rawUsername;
   const slug = params.slug as string;
+  const { data: session } = useSession();
 
   const [collection, setCollection] = useState<PublicCollection | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if current user is the owner
+  const isOwner = session?.user?.id && collection?.createdBy?.id === session.user.id;
 
   const fetchCollection = useCallback(async () => {
     try {
@@ -219,12 +235,17 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
                 {collection.description && (
                   <p className="text-foreground-secondary mt-2">{collection.description}</p>
                 )}
-                <Link
-                  href={`/${username}`}
-                  className="text-sm text-foreground-tertiary hover:text-foreground-secondary mt-2 inline-flex items-center gap-1"
-                >
-                  by @{collection.createdBy.username}
-                </Link>
+                <div className="flex items-center gap-3 mt-2">
+                  <Link
+                    href={`/${username}`}
+                    className="text-sm text-foreground-tertiary hover:text-foreground-secondary inline-flex items-center gap-1"
+                  >
+                    by @{collection.createdBy.username}
+                  </Link>
+                  {collection.forkedFrom && (
+                    <ForkedFromBadge type="collection" forkedFrom={collection.forkedFrom} />
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <LikeButton
@@ -232,7 +253,7 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
                   entityId={collection.id}
                   initialCount={collection.likeCount}
                 />
-                <CloneButton
+                <ForkButton
                   type="collection"
                   sourceId={collection.id}
                   sourceName={collection.name}
@@ -250,10 +271,25 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
                 <Icon icon="heart" className="w-4 h-4" />
                 {collection.likeCount} likes
               </span>
+              {collection.forkCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <Icon icon="gitFork" className="w-4 h-4" />
+                  {collection.forkCount} forks
+                </span>
+              )}
             </div>
 
-            {/* MCP Server URLs */}
-            <McpUrlSection username={username} slug={collection.slug} />
+            {/* MCP Server URLs - Only shown for owner */}
+            {isOwner ? (
+              <McpUrlSection username={username} slug={collection.slug} />
+            ) : (
+              <ForkButton
+                type="collection"
+                sourceId={collection.id}
+                sourceName={collection.name}
+                variant="full"
+              />
+            )}
 
             {/* Tools */}
             {collection.tools.length > 0 ? (

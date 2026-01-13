@@ -23,27 +23,80 @@ interface NavDropdownProps {
 
 function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
+  const [focusedIndex, setFocusedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setFocusedIndex(-1);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Focus menu item when focusedIndex changes
+  useEffect(() => {
+    if (isOpen && focusedIndex >= 0 && menuRef.current) {
+      const menuItems = menuRef.current.querySelectorAll<HTMLElement>('[role="menuitem"]');
+      menuItems[focusedIndex]?.focus();
+    }
+  }, [focusedIndex, isOpen]);
+
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    switch (event.key) {
+      case 'Escape':
+        setIsOpen(false);
+        setFocusedIndex(-1);
+        buttonRef.current?.focus();
+        event.preventDefault();
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        if (!isOpen) {
+          setIsOpen(true);
+          setFocusedIndex(0);
+        } else {
+          setFocusedIndex((prev) => (prev < items.length - 1 ? prev + 1 : 0));
+        }
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        if (isOpen) {
+          setFocusedIndex((prev) => (prev > 0 ? prev - 1 : items.length - 1));
+        }
+        break;
+      case 'Tab':
+        if (isOpen) {
+          setIsOpen(false);
+          setFocusedIndex(-1);
+        }
+        break;
+    }
+  };
+
+  const handleItemClick = () => {
+    setIsOpen(false);
+    setFocusedIndex(-1);
+  };
+
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} onKeyDown={handleKeyDown} role="menu">
       <Button
+        ref={buttonRef}
         variant="ghost"
         size="sm"
         className="text-foreground hover:text-foreground flex items-center gap-1"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          if (!isOpen) setFocusedIndex(-1);
+        }}
         aria-expanded={isOpen}
-        aria-haspopup="true"
+        aria-haspopup="menu"
       >
         {label}
         <Icon
@@ -53,16 +106,23 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
         />
       </Button>
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-56 bg-background border border-border rounded-lg shadow-lg py-1 z-50">
-          {items.map((item) =>
+        <div
+          ref={menuRef}
+          role="menu"
+          aria-label={label}
+          className="absolute top-full left-0 mt-1 w-56 bg-background border border-border rounded-lg shadow-lg py-1 z-50"
+        >
+          {items.map((item, index) =>
             item.external ? (
               <a
                 key={item.href}
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between px-4 py-2 text-sm text-foreground hover:bg-surface transition-colors"
-                onClick={() => setIsOpen(false)}
+                role="menuitem"
+                tabIndex={focusedIndex === index ? 0 : -1}
+                className="flex items-center justify-between px-4 py-2 text-sm text-foreground hover:bg-surface focus:bg-surface focus:outline-none transition-colors"
+                onClick={handleItemClick}
               >
                 <div>
                   <div className="font-medium">{item.label}</div>
@@ -76,8 +136,10 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
               <Link
                 key={item.href}
                 href={item.href}
-                className="block px-4 py-2 text-sm text-foreground hover:bg-surface transition-colors"
-                onClick={() => setIsOpen(false)}
+                role="menuitem"
+                tabIndex={focusedIndex === index ? 0 : -1}
+                className="block px-4 py-2 text-sm text-foreground hover:bg-surface focus:bg-surface focus:outline-none transition-colors"
+                onClick={handleItemClick}
               >
                 <div className="font-medium">{item.label}</div>
                 {item.description && (

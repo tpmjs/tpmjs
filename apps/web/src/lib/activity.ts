@@ -47,6 +47,10 @@ export const ACTIVITY_MESSAGES: Record<
   AGENT_UPDATED: (name) => `Updated agent "${name}"`,
   AGENT_DELETED: (name) => `Deleted agent "${name}"`,
   AGENT_CLONED: (name) => `Cloned agent "${name}"`,
+  AGENT_FORKED: (name, meta) =>
+    meta?.sourceAgentName
+      ? `Forked agent "${meta.sourceAgentName}" as "${name}"`
+      : `Forked agent as "${name}"`,
   AGENT_TOOL_ADDED: (name, meta) =>
     meta?.toolName
       ? `Added tool "${meta.toolName}" to agent "${name}"`
@@ -67,6 +71,10 @@ export const ACTIVITY_MESSAGES: Record<
   COLLECTION_UPDATED: (name) => `Updated collection "${name}"`,
   COLLECTION_DELETED: (name) => `Deleted collection "${name}"`,
   COLLECTION_CLONED: (name) => `Cloned collection "${name}"`,
+  COLLECTION_FORKED: (name, meta) =>
+    meta?.sourceCollectionName
+      ? `Forked collection "${meta.sourceCollectionName}" as "${name}"`
+      : `Forked collection as "${name}"`,
   COLLECTION_TOOL_ADDED: (name, meta) =>
     meta?.toolName
       ? `Added tool "${meta.toolName}" to collection "${name}"`
@@ -91,6 +99,7 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
   AGENT_UPDATED: 'pencil',
   AGENT_DELETED: 'trash',
   AGENT_CLONED: 'copy',
+  AGENT_FORKED: 'gitFork',
   AGENT_TOOL_ADDED: 'link',
   AGENT_TOOL_REMOVED: 'unlink',
   AGENT_COLLECTION_ADDED: 'folderPlus',
@@ -99,6 +108,7 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
   COLLECTION_UPDATED: 'pencil',
   COLLECTION_DELETED: 'trash',
   COLLECTION_CLONED: 'copy',
+  COLLECTION_FORKED: 'gitFork',
   COLLECTION_TOOL_ADDED: 'link',
   COLLECTION_TOOL_REMOVED: 'unlink',
   TOOL_LIKED: 'heart',

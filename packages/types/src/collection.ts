@@ -107,6 +107,8 @@ export const CollectionSchema = z.object({
   description: z.string().nullable(),
   isPublic: z.boolean(),
   toolCount: z.number(),
+  forkCount: z.number().default(0),
+  forkedFromId: z.string().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });

@@ -159,6 +159,7 @@ export async function handleToolsCall(
         select: {
           executorType: true,
           executorConfig: true,
+          envVars: true,
           tools: {
             include: { tool: { include: { package: true } } },
           },
@@ -168,10 +169,23 @@ export async function handleToolsCall(
       'Database query timed out'
     );
 
-    const collectionTool = collection?.tools.find(
+    // Try both scoped (@scope/name) and literal (name-with-hyphens) package name interpretations
+    // This handles cases like:
+    // - @tpmjs/hello (scoped) → sanitized as tpmjs-hello → parsed back as @tpmjs/hello
+    // - firecrawl-aisdk (not scoped) → sanitized as firecrawl-aisdk → should match as-is
+    let collectionTool = collection?.tools.find(
       (ct) =>
         ct.tool.package.npmPackageName === parsed.packageName && ct.tool.name === parsed.toolName
     );
+
+    // If not found with scoped name, try the literal package name
+    if (!collectionTool && parsed.literalPackageName !== parsed.packageName) {
+      collectionTool = collection?.tools.find(
+        (ct) =>
+          ct.tool.package.npmPackageName === parsed.literalPackageName &&
+          ct.tool.name === parsed.toolName
+      );
+    }
 
     if (!collectionTool) {
       return {
@@ -181,17 +195,21 @@ export async function handleToolsCall(
       };
     }
 
+    // Get the actual package name that matched
+    const actualPackageName = collectionTool.tool.package.npmPackageName;
+
     // Resolve executor configuration (collection config only for MCP - no agent context)
     const executorConfig = parseExecutorConfig(
       collection?.executorType,
       collection?.executorConfig
     );
 
-    // Execute via resolved executor
+    // Execute via resolved executor with collection's environment variables
     const result = await executeWithExecutor(executorConfig, {
-      packageName: parsed.packageName,
+      packageName: actualPackageName,
       name: parsed.toolName,
       params: params.arguments ?? {},
+      env: (collection?.envVars as Record<string, string>) ?? undefined,
     });
 
     if (!result.success) {

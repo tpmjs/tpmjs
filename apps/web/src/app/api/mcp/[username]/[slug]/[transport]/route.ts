@@ -52,7 +52,7 @@ async function getPublicCollectionByUsernameAndSlug(username: string, slug: stri
         isPublic: true,
         user: { username },
       },
-      select: { id: true, name: true, description: true },
+      select: { id: true, name: true, description: true, userId: true },
     }),
     DB_TIMEOUT_MS,
     `Database query timed out after ${DB_TIMEOUT_MS}ms`
@@ -286,6 +286,23 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       return NextResponse.json(
         { jsonrpc: '2.0', error: { code: -32001, message: 'Collection not found' }, id: null },
         { status: 404 }
+      );
+    }
+
+    // Owner-only enforcement: Only the collection owner can execute tools via MCP
+    if (authResult.userId !== collection.userId) {
+      return NextResponse.json(
+        {
+          jsonrpc: '2.0',
+          error: {
+            code: -32403,
+            message:
+              'Fork this collection to use it. Only the collection owner can execute tools via MCP. ' +
+              'Visit the collection page to fork it to your account.',
+          },
+          id: null,
+        },
+        { status: 403 }
       );
     }
 
