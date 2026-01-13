@@ -85,7 +85,7 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
   };
 
   return (
-    <div className="relative" ref={dropdownRef} onKeyDown={handleKeyDown} role="menu">
+    <div className="relative" ref={dropdownRef} onKeyDown={handleKeyDown}>
       <Button
         ref={buttonRef}
         variant="ghost"
