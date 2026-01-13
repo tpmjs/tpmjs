@@ -42,15 +42,18 @@ function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): 
 }
 
 /**
- * Find a public collection by username and slug
+ * Find a public collection by username and slug or ID
+ * Supports both human-readable slugs and collection IDs for flexibility
  */
-async function getPublicCollectionByUsernameAndSlug(username: string, slug: string) {
+async function getPublicCollectionByUsernameAndSlugOrId(username: string, slugOrId: string) {
   return withTimeout(
     prisma.collection.findFirst({
       where: {
-        slug,
+        OR: [
+          { slug: slugOrId, user: { username } },
+          { id: slugOrId, user: { username } },
+        ],
         isPublic: true,
-        user: { username },
       },
       select: { id: true, name: true, description: true, userId: true },
     }),
@@ -280,7 +283,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
-    const collection = await getPublicCollectionByUsernameAndSlug(username, slug);
+    const collection = await getPublicCollectionByUsernameAndSlugOrId(username, slug);
 
     if (!collection) {
       return NextResponse.json(
@@ -385,7 +388,7 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       return NextResponse.json({ error: `Invalid transport: ${transport}` }, { status: 400 });
     }
 
-    const collection = await getPublicCollectionByUsernameAndSlug(username, slug);
+    const collection = await getPublicCollectionByUsernameAndSlugOrId(username, slug);
 
     if (!collection) {
       return NextResponse.json({ error: 'Collection not found' }, { status: 404 });
