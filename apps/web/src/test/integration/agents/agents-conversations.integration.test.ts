@@ -15,9 +15,9 @@ describe('Agent Conversations Endpoints', () => {
   beforeAll(async () => {
     ctx = getTestContext();
 
-    // Create a test agent for conversation tests
+    // Create a test agent for conversation tests with unique name
     testAgent = await ctx.factories.agent.create({
-      name: 'Conversation Test Agent',
+      name: `Conversation Test Agent ${Date.now()}`,
       description: 'Agent for testing conversations',
       systemPrompt: 'You are a helpful assistant. Keep responses brief.',
       maxToolCallsPerTurn: 5,

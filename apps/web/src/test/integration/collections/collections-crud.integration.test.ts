@@ -28,15 +28,16 @@ describe('Collections CRUD Endpoints', () => {
   });
 
   describe('POST /api/collections', () => {
-    it('should create a new collection with session auth', async () => {
+    it('should create a new collection with API key auth', async () => {
+      const uniqueName = `Test CRUD Collection ${Date.now()}`;
       const collection = await ctx.factories.collection.create({
-        name: 'Test CRUD Collection',
+        name: uniqueName,
         description: 'Created via integration test',
         isPublic: true,
       });
 
       expect(collection.id).toBeDefined();
-      expect(collection.name).toBe('Test CRUD Collection');
+      expect(collection.name).toBe(uniqueName);
       expect(collection.description).toBe('Created via integration test');
       expect(collection.isPublic).toBe(true);
     });
@@ -51,19 +52,19 @@ describe('Collections CRUD Endpoints', () => {
       expect(result.status).toBe(401);
     });
 
-    it('should reject duplicate slugs for same user', async () => {
-      const slug = `test-duplicate-${Date.now()}`;
+    it('should reject duplicate names for same user', async () => {
+      const uniqueName = `Duplicate Test ${Date.now()}`;
 
       // Create first collection
-      await ctx.factories.collection.create({ slug });
+      await ctx.factories.collection.create({ name: uniqueName });
 
-      // Try to create second with same slug
-      const result = await ctx.apiKeyClient.post<{ success: boolean; error?: string }>('/api/collections', {
-        slug,
-        name: 'Duplicate Slug',
+      // Try to create second with same name
+      const result = await ctx.apiKeyClient.post<{ success: boolean; error?: { code: string } }>('/api/collections', {
+        name: uniqueName,
       });
 
       expect(result.ok).toBe(false);
+      expect(result.status).toBe(409);
     });
   });
 
@@ -94,8 +95,9 @@ describe('Collections CRUD Endpoints', () => {
 
   describe('GET /api/collections/:id', () => {
     it('should get a specific collection', async () => {
+      const uniqueName = `Specific Collection ${Date.now()}`;
       const created = await ctx.factories.collection.create({
-        name: 'Specific Collection',
+        name: uniqueName,
       });
 
       const result = await ctx.apiKeyClient.get<{
@@ -106,7 +108,7 @@ describe('Collections CRUD Endpoints', () => {
       expect(result.ok).toBe(true);
       if (result.ok) {
         expect(result.data.data.id).toBe(created.id);
-        expect(result.data.data.name).toBe('Specific Collection');
+        expect(result.data.data.name).toBe(uniqueName);
       }
     });
 
@@ -120,22 +122,24 @@ describe('Collections CRUD Endpoints', () => {
 
   describe('PATCH /api/collections/:id', () => {
     it('should update a collection', async () => {
+      const timestamp = Date.now();
       const created = await ctx.factories.collection.create({
-        name: 'Before Update',
+        name: `Before Update ${timestamp}`,
         description: 'Original description',
       });
 
+      const updatedName = `After Update ${timestamp}`;
       const result = await ctx.apiKeyClient.patch<{
         success: boolean;
         data: CollectionResponse;
       }>(`/api/collections/${created.id}`, {
-        name: 'After Update',
+        name: updatedName,
         description: 'Updated description',
       });
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        expect(result.data.data.name).toBe('After Update');
+        expect(result.data.data.name).toBe(updatedName);
         expect(result.data.data.description).toBe('Updated description');
       }
     });
