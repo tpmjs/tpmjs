@@ -55,6 +55,7 @@ interface Agent {
   collectionCount: number;
   createdBy: {
     id: string;
+    username: string | null;
     name: string;
     image: string | null;
   };
@@ -266,11 +267,11 @@ export default function PublicAgentChatPage(): React.ReactElement {
 
   // Fetch messages for conversation (initial load - gets most recent 50)
   const fetchMessages = useCallback(async () => {
-    if (!agent) return;
+    if (!agent || !agent.createdBy.username) return;
 
     try {
       const response = await fetch(
-        `/api/agents/${agent.uid}/conversation/${conversationId}?limit=50`
+        `/api/${agent.createdBy.username}/agents/${agent.uid}/conversation/${conversationId}?limit=50`
       );
       if (response.status === 404) {
         // Conversation doesn't exist yet, that's fine
@@ -294,7 +295,14 @@ export default function PublicAgentChatPage(): React.ReactElement {
   // Load older messages when scrolling up
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Virtuoso scroll handler with pagination logic
   const loadMoreMessages = useCallback(async () => {
-    if (!agent || isLoadingMore || !hasMoreMessages || messages.length === 0) return;
+    if (
+      !agent ||
+      !agent.createdBy.username ||
+      isLoadingMore ||
+      !hasMoreMessages ||
+      messages.length === 0
+    )
+      return;
 
     setIsLoadingMore(true);
     try {
@@ -305,7 +313,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
       if (!beforeTimestamp) return;
 
       const response = await fetch(
-        `/api/agents/${agent.uid}/conversation/${conversationId}?limit=50&before=${encodeURIComponent(beforeTimestamp)}`
+        `/api/${agent.createdBy.username}/agents/${agent.uid}/conversation/${conversationId}?limit=50&before=${encodeURIComponent(beforeTimestamp)}`
       );
 
       if (!response.ok) return;
@@ -344,7 +352,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
 
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Chat send handler with streaming and tool calls
   const handleSend = async () => {
-    if (!input.trim() || !agent || isSending) return;
+    if (!input.trim() || !agent || !agent.createdBy.username || isSending) return;
 
     const messageContent = input.trim();
     setInput('');
@@ -363,11 +371,14 @@ export default function PublicAgentChatPage(): React.ReactElement {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const response = await fetch(`/api/agents/${agent.uid}/conversation/${conversationId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: messageContent }),
-      });
+      const response = await fetch(
+        `/api/${agent.createdBy.username}/agents/${agent.uid}/conversation/${conversationId}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: messageContent }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();

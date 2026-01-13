@@ -1219,10 +1219,11 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                 </p>
                 <CodeBlock
                   language="text"
-                  code="https://tpmjs.com/api/collections/<collection-id>/mcp/http"
+                  code="https://tpmjs.com/api/mcp/<username>/<collection-slug>/http"
                 />
                 <p className="text-foreground-secondary mt-4">
                   This URL is what you&apos;ll use to connect MCP clients to your collection.
+                  You&apos;ll also need your TPMJS API key for authentication.
                 </p>
               </DocSubSection>
             </DocSection>
@@ -1244,7 +1245,9 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://tpmjs.com/api/collections/<collection-id>/mcp/http"
+        "https://tpmjs.com/api/mcp/<username>/<collection-slug>/http",
+        "--header",
+        "Authorization: Bearer YOUR_TPMJS_API_KEY"
       ]
     }
   }
@@ -1275,7 +1278,8 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                 <CodeBlock
                   language="bash"
                   code={`claude mcp add tpmjs-my-collection \\
-  -- npx mcp-remote https://tpmjs.com/api/collections/<collection-id>/mcp/http`}
+  -- npx mcp-remote https://tpmjs.com/api/mcp/<username>/<collection-slug>/http \\
+  --header "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
                 />
                 <p className="text-foreground-secondary mt-4">
                   This automatically adds the server to your Claude Code configuration.
@@ -1305,7 +1309,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
               <DocSubSection title="Endpoint Format">
                 <CodeBlock
                   language="text"
-                  code="POST https://tpmjs.com/api/collections/<collection-id>/mcp/http"
+                  code="POST https://tpmjs.com/api/mcp/<username>/<collection-slug>/http"
                 />
               </DocSubSection>
               <DocSubSection title="Request Headers">
@@ -1317,6 +1321,9 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                     <code className="text-primary">
                       Accept: application/json, text/event-stream
                     </code>
+                  </p>
+                  <p>
+                    <code className="text-primary">Authorization: Bearer YOUR_TPMJS_API_KEY</code>
                   </p>
                 </div>
               </DocSubSection>

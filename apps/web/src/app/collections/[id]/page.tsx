@@ -46,13 +46,13 @@ interface PublicCollection {
   tools: CollectionTool[];
 }
 
-function McpUrlSection({ collectionId }: { collectionId: string }) {
+function McpUrlSection({ username, slug }: { username: string; slug: string }) {
   const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
   const [showConfig, setShowConfig] = useState(false);
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
-  const httpUrl = `${baseUrl}/api/collections/${collectionId}/mcp/http`;
-  const sseUrl = `${baseUrl}/api/collections/${collectionId}/mcp/sse`;
+  const httpUrl = `${baseUrl}/api/mcp/${username}/${slug}/http`;
+  const sseUrl = `${baseUrl}/api/mcp/${username}/${slug}/sse`;
 
   const copyToClipboard = async (url: string, type: 'http' | 'sse') => {
     await navigator.clipboard.writeText(url);
@@ -66,7 +66,9 @@ function McpUrlSection({ collectionId }: { collectionId: string }) {
       "command": "npx",
       "args": [
         "mcp-remote",
-        "${httpUrl}"
+        "${httpUrl}",
+        "--header",
+        "Authorization: Bearer YOUR_TPMJS_API_KEY"
       ]
     }
   }
@@ -309,7 +311,9 @@ export default function PublicCollectionDetailPage(): React.ReactElement {
         </div>
 
         {/* MCP URLs */}
-        <McpUrlSection collectionId={collection.id} />
+        {collection.createdBy?.username && collection.slug && (
+          <McpUrlSection username={collection.createdBy.username} slug={collection.slug} />
+        )}
 
         {/* Tools */}
         <div>

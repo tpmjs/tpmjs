@@ -692,16 +692,28 @@ Always cite your sources and be transparent about limitations.`}
               <DocSubSection title="Endpoint">
                 <CodeBlock
                   language="text"
-                  code="POST /api/agents/[uid]/conversation/[conversationId]"
+                  code="POST /api/{username}/agents/{agent-uid}/conversation/{conversationId}"
                 />
                 <div className="mt-4 space-y-2 text-foreground-secondary text-sm">
                   <p>
-                    <strong className="text-foreground">uid:</strong> Your agent&apos;s unique
-                    identifier
+                    <strong className="text-foreground">username:</strong> The agent owner&apos;s
+                    username
+                  </p>
+                  <p>
+                    <strong className="text-foreground">agent-uid:</strong> The agent&apos;s unique
+                    identifier (slug)
                   </p>
                   <p>
                     <strong className="text-foreground">conversationId:</strong> Unique ID for the
                     conversation (create your own or use a new ID to start a new conversation)
+                  </p>
+                </div>
+                <div className="mt-4 p-4 border border-primary/30 rounded-lg bg-primary/5">
+                  <p className="text-sm text-foreground-secondary">
+                    <strong className="text-foreground">Authentication Required:</strong> Include
+                    the header{' '}
+                    <code className="text-primary">Authorization: Bearer YOUR_TPMJS_API_KEY</code>{' '}
+                    in all requests. Get your API key from the dashboard.
                   </p>
                 </div>
               </DocSubSection>
@@ -726,13 +738,19 @@ Always cite your sources and be transparent about limitations.`}
               <DocSubSection title="Example: JavaScript Client">
                 <CodeBlock
                   language="typescript"
-                  code={`const conversationId = 'conv-' + Date.now();
+                  code={`const username = 'ajax';  // Agent owner's username
+const agentUid = 'research-assistant';  // Agent UID
+const conversationId = 'conv-' + Date.now();
+const apiKey = 'tpmjs_sk_...';  // Your TPMJS API key
 
 const response = await fetch(
-  \`https://tpmjs.com/api/agents/\${agentUid}/conversation/\${conversationId}\`,
+  \`https://tpmjs.com/api/\${username}/agents/\${agentUid}/conversation/\${conversationId}\`,
   {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': \`Bearer \${apiKey}\`,
+    },
     body: JSON.stringify({ message: 'Search for AI tools' }),
   }
 );
@@ -825,11 +843,11 @@ while (true) {
                       POST
                     </Badge>
                     <code className="text-foreground font-mono">
-                      /api/agents/[uid]/conversation/[conversationId]
+                      /api/[username]/agents/[uid]/conversation/[conversationId]
                     </code>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    Send a message and stream the AI response via SSE.
+                    Send a message and stream the AI response via SSE. Requires TPMJS API key.
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-surface">
@@ -838,11 +856,11 @@ while (true) {
                       GET
                     </Badge>
                     <code className="text-foreground font-mono">
-                      /api/agents/[uid]/conversation/[conversationId]
+                      /api/[username]/agents/[uid]/conversation/[conversationId]
                     </code>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    Get the full conversation history with all messages.
+                    Get the full conversation history with all messages. Requires TPMJS API key.
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-surface">
@@ -851,11 +869,11 @@ while (true) {
                       GET
                     </Badge>
                     <code className="text-foreground font-mono">
-                      /api/agents/[uid]/conversations
+                      /api/[username]/agents/[uid]/conversations
                     </code>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    List all conversations for an agent.
+                    List all conversations for an agent. Requires TPMJS API key.
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-surface">

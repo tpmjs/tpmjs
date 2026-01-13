@@ -370,7 +370,9 @@ Invalid usernames:
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://tpmjs.com/api/collections/{collection-id}/mcp/http"
+        "https://tpmjs.com/api/mcp/{username}/{collection-slug}/http",
+        "--header",
+        "Authorization: Bearer YOUR_TPMJS_API_KEY"
       ]
     }
   }
@@ -602,10 +604,10 @@ Invalid usernames:
                     <tr>
                       <td className="py-3 px-4 text-foreground">Agent Conversation</td>
                       <td className="py-3 px-4 font-mono text-primary text-xs">
-                        /api/chat/{'{username}'}/{'{uid}'}/conversation/{'{id}'}
+                        /api/{'{username}'}/agents/{'{uid}'}/conversation/{'{id}'}
                       </td>
                       <td className="py-3 px-4 font-mono text-foreground-secondary text-xs">
-                        /api/chat/ajax/research-bot/conversation/abc123
+                        /api/ajax/agents/research-bot/conversation/abc123
                       </td>
                     </tr>
                   </tbody>

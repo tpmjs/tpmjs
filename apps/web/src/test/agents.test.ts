@@ -87,6 +87,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
     name: string;
     userId: string;
     provider: string;
+    user: { username: string | null };
   } | null = null;
 
   let testConversationId: string | null = null;
@@ -110,11 +111,15 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
           name: true,
           userId: true,
           provider: true,
+          user: { select: { username: true } },
         },
       });
 
       if (!testAgent) {
         console.warn(`⚠️  Test agent "${TEST_AGENT_UID}" not found. Skipping agent tests.`);
+      } else if (!testAgent.user.username) {
+        console.warn(`⚠️  Test agent owner has no username. Skipping agent tests.`);
+        testAgent = null;
       }
     } catch (error) {
       console.warn('⚠️  Could not connect to database. Skipping agent tests.', error);
@@ -139,7 +144,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
     }
   });
 
-  describe('POST /api/agents/[id]/conversation/[conversationId]', () => {
+  describe('POST /api/[username]/agents/[uid]/conversation/[conversationId]', () => {
     it('should create a new conversation and receive a response', async () => {
       if (!serverAvailable || !testAgent) {
         console.log('Skipping: Server not available or no test agent');
@@ -147,7 +152,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
       }
 
       const response = await fetch(
-        `${BASE_URL}/api/agents/${testAgent.uid}/conversation/${TEST_CONVERSATION_SLUG}`,
+        `${BASE_URL}/api/${testAgent.user.username}/agents/${testAgent.uid}/conversation/${TEST_CONVERSATION_SLUG}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -224,7 +229,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
       }
 
       const response = await fetch(
-        `${BASE_URL}/api/agents/${testAgent.uid}/conversation/${TEST_CONVERSATION_SLUG}`,
+        `${BASE_URL}/api/${testAgent.user.username}/agents/${testAgent.uid}/conversation/${TEST_CONVERSATION_SLUG}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -260,7 +265,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
       const toolConvSlug = `tool-test-${Date.now()}`;
 
       const response = await fetch(
-        `${BASE_URL}/api/agents/${testAgent.uid}/conversation/${toolConvSlug}`,
+        `${BASE_URL}/api/${testAgent.user.username}/agents/${testAgent.uid}/conversation/${toolConvSlug}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -312,7 +317,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
     });
   });
 
-  describe('GET /api/agents/[id]/conversation/[conversationId]', () => {
+  describe('GET /api/[username]/agents/[uid]/conversation/[conversationId]', () => {
     it('should retrieve conversation history', async () => {
       if (!serverAvailable || !testAgent || !testConversationId) {
         console.log('Skipping: Server not available or no test conversation');
@@ -320,7 +325,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
       }
 
       const response = await fetch(
-        `${BASE_URL}/api/agents/${testAgent.uid}/conversation/${TEST_CONVERSATION_SLUG}`,
+        `${BASE_URL}/api/${testAgent.user.username}/agents/${testAgent.uid}/conversation/${TEST_CONVERSATION_SLUG}`,
         { method: 'GET' }
       );
 
@@ -341,7 +346,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
       }
 
       const response = await fetch(
-        `${BASE_URL}/api/agents/${testAgent.uid}/conversation/non-existent-conv-12345`,
+        `${BASE_URL}/api/${testAgent.user.username}/agents/${testAgent.uid}/conversation/non-existent-conv-12345`,
         { method: 'GET' }
       );
 
@@ -349,16 +354,19 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
     });
   });
 
-  describe('GET /api/agents/[id]/conversations', () => {
+  describe('GET /api/[username]/agents/[uid]/conversations', () => {
     it('should list all conversations for an agent', async () => {
       if (!serverAvailable || !testAgent) {
         console.log('Skipping: Server not available or no test agent');
         return;
       }
 
-      const response = await fetch(`${BASE_URL}/api/agents/${testAgent.id}/conversations`, {
-        method: 'GET',
-      });
+      const response = await fetch(
+        `${BASE_URL}/api/${testAgent.user.username}/agents/${testAgent.uid}/conversations`,
+        {
+          method: 'GET',
+        }
+      );
 
       expect(response.ok).toBe(true);
 
@@ -380,7 +388,7 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
       }
 
       const response = await fetch(
-        `${BASE_URL}/api/agents/${testAgent.id}/conversations?limit=1&offset=0`,
+        `${BASE_URL}/api/${testAgent.user.username}/agents/${testAgent.uid}/conversations?limit=1&offset=0`,
         { method: 'GET' }
       );
 
@@ -433,31 +441,19 @@ describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Agent Endpoints', () => {
     });
   });
 
-  describe('Agent with lookup by ID or UID', () => {
-    it('should accept agent ID in URL', async () => {
+  describe('Agent with username/uid lookup', () => {
+    it('should accept agent with username/uid format', async () => {
       if (!serverAvailable || !testAgent) {
         console.log('Skipping: Server not available or no test agent');
         return;
       }
 
-      const response = await fetch(`${BASE_URL}/api/agents/${testAgent.id}/conversations`, {
-        method: 'GET',
-      });
-
-      expect(response.ok).toBe(true);
-      const result = await response.json();
-      expect(result.success).toBe(true);
-    });
-
-    it('should accept agent UID in URL', async () => {
-      if (!serverAvailable || !testAgent) {
-        console.log('Skipping: Server not available or no test agent');
-        return;
-      }
-
-      const response = await fetch(`${BASE_URL}/api/agents/${testAgent.uid}/conversations`, {
-        method: 'GET',
-      });
+      const response = await fetch(
+        `${BASE_URL}/api/${testAgent.user.username}/agents/${testAgent.uid}/conversations`,
+        {
+          method: 'GET',
+        }
+      );
 
       expect(response.ok).toBe(true);
       const result = await response.json();

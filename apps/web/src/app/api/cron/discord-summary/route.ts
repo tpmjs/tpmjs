@@ -47,16 +47,28 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // 3. Verify agent exists
+    // 3. Verify agent exists and get owner info
     const agent = await prisma.agent.findUnique({
       where: { id: agentId },
-      select: { id: true, name: true },
+      select: {
+        id: true,
+        uid: true,
+        name: true,
+        user: { select: { username: true } },
+      },
     });
 
     if (!agent) {
       return NextResponse.json(
         { success: false, error: `Agent not found: ${agentId}` },
         { status: 404 }
+      );
+    }
+
+    if (!agent.user.username || !agent.uid) {
+      return NextResponse.json(
+        { success: false, error: 'Agent owner has no username or agent has no UID' },
+        { status: 500 }
       );
     }
 
@@ -100,10 +112,10 @@ Then use the discordPostTool to post the summary to channel "${summaryChannelId}
 
 If there are no messages in the past 24 hours, post a brief message saying the server was quiet.`;
 
-    // 6. Call the agent conversation endpoint
+    // 6. Call the agent conversation endpoint (new URL format)
     const baseUrl = env.BETTER_AUTH_URL || `http://localhost:${process.env.PORT || 3000}`;
     const response = await fetch(
-      `${baseUrl}/api/agents/${agentId}/conversation/${conversation.id}`,
+      `${baseUrl}/api/${agent.user.username}/agents/${agent.uid}/conversation/${conversation.id}`,
       {
         method: 'POST',
         headers: {

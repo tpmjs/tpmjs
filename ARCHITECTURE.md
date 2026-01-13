@@ -635,10 +635,10 @@ The API is built on Next.js 16 App Router with standardized response formats.
 | **Tools** | `GET /api/tools` | List/search tools |
 | | `POST /api/tools/execute/[...slug]` | Execute tool (SSE) |
 | **Agents** | `GET /api/agents` | List user agents |
-| | `POST /api/agents/[id]/conversation/[convId]` | Chat with agent (SSE) |
+| | `POST /api/{username}/agents/{uid}/conversation/{convId}` | Chat with agent (SSE) |
 | **Collections** | `GET /api/collections` | List user collections |
 | | `POST /api/collections/[id]/tools` | Add tool to collection |
-| **MCP** | `POST /api/mcp/{user}/{slug}/{transport}` | MCP protocol |
+| **MCP** | `POST /api/mcp/{username}/{slug}/{transport}` | MCP protocol |
 | **Sync** | `POST /api/sync/changes` | Cron: npm changes |
 | **Stats** | `GET /api/stats` | Registry statistics |
 
