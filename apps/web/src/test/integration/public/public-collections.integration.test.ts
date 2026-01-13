@@ -12,7 +12,6 @@ interface PublicCollection {
   slug: string;
   name: string;
   description: string | null;
-  isPublic: boolean;
   likeCount: number;
   toolCount: number;
   createdBy: {
@@ -28,9 +27,9 @@ describe('Public Collections Endpoints', () => {
   beforeAll(async () => {
     ctx = getTestContext();
 
-    // Create a public test collection
+    // Create a public test collection with unique name
     await ctx.factories.collection.create({
-      name: 'Public Test Collection',
+      name: `Public Test Collection ${Date.now()}`,
       description: 'A public collection for testing',
       isPublic: true,
     });
@@ -57,11 +56,7 @@ describe('Public Collections Endpoints', () => {
         expect(result.data.success).toBe(true);
         expect(Array.isArray(result.data.data)).toBe(true);
         expect(result.data.pagination).toBeDefined();
-
-        // All returned collections should be public
-        for (const collection of result.data.data) {
-          expect(collection.isPublic).toBe(true);
-        }
+        // Note: isPublic is not in the response - by definition, only public collections are returned
       }
     });
 

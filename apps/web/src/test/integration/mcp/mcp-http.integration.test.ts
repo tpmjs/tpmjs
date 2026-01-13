@@ -24,9 +24,9 @@ describe('MCP HTTP Endpoint', () => {
   beforeAll(async () => {
     ctx = getTestContext();
 
-    // Create a test collection for MCP tests
+    // Create a test collection for MCP tests with unique name
     testCollection = await ctx.factories.collection.create({
-      name: 'MCP Test Collection',
+      name: `MCP Test Collection ${Date.now()}`,
       description: 'Collection for testing MCP endpoints',
       isPublic: true,
     });
