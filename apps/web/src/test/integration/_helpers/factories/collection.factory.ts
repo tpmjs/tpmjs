@@ -53,7 +53,10 @@ export function createCollectionFactory(api: ApiClient, tracker: TestDataTracker
       );
 
       if (!result.ok) {
-        throw new Error(`Failed to create collection: ${(result as { error: string }).error}`);
+        const errorResult = result as { error: string; status: number };
+        throw new Error(
+          `Failed to create collection: ${errorResult.error} (status: ${errorResult.status})`
+        );
       }
 
       const collection = result.data.data;

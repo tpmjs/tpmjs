@@ -43,11 +43,21 @@ export function getTestAuthContext(): TestAuthContext {
 
 /**
  * Create a fetch function with session cookie authentication
+ *
+ * Note: better-auth uses different cookie names for HTTP vs HTTPS:
+ * - HTTP: better-auth.session_token
+ * - HTTPS: __Secure-better-auth.session_token
+ *
+ * We send both to ensure compatibility.
  */
 export function createSessionFetch(sessionToken: string): typeof fetch {
   return (input: RequestInfo | URL, init?: RequestInit) => {
     const headers = new Headers(init?.headers);
-    headers.set('Cookie', `better-auth.session_token=${sessionToken}`);
+    // Send both cookie formats to work with both HTTP and HTTPS
+    headers.set(
+      'Cookie',
+      `better-auth.session_token=${sessionToken}; __Secure-better-auth.session_token=${sessionToken}`
+    );
 
     return fetch(input, {
       ...init,

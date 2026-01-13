@@ -64,7 +64,10 @@ export function createAgentFactory(api: ApiClient, tracker: TestDataTracker) {
       });
 
       if (!result.ok) {
-        throw new Error(`Failed to create agent: ${(result as { error: string }).error}`);
+        const errorResult = result as { error: string; status: number };
+        throw new Error(
+          `Failed to create agent: ${errorResult.error} (status: ${errorResult.status})`
+        );
       }
 
       const agent = result.data.data;
