@@ -1,0 +1,76 @@
+{
+  "name": "@tpmjs/tools-sprites-url-set",
+  "version": "0.1.0",
+  "description": "Set the access settings for a sprite URL (public or private)",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sprites",
+    "sandbox",
+    "code-execution",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sprites-url-set"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "spritesUrlSetTool",
+        "description": "Set the access settings for a sprite URL. Use 'public' to allow anyone to access the sprite URL, or 'sprite' to require authentication.",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Name of the sprite to update",
+            "required": true
+          },
+          {
+            "name": "auth",
+            "type": "string",
+            "description": "Access mode - 'public' for public access, 'sprite' for authenticated access only",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "SpriteUrlResult",
+          "description": "Updated sprite URL and settings"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}
