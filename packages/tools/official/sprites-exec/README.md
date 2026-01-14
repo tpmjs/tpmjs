@@ -37,6 +37,23 @@ const pythonResult = await spritesExecTool.execute({
   cmd: 'python3',
   stdin: 'print("Hello from stdin!")'
 });
+
+// For shell features (pipes, redirects, etc), use bash -c
+const shellResult = await spritesExecTool.execute({
+  name: 'my-sandbox',
+  cmd: 'bash -c "echo hello > /tmp/test.txt && cat /tmp/test.txt"'
+});
+```
+
+## Shell Commands
+
+Commands are executed directly (like `exec.Command` in Go), not through a shell. This means shell operators like `|`, `>`, `>>`, `&&` won't work directly.
+
+For shell features, wrap your command with `bash -c`:
+```typescript
+// Won't work: cmd: 'echo hello > file.txt'
+// Use instead:
+cmd: 'bash -c "echo hello > file.txt"'
 ```
 
 ## Input Parameters
