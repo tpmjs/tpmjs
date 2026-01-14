@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y openssh-client && rm -rf /var/lib/apt/l
 # Set working directory
 WORKDIR /app
 
-# Set Deno cache directory to use mounted volume
-ENV DENO_DIR=/data
+# Set Deno cache directory (ephemeral, rebuilds on restart)
+ENV DENO_DIR=/tmp/deno-cache
 
 # Copy server file and startup script
 COPY server.ts .
