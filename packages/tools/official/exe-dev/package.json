@@ -1,0 +1,123 @@
+{
+  "name": "@tpmjs/tools-exe-dev",
+  "version": "0.2.3",
+  "description": "Manage exe.dev virtual machines. Create, list, delete, restart VMs, manage sharing, and execute commands via SSH.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "exe.dev",
+    "vm",
+    "virtual-machine",
+    "ssh",
+    "cloud",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/exe-dev"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ops",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "EXE_DEV_SSH_KEY",
+        "description": "Base64-encoded SSH private key for exe.dev authentication. Generate with: cat ~/.ssh/id_ed25519 | base64",
+        "required": false
+      }
+    ],
+    "tools": [
+      {
+        "name": "list",
+        "description": "List all exe.dev virtual machines for the authenticated user."
+      },
+      {
+        "name": "create",
+        "description": "Create a new exe.dev virtual machine with optional image, env vars, and Shelley prompt."
+      },
+      {
+        "name": "deleteVm",
+        "description": "Delete an exe.dev virtual machine permanently."
+      },
+      {
+        "name": "restart",
+        "description": "Restart an exe.dev virtual machine."
+      },
+      {
+        "name": "exec",
+        "description": "Execute a command on an exe.dev VM via SSH."
+      },
+      {
+        "name": "shareShow",
+        "description": "Show the sharing configuration for an exe.dev VM."
+      },
+      {
+        "name": "shareSetPublic",
+        "description": "Make an exe.dev VM's HTTP proxy publicly accessible."
+      },
+      {
+        "name": "shareSetPrivate",
+        "description": "Make an exe.dev VM's HTTP proxy private."
+      },
+      {
+        "name": "sharePort",
+        "description": "Configure the HTTP proxy port for an exe.dev VM."
+      },
+      {
+        "name": "shareAddUser",
+        "description": "Grant a user access to an exe.dev VM by email."
+      },
+      {
+        "name": "shareRemoveUser",
+        "description": "Revoke a user's access to an exe.dev VM."
+      },
+      {
+        "name": "shareAddLink",
+        "description": "Generate a shareable link for an exe.dev VM."
+      },
+      {
+        "name": "shareRemoveLink",
+        "description": "Revoke a shareable link for an exe.dev VM."
+      },
+      {
+        "name": "whoami",
+        "description": "Get the current exe.dev user's account information."
+      },
+      {
+        "name": "shelleyInstall",
+        "description": "Install or upgrade Shelley agent on an exe.dev VM."
+      }
+    ]
+  }
+}
