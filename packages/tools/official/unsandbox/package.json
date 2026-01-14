@@ -1,0 +1,110 @@
+{
+  "name": "@tpmjs/tools-unsandbox",
+  "version": "0.1.0",
+  "description": "Execute code in a secure sandbox environment. Supports 42+ programming languages with async execution, input files, and compiled artifacts.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "code-execution",
+    "sandbox",
+    "unsandbox",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/unsandbox"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "code-execution",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "executeCodeAsync",
+        "description": "Execute code asynchronously in a secure sandbox. Returns a job_id immediately. Use getJob to check status and retrieve results.",
+        "parameters": [
+          {
+            "name": "language",
+            "type": "string",
+            "description": "Programming language to execute",
+            "required": true
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "description": "The source code to execute",
+            "required": true
+          },
+          {
+            "name": "input_files",
+            "type": "array",
+            "description": "Optional array of input files",
+            "required": false
+          },
+          {
+            "name": "network_mode",
+            "type": "string",
+            "description": "Network isolation mode: zerotrust or semitrusted",
+            "required": false
+          },
+          {
+            "name": "ttl",
+            "type": "number",
+            "description": "Execution timeout in seconds (1-900)",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Job ID and initial status"
+        }
+      },
+      {
+        "name": "getJob",
+        "description": "Get the status and results of an async code execution job",
+        "parameters": [
+          {
+            "name": "job_id",
+            "type": "string",
+            "description": "The job ID returned from executeCodeAsync",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "object",
+          "description": "Job status and results"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

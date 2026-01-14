@@ -368,6 +368,33 @@ domain:
       description: "DNS-based network filtering configuration"
 
     # -------------------------------------------------------------------------
+    # Code execution entities (unsandbox)
+    # -------------------------------------------------------------------------
+    code_execution_result:
+      fields: [stdout, stderr, exitCode, duration, language]
+      description: "Result of executing code in a sandbox"
+
+    code_execution_job:
+      fields: [jobId, status, createdAt, language]
+      description: "Async code execution job reference"
+
+    code_job_result:
+      fields: [jobId, status, stdout, stderr, exitCode, duration, error]
+      description: "Completed job result with output"
+
+    input_file:
+      fields: [filename, content]
+      description: "File to make available in sandbox /tmp/input/"
+
+    compiled_artifact:
+      fields: [binary, format, size]
+      description: "Compiled binary artifact from code execution"
+
+    wasm_artifact:
+      fields: [wasm, format, size]
+      description: "WebAssembly compiled artifact"
+
+    # -------------------------------------------------------------------------
     # Agent & workflow entities
     # -------------------------------------------------------------------------
     recipe:
@@ -4949,6 +4976,194 @@ blocks:
       - name: applied
         type: boolean
         description: "Whether the policy was successfully applied"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # M) Code Execution - Unsandbox (4 tools)
+  # ---------------------------------------------------------------------------
+  unsandbox.executeCodeAsync:
+    type: utility
+    description: "Execute code asynchronously in a secure sandbox. Returns a job_id immediately. Use getJob to check status and retrieve results. Supports 42+ languages including Python, JavaScript, TypeScript, Go, Rust, C, C++, Java, Ruby, and more."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /execute/async endpoint"
+      - id: language_support
+        description: |
+          Must support these languages: python, javascript, typescript, ruby, perl, php, lua, bash, r,
+          elixir, erlang, tcl, scheme, powershell, clojure, commonlisp, crystal, groovy, deno, awk, raku,
+          c, cpp, go, rust, java, kotlin, cobol, fortran, d, zig, nim, v, objc, dart, julia, haskell,
+          ocaml, fsharp, csharp, prolog, forth
+      - id: network_modes
+        description: "Must support 'zerotrust' (default, blocks all network) and 'semitrusted' (allows outbound)"
+      - id: input_files
+        description: "Must support optional input_files array with filename and base64 content"
+    inputs:
+      - name: language
+        type: string
+        description: "Programming language to execute (e.g., 'python', 'javascript', 'go', 'rust')"
+      - name: code
+        type: string
+        description: "The source code to execute"
+      - name: input_files
+        type: InputFile[]
+        optional: true
+        description: "Optional array of input files to make available in /tmp/input/"
+      - name: network_mode
+        type: "'zerotrust' | 'semitrusted'"
+        optional: true
+        description: "Network isolation mode. 'zerotrust' (default) blocks all network. 'semitrusted' allows outbound."
+      - name: ttl
+        type: number
+        optional: true
+        description: "Execution timeout in seconds (1-900). Default: 60."
+      - name: return_artifact
+        type: boolean
+        optional: true
+        description: "For compiled languages, return the compiled binary"
+      - name: return_wasm_artifact
+        type: boolean
+        optional: true
+        description: "Compile to WebAssembly. Supported for C, C++, Rust, Zig, Go."
+    outputs:
+      - name: job_id
+        type: string
+        description: "Job ID to use with getJob to retrieve results"
+      - name: status
+        type: string
+        description: "Initial job status (typically 'queued' or 'running')"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  unsandbox.getJob:
+    type: utility
+    description: "Get the status and results of an async code execution job. Poll this endpoint until status is 'completed' or 'failed'."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /jobs/{job_id} endpoint"
+      - id: status_handling
+        description: "Must handle all status values: queued, running, completed, failed"
+    inputs:
+      - name: job_id
+        type: string
+        description: "The job ID returned from executeCodeAsync"
+    outputs:
+      - name: job_id
+        type: string
+        description: "The job ID"
+      - name: status
+        type: string
+        description: "Job status: 'queued', 'running', 'completed', or 'failed'"
+      - name: stdout
+        type: string
+        optional: true
+        description: "Standard output from execution (when completed)"
+      - name: stderr
+        type: string
+        optional: true
+        description: "Standard error from execution (when completed)"
+      - name: exit_code
+        type: number
+        optional: true
+        description: "Exit code from execution (when completed)"
+      - name: duration_ms
+        type: number
+        optional: true
+        description: "Execution duration in milliseconds (when completed)"
+      - name: error
+        type: string
+        optional: true
+        description: "Error message (when failed)"
+      - name: artifact
+        type: string
+        optional: true
+        description: "Base64-encoded compiled binary (if return_artifact was true)"
+      - name: wasm_artifact
+        type: string
+        optional: true
+        description: "Base64-encoded WebAssembly binary (if return_wasm_artifact was true)"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  unsandbox.execute:
+    type: utility
+    description: "Execute code synchronously in a secure sandbox. Blocks until execution completes and returns results directly. Best for quick scripts under 60 seconds."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /execute endpoint (sync)"
+      - id: timeout_handling
+        description: "Must handle execution timeout gracefully"
+    inputs:
+      - name: language
+        type: string
+        description: "Programming language to execute"
+      - name: code
+        type: string
+        description: "The source code to execute"
+      - name: input_files
+        type: InputFile[]
+        optional: true
+        description: "Optional array of input files to make available in /tmp/input/"
+      - name: network_mode
+        type: "'zerotrust' | 'semitrusted'"
+        optional: true
+        description: "Network isolation mode. Default: 'zerotrust'"
+      - name: ttl
+        type: number
+        optional: true
+        description: "Execution timeout in seconds (1-900). Default: 60."
+    outputs:
+      - name: stdout
+        type: string
+        description: "Standard output from execution"
+      - name: stderr
+        type: string
+        description: "Standard error from execution"
+      - name: exit_code
+        type: number
+        description: "Exit code from execution"
+      - name: duration_ms
+        type: number
+        description: "Execution duration in milliseconds"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  unsandbox.run:
+    type: utility
+    description: "Execute code with automatic language detection from shebang. Send raw code with a shebang line (e.g., #!/usr/bin/env python) and the language is auto-detected."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /run endpoint with text/plain content type"
+      - id: shebang_detection
+        description: "Language is auto-detected from shebang line in code"
+    inputs:
+      - name: code
+        type: string
+        description: "The source code with shebang line (e.g., #!/usr/bin/env python)"
+      - name: network_mode
+        type: "'zerotrust' | 'semitrusted'"
+        optional: true
+        description: "Network isolation mode. Default: 'zerotrust'"
+      - name: ttl
+        type: number
+        optional: true
+        description: "Execution timeout in seconds (1-900). Default: 60."
+    outputs:
+      - name: stdout
+        type: string
+        description: "Standard output from execution"
+      - name: stderr
+        type: string
+        description: "Standard error from execution"
+      - name: exit_code
+        type: number
+        description: "Exit code from execution"
+      - name: detected_language
+        type: string
+        description: "Language detected from shebang"
+      - name: duration_ms
+        type: number
+        description: "Execution duration in milliseconds"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
 # =============================================================================
