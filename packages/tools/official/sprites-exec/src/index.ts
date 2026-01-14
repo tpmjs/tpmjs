@@ -254,9 +254,30 @@ export const spritesExecTool = tool({
       );
     }
 
-    // Parse binary response
+    // Parse response - handle both binary and JSON error responses
     const arrayBuffer = await response.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
+
+    // Check if response is JSON error (starts with '{') instead of binary (starts with 0x00-0x03)
+    // Sprites API returns HTTP 200 with JSON body for some errors like auth failures
+    if (buffer.length > 0 && buffer[0] === 0x7b) {
+      // 0x7B = '{'
+      const decoder = new TextDecoder();
+      const jsonText = decoder.decode(buffer);
+      try {
+        const errorResponse = JSON.parse(jsonText) as { error?: string };
+        if (errorResponse.error) {
+          throw new Error(`Failed to execute command in sprite "${name}": ${errorResponse.error}`);
+        }
+      } catch (parseError) {
+        // If JSON parsing fails, throw generic error with raw text
+        if (parseError instanceof SyntaxError) {
+          throw new Error(`Failed to execute command in sprite "${name}": ${jsonText}`);
+        }
+        throw parseError;
+      }
+    }
+
     const { stdout, stderr, exitCode } = parseBinaryResponse(buffer);
 
     return {
