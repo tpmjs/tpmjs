@@ -204,7 +204,7 @@ function parseBinaryResponse(buffer: Uint8Array): {
 
 export const spritesExecTool = tool({
   description:
-    'Execute a command inside a sprite and return the output. Supports stdin input for interactive commands. Returns exit code, stdout, stderr, and execution duration.',
+    'Execute a command inside a sprite and return the output. Supports stdin input for interactive commands. Returns exit code, stdout, stderr, and execution duration. IMPORTANT: If starting a web server, it must listen on port 8080 - this is the Sprites convention for public URLs (use sprites-url-set to make it publicly accessible).',
   inputSchema: jsonSchema<SpritesExecInput>({
     type: 'object',
     properties: {
