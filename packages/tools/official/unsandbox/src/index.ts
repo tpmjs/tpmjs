@@ -494,10 +494,202 @@ export const run = tool({
   },
 });
 
+/**
+ * Additional interfaces for job management
+ */
+export interface RunAsyncInput {
+  code: string;
+  network_mode?: NetworkMode;
+  ttl?: number;
+}
+
+export interface RunAsyncResult {
+  job_id: string;
+  status: string;
+}
+
+export interface ListJobsResult {
+  jobs: Array<{
+    id: string;
+    status: string;
+    language?: string;
+    created_at?: string;
+  }>;
+  count: number;
+}
+
+export interface DeleteJobInput {
+  job_id: string;
+}
+
+export interface DeleteJobResult {
+  deleted: boolean;
+  job_id: string;
+}
+
+/**
+ * Execute code asynchronously with automatic language detection from shebang.
+ * Returns a job_id immediately. Use getJob to check status and retrieve results.
+ */
+export const runAsync = tool({
+  description:
+    'Execute code asynchronously with automatic language detection from shebang. Returns a job_id immediately. Use getJob to check status and retrieve results.',
+  inputSchema: jsonSchema<RunAsyncInput>({
+    type: 'object',
+    properties: {
+      code: {
+        type: 'string',
+        description: 'The source code with shebang line (e.g., #!/usr/bin/env python)',
+      },
+      network_mode: {
+        type: 'string',
+        enum: ['zerotrust', 'semitrusted'],
+        description: "Network isolation mode. Default: 'zerotrust'",
+      },
+      ttl: {
+        type: 'number',
+        description: 'Execution timeout in seconds (1-900). Default: 60.',
+      },
+    },
+    required: ['code'],
+    additionalProperties: false,
+  }),
+  async execute(input: RunAsyncInput): Promise<RunAsyncResult> {
+    const apiKey = getApiKey();
+
+    if (!input.code || typeof input.code !== 'string') {
+      throw new Error('Code is required and must be a string');
+    }
+
+    if (input.ttl !== undefined && (input.ttl < 1 || input.ttl > 900)) {
+      throw new Error('TTL must be between 1 and 900 seconds');
+    }
+
+    const url = new URL(`${UNSANDBOX_API_BASE}/run/async`);
+    if (input.network_mode) {
+      url.searchParams.set('network_mode', input.network_mode);
+    }
+    if (input.ttl) {
+      url.searchParams.set('ttl', input.ttl.toString());
+    }
+
+    const response = await fetch(url.toString(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: input.code,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Unsandbox API error: HTTP ${response.status} - ${errorText}`);
+    }
+
+    const result = (await response.json()) as { job_id: string; status?: string };
+
+    return {
+      job_id: result.job_id,
+      status: result.status || 'queued',
+    };
+  },
+});
+
+/**
+ * List all active (pending or running) code execution jobs.
+ */
+export const listJobs = tool({
+  description:
+    'List all active (pending or running) code execution jobs. Returns an array of job objects with their current status.',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<ListJobsResult> {
+    const apiKey = getApiKey();
+
+    const response = await fetch(`${UNSANDBOX_API_BASE}/jobs`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Unsandbox API error: HTTP ${response.status} - ${errorText}`);
+    }
+
+    const result = (await response.json()) as { jobs?: Array<Record<string, unknown>> };
+    const jobs = (result.jobs || []).map((job) => ({
+      id: String(job.id || job.job_id || ''),
+      status: String(job.status || 'unknown'),
+      language: job.language ? String(job.language) : undefined,
+      created_at: job.created_at ? String(job.created_at) : undefined,
+    }));
+
+    return {
+      jobs,
+      count: jobs.length,
+    };
+  },
+});
+
+/**
+ * Cancel a pending or running code execution job.
+ */
+export const deleteJob = tool({
+  description:
+    'Cancel a pending or running code execution job. The job will be terminated and resources freed.',
+  inputSchema: jsonSchema<DeleteJobInput>({
+    type: 'object',
+    properties: {
+      job_id: {
+        type: 'string',
+        description: 'The job ID to cancel',
+      },
+    },
+    required: ['job_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: DeleteJobInput): Promise<DeleteJobResult> {
+    const apiKey = getApiKey();
+
+    if (!input.job_id || typeof input.job_id !== 'string') {
+      throw new Error('job_id is required and must be a string');
+    }
+
+    const response = await fetch(`${UNSANDBOX_API_BASE}/jobs/${encodeURIComponent(input.job_id)}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error(`Job not found: ${input.job_id}`);
+      }
+      const errorText = await response.text().catch(() => 'Unknown error');
+      throw new Error(`Unsandbox API error: HTTP ${response.status} - ${errorText}`);
+    }
+
+    return {
+      deleted: true,
+      job_id: input.job_id,
+    };
+  },
+});
+
 // Default export for convenience
 export default {
   executeCodeAsync,
   getJob,
   execute,
   run,
+  runAsync,
+  listJobs,
+  deleteJob,
 };

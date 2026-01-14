@@ -5166,6 +5166,75 @@ blocks:
         description: "Execution duration in milliseconds"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
+  unsandbox.runAsync:
+    type: utility
+    description: "Execute code asynchronously with automatic language detection from shebang. Returns a job_id immediately. Use getJob to check status and retrieve results."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /run/async endpoint with text/plain content type"
+      - id: shebang_detection
+        description: "Language is auto-detected from shebang line in code"
+    inputs:
+      - name: code
+        type: string
+        description: "The source code with shebang line (e.g., #!/usr/bin/env python)"
+      - name: network_mode
+        type: "'zerotrust' | 'semitrusted'"
+        optional: true
+        description: "Network isolation mode. Default: 'zerotrust'"
+      - name: ttl
+        type: number
+        optional: true
+        description: "Execution timeout in seconds (1-900). Default: 60."
+    outputs:
+      - name: job_id
+        type: string
+        description: "Job ID to use with getJob to retrieve results"
+      - name: status
+        type: string
+        description: "Initial job status"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  unsandbox.listJobs:
+    type: utility
+    description: "List all active (pending or running) code execution jobs. Returns an array of job objects with their current status."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /jobs endpoint"
+    inputs: []
+    outputs:
+      - name: jobs
+        type: Job[]
+        description: "Array of active jobs with id, status, language, and createdAt"
+      - name: count
+        type: number
+        description: "Number of active jobs"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  unsandbox.deleteJob:
+    type: utility
+    description: "Cancel a pending or running code execution job. The job will be terminated and resources freed."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API DELETE /jobs/{id} endpoint"
+      - id: status_validation
+        description: "Should handle cases where job is already completed or not found"
+    inputs:
+      - name: job_id
+        type: string
+        description: "The job ID to cancel"
+    outputs:
+      - name: deleted
+        type: boolean
+        description: "Whether the job was successfully cancelled"
+      - name: job_id
+        type: string
+        description: "The cancelled job ID"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
 # =============================================================================
 # VALIDATORS - Which validators to run against each block
 # =============================================================================

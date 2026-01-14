@@ -2,7 +2,15 @@
  * Block metadata for unsandbox tools
  * This file provides metadata for the blocks validator
  */
-import { execute, executeCodeAsync, getJob, run } from './src/index.js';
+import {
+  deleteJob,
+  execute,
+  executeCodeAsync,
+  getJob,
+  listJobs,
+  run,
+  runAsync,
+} from './src/index.js';
 
 export const block = {
   name: 'unsandbox',
@@ -12,6 +20,9 @@ export const block = {
     getJob,
     execute,
     run,
+    runAsync,
+    listJobs,
+    deleteJob,
   },
 };
 
