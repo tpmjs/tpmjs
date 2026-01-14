@@ -41,10 +41,56 @@ function getSpritesToken(): string {
 }
 
 /**
+ * Shell operators that require wrapping the command in sh -c
+ */
+const SHELL_OPERATORS = ['&&', '||', '|', ';', '>', '>>', '<', '<<', '2>', '2>>', '&>', '$(', '`'];
+
+/**
+ * Check if a command string contains shell operators that need sh -c wrapping
+ */
+function needsShellWrapper(cmdString: string): boolean {
+  // Check for shell operators outside of quotes
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+
+  for (let i = 0; i < cmdString.length; i++) {
+    const char = cmdString[i];
+
+    if (char === "'" && !inDoubleQuote) {
+      inSingleQuote = !inSingleQuote;
+      continue;
+    }
+
+    if (char === '"' && !inSingleQuote) {
+      inDoubleQuote = !inDoubleQuote;
+      continue;
+    }
+
+    // Only check for operators when not inside quotes
+    if (!inSingleQuote && !inDoubleQuote) {
+      for (const op of SHELL_OPERATORS) {
+        if (cmdString.slice(i, i + op.length) === op) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+/**
  * Parse a command string into command and arguments.
  * Handles quoted strings and escapes.
+ * If the command contains shell operators (&&, ||, |, ;, etc.),
+ * wraps it in sh -c to execute properly.
  */
 function parseCommand(cmdString: string): string[] {
+  // If command contains shell operators, wrap in sh -c
+  if (needsShellWrapper(cmdString)) {
+    return ['sh', '-c', cmdString];
+  }
+
   const args: string[] = [];
   let current = '';
   let inSingleQuote = false;
