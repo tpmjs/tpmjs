@@ -95,16 +95,26 @@ model Tool {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  // Rating aggregates
+  averageRating Decimal? @map("average_rating") @db.Decimal(2, 1) // 1.0 to 5.0
+  ratingCount   Int      @default(0) @map("rating_count")
+  reviewCount   Int      @default(0) @map("review_count")
+
   // Relations
   simulations  Simulation[]
   healthChecks HealthCheck[]
   collections  CollectionTool[]
   agents       AgentTool[]
   likes        ToolLike[]
+  ratings      ToolRating[]
+  reviews      ToolReview[]
 
   @@unique([packageId, name])
   @@index([qualityScore])
   @@index([likeCount])
+  @@index([averageRating])
+  @@index([ratingCount])
+  @@index([reviewCount])
   @@index([importHealth])
   @@index([executionHealth])
   @@index([lastHealthCheck])
@@ -346,6 +356,8 @@ model User {
   agents           Agent[]
   apiKeys          UserApiKey[]
   toolLikes        ToolLike[]
+  toolRatings      ToolRating[]
+  toolReviews      ToolReview[]
   collectionLikes  CollectionLike[]
   agentLikes       AgentLike[]
   activities       UserActivity[]
@@ -759,6 +771,65 @@ model AgentLike {
   @@index([agentId])
   @@index([userId])
   @@map("agent_likes")
+}
+
+/// ToolRating - user ratings for tools (1-5 stars)
+model ToolRating {
+  id        String   @id @default(cuid())
+
+  // Relationships
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolId    String   @map("tool_id")
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Rating value (1-5)
+  rating    Int      @db.SmallInt
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, toolId])
+  @@index([toolId])
+  @@index([userId])
+  @@index([rating])
+  @@map("tool_ratings")
+}
+
+/// ToolReview - user reviews for tools
+model ToolReview {
+  id        String   @id @default(cuid())
+
+  // Relationships
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolId    String   @map("tool_id")
+  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  // Review content
+  title     String?  @db.VarChar(200)
+  content   String   @db.Text
+  rating    Int      @db.SmallInt // 1-5, denormalized for convenience
+
+  // Moderation
+  isApproved Boolean @default(true) @map("is_approved")
+  isHidden   Boolean @default(false) @map("is_hidden")
+
+  // Helpful votes
+  helpfulCount Int   @default(0) @map("helpful_count")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, toolId])
+  @@index([toolId])
+  @@index([userId])
+  @@index([rating])
+  @@index([isApproved, isHidden])
+  @@index([createdAt])
+  @@map("tool_reviews")
 }
 
 // ============================================================================

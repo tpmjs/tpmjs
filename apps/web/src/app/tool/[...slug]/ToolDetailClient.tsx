@@ -13,7 +13,9 @@ import { useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 import { BundleSize } from '~/components/BundleSize';
 import { DownloadSparkline } from '~/components/DownloadSparkline';
+import { LikeButton } from '~/components/LikeButton';
 import { Markdown } from '~/components/Markdown';
+import { Rating } from '~/components/Rating';
 import { ToolPlayground } from '~/components/ToolPlayground';
 
 interface Package {
@@ -67,6 +69,10 @@ export interface Tool {
   executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   healthCheckError?: string | null;
   lastHealthCheck?: string | null;
+  likeCount?: number;
+  averageRating?: string | null;
+  ratingCount?: number;
+  reviewCount?: number;
   package: Package;
   createdAt: string;
   updatedAt: string;
@@ -224,11 +230,30 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                 </p>
               )}
             </div>
-            {pkg.isOfficial && (
-              <Badge variant="default" size="lg">
-                Official
-              </Badge>
-            )}
+            <div className="flex flex-col items-end gap-2">
+              {pkg.isOfficial && (
+                <Badge variant="default" size="lg">
+                  Official
+                </Badge>
+              )}
+              <div className="flex items-center gap-3">
+                <LikeButton
+                  entityType="tool"
+                  entityId={tool.id}
+                  initialCount={tool.likeCount ?? 0}
+                  showCount={true}
+                  size="sm"
+                />
+                <Rating
+                  toolId={tool.id}
+                  initialAverageRating={tool.averageRating ? Number(tool.averageRating) : null}
+                  initialRatingCount={tool.ratingCount ?? 0}
+                  size="md"
+                  showAverage={true}
+                  showCount={true}
+                />
+              </div>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary">{pkg.category}</Badge>

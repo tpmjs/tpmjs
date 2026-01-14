@@ -78,6 +78,10 @@ async function getTool(slug: string[]): Promise<Tool | null> {
     executionHealth: tool.executionHealth ?? undefined,
     healthCheckError: tool.healthCheckError ?? null,
     lastHealthCheck: tool.lastHealthCheck?.toISOString() ?? null,
+    likeCount: tool.likeCount,
+    averageRating: tool.averageRating?.toString() ?? null,
+    ratingCount: tool.ratingCount,
+    reviewCount: tool.reviewCount,
     createdAt: tool.createdAt.toISOString(),
     updatedAt: tool.updatedAt.toISOString(),
     package: {
