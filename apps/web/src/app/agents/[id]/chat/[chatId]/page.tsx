@@ -887,9 +887,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
                           {message.role === 'USER' && (
                             <div className="flex justify-end">
                               <div className="max-w-[80%] rounded-lg p-4 bg-primary text-primary-foreground">
-                                <div className="text-sm prose prose-sm prose-invert max-w-none">
-                                  <Streamdown>{message.content}</Streamdown>
-                                </div>
+                                <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                               </div>
                             </div>
                           )}

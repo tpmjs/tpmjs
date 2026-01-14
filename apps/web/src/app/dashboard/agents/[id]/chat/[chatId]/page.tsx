@@ -679,9 +679,13 @@ export default function AgentChatPage(): React.ReactElement {
                               : 'bg-surface-secondary'
                           }`}
                         >
-                          <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
-                            <Streamdown>{message.content}</Streamdown>
-                          </div>
+                          {message.role === 'USER' ? (
+                            <div className="text-sm whitespace-pre-wrap">{message.content}</div>
+                          ) : (
+                            <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                              <Streamdown>{message.content}</Streamdown>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
