@@ -6,6 +6,7 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Streamdown } from 'streamdown';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 interface Agent {
@@ -678,7 +679,9 @@ export default function AgentChatPage(): React.ReactElement {
                               : 'bg-surface-secondary'
                           }`}
                         >
-                          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+                          <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                            <Streamdown>{message.content}</Streamdown>
+                          </div>
                         </div>
                       </div>
                     )}
@@ -707,7 +710,9 @@ export default function AgentChatPage(): React.ReactElement {
             {streamingContent && (
               <div className="flex justify-start">
                 <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
-                  <p className="whitespace-pre-wrap text-sm">{streamingContent}</p>
+                  <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                    <Streamdown>{streamingContent}</Streamdown>
+                  </div>
                   <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
                 </div>
               </div>

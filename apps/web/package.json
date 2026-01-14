@@ -57,6 +57,7 @@
     "remark-gfm": "^4.0.1",
     "resend": "^6.7.0",
     "sonner": "^2.0.7",
+    "streamdown": "^1.6.11",
     "zod": "^4.3.5"
   },
   "devDependencies": {
