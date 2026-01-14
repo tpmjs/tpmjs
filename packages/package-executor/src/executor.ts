@@ -35,10 +35,11 @@ export async function executePackage(
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     // Build request body, only include env if provided
+    // Use explicit version if provided to avoid Deno HTTP import cache issues
     const requestBody: Record<string, unknown> = {
       packageName,
       name: functionName,
-      version: 'latest',
+      version: options.version || 'latest',
       params,
     };
     if (options.env && Object.keys(options.env).length > 0) {

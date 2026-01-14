@@ -195,8 +195,9 @@ export async function handleToolsCall(
       };
     }
 
-    // Get the actual package name that matched
+    // Get the actual package name and version that matched
     const actualPackageName = collectionTool.tool.package.npmPackageName;
+    const actualVersion = collectionTool.tool.package.npmVersion;
 
     // Resolve executor configuration (collection config only for MCP - no agent context)
     const executorConfig = parseExecutorConfig(
@@ -205,9 +206,11 @@ export async function handleToolsCall(
     );
 
     // Execute via resolved executor with collection's environment variables
+    // Pass explicit version to avoid Deno HTTP import cache issues with @latest
     const result = await executeWithExecutor(executorConfig, {
       packageName: actualPackageName,
       name: parsed.toolName,
+      version: actualVersion,
       params: params.arguments ?? {},
       env: (collection?.envVars as Record<string, string>) ?? undefined,
     });

@@ -136,9 +136,11 @@ export function createToolDefinition(
 
       // Execute the actual npm package using resolved executor
       // Use the actual export name from the Tool record
+      // Pass explicit version to avoid Deno HTTP import cache issues with @latest
       const result = await executeWithExecutor(executorConfig ?? null, {
         packageName: tool.package.npmPackageName,
         name: tool.name, // Use actual export name (e.g., "helloWorldTool", "default")
+        version: tool.package.npmVersion,
         params,
         env: envVars && Object.keys(envVars).length > 0 ? envVars : undefined,
       });

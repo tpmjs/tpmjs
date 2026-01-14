@@ -20,4 +20,6 @@ export interface ExecutorOptions {
   cacheDir?: string;
   /** Environment variables to inject during execution */
   env?: Record<string, string>;
+  /** Specific version to use (defaults to 'latest') */
+  version?: string;
 }

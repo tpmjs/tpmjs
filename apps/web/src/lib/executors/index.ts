@@ -164,6 +164,7 @@ export async function executeWithExecutor(
   // Default: use existing package-executor (which uses SANDBOX_EXECUTOR_URL)
   const result = await executePackage(request.packageName, request.name, request.params, {
     env: request.env,
+    version: request.version,
   });
 
   return {
