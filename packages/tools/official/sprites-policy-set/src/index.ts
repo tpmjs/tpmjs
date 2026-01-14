@@ -79,16 +79,27 @@ export const spritesPolicySetTool = tool({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      response = await fetch(`${SPRITES_API_BASE}/sprites/${encodeURIComponent(name)}/policies`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'User-Agent': 'TPMJS/1.0',
-        },
-        body: JSON.stringify({ mode, domains }),
-        signal: controller.signal,
-      });
+      // API endpoint: POST /v1/sprites/{name}/policy/network
+      // Body format: { "rules": [{ "domain": "...", "action": "allow" | "deny" }] }
+      // Convert our mode/domains format to rules array
+      const rules = domains.map((domain) => ({
+        domain,
+        action: mode, // 'allow' or 'deny'
+      }));
+
+      response = await fetch(
+        `${SPRITES_API_BASE}/sprites/${encodeURIComponent(name)}/policy/network`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'TPMJS/1.0',
+          },
+          body: JSON.stringify({ rules }),
+          signal: controller.signal,
+        }
+      );
 
       clearTimeout(timeoutId);
     } catch (error) {

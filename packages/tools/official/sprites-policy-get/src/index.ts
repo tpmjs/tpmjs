@@ -55,14 +55,18 @@ export const spritesPolicyGetTool = tool({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      response = await fetch(`${SPRITES_API_BASE}/sprites/${encodeURIComponent(name)}/policies`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'User-Agent': 'TPMJS/1.0',
-        },
-        signal: controller.signal,
-      });
+      // API endpoint: GET /v1/sprites/{name}/policy/network
+      response = await fetch(
+        `${SPRITES_API_BASE}/sprites/${encodeURIComponent(name)}/policy/network`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'User-Agent': 'TPMJS/1.0',
+          },
+          signal: controller.signal,
+        }
+      );
 
       clearTimeout(timeoutId);
     } catch (error) {

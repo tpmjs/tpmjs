@@ -66,19 +66,18 @@ export const spritesCheckpointCreateTool = tool({
         body.name = checkpointName;
       }
 
-      response = await fetch(
-        `${SPRITES_API_BASE}/sprites/${encodeURIComponent(name)}/checkpoints`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'User-Agent': 'TPMJS/1.0',
-          },
-          body: JSON.stringify(body),
-          signal: controller.signal,
-        }
-      );
+      // API endpoint: POST /v1/sprites/{name}/checkpoint (singular, not plural)
+      // Note: Returns application/x-ndjson streaming progress events
+      response = await fetch(`${SPRITES_API_BASE}/sprites/${encodeURIComponent(name)}/checkpoint`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'User-Agent': 'TPMJS/1.0',
+        },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
 
       clearTimeout(timeoutId);
     } catch (error) {
@@ -104,19 +103,71 @@ export const spritesCheckpointCreateTool = tool({
       );
     }
 
-    let data: Record<string, unknown>;
+    // API returns application/x-ndjson streaming progress events
+    // Each line is a JSON object, we need to parse all lines and find the result
+    let text: string;
     try {
-      data = (await response.json()) as Record<string, unknown>;
+      text = await response.text();
     } catch {
-      throw new Error('Failed to parse response from Sprites API');
+      throw new Error('Failed to read response from Sprites API');
+    }
+
+    // Parse NDJSON - split by newlines and parse each line as JSON
+    // Format: {"type":"info"|"complete"|"error","data":"...","time":"..."}
+    // The checkpoint ID is in lines like:
+    //   {"type":"info","data":"  ID: v2",...}
+    //   {"type":"complete","data":"Checkpoint v2 created successfully",...}
+    const lines = text
+      .trim()
+      .split('\n')
+      .filter((line) => line.trim());
+    let checkpointId = '';
+    let createdAt = '';
+
+    for (const line of lines) {
+      try {
+        const parsed = JSON.parse(line) as { type?: string; data?: string; time?: string };
+
+        // Check for error
+        if (parsed.type === 'error') {
+          throw new Error(`Checkpoint creation failed: ${parsed.data || 'Unknown error'}`);
+        }
+
+        // Extract checkpoint ID from "  ID: v2" line
+        if (parsed.type === 'info' && parsed.data?.trim().startsWith('ID:')) {
+          checkpointId = parsed.data.trim().replace('ID:', '').trim();
+        }
+
+        // Extract created time from "  Created: 2026-01-14 18:23:26" line
+        if (parsed.type === 'info' && parsed.data?.trim().startsWith('Created:')) {
+          createdAt = parsed.data.trim().replace('Created:', '').trim();
+        }
+
+        // Also try to extract from complete message like "Checkpoint v2 created successfully"
+        if (parsed.type === 'complete' && parsed.data && !checkpointId) {
+          const match = parsed.data.match(/Checkpoint\s+(\S+)\s+created/);
+          if (match && match[1]) {
+            checkpointId = match[1];
+          }
+        }
+      } catch (parseError) {
+        // Skip lines that aren't valid JSON (could be progress messages)
+        if (parseError instanceof SyntaxError) continue;
+        throw parseError;
+      }
+    }
+
+    if (!checkpointId) {
+      throw new Error(
+        `Failed to extract checkpoint ID from response. Raw response: ${text.slice(0, 300)}`
+      );
     }
 
     return {
-      id: (data.id as string) || '',
-      name: (data.name as string) || checkpointName,
-      createdAt:
-        (data.createdAt as string) || (data.created_at as string) || new Date().toISOString(),
-      size: data.size as number | undefined,
+      id: checkpointId,
+      name: checkpointName || checkpointId,
+      createdAt: createdAt || new Date().toISOString(),
+      size: undefined,
     };
   },
 });

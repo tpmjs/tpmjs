@@ -61,17 +61,15 @@ export const spritesSessionsTool = tool({
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      response = await fetch(
-        `${SPRITES_API_BASE}/sprites/${encodeURIComponent(name)}/exec/sessions`,
-        {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'User-Agent': 'TPMJS/1.0',
-          },
-          signal: controller.signal,
-        }
-      );
+      // API endpoint: GET /v1/sprites/{name}/exec lists active exec sessions
+      response = await fetch(`${SPRITES_API_BASE}/sprites/${encodeURIComponent(name)}/exec`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'User-Agent': 'TPMJS/1.0',
+        },
+        signal: controller.signal,
+      });
 
       clearTimeout(timeoutId);
     } catch (error) {
