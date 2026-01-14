@@ -14,4 +14,4 @@ COPY server.ts .
 EXPOSE 3002
 
 # Run the Deno server
-CMD ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "--allow-write", "server.ts"]
+CMD ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "--allow-write", "--allow-run", "server.ts"]
