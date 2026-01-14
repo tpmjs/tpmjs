@@ -1,5 +1,11 @@
-name: "tpmjs-official-tools"
-root: "."
+project:
+  name: "tpmjs-official-tools"
+  domain: "tpmjs.tools"
+
+targets:
+  kind: "block"
+  discover:
+    root: "."
 
 # =============================================================================
 # PHILOSOPHY - Core principles that guide all tool development
@@ -832,6 +838,7 @@ blocks:
   # A) Web Research & Evidence (15 tools)
   # ---------------------------------------------------------------------------
   research.pageBrief:
+    type: utility
     description: "Fetches a URL, extracts main content using Readability algorithm, and returns a structured brief with summary, key points, and claims that need citations"
     path: "page-brief"
     domain_rules:
@@ -852,6 +859,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   research.comparePages:
+    type: utility
     description: "Compares content from two URLs, identifying agreements, conflicts, and unique points from each source using TF-IDF similarity"
     path: "compare-pages"
     domain_rules:
@@ -875,6 +883,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.sourceCredibility:
+    type: utility
     description: "Analyzes a URL for credibility signals using heuristics like HTTPS, domain reputation, author presence, publication date, and citation density"
     path: "source-credibility"
     domain_rules:
@@ -904,6 +913,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.claimChecklist:
+    type: utility
     description: "Extracts factual claims from text and identifies which ones need citations, categorizing by type and priority"
     path: "claim-checklist"
     domain_rules:
@@ -929,6 +939,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   research.timelineFromText:
+    type: utility
     description: "Extracts dated events from unstructured text and returns a normalized, chronologically sorted timeline with confidence scores"
     path: "timeline-from-text"
     domain_rules:
@@ -954,6 +965,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   research.rssRead:
+    type: utility
     description: "Parses RSS/Atom feeds and returns normalized items with title, link, date, and summary"
     path: "rss-read"
     domain_rules:
@@ -987,6 +999,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.sitemapRead:
+    type: utility
     description: "Parses sitemap XML including sitemap indexes and returns URLs for crawling/indexing"
     path: "sitemap-read"
     domain_rules:
@@ -1007,6 +1020,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   research.robotsPolicy:
+    type: utility
     description: "Fetches and parses robots.txt and checks if URLs are allowed for crawling"
     path: "robots-policy"
     domain_rules:
@@ -1034,6 +1048,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   web.fetchText:
+    type: utility
     description: "Safe fetch wrapper with max bytes, timeout, redirects policy, and charset decoding"
     path: "fetch-text"
     domain_rules:
@@ -1065,6 +1080,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   web.redirectTrace:
+    type: utility
     description: "Returns full redirect chain for URL canonicalization and diagnosing paywall/geo redirects"
     path: "redirect-trace"
     domain_rules:
@@ -1089,6 +1105,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, readme_documentation]
 
   web.extractMeta:
+    type: utility
     description: "Extracts title, description, canonical, OG, and Twitter tags for previews and indexing"
     path: "extract-meta"
     domain_rules:
@@ -1124,6 +1141,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   web.extractJsonLd:
+    type: utility
     description: "Extracts JSON-LD blocks, parses leniently, and returns schema objects for articles/products/events"
     path: "extract-json-ld"
     domain_rules:
@@ -1144,6 +1162,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   web.linksCatalog:
+    type: utility
     description: "Extracts links and classifies internal/external with resolved URLs and anchor text"
     path: "links-catalog"
     domain_rules:
@@ -1167,6 +1186,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   web.tableExtract:
+    type: utility
     description: "Pulls HTML tables into normalized headers and rows arrays"
     path: "table-extract"
     domain_rules:
@@ -1194,6 +1214,7 @@ blocks:
   # B) Writing, Docs & Deliverables (15 tools)
   # ---------------------------------------------------------------------------
   doc.executiveBrief:
+    type: utility
     description: "Produces a 1-page executive brief with 'what happened / so what / recommendation' structure"
     path: "executive-brief"
     domain_rules:
@@ -1224,6 +1245,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.runbookDraft:
+    type: utility
     description: "Converts a procedure into an operational runbook with prechecks, steps, rollback, and verify sections"
     path: "runbook-draft"
     domain_rules:
@@ -1267,6 +1289,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.postmortemDraft:
+    type: utility
     description: "Generates postmortem skeleton with timeline, impact, root cause hypotheses, and actions"
     path: "postmortem-draft"
     domain_rules:
@@ -1302,6 +1325,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.faqFromText:
+    type: utility
     description: "Builds a FAQ with Q/A pairs from a reference document, with automatic categorization"
     path: "faq-from-text"
     domain_rules:
@@ -1328,6 +1352,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.glossaryBuild:
+    type: utility
     description: "Extracts domain terms and concise definitions from corpus context with malformed input handling"
     path: "glossary-build"
     domain_rules:
@@ -1359,6 +1384,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.tocGenerate:
+    type: utility
     description: "Generates a Markdown table of contents from headings"
     path: "toc-generate"
     domain_rules:
@@ -1389,6 +1415,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.markdownLintBasic:
+    type: utility
     description: "Flags broken heading order, empty links, trailing spaces, and other markdown issues"
     path: "markdown-lint-basic"
     domain_rules:
@@ -1409,6 +1436,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.styleRewrite:
+    type: utility
     description: "Rewrites text to a specified tone without changing meaning"
     path: "style-rewrite"
     domain_rules:
@@ -1432,6 +1460,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.meetingMinutesFormat:
+    type: utility
     description: "Turns messy notes into minutes with decisions and action items"
     path: "meeting-minutes-format"
     domain_rules:
@@ -1452,6 +1481,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.decisionRecordADR:
+    type: utility
     description: "Produces an Architecture Decision Record with context, decision, alternatives, and consequences"
     path: "decision-record-adr"
     domain_rules:
@@ -1487,6 +1517,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.changelogEntry:
+    type: utility
     description: "Groups change notes into Added/Changed/Fixed/Removed entries"
     path: "changelog-entry"
     domain_rules:
@@ -1523,6 +1554,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.releaseNotes:
+    type: utility
     description: "Converts technical changes into user-facing release notes"
     path: "release-notes"
     domain_rules:
@@ -1555,6 +1587,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.prdOutline:
+    type: utility
     description: "Generates PRD structure with problem, goals, non-goals, UX, metrics, risks, and rollout"
     path: "prd-outline"
     domain_rules:
@@ -1590,6 +1623,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.acceptanceCriteria:
+    type: utility
     description: "Turns feature description into testable acceptance criteria in Given-When-Then format"
     path: "acceptance-criteria"
     domain_rules:
@@ -1616,6 +1650,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   doc.testPlanMatrix:
+    type: utility
     description: "Produces a QA test matrix with scenarios, steps, expected results, and priority"
     path: "test-plan-matrix"
     domain_rules:
@@ -1652,6 +1687,7 @@ blocks:
   # C) Data Wrangling & Transforms (15 tools)
   # ---------------------------------------------------------------------------
   data.csvParse:
+    type: utility
     description: "Parses CSV into headers and rows with light type inference"
     path: "csv-parse"
     domain_rules:
@@ -1676,6 +1712,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.csvStringify:
+    type: utility
     description: "Converts rows back to CSV with stable column ordering"
     path: "csv-stringify"
     domain_rules:
@@ -1700,6 +1737,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.yamlParse:
+    type: utility
     description: "Parses YAML safely into JSON"
     path: "yaml-parse"
     domain_rules:
@@ -1720,6 +1758,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.yamlStringify:
+    type: utility
     description: "Converts JavaScript data to YAML with formatting options"
     path: "yaml-stringify"
     domain_rules:
@@ -1742,6 +1781,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.jsonRepair:
+    type: utility
     description: "Repairs common JSON formatting errors and parses the result"
     path: "json-repair"
     domain_rules:
@@ -1762,6 +1802,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.jsonSchemaValidate:
+    type: utility
     description: "Validates JSON against a JSON Schema and returns detailed errors"
     path: "json-schema-validate"
     domain_rules:
@@ -1785,6 +1826,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.rowsFilter:
+    type: utility
     description: "Filters rows using a predicate DSL (field/operator/value)"
     path: "rows-filter"
     domain_rules:
@@ -1808,6 +1850,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.rowsSort:
+    type: utility
     description: "Stable multi-key sort with null handling"
     path: "rows-sort"
     domain_rules:
@@ -1831,6 +1874,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.rowsGroupAggregate:
+    type: utility
     description: "Groups rows by key and computes aggregates (count/sum/avg/min/max)"
     path: "rows-group-aggregate"
     domain_rules:
@@ -1857,6 +1901,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.rowsJoin:
+    type: utility
     description: "Joins two datasets on keys with inner/left/right/full join support"
     path: "rows-join"
     domain_rules:
@@ -1890,6 +1935,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.dedupeByKey:
+    type: utility
     description: "Deduplicates rows by key, keeping first or last occurrence"
     path: "dedupe-by-key"
     domain_rules:
@@ -1917,6 +1963,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.pivot:
+    type: utility
     description: "Pivots data long-to-wide with row key, column key, and value key"
     path: "pivot"
     domain_rules:
@@ -1946,6 +1993,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.normalizeWhitespace:
+    type: utility
     description: "Normalizes newlines, trims, and collapses excessive spaces"
     path: "normalize-whitespace"
     domain_rules:
@@ -1970,6 +2018,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.urlNormalize:
+    type: utility
     description: "Canonicalizes URLs for deduplication and caching"
     path: "url-normalize"
     domain_rules:
@@ -1990,6 +2039,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.textChunk:
+    type: utility
     description: "Splits text into chunks with overlap for downstream processing"
     path: "text-chunk"
     domain_rules:
@@ -2017,6 +2067,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.base64Decode:
+    type: utility
     description: "Decode base64 encoded data to string with support for multiple output encodings"
     path: "base64-decode"
     domain_rules:
@@ -2039,6 +2090,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.base64Encode:
+    type: utility
     description: "Encode string or buffer to base64 format with support for multiple character encodings"
     path: "base64-encode"
     domain_rules:
@@ -2061,6 +2113,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.dateParse:
+    type: utility
     description: "Parse dates from natural language text like 'tomorrow at 3pm' or 'next Friday'"
     path: "date-parse"
     domain_rules:
@@ -2089,6 +2142,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.hashText:
+    type: utility
     description: "Hash text using cryptographic algorithms (MD5, SHA-1, SHA-256, SHA-512)"
     path: "hash-text"
     domain_rules:
@@ -2110,6 +2164,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.htmlToMarkdown:
+    type: utility
     description: "Convert HTML to markdown with customizable formatting options"
     path: "html-to-markdown"
     domain_rules:
@@ -2134,6 +2189,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.jsonPathQuery:
+    type: utility
     description: "Query JSON data using JSONPath expressions like '$.users[?(@.age > 18)].name'"
     path: "json-path-query"
     domain_rules:
@@ -2157,6 +2213,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.markdownToHtml:
+    type: utility
     description: "Convert markdown to HTML with optional GitHub Flavored Markdown and sanitization"
     path: "markdown-to-html"
     domain_rules:
@@ -2181,6 +2238,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.regexExtract:
+    type: utility
     description: "Extract all regex matches from text with optional capture group support"
     path: "regex-extract"
     domain_rules:
@@ -2212,6 +2270,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.schemaInfer:
+    type: utility
     description: "Infer JSON Schema from sample data objects"
     path: "schema-infer"
     domain_rules:
@@ -2236,6 +2295,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.templateRender:
+    type: utility
     description: "Render mustache-style templates with data and track variable usage"
     path: "template-render"
     domain_rules:
@@ -2263,6 +2323,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   data.urlParse:
+    type: utility
     description: "Parse URL into protocol, hostname, port, pathname, search params, and hash"
     path: "url-parse"
     domain_rules:
@@ -2286,6 +2347,7 @@ blocks:
   # D) Engineering & Ops Helpers (15 tools)
   # ---------------------------------------------------------------------------
   eng.diffTextUnified:
+    type: utility
     description: "Produces unified diff between two strings for reviews and patch previews"
     path: "diff-text-unified"
     domain_rules:
@@ -2313,6 +2375,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.stacktraceParse:
+    type: utility
     description: "Parses stack traces into frames and highlights likely app frames vs library frames"
     path: "stacktrace-parse"
     domain_rules:
@@ -2333,6 +2396,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.errorLogTriage:
+    type: utility
     description: "Buckets logs into likely causes with recommended next checks"
     path: "error-log-triage"
     domain_rules:
@@ -2353,6 +2417,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.conventionalCommitSuggest:
+    type: utility
     description: "Suggests conventional commit message from a change summary"
     path: "conventional-commit-suggest"
     domain_rules:
@@ -2373,6 +2438,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.envVarDocsGenerate:
+    type: utility
     description: "Generates environment variable documentation table from schema"
     path: "env-var-docs-generate"
     domain_rules:
@@ -2393,6 +2459,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.openapiSnippetBuild:
+    type: utility
     description: "Builds minimal OpenAPI snippet from endpoint metadata"
     path: "openapi-snippet-build"
     domain_rules:
@@ -2413,6 +2480,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.dependencyAuditLite:
+    type: utility
     description: "Heuristic audit for duplicates, suspicious version ranges, and heavy deps"
     path: "dependency-audit-lite"
     domain_rules:
@@ -2433,6 +2501,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.configNormalize:
+    type: utility
     description: "Applies defaults and coercions to config objects"
     path: "config-normalize"
     domain_rules:
@@ -2456,6 +2525,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.testCaseGenerate:
+    type: utility
     description: "Generates test cases from requirements with scenarios and expected results"
     path: "test-case-generate"
     domain_rules:
@@ -2476,6 +2546,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   eng.releaseChecklist:
+    type: utility
     description: "Generates pre-release checklist tailored to stack"
     path: "release-checklist"
     domain_rules:
@@ -2496,6 +2567,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   ops.monitoringGapAnalysis:
+    type: utility
     description: "Suggests missing monitors and SLO signals from services and incidents"
     path: "monitoring-gap-analysis"
     domain_rules:
@@ -2520,6 +2592,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   ops.sloDraft:
+    type: utility
     description: "Drafts SLOs with SLI definitions, targets, and alerting hints"
     path: "slo-draft"
     domain_rules:
@@ -2540,6 +2613,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   ops.postmortemActionExtractor:
+    type: utility
     description: "Extracts action items with owners and dates from postmortem text"
     path: "postmortem-action-extractor"
     domain_rules:
@@ -2563,6 +2637,7 @@ blocks:
   # E) Security & Compliance (10 tools)
   # ---------------------------------------------------------------------------
   sec.urlRiskHeuristic:
+    type: utility
     description: "Flags suspicious URLs using punycode, homoglyph, and TLD pattern detection"
     path: "url-risk-heuristic"
     domain_rules:
@@ -2583,6 +2658,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   sec.secretScanText:
+    type: utility
     description: "Detects potential secrets (API keys, tokens, private keys) in text"
     path: "secret-scan-text"
     domain_rules:
@@ -2603,6 +2679,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   sec.redactSecrets:
+    type: utility
     description: "Redacts detected secrets from text and returns a redaction report"
     path: "redact-secrets"
     domain_rules:
@@ -2623,6 +2700,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   sec.cspCompose:
+    type: utility
     description: "Builds a CSP header string from allowed origins and directives"
     path: "csp-compose"
     domain_rules:
@@ -2643,6 +2721,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   sec.hardeningChecklistWeb:
+    type: utility
     description: "Creates web app hardening checklist for headers, cookies, deps, and auth"
     path: "hardening-checklist-web"
     domain_rules:
@@ -2667,6 +2746,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   sec.htmlSanitize:
+    type: utility
     description: "Sanitize HTML to prevent XSS attacks with customizable allowed tags and attributes"
     path: "html-sanitize"
     domain_rules:
@@ -2691,6 +2771,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   compliance.dataClassificationHeuristic:
+    type: utility
     description: "Labels fields as PII/sensitive based on names and sample values"
     path: "data-classification-heuristic"
     domain_rules:
@@ -2711,6 +2792,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   compliance.retentionPolicyDraft:
+    type: utility
     description: "Drafts data retention/deletion policy from system requirements"
     path: "retention-policy-draft"
     domain_rules:
@@ -2731,6 +2813,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   compliance.dpiaOutline:
+    type: utility
     description: "Drafts DPIA outline with purpose, risks, mitigations, and necessity assessment"
     path: "dpia-outline"
     domain_rules:
@@ -2751,6 +2834,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   compliance.accessControlMatrix:
+    type: utility
     description: "Generates RBAC permissions matrix from roles and resources"
     path: "access-control-matrix"
     domain_rules:
@@ -2777,6 +2861,7 @@ blocks:
   # F) Quantitative / Statistics (10 tools)
   # ---------------------------------------------------------------------------
   stats.bootstrapCI:
+    type: utility
     description: "Computes bootstrap confidence intervals for mean, median, or custom statistic"
     path: "bootstrap-ci"
     domain_rules:
@@ -2804,6 +2889,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   stats.permutationTest:
+    type: utility
     description: "Nonparametric hypothesis test using permutation resampling"
     path: "permutation-test"
     domain_rules:
@@ -2827,6 +2913,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   stats.effectSizeSuite:
+    type: utility
     description: "Computes effect sizes: Cohen's d, odds ratio, r, eta² for proper reporting"
     path: "effect-size-suite"
     domain_rules:
@@ -2853,6 +2940,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   stats.multipleTestingAdjust:
+    type: utility
     description: "Applies Bonferroni, Holm, or Benjamini-Hochberg corrections to p-values"
     path: "multiple-testing-adjust"
     domain_rules:
@@ -2876,6 +2964,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   stats.linearRegressionOLS:
+    type: utility
     description: "Fits OLS regression and returns coefficients with residual diagnostics"
     path: "linear-regression-ols"
     domain_rules:
@@ -2899,6 +2988,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   stats.logisticRegression:
+    type: utility
     description: "Fits logistic regression for binary outcomes with weights and metrics"
     path: "logistic-regression"
     domain_rules:
@@ -2922,6 +3012,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   causal.diffInDiff:
+    type: utility
     description: "Difference-in-differences estimate with parallel trends assumption check"
     path: "diff-in-diff"
     domain_rules:
@@ -2954,6 +3045,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   bayes.betaBinomialUpdate:
+    type: utility
     description: "Bayesian update for conversion rates with Beta prior, returns posterior and credible interval"
     path: "beta-binomial-update"
     domain_rules:
@@ -2987,6 +3079,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   stats.timeSeriesDecomposeLite:
+    type: utility
     description: "Decomposes time series into trend, seasonality, and residual components"
     path: "time-series-decompose-lite"
     domain_rules:
@@ -3013,6 +3106,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   stats.anomalyDetectMAD:
+    type: utility
     description: "Robust anomaly detection using median absolute deviation"
     path: "anomaly-detect-mad"
     domain_rules:
@@ -3040,6 +3134,7 @@ blocks:
   # G) Agent Ops / Recipes / Routing / Eval (20 tools)
   # ---------------------------------------------------------------------------
   agent.recipeEmit:
+    type: utility
     description: "Emits canonical workflow JSON with steps, params, artifacts, and checks"
     path: "recipe-emit"
     domain_rules:
@@ -3063,6 +3158,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.recipeHash:
+    type: utility
     description: "Produces stable hash ID for recipe deduplication and versioning"
     path: "recipe-hash"
     domain_rules:
@@ -3083,6 +3179,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.workflowValidateIO:
+    type: utility
     description: "Validates that each step's output type matches next step's input type"
     path: "workflow-validate-io"
     domain_rules:
@@ -3103,6 +3200,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.workflowAutoRepair:
+    type: utility
     description: "Inserts adapter steps when input/output types are mismatched"
     path: "workflow-auto-repair"
     domain_rules:
@@ -3123,6 +3221,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.toolSelectionPlan:
+    type: utility
     description: "Creates tool selection policy specifying when to use which tools"
     path: "tool-selection-plan"
     domain_rules:
@@ -3146,6 +3245,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.evalFixtureBuild:
+    type: utility
     description: "Converts conversations into eval fixtures with inputs and expected tool calls"
     path: "eval-fixture-build"
     domain_rules:
@@ -3166,6 +3266,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.toolCallAccuracyScore:
+    type: utility
     description: "Scores predicted tool calls vs expected with exact, top-k, and partial credit"
     path: "tool-call-accuracy-score"
     domain_rules:
@@ -3189,6 +3290,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.coverageTracker:
+    type: utility
     description: "Tracks coverage across domains, artifacts, and roles for recipe library"
     path: "coverage-tracker"
     domain_rules:
@@ -3209,6 +3311,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.noveltyScoreWorkflow:
+    type: utility
     description: "Scores workflow uniqueness vs corpus using tool-sequence similarity"
     path: "novelty-score-workflow"
     domain_rules:
@@ -3232,6 +3335,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.recipeGenerateFromGrammar:
+    type: utility
     description: "Expands workflow templates into concrete recipes using grammar rules"
     path: "recipe-generate-from-grammar"
     domain_rules:
@@ -3258,6 +3362,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.recipeCurateRank:
+    type: utility
     description: "Filters, dedupes, and ranks recipe candidates by coherence, novelty, and coverage"
     path: "recipe-curate-rank"
     domain_rules:
@@ -3281,6 +3386,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.workflowCostEstimate:
+    type: utility
     description: "Estimates workflow cost in steps, bytes, network calls, and complexity"
     path: "workflow-cost-estimate"
     domain_rules:
@@ -3301,6 +3407,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.guardrailPolicyDraft:
+    type: utility
     description: "Drafts operational guardrails for allowed domains, max fetch, redaction, and refusals"
     path: "guardrail-policy-draft"
     domain_rules:
@@ -3324,6 +3431,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.promptToWorkflowSkeleton:
+    type: utility
     description: "Converts user request into proposed workflow skeleton with steps and rationale"
     path: "prompt-to-workflow-skeleton"
     domain_rules:
@@ -3344,6 +3452,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.workflowExplain:
+    type: utility
     description: "Produces human-readable explanation of workflow with step purposes and outputs"
     path: "workflow-explain"
     domain_rules:
@@ -3367,6 +3476,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.workflowVariantGenerate:
+    type: utility
     description: "Creates meaningful workflow variants for different goals (fast, accurate, low-web)"
     path: "workflow-variant-generate"
     domain_rules:
@@ -3390,6 +3500,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   agent.recipePublishManifest:
+    type: utility
     description: "Builds publish-ready manifests with tags, categories, and readme snippets"
     path: "recipe-publish-manifest"
     domain_rules:
@@ -3413,6 +3524,7 @@ blocks:
   # Existing tool (kept for compatibility)
   # ---------------------------------------------------------------------------
   adapter.createBlogPost:
+    type: utility
     description: "Creates structured blog posts with frontmatter, metadata, slug generation, word count, and reading time estimation"
     path: "createBlogPost"
     inputs:
@@ -3447,6 +3559,7 @@ blocks:
   # H) Sales & Marketing (10 tools)
   # ---------------------------------------------------------------------------
   sales.leadScore:
+    type: utility
     description: "Scores leads based on engagement signals like email opens, page visits, form fills, and company fit"
     path: "lead-score"
     domain_rules:
@@ -3467,6 +3580,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   sales.proposalOutline:
+    type: utility
     description: "Generates structured sales proposal outline from opportunity details and customer requirements"
     path: "proposal-outline"
     domain_rules:
@@ -3489,6 +3603,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   sales.objectionResponse:
+    type: utility
     description: "Suggests responses to common sales objections based on objection category and context"
     path: "objection-response"
     domain_rules:
@@ -3511,6 +3626,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   marketing.competitorBrief:
+    type: utility
     description: "Extracts and structures competitor information from various sources into a competitive brief"
     path: "competitor-brief"
     domain_rules:
@@ -3532,6 +3648,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   marketing.campaignBrief:
+    type: utility
     description: "Structures marketing campaign briefs with objectives, audience, channels, and KPIs"
     path: "campaign-brief"
     domain_rules:
@@ -3557,6 +3674,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   marketing.socialPostDraft:
+    type: utility
     description: "Drafts social media posts optimized for specific platforms with hashtags and call-to-action"
     path: "social-post-draft"
     domain_rules:
@@ -3582,6 +3700,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   marketing.emailSubjectScore:
+    type: utility
     description: "Scores email subject lines for open rate potential based on length, urgency, personalization"
     path: "email-subject-score"
     domain_rules:
@@ -3600,6 +3719,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   marketing.audiencePersona:
+    type: utility
     description: "Creates audience persona profiles from demographic and behavioral data"
     path: "audience-persona"
     domain_rules:
@@ -3621,6 +3741,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   marketing.contentCalendarPlan:
+    type: utility
     description: "Generates content calendar structure with themes, topics, and posting schedule"
     path: "content-calendar-plan"
     domain_rules:
@@ -3646,6 +3767,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   marketing.pricingPageCopy:
+    type: utility
     description: "Generates pricing page copy with tier names, feature lists, and CTAs"
     path: "pricing-page-copy"
     domain_rules:
@@ -3670,6 +3792,7 @@ blocks:
   # I) HR & People Operations (10 tools)
   # ---------------------------------------------------------------------------
   hr.jobDescriptionDraft:
+    type: utility
     description: "Generates job descriptions from role requirements with responsibilities, qualifications, and benefits"
     path: "job-description-draft"
     domain_rules:
@@ -3695,6 +3818,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.interviewQuestions:
+    type: utility
     description: "Generates behavioral and technical interview questions for specific roles"
     path: "interview-questions"
     domain_rules:
@@ -3720,6 +3844,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.performanceReviewDraft:
+    type: utility
     description: "Structures performance review from achievements and feedback into formal review format"
     path: "performance-review-draft"
     domain_rules:
@@ -3744,6 +3869,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.onboardingChecklist:
+    type: utility
     description: "Generates role-specific onboarding checklists with tasks, owners, and timelines"
     path: "onboarding-checklist"
     domain_rules:
@@ -3768,6 +3894,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.compensationBand:
+    type: utility
     description: "Structures compensation data into salary bands with percentiles and benchmarks"
     path: "compensation-band"
     domain_rules:
@@ -3793,6 +3920,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.surveyAnalyze:
+    type: utility
     description: "Analyzes employee survey responses to extract themes, sentiment, and action items"
     path: "survey-analyze"
     domain_rules:
@@ -3816,6 +3944,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.orgChartFormat:
+    type: utility
     description: "Formats organizational hierarchy data into structured org chart representation"
     path: "org-chart-format"
     domain_rules:
@@ -3834,6 +3963,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.offerLetterDraft:
+    type: utility
     description: "Generates offer letter content from compensation and role details"
     path: "offer-letter-draft"
     domain_rules:
@@ -3858,6 +3988,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.exitInterviewSummarize:
+    type: utility
     description: "Summarizes exit interview responses into themes and retention insights"
     path: "exit-interview-summarize"
     domain_rules:
@@ -3876,6 +4007,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   hr.policyDocFormat:
+    type: utility
     description: "Formats HR policy content into standardized policy document structure"
     path: "policy-doc-format"
     domain_rules:
@@ -3900,6 +4032,7 @@ blocks:
   # J) Legal & Contracts (8 tools)
   # ---------------------------------------------------------------------------
   legal.contractClauseScan:
+    type: utility
     description: "Scans contract text to identify and categorize key clauses (termination, liability, IP, etc.)"
     path: "contract-clause-scan"
     domain_rules:
@@ -3918,6 +4051,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   legal.ndaTemplateDraft:
+    type: utility
     description: "Generates NDA template with customizable terms for mutual or unilateral agreements"
     path: "nda-template-draft"
     domain_rules:
@@ -3946,6 +4080,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   legal.tosReadability:
+    type: utility
     description: "Analyzes Terms of Service for readability, complexity, and consumer-friendliness"
     path: "tos-readability"
     domain_rules:
@@ -3964,6 +4099,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   legal.riskClauseHighlight:
+    type: utility
     description: "Identifies and highlights potentially risky clauses in contracts"
     path: "risk-clause-highlight"
     domain_rules:
@@ -3982,6 +4118,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   legal.invoiceTermsExtract:
+    type: utility
     description: "Extracts payment terms, due dates, and late fees from invoice text"
     path: "invoice-terms-extract"
     domain_rules:
@@ -4000,6 +4137,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   legal.gdprDataMap:
+    type: utility
     description: "Maps data processing activities to GDPR requirements and legal bases"
     path: "gdpr-data-map"
     domain_rules:
@@ -4018,6 +4156,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   legal.copyrightNotice:
+    type: utility
     description: "Generates appropriate copyright notices for different content types and jurisdictions"
     path: "copyright-notice"
     domain_rules:
@@ -4042,6 +4181,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   legal.trademarkCheck:
+    type: utility
     description: "Checks proposed names against common trademark patterns and suggests conflicts"
     path: "trademark-check"
     domain_rules:
@@ -4066,6 +4206,7 @@ blocks:
   # K) Finance & Accounting (8 tools)
   # ---------------------------------------------------------------------------
   finance.expenseCategoriize:
+    type: utility
     description: "Categorizes expenses into accounting categories based on description and amount"
     path: "expense-categorize"
     domain_rules:
@@ -4084,6 +4225,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   finance.invoiceDataExtract:
+    type: utility
     description: "Extracts structured data from invoice text including vendor, line items, totals"
     path: "invoice-data-extract"
     domain_rules:
@@ -4102,6 +4244,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   finance.budgetVariance:
+    type: utility
     description: "Calculates budget vs actual variance with percentage and trend analysis"
     path: "budget-variance"
     domain_rules:
@@ -4123,6 +4266,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   finance.cashFlowProject:
+    type: utility
     description: "Projects cash flow based on receivables, payables, and recurring items"
     path: "cash-flow-project"
     domain_rules:
@@ -4147,6 +4291,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   finance.revenueBreakdown:
+    type: utility
     description: "Breaks down revenue by segment, product, or period with growth rates"
     path: "revenue-breakdown"
     domain_rules:
@@ -4168,6 +4313,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   finance.ratioAnalysis:
+    type: utility
     description: "Calculates key financial ratios from balance sheet and income statement data"
     path: "ratio-analysis"
     domain_rules:
@@ -4186,6 +4332,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   finance.taxDeductionScan:
+    type: utility
     description: "Scans expense data for potential tax deductions by category"
     path: "tax-deduction-scan"
     domain_rules:
@@ -4207,6 +4354,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   finance.reconciliationMatch:
+    type: utility
     description: "Matches bank transactions to ledger entries for reconciliation"
     path: "reconciliation-match"
     domain_rules:
@@ -4231,6 +4379,7 @@ blocks:
   # L) Customer Success (7 tools)
   # ---------------------------------------------------------------------------
   cx.feedbackThemes:
+    type: utility
     description: "Extracts themes and sentiment from customer feedback text"
     path: "feedback-themes"
     domain_rules:
@@ -4249,6 +4398,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   cx.churnRiskScore:
+    type: utility
     description: "Scores customer churn risk based on usage, engagement, and support signals"
     path: "churn-risk-score"
     domain_rules:
@@ -4267,6 +4417,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   cx.npsAnalysis:
+    type: utility
     description: "Analyzes NPS survey responses to categorize by promoter/detractor and extract themes"
     path: "nps-analysis"
     domain_rules:
@@ -4285,6 +4436,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   cx.ticketCategorize:
+    type: utility
     description: "Categorizes support tickets by type, priority, and product area"
     path: "ticket-categorize"
     domain_rules:
@@ -4303,6 +4455,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   cx.responseTemplateSuggest:
+    type: utility
     description: "Suggests response templates based on ticket category and customer context"
     path: "response-template-suggest"
     domain_rules:
@@ -4325,6 +4478,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   cx.healthScoreCalculate:
+    type: utility
     description: "Calculates customer health score from usage, support, payment, and engagement data"
     path: "health-score-calculate"
     domain_rules:
@@ -4343,6 +4497,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   cx.renewalForecast:
+    type: utility
     description: "Forecasts renewal likelihood based on health score and engagement patterns"
     path: "renewal-forecast"
     domain_rules:
@@ -4364,6 +4519,7 @@ blocks:
   # M) Education (7 tools)
   # ---------------------------------------------------------------------------
   edu.lessonPlanOutline:
+    type: utility
     description: "Generates lesson plan outlines with objectives, activities, and assessments"
     path: "lesson-plan-outline"
     domain_rules:
@@ -4388,6 +4544,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   edu.quizGenerate:
+    type: utility
     description: "Generates quiz questions from content with answer options and explanations"
     path: "quiz-generate"
     domain_rules:
@@ -4413,6 +4570,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   edu.rubricCreate:
+    type: utility
     description: "Creates grading rubrics with criteria, levels, and point values"
     path: "rubric-create"
     domain_rules:
@@ -4437,6 +4595,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   edu.syllabusFormat:
+    type: utility
     description: "Formats course syllabus with schedule, policies, and learning outcomes"
     path: "syllabus-format"
     domain_rules:
@@ -4462,6 +4621,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   edu.progressReportDraft:
+    type: utility
     description: "Drafts student progress reports from grades and observation notes"
     path: "progress-report-draft"
     domain_rules:
@@ -4483,6 +4643,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   edu.learningObjectiveWrite:
+    type: utility
     description: "Writes measurable learning objectives using Bloom's taxonomy verbs"
     path: "learning-objective-write"
     domain_rules:
@@ -4504,6 +4665,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, readme_documentation]
 
   edu.curriculumMap:
+    type: utility
     description: "Maps curriculum standards to learning activities and assessments"
     path: "curriculum-map"
     domain_rules:
@@ -4528,6 +4690,7 @@ blocks:
   # K) Sandbox & Code Execution - Sprites API (11 tools)
   # ---------------------------------------------------------------------------
   sprites.createSprite:
+    type: utility
     description: "Creates a new isolated Linux sandbox environment (sprite) with persistent filesystem using the Sprites API"
     path: "sprites-create"
     domain_rules:
@@ -4550,6 +4713,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.listSprites:
+    type: utility
     description: "Lists all sprites in the account with their current status and metadata"
     path: "sprites-list"
     domain_rules:
@@ -4568,6 +4732,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.getSprite:
+    type: utility
     description: "Retrieves details of a specific sprite by name including status and configuration"
     path: "sprites-get"
     domain_rules:
@@ -4586,6 +4751,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.deleteSprite:
+    type: utility
     description: "Deletes a sprite and all its associated data including checkpoints"
     path: "sprites-delete"
     domain_rules:
@@ -4607,6 +4773,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.execCommand:
+    type: utility
     description: "Executes a command inside a sprite and returns the output. Supports stdin input for interactive commands."
     path: "sprites-exec"
     domain_rules:
@@ -4649,6 +4816,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.listSessions:
+    type: utility
     description: "Lists active execution sessions for a sprite"
     path: "sprites-sessions"
     domain_rules:
@@ -4668,6 +4836,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.createCheckpoint:
+    type: utility
     description: "Creates a point-in-time snapshot (checkpoint) of a sprite's filesystem state for later restoration"
     path: "sprites-checkpoint-create"
     domain_rules:
@@ -4690,6 +4859,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.listCheckpoints:
+    type: utility
     description: "Lists all checkpoints for a sprite ordered by creation time"
     path: "sprites-checkpoint-list"
     domain_rules:
@@ -4709,6 +4879,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.restoreCheckpoint:
+    type: utility
     description: "Restores a sprite to a previous checkpoint state, reverting all filesystem changes since that checkpoint"
     path: "sprites-checkpoint-restore"
     domain_rules:
@@ -4736,6 +4907,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.getPolicy:
+    type: utility
     description: "Retrieves the current network policy for a sprite including allowed domains and filtering rules"
     path: "sprites-policy-get"
     domain_rules:
@@ -4752,6 +4924,7 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   sprites.setPolicy:
+    type: utility
     description: "Updates the network policy for a sprite to control outbound network access with DNS-based filtering"
     path: "sprites-policy-set"
     domain_rules:
@@ -4782,6 +4955,24 @@ blocks:
 # VALIDATORS - Which validators to run against each block
 # =============================================================================
 validators:
-  - schema      # Validates inputs/outputs are defined correctly
-  - shape.ts    # Validates TypeScript exports match expected shape
-  - domain      # AI-powered semantic validation against domain rules
+  schema:
+    - id: io_schema
+      run: "schema.io.v1"
+
+  shape:
+    - id: export_shape
+      run: "shape.exports.v1"
+
+  domain:
+    - id: domain_alignment
+      run: "domain.validation.v1"
+
+pipeline:
+  name: "default"
+  steps:
+    - id: schema
+      run: "schema.io.v1"
+    - id: shape
+      run: "shape.exports.v1"
+    - id: domain
+      run: "domain.validation.v1"

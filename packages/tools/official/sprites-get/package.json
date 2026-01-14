@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-sprites-get",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Retrieve details of a specific sprite by name including status and configuration",
   "type": "module",
   "keywords": [

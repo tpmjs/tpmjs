@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-sprites-checkpoint-list",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "List all checkpoints for a sprite ordered by creation time",
   "type": "module",
   "keywords": [

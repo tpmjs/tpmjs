@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-sprites-policy-set",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Update the network policy for a sprite to control outbound network access",
   "type": "module",
   "keywords": [
