@@ -1,6 +1,11 @@
 # Use official Deno image
 FROM denoland/deno:1.39.0
 
+# Install OpenSSH client for tools that need SSH access (e.g., exe-dev)
+USER root
+RUN apt-get update && apt-get install -y openssh-client && rm -rf /var/lib/apt/lists/*
+USER deno
+
 # Set working directory
 WORKDIR /app
 
