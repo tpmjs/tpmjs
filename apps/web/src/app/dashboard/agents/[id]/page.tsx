@@ -1029,9 +1029,17 @@ export default function AgentDetailPage(): React.ReactElement {
         <div className="bg-surface border border-border rounded-lg p-6">
           <EnvVarsEditor
             value={envVars}
-            onChange={setEnvVars}
+            onChange={(newEnvVars) => {
+              setEnvVars(newEnvVars);
+              // Auto-save env vars
+              fetch(`/api/agents/${agentId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ envVars: newEnvVars }),
+              });
+            }}
             title="Environment Variables"
-            description="Passed to tools at runtime. Agent vars override collection vars."
+            description="Passed to tools at runtime. Agent vars override collection vars. Changes are saved automatically."
             disabled={isSaving}
           />
         </div>
