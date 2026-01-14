@@ -22,11 +22,11 @@
     ],
     "tools": [
       {
-        "exportName": "markdownToPlainText",
+        "name": "markdownToPlainText",
         "description": "Convert markdown to plain text by removing all formatting"
       },
       {
-        "exportName": "formatMarkdownTable",
+        "name": "formatMarkdownTable",
         "description": "Format and align markdown table columns for better readability"
       }
     ]

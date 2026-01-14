@@ -30,7 +30,7 @@
     ],
     "tools": [
       {
-        "exportName": "searchTpmjsToolsTool",
+        "name": "searchTpmjsToolsTool",
         "description": "Search the TPMJS tool registry to find AI SDK tools by keyword, category, or description. Returns tool metadata for dynamic loading.",
         "parameters": [
           {
@@ -54,7 +54,7 @@
         ],
         "returns": {
           "type": "object",
-          "description": "Search results with tool metadata including packageName, exportName, version, importUrl"
+          "description": "Search results with tool metadata including packageName, name, version, importUrl"
         },
         "aiAgent": {
           "useCase": "Use when you need a tool that isn't currently available. Search for tools by keyword or domain.",

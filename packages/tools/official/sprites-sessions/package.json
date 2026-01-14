@@ -1,0 +1,70 @@
+{
+  "name": "@tpmjs/tools-sprites-sessions",
+  "version": "0.1.1",
+  "description": "List active execution sessions for a sprite",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sprites",
+    "sandbox",
+    "code-execution",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sprites-sessions"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "spritesSessionsTool",
+        "description": "List active execution sessions for a sprite",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Name of the sprite to list sessions for",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "{ sessions: ExecSession[], count: number }",
+          "description": "Array of active execution sessions with count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

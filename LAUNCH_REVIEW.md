@@ -154,7 +154,7 @@ automation, ai-ml, security, monitoring
 - NPM_MIRROR: Different formula entirely
 
 ### Field Names Inconsistent
-- `exportName` used in MANUAL_TOOLS but not in HOW_TO_PUBLISH
+- `name` used in MANUAL_TOOLS but not in HOW_TO_PUBLISH
 - Deprecated fields (`parameters`, `returns`) mentioned but unclear when deprecated
 
 ---

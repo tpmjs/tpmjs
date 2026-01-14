@@ -1,0 +1,77 @@
+{
+  "name": "@tpmjs/tools-sprites-checkpoint-create",
+  "version": "0.1.1",
+  "description": "Create a point-in-time snapshot of a sprite's filesystem state for later restoration",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sprites",
+    "sandbox",
+    "checkpoint",
+    "snapshot",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sprites-checkpoint-create"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "spritesCheckpointCreateTool",
+        "description": "Create a point-in-time snapshot of a sprite's filesystem state for later restoration",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Name of the sprite to checkpoint",
+            "required": true
+          },
+          {
+            "name": "checkpointName",
+            "type": "string",
+            "description": "Optional name for the checkpoint",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "Checkpoint",
+          "description": "Created checkpoint with ID and metadata"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

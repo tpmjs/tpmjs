@@ -47,7 +47,7 @@
     ],
     "tools": [
       {
-        "exportName": "emailSubjectScoreTool",
+        "name": "emailSubjectScoreTool",
         "description": "Scores email subject lines for open rate potential based on length, clarity, urgency, curiosity, and personalization. Provides detailed feedback and improvement suggestions.",
         "parameters": [
           {

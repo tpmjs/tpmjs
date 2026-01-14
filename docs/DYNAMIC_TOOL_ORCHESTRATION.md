@@ -72,7 +72,7 @@ A **tool** in TPMJS is an atomic unit of computation that:
 ```typescript
 // Tool metadata structure
 interface Tool {
-  exportName: string;
+  name: string;
   description: string;
   parameters: Parameter[];
   returns: ReturnType;
@@ -336,7 +336,7 @@ interface ExecutionStep {
   // Tool reference
   tool: {
     packageName: string;
-    exportName: string;
+    name: string;
     version?: string;
   };
 
@@ -415,7 +415,7 @@ interface ExecutionStep {
       "order": 1,
       "tool": {
         "packageName": "tpmjs-web-scraper",
-        "exportName": "scrapeUrl"
+        "name": "scrapeUrl"
       },
       "purpose": "Fetch the product listings page HTML",
       "input": {
@@ -448,7 +448,7 @@ interface ExecutionStep {
       "order": 2,
       "tool": {
         "packageName": "tpmjs-html-parser",
-        "exportName": "extractElements"
+        "name": "extractElements"
       },
       "purpose": "Extract product cards from the HTML",
       "input": {
@@ -477,7 +477,7 @@ interface ExecutionStep {
       "order": 3,
       "tool": {
         "packageName": "tpmjs-price-extractor",
-        "exportName": "extractPrices"
+        "name": "extractPrices"
       },
       "purpose": "Parse and normalize price values",
       "input": {
@@ -507,7 +507,7 @@ interface ExecutionStep {
       "order": 3,
       "tool": {
         "packageName": "tpmjs-text-cleaner",
-        "exportName": "cleanProductNames"
+        "name": "cleanProductNames"
       },
       "purpose": "Clean and normalize product names",
       "input": {
@@ -533,7 +533,7 @@ interface ExecutionStep {
       "order": 4,
       "tool": {
         "packageName": "tpmjs-data-merger",
-        "exportName": "mergeArrays"
+        "name": "mergeArrays"
       },
       "purpose": "Combine prices and names into product objects",
       "input": {
@@ -561,7 +561,7 @@ interface ExecutionStep {
       "order": 5,
       "tool": {
         "packageName": "tpmjs-spreadsheet-generator",
-        "exportName": "createXlsx"
+        "name": "createXlsx"
       },
       "purpose": "Generate Excel spreadsheet with price comparison",
       "input": {
@@ -1587,7 +1587,7 @@ async function executeWithFallback(
       const modifiedStep = { ...step, tool };
       return await executeStep(modifiedStep, context);
     } catch (error) {
-      console.log(`Tool ${tool.exportName} failed, trying fallback...`);
+      console.log(`Tool ${tool.name} failed, trying fallback...`);
     }
   }
 

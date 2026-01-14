@@ -42,7 +42,7 @@ Execute a tool from the TPMJS registry by its toolId.
 
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `toolId` | string | Yes | Tool identifier (format: `package::exportName`) |
+| `toolId` | string | Yes | Tool identifier (format: `package::name`) |
 | `params` | object | Yes | Parameters to pass to the tool |
 | `env` | object | No | Environment variables (API keys) if required |
 

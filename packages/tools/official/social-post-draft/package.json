@@ -47,7 +47,7 @@
     ],
     "tools": [
       {
-        "exportName": "socialPostDraftTool",
+        "name": "socialPostDraftTool",
         "description": "Drafts social media posts optimized for specific platforms (Twitter, LinkedIn, Instagram, Facebook) with appropriate hashtags, CTAs, and platform-specific best practices. Respects character limits and engagement patterns.",
         "parameters": [
           {

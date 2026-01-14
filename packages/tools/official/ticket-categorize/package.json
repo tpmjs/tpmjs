@@ -48,7 +48,7 @@
     ],
     "tools": [
       {
-        "exportName": "ticketCategorizeTool",
+        "name": "ticketCategorizeTool",
         "description": "Categorizes support tickets by type, priority, and product area. Suggests routing based on category and identifies urgent issues requiring immediate attention.",
         "parameters": [
           {

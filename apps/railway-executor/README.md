@@ -21,7 +21,7 @@ Load a tool from esm.sh and return its schema
 ```json
 {
   "packageName": "firecrawl-aisdk",
-  "exportName": "webSearchTool",
+  "name": "webSearchTool",
   "version": "0.7.2",
   "importUrl": "https://esm.sh/firecrawl-aisdk@0.7.2"
 }
@@ -32,7 +32,7 @@ Load a tool from esm.sh and return its schema
 {
   "success": true,
   "tool": {
-    "exportName": "webSearchTool",
+    "name": "webSearchTool",
     "description": "Search the web using Firecrawl",
     "inputSchema": { ... }
   }
@@ -46,7 +46,7 @@ Execute a tool with parameters
 ```json
 {
   "packageName": "firecrawl-aisdk",
-  "exportName": "webSearchTool",
+  "name": "webSearchTool",
   "version": "0.7.2",
   "params": {
     "query": "latest AI news"
@@ -128,7 +128,7 @@ curl -X POST http://localhost:3001/load-and-describe \
   -H "Content-Type: application/json" \
   -d '{
     "packageName": "@tpmjs/hello",
-    "exportName": "helloWorldTool",
+    "name": "helloWorldTool",
     "version": "0.1.0"
   }'
 ```
@@ -139,7 +139,7 @@ curl -X POST http://localhost:3001/execute-tool \
   -H "Content-Type: application/json" \
   -d '{
     "packageName": "@tpmjs/hello",
-    "exportName": "helloWorldTool",
+    "name": "helloWorldTool",
     "version": "0.1.0",
     "params": {}
   }'

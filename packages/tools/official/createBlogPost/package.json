@@ -47,7 +47,7 @@
     ],
     "tools": [
       {
-        "exportName": "createBlogPostTool",
+        "name": "createBlogPostTool",
         "description": "Creates structured blog posts with customizable frontmatter, content sections, and SEO metadata. Supports multiple output formats including Markdown and MDX.",
         "parameters": [
           {

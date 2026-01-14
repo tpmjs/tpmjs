@@ -111,7 +111,7 @@ Tools declare their capabilities via a `tpmjs` field in package.json:
     ],
     "tools": [
       {
-        "exportName": "scrapeTool",
+        "name": "scrapeTool",
         "description": "Scrape content from any webpage and return structured data",
         "parameters": [
           {
@@ -149,15 +149,15 @@ Tools declare their capabilities via a `tpmjs` field in package.json:
 
 **1. Multi-tool packages**
 
-One npm package can export multiple tools. Each has its own `exportName`:
+One npm package can export multiple tools. Each has its own `name`:
 
 ```json
 {
   "tpmjs": {
     "tools": [
-      { "exportName": "scrapeTool", "description": "..." },
-      { "exportName": "screenshotTool", "description": "..." },
-      { "exportName": "pdfExtractTool", "description": "..." }
+      { "name": "scrapeTool", "description": "..." },
+      { "name": "screenshotTool", "description": "..." },
+      { "name": "pdfExtractTool", "description": "..." }
     ]
   }
 }
@@ -327,12 +327,12 @@ const conversationEnv = new Map<string, Record<string, string>>();
 
 export async function loadToolDynamically(
   packageName: string,
-  exportName: string,
+  name: string,
   version: string,
   conversationId: string,
   env?: Record<string, string>
 ): Promise<Tool | null> {
-  const cacheKey = `${packageName}::${exportName}`;
+  const cacheKey = `${packageName}::${name}`;
 
   // Return cached tool if available
   if (moduleCache.has(cacheKey)) {
@@ -354,7 +354,7 @@ export async function loadToolDynamically(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageName,
-        exportName,
+        name,
         version,
         importUrl: `https://esm.sh/${packageName}@${version}`,
         env: env || {},
@@ -378,7 +378,7 @@ export async function loadToolDynamically(
             method: 'POST',
             body: JSON.stringify({
               packageName,
-              exportName,
+              name,
               version,
               params,
               env: currentEnv,  // Fresh on every execution
@@ -395,7 +395,7 @@ export async function loadToolDynamically(
     return toolWrapper;
 
   } catch (error) {
-    console.error(`Failed to load ${packageName}/${exportName}:`, error);
+    console.error(`Failed to load ${packageName}/${name}:`, error);
     return null;
   }
 }
@@ -469,7 +469,7 @@ export async function POST(request: Request) {
       const loadPromises = searchResults.tools.map(meta =>
         loadToolDynamically(
           meta.packageName,
-          meta.exportName,
+          meta.name,
           meta.version,
           conversationId,
           env
@@ -481,7 +481,7 @@ export async function POST(request: Request) {
       // 7. Add to toolset with sanitized names
       searchResults.tools.forEach((meta, i) => {
         if (loadedTools[i]) {
-          const key = sanitizeToolName(`${meta.packageName}-${meta.exportName}`);
+          const key = sanitizeToolName(`${meta.packageName}-${meta.name}`);
           discoveredTools[key] = loadedTools[i];
         }
       });
@@ -583,7 +583,7 @@ Run a separate service (Railway, Fly.io, AWS Lambda) that:
 ```typescript
 // Sandbox service (runs on Railway/Fly.io)
 app.post('/execute-tool', async (req, res) => {
-  const { packageName, exportName, version, params, env } = req.body;
+  const { packageName, name, version, params, env } = req.body;
 
   // Set env vars for this execution only
   const originalEnv = { ...process.env };
@@ -594,9 +594,9 @@ app.post('/execute-tool', async (req, res) => {
     const importUrl = `https://esm.sh/${packageName}@${version}`;
     const module = await import(importUrl);
 
-    const tool = module[exportName] || module.default;
+    const tool = module[name] || module.default;
     if (!tool?.execute) {
-      throw new Error(`No executable tool found at ${exportName}`);
+      throw new Error(`No executable tool found at ${name}`);
     }
 
     // Execute with timeout

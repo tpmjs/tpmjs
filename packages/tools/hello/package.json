@@ -23,7 +23,7 @@
     ],
     "tools": [
       {
-        "exportName": "helloWorldTool",
+        "name": "helloWorldTool",
         "description": "Returns a simple 'Hello, World!' greeting with optional timestamp and customizable message",
         "parameters": [
           {
@@ -39,7 +39,7 @@
         }
       },
       {
-        "exportName": "helloNameTool",
+        "name": "helloNameTool",
         "description": "Returns a personalized greeting with the provided name",
         "parameters": [
           {

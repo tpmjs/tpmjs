@@ -1,0 +1,71 @@
+{
+  "name": "@tpmjs/tools-sprites-checkpoint-list",
+  "version": "0.1.1",
+  "description": "List all checkpoints for a sprite ordered by creation time",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sprites",
+    "sandbox",
+    "checkpoint",
+    "snapshot",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sprites-checkpoint-list"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "spritesCheckpointListTool",
+        "description": "List all checkpoints for a sprite ordered by creation time",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Name of the sprite to list checkpoints for",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "{ checkpoints: Checkpoint[], count: number }",
+          "description": "Array of checkpoints with count"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

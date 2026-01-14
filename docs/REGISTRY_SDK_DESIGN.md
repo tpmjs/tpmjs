@@ -112,10 +112,10 @@ Returns tool metadata including name, description, required env vars, and how to
       matchCount: data.data.length,
       tools: data.data.map((tool: any) => ({
         // Unique identifier for registryExecuteTool
-        toolId: `${tool.package.npmPackageName}::${tool.exportName}`,
+        toolId: `${tool.package.npmPackageName}::${tool.name}`,
 
         // Human-readable info
-        name: tool.exportName,
+        name: tool.name,
         package: tool.package.npmPackageName,
         description: tool.description,
         category: tool.category,
@@ -147,21 +147,21 @@ Use registrySearchTool first to find the toolId, then call this with the toolId 
 The tool runs in a secure sandbox - you don't need to install anything.`,
 
   parameters: z.object({
-    toolId: z.string().describe('Tool identifier from registrySearchTool (format: "package::exportName")'),
+    toolId: z.string().describe('Tool identifier from registrySearchTool (format: "package::name")'),
     params: z.record(z.any()).describe('Parameters to pass to the tool'),
     env: z.record(z.string()).optional().describe('Environment variables (API keys) if required'),
   }),
 
   execute: async ({ toolId, params, env }) => {
-    const [packageName, exportName] = toolId.split('::');
+    const [packageName, name] = toolId.split('::');
 
-    if (!packageName || !exportName) {
-      throw new Error(`Invalid toolId format. Expected "package::exportName", got "${toolId}"`);
+    if (!packageName || !name) {
+      throw new Error(`Invalid toolId format. Expected "package::name", got "${toolId}"`);
     }
 
     // Get tool metadata to find version and importUrl
     const metaResponse = await fetch(
-      `${TPMJS_API_URL}/api/tools?package=${encodeURIComponent(packageName)}&export=${encodeURIComponent(exportName)}`
+      `${TPMJS_API_URL}/api/tools?package=${encodeURIComponent(packageName)}&export=${encodeURIComponent(name)}`
     );
     const metaData = await metaResponse.json();
     const toolMeta = metaData.data?.[0];
@@ -176,7 +176,7 @@ The tool runs in a secure sandbox - you don't need to install anything.`,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageName,
-        exportName,
+        name,
         version: toolMeta.package.npmVersion,
         importUrl: toolMeta.importUrl || `https://esm.sh/${packageName}@${toolMeta.package.npmVersion}`,
         params,
@@ -291,7 +291,7 @@ Response:
   "data": [
     {
       "id": "...",
-      "exportName": "webSearch",
+      "name": "webSearch",
       "description": "Search the web...",
       "category": "search",
       "executionHealth": "HEALTHY",
@@ -319,7 +319,7 @@ Request:
 ```json
 {
   "packageName": "@exalabs/ai-sdk",
-  "exportName": "webSearch",
+  "name": "webSearch",
   "version": "1.0.5",
   "importUrl": "https://esm.sh/@exalabs/ai-sdk@1.0.5",
   "params": { "query": "latest AI news" },

@@ -48,7 +48,7 @@
     ],
     "tools": [
       {
-        "exportName": "feedbackThemesTool",
+        "name": "feedbackThemesTool",
         "description": "Extracts themes and sentiment from customer feedback text. Identifies recurring themes, scores sentiment per theme, and provides frequency counts.",
         "parameters": [
           {

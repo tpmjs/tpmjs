@@ -1,0 +1,70 @@
+{
+  "name": "@tpmjs/tools-sprites-create",
+  "version": "0.1.1",
+  "description": "Create a new isolated Linux sandbox environment (sprite) with persistent filesystem using the Sprites API",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sprites",
+    "sandbox",
+    "code-execution",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sprites-create"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "spritesCreateTool",
+        "description": "Create a new isolated Linux sandbox environment (sprite) with persistent filesystem using the Sprites API",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Unique name for the sprite (must be lowercase alphanumeric with hyphens)",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "Sprite",
+          "description": "Created sprite with name, status, and metadata"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

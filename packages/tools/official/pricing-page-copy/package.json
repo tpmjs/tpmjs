@@ -47,7 +47,7 @@
     ],
     "tools": [
       {
-        "exportName": "pricingPageCopyTool",
+        "name": "pricingPageCopyTool",
         "description": "Generates comprehensive pricing page copy with tier names, headlines, benefit-oriented feature lists, CTAs, FAQs, and trust signals. Frames features as benefits and clearly differentiates tiers.",
         "parameters": [
           {

@@ -122,7 +122,7 @@ TPMJS provides two main tools:
 ```typescript
 import { registrySearchTool } from '@tpmjs/registry-search';
 
-// Returns tools with toolIds in format: "package::exportName"
+// Returns tools with toolIds in format: "package::name"
 const result = await registrySearchTool.execute({
   query: 'web scraping',
   category: 'web-scraping',
@@ -203,9 +203,9 @@ const myRegistryExecuteTool = tool({
   // YOUR CUSTOM EXECUTE FUNCTION
   async execute({ toolId, params, env }) {
     // Option 1: Execute locally instead of sandbox
-    const [packageName, exportName] = toolId.split('::');
+    const [packageName, name] = toolId.split('::');
     const pkg = await import(packageName);
-    const toolFn = pkg[exportName];
+    const toolFn = pkg[name];
     return toolFn.execute(params);
 
     // Option 2: Route to your own executor
@@ -700,7 +700,7 @@ async function executeSandbox(
   timeout: number,
   abortSignal?: AbortSignal
 ) {
-  const [packageName, exportName] = toolId.split('::');
+  const [packageName, name] = toolId.split('::');
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -714,7 +714,7 @@ async function executeSandbox(
     const response = await fetch(`${executorUrl}/execute-tool`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ packageName, exportName, params, env }),
+      body: JSON.stringify({ packageName, name, params, env }),
       signal: combinedSignal,
     });
 
@@ -735,14 +735,14 @@ async function executeLocal(
   params: any,
   basePath?: string
 ) {
-  const [packageName, exportName] = toolId.split('::');
+  const [packageName, name] = toolId.split('::');
   const modulePath = basePath ? `${basePath}/${packageName}` : packageName;
 
   const module = await import(modulePath);
-  const toolFn = module[exportName] || module.default;
+  const toolFn = module[name] || module.default;
 
   if (!toolFn?.execute) {
-    throw new Error(`Tool ${exportName} not found or missing execute function`);
+    throw new Error(`Tool ${name} not found or missing execute function`);
   }
 
   return toolFn.execute(params);
@@ -1151,7 +1151,7 @@ type SearchOutput = {
   query: string;
   matchCount: number;
   tools: Array<{
-    toolId: string;        // "package::exportName"
+    toolId: string;        // "package::name"
     name: string;
     package: string;
     description: string;
@@ -1170,7 +1170,7 @@ import { registryExecuteTool } from '@tpmjs/registry-execute';
 
 // Input
 type ExecuteInput = {
-  toolId: string;                     // "package::exportName"
+  toolId: string;                     // "package::name"
   params: Record<string, unknown>;    // Tool parameters
   env?: Record<string, string>;       // Environment variables
 };

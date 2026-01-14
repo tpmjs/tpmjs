@@ -22,11 +22,11 @@
     ],
     "tools": [
       {
-        "exportName": "textToEmoji",
+        "name": "textToEmoji",
         "description": "Convert text into emoji representations - perfect for making messages more expressive!"
       },
       {
-        "exportName": "emojiMood",
+        "name": "emojiMood",
         "description": "Detect the mood/sentiment and suggest appropriate emojis for the text"
       }
     ]

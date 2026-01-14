@@ -1,0 +1,88 @@
+{
+  "name": "@tpmjs/tools-sprites-exec",
+  "version": "0.1.1",
+  "description": "Execute a command inside a sprite and return the output with exit code",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sprites",
+    "sandbox",
+    "code-execution",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sprites-exec"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "spritesExecTool",
+        "description": "Execute a command inside a sprite and return the output with exit code",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Name of the sprite to execute command in",
+            "required": true
+          },
+          {
+            "name": "cmd",
+            "type": "string",
+            "description": "Command to execute",
+            "required": true
+          },
+          {
+            "name": "stdin",
+            "type": "string",
+            "description": "Optional stdin input",
+            "required": false
+          },
+          {
+            "name": "timeoutMs",
+            "type": "number",
+            "description": "Execution timeout in milliseconds",
+            "required": false
+          }
+        ],
+        "returns": {
+          "type": "ExecResult",
+          "description": "Command output with exitCode, stdout, stderr, and duration"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

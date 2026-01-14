@@ -51,7 +51,7 @@
     ],
     "tools": [
       {
-        "exportName": "executeCode",
+        "name": "executeCode",
         "description": "Execute code synchronously in a secure sandbox. Supports 42+ languages including Python, JavaScript, TypeScript, Go, Rust, and more.",
         "parameters": [
           {
@@ -99,7 +99,7 @@
         }
       },
       {
-        "exportName": "executeCodeAsync",
+        "name": "executeCodeAsync",
         "description": "Execute code asynchronously in a secure sandbox. Returns a job_id immediately for tracking.",
         "parameters": [
           {
@@ -128,7 +128,7 @@
         }
       },
       {
-        "exportName": "runCode",
+        "name": "runCode",
         "description": "Execute code with automatic language detection from shebang line (e.g., #!/usr/bin/env python3).",
         "parameters": [
           {
@@ -151,7 +151,7 @@
         }
       },
       {
-        "exportName": "runCodeAsync",
+        "name": "runCodeAsync",
         "description": "Execute code asynchronously with automatic language detection from shebang.",
         "parameters": [
           {
@@ -173,7 +173,7 @@
         }
       },
       {
-        "exportName": "listJobs",
+        "name": "listJobs",
         "description": "List all active jobs for your API key. Jobs are retained for 3 minutes after completion.",
         "parameters": [],
         "returns": {
@@ -188,7 +188,7 @@
         }
       },
       {
-        "exportName": "getJob",
+        "name": "getJob",
         "description": "Get status and results of a specific async job.",
         "parameters": [
           {
@@ -210,7 +210,7 @@
         }
       },
       {
-        "exportName": "cancelJob",
+        "name": "cancelJob",
         "description": "Cancel a running or pending async job.",
         "parameters": [
           {
@@ -232,7 +232,7 @@
         }
       },
       {
-        "exportName": "listLanguages",
+        "name": "listLanguages",
         "description": "List all 42+ supported programming languages and their aliases.",
         "parameters": [],
         "returns": {

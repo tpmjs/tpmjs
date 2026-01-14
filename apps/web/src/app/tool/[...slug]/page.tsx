@@ -10,27 +10,27 @@ interface ToolDetailPageProps {
 }
 
 /**
- * Parse the URL slug to extract package name and optional export name
+ * Parse the URL slug to extract package name and optional tool name
  */
-function parseSlug(slug: string[]): { packageName: string; exportName?: string } {
+function parseSlug(slug: string[]): { packageName: string; toolName?: string } {
   // URL-decode slug components (@ comes as %40)
   const decodedSlug = slug.map((s) => decodeURIComponent(s));
 
   if (decodedSlug[0]?.startsWith('@')) {
-    // Scoped package: ['@scope', 'package', 'exportName?']
+    // Scoped package: ['@scope', 'package', 'toolName?']
     const packageName = decodedSlug.slice(0, 2).join('/');
-    const exportName = decodedSlug[2];
-    return { packageName, exportName };
+    const toolName = decodedSlug[2];
+    return { packageName, toolName };
   }
-  // Unscoped: ['package', 'exportName?']
-  return { packageName: decodedSlug[0] || '', exportName: decodedSlug[1] };
+  // Unscoped: ['package', 'toolName?']
+  return { packageName: decodedSlug[0] || '', toolName: decodedSlug[1] };
 }
 
 /**
  * Fetch tool data from database
  */
 async function getTool(slug: string[]): Promise<Tool | null> {
-  const { packageName, exportName } = parseSlug(slug);
+  const { packageName, toolName } = parseSlug(slug);
 
   if (!packageName) {
     return null;
@@ -49,7 +49,7 @@ async function getTool(slug: string[]): Promise<Tool | null> {
   const tool = await prisma.tool.findFirst({
     where: {
       packageId: pkg.id,
-      ...(exportName && { name: exportName }),
+      ...(toolName && { name: toolName }),
     },
     include: {
       package: true,
@@ -122,9 +122,9 @@ export async function generateMetadata({ params }: ToolDetailPageProps): Promise
     };
   }
 
-  const { packageName, exportName } = parseSlug(slug);
-  const ogPath = exportName
-    ? `/api/og/tool/${encodeURIComponent(packageName)}/${encodeURIComponent(exportName)}`
+  const { packageName, toolName } = parseSlug(slug);
+  const ogPath = toolName
+    ? `/api/og/tool/${encodeURIComponent(packageName)}/${encodeURIComponent(toolName)}`
     : `/api/og/tool/${encodeURIComponent(packageName)}`;
 
   return {

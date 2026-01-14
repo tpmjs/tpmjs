@@ -1,0 +1,83 @@
+{
+  "name": "@tpmjs/tools-sprites-policy-set",
+  "version": "0.1.1",
+  "description": "Update the network policy for a sprite to control outbound network access",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sprites",
+    "sandbox",
+    "network",
+    "policy",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sprites-policy-set"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "spritesPolicySetTool",
+        "description": "Update the network policy for a sprite to control outbound network access",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Name of the sprite to update policy for",
+            "required": true
+          },
+          {
+            "name": "mode",
+            "type": "'allow' | 'deny'",
+            "description": "Policy mode",
+            "required": true
+          },
+          {
+            "name": "domains",
+            "type": "string[]",
+            "description": "List of domains to allow or deny",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "{ policy: NetworkPolicy, applied: boolean }",
+          "description": "Updated policy and application status"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

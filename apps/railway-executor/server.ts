@@ -550,9 +550,9 @@ async function executeTool(req: Request): Promise<Response> {
           Deno.env.set(key, stringValue);
 
           // ALSO set in Node.js process.env (for npm: imports)
-          // @ts-ignore - process is available in Node.js compatibility mode
+          // @ts-expect-error - process is available in Node.js compatibility mode
           if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
-            // @ts-ignore - process.env exists in Node compat mode
+            // @ts-expect-error - process.env exists in Node compat mode
             globalThis.process.env[key] = stringValue;
           }
 
@@ -782,10 +782,10 @@ async function listExports(req: Request): Promise<Response> {
       error?: string;
     }> = [];
 
-    for (const exportName of allExports) {
-      if (exportName === 'default') continue;
+    for (const exportKey of allExports) {
+      if (exportKey === 'default') continue;
 
-      let rawExport = module[exportName];
+      let rawExport = module[exportKey];
 
       // Check if it's a factory function
       if (typeof rawExport === 'function' && !rawExport.description && !rawExport.execute) {
@@ -809,14 +809,14 @@ async function listExports(req: Request): Promise<Response> {
       // Check if it's a valid AI SDK tool
       if (rawExport?.description && rawExport?.execute) {
         tools.push({
-          name: exportName,
+          name: exportKey,
           isValidTool: true,
           description: rawExport.description,
         });
       } else if (typeof rawExport === 'object' && rawExport !== null) {
         // It's an object but not a valid tool - might be a factory that needs specific config
         tools.push({
-          name: exportName,
+          name: exportKey,
           isValidTool: false,
           error: 'Not a valid AI SDK tool (missing description or execute)',
         });

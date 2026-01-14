@@ -55,7 +55,7 @@ A tutorial on implementing a hierarchical planning agent that dynamically loads 
 interface Tool {
   id: string;
   packageName: string;
-  exportName: string;
+  name: string;
   description: string;
   parameters: Parameter[];
   returns: ReturnType;
@@ -447,7 +447,7 @@ function buildStepContext(
   const parts: string[] = [];
 
   // 1. Current tool description
-  parts.push(`## Current Tool: ${current.tool.exportName}`);
+  parts.push(`## Current Tool: ${current.tool.name}`);
   parts.push(current.tool.description);
   parts.push(formatParameters(current.tool.parameters));
 
@@ -463,7 +463,7 @@ function buildStepContext(
   // 3. Upcoming tools (just names, for continuity)
   if (upcoming.length > 0) {
     parts.push(`## Coming Next`);
-    parts.push(upcoming.map(s => `- ${s.tool.exportName}: ${s.purpose}`).join('\n'));
+    parts.push(upcoming.map(s => `- ${s.tool.name}: ${s.purpose}`).join('\n'));
   }
 
   // 4. Relevant prior results (summarized)
@@ -500,7 +500,7 @@ async function executeWithFallbacks(
     try {
       return await executeTool(tool, input, context);
     } catch (error) {
-      console.log(`Tool ${tool.exportName} failed, trying fallback...`);
+      console.log(`Tool ${tool.name} failed, trying fallback...`);
     }
   }
 
@@ -516,7 +516,7 @@ async function executeTool(
   context: string
 ): Promise<any> {
   const response = await fetch(
-    `/api/tools/execute/${tool.packageName}/${tool.exportName}`,
+    `/api/tools/execute/${tool.packageName}/${tool.name}`,
     {
       method: 'POST',
       body: JSON.stringify({ input, context }),
@@ -973,7 +973,7 @@ export async function POST(req: Request) {
       id: p.id,
       steps: p.steps.map(s => ({
         id: s.id,
-        tool: s.tool.exportName,
+        tool: s.tool.name,
         purpose: s.purpose
       })),
       estimatedCost: p.estimatedCost,

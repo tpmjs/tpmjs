@@ -48,7 +48,7 @@
     ],
     "tools": [
       {
-        "exportName": "npsAnalysisTool",
+        "name": "npsAnalysisTool",
         "description": "Analyzes NPS survey responses to categorize by promoter/passive/detractor and extract themes from comments. Provides NPS score, distribution, and actionable insights.",
         "parameters": [
           {

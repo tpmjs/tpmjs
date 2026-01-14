@@ -48,7 +48,7 @@
     ],
     "tools": [
       {
-        "exportName": "churnRiskScoreTool",
+        "name": "churnRiskScoreTool",
         "description": "Scores customer churn risk based on usage, engagement, and support signals. Provides risk score (0-100) with detailed contributing factors and recommendations.",
         "parameters": [
           {

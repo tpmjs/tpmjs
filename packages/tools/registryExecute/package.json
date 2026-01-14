@@ -44,13 +44,13 @@
     ],
     "tools": [
       {
-        "exportName": "registryExecuteTool",
+        "name": "registryExecuteTool",
         "description": "Execute a tool from the TPMJS registry by toolId. Use registrySearchTool first to find toolIds.",
         "parameters": [
           {
             "name": "toolId",
             "type": "string",
-            "description": "Tool identifier from registrySearchTool (format: 'package::exportName')",
+            "description": "Tool identifier from registrySearchTool (format: 'package::name')",
             "required": true
           },
           {

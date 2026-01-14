@@ -25,7 +25,7 @@
  *   │ TOOL                                │
  *   │ ─────                               │
  *   │ packageName: "tpmjs-web-scraper"    │
- *   │ exportName: "scrapeUrl"             │
+ *   │ name: "scrapeUrl"             │
  *   │ description: "Fetches webpage..."   │
  *   │ parameters: [...]                   │
  *   │ returns: { type: "string" }         │
@@ -37,7 +37,7 @@
 export interface Tool {
   id: string;
   packageName: string;
-  exportName: string;
+  name: string;
   description: string;
   parameters: ToolParameter[];
   returns: ToolReturn;
@@ -254,7 +254,7 @@ export interface PlanStep {
 
 export interface ToolReference {
   packageName: string;
-  exportName: string;
+  name: string;
   version?: string;
 }
 
@@ -743,7 +743,7 @@ export interface ToolContext {
 }
 
 export interface ToolPreview {
-  exportName: string;
+  name: string;
   purpose: string;
   tokenEstimate: number;
 }

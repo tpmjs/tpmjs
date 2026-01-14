@@ -102,41 +102,41 @@ export function normalizePath(path: string): string {
 }
 
 /**
- * Parse tool path to extract package name and export name
+ * Parse tool path to extract package name and tool name
  */
-function parseToolPath(path: string): { packageName: string; exportName?: string } {
+function parseToolPath(path: string): { packageName: string; toolName?: string } {
   // Remove /tool/ prefix
   const segments = path.replace(/^\/tool\//, '').split('/');
 
   let packageName: string;
-  let exportName: string | undefined;
+  let toolName: string | undefined;
 
   if (segments[0]?.startsWith('@')) {
-    // Scoped package: @scope/package/export
+    // Scoped package: @scope/package/toolName
     packageName = segments.slice(0, 2).join('/');
-    exportName = segments[2];
+    toolName = segments[2];
   } else {
-    // Unscoped: package/export
+    // Unscoped: package/toolName
     packageName = segments[0] || '';
-    exportName = segments[1];
+    toolName = segments[1];
   }
 
-  return { packageName, exportName };
+  return { packageName, toolName };
 }
 
 /**
  * Fetch tool data from internal API
  */
 async function fetchToolContent(path: string): Promise<PageContent> {
-  const { packageName, exportName } = parseToolPath(path);
+  const { packageName, toolName } = parseToolPath(path);
 
   // Build API URL
   const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
     : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-  const apiPath = exportName
-    ? `/api/tools/${encodeURIComponent(packageName)}/${encodeURIComponent(exportName)}`
+  const apiPath = toolName
+    ? `/api/tools/${encodeURIComponent(packageName)}/${encodeURIComponent(toolName)}`
     : `/api/tools/${encodeURIComponent(packageName)}`;
 
   try {
@@ -157,11 +157,11 @@ async function fetchToolContent(path: string): Promise<PageContent> {
 
     return {
       pageType: 'tool',
-      title: tool.name || exportName || packageName,
+      title: tool.name || toolName || packageName,
       description: tool.description || `AI tool from ${packageName}`,
       keywords: [tool.package?.category || 'tool', 'AI', 'npm', packageName],
       tool: {
-        name: tool.name || exportName || 'Tool',
+        name: tool.name || toolName || 'Tool',
         packageName: tool.package?.npmPackageName || packageName,
         category: tool.package?.category || 'other',
         description: tool.description || '',
@@ -175,11 +175,11 @@ async function fetchToolContent(path: string): Promise<PageContent> {
     // Return basic content on failure
     return {
       pageType: 'tool',
-      title: exportName || packageName,
+      title: toolName || packageName,
       description: `AI tool from ${packageName}`,
       keywords: ['tool', 'AI', 'npm'],
       tool: {
-        name: exportName || 'Tool',
+        name: toolName || 'Tool',
         packageName,
         category: 'other',
         description: '',

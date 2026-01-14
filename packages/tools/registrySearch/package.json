@@ -44,7 +44,7 @@
     ],
     "tools": [
       {
-        "exportName": "registrySearchTool",
+        "name": "registrySearchTool",
         "description": "Search the TPMJS tool registry to find AI SDK tools. Returns tool metadata including toolId for use with registryExecuteTool.",
         "parameters": [
           {
@@ -68,7 +68,7 @@
         ],
         "returns": {
           "type": "object",
-          "description": "Search results with tool metadata including toolId, packageName, exportName, description, requiredEnvVars"
+          "description": "Search results with tool metadata including toolId, packageName, name, description, requiredEnvVars"
         },
         "aiAgent": {
           "useCase": "Use when you need to find a tool for a specific task. Search returns toolIds that can be executed with registryExecuteTool.",

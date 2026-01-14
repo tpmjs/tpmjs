@@ -47,7 +47,7 @@
     ],
     "tools": [
       {
-        "exportName": "audiencePersonaTool",
+        "name": "audiencePersonaTool",
         "description": "Creates detailed audience persona profiles from demographic and behavioral data. Generates personas with demographics, psychographics, goals, pain points, behaviors, and actionable marketing implications.",
         "parameters": [
           {

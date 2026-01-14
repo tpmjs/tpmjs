@@ -34,16 +34,16 @@ app.get('/health', (req, res) => {
  * Returns tool metadata (description, schema) without executing
  */
 app.post('/load-and-describe', async (req, res) => {
-  const { packageName, exportName, version, importUrl } = req.body;
+  const { packageName, name, version, importUrl } = req.body;
 
-  if (!packageName || !exportName || !version) {
+  if (!packageName || !name || !version) {
     return res.status(400).json({
       success: false,
-      error: 'Missing required fields: packageName, exportName, version',
+      error: 'Missing required fields: packageName, name, version',
     });
   }
 
-  const cacheKey = `${packageName}::${exportName}`;
+  const cacheKey = `${packageName}::${name}`;
 
   try {
     let toolModule;
@@ -72,13 +72,13 @@ app.post('/load-and-describe', async (req, res) => {
 
       // esm.sh returns ES modules, try to get default or named export
       const module = moduleExports.default || moduleExports;
-      toolModule = module[exportName] || module;
+      toolModule = module[name] || module;
 
       if (!toolModule) {
-        console.error(`❌ Export "${exportName}" not found. Available:`, Object.keys(module));
+        console.error(`❌ Export "${name}" not found. Available:`, Object.keys(module));
         return res.status(404).json({
           success: false,
-          error: `Export "${exportName}" not found in module`,
+          error: `Export "${name}" not found in module`,
           availableExports: Object.keys(module),
         });
       }
@@ -108,7 +108,7 @@ app.post('/load-and-describe', async (req, res) => {
     res.json({
       success: true,
       tool: {
-        exportName,
+        name,
         description: toolModule.description,
         inputSchema: toolModule.inputSchema || toolModule.parameters?.shape || {},
       },
@@ -127,16 +127,16 @@ app.post('/load-and-describe', async (req, res) => {
  * Execute a dynamically loaded tool with parameters
  */
 app.post('/execute-tool', async (req, res) => {
-  const { packageName, exportName, version, importUrl, params } = req.body;
+  const { packageName, name, version, importUrl, params } = req.body;
 
-  if (!packageName || !exportName || !version) {
+  if (!packageName || !name || !version) {
     return res.status(400).json({
       success: false,
-      error: 'Missing required fields: packageName, exportName, version',
+      error: 'Missing required fields: packageName, name, version',
     });
   }
 
-  const cacheKey = `${packageName}::${exportName}`;
+  const cacheKey = `${packageName}::${name}`;
   const startTime = Date.now();
 
   try {
@@ -151,7 +151,7 @@ app.post('/execute-tool', async (req, res) => {
       console.log(`📦 Importing for execution: ${url}`);
 
       const module = await import(url);
-      toolModule = module[exportName];
+      toolModule = module[name];
 
       if (!toolModule || !toolModule.execute) {
         return res.status(404).json({

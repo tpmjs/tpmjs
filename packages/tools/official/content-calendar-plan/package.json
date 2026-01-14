@@ -47,7 +47,7 @@
     ],
     "tools": [
       {
-        "exportName": "contentCalendarPlanTool",
+        "name": "contentCalendarPlanTool",
         "description": "Generates a structured content calendar with posting schedule, themes, topics, and content types. Organizes content by date, channel, and theme while maintaining consistent posting frequency.",
         "parameters": [
           {

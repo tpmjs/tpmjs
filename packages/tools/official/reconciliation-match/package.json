@@ -47,7 +47,7 @@
     ],
     "tools": [
       {
-        "exportName": "reconciliationMatchTool",
+        "name": "reconciliationMatchTool",
         "description": "Matches bank transactions to ledger entries for reconciliation. Uses amount, date proximity, and description similarity to identify matches with confidence scoring.",
         "parameters": [
           {

@@ -132,10 +132,10 @@ After every tool execution, the executor reports the result:
 
 ```typescript
 // On successful execution
-reportToolHealth(packageName, exportName, true).catch(() => {});
+reportToolHealth(packageName, name, true).catch(() => {});
 
 // On failed execution
-reportToolHealth(packageName, exportName, false, error.message).catch(() => {});
+reportToolHealth(packageName, name, false, error.message).catch(() => {});
 ```
 
 The reporting is non-blocking (fire-and-forget) to avoid slowing down tool execution.
@@ -164,7 +164,7 @@ curl -s 'https://tpmjs.com/api/tools?limit=50' \
   -H 'Authorization: Bearer tpmjs_sk_your_api_key_here' | \
   jq '.data[] | select(.package.npmPackageName == "PACKAGE_NAME") | {
     packageName: .package.npmPackageName,
-    exportName: .exportName,
+    name: .name,
     importHealth: .importHealth,
     executionHealth: .executionHealth,
     healthCheckError: .healthCheckError,
@@ -188,7 +188,7 @@ curl -X POST 'https://tpmjs.com/api/tools/report-health' \
   -H 'Content-Type: application/json' \
   -d '{
     "packageName": "@scope/package",
-    "exportName": "toolName",
+    "name": "toolName",
     "success": true
   }'
 ```
@@ -197,7 +197,7 @@ curl -X POST 'https://tpmjs.com/api/tools/report-health' \
 
 ### 1. Executor Bugs Masking Tool Errors
 
-**Problem:** Our executor had variables like `startTime`, `packageName`, and `exportName` declared inside try blocks but referenced in catch blocks. When errors occurred early (like during JSON parsing), the catch block crashed first, showing errors like "startTime is not defined" or "packageName is not defined" instead of the actual tool error.
+**Problem:** Our executor had variables like `startTime`, `packageName`, and `name` declared inside try blocks but referenced in catch blocks. When errors occurred early (like during JSON parsing), the catch block crashed first, showing errors like "startTime is not defined" or "packageName is not defined" instead of the actual tool error.
 
 **Lesson:** Always ensure executor error handling is bulletproof. Any variable used in a catch block MUST be declared before the try block with sensible defaults:
 
@@ -206,16 +206,16 @@ async function executeTool(req: Request): Promise<Response> {
   const startTime = Date.now();
   // Declare with defaults BEFORE try
   let packageName = 'unknown';
-  let exportName = 'unknown';
+  let name = 'unknown';
   try {
     const body = await req.json();
-    const { packageName: pkg, exportName: exp, ... } = body;
+    const { packageName: pkg, name: exp, ... } = body;
     packageName = pkg || 'unknown';
-    exportName = exp || 'unknown';
+    name = exp || 'unknown';
     // ... rest of execution
   } catch (error) {
     // Now these are always in scope
-    reportToolHealth(packageName, exportName, false, error.message);
+    reportToolHealth(packageName, name, false, error.message);
     return Response.json({
       success: false,
       error: error.message,

@@ -331,6 +331,37 @@ domain:
       description: "Difference-in-differences result"
 
     # -------------------------------------------------------------------------
+    # Sandbox & execution entities
+    # -------------------------------------------------------------------------
+    sprite:
+      fields: [name, status, createdAt, runtime, filesystem]
+      description: "Isolated Linux sandbox environment"
+
+    sprite_list:
+      fields: [sprites, count]
+      description: "Collection of sprites with metadata"
+
+    exec_result:
+      fields: [exitCode, stdout, stderr, duration]
+      description: "Command execution result from a sprite"
+
+    exec_session:
+      fields: [id, status, startedAt, command]
+      description: "Active execution session in a sprite"
+
+    checkpoint:
+      fields: [id, name, createdAt, size]
+      description: "Point-in-time snapshot of sprite state"
+
+    checkpoint_list:
+      fields: [checkpoints, count]
+      description: "Collection of checkpoints for a sprite"
+
+    network_policy:
+      fields: [mode, allowedDomains, rules]
+      description: "DNS-based network filtering configuration"
+
+    # -------------------------------------------------------------------------
     # Agent & workflow entities
     # -------------------------------------------------------------------------
     recipe:
@@ -521,10 +552,9 @@ domain:
       severity: warning
 
 # =============================================================================
-# DOMAIN RULES - Enforce code quality across all blocks
+# DOMAIN RULES - Enforce code quality across all blocks (documentation only)
 # =============================================================================
-blocks:
-  domain_rules:
+domain_rules:
     # -------------------------------------------------------------------------
     # Core implementation rules (apply to ALL tools)
     # -------------------------------------------------------------------------
@@ -794,10 +824,10 @@ blocks:
         - Handle missing/extra items
         - Report confidence in scores
 
-  # ===========================================================================
-  # BLOCK DEFINITIONS - All 100 tools organized by category
-  # ===========================================================================
-
+# ===========================================================================
+# BLOCK DEFINITIONS - All 100 tools organized by category
+# ===========================================================================
+blocks:
   # ---------------------------------------------------------------------------
   # A) Web Research & Evidence (15 tools)
   # ---------------------------------------------------------------------------
@@ -4493,6 +4523,260 @@ blocks:
         type: CurriculumMap
         description: "Standards to activities mapping"
         measures: [working_implementation, valid_output_structure, readme_documentation]
+
+  # ---------------------------------------------------------------------------
+  # K) Sandbox & Code Execution - Sprites API (11 tools)
+  # ---------------------------------------------------------------------------
+  sprites.createSprite:
+    description: "Creates a new isolated Linux sandbox environment (sprite) with persistent filesystem using the Sprites API"
+    path: "sprites-create"
+    domain_rules:
+      - id: api_integration
+        description: |
+          Must call Sprites API POST /sprites endpoint:
+          - Use fetch with Authorization Bearer header
+          - Send name in request body
+          - Handle API errors with meaningful messages
+      - id: auth_handling
+        description: "Must use SPRITES_TOKEN environment variable for authentication"
+    inputs:
+      - name: name
+        type: string
+        description: "Unique name for the sprite (must be lowercase alphanumeric with hyphens)"
+    outputs:
+      - name: sprite
+        type: Sprite
+        description: "Created sprite with name, status, and metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.listSprites:
+    description: "Lists all sprites in the account with their current status and metadata"
+    path: "sprites-list"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API GET /sprites endpoint"
+      - id: auth_handling
+        description: "Must use SPRITES_TOKEN environment variable for authentication"
+    inputs: []
+    outputs:
+      - name: sprites
+        type: Sprite[]
+        description: "Array of sprites with name, status, and metadata"
+      - name: count
+        type: number
+        description: "Total number of sprites"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.getSprite:
+    description: "Retrieves details of a specific sprite by name including status and configuration"
+    path: "sprites-get"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API GET /sprites/{name} endpoint"
+      - id: error_handling
+        description: "Must handle 404 for non-existent sprites gracefully"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to retrieve"
+    outputs:
+      - name: sprite
+        type: Sprite
+        description: "Sprite details including status and metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.deleteSprite:
+    description: "Deletes a sprite and all its associated data including checkpoints"
+    path: "sprites-delete"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API DELETE /sprites/{name} endpoint"
+      - id: confirmation
+        description: "Returns success status after deletion"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to delete"
+    outputs:
+      - name: deleted
+        type: boolean
+        description: "Whether the sprite was successfully deleted"
+      - name: name
+        type: string
+        description: "Name of the deleted sprite"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.execCommand:
+    description: "Executes a command inside a sprite and returns the output. Supports stdin input for interactive commands."
+    path: "sprites-exec"
+    domain_rules:
+      - id: api_integration
+        description: |
+          Must call Sprites API POST /sprites/{name}/exec endpoint:
+          - Send cmd and optional stdin in request body
+          - Handle command execution timeout
+          - Return stdout, stderr, and exit code
+      - id: timeout_handling
+        description: "Must implement configurable timeout (default 60s)"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to execute command in"
+      - name: cmd
+        type: string
+        description: "Command to execute (e.g., 'ls -la', 'python script.py')"
+      - name: stdin
+        type: string
+        optional: true
+        description: "Optional stdin input to pass to the command"
+      - name: timeoutMs
+        type: number
+        optional: true
+        description: "Execution timeout in milliseconds (default: 60000)"
+    outputs:
+      - name: exitCode
+        type: number
+        description: "Command exit code (0 for success)"
+      - name: stdout
+        type: string
+        description: "Standard output from the command"
+      - name: stderr
+        type: string
+        description: "Standard error output from the command"
+      - name: duration
+        type: number
+        description: "Execution duration in milliseconds"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.listSessions:
+    description: "Lists active execution sessions for a sprite"
+    path: "sprites-sessions"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API GET /sprites/{name}/exec/sessions endpoint"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to list sessions for"
+    outputs:
+      - name: sessions
+        type: ExecSession[]
+        description: "Array of active execution sessions"
+      - name: count
+        type: number
+        description: "Total number of active sessions"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.createCheckpoint:
+    description: "Creates a point-in-time snapshot (checkpoint) of a sprite's filesystem state for later restoration"
+    path: "sprites-checkpoint-create"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API POST /sprites/{name}/checkpoints endpoint"
+      - id: checkpoint_metadata
+        description: "Must return checkpoint ID and creation timestamp"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to checkpoint"
+      - name: checkpointName
+        type: string
+        optional: true
+        description: "Optional human-readable name for the checkpoint"
+    outputs:
+      - name: checkpoint
+        type: Checkpoint
+        description: "Created checkpoint with ID and metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.listCheckpoints:
+    description: "Lists all checkpoints for a sprite ordered by creation time"
+    path: "sprites-checkpoint-list"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API GET /sprites/{name}/checkpoints endpoint"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to list checkpoints for"
+    outputs:
+      - name: checkpoints
+        type: Checkpoint[]
+        description: "Array of checkpoints with IDs and metadata"
+      - name: count
+        type: number
+        description: "Total number of checkpoints"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.restoreCheckpoint:
+    description: "Restores a sprite to a previous checkpoint state, reverting all filesystem changes since that checkpoint"
+    path: "sprites-checkpoint-restore"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API POST /sprites/{name}/checkpoints/{id}/restore endpoint"
+      - id: state_verification
+        description: "Must verify restoration completed successfully"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to restore"
+      - name: checkpointId
+        type: string
+        description: "ID of the checkpoint to restore to"
+    outputs:
+      - name: restored
+        type: boolean
+        description: "Whether the restoration was successful"
+      - name: checkpointId
+        type: string
+        description: "ID of the restored checkpoint"
+      - name: sprite
+        type: Sprite
+        description: "Sprite status after restoration"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.getPolicy:
+    description: "Retrieves the current network policy for a sprite including allowed domains and filtering rules"
+    path: "sprites-policy-get"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API GET /sprites/{name}/policies endpoint"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to get policy for"
+    outputs:
+      - name: policy
+        type: NetworkPolicy
+        description: "Current network policy with allowed domains and rules"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
+
+  sprites.setPolicy:
+    description: "Updates the network policy for a sprite to control outbound network access with DNS-based filtering"
+    path: "sprites-policy-set"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Sprites API POST /sprites/{name}/policies endpoint"
+      - id: policy_validation
+        description: "Must validate policy format before sending"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the sprite to update policy for"
+      - name: mode
+        type: "'allow' | 'deny'"
+        description: "Policy mode - 'allow' blocks all except listed, 'deny' allows all except listed"
+      - name: domains
+        type: string[]
+        description: "List of domains to allow or deny based on mode"
+    outputs:
+      - name: policy
+        type: NetworkPolicy
+        description: "Updated network policy"
+      - name: applied
+        type: boolean
+        description: "Whether the policy was successfully applied"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
 # =============================================================================
 # VALIDATORS - Which validators to run against each block

@@ -1,0 +1,77 @@
+{
+  "name": "@tpmjs/tools-sprites-checkpoint-restore",
+  "version": "0.1.1",
+  "description": "Restore a sprite to a previous checkpoint state",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sprites",
+    "sandbox",
+    "checkpoint",
+    "restore",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anthropics/tpmjs.git",
+    "directory": "packages/tools/official/sprites-checkpoint-restore"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "spritesCheckpointRestoreTool",
+        "description": "Restore a sprite to a previous checkpoint state, reverting all filesystem changes",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "string",
+            "description": "Name of the sprite to restore",
+            "required": true
+          },
+          {
+            "name": "checkpointId",
+            "type": "string",
+            "description": "ID of the checkpoint to restore to",
+            "required": true
+          }
+        ],
+        "returns": {
+          "type": "{ restored: boolean, checkpointId: string, sprite: Sprite }",
+          "description": "Restoration result with sprite status"
+        }
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

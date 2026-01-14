@@ -45,7 +45,7 @@ Edit `manual-tools.ts` and add a new entry:
   npmPackageName: 'example-package',
   category: 'search',
   frameworks: ['vercel-ai'],
-  exportName: 'exampleTool',
+  name: 'exampleTool',
   description: 'A clear, concise description of what this tool does',
 
   // Optional but recommended for 'rich' tier
@@ -116,24 +116,24 @@ pnpm dev --filter=@tpmjs/web
 
 ## Multi-Tool Packages
 
-If a package exports multiple tools, add multiple entries with the same `npmPackageName` but different `exportName`:
+If a package exports multiple tools, add multiple entries with the same `npmPackageName` but different `name`:
 
 ```typescript
 {
   npmPackageName: 'firecrawl-aisdk',
-  exportName: 'scrapeTool',
+  name: 'scrapeTool',
   description: 'Scrape websites...',
   // ...
 },
 {
   npmPackageName: 'firecrawl-aisdk',
-  exportName: 'searchTool',
+  name: 'searchTool',
   description: 'Search the web...',
   // ...
 },
 {
   npmPackageName: 'firecrawl-aisdk',
-  exportName: 'crawlTool',
+  name: 'crawlTool',
   description: 'Crawl entire websites...',
   // ...
 },
