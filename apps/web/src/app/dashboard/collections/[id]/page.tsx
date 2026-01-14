@@ -624,14 +624,24 @@ export default function CollectionDetailPage(): React.ReactElement {
         <div className="bg-surface border border-border rounded-lg p-6">
           <EnvVarsEditor
             value={envVars}
-            onChange={(newEnvVars) => {
+            onChange={async (newEnvVars) => {
               setEnvVars(newEnvVars);
-              // Auto-save env vars
-              fetch(`/api/collections/${collectionId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ envVars: newEnvVars }),
-              });
+              // Auto-save env vars with error handling
+              try {
+                const response = await fetch(`/api/collections/${collectionId}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ envVars: newEnvVars }),
+                });
+                const result = await response.json();
+                if (!result.success) {
+                  console.error('Failed to save env vars:', result.error);
+                  alert(`Failed to save environment variables: ${result.error || 'Unknown error'}`);
+                }
+              } catch (err) {
+                console.error('Failed to save env vars:', err);
+                alert('Failed to save environment variables. Please try again.');
+              }
             }}
             title="Environment Variables"
             description="These variables are passed to tools at runtime. Use them to store API keys and configuration."
