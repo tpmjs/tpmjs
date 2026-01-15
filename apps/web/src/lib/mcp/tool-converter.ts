@@ -19,13 +19,37 @@ export interface BridgeTool {
 
 /**
  * Sanitize package name and tool name into a valid MCP tool name.
- * MCP tool names must match ^[a-zA-Z0-9_-]+
+ * MCP tool names must match ^[a-zA-Z0-9_-]+ and be at most 64 characters.
  *
  * Example: @tpmjs/hello + helloWorldTool → tpmjs-hello--helloWorldTool
+ * Example: @tpmjs/tools-sprites-foo + spritesBarTool → sprites-foo--spritesBar
  */
 export function sanitizeMcpName(packageName: string, toolName: string): string {
-  const sanitizedPkg = packageName.replace(/^@/, '').replace(/\//g, '-');
-  return `${sanitizedPkg}--${toolName}`;
+  // Remove @ and convert / to -
+  let sanitizedPkg = packageName.replace(/^@/, '').replace(/\//g, '-');
+
+  // Remove common prefixes to shorten
+  sanitizedPkg = sanitizedPkg.replace(/^tpmjs-tools-/, '');
+  sanitizedPkg = sanitizedPkg.replace(/^tpmjs-/, '');
+
+  // Remove 'Tool' suffix from tool name
+  const sanitizedTool = toolName.replace(/Tool$/, '');
+
+  const fullName = `${sanitizedPkg}--${sanitizedTool}`;
+
+  // Ensure we stay under 64 character limit
+  if (fullName.length <= 64) {
+    return fullName;
+  }
+
+  // If still too long, truncate package name to fit
+  const maxPkgLen = 64 - sanitizedTool.length - 2; // 2 for '--'
+  if (maxPkgLen > 10) {
+    return `${sanitizedPkg.slice(0, maxPkgLen)}--${sanitizedTool}`;
+  }
+
+  // Last resort: truncate both
+  return fullName.slice(0, 64);
 }
 
 /**
@@ -57,7 +81,14 @@ export function convertToMcpTool(tool: Tool & { package: Package }): McpToolDefi
  * Parsed tool name result - either a registry tool or a bridge tool
  */
 export type ParsedToolName =
-  | { type: 'registry'; packageName: string; literalPackageName: string; toolName: string }
+  | {
+      type: 'registry';
+      packageName: string;
+      literalPackageName: string;
+      toolName: string;
+      possiblePackages: string[];
+      possibleToolNames: string[];
+    }
   | { type: 'bridge'; serverId: string; toolName: string };
 
 /**
@@ -65,6 +96,7 @@ export type ParsedToolName =
  * Handles both registry tools and bridge tools.
  *
  * Registry: tpmjs-hello--helloWorldTool → { type: 'registry', packageName: "@tpmjs/hello", toolName: "helloWorldTool" }
+ * Shortened: sprites-get--spritesGet → tries @tpmjs/tools-sprites-get, @tpmjs/sprites-get, sprites-get
  * Bridge: bridge--chrome-devtools--screenshot → { type: 'bridge', serverId: "chrome-devtools", toolName: "screenshot" }
  */
 export function parseToolName(mcpName: string): ParsedToolName | null {
@@ -83,21 +115,34 @@ export function parseToolName(mcpName: string): ParsedToolName | null {
   if (!match || !match[1] || !match[2]) return null;
 
   const pkg = match[1];
-  const toolName = match[2];
+  let toolName = match[2];
 
-  // Try to reconstruct @scope/name format if it looks scoped
-  // tpmjs-hello → @tpmjs/hello (first dash becomes @scope/)
-  // But also keep the original for non-scoped packages like firecrawl-aisdk
-  const scopedPackageName = pkg.includes('-') ? `@${pkg.replace('-', '/')}` : pkg;
-  const literalPackageName = pkg;
+  // Add back 'Tool' suffix if it was removed (try both with and without)
+  // The handler will try to find the tool with both variants
+  const toolNameWithSuffix = toolName.endsWith('Tool') ? toolName : `${toolName}Tool`;
 
-  // Return both possible interpretations - the handler will try both
+  // Generate possible package names to try:
+  // 1. @tpmjs/tools-{pkg} (shortened tpmjs-tools- prefix)
+  // 2. @tpmjs/{pkg} (shortened tpmjs- prefix)
+  // 3. @{scope}/{name} (standard scoped, first dash becomes /)
+  // 4. {pkg} as literal (non-scoped packages)
+  const possiblePackages = [
+    `@tpmjs/tools-${pkg}`,
+    `@tpmjs/${pkg}`,
+    pkg.includes('-') ? `@${pkg.replace('-', '/')}` : `@${pkg}`,
+    pkg,
+  ];
+
+  // Return the first scoped interpretation as primary, with literal as fallback
   return {
     type: 'registry',
-    packageName: scopedPackageName,
-    literalPackageName,
-    toolName,
-  };
+    packageName: possiblePackages[0]!, // @tpmjs/tools-{pkg}
+    literalPackageName: pkg,
+    toolName: toolNameWithSuffix,
+    // Additional candidates for the handler to try
+    possiblePackages,
+    possibleToolNames: [toolNameWithSuffix, toolName],
+  } as ParsedToolName;
 }
 
 /**

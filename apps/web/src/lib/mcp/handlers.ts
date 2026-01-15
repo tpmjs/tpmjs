@@ -169,22 +169,19 @@ export async function handleToolsCall(
       'Database query timed out'
     );
 
-    // Try both scoped (@scope/name) and literal (name-with-hyphens) package name interpretations
-    // This handles cases like:
-    // - @tpmjs/hello (scoped) → sanitized as tpmjs-hello → parsed back as @tpmjs/hello
-    // - firecrawl-aisdk (not scoped) → sanitized as firecrawl-aisdk → should match as-is
-    let collectionTool = collection?.tools.find(
-      (ct) =>
-        ct.tool.package.npmPackageName === parsed.packageName && ct.tool.name === parsed.toolName
-    );
+    // Try all possible package name and tool name combinations
+    // This handles both old format (full package name) and new shortened format
+    type CollectionTool = NonNullable<typeof collection>['tools'][number];
+    let collectionTool: CollectionTool | undefined;
 
-    // If not found with scoped name, try the literal package name
-    if (!collectionTool && parsed.literalPackageName !== parsed.packageName) {
-      collectionTool = collection?.tools.find(
-        (ct) =>
-          ct.tool.package.npmPackageName === parsed.literalPackageName &&
-          ct.tool.name === parsed.toolName
-      );
+    for (const pkgName of parsed.possiblePackages) {
+      for (const toolName of parsed.possibleToolNames) {
+        collectionTool = collection?.tools.find(
+          (ct) => ct.tool.package.npmPackageName === pkgName && ct.tool.name === toolName
+        );
+        if (collectionTool) break;
+      }
+      if (collectionTool) break;
     }
 
     if (!collectionTool) {
