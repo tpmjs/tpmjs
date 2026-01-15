@@ -3,6 +3,7 @@
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { Label } from '@tpmjs/ui/Label/Label';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import { Select } from '@tpmjs/ui/Select/Select';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
@@ -99,9 +100,9 @@ export function ToolIdeasClient() {
   }, [fetchTools]);
 
   const qualityColor = (score: number) => {
-    if (score >= 0.9) return 'text-green-600';
-    if (score >= 0.7) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 0.9) return 'text-success';
+    if (score >= 0.7) return 'text-warning';
+    return 'text-error';
   };
 
   const ToolCard = ({ tool }: { tool: ToolIdea }) => {
@@ -227,12 +228,7 @@ export function ToolIdeasClient() {
       {/* Filters */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 bg-surface p-4 rounded-lg border border-border">
         <div>
-          <label
-            htmlFor="tool-search"
-            className="text-xs font-medium text-foreground-secondary mb-1.5 block"
-          >
-            Search
-          </label>
+          <Label htmlFor="tool-search" className="text-xs mb-1.5">Search</Label>
           <Input
             id="tool-search"
             type="text"
@@ -244,12 +240,7 @@ export function ToolIdeasClient() {
         </div>
 
         <div>
-          <label
-            htmlFor="tool-category"
-            className="text-xs font-medium text-foreground-secondary mb-1.5 block"
-          >
-            Category
-          </label>
+          <Label htmlFor="tool-category" className="text-xs mb-1.5">Category</Label>
           <Select
             id="tool-category"
             value={category}
@@ -260,12 +251,7 @@ export function ToolIdeasClient() {
         </div>
 
         <div>
-          <label
-            htmlFor="tool-verb"
-            className="text-xs font-medium text-foreground-secondary mb-1.5 block"
-          >
-            Verb
-          </label>
+          <Label htmlFor="tool-verb" className="text-xs mb-1.5">Verb</Label>
           <Select
             id="tool-verb"
             value={verb}
@@ -276,12 +262,7 @@ export function ToolIdeasClient() {
         </div>
 
         <div>
-          <label
-            htmlFor="tool-quality"
-            className="text-xs font-medium text-foreground-secondary mb-1.5 block"
-          >
-            Min Quality
-          </label>
+          <Label htmlFor="tool-quality" className="text-xs mb-1.5">Min Quality</Label>
           <Select
             id="tool-quality"
             value={minQuality}

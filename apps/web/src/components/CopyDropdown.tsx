@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -46,10 +47,11 @@ export function CopyDropdown({
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1 px-2 py-1 text-xs text-foreground-secondary hover:text-foreground hover:bg-surface rounded transition-colors"
+        className="inline-flex items-center gap-1 text-xs text-foreground-secondary hover:text-foreground"
       >
         <Icon icon="copy" size="xs" />
         <span>{buttonLabel}</span>
@@ -58,24 +60,26 @@ export function CopyDropdown({
           size="xs"
           className={`transition-transform ${isOpen ? 'rotate-180' : ''}`}
         />
-      </button>
+      </Button>
 
       {isOpen && (
         <div className="absolute right-0 top-full mt-1 w-56 bg-background border border-border rounded-lg shadow-lg py-1 z-50">
           {options.map((option) => (
-            <button
+            <Button
               key={option.label}
-              type="button"
+              variant="ghost"
               onClick={() => handleCopy(option)}
-              className="w-full px-3 py-2 text-left text-sm hover:bg-surface transition-colors"
+              className="w-full px-3 py-2 h-auto text-left justify-start hover:bg-surface"
             >
-              <div className="font-medium text-foreground">{option.label}</div>
-              {option.description && (
-                <div className="text-xs text-foreground-tertiary truncate">
-                  {option.description}
-                </div>
-              )}
-            </button>
+              <div className="flex flex-col items-start">
+                <div className="font-medium text-foreground">{option.label}</div>
+                {option.description && (
+                  <div className="text-xs text-foreground-tertiary truncate max-w-full">
+                    {option.description}
+                  </div>
+                )}
+              </div>
+            </Button>
           ))}
         </div>
       )}

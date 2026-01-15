@@ -2,6 +2,7 @@
 
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { Label } from '@tpmjs/ui/Label/Label';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -63,16 +64,17 @@ export default function ForgotPasswordPage() {
 
         <p className="text-center text-sm text-foreground-secondary">
           Didn&apos;t receive the email?{' '}
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => {
               setSuccess(false);
               setEmail('');
             }}
-            className="text-foreground hover:underline font-medium"
+            className="p-0 h-auto text-foreground hover:underline font-medium"
           >
             Try again
-          </button>
+          </Button>
         </p>
 
         <p className="text-center text-sm text-foreground-secondary">
@@ -101,9 +103,7 @@ export default function ForgotPasswordPage() {
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
-            Email
-          </label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"

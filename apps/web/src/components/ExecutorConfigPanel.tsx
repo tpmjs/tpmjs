@@ -142,67 +142,71 @@ export function ExecutorConfigPanel({
 
       {/* Executor Type Selection */}
       <div className="flex gap-3">
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => handleTypeChange('default')}
           disabled={disabled}
-          className={`flex-1 p-3 rounded-lg border-2 text-left transition-colors ${
+          className={`flex-1 p-3 h-auto rounded-lg border-2 text-left justify-start transition-colors ${
             executorType === 'default'
               ? 'border-primary bg-primary/5'
               : 'border-border hover:border-foreground-secondary'
-          } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          }`}
         >
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-4 h-4 rounded-full border-2 ${
-                executorType === 'default'
-                  ? 'border-primary bg-primary'
-                  : 'border-foreground-tertiary'
-              }`}
-            >
-              {executorType === 'default' && (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                </div>
-              )}
+          <div className="flex flex-col items-start">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-4 h-4 rounded-full border-2 ${
+                  executorType === 'default'
+                    ? 'border-primary bg-primary'
+                    : 'border-foreground-tertiary'
+                }`}
+              >
+                {executorType === 'default' && (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                  </div>
+                )}
+              </div>
+              <span className="font-medium text-sm text-foreground">TPMJS Default</span>
             </div>
-            <span className="font-medium text-sm text-foreground">TPMJS Default</span>
+            <p className="text-xs text-foreground-tertiary mt-1 ml-6">
+              Free, managed executor hosted by TPMJS
+            </p>
           </div>
-          <p className="text-xs text-foreground-tertiary mt-1 ml-6">
-            Free, managed executor hosted by TPMJS
-          </p>
-        </button>
+        </Button>
 
-        <button
-          type="button"
+        <Button
+          variant="ghost"
           onClick={() => handleTypeChange('custom_url')}
           disabled={disabled}
-          className={`flex-1 p-3 rounded-lg border-2 text-left transition-colors ${
+          className={`flex-1 p-3 h-auto rounded-lg border-2 text-left justify-start transition-colors ${
             executorType === 'custom_url'
               ? 'border-primary bg-primary/5'
               : 'border-border hover:border-foreground-secondary'
-          } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          }`}
         >
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-4 h-4 rounded-full border-2 ${
-                executorType === 'custom_url'
-                  ? 'border-primary bg-primary'
-                  : 'border-foreground-tertiary'
-              }`}
-            >
-              {executorType === 'custom_url' && (
-                <div className="w-full h-full flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                </div>
-              )}
+          <div className="flex flex-col items-start">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-4 h-4 rounded-full border-2 ${
+                  executorType === 'custom_url'
+                    ? 'border-primary bg-primary'
+                    : 'border-foreground-tertiary'
+                }`}
+              >
+                {executorType === 'custom_url' && (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                  </div>
+                )}
+              </div>
+              <span className="font-medium text-sm text-foreground">Custom Executor</span>
             </div>
-            <span className="font-medium text-sm text-foreground">Custom Executor</span>
+            <p className="text-xs text-foreground-tertiary mt-1 ml-6">
+              Self-hosted executor on your infrastructure
+            </p>
           </div>
-          <p className="text-xs text-foreground-tertiary mt-1 ml-6">
-            Self-hosted executor on your infrastructure
-          </p>
-        </button>
+        </Button>
       </div>
 
       {/* Custom URL Configuration */}

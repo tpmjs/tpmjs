@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@tpmjs/ui/Button/Button';
 import { useCallback, useEffect, useState } from 'react';
 
 export type PackageManager = 'npm' | 'yarn' | 'pnpm' | 'bun';
@@ -59,18 +60,19 @@ export function PackageManagerSelector({
       <span className="text-sm text-foreground-secondary mr-1">Package Manager:</span>
       <div className="inline-flex rounded-lg border border-border overflow-hidden">
         {packageManagers.map((pm) => (
-          <button
+          <Button
             key={pm.id}
-            type="button"
+            variant={selected === pm.id ? 'default' : 'ghost'}
+            size="sm"
             onClick={() => handleSelect(pm.id)}
-            className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`px-3 py-1.5 text-xs font-medium rounded-none ${
               selected === pm.id
-                ? 'bg-primary text-primary-foreground'
+                ? ''
                 : 'bg-background text-foreground-secondary hover:bg-surface hover:text-foreground'
             }`}
           >
             {pm.label}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { Label } from '@tpmjs/ui/Label/Label';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -222,9 +223,7 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
 
           {/* Name field */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
-              Display Name
-            </label>
+            <Label htmlFor="name">Display Name</Label>
             <Input
               id="name"
               type="text"
@@ -240,9 +239,7 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
 
           {/* Username field */}
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
-              Username
-            </label>
+            <Label htmlFor="username">Username</Label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground-secondary z-10">
                 @
@@ -292,9 +289,7 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
 
           {/* Email (read-only) */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
-              Email
-            </label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"

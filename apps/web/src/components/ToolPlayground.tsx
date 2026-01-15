@@ -7,7 +7,10 @@
 
 import type { TokenBreakdown as TokenData } from '@/lib/ai-agent/tool-executor-agent';
 import type { Package, Tool } from '@tpmjs/db';
+import { Button } from '@tpmjs/ui/Button/Button';
+import { Label } from '@tpmjs/ui/Label/Label';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -211,11 +214,11 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
       <div className="border-b border-border bg-muted/10">
         <div className="flex space-x-1 px-6">
           {tabs.map((tab) => (
-            <button
+            <Button
               key={tab.id}
-              type="button"
+              variant="ghost"
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+              className={`px-4 py-3 rounded-none text-sm font-medium transition-colors relative ${
                 activeTab === tab.id
                   ? 'text-foreground border-b-2 border-primary'
                   : 'text-foreground-secondary hover:text-foreground'
@@ -227,7 +230,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                   {tab.badge}
                 </span>
               )}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -237,15 +240,14 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
         {activeTab === 'input' && (
           <div className="space-y-4">
             <div>
-              <label htmlFor="prompt" className="block text-sm font-medium text-foreground mb-2">
-                Prompt
-              </label>
-              <textarea
+              <Label htmlFor="prompt" className="mb-2">Prompt</Label>
+              <Textarea
                 id="prompt"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Enter your prompt here... (e.g., 'Create a blog post about TypeScript best practices')"
-                className="w-full h-32 px-4 py-3 rounded-lg border border-input bg-white text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                className="h-32"
+                resize="none"
                 disabled={isExecuting}
               />
               <p className="text-xs text-foreground-tertiary mt-2">
@@ -253,21 +255,13 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
               </p>
             </div>
 
-            <button
-              type="button"
+            <Button
               onClick={handleExecute}
               disabled={isExecuting || !prompt.trim()}
-              className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              loading={isExecuting}
             >
-              {isExecuting ? (
-                <span className="flex items-center gap-2">
-                  <Spinner size="sm" />
-                  Executing...
-                </span>
-              ) : (
-                'Execute'
-              )}
-            </button>
+              {isExecuting ? 'Executing...' : 'Execute'}
+            </Button>
           </div>
         )}
 

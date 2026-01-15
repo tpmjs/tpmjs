@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -33,16 +34,19 @@ export function CopyButton({
   }, [text, successMessage]);
 
   const iconSize = size === 'xs' ? 'xs' : size === 'sm' ? 'sm' : 'md';
+  // Map xs to sm for Button since Button doesn't support xs size
+  const buttonSize = size === 'xs' ? 'sm' : size;
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size={buttonSize}
       onClick={handleCopy}
-      className={`inline-flex items-center gap-1.5 px-2 py-1 text-foreground-secondary hover:text-foreground hover:bg-surface rounded transition-colors ${className}`}
+      className={`inline-flex items-center gap-1.5 text-foreground-secondary hover:text-foreground ${className}`}
       title={label || 'Copy to clipboard'}
     >
       <Icon icon={copied ? 'check' : 'copy'} size={iconSize} />
       {label && <span className="text-xs">{label}</span>}
-    </button>
+    </Button>
   );
 }

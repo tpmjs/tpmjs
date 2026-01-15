@@ -3,6 +3,7 @@
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { Label } from '@tpmjs/ui/Label/Label';
 import { suggestUsername } from '@tpmjs/types/user';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
@@ -182,9 +183,7 @@ export default function SignUpPage() {
         )}
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
-            Name
-          </label>
+          <Label htmlFor="name">Name</Label>
           <Input
             id="name"
             type="text"
@@ -196,9 +195,7 @@ export default function SignUpPage() {
         </div>
 
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1">
-            Username
-          </label>
+          <Label htmlFor="username">Username</Label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground-secondary">
               @
@@ -245,9 +242,7 @@ export default function SignUpPage() {
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
-            Email
-          </label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
@@ -259,9 +254,7 @@ export default function SignUpPage() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
-            Password
-          </label>
+          <Label htmlFor="password">Password</Label>
           <Input
             id="password"
             type="password"
