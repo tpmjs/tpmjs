@@ -7,6 +7,7 @@ import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import { Switch } from '@tpmjs/ui/Switch/Switch';
 import {
   Table,
@@ -819,7 +820,7 @@ export default function AgentDetailPage(): React.ReactElement {
               />
               {isSearchingTools && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <Spinner size="sm" />
                 </div>
               )}
             </div>
@@ -932,7 +933,7 @@ export default function AgentDetailPage(): React.ReactElement {
               />
               {isSearchingCollections && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <Spinner size="sm" />
                 </div>
               )}
             </div>

@@ -83,7 +83,7 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(
     <tr
       ref={ref}
       className={cn(
-        'border-b border-border transition-colors',
+        'border-b border-border bg-white dark:bg-zinc-900 transition-colors',
         interactive && 'cursor-pointer hover:bg-surface',
         selected && 'bg-surface',
         className

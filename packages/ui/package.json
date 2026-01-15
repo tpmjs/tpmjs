@@ -218,6 +218,22 @@
     "./ToolCard/ToolCard": {
       "types": "./dist/ToolCard/ToolCard.d.ts",
       "default": "./dist/ToolCard/ToolCard.js"
+    },
+    "./EmptyState/EmptyState": {
+      "types": "./dist/EmptyState/EmptyState.d.ts",
+      "default": "./dist/EmptyState/EmptyState.js"
+    },
+    "./ErrorState/ErrorState": {
+      "types": "./dist/ErrorState/ErrorState.d.ts",
+      "default": "./dist/ErrorState/ErrorState.js"
+    },
+    "./LoadingState/LoadingState": {
+      "types": "./dist/LoadingState/LoadingState.d.ts",
+      "default": "./dist/LoadingState/LoadingState.js"
+    },
+    "./PageHeader/PageHeader": {
+      "types": "./dist/PageHeader/PageHeader.d.ts",
+      "default": "./dist/PageHeader/PageHeader.js"
     }
   },
   "files": [

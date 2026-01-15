@@ -1,11 +1,13 @@
 'use client';
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
-import { Button } from '@tpmjs/ui/Button/Button';
+import { EmptyState } from '@tpmjs/ui/EmptyState/EmptyState';
+import { ErrorState } from '@tpmjs/ui/ErrorState/ErrorState';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
+import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
 import { Select } from '@tpmjs/ui/Select/Select';
-import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
@@ -122,7 +124,7 @@ export default function PublicCollectionsPage(): React.ReactElement {
 
   const TableHeader = useCallback(
     () => (
-      <tr className="bg-surface text-left text-sm font-medium text-foreground-secondary">
+      <tr className="bg-surface-secondary text-left text-xs font-semibold uppercase tracking-wider text-foreground-secondary border-b border-border">
         <th className="px-4 py-3 w-[250px]">Name</th>
         <th className="px-4 py-3 w-[300px]">Description</th>
         <th className="px-4 py-3 w-[80px] text-center">Tools</th>
@@ -140,7 +142,7 @@ export default function PublicCollectionsPage(): React.ReactElement {
         <td className="px-4 py-3">
           <Link
             href={`/collections/${collection.id}`}
-            className="font-medium text-foreground hover:text-primary transition-colors"
+            className="font-semibold text-foreground hover:text-primary group-hover:text-primary transition-colors"
           >
             {collection.name}
           </Link>
@@ -201,13 +203,10 @@ export default function PublicCollectionsPage(): React.ReactElement {
       <AppHeader />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Public Collections</h1>
-          <p className="text-foreground-secondary">
-            Discover curated tool collections shared by the community
-          </p>
-        </div>
+        <PageHeader
+          title="Public Collections"
+          description="Discover curated tool collections shared by the community"
+        />
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -236,31 +235,15 @@ export default function PublicCollectionsPage(): React.ReactElement {
 
         {/* Content */}
         {error ? (
-          <div className="text-center py-16">
-            <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
-            <h2 className="text-lg font-medium text-foreground mb-2">Error</h2>
-            <p className="text-foreground-secondary mb-4">{error}</p>
-            <Button onClick={() => fetchCollections(0, true)}>Try Again</Button>
-          </div>
+          <ErrorState message={error} onRetry={() => fetchCollections(0, true)} />
         ) : isLoading ? (
-          <div className="flex items-center justify-center py-24 gap-4">
-            <Spinner size="lg" />
-            <span className="text-foreground-secondary font-mono text-sm">
-              Loading collections...
-            </span>
-          </div>
+          <LoadingState message="Loading collections..." size="lg" />
         ) : filteredCollections.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-              <Icon icon="folder" size="lg" className="text-primary" />
-            </div>
-            <h2 className="text-lg font-medium text-foreground mb-2">No collections found</h2>
-            <p className="text-foreground-secondary">
-              {search
-                ? 'Try adjusting your search terms'
-                : 'Be the first to share a public collection!'}
-            </p>
-          </div>
+          <EmptyState
+            icon="folder"
+            title="No collections found"
+            description={search ? 'Try adjusting your search terms' : 'Be the first to share a public collection!'}
+          />
         ) : (
           <>
             <div className="border border-border rounded-lg overflow-hidden">
@@ -280,13 +263,13 @@ export default function PublicCollectionsPage(): React.ReactElement {
                     />
                   ),
                   TableHead: (props) => (
-                    <thead {...props} className="bg-surface sticky top-0 z-10" />
+                    <thead {...props} className="bg-surface-secondary sticky top-0 z-10" />
                   ),
                   TableBody: (props) => <tbody {...props} />,
                   TableRow: (props) => (
                     <tr
                       {...props}
-                      className="border-b border-border hover:bg-surface/50 transition-colors"
+                      className="border-b border-border bg-white dark:bg-zinc-900 hover:bg-surface transition-all duration-150 group"
                     />
                   ),
                 }}

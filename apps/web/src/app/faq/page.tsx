@@ -1,4 +1,6 @@
+import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
+import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { AppHeader } from '~/components/AppHeader';
 
@@ -29,22 +31,7 @@ function FAQItem({ question, children }: FAQItemProps): React.ReactElement {
       <summary className="cursor-pointer px-6 py-4 font-semibold text-foreground flex items-center justify-between list-none">
         <span className="pr-4">{question}</span>
         <span className="text-foreground-secondary group-open:rotate-180 transition-transform">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
-          >
-            <path
-              d="M5 7.5L10 12.5L15 7.5"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <Icon icon="chevronDown" size="sm" />
         </span>
       </summary>
       <div className="px-6 pb-6 pt-2 text-foreground-secondary space-y-4">{children}</div>
@@ -409,17 +396,17 @@ export default function FAQPage(): React.ReactElement {
                 href="https://github.com/tpmjs/tpmjs/issues/new"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
               >
-                Ask on GitHub
+                <Button size="lg">Ask on GitHub</Button>
               </a>
               <a
                 href="https://twitter.com/tpmjs_registry"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-6 py-3 border border-border bg-background text-foreground font-semibold rounded-lg hover:border-foreground transition-colors"
               >
-                Follow on Twitter
+                <Button variant="outline" size="lg">
+                  Follow on Twitter
+                </Button>
               </a>
             </div>
           </section>

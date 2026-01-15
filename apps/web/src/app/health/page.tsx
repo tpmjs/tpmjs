@@ -1,7 +1,17 @@
 'use client';
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
+import { Button } from '@tpmjs/ui/Button/Button';
+import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@tpmjs/ui/Table/Table';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
@@ -42,9 +52,9 @@ interface HealthData {
 }
 
 const statusColors: Record<string, { bg: string; text: string; border: string }> = {
-  healthy: { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/30' },
-  degraded: { bg: 'bg-yellow-500/10', text: 'text-yellow-500', border: 'border-yellow-500/30' },
-  down: { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/30' },
+  healthy: { bg: 'bg-success/10', text: 'text-success', border: 'border-success/30' },
+  degraded: { bg: 'bg-warning/10', text: 'text-warning', border: 'border-warning/30' },
+  down: { bg: 'bg-error/10', text: 'text-error', border: 'border-error/30' },
   unknown: { bg: 'bg-zinc-500/10', text: 'text-zinc-500', border: 'border-zinc-500/30' },
 };
 
@@ -71,7 +81,7 @@ function StatusBadge({ status }: { status: string }) {
       className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${colors.bg} ${colors.text} border ${colors.border}`}
     >
       <span
-        className={`w-2 h-2 rounded-full mr-2 ${status === 'healthy' ? 'bg-green-500' : status === 'degraded' ? 'bg-yellow-500' : status === 'down' ? 'bg-red-500' : 'bg-zinc-500'}`}
+        className={`w-2 h-2 rounded-full mr-2 ${status === 'healthy' ? 'bg-success' : status === 'degraded' ? 'bg-warning' : status === 'down' ? 'bg-error' : 'bg-zinc-500'}`}
       />
       {status.charAt(0).toUpperCase() + status.slice(1)}
     </span>
@@ -80,17 +90,9 @@ function StatusBadge({ status }: { status: string }) {
 
 function CheckStatusIcon({ status }: { status: string }) {
   if (status === 'pass') {
-    return (
-      <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-      </svg>
-    );
+    return <Icon icon="checkCircle" size="sm" className="text-success" />;
   }
-  return (
-    <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  );
+  return <Icon icon="xCircle" size="sm" className="text-error" />;
 }
 
 function StatCard({
@@ -110,7 +112,7 @@ function StatCard({
       <p className="text-3xl font-bold text-foreground">{value}</p>
       {subtitle && (
         <p
-          className={`text-sm mt-1 ${trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-foreground-secondary'}`}
+          className={`text-sm mt-1 ${trend === 'up' ? 'text-success' : trend === 'down' ? 'text-error' : 'text-foreground-secondary'}`}
         >
           {subtitle}
         </p>
@@ -196,15 +198,11 @@ export default function HealthPage() {
             <Spinner size="lg" />
           </div>
         ) : error ? (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-6 text-center">
-            <p className="text-red-500 font-medium">{error}</p>
-            <button
-              type="button"
-              onClick={fetchHealthData}
-              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-            >
+          <div className="bg-error/10 border border-error/20 rounded-lg p-6 text-center">
+            <p className="text-error font-medium">{error}</p>
+            <Button onClick={fetchHealthData} className="mt-4">
               Retry
-            </button>
+            </Button>
           </div>
         ) : healthData ? (
           <>
@@ -294,59 +292,49 @@ export default function HealthPage() {
             {/* Recent Reports */}
             <div className="bg-surface-elevated rounded-lg border border-border p-6">
               <h2 className="text-xl font-semibold text-foreground mb-4">Recent Health Checks</h2>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-2 text-sm font-medium text-foreground-secondary">
-                        Time
-                      </th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-foreground-secondary">
-                        Status
-                      </th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-foreground-secondary">
-                        Checks
-                      </th>
-                      <th className="text-left py-3 px-2 text-sm font-medium text-foreground-secondary">
-                        Source
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {healthData.recentReports.map((report) => (
-                      <tr key={report.id} className="border-b border-border last:border-0">
-                        <td className="py-3 px-2">
-                          <span className="text-sm text-foreground">
-                            {formatTimestamp(report.timestamp)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-2">
-                          <StatusBadge status={report.overallStatus} />
-                        </td>
-                        <td className="py-3 px-2">
-                          <span className="text-sm text-foreground">
-                            <span className="text-green-500">{report.passCount}</span>
-                            <span className="text-foreground-tertiary">/</span>
-                            <span className="text-foreground-secondary">{report.totalChecks}</span>
-                          </span>
-                        </td>
-                        <td className="py-3 px-2">
-                          <span className="text-sm text-foreground-secondary">{report.source}</span>
-                          {report.runId && (
-                            <Link
-                              href={`https://github.com/tpmjs/tpmjs/actions/runs/${report.runId}`}
-                              target="_blank"
-                              className="ml-2 text-primary hover:underline text-xs"
-                            >
-                              View Run
-                            </Link>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Checks</TableHead>
+                    <TableHead>Source</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {healthData.recentReports.map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell>
+                        <span className="text-sm text-foreground">
+                          {formatTimestamp(report.timestamp)}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge status={report.overallStatus} />
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-foreground">
+                          <span className="text-success">{report.passCount}</span>
+                          <span className="text-foreground-tertiary">/</span>
+                          <span className="text-foreground-secondary">{report.totalChecks}</span>
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-foreground-secondary">{report.source}</span>
+                        {report.runId && (
+                          <Link
+                            href={`https://github.com/tpmjs/tpmjs/actions/runs/${report.runId}`}
+                            target="_blank"
+                            className="ml-2 text-primary hover:underline text-xs"
+                          >
+                            View Run
+                          </Link>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
 
             {/* Footer Links */}

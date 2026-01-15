@@ -4,10 +4,12 @@ import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Card, CardContent } from '@tpmjs/ui/Card/Card';
 import { Container } from '@tpmjs/ui/Container/Container';
+import { EmptyState } from '@tpmjs/ui/EmptyState/EmptyState';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
+import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
 import { Select } from '@tpmjs/ui/Select/Select';
-import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
@@ -171,7 +173,7 @@ export default function ToolSearchPage(): React.ReactElement {
 
   const TableHeader = useCallback(
     () => (
-      <tr className="bg-surface text-left text-sm font-medium text-foreground-secondary">
+      <tr className="bg-surface-secondary text-left text-xs font-semibold uppercase tracking-wider text-foreground-secondary border-b border-border">
         <th className="px-4 py-3 w-[250px]">Name</th>
         <th className="px-4 py-3 w-[300px]">Description</th>
         <th className="px-4 py-3 w-[100px]">Category</th>
@@ -194,9 +196,9 @@ export default function ToolSearchPage(): React.ReactElement {
           <td className="px-4 py-3">
             <Link
               href={`/tool/${tool.package.npmPackageName}/${tool.name}`}
-              className="group block"
+              className="block"
             >
-              <div className="font-medium text-foreground group-hover:text-primary transition-colors">
+              <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
                 {displayName}
                 {isBroken && (
                   <Badge variant="error" size="sm" className="ml-2">
@@ -243,16 +245,11 @@ export default function ToolSearchPage(): React.ReactElement {
       <AppHeader />
 
       <Container size="xl" padding="md" className="py-8">
-        {/* Page header */}
-        <div className="space-y-4 mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-foreground">
-            Tool Registry
-          </h1>
-          <p className="text-lg text-foreground-secondary">
-            Search npm packages indexed as AI agent tools. Filter by category, health status, or
-            keyword.
-          </p>
-        </div>
+        <PageHeader
+          title="Tool Registry"
+          description="Search npm packages indexed as AI agent tools. Filter by category, health status, or keyword."
+          size="lg"
+        />
 
         {/* Search and filters section */}
         <div className="space-y-4 mb-6">
@@ -342,14 +339,7 @@ export default function ToolSearchPage(): React.ReactElement {
         </div>
 
         {/* Loading state */}
-        {loading && (
-          <div className="flex items-center justify-center py-24 gap-4">
-            <Spinner size="lg" />
-            <span className="text-foreground-secondary font-mono text-sm tracking-wide">
-              Loading tools...
-            </span>
-          </div>
-        )}
+        {loading && <LoadingState message="Loading tools..." size="lg" />}
 
         {/* Error state */}
         {error && <div className="text-center py-12 text-error">Error: {error}</div>}
@@ -371,12 +361,12 @@ export default function ToolSearchPage(): React.ReactElement {
                     style={{ tableLayout: 'fixed' }}
                   />
                 ),
-                TableHead: (props) => <thead {...props} className="bg-surface sticky top-0 z-10" />,
+                TableHead: (props) => <thead {...props} className="bg-surface-secondary sticky top-0 z-10" />,
                 TableBody: (props) => <tbody {...props} />,
                 TableRow: (props) => (
                   <tr
                     {...props}
-                    className="border-b border-border hover:bg-surface/50 transition-colors"
+                    className="border-b border-border bg-white dark:bg-zinc-900 hover:bg-surface transition-all duration-150 group"
                   />
                 ),
               }}
@@ -394,26 +384,14 @@ export default function ToolSearchPage(): React.ReactElement {
 
         {/* Empty States */}
         {!loading && !error && filteredTools.length === 0 && (
-          <div className="flex items-center justify-center py-24">
-            <Card className="max-w-2xl w-full">
-              <CardContent className="pt-6 pb-6 text-center space-y-6">
-                <div className="flex justify-center">
-                  <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                    <Icon icon="x" size="lg" className="text-foreground-tertiary" />
-                  </div>
-                </div>
-
-                {searchQuery && (
-                  <>
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-semibold text-foreground">
-                        No tools found matching &ldquo;{searchQuery}&rdquo;
-                      </h3>
-                      <p className="text-foreground-secondary">
-                        We couldn&apos;t find any tools matching your search. Try adjusting your
-                        search terms or filters.
-                      </p>
-                    </div>
+          <Card className="max-w-2xl mx-auto">
+            <CardContent className="pt-6 pb-6">
+              {searchQuery ? (
+                <EmptyState
+                  icon="search"
+                  title={`No tools found matching "${searchQuery}"`}
+                  description="Try adjusting your search terms or filters."
+                  action={
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                       <Button variant="default" onClick={() => setSearchQuery('')}>
                         Clear Search
@@ -430,19 +408,14 @@ export default function ToolSearchPage(): React.ReactElement {
                         </Button>
                       )}
                     </div>
-                  </>
-                )}
-
-                {!searchQuery && (categoryFilter !== 'all' || healthFilter !== 'all') && (
-                  <>
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-semibold text-foreground">
-                        No tools match your filters
-                      </h3>
-                      <p className="text-foreground-secondary">
-                        Try adjusting or clearing your filters to see more tools.
-                      </p>
-                    </div>
+                  }
+                />
+              ) : categoryFilter !== 'all' || healthFilter !== 'all' ? (
+                <EmptyState
+                  icon="search"
+                  title="No tools match your filters"
+                  description="Try adjusting or clearing your filters to see more tools."
+                  action={
                     <Button
                       variant="default"
                       onClick={() => {
@@ -452,17 +425,14 @@ export default function ToolSearchPage(): React.ReactElement {
                     >
                       Clear All Filters
                     </Button>
-                  </>
-                )}
-
-                {!searchQuery && categoryFilter === 'all' && healthFilter === 'all' && (
-                  <>
-                    <div className="space-y-2">
-                      <h3 className="text-xl font-semibold text-foreground">No tools yet</h3>
-                      <p className="text-foreground-secondary">
-                        Be the first to publish a tool and help AI agents gain new capabilities.
-                      </p>
-                    </div>
+                  }
+                />
+              ) : (
+                <EmptyState
+                  icon="puzzle"
+                  title="No tools yet"
+                  description="Be the first to publish a tool and help AI agents gain new capabilities."
+                  action={
                     <Button
                       variant="default"
                       onClick={() =>
@@ -472,11 +442,11 @@ export default function ToolSearchPage(): React.ReactElement {
                       <Icon icon="github" size="sm" className="mr-2" />
                       View Documentation
                     </Button>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+                  }
+                />
+              )}
+            </CardContent>
+          </Card>
         )}
       </Container>
     </div>

@@ -1,5 +1,7 @@
 'use client';
 
+import { ErrorState } from '@tpmjs/ui/ErrorState/ErrorState';
+import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
 import { useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 import { AnimatedCounter } from '~/components/stats/AnimatedCounter';
@@ -184,10 +186,7 @@ export default function StatsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-foreground-secondary animate-pulse">Loading statistics...</p>
-        </div>
+        <LoadingState message="Loading statistics..." size="lg" />
       </div>
     );
   }
@@ -195,10 +194,10 @@ export default function StatsPage() {
   if (error || !stats) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold text-error mb-2">Failed to load statistics</h2>
-          <p className="text-foreground-secondary">{error || 'Unknown error'}</p>
-        </div>
+        <ErrorState
+          title="Failed to load statistics"
+          message={error || 'Unknown error'}
+        />
       </div>
     );
   }

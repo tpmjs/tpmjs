@@ -4,6 +4,10 @@ import type { AIProvider } from '@tpmjs/types/agent';
 import { PROVIDER_MODELS, SUPPORTED_PROVIDERS } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Input } from '@tpmjs/ui/Input/Input';
+import { Label } from '@tpmjs/ui/Label/Label';
+import { Select } from '@tpmjs/ui/Select/Select';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -133,11 +137,10 @@ export default function NewAgentPage(): React.ReactElement {
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
-                  Name *
-                </label>
-                <input
-                  type="text"
+                <Label htmlFor="name" required className="mb-1">
+                  Name
+                </Label>
+                <Input
                   id="name"
                   name="name"
                   value={formData.name}
@@ -145,16 +148,14 @@ export default function NewAgentPage(): React.ReactElement {
                   required
                   maxLength={100}
                   placeholder="My AI Agent"
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                 />
               </div>
 
               <div>
-                <label htmlFor="uid" className="block text-sm font-medium text-foreground mb-1">
+                <Label htmlFor="uid" className="mb-1">
                   UID (URL-friendly identifier)
-                </label>
-                <input
-                  type="text"
+                </Label>
+                <Input
                   id="uid"
                   name="uid"
                   value={formData.uid}
@@ -162,7 +163,7 @@ export default function NewAgentPage(): React.ReactElement {
                   maxLength={50}
                   pattern="[a-z0-9-]+"
                   placeholder="my-ai-agent"
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary font-mono text-sm"
+                  className="font-mono text-sm"
                 />
                 <p className="text-xs text-foreground-tertiary mt-1">
                   Used in API URLs. Lowercase letters, numbers, and hyphens only.
@@ -170,21 +171,18 @@ export default function NewAgentPage(): React.ReactElement {
               </div>
 
               <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
+                <Label htmlFor="description" className="mb-1">
                   Description
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   maxLength={500}
                   rows={2}
+                  resize="none"
                   placeholder="What does this agent do?"
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
                 />
               </div>
             </div>
@@ -197,68 +195,54 @@ export default function NewAgentPage(): React.ReactElement {
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label
-                    htmlFor="provider"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
-                    Provider *
-                  </label>
-                  <select
+                  <Label htmlFor="provider" required className="mb-1">
+                    Provider
+                  </Label>
+                  <Select
                     id="provider"
                     name="provider"
                     value={formData.provider}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  >
-                    {SUPPORTED_PROVIDERS.map((provider) => (
-                      <option key={provider} value={provider}>
-                        {PROVIDER_DISPLAY_NAMES[provider]}
-                      </option>
-                    ))}
-                  </select>
+                    options={SUPPORTED_PROVIDERS.map((provider) => ({
+                      value: provider,
+                      label: PROVIDER_DISPLAY_NAMES[provider],
+                    }))}
+                  />
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="modelId"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
-                    Model *
-                  </label>
-                  <select
+                  <Label htmlFor="modelId" required className="mb-1">
+                    Model
+                  </Label>
+                  <Select
                     id="modelId"
                     name="modelId"
                     value={formData.modelId}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  >
-                    {models.map((model) => (
-                      <option key={model.id} value={model.id}>
-                        {model.name}
-                      </option>
-                    ))}
-                  </select>
+                    options={models.map((model) => ({
+                      value: model.id,
+                      label: model.name,
+                    }))}
+                  />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="systemPrompt"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
+                <Label htmlFor="systemPrompt" className="mb-1">
                   System Prompt
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   id="systemPrompt"
                   name="systemPrompt"
                   value={formData.systemPrompt}
                   onChange={handleChange}
                   maxLength={10000}
                   rows={6}
+                  resize="none"
                   placeholder="You are a helpful assistant that..."
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none font-mono text-sm"
+                  className="font-mono text-sm"
                 />
                 <p className="text-xs text-foreground-tertiary mt-1">
                   Instructions that define how the agent behaves.
@@ -267,13 +251,10 @@ export default function NewAgentPage(): React.ReactElement {
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label
-                    htmlFor="temperature"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
+                  <Label htmlFor="temperature" className="mb-1">
                     Temperature
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     id="temperature"
                     name="temperature"
@@ -282,7 +263,6 @@ export default function NewAgentPage(): React.ReactElement {
                     min={0}
                     max={2}
                     step={0.1}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                   <p className="text-xs text-foreground-tertiary mt-1">
                     0 = deterministic, 2 = creative
@@ -290,13 +270,10 @@ export default function NewAgentPage(): React.ReactElement {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="maxToolCallsPerTurn"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
+                  <Label htmlFor="maxToolCallsPerTurn" className="mb-1">
                     Max Tool Calls
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     id="maxToolCallsPerTurn"
                     name="maxToolCallsPerTurn"
@@ -304,19 +281,15 @@ export default function NewAgentPage(): React.ReactElement {
                     onChange={handleChange}
                     min={1}
                     max={100}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                   <p className="text-xs text-foreground-tertiary mt-1">Per response turn</p>
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="maxMessagesInContext"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
+                  <Label htmlFor="maxMessagesInContext" className="mb-1">
                     Context Messages
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     id="maxMessagesInContext"
                     name="maxMessagesInContext"
@@ -324,7 +297,6 @@ export default function NewAgentPage(): React.ReactElement {
                     onChange={handleChange}
                     min={1}
                     max={100}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                   <p className="text-xs text-foreground-tertiary mt-1">
                     Recent messages to include
@@ -348,14 +320,14 @@ export default function NewAgentPage(): React.ReactElement {
 
           {/* Error */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="bg-error/10 border border-error/20 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <Icon
                   icon="alertCircle"
                   size="sm"
-                  className="text-red-600 dark:text-red-400 mt-0.5"
+                  className="text-error mt-0.5"
                 />
-                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                <p className="text-sm text-error">{error}</p>
               </div>
             </div>
           )}
