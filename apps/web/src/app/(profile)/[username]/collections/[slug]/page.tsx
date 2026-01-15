@@ -11,6 +11,7 @@ import { AppHeader } from '~/components/AppHeader';
 import { ForkButton } from '~/components/ForkButton';
 import { ForkedFromBadge } from '~/components/ForkedFromBadge';
 import { LikeButton } from '~/components/LikeButton';
+import { UseCasesSection } from '~/components/UseCasesSection';
 import { useSession } from '~/lib/auth-client';
 
 interface CollectionTool {
@@ -28,6 +29,20 @@ interface CollectionTool {
       category: string;
     };
   };
+}
+
+interface UseCaseToolStep {
+  toolName: string;
+  packageName: string;
+  purpose: string;
+  order: number;
+}
+
+interface UseCase {
+  id: string;
+  userPrompt: string;
+  description: string;
+  toolSequence: UseCaseToolStep[];
 }
 
 interface PublicCollection {
@@ -55,6 +70,8 @@ interface PublicCollection {
       username: string;
     };
   } | null;
+  useCases: UseCase[] | null;
+  useCasesGeneratedAt: string | null;
 }
 
 function McpUrlSection({ username, slug }: { username: string; slug: string }) {
@@ -183,6 +200,20 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
 
   // Check if current user is the owner
   const isOwner = session?.user?.id && collection?.createdBy?.id === session.user.id;
+
+  // Handler for when use cases are generated
+  const handleUseCasesGenerated = useCallback(
+    (useCases: UseCase[], generatedAt: string) => {
+      if (collection) {
+        setCollection({
+          ...collection,
+          useCases,
+          useCasesGeneratedAt: generatedAt,
+        });
+      }
+    },
+    [collection]
+  );
 
   const fetchCollection = useCallback(async () => {
     try {
@@ -336,6 +367,16 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
                 <Icon icon="box" className="w-12 h-12 mx-auto text-foreground-secondary mb-4" />
                 <p className="text-foreground-secondary">This collection is empty.</p>
               </div>
+            )}
+
+            {/* Use Cases Section - at the bottom */}
+            {collection.tools.length > 0 && (
+              <UseCasesSection
+                collectionId={collection.id}
+                useCases={collection.useCases}
+                generatedAt={collection.useCasesGeneratedAt}
+                onUseCasesGenerated={handleUseCasesGenerated}
+              />
             )}
           </div>
         ) : null}

@@ -105,6 +105,13 @@ export const STRICT_RATE_LIMIT: RateLimitConfig = {
   windowSeconds: 60,
 };
 
+/** AI generation rate limit: 5 requests per hour (expensive AI operations) */
+export const AI_GENERATION_RATE_LIMIT: RateLimitConfig = {
+  limit: 5,
+  windowSeconds: 3600, // 1 hour
+  prefix: 'ai-gen',
+};
+
 /**
  * Helper to add timeout to promises
  */

@@ -454,6 +454,10 @@ model Collection {
   forks        Collection[] @relation("CollectionForks")
   forkCount    Int         @default(0) @map("fork_count")
 
+  // AI-generated use cases
+  useCases            Json?     @map("use_cases") @db.JsonB
+  useCasesGeneratedAt DateTime? @map("use_cases_generated_at")
+
   // Timestamps
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")

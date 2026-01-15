@@ -108,6 +108,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
         })),
         forkedFromId: collection.forkedFromId,
         forkedFrom: collection.forkedFrom,
+        useCases: collection.useCases,
+        useCasesGeneratedAt: collection.useCasesGeneratedAt?.toISOString() ?? null,
       },
       { requestId }
     );

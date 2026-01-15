@@ -97,6 +97,38 @@ export const CloneCollectionSchema = z.object({
 });
 
 // ============================================================================
+// Use Case Types (AI-generated workflows)
+// ============================================================================
+
+export const UseCaseToolStepSchema = z.object({
+  toolName: z.string().describe('Name of the tool being invoked'),
+  packageName: z.string().describe('NPM package name containing the tool'),
+  purpose: z.string().max(100).describe('Why this tool is called at this step'),
+  order: z.number().int().min(1).describe('Execution order (1-based)'),
+});
+
+export const UseCaseSchema = z.object({
+  id: z.string().describe('Unique identifier for this use case'),
+  userPrompt: z
+    .string()
+    .min(20)
+    .max(200)
+    .describe('Example user prompt that triggers this workflow'),
+  description: z.string().min(30).max(150).describe('Brief description of what this accomplishes'),
+  toolSequence: z
+    .array(UseCaseToolStepSchema)
+    .min(1)
+    .max(10)
+    .describe('Ordered sequence of tool calls'),
+});
+
+export const CollectionUseCasesSchema = z.array(UseCaseSchema).max(6);
+
+export type UseCaseToolStep = z.infer<typeof UseCaseToolStepSchema>;
+export type UseCase = z.infer<typeof UseCaseSchema>;
+export type CollectionUseCases = z.infer<typeof CollectionUseCasesSchema>;
+
+// ============================================================================
 // Response Types (for API responses)
 // ============================================================================
 
@@ -109,6 +141,8 @@ export const CollectionSchema = z.object({
   toolCount: z.number(),
   forkCount: z.number().default(0),
   forkedFromId: z.string().nullable().optional(),
+  useCases: CollectionUseCasesSchema.nullable().optional(),
+  useCasesGeneratedAt: z.date().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date(),
 });
