@@ -129,7 +129,7 @@ export function UseCasesSection({
                 </div>
                 <div>
                   <p className="text-sm text-foreground-tertiary mb-1">Example prompt:</p>
-                  <p className="text-foreground font-medium">"{useCase.userPrompt}"</p>
+                  <p className="text-foreground font-medium">&ldquo;{useCase.userPrompt}&rdquo;</p>
                 </div>
               </div>
 
