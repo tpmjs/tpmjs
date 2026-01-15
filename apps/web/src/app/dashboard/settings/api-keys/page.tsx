@@ -2,6 +2,8 @@
 
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Input } from '@tpmjs/ui/Input/Input';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import {
   Table,
   TableBody,
@@ -176,9 +178,9 @@ export default function ApiKeysPage(): React.ReactElement {
       }
     >
       {/* Info banner */}
-      <div className="bg-blue-500/5 border border-blue-500/20 rounded-lg p-4 mb-6">
+      <div className="bg-info/10 border border-info/20 rounded-lg p-4 mb-6">
         <div className="flex gap-3">
-          <Icon icon="info" size="sm" className="text-blue-500 flex-shrink-0 mt-0.5" />
+          <Icon icon="info" size="sm" className="text-info flex-shrink-0 mt-0.5" />
           <div className="text-sm">
             <p className="text-foreground font-medium mb-1">
               These are your AI service credentials
@@ -195,14 +197,14 @@ export default function ApiKeysPage(): React.ReactElement {
       {showImport && (
         <div className="bg-surface border border-border rounded-lg p-6 mb-6">
           <h2 className="text-lg font-medium text-foreground mb-4">Import from .env</h2>
-          <textarea
+          <Textarea
             value={envText}
             onChange={(e) => setEnvText(e.target.value)}
             placeholder="Paste .env content here...
 MY_API_KEY=abc123
 ANOTHER_SECRET=xyz789"
             rows={5}
-            className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+            className="font-mono text-sm resize-none"
           />
           <div className="flex items-center gap-2 mt-4">
             <Button onClick={handleImport} disabled={importing || !envText.trim()}>
@@ -221,22 +223,22 @@ ANOTHER_SECRET=xyz789"
           <h2 className="text-lg font-medium text-foreground mb-4">Add New Key</h2>
           {saveError && <p className="text-error text-sm mb-3">{saveError}</p>}
           <div className="space-y-3">
-            <input
+            <Input
               type="text"
               value={newKeyName}
               onChange={(e) =>
                 setNewKeyName(e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, ''))
               }
               placeholder="KEY_NAME (e.g., OPENAI_API_KEY)"
-              className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm font-mono placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="font-mono text-sm"
             />
-            <input
+            <Input
               type="password"
               value={newKeyValue}
               onChange={(e) => setNewKeyValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddKey()}
               placeholder="Value"
-              className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm font-mono placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="font-mono text-sm"
             />
           </div>
           <div className="flex items-center gap-2 mt-4">
@@ -288,8 +290,8 @@ ANOTHER_SECRET=xyz789"
               <TableEmpty
                 colSpan={4}
                 icon={
-                  <div className="w-16 h-16 rounded-full bg-blue-500/10 flex items-center justify-center">
-                    <Icon icon="puzzle" size="lg" className="text-blue-500" />
+                  <div className="w-16 h-16 rounded-full bg-info/10 flex items-center justify-center">
+                    <Icon icon="puzzle" size="lg" className="text-info" />
                   </div>
                 }
                 title="No AI provider keys yet"

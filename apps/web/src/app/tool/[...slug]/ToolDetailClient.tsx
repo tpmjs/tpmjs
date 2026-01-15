@@ -269,14 +269,14 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
 
         {/* Auto-discovery info banner */}
         {tool.toolDiscoverySource === 'auto' && (
-          <div className="mb-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900">
+          <div className="mb-6 p-4 rounded-lg bg-warning/10 border border-warning/20">
             <div className="flex items-start gap-3">
               <span className="text-xl mt-0.5">🔍</span>
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1">
+                <h3 className="text-sm font-semibold text-warning mb-1">
                   Auto-discovered tool
                 </h3>
-                <p className="text-sm text-amber-700 dark:text-amber-400">
+                <p className="text-sm text-warning/80">
                   This tool was automatically discovered from the package exports. The author did
                   not explicitly register it in their{' '}
                   <code className="font-mono">package.json</code>. Schema and description were
@@ -289,14 +289,14 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
 
         {/* Health warning banner */}
         {(tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN') && (
-          <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900">
+          <div className="mb-6 p-4 rounded-lg bg-error/10 border border-error/20">
             <div className="flex items-start gap-3">
               <span className="text-xl mt-0.5">⚠️</span>
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
+                <h3 className="text-sm font-semibold text-error mb-1">
                   This tool is currently broken
                 </h3>
-                <div className="space-y-1 text-sm text-red-700 dark:text-red-400">
+                <div className="space-y-1 text-sm text-error/80">
                   {tool.importHealth === 'BROKEN' && (
                     <div className="flex items-center gap-2">
                       <Badge variant="error" size="sm">
@@ -315,23 +315,24 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                   )}
                 </div>
                 {tool.healthCheckError && (
-                  <pre className="mt-2 p-2 rounded bg-red-100 dark:bg-red-900/30 text-xs font-mono text-red-800 dark:text-red-300 overflow-x-auto whitespace-pre-wrap">
+                  <pre className="mt-2 p-2 rounded bg-error/10 text-xs font-mono text-error overflow-x-auto whitespace-pre-wrap">
                     {tool.healthCheckError}
                   </pre>
                 )}
                 {tool.lastHealthCheck && (
-                  <p className="text-xs text-red-600 dark:text-red-500 mt-2">
+                  <p className="text-xs text-error/60 mt-2">
                     Last checked: {new Date(tool.lastHealthCheck).toLocaleString()}
                   </p>
                 )}
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={recheckHealth}
                   disabled={recheckLoading}
-                  className="mt-3 text-sm font-medium text-red-700 dark:text-red-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="mt-3 text-error hover:text-error"
                 >
                   {recheckLoading ? 'Rechecking...' : 'Recheck health →'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>

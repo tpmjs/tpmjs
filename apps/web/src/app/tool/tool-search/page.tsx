@@ -352,7 +352,7 @@ export default function ToolSearchPage(): React.ReactElement {
         )}
 
         {/* Error state */}
-        {error && <div className="text-center py-12 text-red-500">Error: {error}</div>}
+        {error && <div className="text-center py-12 text-error">Error: {error}</div>}
 
         {/* Tool table */}
         {!loading && !error && filteredTools.length > 0 && (

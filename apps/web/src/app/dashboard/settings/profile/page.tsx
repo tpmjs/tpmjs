@@ -2,6 +2,7 @@
 
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Input } from '@tpmjs/ui/Input/Input';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -192,11 +193,11 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Setup mode banner */}
           {isSetupMode && !profile?.username && (
-            <div className="bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
+            <div className="bg-warning/10 border border-warning/20 text-warning px-4 py-3 rounded-lg text-sm flex items-start gap-2">
               <Icon icon="alertCircle" size="sm" className="mt-0.5 shrink-0" />
               <div>
                 <p className="font-medium">Complete your account setup</p>
-                <p className="text-amber-700 mt-1">
+                <p className="text-warning/80 mt-1">
                   Please set your username to complete your account setup. This is required to use
                   MCP endpoints and public profiles.
                 </p>
@@ -206,7 +207,7 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
 
           {/* Success message */}
           {saveSuccess && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+            <div className="bg-success/10 border border-success/20 text-success px-4 py-3 rounded-lg text-sm flex items-center gap-2">
               <Icon icon="check" size="sm" />
               Profile updated successfully!
             </div>
@@ -214,7 +215,7 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
 
           {/* Error message */}
           {saveError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-lg text-sm">
               {saveError}
             </div>
           )}
@@ -224,7 +225,7 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
             <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
               Display Name
             </label>
-            <input
+            <Input
               id="name"
               type="text"
               value={name}
@@ -233,7 +234,6 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
                 setSaveSuccess(false);
               }}
               required
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="Your name"
             />
           </div>
@@ -244,10 +244,10 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
               Username
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground-secondary">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground-secondary z-10">
                 @
               </div>
-              <input
+              <Input
                 id="username"
                 type="text"
                 value={username}
@@ -255,7 +255,7 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
                 required
                 minLength={3}
                 maxLength={30}
-                className="w-full pl-7 pr-10 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="pl-7 pr-10"
                 placeholder="username"
               />
               {/* Status indicator */}
@@ -268,20 +268,20 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
                   />
                 )}
                 {!checkingUsername && usernameCheck?.available && (
-                  <Icon icon="check" size="sm" className="text-green-500" />
+                  <Icon icon="check" size="sm" className="text-success" />
                 )}
                 {!checkingUsername &&
                   usernameCheck &&
                   !usernameCheck.available &&
-                  username.length >= 3 && <Icon icon="x" size="sm" className="text-red-500" />}
+                  username.length >= 3 && <Icon icon="x" size="sm" className="text-error" />}
               </div>
             </div>
             {/* Username availability message */}
             {username.length >= 3 && usernameCheck && !usernameCheck.available && (
-              <p className="mt-1 text-xs text-red-500">{usernameCheck.reason}</p>
+              <p className="mt-1 text-xs text-error">{usernameCheck.reason}</p>
             )}
             {username.length >= 3 && usernameCheck?.available && (
-              <p className="mt-1 text-xs text-green-600">
+              <p className="mt-1 text-xs text-success">
                 {username === profile.username ? 'Current username' : 'Username available'}
               </p>
             )}
@@ -295,12 +295,12 @@ function ProfileSettingsContent({ isSetupMode }: { isSetupMode: boolean }): Reac
             <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
               Email
             </label>
-            <input
+            <Input
               id="email"
               type="email"
               value={profile.email}
               disabled
-              className="w-full px-3 py-2 border border-border rounded-lg bg-surface-secondary text-foreground-secondary cursor-not-allowed"
+              className="bg-surface-secondary text-foreground-secondary cursor-not-allowed"
             />
             <p className="mt-1 text-xs text-foreground-tertiary">Email cannot be changed</p>
           </div>

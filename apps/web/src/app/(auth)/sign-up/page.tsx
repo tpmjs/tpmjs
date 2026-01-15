@@ -1,9 +1,12 @@
 'use client';
 
-import { signUp } from '@/lib/auth-client';
+import { Button } from '@tpmjs/ui/Button/Button';
+import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Input } from '@tpmjs/ui/Input/Input';
 import { suggestUsername } from '@tpmjs/types/user';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { signUp } from '~/lib/auth-client';
 
 interface UsernameCheckResult {
   available: boolean;
@@ -173,7 +176,7 @@ export default function SignUpPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+          <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-md text-sm">
             {error}
           </div>
         )}
@@ -182,13 +185,12 @@ export default function SignUpPage() {
           <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
             Name
           </label>
-          <input
+          <Input
             id="name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent"
             placeholder="Your name"
           />
         </div>
@@ -201,7 +203,7 @@ export default function SignUpPage() {
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-foreground-secondary">
               @
             </div>
-            <input
+            <Input
               id="username"
               type="text"
               value={username}
@@ -209,74 +211,31 @@ export default function SignUpPage() {
               required
               minLength={3}
               maxLength={30}
-              className="w-full pl-7 pr-10 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent"
+              className="pl-7 pr-10"
               placeholder="username"
             />
             {/* Status indicator */}
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
               {checkingUsername && (
-                <svg
-                  className="animate-spin h-4 w-4 text-foreground-secondary"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
+                <Icon icon="loader" size="sm" className="animate-spin text-foreground-secondary" />
               )}
               {!checkingUsername && usernameCheck?.available && (
-                <svg
-                  className="h-4 w-4 text-green-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+                <Icon icon="check" size="sm" className="text-success" />
               )}
               {!checkingUsername &&
                 usernameCheck &&
                 !usernameCheck.available &&
                 username.length >= 3 && (
-                  <svg
-                    className="h-4 w-4 text-red-500"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <Icon icon="x" size="sm" className="text-error" />
                 )}
             </div>
           </div>
           {/* Username availability message */}
           {username.length >= 3 && usernameCheck && !usernameCheck.available && (
-            <p className="mt-1 text-xs text-red-500">{usernameCheck.reason}</p>
+            <p className="mt-1 text-xs text-error">{usernameCheck.reason}</p>
           )}
           {username.length >= 3 && usernameCheck?.available && (
-            <p className="mt-1 text-xs text-green-600">Username available</p>
+            <p className="mt-1 text-xs text-success">Username available</p>
           )}
           {username && (
             <p className="mt-1 text-xs text-foreground-tertiary">
@@ -289,13 +248,12 @@ export default function SignUpPage() {
           <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
             Email
           </label>
-          <input
+          <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent"
             placeholder="you@example.com"
           />
         </div>
@@ -304,25 +262,25 @@ export default function SignUpPage() {
           <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
             Password
           </label>
-          <input
+          <Input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={8}
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent"
             placeholder="At least 8 characters"
           />
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={loading || (usernameCheck !== null && !usernameCheck.available)}
-          className="w-full py-2 px-4 bg-foreground text-background font-medium rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+          loading={loading}
+          className="w-full"
         >
           {loading ? 'Creating account...' : 'Create Account'}
-        </button>
+        </Button>
       </form>
 
       <p className="text-center text-sm text-foreground-secondary">

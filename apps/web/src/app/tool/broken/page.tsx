@@ -97,14 +97,14 @@ export default function BrokenToolsPage(): React.ReactElement {
         )}
 
         {/* Error state */}
-        {error && <div className="text-center py-12 text-red-500">Error: {error}</div>}
+        {error && <div className="text-center py-12 text-error">Error: {error}</div>}
 
         {/* Empty state - All healthy! */}
         {!loading && !error && tools.length === 0 && (
           <Card className="text-center py-12">
             <CardContent className="space-y-4">
               <div className="flex justify-center">
-                <Icon icon="check" size="lg" className="text-green-600 dark:text-green-400" />
+                <Icon icon="check" size="lg" className="text-success" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-foreground mb-2">All Tools are Healthy!</h2>
@@ -124,14 +124,14 @@ export default function BrokenToolsPage(): React.ReactElement {
         {/* Broken tools grid */}
         {!loading && !error && tools.length > 0 && (
           <>
-            <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900">
+            <div className="mb-6 p-4 rounded-lg bg-error/10 border border-error/20">
               <div className="flex items-start gap-3">
                 <span className="text-xl mt-0.5">⚠️</span>
                 <div>
-                  <h3 className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">
+                  <h3 className="text-sm font-semibold text-error mb-1">
                     {tools.length} {tools.length === 1 ? 'tool is' : 'tools are'} currently broken
                   </h3>
-                  <p className="text-sm text-red-700 dark:text-red-400">
+                  <p className="text-sm text-error/80">
                     These tools are experiencing import or execution failures. Click on a tool to
                     see details and manually trigger a health recheck.
                   </p>
@@ -148,7 +148,7 @@ export default function BrokenToolsPage(): React.ReactElement {
                   : null;
 
                 return (
-                  <Card key={tool.id} className="flex flex-col border-red-200 dark:border-red-900">
+                  <Card key={tool.id} className="flex flex-col border-error/20">
                     <CardHeader>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1">

@@ -1,5 +1,7 @@
 'use client';
 
+import { Button } from '@tpmjs/ui/Button/Button';
+import { Input } from '@tpmjs/ui/Input/Input';
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -54,7 +56,7 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
 
-        <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 px-4 py-3 rounded-md text-sm">
+        <div className="bg-success/10 border border-success/20 text-success px-4 py-3 rounded-md text-sm">
           Check your inbox and click the link to reset your password. The link will expire in 1
           hour.
         </div>
@@ -93,7 +95,7 @@ export default function ForgotPasswordPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-md text-sm">
+          <div className="bg-error/10 border border-error/20 text-error px-4 py-3 rounded-md text-sm">
             {error}
           </div>
         )}
@@ -102,24 +104,24 @@ export default function ForgotPasswordPage() {
           <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
             Email
           </label>
-          <input
+          <Input
             id="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-transparent"
             placeholder="you@example.com"
           />
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-foreground text-background font-medium rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground disabled:opacity-50 disabled:cursor-not-allowed"
+          loading={loading}
+          className="w-full"
         >
           {loading ? 'Sending...' : 'Send Reset Link'}
-        </button>
+        </Button>
       </form>
 
       <p className="text-center text-sm text-foreground-secondary">
