@@ -12,6 +12,7 @@ export async function promptCategoryAndMode(): Promise<{
 
   const category = await clack.select({
     message: 'Tool category',
+    // @ts-expect-error - clack types are overly strict for dynamic options
     options: categories.map((cat) => ({
       value: cat,
       label: cat,
