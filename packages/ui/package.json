@@ -240,7 +240,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' tsup",
+    "build": "tsup && tsc --emitDeclarationOnly --declaration --outDir dist",
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:ui": "vitest --ui",

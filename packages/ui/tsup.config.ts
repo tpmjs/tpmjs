@@ -47,13 +47,9 @@ entries.push('src/system/hooks/useDitherAnimation.ts');
 export default defineConfig({
   entry: entries,
   format: ['esm'],
-  dts: {
-    // Reduce memory usage in CI by disabling concurrent workers
-    // This prevents "JS heap out of memory" errors when building many components
-    compilerOptions: {
-      composite: false,
-    },
-  },
+  // DTS disabled - using tsc directly to avoid memory issues with rollup-plugin-dts
+  // See build script: "tsup && tsc --emitDeclarationOnly"
+  dts: false,
   clean: true,
   treeshake: false, // Disable treeshaking to preserve 'use client'
   splitting: false,
