@@ -166,6 +166,58 @@
     "./Table/Table": {
       "types": "./dist/Table/Table.d.ts",
       "default": "./dist/Table/Table.js"
+    },
+    "./Modal/Modal": {
+      "types": "./dist/Modal/Modal.d.ts",
+      "default": "./dist/Modal/Modal.js"
+    },
+    "./Toast/Toast": {
+      "types": "./dist/Toast/Toast.d.ts",
+      "default": "./dist/Toast/Toast.js"
+    },
+    "./Drawer/Drawer": {
+      "types": "./dist/Drawer/Drawer.d.ts",
+      "default": "./dist/Drawer/Drawer.js"
+    },
+    "./Popover/Popover": {
+      "types": "./dist/Popover/Popover.d.ts",
+      "default": "./dist/Popover/Popover.js"
+    },
+    "./Tooltip/Tooltip": {
+      "types": "./dist/Tooltip/Tooltip.d.ts",
+      "default": "./dist/Tooltip/Tooltip.js"
+    },
+    "./DropdownMenu/DropdownMenu": {
+      "types": "./dist/DropdownMenu/DropdownMenu.d.ts",
+      "default": "./dist/DropdownMenu/DropdownMenu.js"
+    },
+    "./Breadcrumbs/Breadcrumbs": {
+      "types": "./dist/Breadcrumbs/Breadcrumbs.d.ts",
+      "default": "./dist/Breadcrumbs/Breadcrumbs.js"
+    },
+    "./Pagination/Pagination": {
+      "types": "./dist/Pagination/Pagination.d.ts",
+      "default": "./dist/Pagination/Pagination.js"
+    },
+    "./Accordion/Accordion": {
+      "types": "./dist/Accordion/Accordion.d.ts",
+      "default": "./dist/Accordion/Accordion.js"
+    },
+    "./Skeleton/Skeleton": {
+      "types": "./dist/Skeleton/Skeleton.d.ts",
+      "default": "./dist/Skeleton/Skeleton.js"
+    },
+    "./InstallSnippet/InstallSnippet": {
+      "types": "./dist/InstallSnippet/InstallSnippet.d.ts",
+      "default": "./dist/InstallSnippet/InstallSnippet.js"
+    },
+    "./QualityScore/QualityScore": {
+      "types": "./dist/QualityScore/QualityScore.d.ts",
+      "default": "./dist/QualityScore/QualityScore.js"
+    },
+    "./ToolCard/ToolCard": {
+      "types": "./dist/ToolCard/ToolCard.d.ts",
+      "default": "./dist/ToolCard/ToolCard.js"
     }
   },
   "files": [

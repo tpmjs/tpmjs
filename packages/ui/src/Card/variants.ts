@@ -8,36 +8,37 @@ export const cardVariants = createVariants({
   base: [
     // Layout
     'relative',
-    // Borders & Radius
-    'rounded-lg',
+    // Borders & Radius - SHARP CORNERS
+    'rounded-none',
     // Transitions
-    'transition-base',
+    'transition-colors duration-150',
   ].join(' '),
 
   variants: {
     variant: {
       default: [
-        'border border-dotted border-border',
+        'border border-dashed border-border',
         'bg-card text-card-foreground',
-        'shadow-sm',
       ].join(' '),
 
       elevated: [
-        'border border-dotted border-border',
+        'border border-dashed border-border',
         'bg-surface-elevated text-card-foreground',
-        'shadow-md',
       ].join(' '),
 
-      outline: ['border-2 border-dotted border-border', 'bg-transparent text-foreground'].join(' '),
+      outline: ['border-2 border-dashed border-border', 'bg-transparent text-foreground'].join(' '),
 
       blueprint: [
-        'border border-dotted border-border',
+        'border border-dashed border-border',
         'bg-card text-card-foreground',
-        'shadow-blueprint',
-        'hover:shadow-blueprint-hover',
       ].join(' '),
 
       ghost: ['bg-transparent text-foreground'].join(' '),
+
+      featured: [
+        'border-2 border-solid border-foreground',
+        'bg-card text-card-foreground',
+      ].join(' '),
 
       brutalist: [
         'border-[6px] border-foreground',

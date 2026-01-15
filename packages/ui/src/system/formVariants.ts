@@ -10,18 +10,18 @@
 export const formInputBase = [
   // Layout
   'flex w-full',
-  // Typography
-  'font-sans text-base',
-  // Borders and radius
-  'rounded-md border border-border',
+  // Typography - Monospace for inputs
+  'font-mono text-base',
+  // Borders and radius - SHARP CORNERS
+  'rounded-none border border-border',
   // Colors - Pure white background to stand out
   'bg-surface text-foreground',
   // Placeholder
   'placeholder:text-foreground-tertiary',
-  // Transitions
-  'transition-base',
-  // Focus state
-  'focus-ring',
+  // Transitions - Fast, subtle
+  'transition-colors duration-150',
+  // Focus state - Copper accent
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
   // Hover state
   'hover:border-border-strong',
   // Disabled state

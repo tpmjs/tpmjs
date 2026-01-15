@@ -18,8 +18,8 @@ export const tabsContainerVariants = createVariants({
       lg: 'gap-1',
     },
     variant: {
-      default: 'border-b border-border',
-      blueprint: 'border-b border-dotted border-border',
+      default: 'border-b border-dashed border-border',
+      blueprint: 'border-b border-dashed border-border',
     },
   },
 
@@ -38,10 +38,10 @@ export const tabButtonVariants = createVariants({
   base: [
     // Display
     'inline-flex items-center gap-2',
-    // Font
-    'font-medium whitespace-nowrap',
-    // Transition
-    'transition-colors duration-200',
+    // Font - Monospace, lowercase
+    'font-mono font-medium lowercase whitespace-nowrap',
+    // Transition - Fast, subtle
+    'transition-colors duration-150',
     // Cursor
     'cursor-pointer',
   ].join(' '),
@@ -59,7 +59,7 @@ export const tabButtonVariants = createVariants({
     },
     variant: {
       default: 'border-b-2',
-      blueprint: 'border-b-2 border-dotted',
+      blueprint: 'border-b-2 border-dashed',
     },
   },
 
@@ -83,12 +83,12 @@ export const tabCountVariants = createVariants({
     'min-w-[1.25rem] h-5',
     // Padding
     'px-1.5',
-    // Font
-    'text-xs font-medium tabular-nums',
+    // Font - Monospace
+    'font-mono text-xs font-medium tabular-nums',
     // Background
     'bg-surface-elevated',
-    // Border
-    'rounded-full',
+    // Border - Sharp corners
+    'rounded-none',
   ].join(' '),
 
   variants: {

@@ -8,16 +8,16 @@ export const inputVariants = createVariants({
   base: [
     // Layout
     'flex w-full',
-    // Typography
-    'font-sans',
-    // Borders & Radius
-    'rounded-md border',
+    // Typography - Monospace for inputs
+    'font-mono',
+    // Borders & Radius - SHARP CORNERS
+    'rounded-none border',
     // Background - Pure white to stand out
     'bg-surface',
     // Transitions
-    'transition-base',
-    // Focus
-    'focus-ring',
+    'transition-colors duration-150',
+    // Focus - Copper accent
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
     // Placeholder
     'placeholder:text-foreground-tertiary',
     // File input

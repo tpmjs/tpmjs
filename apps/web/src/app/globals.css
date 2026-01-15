@@ -3,161 +3,393 @@
 @tailwind utilities;
 
 @layer base {
-  /* Light mode (default) */
+  /* Light mode (default) - Warm earthy palette with copper accent */
   :root {
-    /* Backgrounds & Surfaces - DRAMATIC CONTRAST */
-    --background: 220 15% 96%; /* Light blue-gray background */
-    --surface: 0 0% 100%; /* Pure white - cards really pop! */
-    --surface-secondary: 220 15% 94%; /* Subtle gray for secondary surfaces */
-    --surface-elevated: 0 0% 100%; /* White (elevated) */
-    --surface-overlay: 0 0% 100%; /* White overlays */
+    /* ===========================================
+       COMPREHENSIVE COLOR PALETTE
+       Warm, earthy tones with copper accent
+       =========================================== */
 
-    /* Foreground (Text) */
-    --foreground: 222 47% 11%; /* Almost black */
-    --foreground-secondary: 215 25% 35%; /* Much darker for readability */
-    --foreground-tertiary: 215 20% 50%; /* Medium gray */
-    --foreground-muted: 215 16% 65%; /* Light gray */
+    /* Backgrounds - Layered surface system */
+    --background: 30 15% 95%; /* #F5F3F0 - Warm off-white base */
+    --surface: 0 0% 100%; /* #FFFFFF - Cards, panels */
+    --surface-2: 30 20% 97%; /* #FAF8F6 - Elevated surfaces */
+    --surface-3: 25 12% 93%; /* #F0EDEA - Highest elevation */
+    --surface-secondary: 30 10% 95%; /* Legacy alias */
+    --surface-elevated: 30 20% 97%; /* Legacy alias */
+    --surface-overlay: 0 0% 100%; /* Overlays, modals */
 
-    /* Borders - MUCH MORE VISIBLE */
-    --border: 214 25% 80%; /* Strong medium gray */
-    --border-strong: 214 30% 60%; /* Dark gray for emphasis */
-    --border-subtle: 214 20% 88%; /* Subtle but visible */
+    /* Text - Clear hierarchy */
+    --foreground: 25 15% 10%; /* #1A1715 - Primary text */
+    --foreground-secondary: 25 8% 35%; /* #5C564F - Secondary text */
+    --foreground-tertiary: 25 6% 50%; /* #817B74 - Tertiary text */
+    --foreground-muted: 25 5% 60%; /* #9A958F - Muted/hints */
 
-    /* Interactive States - MODERN & REFINED */
-    --primary: 221 83% 53%; /* Sophisticated blue */
-    --primary-foreground: 0 0% 100%; /* White text */
-    --secondary: 220 15% 90%; /* Subtle gray-blue bg */
-    --secondary-foreground: 222 47% 11%; /* Dark text */
-    --accent: 221 75% 95%; /* Soft blue tint */
-    --accent-foreground: 221 70% 35%; /* Rich blue text */
-    --muted: 220 15% 92%; /* Subtle muted bg */
-    --muted-foreground: 215 25% 40%; /* Darker muted text */
+    /* Borders - Warm grays */
+    --border: 30 8% 80%; /* #CEC9C3 - Default borders */
+    --border-strong: 25 8% 50%; /* #857F77 - Emphasized borders */
+    --border-subtle: 30 6% 88%; /* #E3E0DC - Subtle borders */
 
-    /* Status Colors - Modern Editorial Palette */
-    --success: 152 57% 45%; /* Refined emerald green */
-    --success-foreground: 0 0% 100%; /* White text on success */
-    --error: 0 65% 51%; /* Sophisticated red, less harsh */
-    --error-foreground: 0 0% 100%; /* White text on error */
-    --warning: 36 100% 50%; /* Warm sophisticated amber */
-    --warning-foreground: 0 0% 100%; /* White text on warning */
-    --info: 210 100% 56%; /* Cool modern blue */
-    --info-foreground: 0 0% 100%; /* White text on info */
+    /* Primary - Copper accent #A6592D */
+    --primary: 22 57% 41%; /* #A6592D - Brand copper */
+    --primary-hover: 22 57% 35%; /* #8B4A26 - Hover state */
+    --primary-active: 22 57% 30%; /* #753F20 - Active/pressed */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
 
-    /* Destructive (legacy) */
-    --destructive: 0 65% 51%; /* Match error color */
+    /* Accent - Copper variations */
+    --accent: 22 57% 41%; /* #A6592D - Same as primary */
+    --accent-strong: 22 60% 35%; /* #8F4722 - Darker/hover */
+    --accent-muted: 22 30% 90%; /* #EDE5DF - Soft copper tint */
+    --accent-foreground: 0 0% 100%; /* White text */
+
+    /* Secondary - Warm neutrals */
+    --secondary: 30 10% 92%; /* #EDEBE8 - Soft warm bg */
+    --secondary-hover: 30 10% 88%; /* #E3E0DC - Hover */
+    --secondary-foreground: 25 15% 10%; /* Dark text */
+
+    /* Muted - Subtle backgrounds */
+    --muted: 30 8% 94%; /* #F2F0ED - Muted background */
+    --muted-foreground: 25 8% 40%; /* #6B655E - Muted text */
+
+    /* Status Colors - Earthy, warm variants */
+    --success: 145 45% 36%; /* #327D52 - Forest green */
+    --success-light: 145 35% 92%; /* #E5F3EC - Light bg */
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 75% 50%; /* #D9A020 - Warm amber */
+    --warning-light: 38 60% 92%; /* #F8F2E0 - Light bg */
+    --warning-foreground: 25 15% 10%;
+
+    --error: 0 55% 50%; /* #C44545 - Warm red */
+    --error-light: 0 50% 95%; /* #F9EDED - Light bg */
+    --error-foreground: 0 0% 100%;
+
+    --info: 210 60% 50%; /* #3380CC - Cool blue */
+    --info-light: 210 50% 95%; /* #EDF4FB - Light bg */
+    --info-foreground: 0 0% 100%;
+
+    /* Destructive (alias for error) */
+    --destructive: 0 55% 50%;
     --destructive-foreground: 0 0% 100%;
 
     /* Form Elements */
-    --input: 214 32% 91%;
-    --ring: 222 84% 5%;
+    --input: 30 8% 80%; /* Input borders */
+    --input-focus: 22 57% 41%; /* Copper focus */
+    --ring: 22 57% 41%; /* Focus ring - copper */
     --ring-offset: 0 0% 100%;
 
     /* Grid/Blueprint Pattern */
-    --grid-color: 214 32% 90%;
-    --grid-size: 24px; /* Grid cell size */
+    --grid-color: 25 8% 88%;
+    --grid-size: 24px;
 
     /* Card */
-    --card: 0 0% 100%; /* Pure white - stands out dramatically on blue-gray background */
-    --card-foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 25 15% 10%;
 
-    /* Border Radii */
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 8px;
-    --radius-xl: 12px;
-    --radius: var(--radius-md);
+    /* Border Radii - SHARP CORNERS (0) */
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-xl: 0;
+    --radius: 0;
 
-    /* Spacing - Editorial scale for airy layouts */
-    --spacing-section: 6rem; /* 96px - Between major sections */
-    --spacing-component: 3rem; /* 48px - Between components */
-    --spacing-element: 1.5rem; /* 24px - Between related elements */
-    --spacing-tight: 0.75rem; /* 12px - Tight groupings */
-    --spacing-comfortable: 2rem; /* 32px - Comfortable breathing room */
+    /* Spacing - Generous whitespace */
+    --spacing-section: 8rem;
+    --spacing-component: 4rem;
+    --spacing-element: 2rem;
+    --spacing-tight: 1rem;
+    --spacing-comfortable: 3rem;
 
     /* Typography */
-    --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    --font-mono: var(--font-mono), "SF Mono", Consolas, monospace;
+    --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-mono: var(--font-jetbrains), "JetBrains Mono", "SF Mono", Consolas, monospace;
 
-    /* Editorial Line Heights - Airy, readable */
-    --leading-tight: 1.25;
-    --leading-snug: 1.375;
-    --leading-normal: 1.5;
-    --leading-relaxed: 1.625;
-    --leading-loose: 1.75;
-    --leading-editorial: 1.8; /* Extra generous for body copy */
+    /* Line Heights */
+    --leading-tight: 1.2;
+    --leading-snug: 1.4;
+    --leading-normal: 1.6;
+    --leading-relaxed: 1.7;
+    --leading-loose: 1.8;
+    --leading-editorial: 1.9;
 
-    /* Letter Spacing - Technical precision */
-    --tracking-tighter: -0.05em;
-    --tracking-tight: -0.025em;
+    /* Letter Spacing */
+    --tracking-tighter: -0.03em;
+    --tracking-tight: -0.015em;
     --tracking-normal: 0;
     --tracking-wide: 0.025em;
     --tracking-wider: 0.05em;
     --tracking-widest: 0.1em;
 
-    /* Brutalist Accent Colors - Modern Editorial */
-    --brutalist-accent: 221 83% 53%; /* Sophisticated blue */
-    --brutalist-accent-hover: 221 83% 45%; /* Slightly deeper on hover */
+    /* Brutalist Accents */
+    --brutalist-accent: 22 57% 41%;
+    --brutalist-accent-hover: 22 57% 35%;
+
+    /* Gradients */
+    --gradient-start: 24 70% 50%;
+    --gradient-end: 15 60% 20%;
+
+    /* ===========================================
+       MOTION & ANIMATION TOKENS
+       Motion communicates state, not decoration
+       Fast by default (150-200ms)
+       =========================================== */
+
+    /* Duration tokens */
+    --motion-instant: 0ms;
+    --motion-fast: 150ms;
+    --motion-base: 200ms;
+    --motion-slow: 300ms;
+    --motion-slower: 500ms;
+
+    /* Easing tokens */
+    --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
+    --easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+    --easing-linear: linear;
+    --easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* ===========================================
+       TYPOGRAPHY SCALE
+       Modular scale with 1.25 ratio
+       Base: 16px
+       =========================================== */
+
+    /* Type scale */
+    --text-xs: 0.75rem;     /* 12px */
+    --text-sm: 0.875rem;    /* 14px */
+    --text-base: 1rem;      /* 16px */
+    --text-lg: 1.125rem;    /* 18px */
+    --text-xl: 1.25rem;     /* 20px */
+    --text-2xl: 1.5rem;     /* 24px */
+    --text-3xl: 2rem;       /* 32px */
+    --text-4xl: 2.5rem;     /* 40px */
+    --text-5xl: 3rem;       /* 48px */
+    --text-6xl: 4rem;       /* 64px */
+
+    /* Max line widths for readability */
+    --prose-width: 65ch;
+    --prose-width-narrow: 45ch;
+    --prose-width-wide: 80ch;
+
+    /* ===========================================
+       BREAKPOINTS
+       Mobile-first responsive design
+       =========================================== */
+
+    /* Breakpoint values (for reference, Tailwind handles classes) */
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
+    --breakpoint-2xl: 1536px;
+
+    /* ===========================================
+       DENSITY MODES
+       Compact / Comfortable / Spacious
+       =========================================== */
+
+    /* Default is comfortable */
+    --density-row-height: 48px;
+    --density-cell-padding-x: 16px;
+    --density-cell-padding-y: 12px;
+    --density-icon-size: 20px;
+    --density-font-size: var(--text-sm);
+
+    /* ===========================================
+       Z-INDEX SCALE
+       Consistent layering
+       =========================================== */
+
+    --z-base: 0;
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+    --z-modal-backdrop: 400;
+    --z-modal: 500;
+    --z-popover: 600;
+    --z-tooltip: 700;
+    --z-toast: 800;
+
+    /* ===========================================
+       FOCUS & ACCESSIBILITY
+       Never remove focus indicators
+       =========================================== */
+
+    --focus-ring-width: 2px;
+    --focus-ring-offset: 2px;
+    --focus-ring-color: var(--ring);
+
+    /* ===========================================
+       ELEVATION & SHADOWS
+       Subtle depth, prefer borders for emphasis
+       =========================================== */
+
+    --shadow-none: none;
+    --shadow-xs: 0 1px 2px 0 hsl(var(--foreground) / 0.05);
+    --shadow-sm: 0 1px 3px 0 hsl(var(--foreground) / 0.08), 0 1px 2px -1px hsl(var(--foreground) / 0.08);
+    --shadow-md: 0 4px 6px -1px hsl(var(--foreground) / 0.08), 0 2px 4px -2px hsl(var(--foreground) / 0.08);
+    --shadow-lg: 0 10px 15px -3px hsl(var(--foreground) / 0.08), 0 4px 6px -4px hsl(var(--foreground) / 0.08);
+    --shadow-xl: 0 20px 25px -5px hsl(var(--foreground) / 0.08), 0 8px 10px -6px hsl(var(--foreground) / 0.08);
+    --shadow-2xl: 0 25px 50px -12px hsl(var(--foreground) / 0.15);
+    --shadow-inner: inset 0 2px 4px 0 hsl(var(--foreground) / 0.05);
+
+    /* ===========================================
+       RADIUS SCALE
+       Sharp corners by default (brutalist)
+       Explicit tokens for rare roundness
+       =========================================== */
+
+    --radius-none: 0;
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-2xl: 16px;
+    --radius-full: 9999px;
+
+    /* ===========================================
+       BORDER WIDTH SCALE
+       =========================================== */
+
+    --border-hairline: 0.5px;
+    --border-thin: 1px;
+    --border-medium: 2px;
+    --border-thick: 4px;
+    --border-heavy: 6px;
+    --border-brutalist: 8px;
+
+    /* ===========================================
+       OPACITY SCALE
+       For disabled, subtle, overlay states
+       =========================================== */
+
+    --opacity-0: 0;
+    --opacity-disabled: 0.5;
+    --opacity-subtle: 0.6;
+    --opacity-muted: 0.4;
+    --opacity-overlay: 0.8;
+    --opacity-overlay-heavy: 0.9;
+    --opacity-hover: 0.9;
+    --opacity-full: 1;
+
+    /* ===========================================
+       ADDITIONAL Z-INDEX LAYERS
+       Extended from base scale
+       =========================================== */
+
+    --z-drawer: 350;
+    --z-command-palette: 900;
+    --z-notification: 850;
   }
 
-  /* Dark mode (opt-in) - Vercel/Cursor/Perplexity aesthetic */
+  /* Dark mode (opt-in) - Warm dark with copper accent */
   .dark {
-    /* Backgrounds & Surfaces */
-    --background: 210 10% 5%; /* #0d0d0f - Almost black */
-    --surface: 210 10% 8%; /* #14141a - Slightly lighter */
-    --surface-secondary: 210 10% 10%; /* Secondary surfaces */
-    --surface-elevated: 210 10% 12%; /* #1c1c24 - Cards, modals */
-    --surface-overlay: 210 10% 16%; /* #25252f - Overlays, popovers */
+    /* ===========================================
+       DARK MODE - Warm charcoal with copper
+       =========================================== */
 
-    /* Foreground (Text) */
-    --foreground: 210 10% 90%; /* #e3e3e8 - Primary text */
-    --foreground-secondary: 210 8% 60%; /* #949499 - Secondary text */
-    --foreground-tertiary: 210 6% 40%; /* #64646a - Tertiary text */
-    --foreground-muted: 210 6% 30%; /* #4a4a50 - Muted text */
+    /* Backgrounds - Layered dark surfaces */
+    --background: 25 10% 6%; /* #0F0E0D - Warm dark base */
+    --surface: 25 10% 9%; /* #171514 - Cards, panels */
+    --surface-2: 25 10% 12%; /* #1F1D1B - Elevated */
+    --surface-3: 25 10% 16%; /* #2A2725 - Highest elevation */
+    --surface-secondary: 25 10% 10%;
+    --surface-elevated: 25 10% 12%;
+    --surface-overlay: 25 10% 16%;
 
-    /* Borders (1px, subtle) */
-    --border: 210 10% 20%; /* #30303a - Default border */
-    --border-strong: 210 12% 30%; /* #494954 - Emphasized border */
-    --border-subtle: 210 8% 15%; /* #22222c - Subtle border */
+    /* Text - Clear hierarchy in dark */
+    --foreground: 30 10% 90%; /* #E8E5E2 - Primary text */
+    --foreground-secondary: 25 6% 60%; /* #9A9592 - Secondary */
+    --foreground-tertiary: 25 5% 45%; /* #757270 - Tertiary */
+    --foreground-muted: 25 4% 35%; /* #5A5856 - Muted */
 
-    /* Interactive States */
-    --primary: 210 10% 98%; /* White-ish for dark mode */
-    --primary-foreground: 210 10% 5%; /* Dark text on light bg */
-    --secondary: 210 10% 15%; /* Dark secondary */
-    --secondary-foreground: 210 10% 90%; /* Light text on dark bg */
-    --accent: 210 10% 18%; /* Accent background */
-    --accent-foreground: 210 10% 95%; /* Accent text */
-    --muted: 210 10% 12%; /* Muted background */
-    --muted-foreground: 210 8% 60%; /* Muted text */
+    /* Borders - Subtle in dark */
+    --border: 25 8% 20%; /* #363230 - Default */
+    --border-strong: 25 8% 35%; /* #5C5854 - Emphasized */
+    --border-subtle: 25 6% 14%; /* #252321 - Subtle */
 
-    /* Status Colors - Modern Editorial (Dark Mode) */
-    --success: 152 57% 50%; /* Refined emerald - slightly brighter for dark */
-    --success-foreground: 0 0% 100%; /* White text */
-    --error: 0 65% 58%; /* Sophisticated red - brighter for dark */
-    --error-foreground: 0 0% 100%; /* White text */
-    --warning: 36 100% 55%; /* Warm amber - brighter for dark */
-    --warning-foreground: 0 0% 100%; /* White text */
-    --info: 210 100% 60%; /* Cool blue - brighter for dark */
-    --info-foreground: 0 0% 100%; /* White text */
+    /* Primary - Copper, brighter for dark mode */
+    --primary: 22 57% 50%; /* #C96A38 - Brighter copper */
+    --primary-hover: 22 57% 55%; /* #D47942 - Hover */
+    --primary-active: 22 57% 45%; /* #B55E2E - Active */
+    --primary-foreground: 0 0% 100%;
 
-    /* Destructive (legacy support) */
-    --destructive: 0 65% 58%;
+    /* Accent - Copper variations */
+    --accent: 22 57% 50%;
+    --accent-strong: 22 60% 55%;
+    --accent-muted: 22 20% 15%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Secondary - Warm dark */
+    --secondary: 25 10% 15%;
+    --secondary-hover: 25 10% 20%;
+    --secondary-foreground: 30 10% 90%;
+
+    /* Muted - Subtle dark */
+    --muted: 25 8% 12%;
+    --muted-foreground: 25 6% 55%;
+
+    /* Status Colors - Brighter for dark mode */
+    --success: 145 50% 45%; /* Brighter green */
+    --success-light: 145 30% 15%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 80% 55%; /* Brighter amber */
+    --warning-light: 38 40% 15%;
+    --warning-foreground: 25 15% 10%;
+
+    --error: 0 60% 55%; /* Brighter red */
+    --error-light: 0 40% 15%;
+    --error-foreground: 0 0% 100%;
+
+    --info: 210 70% 55%; /* Brighter blue */
+    --info-light: 210 40% 15%;
+    --info-foreground: 0 0% 100%;
+
+    /* Destructive */
+    --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 100%;
 
     /* Form Elements */
-    --input: 210 10% 20%; /* Input border */
-    --ring: 210 10% 90%; /* Focus ring */
-    --ring-offset: 210 10% 5%; /* Focus ring offset */
+    --input: 25 8% 20%;
+    --input-focus: 22 57% 50%;
+    --ring: 22 57% 50%;
+    --ring-offset: 25 10% 6%;
 
-    /* Grid/Blueprint Pattern */
-    --grid-color: 210 10% 15%; /* Grid line color */
+    /* Grid */
+    --grid-color: 25 8% 15%;
 
     /* Card */
-    --card: 210 10% 8%;
-    --card-foreground: 210 10% 90%;
+    --card: 25 10% 9%;
+    --card-foreground: 30 10% 90%;
 
-    /* Brutalist Accent Colors - Modern Editorial */
-    --brutalist-accent: 210 100% 60%; /* Cool sophisticated blue for dark mode */
-    --brutalist-accent-hover: 210 100% 65%; /* Slightly brighter on hover */
+    /* Brutalist Accents */
+    --brutalist-accent: 22 57% 50%;
+    --brutalist-accent-hover: 22 57% 55%;
+
+    /* Border Radii - SHARP CORNERS (0) */
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-xl: 0;
+    --radius: 0;
+
+    /* ===========================================
+       DARK MODE SHADOWS
+       Darker, more prominent for visibility
+       =========================================== */
+
+    --shadow-none: none;
+    --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.2);
+    --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.25), 0 1px 2px -1px hsl(0 0% 0% / 0.25);
+    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.25), 0 2px 4px -2px hsl(0 0% 0% / 0.25);
+    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.25), 0 4px 6px -4px hsl(0 0% 0% / 0.25);
+    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.3), 0 8px 10px -6px hsl(0 0% 0% / 0.3);
+    --shadow-2xl: 0 25px 50px -12px hsl(0 0% 0% / 0.4);
+    --shadow-inner: inset 0 2px 4px 0 hsl(0 0% 0% / 0.2);
+
+    /* Radius, border, opacity tokens inherit from light mode */
   }
 
   /* Base element styles */
@@ -517,5 +749,97 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+
+  /* ===========================================
+     DENSITY MODES
+     Use data-density attribute on container
+     =========================================== */
+
+  /* Compact density */
+  [data-density="compact"] {
+    --density-row-height: 36px;
+    --density-cell-padding-x: 8px;
+    --density-cell-padding-y: 6px;
+    --density-icon-size: 16px;
+    --density-font-size: var(--text-xs);
+  }
+
+  /* Comfortable density (default) */
+  [data-density="comfortable"] {
+    --density-row-height: 48px;
+    --density-cell-padding-x: 16px;
+    --density-cell-padding-y: 12px;
+    --density-icon-size: 20px;
+    --density-font-size: var(--text-sm);
+  }
+
+  /* Spacious density */
+  [data-density="spacious"] {
+    --density-row-height: 64px;
+    --density-cell-padding-x: 24px;
+    --density-cell-padding-y: 20px;
+    --density-icon-size: 24px;
+    --density-font-size: var(--text-base);
+  }
+
+  /* Density utility classes */
+  .density-row {
+    height: var(--density-row-height);
+    font-size: var(--density-font-size);
+  }
+
+  .density-cell {
+    padding: var(--density-cell-padding-y) var(--density-cell-padding-x);
+    font-size: var(--density-font-size);
+  }
+
+  .density-icon {
+    width: var(--density-icon-size);
+    height: var(--density-icon-size);
+  }
+
+  /* ===========================================
+     PROSE WIDTHS FOR READABILITY
+     =========================================== */
+
+  .prose-width {
+    max-width: var(--prose-width);
+  }
+
+  .prose-width-narrow {
+    max-width: var(--prose-width-narrow);
+  }
+
+  .prose-width-wide {
+    max-width: var(--prose-width-wide);
+  }
+
+  /* ===========================================
+     MOTION UTILITIES
+     Using CSS custom properties
+     =========================================== */
+
+  .motion-fast {
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--easing-standard);
+  }
+
+  .motion-base {
+    transition-duration: var(--motion-base);
+    transition-timing-function: var(--easing-standard);
+  }
+
+  .motion-slow {
+    transition-duration: var(--motion-slow);
+    transition-timing-function: var(--easing-standard);
+  }
+
+  .motion-linear {
+    transition-timing-function: var(--easing-linear);
+  }
+
+  .motion-spring {
+    transition-timing-function: var(--easing-spring);
   }
 }

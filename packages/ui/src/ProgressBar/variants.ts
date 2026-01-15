@@ -9,8 +9,8 @@ export const progressBarTrackVariants = createVariants({
     'relative overflow-hidden',
     // Background
     'bg-surface',
-    // Border
-    'rounded',
+    // Border - SHARP CORNERS
+    'rounded-none',
   ].join(' '),
 
   variants: {
@@ -35,10 +35,10 @@ export const progressBarFillVariants = createVariants({
   base: [
     // Layout
     'h-full',
-    // Transition
-    'transition-all duration-300 ease-out',
-    // Border
-    'rounded',
+    // Transition - Fast
+    'transition-all duration-150 ease-out',
+    // Border - SHARP CORNERS
+    'rounded-none',
   ].join(' '),
 
   variants: {

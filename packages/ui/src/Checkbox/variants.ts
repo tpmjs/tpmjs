@@ -41,15 +41,15 @@ export const checkboxUIVariants = createVariants({
   base: [
     // Layout
     'relative inline-flex items-center justify-center flex-shrink-0',
-    // Border & Background
-    'rounded-sm border-2 border-border',
+    // Border & Background - SHARP CORNERS
+    'rounded-none border-2 border-border',
     'bg-background',
-    // Transitions
-    'transition-all duration-200',
+    // Transitions - Fast, subtle
+    'transition-colors duration-150',
     // Hover state
     'peer-hover:border-border-strong',
-    // Focus state (via peer)
-    'peer-focus-visible:ring-2 peer-focus-visible:ring-primary/20 peer-focus-visible:ring-offset-2',
+    // Focus state (via peer) - Copper accent
+    'peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2',
     // Checked state
     'peer-checked:bg-primary peer-checked:border-primary',
     // Indeterminate state (custom data attribute)

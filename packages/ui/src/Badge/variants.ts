@@ -8,13 +8,13 @@ export const badgeVariants = createVariants({
   base: [
     // Layout
     'inline-flex items-center',
-    // Typography
-    'font-semibold',
+    // Typography - Monospace, lowercase
+    'font-mono font-medium lowercase',
     'whitespace-nowrap',
-    // Borders & Radius
-    'rounded-full',
+    // Borders & Radius - SHARP CORNERS
+    'rounded-none',
     // Transitions
-    'transition-base',
+    'transition-colors duration-150',
   ].join(' '),
 
   variants: {

@@ -8,15 +8,15 @@ export const buttonVariants = createVariants({
   base: [
     // Layout
     'inline-flex items-center justify-center gap-2',
-    // Typography
-    'font-medium text-sm',
-    'whitespace-nowrap',
-    // Borders & Radius
-    'rounded-md',
-    // Transitions
-    'transition-base',
-    // Focus
-    'focus-ring',
+    // Typography - Monospace for buttons
+    'font-mono font-medium text-sm',
+    'whitespace-nowrap lowercase',
+    // Borders & Radius - SHARP CORNERS
+    'rounded-none',
+    // Transitions - Fast, subtle
+    'transition-colors duration-150',
+    // Focus - Copper accent
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
     // Disabled state
     'disabled:pointer-events-none disabled:opacity-50',
   ].join(' '),

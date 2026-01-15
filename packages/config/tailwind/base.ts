@@ -18,18 +18,40 @@ export default {
     'dotted-grid-background',
     'blueprint-background',
     'grid-background',
+    // Extended color utilities for style guide
+    'bg-accent-strong',
+    'bg-accent-muted',
+    'bg-surface-2',
+    'bg-surface-3',
+    'bg-success-light',
+    'bg-warning-light',
+    'bg-error-light',
+    'bg-info-light',
+    'text-foreground-secondary',
+    'text-foreground-tertiary',
+    'text-foreground-muted',
+    'border-border-strong',
+    'border-border-subtle',
   ],
   theme: {
     extend: {
       colors: {
-        // Backgrounds & Surfaces
+        // Backgrounds & Surfaces - Layered system
         background: 'hsl(var(--background))',
-        surface: 'hsl(var(--surface))',
+        surface: {
+          DEFAULT: 'hsl(var(--surface))',
+          2: 'hsl(var(--surface-2))',
+          3: 'hsl(var(--surface-3))',
+          secondary: 'hsl(var(--surface-secondary))',
+          elevated: 'hsl(var(--surface-elevated))',
+          overlay: 'hsl(var(--surface-overlay))',
+        },
+        // Legacy flat aliases
         'surface-secondary': 'hsl(var(--surface-secondary))',
         'surface-elevated': 'hsl(var(--surface-elevated))',
         'surface-overlay': 'hsl(var(--surface-overlay))',
 
-        // Foreground (Text)
+        // Foreground (Text) - Clear hierarchy
         foreground: {
           DEFAULT: 'hsl(var(--foreground))',
           secondary: 'hsl(var(--foreground-secondary))',
@@ -37,57 +59,75 @@ export default {
           muted: 'hsl(var(--foreground-muted))',
         },
 
-        // Borders
+        // Borders - Multiple weights
         border: {
           DEFAULT: 'hsl(var(--border))',
           strong: 'hsl(var(--border-strong))',
           subtle: 'hsl(var(--border-subtle))',
         },
 
-        // Interactive States
+        // Primary - With hover/active states
         primary: {
           DEFAULT: 'hsl(var(--primary))',
+          hover: 'hsl(var(--primary-hover))',
+          active: 'hsl(var(--primary-active))',
           foreground: 'hsl(var(--primary-foreground))',
         },
+
+        // Secondary - With hover state
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
+          hover: 'hsl(var(--secondary-hover))',
           foreground: 'hsl(var(--secondary-foreground))',
         },
+
+        // Accent - Copper variations
         accent: {
           DEFAULT: 'hsl(var(--accent))',
+          strong: 'hsl(var(--accent-strong))',
+          muted: 'hsl(var(--accent-muted))',
           foreground: 'hsl(var(--accent-foreground))',
         },
+
+        // Muted
         muted: {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
         },
 
-        // Status Colors
+        // Status Colors - With light variants
         success: {
           DEFAULT: 'hsl(var(--success))',
+          light: 'hsl(var(--success-light))',
           foreground: 'hsl(var(--success-foreground))',
         },
         error: {
           DEFAULT: 'hsl(var(--error))',
+          light: 'hsl(var(--error-light))',
           foreground: 'hsl(var(--error-foreground))',
         },
         warning: {
           DEFAULT: 'hsl(var(--warning))',
+          light: 'hsl(var(--warning-light))',
           foreground: 'hsl(var(--warning-foreground))',
         },
         info: {
           DEFAULT: 'hsl(var(--info))',
+          light: 'hsl(var(--info-light))',
           foreground: 'hsl(var(--info-foreground))',
         },
 
-        // Destructive (legacy support)
+        // Destructive (alias for error)
         destructive: {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
 
         // Form Elements
-        input: 'hsl(var(--input))',
+        input: {
+          DEFAULT: 'hsl(var(--input))',
+          focus: 'hsl(var(--input-focus))',
+        },
         ring: 'hsl(var(--ring))',
 
         // Card
