@@ -21,12 +21,31 @@ interface JsonRpcResponse {
   };
 }
 
+interface UserProfile {
+  id: string;
+  name: string;
+  username: string;
+  email: string;
+}
+
 describe('MCP HTTP Endpoint', () => {
   let ctx: IntegrationTestContext;
   let testCollection: { id: string; slug: string } | null = null;
+  let actualUsername: string | null = null;
 
   beforeAll(async () => {
     ctx = getTestContext();
+
+    // Get the actual username of the API key owner (not from env var which may be stale)
+    const profileResult = await ctx.apiKeyClient.get<{ success: boolean; data: UserProfile }>(
+      '/api/user/profile'
+    );
+    if (profileResult.ok && profileResult.data.data.username) {
+      actualUsername = profileResult.data.data.username;
+    } else {
+      console.log('Warning: Could not get actual username, falling back to ctx.auth.username');
+      actualUsername = ctx.auth.username;
+    }
 
     // Create a test collection for MCP tests with unique name
     testCollection = await ctx.factories.collection.create({
@@ -53,7 +72,7 @@ describe('MCP HTTP Endpoint', () => {
         protocol: string;
         transport: string;
         endpoint: string;
-      }>(`/api/mcp/${ctx.auth.username}/${testCollection.slug}/http`);
+      }>(`/api/mcp/${actualUsername}/${testCollection.slug}/http`);
 
       expect(result.ok).toBe(true);
       if (result.ok) {
@@ -72,7 +91,7 @@ describe('MCP HTTP Endpoint', () => {
       }
 
       const result = await ctx.apiKeyClient.post<JsonRpcResponse>(
-        `/api/mcp/${ctx.auth.username}/${testCollection.slug}/http`,
+        `/api/mcp/${actualUsername}/${testCollection.slug}/http`,
         {
           jsonrpc: '2.0',
           method: 'initialize',
@@ -95,7 +114,7 @@ describe('MCP HTTP Endpoint', () => {
       }
 
       const result = await ctx.publicClient.post(
-        `/api/mcp/${ctx.auth.username}/${testCollection.slug}/http`,
+        `/api/mcp/${actualUsername}/${testCollection.slug}/http`,
         {
           jsonrpc: '2.0',
           method: 'initialize',
@@ -116,7 +135,7 @@ describe('MCP HTTP Endpoint', () => {
       }
 
       const result = await ctx.apiKeyClient.post<JsonRpcResponse>(
-        `/api/mcp/${ctx.auth.username}/${testCollection.slug}/http`,
+        `/api/mcp/${actualUsername}/${testCollection.slug}/http`,
         {
           jsonrpc: '2.0',
           method: 'tools/list',
@@ -144,7 +163,7 @@ describe('MCP HTTP Endpoint', () => {
       }
 
       const result = await ctx.apiKeyClient.post<JsonRpcResponse>(
-        `/api/mcp/${ctx.auth.username}/${testCollection.slug}/http`,
+        `/api/mcp/${actualUsername}/${testCollection.slug}/http`,
         {
           jsonrpc: '2.0',
           method: 'nonexistent/method',
@@ -168,7 +187,7 @@ describe('MCP HTTP Endpoint', () => {
 
       // Use collection ID instead of slug
       const result = await ctx.apiKeyClient.post<JsonRpcResponse>(
-        `/api/mcp/${ctx.auth.username}/${testCollection.id}/http`,
+        `/api/mcp/${actualUsername}/${testCollection.id}/http`,
         {
           jsonrpc: '2.0',
           method: 'initialize',
