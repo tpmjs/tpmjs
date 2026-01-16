@@ -33,6 +33,15 @@ function hasExactNameMatch(query: string, toolName: string): boolean {
   return queryLower.includes(nameLower) || nameLower.includes(queryLower);
 }
 
+// Check for package name match (case-insensitive)
+function hasPackageNameMatch(query: string, packageName: string): boolean {
+  const queryLower = query.toLowerCase();
+  const packageLower = packageName.toLowerCase();
+  // Check if query contains package name or package name contains query
+  // Also handle partial matches like "@tpmjs/tools-" matching "@tpmjs/tools-unsandbox"
+  return queryLower.includes(packageLower) || packageLower.includes(queryLower);
+}
+
 // Calculate term frequency
 function termFrequency(term: string, tokens: string[]): number {
   return tokens.filter((t) => t === term).length;
@@ -188,7 +197,10 @@ export async function GET(request: NextRequest) {
       // Massive boost for exact tool name match (when user mentions tool by name)
       const exactNameBoost = hasExactNameMatch(query, tool.name) ? 100 : 0;
 
-      const finalScore = bm25Score + qualityBoost + downloadBoost + exactNameBoost;
+      // Boost for package name match (when user searches by package name like @tpmjs/tools-unsandbox)
+      const packageNameBoost = hasPackageNameMatch(query, tool.package.npmPackageName) ? 50 : 0;
+
+      const finalScore = bm25Score + qualityBoost + downloadBoost + exactNameBoost + packageNameBoost;
 
       return { tool, score: finalScore };
     });

@@ -132,9 +132,14 @@ export function AddToolSearch({
           description: tool.description,
           package: tool.package,
         });
-        setQuery('');
-        setResults([]);
-        setIsOpen(false);
+        // Remove the added tool from results but keep dropdown open for adding more
+        const remainingResults = results.filter((t) => t.id !== tool.id);
+        setResults(remainingResults);
+        // Close dropdown only if no more tools to add
+        if (remainingResults.length === 0) {
+          setIsOpen(false);
+          setQuery('');
+        }
       } else {
         setError(data.error?.message || 'Failed to add tool');
       }
