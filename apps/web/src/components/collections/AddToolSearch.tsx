@@ -58,9 +58,16 @@ export function AddToolSearch({
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/tools/search?q=${encodeURIComponent(searchQuery)}&limit=10`
-      );
+      // Build URL with excludeIds to avoid returning tools already in collection
+      const params = new URLSearchParams({
+        q: searchQuery,
+        limit: '50', // Higher limit to handle large packages like @tpmjs/tools-unsandbox (59 tools)
+      });
+      // Pass existing tool IDs so server can exclude them
+      if (existingToolIds.length > 0) {
+        params.set('excludeIds', existingToolIds.join(','));
+      }
+      const response = await fetch(`/api/tools/search?${params.toString()}`);
       const data = await response.json();
 
       if (data.success && data.results?.tools) {
@@ -76,7 +83,7 @@ export function AddToolSearch({
     } finally {
       setIsSearching(false);
     }
-  }, []);
+  }, [existingToolIds]);
 
   // Handle query changes with debounce
   useEffect(() => {

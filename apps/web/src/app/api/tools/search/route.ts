@@ -93,7 +93,11 @@ export async function GET(request: NextRequest) {
     // Accept both 'q' and 'query' parameters for flexibility
     const query = searchParams.get('q') || searchParams.get('query') || '';
     const category = searchParams.get('category');
-    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '10'), 50);
+    const limit = Math.min(Number.parseInt(searchParams.get('limit') || '10'), 100);
+
+    // Parse excludeIds to filter out tools already in user's collection
+    const excludeIdsParam = searchParams.get('excludeIds');
+    const excludeIds = excludeIdsParam ? excludeIdsParam.split(',').filter(Boolean) : [];
 
     // Get recent messages for context (passed as JSON in 'messages' param)
     // Wrap in try-catch to handle malformed JSON gracefully
@@ -121,6 +125,8 @@ export async function GET(request: NextRequest) {
     // Build database filter - pre-filter at DB level to reduce in-memory processing
     // Use OR conditions to find tools that match ANY search token
     const dbFilter = {
+      // Exclude tools already in collection (if provided)
+      ...(excludeIds.length > 0 && { id: { notIn: excludeIds } }),
       ...(category && { package: { category } }),
       ...(hasSearchQuery && {
         OR: [
