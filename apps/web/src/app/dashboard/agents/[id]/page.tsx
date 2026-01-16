@@ -12,7 +12,6 @@ import { Label } from '@tpmjs/ui/Label/Label';
 import { Select } from '@tpmjs/ui/Select/Select';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import { Switch } from '@tpmjs/ui/Switch/Switch';
-import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import {
   Table,
   TableBody,
@@ -23,6 +22,7 @@ import {
   TableRow,
 } from '@tpmjs/ui/Table/Table';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -102,186 +102,550 @@ const PROVIDER_DISPLAY_NAMES: Record<AIProvider, string> = {
   MISTRAL: 'Mistral',
 };
 
-const API_SECTION_TABS = [
-  { id: 'send', label: 'Send Message' },
-  { id: 'fetch', label: 'Fetch Conversations' },
-];
-
 const LANG_OPTIONS = [
-  { id: 'curl', label: 'cURL' },
-  { id: 'typescript', label: 'TypeScript' },
-  { id: 'python', label: 'Python' },
-  { id: 'aisdk', label: 'AI SDK' },
-];
-
-const FETCH_LANG_OPTIONS = [
   { id: 'curl', label: 'cURL' },
   { id: 'typescript', label: 'TypeScript' },
   { id: 'python', label: 'Python' },
 ];
 
 function ApiDocsSection({ agent, agentTools }: { agent: Agent; agentTools: AgentTool[] }) {
-  const [activeSection, setActiveSection] = useState('send');
   const [activeLang, setActiveLang] = useState('curl');
+  const [expandedEndpoint, setExpandedEndpoint] = useState<string | null>('send-message');
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
   const username = agent.user.username;
-  const endpoint = `${baseUrl}/api/${username}/agents/${agent.uid}/conversation/my-conv-1`;
-  const listEndpoint = `${baseUrl}/api/${username}/agents/${agent.uid}/conversations`;
-  const toolPackages = agentTools.map((t) => t.tool.npmPackageName).join(' ') || '@tpmjs/hello';
+  const conversationEndpoint = `/api/${username}/agents/${agent.uid}/conversation`;
+  const listEndpoint = `/api/${username}/agents/${agent.uid}/conversations`;
+  const toolPackages = agentTools.map((t) => t.tool.npmPackageName).join(', ') || 'none';
 
-  const sendExamples: Record<string, { language: string; code: string }> = {
+  const toggleEndpoint = (id: string) => {
+    setExpandedEndpoint(expandedEndpoint === id ? null : id);
+  };
+
+  // Code examples for each endpoint
+  const sendMessageExamples: Record<string, { language: string; code: string }> = {
     curl: {
       language: 'bash',
-      code: `curl -X POST '${endpoint}' \\
+      code: `curl -X POST '${baseUrl}${conversationEndpoint}/my-conversation' \\
   -H 'Content-Type: application/json' \\
   -H 'Authorization: Bearer YOUR_TPMJS_API_KEY' \\
-  -d '{ "message": "Hello, what can you help me with?" }'`,
+  -d '{
+    "message": "Hello, what can you help me with?"
+  }'`,
     },
     typescript: {
       language: 'typescript',
-      code: `const response = await fetch('${endpoint}', {
+      code: `const response = await fetch('${baseUrl}${conversationEndpoint}/my-conversation', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
     'Authorization': 'Bearer YOUR_TPMJS_API_KEY'
   },
-  body: JSON.stringify({ message: 'Hello, what can you help me with?' })
+  body: JSON.stringify({
+    message: 'Hello, what can you help me with?'
+  })
 });
 
 // Stream SSE response
 const reader = response.body?.getReader();
 const decoder = new TextDecoder();
+
 while (true) {
   const { done, value } = await reader!.read();
   if (done) break;
-  console.log(decoder.decode(value));
+
+  const text = decoder.decode(value);
+  const lines = text.split('\\n');
+
+  for (const line of lines) {
+    if (line.startsWith('data: ')) {
+      const data = JSON.parse(line.slice(6));
+      // Handle: text-delta, tool-call, tool-result, finish, error
+      console.log(data);
+    }
+  }
 }`,
     },
     python: {
       language: 'python',
       code: `import requests
+import json
 
-response = requests.post('${endpoint}',
-    headers={'Authorization': 'Bearer YOUR_TPMJS_API_KEY'},
+response = requests.post(
+    '${baseUrl}${conversationEndpoint}/my-conversation',
+    headers={
+        'Authorization': 'Bearer YOUR_TPMJS_API_KEY',
+        'Content-Type': 'application/json'
+    },
     json={'message': 'Hello, what can you help me with?'},
-    stream=True)
+    stream=True
+)
 
 for line in response.iter_lines():
-    if line: print(line.decode('utf-8'))`,
-    },
-    aisdk: {
-      language: 'typescript',
-      code: `import { streamText } from 'ai';
-import { createAnthropic } from '@ai-sdk/anthropic';
-
-// Option 1: Use hosted agent via fetch
-const response = await fetch('${endpoint}', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer YOUR_TPMJS_API_KEY'
-  },
-  body: JSON.stringify({ message: 'Hello!' })
-});
-
-// Option 2: Build your own with same tools
-// npm install ${toolPackages}
-const { textStream } = streamText({
-  model: createAnthropic()('${agent.modelId}'),
-  system: \`${agent.systemPrompt || 'You are a helpful assistant.'}\`,
-  prompt: 'Hello!',
-});`,
+    if line:
+        line = line.decode('utf-8')
+        if line.startswith('data: '):
+            data = json.loads(line[6:])
+            # Handle: text-delta, tool-call, tool-result, finish, error
+            print(data)`,
     },
   };
 
-  const fetchExamples: Record<string, { language: string; code: string }> = {
+  const listConversationsExamples: Record<string, { language: string; code: string }> = {
     curl: {
       language: 'bash',
-      code: `# List conversations
-curl -H 'Authorization: Bearer YOUR_TPMJS_API_KEY' \\
-  '${listEndpoint}?limit=20&offset=0'
-
-# Get conversation with messages
-curl -H 'Authorization: Bearer YOUR_TPMJS_API_KEY' \\
-  '${endpoint}?limit=50&offset=0'
-
-# Delete conversation
-curl -X DELETE -H 'Authorization: Bearer YOUR_TPMJS_API_KEY' \\
-  '${endpoint}'`,
+      code: `curl '${baseUrl}${listEndpoint}?limit=20&offset=0' \\
+  -H 'Authorization: Bearer YOUR_TPMJS_API_KEY'`,
     },
     typescript: {
       language: 'typescript',
-      code: `const headers = { 'Authorization': 'Bearer YOUR_TPMJS_API_KEY' };
+      code: `const response = await fetch(
+  '${baseUrl}${listEndpoint}?limit=20&offset=0',
+  { headers: { 'Authorization': 'Bearer YOUR_TPMJS_API_KEY' } }
+);
 
-// List conversations
-const list = await fetch('${listEndpoint}?limit=20&offset=0', { headers });
-const { data, pagination } = await list.json();
-// data: [{ id, slug, title, messageCount }], pagination: { hasMore }
-
-// Get conversation with messages
-const conv = await fetch('${endpoint}?limit=50&offset=0', { headers });
-const { data: conversation } = await conv.json();
-// conversation: { id, slug, title, messages: [...] }`,
+const { success, data, pagination } = await response.json();
+// data: [{ id, slug, title, messageCount, createdAt, updatedAt }]
+// pagination: { limit, offset, hasMore }`,
     },
     python: {
       language: 'python',
       code: `import requests
 
-headers = {'Authorization': 'Bearer YOUR_TPMJS_API_KEY'}
+response = requests.get(
+    '${baseUrl}${listEndpoint}',
+    headers={'Authorization': 'Bearer YOUR_TPMJS_API_KEY'},
+    params={'limit': 20, 'offset': 0}
+)
 
-# List conversations
-resp = requests.get('${listEndpoint}', headers=headers, params={'limit': 20, 'offset': 0})
-data = resp.json()  # data['data'], data['pagination']['hasMore']
-
-# Get conversation with messages
-resp = requests.get('${endpoint}', headers=headers, params={'limit': 50, 'offset': 0})
-conv = resp.json()  # conv['data']['messages']`,
+data = response.json()
+# data['data']: list of conversations
+# data['pagination']['hasMore']: boolean`,
     },
   };
 
-  const isSend = activeSection === 'send';
-  const examples = isSend ? sendExamples : fetchExamples;
-  const langOptions = isSend ? LANG_OPTIONS : FETCH_LANG_OPTIONS;
-  const effectiveLang = isSend || activeLang !== 'aisdk' ? activeLang : 'curl';
-  const currentExample = examples[effectiveLang] ?? examples.curl ?? { language: 'bash', code: '' };
+  const getConversationExamples: Record<string, { language: string; code: string }> = {
+    curl: {
+      language: 'bash',
+      code: `curl '${baseUrl}${conversationEndpoint}/my-conversation?limit=50&offset=0' \\
+  -H 'Authorization: Bearer YOUR_TPMJS_API_KEY'`,
+    },
+    typescript: {
+      language: 'typescript',
+      code: `const response = await fetch(
+  '${baseUrl}${conversationEndpoint}/my-conversation?limit=50&offset=0',
+  { headers: { 'Authorization': 'Bearer YOUR_TPMJS_API_KEY' } }
+);
+
+const { success, data } = await response.json();
+// data: { id, slug, title, messages: [...], pagination }
+// messages: [{ id, role, content, toolCalls, createdAt }]`,
+    },
+    python: {
+      language: 'python',
+      code: `import requests
+
+response = requests.get(
+    '${baseUrl}${conversationEndpoint}/my-conversation',
+    headers={'Authorization': 'Bearer YOUR_TPMJS_API_KEY'},
+    params={'limit': 50, 'offset': 0}
+)
+
+data = response.json()
+# data['data']['messages']: list of messages
+# data['data']['pagination']: { limit, offset, hasMore }`,
+    },
+  };
+
+  const deleteConversationExamples: Record<string, { language: string; code: string }> = {
+    curl: {
+      language: 'bash',
+      code: `curl -X DELETE '${baseUrl}${conversationEndpoint}/my-conversation' \\
+  -H 'Authorization: Bearer YOUR_TPMJS_API_KEY'`,
+    },
+    typescript: {
+      language: 'typescript',
+      code: `const response = await fetch(
+  '${baseUrl}${conversationEndpoint}/my-conversation',
+  {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer YOUR_TPMJS_API_KEY' }
+  }
+);
+
+const { success } = await response.json();`,
+    },
+    python: {
+      language: 'python',
+      code: `import requests
+
+response = requests.delete(
+    '${baseUrl}${conversationEndpoint}/my-conversation',
+    headers={'Authorization': 'Bearer YOUR_TPMJS_API_KEY'}
+)
+
+data = response.json()
+# data['success']: boolean`,
+    },
+  };
+
+  const endpoints = [
+    {
+      id: 'send-message',
+      method: 'POST',
+      path: `${conversationEndpoint}/:conversationId`,
+      title: 'send message',
+      description:
+        'Send a message to the agent and receive a streaming response. If the conversation does not exist, it will be created automatically.',
+      examples: sendMessageExamples,
+      requestBody: [
+        {
+          name: 'message',
+          type: 'string',
+          required: true,
+          description: 'The message to send to the agent',
+        },
+        {
+          name: 'env',
+          type: 'object',
+          required: false,
+          description: 'Environment variables to pass to tools at runtime',
+        },
+      ],
+      responseEvents: [
+        { type: 'text-delta', description: 'Partial text content from the agent' },
+        { type: 'tool-call', description: 'Agent is calling a tool with arguments' },
+        { type: 'tool-result', description: 'Result returned from a tool execution' },
+        { type: 'finish', description: 'Stream completed successfully' },
+        { type: 'error', description: 'An error occurred during processing' },
+      ],
+    },
+    {
+      id: 'list-conversations',
+      method: 'GET',
+      path: listEndpoint,
+      title: 'list conversations',
+      description:
+        'List all conversations for this agent. Results are paginated and sorted by most recently updated.',
+      examples: listConversationsExamples,
+      queryParams: [
+        {
+          name: 'limit',
+          type: 'number',
+          default: '20',
+          description: 'Maximum number of results to return (1-100)',
+        },
+        {
+          name: 'offset',
+          type: 'number',
+          default: '0',
+          description: 'Number of results to skip for pagination',
+        },
+      ],
+    },
+    {
+      id: 'get-conversation',
+      method: 'GET',
+      path: `${conversationEndpoint}/:conversationId`,
+      title: 'get conversation',
+      description:
+        'Retrieve a conversation with its messages. Messages are paginated from newest to oldest.',
+      examples: getConversationExamples,
+      queryParams: [
+        {
+          name: 'limit',
+          type: 'number',
+          default: '50',
+          description: 'Maximum number of messages to return',
+        },
+        { name: 'offset', type: 'number', default: '0', description: 'Number of messages to skip' },
+      ],
+    },
+    {
+      id: 'delete-conversation',
+      method: 'DELETE',
+      path: `${conversationEndpoint}/:conversationId`,
+      title: 'delete conversation',
+      description:
+        'Permanently delete a conversation and all its messages. This action cannot be undone.',
+      examples: deleteConversationExamples,
+    },
+  ];
+
+  const methodColors: Record<string, string> = {
+    GET: 'text-success',
+    POST: 'text-primary',
+    DELETE: 'text-error',
+  };
 
   return (
-    <div className="bg-surface border border-border rounded-lg overflow-hidden mb-8">
-      <div className="flex items-center justify-between p-4 border-b border-border">
-        <h2 className="text-lg font-medium text-foreground">API Reference</h2>
-        <code className="text-xs text-foreground-secondary font-mono bg-surface px-2 py-1 rounded">
-          {isSend
-            ? `POST /api/${username}/agents/${agent.uid}/conversation/:id`
-            : `GET /api/${username}/agents/${agent.uid}/conversations`}
-        </code>
-      </div>
+    <div className="space-y-8">
+      {/* Overview Section */}
+      <fieldset className="border border-dashed border-border p-6">
+        <legend className="px-2 font-mono text-sm text-foreground-secondary lowercase">
+          overview
+        </legend>
+        <div className="space-y-4">
+          <p className="text-foreground-secondary leading-relaxed">
+            The Agent Conversation API allows you to interact with this agent programmatically. Send
+            messages, manage conversations, and integrate the agent into your applications.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="p-4 bg-surface-secondary border border-dashed border-border">
+              <p className="font-mono text-xs text-foreground-tertiary uppercase tracking-wide mb-1">
+                base url
+              </p>
+              <code className="text-sm font-mono text-foreground break-all">{baseUrl}</code>
+            </div>
+            <div className="p-4 bg-surface-secondary border border-dashed border-border">
+              <p className="font-mono text-xs text-foreground-tertiary uppercase tracking-wide mb-1">
+                tools attached
+              </p>
+              <code className="text-sm font-mono text-foreground">{toolPackages}</code>
+            </div>
+          </div>
+        </div>
+      </fieldset>
 
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
-        <Tabs
-          tabs={API_SECTION_TABS}
-          activeTab={activeSection}
-          onTabChange={setActiveSection}
-          size="sm"
-        />
+      {/* Authentication Section */}
+      <fieldset className="border border-dashed border-border p-6">
+        <legend className="px-2 font-mono text-sm text-foreground-secondary lowercase">
+          authentication
+        </legend>
+        <div className="space-y-4">
+          <p className="text-foreground-secondary leading-relaxed">
+            All API requests require authentication using a TPMJS API key. Include your key in the
+            <code className="mx-1 px-1.5 py-0.5 bg-surface-secondary font-mono text-sm">
+              Authorization
+            </code>
+            header as a Bearer token.
+          </p>
+          <div className="p-4 bg-surface-secondary border border-dashed border-border font-mono text-sm">
+            <span className="text-foreground-tertiary">Authorization:</span>{' '}
+            <span className="text-foreground">Bearer YOUR_TPMJS_API_KEY</span>
+          </div>
+          <p className="text-sm text-foreground-tertiary">
+            Get your API key from the{' '}
+            <Link
+              href="/dashboard/settings/tpmjs-api-keys"
+              className="underline underline-offset-2 hover:text-foreground-secondary"
+            >
+              API Keys settings page
+            </Link>
+            .
+          </p>
+        </div>
+      </fieldset>
+
+      {/* Language Selector */}
+      <div className="flex items-center justify-between">
+        <h3 className="font-mono text-sm text-foreground-secondary lowercase">endpoints</h3>
         <Select
-          value={effectiveLang}
+          value={activeLang}
           onChange={(e) => setActiveLang(e.target.value)}
           size="sm"
-          options={langOptions.map((opt) => ({ value: opt.id, label: opt.label }))}
+          options={LANG_OPTIONS.map((opt) => ({ value: opt.id, label: opt.label }))}
         />
       </div>
 
-      <div className="p-4">
-        <CodeBlock language={currentExample.language} showCopy code={currentExample.code} />
+      {/* Endpoints */}
+      <div className="space-y-4">
+        {endpoints.map((endpoint) => (
+          <fieldset key={endpoint.id} className="border border-dashed border-border">
+            <legend className="px-2 font-mono text-sm text-foreground-secondary lowercase">
+              {endpoint.title}
+            </legend>
+
+            {/* Endpoint Header - Always visible */}
+            <button
+              type="button"
+              onClick={() => toggleEndpoint(endpoint.id)}
+              className="w-full p-4 flex items-center justify-between hover:bg-surface-secondary transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <span
+                  className={`font-mono text-sm font-semibold ${methodColors[endpoint.method]}`}
+                >
+                  {endpoint.method}
+                </span>
+                <code className="font-mono text-sm text-foreground">{endpoint.path}</code>
+              </div>
+              <Icon
+                icon={expandedEndpoint === endpoint.id ? 'chevronDown' : 'chevronRight'}
+                size="sm"
+                className="text-foreground-tertiary"
+              />
+            </button>
+
+            {/* Expanded Content */}
+            {expandedEndpoint === endpoint.id && (
+              <div className="border-t border-dashed border-border">
+                <div className="p-4 space-y-6">
+                  {/* Description */}
+                  <p className="text-foreground-secondary leading-relaxed">
+                    {endpoint.description}
+                  </p>
+
+                  {/* Request Body */}
+                  {endpoint.requestBody && (
+                    <div>
+                      <h4 className="font-mono text-xs text-foreground-tertiary uppercase tracking-wide mb-3">
+                        request body
+                      </h4>
+                      <div className="border border-dashed border-border overflow-hidden">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-dashed border-border bg-surface-secondary">
+                              <th className="text-left p-3 font-mono font-medium text-foreground-secondary lowercase">
+                                parameter
+                              </th>
+                              <th className="text-left p-3 font-mono font-medium text-foreground-secondary lowercase">
+                                type
+                              </th>
+                              <th className="text-left p-3 font-mono font-medium text-foreground-secondary lowercase">
+                                description
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {endpoint.requestBody.map((param) => (
+                              <tr
+                                key={param.name}
+                                className="border-b border-dashed border-border last:border-b-0"
+                              >
+                                <td className="p-3 font-mono text-foreground">
+                                  {param.name}
+                                  {param.required && <span className="text-error ml-1">*</span>}
+                                </td>
+                                <td className="p-3 font-mono text-foreground-secondary">
+                                  {param.type}
+                                </td>
+                                <td className="p-3 text-foreground-secondary">
+                                  {param.description}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Query Parameters */}
+                  {endpoint.queryParams && (
+                    <div>
+                      <h4 className="font-mono text-xs text-foreground-tertiary uppercase tracking-wide mb-3">
+                        query parameters
+                      </h4>
+                      <div className="border border-dashed border-border overflow-hidden">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-dashed border-border bg-surface-secondary">
+                              <th className="text-left p-3 font-mono font-medium text-foreground-secondary lowercase">
+                                parameter
+                              </th>
+                              <th className="text-left p-3 font-mono font-medium text-foreground-secondary lowercase">
+                                default
+                              </th>
+                              <th className="text-left p-3 font-mono font-medium text-foreground-secondary lowercase">
+                                description
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {endpoint.queryParams.map((param) => (
+                              <tr
+                                key={param.name}
+                                className="border-b border-dashed border-border last:border-b-0"
+                              >
+                                <td className="p-3 font-mono text-foreground">{param.name}</td>
+                                <td className="p-3 font-mono text-foreground-secondary">
+                                  {param.default}
+                                </td>
+                                <td className="p-3 text-foreground-secondary">
+                                  {param.description}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Response Events (for streaming) */}
+                  {endpoint.responseEvents && (
+                    <div>
+                      <h4 className="font-mono text-xs text-foreground-tertiary uppercase tracking-wide mb-3">
+                        sse event types
+                      </h4>
+                      <div className="border border-dashed border-border overflow-hidden">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-dashed border-border bg-surface-secondary">
+                              <th className="text-left p-3 font-mono font-medium text-foreground-secondary lowercase">
+                                type
+                              </th>
+                              <th className="text-left p-3 font-mono font-medium text-foreground-secondary lowercase">
+                                description
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {endpoint.responseEvents.map((event) => (
+                              <tr
+                                key={event.type}
+                                className="border-b border-dashed border-border last:border-b-0"
+                              >
+                                <td className="p-3 font-mono text-foreground">{event.type}</td>
+                                <td className="p-3 text-foreground-secondary">
+                                  {event.description}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Code Example */}
+                  <div>
+                    <h4 className="font-mono text-xs text-foreground-tertiary uppercase tracking-wide mb-3">
+                      example
+                    </h4>
+                    <CodeBlock
+                      language={endpoint.examples[activeLang]?.language || 'bash'}
+                      showCopy
+                      code={endpoint.examples[activeLang]?.code || ''}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </fieldset>
+        ))}
       </div>
 
-      <div className="px-4 pb-4">
-        <p className="text-xs text-foreground-tertiary">
-          {isSend
-            ? 'Use any unique string as the conversation ID to maintain chat history across requests.'
-            : 'Use limit and offset query params for pagination. Check hasMore to know if more results exist.'}
+      {/* Conversation ID Note */}
+      <fieldset className="border border-dashed border-border p-6">
+        <legend className="px-2 font-mono text-sm text-foreground-secondary lowercase">
+          conversation ids
+        </legend>
+        <p className="text-foreground-secondary leading-relaxed">
+          The{' '}
+          <code className="px-1.5 py-0.5 bg-surface-secondary font-mono text-sm">
+            :conversationId
+          </code>{' '}
+          parameter can be any unique string you choose (e.g.,{' '}
+          <code className="px-1.5 py-0.5 bg-surface-secondary font-mono text-sm">
+            user-123-chat
+          </code>
+          ,<code className="px-1.5 py-0.5 bg-surface-secondary font-mono text-sm">session-abc</code>
+          ). The agent will automatically create a new conversation if the ID does not exist, or
+          continue an existing one if it does. This allows you to maintain separate chat histories
+          for different users or contexts.
         </p>
-      </div>
+      </fieldset>
     </div>
   );
 }
@@ -1041,9 +1405,7 @@ export default function AgentDetailPage(): React.ReactElement {
                 const result = await response.json();
                 if (!result.success) {
                   console.error('Failed to save env vars:', result.error);
-                  alert(
-                    'Failed to save environment variables: ' + (result.error || 'Unknown error')
-                  );
+                  alert(`Failed to save environment variables: ${result.error || 'Unknown error'}`);
                 }
               } catch (err) {
                 console.error('Failed to save env vars:', err);
