@@ -87,7 +87,7 @@ export default function PublicAgentsPage(): React.ReactElement {
       <>
         <td className="px-4 py-3">
           <Link
-            href={`/agents/${agent.id}`}
+            href={`/${agent.createdBy.username}/agents/${agent.uid}`}
             className="font-semibold text-foreground hover:text-primary group-hover:text-primary transition-colors"
           >
             {agent.name}
@@ -135,7 +135,7 @@ export default function PublicAgentsPage(): React.ReactElement {
         </td>
         <td className="px-4 py-3 text-center">
           <Link
-            href={`/agents/${agent.id}/chat`}
+            href={`/${agent.createdBy.username}/agents/${agent.uid}/chat`}
             className="inline-flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
           >
             <Icon icon="message" size="xs" />
