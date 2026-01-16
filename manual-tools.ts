@@ -908,4 +908,22 @@ export const manualTools: ManualTool[] = [
     docsUrl: 'https://github.com/vercel/bash-tool',
     websiteUrl: 'https://github.com/vercel/bash-tool',
   },
+  {
+    npmPackageName: '@takoviz/ai-sdk',
+    category: 'search',
+    frameworks: ['vercel-ai'],
+    name: 'takoSearch',
+    description: 'Search Tako\'s knowledge base for data visualizations, insights, and well-sourced information with charts and analytics.',
+    tags: ['search', 'data', 'visualization', 'analytics'],
+    env: [
+      {
+        name: 'TAKO_API_KEY',
+        description: 'API key for authenticating requests to Tako services.',
+        required: true,
+      }
+    ],
+    docsUrl: 'https://github.com/TakoData/ai-sdk#readme',
+    apiKeyUrl: 'https://tako.com',
+    websiteUrl: 'https://tako.com',
+  },
 ];
