@@ -1,15 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@tpmjs/ui/Card/Card';
-import { useEffect, useState } from 'react';
-
-interface BundleSizeData {
-  name: string;
-  version: string;
-  size: number;
-  gzip: number;
-  dependencyCount: number;
-}
+import { useBundleSize } from '~/hooks/useBundleSize';
 
 interface BundleSizeProps {
   packageName: string;
@@ -25,42 +17,10 @@ function formatBytes(bytes: number): string {
 }
 
 export function BundleSize({ packageName, version }: BundleSizeProps): React.ReactElement | null {
-  const [data, setData] = useState<BundleSizeData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading: loading, error } = useBundleSize(packageName, version);
 
-  useEffect(() => {
-    const fetchBundleSize = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const params = new URLSearchParams({ package: packageName, version });
-        const response = await fetch(`/api/bundlephobia?${params}`);
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('not-found');
-          } else {
-            setError('failed');
-          }
-          return;
-        }
-
-        const result = await response.json();
-        setData(result);
-      } catch {
-        setError('failed');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBundleSize();
-  }, [packageName, version]);
-
-  // Don't render anything if package not found (common for scoped packages)
-  if (error === 'not-found') {
+  // Don't render anything if package not found (common for scoped packages) or error
+  if (error || (!loading && !data)) {
     return null;
   }
 
@@ -80,7 +40,7 @@ export function BundleSize({ packageName, version }: BundleSizeProps): React.Rea
     );
   }
 
-  if (error || !data) {
+  if (!data) {
     return null;
   }
 

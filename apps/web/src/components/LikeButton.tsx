@@ -3,7 +3,8 @@
 import { useSession } from '@/lib/auth-client';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useLikeStatus } from '~/hooks/useLikeStatus';
 
 export type LikeEntityType = 'tool' | 'collection' | 'agent';
 
@@ -31,41 +32,19 @@ export function LikeButton({
   onLikeChange,
 }: LikeButtonProps): React.ReactElement {
   const { data: session } = useSession();
-  const [liked, setLiked] = useState(initialLiked);
-  const [count, setCount] = useState(initialCount);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasFetched, setHasFetched] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch initial like status when user is logged in
-  useEffect(() => {
-    if (!session || hasFetched) return;
+  // Use SWR for like status with optimistic updates
+  const { data, toggleLike } = useLikeStatus(
+    entityType,
+    entityId,
+    !!session,
+    { liked: initialLiked, likeCount: initialCount }
+  );
 
-    const fetchLikeStatus = async () => {
-      try {
-        const response = await fetch(`/api/${entityType}s/${entityId}/like`);
-        const data = await response.json();
-        if (data.success) {
-          setLiked(data.data.liked);
-          setCount(data.data.likeCount);
-        }
-      } catch (error) {
-        console.error('Failed to fetch like status:', error);
-      } finally {
-        setHasFetched(true);
-      }
-    };
-
-    fetchLikeStatus();
-  }, [session, entityType, entityId, hasFetched]);
-
-  // Update from props when they change
-  useEffect(() => {
-    if (!hasFetched) {
-      setLiked(initialLiked);
-      setCount(initialCount);
-    }
-  }, [initialLiked, initialCount, hasFetched]);
+  const liked = data?.liked ?? initialLiked;
+  const count = data?.likeCount ?? initialCount;
 
   const handleClick = useCallback(async () => {
     if (!session) {
@@ -77,40 +56,17 @@ export function LikeButton({
 
     if (isLoading) return;
 
-    // Optimistic update
-    const newLiked = !liked;
-    const newCount = newLiked ? count + 1 : Math.max(0, count - 1);
-    setLiked(newLiked);
-    setCount(newCount);
-
     setIsLoading(true);
-
     try {
-      const response = await fetch(`/api/${entityType}s/${entityId}/like`, {
-        method: newLiked ? 'POST' : 'DELETE',
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Update with server values
-        setLiked(data.data.liked);
-        setCount(data.data.likeCount);
-        onLikeChange?.(data.data.liked, data.data.likeCount);
-      } else {
-        // Revert on error
-        setLiked(!newLiked);
-        setCount(liked ? count : Math.max(0, count - 1));
+      await toggleLike();
+      // Call the onLikeChange callback if provided
+      if (onLikeChange && data) {
+        onLikeChange(!data.liked, data.liked ? data.likeCount - 1 : data.likeCount + 1);
       }
-    } catch (error) {
-      console.error('Failed to toggle like:', error);
-      // Revert on error
-      setLiked(!newLiked);
-      setCount(liked ? count : Math.max(0, count - 1));
     } finally {
       setIsLoading(false);
     }
-  }, [session, liked, count, isLoading, entityType, entityId, onLikeChange]);
+  }, [session, isLoading, toggleLike, onLikeChange, data]);
 
   return (
     <div className="relative inline-block">

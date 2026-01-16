@@ -5,6 +5,7 @@ import Script from 'next/script';
 import { Toaster } from 'sonner';
 import { AppFooter } from '../components/AppFooter';
 import { ThemeProvider } from '../components/providers/ThemeProvider';
+import { SWRProvider } from '../components/SWRProvider';
 import './globals.css';
 
 const spaceGrotesk = Space_Grotesk({
@@ -157,11 +158,13 @@ export default function RootLayout({
           enableSystem={true}
           disableTransitionOnChange={false}
         >
-          <div className="flex flex-col min-h-screen">
-            <div className="flex-1">{children}</div>
-            <AppFooter />
-          </div>
-          <Toaster position="bottom-right" richColors closeButton />
+          <SWRProvider>
+            <div className="flex flex-col min-h-screen">
+              <div className="flex-1">{children}</div>
+              <AppFooter />
+            </div>
+            <Toaster position="bottom-right" richColors closeButton />
+          </SWRProvider>
         </ThemeProvider>
         <Analytics />
       </body>

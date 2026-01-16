@@ -9,30 +9,12 @@ import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
 import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
 import { Select } from '@tpmjs/ui/Select/Select';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
 import { CopyDropdown, getAgentCopyOptions } from '~/components/CopyDropdown';
 import { LikeButton } from '~/components/LikeButton';
-
-interface PublicAgent {
-  id: string;
-  uid: string;
-  name: string;
-  description: string | null;
-  provider: string;
-  modelId: string;
-  likeCount: number;
-  toolCount: number;
-  collectionCount: number;
-  createdAt: string;
-  createdBy: {
-    id: string;
-    name: string;
-    image: string | null;
-    username: string | null;
-  };
-}
+import { type PublicAgent, useAgents } from '~/hooks/useAgents';
 
 type SortOption = 'likes' | 'recent' | 'tools';
 
@@ -57,68 +39,24 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 export default function PublicAgentsPage(): React.ReactElement {
-  const [agents, setAgents] = useState<PublicAgent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('likes');
-  const loadingMore = useRef(false);
 
-  const fetchAgents = useCallback(
-    async (offset: number, resetList = false) => {
-      try {
-        if (loadingMore.current && !resetList) return;
-        loadingMore.current = true;
+  // Fetch agents using SWR
+  const { data, isLoading, error: swrError, mutate } = useAgents({ sort });
 
-        const params = new URLSearchParams({
-          limit: '100',
-          offset: String(offset),
-          sort,
-        });
+  const agents = data?.agents ?? [];
+  const hasMore = data?.pagination.hasMore ?? false;
+  const error = swrError?.message ?? null;
 
-        const response = await fetch(`/api/public/agents?${params}`);
-        const data = await response.json();
-
-        if (data.success) {
-          if (resetList || offset === 0) {
-            setAgents(data.data);
-          } else {
-            setAgents((prev) => [...prev, ...data.data]);
-          }
-          setHasMore(data.pagination.hasMore);
-        } else {
-          setError(data.error?.message || 'Failed to fetch agents');
-        }
-      } catch (err) {
-        console.error('Failed to fetch agents:', err);
-        setError('Failed to fetch agents');
-      } finally {
-        setIsLoading(false);
-        loadingMore.current = false;
-      }
-    },
-    [sort]
-  );
-
-  useEffect(() => {
-    setIsLoading(true);
-    fetchAgents(0, true);
-  }, [fetchAgents]);
-
-  const loadMore = useCallback(() => {
-    if (!hasMore || loadingMore.current) return;
-    fetchAgents(agents.length);
-  }, [hasMore, agents.length, fetchAgents]);
-
-  // Filter and sort agents
+  // Filter and sort agents (client-side search)
   const filteredAgents = useMemo(() => {
     let result = agents;
 
     if (search) {
       const query = search.toLowerCase();
       result = result.filter(
-        (a) =>
+        (a: PublicAgent) =>
           a.name.toLowerCase().includes(query) ||
           a.description?.toLowerCase().includes(query) ||
           a.provider.toLowerCase().includes(query)
@@ -253,7 +191,7 @@ export default function PublicAgentsPage(): React.ReactElement {
 
         {/* Content */}
         {error ? (
-          <ErrorState message={error} onRetry={() => fetchAgents(0, true)} />
+          <ErrorState message={error} onRetry={() => mutate()} />
         ) : isLoading ? (
           <LoadingState message="Loading agents..." size="lg" />
         ) : filteredAgents.length === 0 ? (
@@ -269,7 +207,6 @@ export default function PublicAgentsPage(): React.ReactElement {
                 style={{ height: 'calc(100vh - 350px)', minHeight: '400px' }}
                 data={filteredAgents}
                 overscan={30}
-                endReached={loadMore}
                 fixedHeaderContent={TableHeader}
                 itemContent={TableRow}
                 components={{

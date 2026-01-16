@@ -11,7 +11,7 @@ import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
 import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
 import { Select } from '@tpmjs/ui/Select/Select';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
 import { CopyButton } from '~/components/CopyButton';
@@ -21,26 +21,7 @@ import {
   getInstallCommand,
   usePackageManager,
 } from '~/components/PackageManagerSelector';
-
-interface Tool {
-  id: string;
-  name: string;
-  description: string;
-  qualityScore: string;
-  likeCount?: number;
-  importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
-  executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
-  createdAt: string;
-  package: {
-    npmPackageName: string;
-    npmVersion: string;
-    npmPublishedAt: string;
-    category: string;
-    npmRepository: { url: string; type: string } | null;
-    isOfficial: boolean;
-    npmDownloadsLastMonth: number;
-  };
-}
+import { type Tool, useTools } from '~/hooks/useTools';
 
 type SortOption = 'downloads' | 'likes' | 'recent' | 'name';
 
@@ -97,60 +78,28 @@ export default function ToolSearchPage(): React.ReactElement {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [healthFilter, setHealthFilter] = useState('all');
   const [sortBy, setSortBy] = useState<SortOption>('downloads');
-  const [tools, setTools] = useState<Tool[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [packageManager, setPackageManager] = usePackageManager();
 
-  // Fetch tools from API
-  useEffect(() => {
-    const fetchTools = async () => {
-      try {
-        setLoading(true);
-        const params = new URLSearchParams();
+  // Fetch tools from API using SWR
+  const { data: tools = [], isLoading: loading, error: swrError } = useTools({
+    category: categoryFilter !== 'all' ? categoryFilter : undefined,
+    importHealth: healthFilter === 'healthy' ? 'HEALTHY' : undefined,
+    executionHealth: healthFilter === 'healthy' ? 'HEALTHY' : undefined,
+    broken: healthFilter === 'broken' ? true : undefined,
+  });
 
-        if (categoryFilter !== 'all') {
-          params.set('category', categoryFilter);
-        }
+  const error = swrError?.message ?? null;
 
-        if (healthFilter === 'healthy') {
-          params.set('importHealth', 'HEALTHY');
-          params.set('executionHealth', 'HEALTHY');
-        } else if (healthFilter === 'broken') {
-          params.set('broken', 'true');
-        }
-
-        // Fetch all tools (no pagination limit)
-        params.set('limit', '1000');
-        const toolsResponse = await fetch(`/api/tools?${params.toString()}`);
-        const toolsData = await toolsResponse.json();
-
-        if (toolsData.success) {
-          const fetchedTools = toolsData.data;
-          setTools(fetchedTools);
-          setError(null);
-
-          // Extract unique categories from all tools
-          const categories = new Set<string>();
-          for (const tool of fetchedTools) {
-            if (tool.package.category) {
-              categories.add(tool.package.category);
-            }
-          }
-          setAvailableCategories(Array.from(categories).sort());
-        } else {
-          setError(toolsData.error || 'Failed to fetch tools');
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
-      } finally {
-        setLoading(false);
+  // Extract unique categories from all tools
+  const availableCategories = useMemo(() => {
+    const categories = new Set<string>();
+    for (const tool of tools) {
+      if (tool.package.category) {
+        categories.add(tool.package.category);
       }
-    };
-
-    fetchTools();
-  }, [categoryFilter, healthFilter]);
+    }
+    return Array.from(categories).sort();
+  }, [tools]);
 
   // Filter and sort tools
   const filteredTools = useMemo(() => {
@@ -160,7 +109,7 @@ export default function ToolSearchPage(): React.ReactElement {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter(
-        (tool) =>
+        (tool: Tool) =>
           tool.name.toLowerCase().includes(query) ||
           tool.package.npmPackageName.toLowerCase().includes(query) ||
           tool.description.toLowerCase().includes(query)

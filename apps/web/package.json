@@ -27,6 +27,8 @@
     "@ai-sdk/openai": "3.0.7",
     "@modelcontextprotocol/sdk": "^1.25.2",
     "@prisma/client": "^6.19.1",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
     "@tpmjs/db": "workspace:*",
     "@tpmjs/env": "workspace:*",
     "@tpmjs/npm-client": "workspace:*",
@@ -57,7 +59,9 @@
     "remark-gfm": "^4.0.1",
     "resend": "^6.7.0",
     "sonner": "^2.0.7",
+    "swr": "^2.2.5",
     "streamdown": "^1.6.11",
+    "three": "^0.182.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {
@@ -68,6 +72,7 @@
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.182.0",
     "autoprefixer": "^10.4.23",
     "dotenv": "^17.2.3",
     "eslint": "^9.39.2",
