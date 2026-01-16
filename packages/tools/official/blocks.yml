@@ -6593,6 +6593,36 @@ blocks:
         description: "Whether Shelley was successfully installed/upgraded"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
 
+  # ---------------------------------------------------------------------------
+  # Utility Tools
+  # ---------------------------------------------------------------------------
+  utility.sleep:
+    type: utility
+    description: "Pauses execution for a specified duration. Returns a cute message about taking a little nap. Useful for rate limiting, waiting for external processes, or adding delays between operations."
+    path: "sleep"
+    domain_rules:
+      - id: async_sleep
+        description: "Must use setTimeout wrapped in a Promise for non-blocking sleep"
+      - id: max_duration
+        description: "Must enforce a maximum sleep duration of 300 seconds (5 minutes) to prevent abuse"
+    inputs:
+      - name: seconds
+        type: number
+        description: "Number of seconds to sleep (max 300)"
+      - name: reason
+        type: string
+        optional: true
+        description: "Optional reason for sleeping (for logging purposes)"
+    outputs:
+      - name: sleptFor
+        type: number
+        description: "Actual seconds slept"
+      - name: message
+        type: string
+        description: "A cute message about the nap"
+        extra_prompt: "Include a playful, cozy message about taking a little rest. Examples: '😴 zzz... had a lovely {duration} second nap!', '💤 *yawn* refreshed after snoozing for {duration}s', '🛏️ ahh, that was a nice little rest...'"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
 # =============================================================================
 # VALIDATORS - Which validators to run against each block
 # =============================================================================
