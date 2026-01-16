@@ -274,6 +274,12 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       });
     }
 
+    // Build a set of tool call IDs that have corresponding tool results
+    // This is needed because AI SDK requires every tool call to have a matching tool result
+    const toolResultIds = new Set(
+      recentMessages.filter((m) => m.role === 'TOOL' && m.toolCallId).map((m) => m.toolCallId)
+    );
+
     // Add conversation history - properly format for AI SDK
     for (const msg of recentMessages) {
       if (msg.role === 'USER') {
@@ -281,27 +287,39 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       } else if (msg.role === 'ASSISTANT') {
         // For assistant messages with tool calls, include ToolCallParts in content
         if (msg.toolCalls && Array.isArray(msg.toolCalls) && msg.toolCalls.length > 0) {
-          const toolCallParts = (
+          // Only include tool calls that have matching tool results
+          // AI SDK fails if there's a tool call without a corresponding tool result
+          const validToolCalls = (
             msg.toolCalls as Array<{ toolCallId: string; toolName: string; args: unknown }>
-          ).map((tc) => ({
-            type: 'tool-call' as const,
-            toolCallId: tc.toolCallId,
-            toolName: tc.toolName,
-            input: tc.args,
-          }));
-          // Content includes text (if any) plus tool call parts
-          const content: Array<
-            | { type: 'text'; text: string }
-            | { type: 'tool-call'; toolCallId: string; toolName: string; input: unknown }
-          > = [];
-          if (msg.content) {
-            content.push({ type: 'text', text: msg.content });
+          ).filter((tc) => toolResultIds.has(tc.toolCallId));
+
+          if (validToolCalls.length > 0) {
+            const toolCallParts = validToolCalls.map((tc) => ({
+              type: 'tool-call' as const,
+              toolCallId: tc.toolCallId,
+              toolName: tc.toolName,
+              input: tc.args,
+            }));
+            // Content includes text (if any) plus tool call parts
+            const content: Array<
+              | { type: 'text'; text: string }
+              | { type: 'tool-call'; toolCallId: string; toolName: string; input: unknown }
+            > = [];
+            if (msg.content) {
+              content.push({ type: 'text', text: msg.content });
+            }
+            content.push(...toolCallParts);
+            messages.push({
+              role: 'assistant',
+              content,
+            });
+          } else {
+            // All tool calls are missing results, just include text content
+            messages.push({
+              role: 'assistant',
+              content: msg.content || '',
+            });
           }
-          content.push(...toolCallParts);
-          messages.push({
-            role: 'assistant',
-            content,
-          });
         } else {
           messages.push({
             role: 'assistant',
