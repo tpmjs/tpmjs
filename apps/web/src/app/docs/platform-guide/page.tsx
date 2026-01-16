@@ -1534,6 +1534,349 @@ X-RateLimit-Reset: 1704067200`}
               </DocSubSection>
             </DocSection>
 
+            {/* ==================== ACCESS MODEL ==================== */}
+            <DocSection id="access-model" title="Access Model: Fork to Use">
+              <p className="text-foreground-secondary mb-6">
+                TPMJS uses a <strong className="text-foreground">&quot;fork to use&quot;</strong>{' '}
+                model. You cannot directly use someone else&apos;s public agent or collection with
+                your API key—you must fork it first.
+              </p>
+              <div className="p-4 border border-warning/30 rounded-lg bg-warning/5 mb-6">
+                <p className="text-sm text-foreground-secondary">
+                  <strong className="text-warning">Important:</strong> Even with a valid API key,
+                  you cannot call another user&apos;s agent or collection endpoints. You&apos;ll
+                  receive a 403 error instructing you to fork the resource first.
+                </p>
+              </div>
+              <DocSubSection title="Why Fork to Use?">
+                <ul className="list-disc list-inside space-y-2 text-foreground-secondary">
+                  <li>
+                    <strong className="text-foreground">Security</strong> - Owners control their own
+                    API keys and environment variables
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Cost Control</strong> - You pay for your own
+                    usage, not someone else&apos;s
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Customization</strong> - Forking lets you
+                    modify tools, prompts, and settings
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Privacy</strong> - Your conversations and
+                    usage stay in your account
+                  </li>
+                </ul>
+              </DocSubSection>
+            </DocSection>
+
+            <DocSection id="agent-access" title="Accessing Agents via API">
+              <p className="text-foreground-secondary mb-6">
+                When you call the agent conversation API, strict ownership checks apply.
+              </p>
+              <DocSubSection title="Can I Chat with Someone Else&apos;s Public Agent?">
+                <p className="text-foreground-secondary mb-4">
+                  <strong className="text-foreground">No.</strong> Even if an agent is public, you
+                  must be the owner to use the conversation API. Attempting to call another
+                  user&apos;s agent returns:
+                </p>
+                <CodeBlock
+                  language="json"
+                  code={`{
+  "success": false,
+  "error": "Fork this agent to use it. Only the agent owner can chat with agents. Visit the agent page to fork it to your account."
+}
+// HTTP 403 Forbidden`}
+                />
+              </DocSubSection>
+              <DocSubSection title="Who Pays for Agent LLM Calls?">
+                <p className="text-foreground-secondary mb-4">
+                  The <strong className="text-foreground">agent owner</strong> always pays. The
+                  system uses the owner&apos;s stored LLM provider API keys (OpenAI, Anthropic,
+                  etc.), not the caller&apos;s.
+                </p>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <p className="text-sm text-foreground-secondary">
+                    Since you must own the agent to use it, and the owner&apos;s API keys are
+                    used—you&apos;re always paying for your own usage.
+                  </p>
+                </div>
+              </DocSubSection>
+              <DocSubSection title="Missing Provider API Keys">
+                <p className="text-foreground-secondary mb-4">
+                  If you haven&apos;t configured your LLM provider API key, you&apos;ll receive:
+                </p>
+                <CodeBlock
+                  language="json"
+                  code={`{
+  "success": false,
+  "error": "No API key configured for OPENAI. Please add your API key in settings."
+}
+// HTTP 400 Bad Request`}
+                />
+                <p className="text-foreground-secondary mt-4">
+                  Add your provider keys at{' '}
+                  <Link
+                    href="/dashboard/settings/api-keys"
+                    className="text-primary hover:underline"
+                  >
+                    Dashboard → Settings → API Keys
+                  </Link>
+                  .
+                </p>
+              </DocSubSection>
+              <DocSubSection title="Agent API Workflow">
+                <div className="space-y-3">
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                        1
+                      </span>
+                      <span className="font-medium text-foreground">Find a public agent</span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary ml-8">
+                      Browse at tpmjs.com/{'{username}'}/agents/{'{uid}'}
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                        2
+                      </span>
+                      <span className="font-medium text-foreground">Fork it to your account</span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary ml-8">
+                      Click &quot;Fork&quot; to create your own copy
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                        3
+                      </span>
+                      <span className="font-medium text-foreground">Add your LLM API key</span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary ml-8">
+                      Configure your provider key (not copied during fork)
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                        4
+                      </span>
+                      <span className="font-medium text-foreground">
+                        Use your fork via API
+                      </span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary ml-8">
+                      Call /api/{'{your-username}'}/agents/{'{uid}'}/conversation/{'{id}'}
+                    </p>
+                  </div>
+                </div>
+              </DocSubSection>
+            </DocSection>
+
+            <DocSection id="collection-access" title="Accessing Collections via MCP">
+              <p className="text-foreground-secondary mb-6">
+                MCP endpoints for collections follow the same fork-to-use model.
+              </p>
+              <DocSubSection title="Can I Use Someone Else&apos;s Public Collection?">
+                <p className="text-foreground-secondary mb-4">
+                  <strong className="text-foreground">No.</strong> Even if a collection is public,
+                  you must be the owner to execute tools via MCP. Attempting to call another
+                  user&apos;s collection returns:
+                </p>
+                <CodeBlock
+                  language="json"
+                  code={`{
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32403,
+    "message": "Fork this collection to use it. Only the collection owner can execute tools via MCP. Visit the collection page to fork it to your account."
+  }
+}
+// HTTP 403 Forbidden`}
+                />
+              </DocSubSection>
+              <DocSubSection title="Who Pays for Tool Execution?">
+                <p className="text-foreground-secondary mb-4">
+                  The <strong className="text-foreground">caller</strong> (API key owner) pays for
+                  tool execution. Usage is tracked against your account and counts against your rate
+                  limits.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border border-border rounded-lg bg-surface">
+                    <h4 className="font-semibold text-foreground mb-2">You Provide</h4>
+                    <ul className="text-sm text-foreground-secondary space-y-1">
+                      <li>• Your TPMJS API key (for auth)</li>
+                      <li>• Your rate limit quota</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 border border-border rounded-lg bg-surface">
+                    <h4 className="font-semibold text-foreground mb-2">Collection Provides</h4>
+                    <ul className="text-sm text-foreground-secondary space-y-1">
+                      <li>• Tool environment variables</li>
+                      <li>• Executor configuration</li>
+                    </ul>
+                  </div>
+                </div>
+              </DocSubSection>
+              <DocSubSection title="Environment Variables">
+                <p className="text-foreground-secondary mb-4">
+                  Tools use the <strong className="text-foreground">collection owner&apos;s</strong>{' '}
+                  stored environment variables—not yours. You cannot pass custom env vars via the
+                  MCP request.
+                </p>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <p className="text-sm text-foreground-secondary">
+                    <strong className="text-foreground">Example:</strong> If you fork a web scraping
+                    collection, you must add your own FIRECRAWL_API_KEY in the collection settings.
+                    The original owner&apos;s key is not copied.
+                  </p>
+                </div>
+              </DocSubSection>
+              <DocSubSection title="Missing Environment Variables">
+                <p className="text-foreground-secondary mb-4">
+                  If tools require environment variables that aren&apos;t configured, the behavior
+                  depends on the tool. Most tools will return an error in the result:
+                </p>
+                <CodeBlock
+                  language="json"
+                  code={`{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [{ "type": "text", "text": "Error: FIRECRAWL_API_KEY is required" }],
+    "isError": true
+  }
+}`}
+                />
+                <p className="text-foreground-secondary mt-4">
+                  Check each tool&apos;s required environment variables and add them in your
+                  collection&apos;s Env Vars tab.
+                </p>
+              </DocSubSection>
+              <DocSubSection title="Collection MCP Workflow">
+                <div className="space-y-3">
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                        1
+                      </span>
+                      <span className="font-medium text-foreground">Find a public collection</span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary ml-8">
+                      Browse at tpmjs.com/{'{username}'}/collections/{'{slug}'}
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                        2
+                      </span>
+                      <span className="font-medium text-foreground">Fork it to your account</span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary ml-8">
+                      Click &quot;Fork&quot; to create your own copy
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                        3
+                      </span>
+                      <span className="font-medium text-foreground">Add environment variables</span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary ml-8">
+                      Configure tool API keys (not copied during fork)
+                    </p>
+                  </div>
+                  <div className="p-3 border border-border rounded-lg bg-surface">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
+                        4
+                      </span>
+                      <span className="font-medium text-foreground">
+                        Use your fork via MCP
+                      </span>
+                    </div>
+                    <p className="text-xs text-foreground-secondary ml-8">
+                      Connect to /api/mcp/{'{your-username}'}/{'{slug}'}/http
+                    </p>
+                  </div>
+                </div>
+              </DocSubSection>
+            </DocSection>
+
+            <DocSection id="error-reference" title="Common Access Errors">
+              <p className="text-foreground-secondary mb-6">
+                Reference of errors you may encounter when accessing agents and collections.
+              </p>
+              <div className="space-y-4">
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="error" size="sm">
+                      401
+                    </Badge>
+                    <code className="text-foreground font-mono text-sm">Unauthorized</code>
+                  </div>
+                  <p className="text-sm text-foreground-secondary">
+                    No API key provided or invalid format. Include{' '}
+                    <code className="text-primary">Authorization: Bearer tpmjs_sk_...</code> header.
+                  </p>
+                </div>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="error" size="sm">
+                      403
+                    </Badge>
+                    <code className="text-foreground font-mono text-sm">Missing Scope</code>
+                  </div>
+                  <p className="text-sm text-foreground-secondary">
+                    API key lacks required scope. Agents need{' '}
+                    <code className="text-primary">agent:chat</code>, collections need{' '}
+                    <code className="text-primary">mcp:execute</code>.
+                  </p>
+                </div>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="error" size="sm">
+                      403
+                    </Badge>
+                    <code className="text-foreground font-mono text-sm">Fork Required</code>
+                  </div>
+                  <p className="text-sm text-foreground-secondary">
+                    You&apos;re trying to use someone else&apos;s agent/collection. Fork it first,
+                    then use your own copy.
+                  </p>
+                </div>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="warning" size="sm">
+                      400
+                    </Badge>
+                    <code className="text-foreground font-mono text-sm">Missing Provider Key</code>
+                  </div>
+                  <p className="text-sm text-foreground-secondary">
+                    Agent&apos;s LLM provider key not configured. Add it at Dashboard → Settings →
+                    API Keys.
+                  </p>
+                </div>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="warning" size="sm">
+                      429
+                    </Badge>
+                    <code className="text-foreground font-mono text-sm">Rate Limited</code>
+                  </div>
+                  <p className="text-sm text-foreground-secondary">
+                    Exceeded your hourly request limit. Wait for the reset or upgrade your tier.
+                  </p>
+                </div>
+              </div>
+            </DocSection>
+
             {/* ==================== REFERENCE ==================== */}
             <DocSection id="limits" title="Platform Limits">
               <p className="text-foreground-secondary mb-6">
