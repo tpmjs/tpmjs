@@ -238,9 +238,10 @@ export async function handleToolsCall(
     // Use caller-provided env vars if given (non-owner), otherwise use collection's stored env vars
     const effectiveEnvVars = callerEnvVars ?? (collection?.envVars as Record<string, string>) ?? {};
     // Pass explicit version to avoid Deno HTTP import cache issues with @latest
+    // Use actual tool name from DB, not parsed name (which may have wrong suffix)
     const result = await executeWithExecutor(executorConfig, {
       packageName: actualPackageName,
-      name: parsed.toolName,
+      name: collectionTool.tool.name,
       version: actualVersion,
       params: params.arguments ?? {},
       env: Object.keys(effectiveEnvVars).length > 0 ? effectiveEnvVars : undefined,
