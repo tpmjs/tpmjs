@@ -357,9 +357,10 @@ export default function AgentChatPage(): React.ReactElement {
     }
   }, [activeConversationId, fetchMessages]);
 
+  // Scroll to bottom only when messages change or streaming content updates
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  });
+  }, [messages.length, streamingContent]);
 
   const handleSelectConversation = (convSlug: string) => {
     router.push(`/dashboard/agents/${agentId}/chat/${convSlug}`);
