@@ -422,6 +422,61 @@ domain:
       description: "Result of executing a command on an exe.dev VM"
 
     # -------------------------------------------------------------------------
+    # HLLM entities
+    # -------------------------------------------------------------------------
+    hllm_topology_result:
+      fields: [id, status, output, tokens, duration, steps]
+      description: "Result of executing an HLLM topology"
+
+    hllm_session:
+      fields: [id, title, createdAt, updatedAt, messageCount]
+      description: "An HLLM chat session"
+
+    hllm_message:
+      fields: [id, role, content, createdAt]
+      description: "A message in an HLLM chat session"
+
+    hllm_prompt:
+      fields: [id, name, content, description, category, tags, usageCount]
+      description: "A prompt in the HLLM prompt library"
+
+    hllm_user_profile:
+      fields: [id, email, name, avatar, preferences]
+      description: "HLLM user profile information"
+
+    hllm_user_stats:
+      fields: [totalExecutions, totalTokens, totalSessions, totalPrompts, topologyBreakdown]
+      description: "HLLM user usage statistics"
+
+    hllm_env_var:
+      fields: [key, value, createdAt, updatedAt]
+      description: "A TPMJS environment variable in HLLM"
+
+    hllm_file:
+      fields: [id, name, size, mimeType, url, createdAt]
+      description: "An uploaded file in HLLM"
+
+    hllm_model:
+      fields: [id, name, provider, contextWindow, inputPricing, outputPricing, capabilities]
+      description: "An available AI model in HLLM"
+
+    hllm_execution_log:
+      fields: [id, topologyType, status, inputTokens, outputTokens, duration, error]
+      description: "An execution log entry in HLLM"
+
+    hllm_agent_metrics:
+      fields: [totalRequests, successRate, averageLatency, tokenUsage, topologyBreakdown]
+      description: "HLLM agent performance metrics"
+
+    hllm_tool_info:
+      fields: [id, name, description, package, parameters]
+      description: "Information about a TPMJS tool in HLLM"
+
+    hllm_api_key:
+      fields: [id, name, keyHint, createdAt, lastUsedAt]
+      description: "An HLLM API key"
+
+    # -------------------------------------------------------------------------
     # Agent & workflow entities
     # -------------------------------------------------------------------------
     recipe:
@@ -6591,6 +6646,867 @@ blocks:
       - name: success
         type: boolean
         description: "Whether Shelley was successfully installed/upgraded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # ---------------------------------------------------------------------------
+  # N) HLLM - Topology & Agent Tools
+  # ---------------------------------------------------------------------------
+  hllm.executeTopology:
+    type: utility
+    description: "Execute a topology with streaming SSE response. Supports topology types: single, sequential, parallel, map-reduce, scatter, debate, reflection, consensus, brainstorm, decomposition, rhetorical-triangle, tree-of-thoughts, react."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /topology/execute endpoint"
+      - id: topology_types
+        description: "Must support all topology types: single, sequential, parallel, map-reduce, scatter, debate, reflection, consensus, brainstorm, decomposition, rhetorical-triangle, tree-of-thoughts, react"
+    inputs:
+      - name: topology
+        type: string
+        description: "Type of topology to execute"
+      - name: prompt
+        type: string
+        description: "The prompt to send to the topology"
+      - name: model
+        type: string
+        optional: true
+        description: "Model to use (e.g., 'gpt-4', 'claude-3-opus')"
+      - name: systemPrompt
+        type: string
+        optional: true
+        description: "System prompt to set the context"
+      - name: temperature
+        type: number
+        optional: true
+        description: "Temperature for response randomness (0-2)"
+      - name: maxTokens
+        type: number
+        optional: true
+        description: "Maximum tokens in response"
+      - name: tools
+        type: string[]
+        optional: true
+        description: "Tool IDs to make available to the topology"
+      - name: sessionId
+        type: string
+        optional: true
+        description: "Session ID to continue a conversation"
+    outputs:
+      - name: id
+        type: string
+        description: "Execution ID"
+      - name: status
+        type: string
+        description: "Execution status"
+      - name: output
+        type: string
+        description: "Generated output"
+      - name: tokens
+        type: object
+        description: "Token usage (input, output, total)"
+      - name: duration
+        type: number
+        description: "Execution duration in ms"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.listSessions:
+    type: utility
+    description: "List all chat sessions for the authenticated user."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /sessions endpoint"
+    inputs:
+      - name: limit
+        type: number
+        optional: true
+        description: "Maximum number of sessions to return"
+      - name: offset
+        type: number
+        optional: true
+        description: "Number of sessions to skip"
+    outputs:
+      - name: sessions
+        type: hllm_session[]
+        description: "Array of chat sessions"
+      - name: total
+        type: number
+        description: "Total number of sessions"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.createSession:
+    type: utility
+    description: "Create a new chat session with optional initial configuration."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /sessions endpoint"
+    inputs:
+      - name: title
+        type: string
+        optional: true
+        description: "Title for the session"
+      - name: systemPrompt
+        type: string
+        optional: true
+        description: "System prompt for the session"
+    outputs:
+      - name: session
+        type: hllm_session
+        description: "The created session"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.getSession:
+    type: utility
+    description: "Get details of a specific chat session including messages."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /sessions/{id} endpoint"
+    inputs:
+      - name: sessionId
+        type: string
+        description: "The session ID"
+    outputs:
+      - name: session
+        type: hllm_session
+        description: "Session details"
+      - name: messages
+        type: hllm_message[]
+        description: "Messages in the session"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.updateSession:
+    type: utility
+    description: "Update session properties like title or configuration."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API PATCH /sessions/{id} endpoint"
+    inputs:
+      - name: sessionId
+        type: string
+        description: "The session ID"
+      - name: title
+        type: string
+        optional: true
+        description: "New title for the session"
+      - name: systemPrompt
+        type: string
+        optional: true
+        description: "New system prompt"
+    outputs:
+      - name: session
+        type: hllm_session
+        description: "Updated session"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.deleteSession:
+    type: utility
+    description: "Delete a chat session and all its messages."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API DELETE /sessions/{id} endpoint"
+    inputs:
+      - name: sessionId
+        type: string
+        description: "The session ID to delete"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether deletion was successful"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.addMessage:
+    type: utility
+    description: "Add a message to a chat session."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /sessions/{id}/messages endpoint"
+    inputs:
+      - name: sessionId
+        type: string
+        description: "The session ID"
+      - name: role
+        type: string
+        description: "Message role: user, assistant, or system"
+      - name: content
+        type: string
+        description: "Message content"
+    outputs:
+      - name: message
+        type: hllm_message
+        description: "The created message"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.clearMessages:
+    type: utility
+    description: "Clear all messages from a chat session."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API DELETE /sessions/{id}/messages endpoint"
+    inputs:
+      - name: sessionId
+        type: string
+        description: "The session ID"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether clearing was successful"
+      - name: clearedCount
+        type: number
+        description: "Number of messages cleared"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.listPrompts:
+    type: utility
+    description: "List all prompts in the prompt library with optional filtering."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /prompts endpoint"
+    inputs:
+      - name: category
+        type: string
+        optional: true
+        description: "Filter by category"
+      - name: search
+        type: string
+        optional: true
+        description: "Search in name and content"
+      - name: limit
+        type: number
+        optional: true
+        description: "Maximum number of prompts to return"
+      - name: offset
+        type: number
+        optional: true
+        description: "Number of prompts to skip"
+    outputs:
+      - name: prompts
+        type: hllm_prompt[]
+        description: "Array of prompts"
+      - name: total
+        type: number
+        description: "Total number of prompts"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.createPrompt:
+    type: utility
+    description: "Create a new prompt in the library."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /prompts endpoint"
+    inputs:
+      - name: name
+        type: string
+        description: "Name of the prompt"
+      - name: content
+        type: string
+        description: "The prompt content/template"
+      - name: description
+        type: string
+        optional: true
+        description: "Description of what the prompt does"
+      - name: category
+        type: string
+        optional: true
+        description: "Category for organization"
+      - name: tags
+        type: string[]
+        optional: true
+        description: "Tags for filtering"
+    outputs:
+      - name: prompt
+        type: hllm_prompt
+        description: "The created prompt"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.getPrompt:
+    type: utility
+    description: "Get details of a specific prompt."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /prompts/{id} endpoint"
+    inputs:
+      - name: promptId
+        type: string
+        description: "The prompt ID"
+    outputs:
+      - name: prompt
+        type: hllm_prompt
+        description: "Prompt details"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.updatePrompt:
+    type: utility
+    description: "Update an existing prompt."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API PATCH /prompts/{id} endpoint"
+    inputs:
+      - name: promptId
+        type: string
+        description: "The prompt ID"
+      - name: name
+        type: string
+        optional: true
+        description: "New name"
+      - name: content
+        type: string
+        optional: true
+        description: "New content"
+      - name: description
+        type: string
+        optional: true
+        description: "New description"
+      - name: category
+        type: string
+        optional: true
+        description: "New category"
+      - name: tags
+        type: string[]
+        optional: true
+        description: "New tags"
+    outputs:
+      - name: prompt
+        type: hllm_prompt
+        description: "Updated prompt"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.deletePrompt:
+    type: utility
+    description: "Delete a prompt from the library."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API DELETE /prompts/{id} endpoint"
+    inputs:
+      - name: promptId
+        type: string
+        description: "The prompt ID to delete"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether deletion was successful"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.incrementPromptUsage:
+    type: utility
+    description: "Increment the usage count for a prompt."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /prompts/{id}/usage endpoint"
+    inputs:
+      - name: promptId
+        type: string
+        description: "The prompt ID"
+    outputs:
+      - name: usageCount
+        type: number
+        description: "New usage count"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.getUserProfile:
+    type: utility
+    description: "Get the current user's profile information."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /user/profile endpoint"
+    inputs: []
+    outputs:
+      - name: profile
+        type: hllm_user_profile
+        description: "User profile information"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.updateUserProfile:
+    type: utility
+    description: "Update the current user's profile."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API PATCH /user/profile endpoint"
+    inputs:
+      - name: name
+        type: string
+        optional: true
+        description: "Display name"
+      - name: avatar
+        type: string
+        optional: true
+        description: "Avatar URL"
+      - name: preferences
+        type: object
+        optional: true
+        description: "User preferences"
+    outputs:
+      - name: profile
+        type: hllm_user_profile
+        description: "Updated profile"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.getUserStats:
+    type: utility
+    description: "Get usage statistics for the current user."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /user/stats endpoint"
+    inputs:
+      - name: period
+        type: string
+        optional: true
+        description: "Time period: day, week, month, or all"
+    outputs:
+      - name: stats
+        type: hllm_user_stats
+        description: "User statistics"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.listEnvVars:
+    type: utility
+    description: "List all TPMJS environment variables."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /env-vars endpoint"
+    inputs: []
+    outputs:
+      - name: envVars
+        type: hllm_env_var[]
+        description: "Array of environment variables"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.setEnvVar:
+    type: utility
+    description: "Set or update a TPMJS environment variable."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API PUT /env-vars endpoint"
+    inputs:
+      - name: key
+        type: string
+        description: "Variable name"
+      - name: value
+        type: string
+        description: "Variable value"
+    outputs:
+      - name: envVar
+        type: hllm_env_var
+        description: "The created/updated variable"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.deleteEnvVar:
+    type: utility
+    description: "Delete a TPMJS environment variable."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API DELETE /env-vars/{key} endpoint"
+    inputs:
+      - name: key
+        type: string
+        description: "Variable name to delete"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether deletion was successful"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.uploadFile:
+    type: utility
+    description: "Upload a file for use in topologies."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /files endpoint"
+    inputs:
+      - name: name
+        type: string
+        description: "File name"
+      - name: content
+        type: string
+        description: "Base64-encoded file content"
+      - name: mimeType
+        type: string
+        optional: true
+        description: "MIME type of the file"
+    outputs:
+      - name: file
+        type: hllm_file
+        description: "Uploaded file information"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.getFile:
+    type: utility
+    description: "Get file metadata and download URL."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /files/{id} endpoint"
+    inputs:
+      - name: fileId
+        type: string
+        description: "The file ID"
+    outputs:
+      - name: file
+        type: hllm_file
+        description: "File information"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.deleteFile:
+    type: utility
+    description: "Delete an uploaded file."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API DELETE /files/{id} endpoint"
+    inputs:
+      - name: fileId
+        type: string
+        description: "The file ID to delete"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether deletion was successful"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.listModels:
+    type: utility
+    description: "List all available AI models."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /models endpoint"
+    inputs:
+      - name: provider
+        type: string
+        optional: true
+        description: "Filter by provider (openai, anthropic, google, etc.)"
+    outputs:
+      - name: models
+        type: hllm_model[]
+        description: "Array of available models"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.getExecutionLogs:
+    type: utility
+    description: "Get execution logs for topology runs."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /logs endpoint"
+    inputs:
+      - name: sessionId
+        type: string
+        optional: true
+        description: "Filter logs by session ID"
+      - name: limit
+        type: number
+        optional: true
+        description: "Maximum number of logs to return"
+      - name: offset
+        type: number
+        optional: true
+        description: "Number of logs to skip"
+    outputs:
+      - name: logs
+        type: hllm_execution_log[]
+        description: "Array of execution logs"
+      - name: total
+        type: number
+        description: "Total number of logs"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.getAgentMetrics:
+    type: utility
+    description: "Get agent performance metrics."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /metrics endpoint"
+    inputs:
+      - name: period
+        type: string
+        optional: true
+        description: "Time period: hour, day, week, or month"
+    outputs:
+      - name: metrics
+        type: hllm_agent_metrics
+        description: "Agent metrics"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.listTools:
+    type: utility
+    description: "List all available TPMJS tools."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /tools endpoint"
+    inputs:
+      - name: category
+        type: string
+        optional: true
+        description: "Filter by category"
+    outputs:
+      - name: tools
+        type: hllm_tool_info[]
+        description: "Array of available tools"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.describeTool:
+    type: utility
+    description: "Get detailed description of a specific tool."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /tools/{id} endpoint"
+    inputs:
+      - name: toolId
+        type: string
+        description: "The tool ID"
+    outputs:
+      - name: tool
+        type: hllm_tool_info
+        description: "Tool information"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.executeTool:
+    type: utility
+    description: "Execute a TPMJS tool directly."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /tools/{id}/execute endpoint"
+    inputs:
+      - name: toolId
+        type: string
+        description: "The tool ID to execute"
+      - name: parameters
+        type: object
+        description: "Tool parameters"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether execution was successful"
+      - name: result
+        type: any
+        description: "Tool execution result"
+      - name: duration
+        type: number
+        description: "Execution duration in ms"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.generatePrompt:
+    type: utility
+    description: "Generate a prompt using AI assistance."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /prompts/generate endpoint"
+    inputs:
+      - name: task
+        type: string
+        description: "Description of what the prompt should accomplish"
+      - name: context
+        type: string
+        optional: true
+        description: "Additional context for prompt generation"
+      - name: style
+        type: string
+        optional: true
+        description: "Style: concise, detailed, or creative"
+    outputs:
+      - name: prompt
+        type: string
+        description: "Generated prompt"
+      - name: suggestions
+        type: string[]
+        optional: true
+        description: "Alternative suggestions"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.improvePrompt:
+    type: utility
+    description: "Improve an existing prompt using AI."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /prompts/improve endpoint"
+    inputs:
+      - name: prompt
+        type: string
+        description: "The prompt to improve"
+      - name: goal
+        type: string
+        optional: true
+        description: "What improvement to focus on"
+    outputs:
+      - name: prompt
+        type: string
+        description: "Improved prompt"
+      - name: suggestions
+        type: string[]
+        optional: true
+        description: "Alternative suggestions"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.exportData:
+    type: utility
+    description: "Export user data including sessions, prompts, and settings."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /export endpoint"
+    inputs:
+      - name: include
+        type: string[]
+        optional: true
+        description: "What data to include: sessions, prompts, settings, files"
+    outputs:
+      - name: data
+        type: string
+        description: "Base64 encoded export data"
+      - name: format
+        type: string
+        description: "Export format"
+      - name: exportedAt
+        type: string
+        description: "Export timestamp"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.importData:
+    type: utility
+    description: "Import previously exported data."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /import endpoint"
+    inputs:
+      - name: data
+        type: string
+        description: "Base64 encoded export data"
+      - name: overwrite
+        type: boolean
+        optional: true
+        description: "Whether to overwrite existing data"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether import was successful"
+      - name: imported
+        type: object
+        description: "Summary of imported items"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.healthCheck:
+    type: utility
+    description: "Check HLLM API health status."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /health endpoint"
+    inputs: []
+    outputs:
+      - name: status
+        type: string
+        description: "Health status"
+      - name: version
+        type: string
+        description: "API version"
+      - name: uptime
+        type: number
+        description: "Uptime in seconds"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.getStats:
+    type: utility
+    description: "Get public HLLM statistics."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /stats endpoint"
+    inputs: []
+    outputs:
+      - name: totalUsers
+        type: number
+        description: "Total number of users"
+      - name: totalExecutions
+        type: number
+        description: "Total number of executions"
+      - name: totalTokens
+        type: number
+        description: "Total tokens processed"
+      - name: uptimePercent
+        type: number
+        description: "Uptime percentage"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.listApiKeys:
+    type: utility
+    description: "List all API keys for the authenticated user."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API GET /api-keys endpoint"
+    inputs: []
+    outputs:
+      - name: apiKeys
+        type: hllm_api_key[]
+        description: "Array of API keys"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.createApiKey:
+    type: utility
+    description: "Create a new API key."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /api-keys endpoint"
+    inputs:
+      - name: name
+        type: string
+        description: "Name for the API key"
+    outputs:
+      - name: id
+        type: string
+        description: "Key ID"
+      - name: name
+        type: string
+        description: "Key name"
+      - name: key
+        type: string
+        description: "Full API key (only shown once)"
+      - name: createdAt
+        type: string
+        description: "Creation timestamp"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.deleteApiKey:
+    type: utility
+    description: "Delete an API key."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API DELETE /api-keys/{id} endpoint"
+    inputs:
+      - name: keyId
+        type: string
+        description: "The API key ID to delete"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether deletion was successful"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
 
   # ---------------------------------------------------------------------------

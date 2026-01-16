@@ -1,0 +1,207 @@
+{
+  "name": "@tpmjs/tools-hllm",
+  "version": "0.1.0",
+  "description": "HLLM API client tools for AI agents. Manage topologies, sessions, prompts, files, and more.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "hllm",
+    "ai",
+    "llm",
+    "topology",
+    "agent"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/hllm"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "executeTopology",
+        "description": "Execute a topology with streaming SSE response. Supports various topology types including single, sequential, parallel, map-reduce, and more."
+      },
+      {
+        "name": "listSessions",
+        "description": "List all chat sessions for the authenticated user."
+      },
+      {
+        "name": "createSession",
+        "description": "Create a new chat session with optional initial configuration."
+      },
+      {
+        "name": "getSession",
+        "description": "Get details of a specific chat session including messages."
+      },
+      {
+        "name": "updateSession",
+        "description": "Update session properties like title or configuration."
+      },
+      {
+        "name": "deleteSession",
+        "description": "Delete a chat session and all its messages."
+      },
+      {
+        "name": "addMessage",
+        "description": "Add a message to a chat session."
+      },
+      {
+        "name": "clearMessages",
+        "description": "Clear all messages from a chat session."
+      },
+      {
+        "name": "listPrompts",
+        "description": "List all prompts in the prompt library with optional filtering."
+      },
+      {
+        "name": "createPrompt",
+        "description": "Create a new prompt in the library."
+      },
+      {
+        "name": "getPrompt",
+        "description": "Get details of a specific prompt."
+      },
+      {
+        "name": "updatePrompt",
+        "description": "Update an existing prompt."
+      },
+      {
+        "name": "deletePrompt",
+        "description": "Delete a prompt from the library."
+      },
+      {
+        "name": "incrementPromptUsage",
+        "description": "Increment the usage count for a prompt."
+      },
+      {
+        "name": "getUserProfile",
+        "description": "Get the current user's profile information."
+      },
+      {
+        "name": "updateUserProfile",
+        "description": "Update the current user's profile."
+      },
+      {
+        "name": "getUserStats",
+        "description": "Get usage statistics for the current user."
+      },
+      {
+        "name": "listEnvVars",
+        "description": "List all TPMJS environment variables."
+      },
+      {
+        "name": "setEnvVar",
+        "description": "Set or update a TPMJS environment variable."
+      },
+      {
+        "name": "deleteEnvVar",
+        "description": "Delete a TPMJS environment variable."
+      },
+      {
+        "name": "uploadFile",
+        "description": "Upload a file for use in topologies."
+      },
+      {
+        "name": "getFile",
+        "description": "Get file metadata and download URL."
+      },
+      {
+        "name": "deleteFile",
+        "description": "Delete an uploaded file."
+      },
+      {
+        "name": "listModels",
+        "description": "List all available AI models."
+      },
+      {
+        "name": "getExecutionLogs",
+        "description": "Get execution logs for topology runs."
+      },
+      {
+        "name": "getAgentMetrics",
+        "description": "Get agent performance metrics."
+      },
+      {
+        "name": "listTools",
+        "description": "List all available TPMJS tools."
+      },
+      {
+        "name": "describeTool",
+        "description": "Get detailed description of a specific tool."
+      },
+      {
+        "name": "executeTool",
+        "description": "Execute a TPMJS tool directly."
+      },
+      {
+        "name": "generatePrompt",
+        "description": "Generate a prompt using AI assistance."
+      },
+      {
+        "name": "improvePrompt",
+        "description": "Improve an existing prompt using AI."
+      },
+      {
+        "name": "exportData",
+        "description": "Export user data including sessions, prompts, and settings."
+      },
+      {
+        "name": "importData",
+        "description": "Import previously exported data."
+      },
+      {
+        "name": "healthCheck",
+        "description": "Check HLLM API health status."
+      },
+      {
+        "name": "getStats",
+        "description": "Get public HLLM statistics."
+      },
+      {
+        "name": "listApiKeys",
+        "description": "List all API keys for the authenticated user."
+      },
+      {
+        "name": "createApiKey",
+        "description": "Create a new API key."
+      },
+      {
+        "name": "deleteApiKey",
+        "description": "Delete an API key."
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}
