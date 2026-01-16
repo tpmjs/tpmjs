@@ -5263,7 +5263,1044 @@ blocks:
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance, readme_documentation]
 
   # ---------------------------------------------------------------------------
-  # Q) exe.dev VM Management (15 tools)
+  # N) Languages (2 tools)
+  # ---------------------------------------------------------------------------
+  unsandbox.getLanguages:
+    type: utility
+    description: "Get list of all supported programming languages with metadata including extensions, version, and capabilities."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /languages endpoint"
+    inputs: []
+    outputs:
+      - name: languages
+        type: Language[]
+        description: "Array of supported languages with id, name, version, extensions, and capabilities"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getShells:
+    type: utility
+    description: "Get list of available shell interpreters (bash, zsh, etc.) with their versions and capabilities."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /shells endpoint"
+    inputs: []
+    outputs:
+      - name: shells
+        type: Shell[]
+        description: "Array of available shells with id, name, version, and path"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # ---------------------------------------------------------------------------
+  # O) Sessions (11 tools)
+  # ---------------------------------------------------------------------------
+  unsandbox.createSession:
+    type: utility
+    description: "Create a new persistent session with configurable language, resources, and networking. Sessions maintain state across executions."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /sessions endpoint"
+    inputs:
+      - name: language
+        type: string
+        description: "Programming language for the session"
+      - name: network_mode
+        type: "'zerotrust' | 'semitrusted'"
+        optional: true
+        description: "Network isolation mode. Default: 'zerotrust'"
+      - name: vcpu
+        type: number
+        optional: true
+        description: "Number of virtual CPUs (0.25-8). Default: 1"
+      - name: memory
+        type: number
+        optional: true
+        description: "Memory in MB (256-8192). Default: 512"
+      - name: ttl
+        type: number
+        optional: true
+        description: "Session timeout in seconds. Default: 3600"
+      - name: env
+        type: "Record<string, string>"
+        optional: true
+        description: "Environment variables for the session"
+    outputs:
+      - name: session_id
+        type: string
+        description: "Unique session identifier"
+      - name: status
+        type: string
+        description: "Session status (creating, active, frozen, etc.)"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getSession:
+    type: utility
+    description: "Get details of a session including status, resource usage, and configuration."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /sessions/{id} endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to retrieve"
+    outputs:
+      - name: session
+        type: Session
+        description: "Session details including id, status, language, resources, and created_at"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.listSessions:
+    type: utility
+    description: "List all sessions with optional filtering by status (active, frozen, locked)."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /sessions endpoint"
+    inputs:
+      - name: status
+        type: string
+        optional: true
+        description: "Filter by status: active, frozen, locked"
+    outputs:
+      - name: sessions
+        type: Session[]
+        description: "Array of sessions matching the filter"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.executeInSession:
+    type: utility
+    description: "Execute code in an existing session. State and files persist between executions."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /sessions/{id}/execute endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to execute in"
+      - name: code
+        type: string
+        description: "Code to execute"
+      - name: timeout
+        type: number
+        optional: true
+        description: "Execution timeout in seconds"
+    outputs:
+      - name: stdout
+        type: string
+        description: "Standard output from execution"
+      - name: stderr
+        type: string
+        description: "Standard error from execution"
+      - name: exit_code
+        type: number
+        description: "Process exit code"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.freezeSession:
+    type: utility
+    description: "Freeze a session to pause execution and reduce resource usage while preserving state."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /sessions/{id}/freeze endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to freeze"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the freeze operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.unfreezeSession:
+    type: utility
+    description: "Unfreeze a frozen session to resume execution."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /sessions/{id}/unfreeze endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to unfreeze"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the unfreeze operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.lockSession:
+    type: utility
+    description: "Lock a session to prevent modifications or deletion."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /sessions/{id}/lock endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to lock"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the lock operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.unlockSession:
+    type: utility
+    description: "Unlock a locked session to allow modifications."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /sessions/{id}/unlock endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to unlock"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the unlock operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.createSessionSnapshot:
+    type: utility
+    description: "Create a snapshot of the current session state for backup or cloning."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /sessions/{id}/snapshot endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to snapshot"
+      - name: name
+        type: string
+        optional: true
+        description: "Name for the snapshot"
+    outputs:
+      - name: snapshot_id
+        type: string
+        description: "ID of the created snapshot"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.restoreSession:
+    type: utility
+    description: "Restore a session from a snapshot."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /sessions/{id}/restore endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to restore"
+      - name: snapshot_id
+        type: string
+        description: "The snapshot ID to restore from"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the restore operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.deleteSession:
+    type: utility
+    description: "Delete a session and release all associated resources."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API DELETE /sessions/{id} endpoint"
+    inputs:
+      - name: session_id
+        type: string
+        description: "The session ID to delete"
+    outputs:
+      - name: deleted
+        type: boolean
+        description: "Whether the deletion succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # ---------------------------------------------------------------------------
+  # P) Services (15 tools)
+  # ---------------------------------------------------------------------------
+  unsandbox.createService:
+    type: utility
+    description: "Create a long-running service with persistent state, networking, and auto-restart capabilities."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /services endpoint"
+    inputs:
+      - name: language
+        type: string
+        description: "Programming language for the service"
+      - name: code
+        type: string
+        description: "Service code to run"
+      - name: network_mode
+        type: "'zerotrust' | 'semitrusted'"
+        optional: true
+        description: "Network isolation mode"
+      - name: port
+        type: number
+        optional: true
+        description: "Port to expose"
+      - name: env
+        type: "Record<string, string>"
+        optional: true
+        description: "Environment variables"
+    outputs:
+      - name: service_id
+        type: string
+        description: "Unique service identifier"
+      - name: url
+        type: string
+        description: "Public URL for the service"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getService:
+    type: utility
+    description: "Get details of a service including status, endpoints, and resource usage."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /services/{id} endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to retrieve"
+    outputs:
+      - name: service
+        type: Service
+        description: "Service details including id, status, url, and resources"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.listServices:
+    type: utility
+    description: "List all services with optional filtering by status."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /services endpoint"
+    inputs:
+      - name: status
+        type: string
+        optional: true
+        description: "Filter by status"
+    outputs:
+      - name: services
+        type: Service[]
+        description: "Array of services"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.executeInService:
+    type: utility
+    description: "Execute a command or code snippet in a running service."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /services/{id}/execute endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to execute in"
+      - name: code
+        type: string
+        description: "Code to execute"
+    outputs:
+      - name: stdout
+        type: string
+        description: "Standard output"
+      - name: stderr
+        type: string
+        description: "Standard error"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.freezeService:
+    type: utility
+    description: "Freeze a service to pause execution while preserving state."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /services/{id}/freeze endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to freeze"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the freeze operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.unfreezeService:
+    type: utility
+    description: "Unfreeze a frozen service to resume execution."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /services/{id}/unfreeze endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to unfreeze"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the unfreeze operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.lockService:
+    type: utility
+    description: "Lock a service to prevent modifications or deletion."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /services/{id}/lock endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to lock"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the lock operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.unlockService:
+    type: utility
+    description: "Unlock a locked service to allow modifications."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /services/{id}/unlock endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to unlock"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the unlock operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.redeployService:
+    type: utility
+    description: "Redeploy a service with updated configuration or code."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /services/{id}/redeploy endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to redeploy"
+      - name: code
+        type: string
+        optional: true
+        description: "New code to deploy"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the redeploy operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getServiceLogs:
+    type: utility
+    description: "Get logs from a service with optional filtering by time range and log level."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /services/{id}/logs endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to get logs from"
+      - name: since
+        type: string
+        optional: true
+        description: "ISO timestamp to start from"
+      - name: until
+        type: string
+        optional: true
+        description: "ISO timestamp to end at"
+      - name: limit
+        type: number
+        optional: true
+        description: "Maximum number of log entries"
+    outputs:
+      - name: logs
+        type: LogEntry[]
+        description: "Array of log entries"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.createServiceSnapshot:
+    type: utility
+    description: "Create a snapshot of the current service state."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /services/{id}/snapshot endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to snapshot"
+      - name: name
+        type: string
+        optional: true
+        description: "Name for the snapshot"
+    outputs:
+      - name: snapshot_id
+        type: string
+        description: "ID of the created snapshot"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getServiceEnv:
+    type: utility
+    description: "Get environment variables configured for a service."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /services/{id}/env endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID"
+    outputs:
+      - name: env
+        type: "Record<string, string>"
+        description: "Environment variables"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.setServiceEnv:
+    type: utility
+    description: "Set or update environment variables for a service."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API PUT /services/{id}/env endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID"
+      - name: env
+        type: "Record<string, string>"
+        description: "Environment variables to set"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.deleteServiceEnv:
+    type: utility
+    description: "Delete an environment variable from a service."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API DELETE /services/{id}/env/{key} endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID"
+      - name: key
+        type: string
+        description: "Environment variable key to delete"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the deletion succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.deleteService:
+    type: utility
+    description: "Delete a service and release all associated resources."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API DELETE /services/{id} endpoint"
+    inputs:
+      - name: service_id
+        type: string
+        description: "The service ID to delete"
+    outputs:
+      - name: deleted
+        type: boolean
+        description: "Whether the deletion succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # ---------------------------------------------------------------------------
+  # Q) Snapshots (8 tools)
+  # ---------------------------------------------------------------------------
+  unsandbox.createSnapshot:
+    type: utility
+    description: "Create a snapshot from any source (session, service, or existing snapshot)."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /snapshots endpoint"
+    inputs:
+      - name: source_type
+        type: "'session' | 'service' | 'snapshot'"
+        description: "Type of source to snapshot"
+      - name: source_id
+        type: string
+        description: "ID of the source"
+      - name: name
+        type: string
+        optional: true
+        description: "Name for the snapshot"
+    outputs:
+      - name: snapshot_id
+        type: string
+        description: "ID of the created snapshot"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getSnapshot:
+    type: utility
+    description: "Get details of a snapshot including metadata and creation info."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /snapshots/{id} endpoint"
+    inputs:
+      - name: snapshot_id
+        type: string
+        description: "The snapshot ID to retrieve"
+    outputs:
+      - name: snapshot
+        type: Snapshot
+        description: "Snapshot details"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.listSnapshots:
+    type: utility
+    description: "List all snapshots with optional filtering by source type."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /snapshots endpoint"
+    inputs:
+      - name: source_type
+        type: string
+        optional: true
+        description: "Filter by source type"
+    outputs:
+      - name: snapshots
+        type: Snapshot[]
+        description: "Array of snapshots"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.lockSnapshot:
+    type: utility
+    description: "Lock a snapshot to prevent deletion or modification."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /snapshots/{id}/lock endpoint"
+    inputs:
+      - name: snapshot_id
+        type: string
+        description: "The snapshot ID to lock"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the lock operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.unlockSnapshot:
+    type: utility
+    description: "Unlock a locked snapshot to allow modifications."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /snapshots/{id}/unlock endpoint"
+    inputs:
+      - name: snapshot_id
+        type: string
+        description: "The snapshot ID to unlock"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the unlock operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.restoreSnapshot:
+    type: utility
+    description: "Restore a session or service from a snapshot."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /snapshots/{id}/restore endpoint"
+    inputs:
+      - name: snapshot_id
+        type: string
+        description: "The snapshot ID to restore"
+      - name: target_type
+        type: "'session' | 'service'"
+        description: "Type of resource to create"
+    outputs:
+      - name: id
+        type: string
+        description: "ID of the restored resource"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.cloneSnapshot:
+    type: utility
+    description: "Clone a snapshot to create a new independent copy."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /snapshots/{id}/clone endpoint"
+    inputs:
+      - name: snapshot_id
+        type: string
+        description: "The snapshot ID to clone"
+      - name: name
+        type: string
+        optional: true
+        description: "Name for the cloned snapshot"
+    outputs:
+      - name: snapshot_id
+        type: string
+        description: "ID of the cloned snapshot"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.deleteSnapshot:
+    type: utility
+    description: "Delete a snapshot and free associated storage."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API DELETE /snapshots/{id} endpoint"
+    inputs:
+      - name: snapshot_id
+        type: string
+        description: "The snapshot ID to delete"
+    outputs:
+      - name: deleted
+        type: boolean
+        description: "Whether the deletion succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # ---------------------------------------------------------------------------
+  # R) Images (12 tools)
+  # ---------------------------------------------------------------------------
+  unsandbox.publishImage:
+    type: utility
+    description: "Publish a snapshot as a reusable image for spawning new sessions or services."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /images endpoint"
+    inputs:
+      - name: snapshot_id
+        type: string
+        description: "The snapshot ID to publish"
+      - name: name
+        type: string
+        description: "Name for the image"
+      - name: visibility
+        type: "'public' | 'private'"
+        optional: true
+        description: "Image visibility. Default: 'private'"
+    outputs:
+      - name: image_id
+        type: string
+        description: "ID of the published image"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getImage:
+    type: utility
+    description: "Get details of a published image including metadata and access info."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /images/{id} endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID to retrieve"
+    outputs:
+      - name: image
+        type: Image
+        description: "Image details"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.listImages:
+    type: utility
+    description: "List all images with optional filtering by visibility and ownership."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /images endpoint"
+    inputs:
+      - name: visibility
+        type: string
+        optional: true
+        description: "Filter by visibility: public, private"
+      - name: owned
+        type: boolean
+        optional: true
+        description: "Filter to only owned images"
+    outputs:
+      - name: images
+        type: Image[]
+        description: "Array of images"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.lockImage:
+    type: utility
+    description: "Lock an image to prevent modifications or deletion."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /images/{id}/lock endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID to lock"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the lock operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.unlockImage:
+    type: utility
+    description: "Unlock a locked image to allow modifications."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /images/{id}/unlock endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID to unlock"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the unlock operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.grantImageAccess:
+    type: utility
+    description: "Grant access to a private image for specific users or API keys."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /images/{id}/access endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID"
+      - name: public_key
+        type: string
+        description: "Public key to grant access to"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the grant operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.revokeImageAccess:
+    type: utility
+    description: "Revoke access to an image from specific users or API keys."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API DELETE /images/{id}/access/{key} endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID"
+      - name: public_key
+        type: string
+        description: "Public key to revoke access from"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the revoke operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.transferImage:
+    type: utility
+    description: "Transfer ownership of an image to another user."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /images/{id}/transfer endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID to transfer"
+      - name: new_owner_key
+        type: string
+        description: "Public key of the new owner"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the transfer succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.setImageVisibility:
+    type: utility
+    description: "Set image visibility to public or private."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API PUT /images/{id}/visibility endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID"
+      - name: visibility
+        type: "'public' | 'private'"
+        description: "New visibility setting"
+    outputs:
+      - name: success
+        type: boolean
+        description: "Whether the operation succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.spawnFromImage:
+    type: utility
+    description: "Spawn a new session or service from an image."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API POST /images/{id}/spawn endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID to spawn from"
+      - name: type
+        type: "'session' | 'service'"
+        description: "Type of resource to create"
+      - name: network_mode
+        type: "'zerotrust' | 'semitrusted'"
+        optional: true
+        description: "Network isolation mode"
+    outputs:
+      - name: id
+        type: string
+        description: "ID of the spawned resource"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getImageTrustedKeys:
+    type: utility
+    description: "Get list of API keys that have access to a private image."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /images/{id}/trusted endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID"
+    outputs:
+      - name: keys
+        type: string[]
+        description: "Array of public keys with access"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.deleteImage:
+    type: utility
+    description: "Delete an image and free associated storage."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API DELETE /images/{id} endpoint"
+    inputs:
+      - name: image_id
+        type: string
+        description: "The image ID to delete"
+    outputs:
+      - name: deleted
+        type: boolean
+        description: "Whether the deletion succeeded"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # ---------------------------------------------------------------------------
+  # S) System (4 tools)
+  # ---------------------------------------------------------------------------
+  unsandbox.healthCheck:
+    type: utility
+    description: "Check the health status of the Unsandbox API service."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /health endpoint"
+    inputs: []
+    outputs:
+      - name: status
+        type: string
+        description: "Health status (healthy, degraded, unhealthy)"
+      - name: version
+        type: string
+        description: "API version"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getClusterStatus:
+    type: utility
+    description: "Get status of the execution cluster including node availability and capacity."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /cluster endpoint"
+    inputs: []
+    outputs:
+      - name: nodes
+        type: number
+        description: "Number of active nodes"
+      - name: capacity
+        type: object
+        description: "Available capacity information"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.getSystemStats:
+    type: utility
+    description: "Get system statistics including resource utilization and job metrics."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /stats endpoint"
+    inputs: []
+    outputs:
+      - name: jobs_total
+        type: number
+        description: "Total jobs processed"
+      - name: jobs_active
+        type: number
+        description: "Currently active jobs"
+      - name: resource_usage
+        type: object
+        description: "Resource utilization metrics"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  unsandbox.listPools:
+    type: utility
+    description: "List available execution pools with their configurations and current status."
+    path: "unsandbox"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsandbox API GET /pools endpoint"
+    inputs: []
+    outputs:
+      - name: pools
+        type: Pool[]
+        description: "Array of execution pools"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # ---------------------------------------------------------------------------
+  # T) exe.dev VM Management (15 tools)
   # ---------------------------------------------------------------------------
   exe.list:
     type: utility

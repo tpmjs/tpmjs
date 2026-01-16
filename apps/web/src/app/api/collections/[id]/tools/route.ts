@@ -86,6 +86,7 @@ export async function GET(
             id: true,
             name: true,
             description: true,
+            parameters: true,
             package: {
               select: {
                 npmPackageName: true,

@@ -4,6 +4,14 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useCallback, useState } from 'react';
 
+export interface ToolParameter {
+  name: string;
+  type: string;
+  description: string;
+  required: boolean;
+  default?: unknown;
+}
+
 export interface ToolInfo {
   id: string;
   toolId: string;
@@ -11,6 +19,7 @@ export interface ToolInfo {
     id: string;
     name: string;
     description: string | null;
+    parameters: ToolParameter[] | null;
     package: {
       npmPackageName: string;
       category: string;

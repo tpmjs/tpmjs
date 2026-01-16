@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-unsandbox",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Execute code in a secure sandbox environment. Supports 42+ programming languages with async execution, input files, and compiled artifacts.",
   "type": "module",
   "keywords": [
@@ -51,10 +51,6 @@
         "description": "Execute code asynchronously in a secure sandbox. Returns a job_id immediately. Use getJob to check status and retrieve results. Supports 42+ languages."
       },
       {
-        "name": "getJob",
-        "description": "Get the status and results of an async code execution job by job_id."
-      },
-      {
         "name": "execute",
         "description": "Execute code synchronously in a secure sandbox. Waits for completion and returns results directly. Best for quick scripts."
       },
@@ -67,12 +63,224 @@
         "description": "Execute code asynchronously with automatic language detection via shebang. Returns job_id for polling."
       },
       {
+        "name": "getJob",
+        "description": "Get the status and results of an async code execution job by job_id."
+      },
+      {
         "name": "listJobs",
         "description": "List all active code execution jobs with their current status."
       },
       {
         "name": "deleteJob",
         "description": "Cancel an active code execution job by job_id."
+      },
+      {
+        "name": "getLanguages",
+        "description": "Get list of all supported programming languages with their metadata including extensions, version, and capabilities."
+      },
+      {
+        "name": "getShells",
+        "description": "Get list of available shell interpreters (bash, zsh, etc.) with their versions and capabilities."
+      },
+      {
+        "name": "createSession",
+        "description": "Create a new persistent session with configurable language, resources, and networking. Sessions maintain state across executions."
+      },
+      {
+        "name": "getSession",
+        "description": "Get details of a session including status, resource usage, and configuration."
+      },
+      {
+        "name": "listSessions",
+        "description": "List all sessions with optional filtering by status (active, frozen, locked)."
+      },
+      {
+        "name": "executeInSession",
+        "description": "Execute code in an existing session. State and files persist between executions."
+      },
+      {
+        "name": "freezeSession",
+        "description": "Freeze a session to pause execution and reduce resource usage while preserving state."
+      },
+      {
+        "name": "unfreezeSession",
+        "description": "Unfreeze a frozen session to resume execution."
+      },
+      {
+        "name": "lockSession",
+        "description": "Lock a session to prevent modifications or deletion."
+      },
+      {
+        "name": "unlockSession",
+        "description": "Unlock a locked session to allow modifications."
+      },
+      {
+        "name": "createSessionSnapshot",
+        "description": "Create a snapshot of the current session state for backup or cloning."
+      },
+      {
+        "name": "restoreSession",
+        "description": "Restore a session from a snapshot."
+      },
+      {
+        "name": "deleteSession",
+        "description": "Delete a session and release all associated resources."
+      },
+      {
+        "name": "createService",
+        "description": "Create a long-running service with persistent state, networking, and auto-restart capabilities."
+      },
+      {
+        "name": "getService",
+        "description": "Get details of a service including status, endpoints, and resource usage."
+      },
+      {
+        "name": "listServices",
+        "description": "List all services with optional filtering by status."
+      },
+      {
+        "name": "executeInService",
+        "description": "Execute a command or code snippet in a running service."
+      },
+      {
+        "name": "freezeService",
+        "description": "Freeze a service to pause execution while preserving state."
+      },
+      {
+        "name": "unfreezeService",
+        "description": "Unfreeze a frozen service to resume execution."
+      },
+      {
+        "name": "lockService",
+        "description": "Lock a service to prevent modifications or deletion."
+      },
+      {
+        "name": "unlockService",
+        "description": "Unlock a locked service to allow modifications."
+      },
+      {
+        "name": "redeployService",
+        "description": "Redeploy a service with updated configuration or code."
+      },
+      {
+        "name": "getServiceLogs",
+        "description": "Get logs from a service with optional filtering by time range and log level."
+      },
+      {
+        "name": "createServiceSnapshot",
+        "description": "Create a snapshot of the current service state."
+      },
+      {
+        "name": "getServiceEnv",
+        "description": "Get environment variables configured for a service."
+      },
+      {
+        "name": "setServiceEnv",
+        "description": "Set or update environment variables for a service."
+      },
+      {
+        "name": "deleteServiceEnv",
+        "description": "Delete an environment variable from a service."
+      },
+      {
+        "name": "deleteService",
+        "description": "Delete a service and release all associated resources."
+      },
+      {
+        "name": "createSnapshot",
+        "description": "Create a snapshot from any source (session, service, or existing snapshot)."
+      },
+      {
+        "name": "getSnapshot",
+        "description": "Get details of a snapshot including metadata and creation info."
+      },
+      {
+        "name": "listSnapshots",
+        "description": "List all snapshots with optional filtering by source type."
+      },
+      {
+        "name": "lockSnapshot",
+        "description": "Lock a snapshot to prevent deletion or modification."
+      },
+      {
+        "name": "unlockSnapshot",
+        "description": "Unlock a locked snapshot to allow modifications."
+      },
+      {
+        "name": "restoreSnapshot",
+        "description": "Restore a session or service from a snapshot."
+      },
+      {
+        "name": "cloneSnapshot",
+        "description": "Clone a snapshot to create a new independent copy."
+      },
+      {
+        "name": "deleteSnapshot",
+        "description": "Delete a snapshot and free associated storage."
+      },
+      {
+        "name": "publishImage",
+        "description": "Publish a snapshot as a reusable image for spawning new sessions or services."
+      },
+      {
+        "name": "getImage",
+        "description": "Get details of a published image including metadata and access info."
+      },
+      {
+        "name": "listImages",
+        "description": "List all images with optional filtering by visibility and ownership."
+      },
+      {
+        "name": "lockImage",
+        "description": "Lock an image to prevent modifications or deletion."
+      },
+      {
+        "name": "unlockImage",
+        "description": "Unlock a locked image to allow modifications."
+      },
+      {
+        "name": "grantImageAccess",
+        "description": "Grant access to a private image for specific users or API keys."
+      },
+      {
+        "name": "revokeImageAccess",
+        "description": "Revoke access to an image from specific users or API keys."
+      },
+      {
+        "name": "transferImage",
+        "description": "Transfer ownership of an image to another user."
+      },
+      {
+        "name": "setImageVisibility",
+        "description": "Set image visibility to public or private."
+      },
+      {
+        "name": "spawnFromImage",
+        "description": "Spawn a new session or service from an image."
+      },
+      {
+        "name": "getImageTrustedKeys",
+        "description": "Get list of API keys that have access to a private image."
+      },
+      {
+        "name": "deleteImage",
+        "description": "Delete an image and free associated storage."
+      },
+      {
+        "name": "healthCheck",
+        "description": "Check the health status of the Unsandbox API service."
+      },
+      {
+        "name": "getClusterStatus",
+        "description": "Get status of the execution cluster including node availability and capacity."
+      },
+      {
+        "name": "getSystemStats",
+        "description": "Get system statistics including resource utilization and job metrics."
+      },
+      {
+        "name": "listPools",
+        "description": "List available execution pools with their configurations and current status."
       }
     ]
   },

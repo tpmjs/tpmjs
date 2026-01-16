@@ -60,6 +60,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
                 id: true,
                 name: true,
                 description: true,
+                parameters: true,
                 package: {
                   select: {
                     npmPackageName: true,
