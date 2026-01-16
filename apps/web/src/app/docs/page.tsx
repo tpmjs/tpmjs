@@ -646,6 +646,25 @@ const result = streamText({
               </div>
             </section>
 
+            {/* Platform Guide - Comprehensive reference */}
+            <section className="mb-16 p-6 border border-border rounded-lg bg-surface">
+              <div className="flex items-start gap-4">
+                <span className="text-3xl">📚</span>
+                <div>
+                  <h2 className="text-xl font-bold text-foreground mb-2">Platform Guide</h2>
+                  <p className="text-foreground-secondary mb-4">
+                    Complete guide to TPMJS platform features: user accounts, collections, agents,
+                    forking, and API keys. Everything you need to know in one place.
+                  </p>
+                  <Link href="/docs/platform-guide">
+                    <Button variant="outline" size="sm">
+                      View Platform Guide →
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </section>
+
             {/* ==================== API REFERENCE ==================== */}
             <DocSection id="api-overview" title="API Overview">
               <p className="text-foreground-secondary mb-6">
