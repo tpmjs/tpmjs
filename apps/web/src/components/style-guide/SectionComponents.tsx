@@ -7,7 +7,7 @@ import {
   AccordionTrigger,
 } from '@tpmjs/ui/Accordion/Accordion';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
-import { Breadcrumbs } from '@tpmjs/ui/Breadcrumbs/Breadcrumbs';
+import { Breadcrumbs, BreadcrumbItem } from '@tpmjs/ui/Breadcrumbs/Breadcrumbs';
 import { Button } from '@tpmjs/ui/Button/Button';
 import {
   Card,
@@ -19,13 +19,11 @@ import {
 } from '@tpmjs/ui/Card/Card';
 import { Checkbox } from '@tpmjs/ui/Checkbox/Checkbox';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
-import { Drawer, DrawerContent, DrawerTrigger } from '@tpmjs/ui/Drawer/Drawer';
+import { Drawer } from '@tpmjs/ui/Drawer/Drawer';
 import {
   DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from '@tpmjs/ui/DropdownMenu/DropdownMenu';
 import { EmptyState } from '@tpmjs/ui/EmptyState/EmptyState';
 import { ErrorState } from '@tpmjs/ui/ErrorState/ErrorState';
@@ -34,10 +32,10 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { InstallSnippet } from '@tpmjs/ui/InstallSnippet/InstallSnippet';
 import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
-import { Modal, ModalContent, ModalTrigger } from '@tpmjs/ui/Modal/Modal';
+import { Modal } from '@tpmjs/ui/Modal/Modal';
 import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
 import { Pagination } from '@tpmjs/ui/Pagination/Pagination';
-import { Popover, PopoverContent, PopoverTrigger } from '@tpmjs/ui/Popover/Popover';
+import { Popover } from '@tpmjs/ui/Popover/Popover';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import { QualityScore } from '@tpmjs/ui/QualityScore/QualityScore';
 import { Radio } from '@tpmjs/ui/Radio/Radio';
@@ -60,7 +58,7 @@ import {
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import { Toast, ToastProvider } from '@tpmjs/ui/Toast/Toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@tpmjs/ui/Tooltip/Tooltip';
+import { Tooltip } from '@tpmjs/ui/Tooltip/Tooltip';
 import { useState } from 'react';
 import { FieldsetSection, SubSection } from './shared';
 
@@ -80,6 +78,8 @@ export function SectionComponents({
   const [sliderValue, setSliderValue] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
   const [showToast, setShowToast] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [showDrawer, setShowDrawer] = useState(false);
 
   return (
     <FieldsetSection title="12. components" id="components">
@@ -203,14 +203,12 @@ export function SectionComponents({
       {/* Breadcrumbs */}
       <SubSection title="breadcrumbs">
         <div className="space-y-4">
-          <Breadcrumbs
-            items={[
-              { label: 'Home', href: '/' },
-              { label: 'Tools', href: '/tools' },
-              { label: 'Category', href: '/tools/category' },
-              { label: 'Current Page' },
-            ]}
-          />
+          <Breadcrumbs>
+            <BreadcrumbItem href="/">Home</BreadcrumbItem>
+            <BreadcrumbItem href="/tools">Tools</BreadcrumbItem>
+            <BreadcrumbItem href="/tools/category">Category</BreadcrumbItem>
+            <BreadcrumbItem current>Current Page</BreadcrumbItem>
+          </Breadcrumbs>
         </div>
       </SubSection>
 
@@ -272,7 +270,7 @@ export function SectionComponents({
       {/* Slider */}
       <SubSection title="slider">
         <div className="max-w-md space-y-4">
-          <Slider value={sliderValue} onChange={setSliderValue} min={0} max={100} step={1} />
+          <Slider value={sliderValue} onChange={(e) => setSliderValue(Number(e.target.value))} min={0} max={100} step={1} />
           <p className="font-mono text-xs text-foreground-secondary">Value: {sliderValue}</p>
         </div>
       </SubSection>
@@ -353,7 +351,7 @@ export function SectionComponents({
       {/* Pagination */}
       <SubSection title="pagination">
         <Pagination
-          currentPage={currentPage}
+          page={currentPage}
           totalPages={10}
           onPageChange={setCurrentPage}
         />
@@ -361,86 +359,75 @@ export function SectionComponents({
 
       {/* Dropdown Menu */}
       <SubSection title="dropdown menu">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <DropdownMenu
+          trigger={
             <Button variant="outline">
               Open Menu <Icon icon="chevronDown" size="sm" className="ml-2" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Logout</DropdownMenuItem>
-          </DropdownMenuContent>
+          }
+        >
+          <DropdownMenuItem onSelect={() => {}}>Profile</DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => {}}>Settings</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => {}}>Logout</DropdownMenuItem>
         </DropdownMenu>
       </SubSection>
 
       {/* Popover */}
       <SubSection title="popover">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline">Open Popover</Button>
-          </PopoverTrigger>
-          <PopoverContent>
+        <Popover
+          content={
             <div className="space-y-2">
               <h4 className="font-medium text-foreground">Popover Title</h4>
               <p className="text-sm text-foreground-secondary">
                 This is the popover content. It can contain any elements.
               </p>
             </div>
-          </PopoverContent>
+          }
+        >
+          <Button variant="outline">Open Popover</Button>
         </Popover>
       </SubSection>
 
       {/* Tooltip */}
       <SubSection title="tooltip">
-        <TooltipProvider>
-          <div className="flex gap-4">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="outline">Hover me</Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>This is a tooltip</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
+        <div className="flex gap-4">
+          <Tooltip content="This is a tooltip">
+            <Button variant="outline">Hover me</Button>
+          </Tooltip>
+        </div>
       </SubSection>
 
       {/* Modal */}
       <SubSection title="modal">
-        <Modal>
-          <ModalTrigger asChild>
-            <Button>Open Modal</Button>
-          </ModalTrigger>
-          <ModalContent title="Modal Title" description="This is a modal dialog.">
-            <div className="py-4">
-              <p className="text-foreground-secondary">Modal content goes here.</p>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline">Cancel</Button>
-              <Button>Confirm</Button>
-            </div>
-          </ModalContent>
+        <Button onClick={() => setShowModal(true)}>Open Modal</Button>
+        <Modal
+          open={showModal}
+          onClose={() => setShowModal(false)}
+          title="Modal Title"
+          description="This is a modal dialog."
+          footer={
+            <>
+              <Button variant="outline" onClick={() => setShowModal(false)}>Cancel</Button>
+              <Button onClick={() => setShowModal(false)}>Confirm</Button>
+            </>
+          }
+        >
+          <p className="text-foreground-secondary">Modal content goes here.</p>
         </Modal>
       </SubSection>
 
       {/* Drawer */}
       <SubSection title="drawer">
-        <Drawer>
-          <DrawerTrigger asChild>
-            <Button variant="outline">Open Drawer</Button>
-          </DrawerTrigger>
-          <DrawerContent>
-            <div className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Drawer Content</h3>
-              <p className="text-foreground-secondary">
-                This is the drawer content. It slides in from the bottom.
-              </p>
-            </div>
-          </DrawerContent>
+        <Button variant="outline" onClick={() => setShowDrawer(true)}>Open Drawer</Button>
+        <Drawer
+          open={showDrawer}
+          onClose={() => setShowDrawer(false)}
+          title="Drawer Content"
+        >
+          <p className="text-foreground-secondary">
+            This is the drawer content. It slides in from the side.
+          </p>
         </Drawer>
       </SubSection>
 
@@ -492,7 +479,7 @@ export function SectionComponents({
           <div className="border border-dashed border-border p-4">
             <p className="font-mono text-xs text-foreground-secondary mb-4">empty state</p>
             <EmptyState
-              icon="inbox"
+              icon="box"
               title="No items yet"
               description="Get started by creating your first item."
               action={<Button size="sm">Create Item</Button>}
@@ -534,9 +521,9 @@ export function SectionComponents({
       {/* Stat Card */}
       <SubSection title="stat card">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard title="Total Tools" value="1,234" change="+12%" changeType="positive" />
-          <StatCard title="Downloads" value="45.2K" change="-3%" changeType="negative" />
-          <StatCard title="Users" value="892" change="0%" changeType="neutral" />
+          <StatCard label="Total Tools" value={1234} subtext="+12% from last month" />
+          <StatCard label="Downloads" value={45200} suffix="K" subtext="-3% from last month" />
+          <StatCard label="Users" value={892} subtext="No change" />
         </div>
       </SubSection>
 
