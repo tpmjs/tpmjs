@@ -2,6 +2,8 @@
 
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Input } from '@tpmjs/ui/Input/Input';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { parseEnvString } from '~/lib/utils/env-parser';
 
@@ -148,9 +150,6 @@ export function EnvVarsEditor({
     return parseEnvString(pasteContent);
   }, [pasteContent]);
 
-  const inputClassName =
-    'flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed';
-
   return (
     <div className={className}>
       {/* Header */}
@@ -182,11 +181,12 @@ export function EnvVarsEditor({
               <Icon icon="x" size="xs" />
             </Button>
           </div>
-          <textarea
+          <Textarea
             value={pasteContent}
             onChange={(e) => setPasteContent(e.target.value)}
             placeholder={`# Paste your .env content here\nAPI_KEY=your-api-key\nDATABASE_URL="postgres://..."\n`}
-            className="w-full h-32 px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-xs focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+            className="h-32 text-xs"
+            resize="none"
             disabled={disabled}
           />
           {parsedPreview.length > 0 && (
@@ -217,20 +217,20 @@ export function EnvVarsEditor({
         <div className="space-y-2 mb-3">
           {envVars.map((env, index) => (
             <div key={`env-${env.key || index}`} className="flex items-center gap-2">
-              <input
+              <Input
                 type="text"
                 value={env.key}
                 onChange={(e) => updateEnvVar(index, 'key', e.target.value)}
                 placeholder="KEY"
-                className={inputClassName}
+                size="sm"
                 disabled={disabled}
               />
-              <input
+              <Input
                 type="password"
                 value={env.value}
                 onChange={(e) => updateEnvVar(index, 'value', e.target.value)}
                 placeholder="value"
-                className={inputClassName}
+                size="sm"
                 disabled={disabled}
               />
               <Button
@@ -249,12 +249,12 @@ export function EnvVarsEditor({
 
       {/* Add new env var */}
       <div className="flex items-center gap-2">
-        <input
+        <Input
           type="text"
           value={newEnvKey}
           onChange={(e) => setNewEnvKey(e.target.value.toUpperCase())}
           placeholder={keyPlaceholder}
-          className={inputClassName}
+          size="sm"
           disabled={disabled}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && newEnvKey.trim()) {
@@ -262,12 +262,12 @@ export function EnvVarsEditor({
             }
           }}
         />
-        <input
+        <Input
           type="text"
           value={newEnvValue}
           onChange={(e) => setNewEnvValue(e.target.value)}
           placeholder={valuePlaceholder}
-          className={inputClassName}
+          size="sm"
           disabled={disabled}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && newEnvKey.trim()) {

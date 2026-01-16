@@ -255,7 +255,7 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
           </div>
         ) : error ? (
           <div className="text-center py-12">
-            <p className="text-red-500">{error}</p>
+            <p className="text-error">{error}</p>
           </div>
         ) : collection ? (
           <div className="space-y-8">

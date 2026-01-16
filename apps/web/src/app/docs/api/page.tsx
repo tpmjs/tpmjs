@@ -120,10 +120,10 @@ function EndpointCard({
   children?: React.ReactNode;
 }) {
   const methodColors = {
-    GET: 'bg-green-500/10 text-green-500 border-green-500/30',
-    POST: 'bg-blue-500/10 text-blue-500 border-blue-500/30',
-    PUT: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30',
-    DELETE: 'bg-red-500/10 text-red-500 border-red-500/30',
+    GET: 'bg-success/10 text-success border-success/30',
+    POST: 'bg-info/10 text-info border-info/30',
+    PUT: 'bg-warning/10 text-warning border-warning/30',
+    DELETE: 'bg-error/10 text-error border-error/30',
   };
 
   return (
@@ -377,7 +377,7 @@ export default function APIDocsPage(): React.ReactElement {
                   />
                 </div>
 
-                <div className="p-4 border border-yellow-500/30 rounded-lg bg-yellow-500/5">
+                <div className="p-4 border border-warning/30 rounded-lg bg-warning/5">
                   <h3 className="font-semibold text-foreground mb-2">API Key Scopes</h3>
                   <ul className="text-sm text-foreground-secondary list-disc list-inside space-y-1">
                     <li>
@@ -398,7 +398,7 @@ export default function APIDocsPage(): React.ReactElement {
                   </ul>
                 </div>
 
-                <div className="p-4 border border-green-500/30 rounded-lg bg-green-500/5">
+                <div className="p-4 border border-success/30 rounded-lg bg-success/5">
                   <h3 className="font-semibold text-foreground mb-2">Rate Limits</h3>
                   <ul className="text-sm text-foreground-secondary list-disc list-inside space-y-1">
                     <li>FREE tier: 100 requests/hour</li>

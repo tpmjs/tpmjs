@@ -154,7 +154,7 @@ export default function PublishPage(): React.ReactElement {
             </div>
 
             {/* Auto-discovery callout */}
-            <div className="mb-8 p-6 border-2 border-amber-500/30 rounded-lg bg-amber-500/5">
+            <div className="mb-8 p-6 border-2 border-warning/30 rounded-lg bg-warning/5">
               <div className="flex items-start gap-4">
                 <div className="text-3xl">🔍</div>
                 <div>

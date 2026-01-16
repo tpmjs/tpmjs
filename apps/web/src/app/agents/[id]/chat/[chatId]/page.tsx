@@ -4,6 +4,7 @@ import type { AIProvider } from '@tpmjs/types/agent';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -102,10 +103,10 @@ function ToolCallCard({
   onToggle: () => void;
 }) {
   const statusColors = {
-    pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    running: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-    success: 'bg-green-500/20 text-green-400 border-green-500/30',
-    error: 'bg-red-500/20 text-red-400 border-red-500/30',
+    pending: 'bg-warning/10 text-warning border-warning/30',
+    running: 'bg-info/10 text-info border-info/30',
+    success: 'bg-success/10 text-success border-success/30',
+    error: 'bg-error/10 text-error border-error/30',
   };
 
   const statusIcons: Record<ToolCall['status'], 'loader' | 'check' | 'alertCircle' | 'info'> = {
@@ -126,10 +127,10 @@ function ToolCallCard({
   return (
     <div className="rounded-lg border border-border bg-surface-secondary/50 overflow-hidden font-mono text-xs">
       {/* Header */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
         onClick={onToggle}
-        className="w-full flex items-center gap-3 p-3 hover:bg-surface-secondary/80 transition-colors"
+        className="w-full flex items-center gap-3 p-3 h-auto justify-start rounded-none hover:bg-surface-secondary/80"
       >
         <div className={`p-1.5 rounded ${statusColors[toolCall.status]}`}>
           <Icon
@@ -151,7 +152,7 @@ function ToolCallCard({
           size="xs"
           className={`text-foreground-tertiary transition-transform ${isExpanded ? 'rotate-90' : ''}`}
         />
-      </button>
+      </Button>
 
       {/* Expanded Content */}
       {isExpanded && (
@@ -180,7 +181,7 @@ function ToolCallCard({
                 </span>
                 <div className="flex-1 h-px bg-border/50" />
               </div>
-              <pre className="text-[11px] text-green-400 overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
+              <pre className="text-[11px] text-success overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
                 {formatJson(toolCall.output)}
               </pre>
             </div>
@@ -661,14 +662,14 @@ export default function PublicAgentChatPage(): React.ReactElement {
           <div className="border-b border-border bg-surface/50 px-4 py-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 hover:bg-surface-secondary rounded-lg transition-colors"
                   title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
                 >
                   <Icon icon="menu" size="sm" />
-                </button>
+                </Button>
                 <div>
                   <h1 className="text-lg font-semibold text-foreground">{agent.name}</h1>
                   <p className="text-sm text-foreground-tertiary">
@@ -683,28 +684,20 @@ export default function PublicAgentChatPage(): React.ReactElement {
             </div>
             {/* View Mode Tabs */}
             <div className="flex gap-1 mt-3">
-              <button
-                type="button"
+              <Button
+                variant={viewMode === 'chat' ? 'default' : 'ghost'}
+                size="sm"
                 onClick={() => setViewMode('chat')}
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  viewMode === 'chat'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground-secondary hover:text-foreground hover:bg-surface-secondary'
-                }`}
               >
                 Chat
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant={viewMode === 'debug' ? 'default' : 'ghost'}
+                size="sm"
                 onClick={() => setViewMode('debug')}
-                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                  viewMode === 'debug'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground-secondary hover:text-foreground hover:bg-surface-secondary'
-                }`}
               >
                 Debug JSON
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -776,13 +769,14 @@ export default function PublicAgentChatPage(): React.ReactElement {
                                 <span className="text-sm">Loading older messages...</span>
                               </div>
                             ) : (
-                              <button
-                                type="button"
+                              <Button
+                                variant="ghost"
+                                size="sm"
                                 onClick={loadMoreMessages}
-                                className="text-sm text-primary hover:text-primary/80 transition-colors"
+                                className="text-primary hover:text-primary/80"
                               >
                                 Load older messages
-                              </button>
+                              </Button>
                             )}
                           </div>
                         ) : null,
@@ -950,22 +944,23 @@ export default function PublicAgentChatPage(): React.ReactElement {
 
               {/* Error Message */}
               {error && (
-                <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
-                  <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+                <div className="px-4 py-2 bg-error/10 border-t border-error/20">
+                  <p className="text-sm text-error">{error}</p>
                 </div>
               )}
 
               {/* Input Area */}
               <div className="border-t border-border p-4">
                 <div className="flex items-end gap-2">
-                  <textarea
+                  <Textarea
                     ref={inputRef}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
                     rows={1}
-                    className="flex-1 px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none min-h-[48px] max-h-[200px]"
+                    resize="none"
+                    className="flex-1 min-h-[48px] max-h-[200px]"
                     style={{
                       height: 'auto',
                       minHeight: '48px',

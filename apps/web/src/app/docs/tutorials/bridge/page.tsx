@@ -66,23 +66,23 @@ const slides: Slide[] = [
             <h4 className="text-lg font-semibold text-foreground mb-3">Cloud-Only Tools</h4>
             <ul className="space-y-3 text-foreground-secondary">
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Code execution (sandboxed)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Web fetching</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Web search</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-0.5">✗</span>
+                <span className="text-error mt-0.5">✗</span>
                 <span>Browser automation</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-0.5">✗</span>
+                <span className="text-error mt-0.5">✗</span>
                 <span>Local file access</span>
               </li>
             </ul>
@@ -91,23 +91,23 @@ const slides: Slide[] = [
             <h4 className="text-lg font-semibold text-foreground mb-3">With Bridge</h4>
             <ul className="space-y-3 text-foreground-secondary">
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Chrome DevTools control</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Read/write local files</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Local database access</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Custom internal APIs</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Any stdio MCP server</span>
               </li>
             </ul>
@@ -439,13 +439,13 @@ Opening browser for authentication...
         </div>
         <div className="flex justify-center gap-3 text-sm text-foreground-secondary">
           <span className="flex items-center gap-1">
-            <span className="text-green-500">✓</span> Chrome automation
+            <span className="text-success">✓</span> Chrome automation
           </span>
           <span className="flex items-center gap-1">
-            <span className="text-green-500">✓</span> Local files
+            <span className="text-success">✓</span> Local files
           </span>
           <span className="flex items-center gap-1">
-            <span className="text-green-500">✓</span> Custom tools
+            <span className="text-success">✓</span> Custom tools
           </span>
         </div>
       </div>

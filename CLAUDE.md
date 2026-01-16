@@ -26,7 +26,37 @@ This project uses a Turborepo monorepo architecture with the following structure
 
 ### Architecture Principles
 
+#### 1. Design System First
 
+**Always use `@tpmjs/ui` components instead of raw HTML elements.** This ensures visual consistency, accessibility, and maintainability across the application.
+
+```typescript
+// Good - use design system components
+import { Button } from '@tpmjs/ui/Button/Button';
+import { Input } from '@tpmjs/ui/Input/Input';
+import { Table, TableRow, TableCell } from '@tpmjs/ui/Table/Table';
+
+<Button onClick={handleClick}>Submit</Button>
+<Input value={value} onChange={onChange} />
+
+// Bad - raw HTML elements
+<button onClick={handleClick}>Submit</button>
+<input value={value} onChange={onChange} />
+```
+
+**When to create/update UI components:**
+- If a pattern is used in 2+ places, create a reusable component in `@tpmjs/ui`
+- If existing component styling doesn't match the design, update the component (not the usage site)
+- If you need virtualization (e.g., `react-virtuoso`), match the design system's styling classes
+
+**Common components to use:**
+- `Button` - all clickable actions
+- `Input`, `Select`, `Textarea` - form inputs
+- `Table`, `TableRow`, `TableCell` - data tables
+- `Card` - content containers
+- `Badge` - status indicators
+- `Icon` - all icons (not inline SVGs)
+- `Spinner`, `Skeleton` - loading states
 
 #### 2. No Barrel Exports
 

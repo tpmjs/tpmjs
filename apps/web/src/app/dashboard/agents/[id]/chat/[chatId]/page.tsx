@@ -3,6 +3,7 @@
 import type { AIProvider } from '@tpmjs/types/agent';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -87,14 +88,10 @@ function ToolCallCard({
   const effectiveStatus = hasError ? 'error' : toolCall.status;
 
   const statusColors = {
-    pending:
-      'bg-yellow-100 dark:bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-yellow-300 dark:border-yellow-500/30',
-    running:
-      'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-500/30',
-    success:
-      'bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400 border-green-300 dark:border-green-500/30',
-    error:
-      'bg-red-100 dark:bg-red-500/20 text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/30',
+    pending: 'bg-warning/10 text-warning border-warning/30',
+    running: 'bg-info/10 text-info border-info/30',
+    success: 'bg-success/10 text-success border-success/30',
+    error: 'bg-error/10 text-error border-error/30',
   };
 
   const statusIcons: Record<ToolCall['status'], 'loader' | 'check' | 'alertCircle' | 'info'> = {
@@ -114,13 +111,13 @@ function ToolCallCard({
 
   return (
     <div
-      className={`rounded-lg border overflow-hidden font-mono text-xs ${hasError ? 'border-red-500/50 bg-red-50 dark:bg-red-500/5' : 'border-border bg-slate-50 dark:bg-surface-secondary/50'}`}
+      className={`rounded-lg border overflow-hidden font-mono text-xs ${hasError ? 'border-error/50 bg-error/5' : 'border-border bg-surface-secondary/50'}`}
     >
       {/* Header */}
-      <button
-        type="button"
+      <Button
+        variant="ghost"
         onClick={onToggle}
-        className="w-full flex items-center gap-3 p-3 hover:bg-slate-100 dark:hover:bg-surface-secondary/80 transition-colors"
+        className="w-full flex items-center gap-3 p-3 h-auto justify-start rounded-none hover:bg-surface-secondary/80"
       >
         <div className={`p-1.5 rounded ${statusColors[effectiveStatus]}`}>
           <Icon
@@ -136,14 +133,14 @@ function ToolCallCard({
               {toolCall.toolCallId.slice(0, 8)}...
             </span>
             {hasError && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400">
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-error/10 text-error">
                 ERROR
               </span>
             )}
           </div>
           {/* Show error message preview in header */}
           {hasError && errorMessage && !isExpanded && (
-            <div className="text-red-600 dark:text-red-400 text-[10px] mt-1 truncate max-w-[300px]">
+            <div className="text-error text-[10px] mt-1 truncate max-w-[300px]">
               {errorMessage}
             </div>
           )}
@@ -153,7 +150,7 @@ function ToolCallCard({
           size="xs"
           className={`text-foreground-tertiary transition-transform ${isExpanded ? 'rotate-90' : ''}`}
         />
-      </button>
+      </Button>
 
       {/* Expanded Content */}
       {isExpanded && (
@@ -175,14 +172,14 @@ function ToolCallCard({
 
           {/* Error Message Section */}
           {hasError && errorMessage && (
-            <div className="p-3 bg-red-100 dark:bg-red-500/10 border-b border-red-200 dark:border-red-500/20">
+            <div className="p-3 bg-error/10 border-b border-error/20">
               <div className="flex items-center gap-2 mb-2">
-                <Icon icon="alertCircle" size="xs" className="text-red-600 dark:text-red-400" />
-                <span className="text-[10px] uppercase tracking-wider text-red-600 dark:text-red-400 font-semibold">
+                <Icon icon="alertCircle" size="xs" className="text-error" />
+                <span className="text-[10px] uppercase tracking-wider text-error font-semibold">
                   Error
                 </span>
               </div>
-              <p className="text-[11px] text-red-600 dark:text-red-400">{errorMessage}</p>
+              <p className="text-[11px] text-error">{errorMessage}</p>
             </div>
           )}
 
@@ -196,7 +193,7 @@ function ToolCallCard({
                 <div className="flex-1 h-px bg-border/50" />
               </div>
               <pre
-                className={`text-[11px] overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto ${hasError ? 'text-red-600 dark:text-red-300' : 'text-emerald-700 dark:text-green-400'}`}
+                className={`text-[11px] overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto ${hasError ? 'text-error' : 'text-success'}`}
               >
                 {formatJson(toolCall.output)}
               </pre>
@@ -573,19 +570,21 @@ export default function AgentChatPage(): React.ReactElement {
               </p>
             ) : (
               conversations.map((conv) => (
-                <button
+                <Button
                   key={conv.id}
-                  type="button"
+                  variant="ghost"
                   onClick={() => handleSelectConversation(conv.slug)}
-                  className={`w-full text-left px-3 py-2 rounded-lg mb-1 transition-colors ${
+                  className={`w-full text-left h-auto py-2 px-3 justify-start mb-1 ${
                     chatId === conv.slug
                       ? 'bg-primary/10 text-primary'
                       : 'text-foreground-secondary hover:bg-surface-secondary'
                   }`}
                 >
-                  <p className="text-sm font-medium truncate">{conv.title || 'Untitled Chat'}</p>
-                  <p className="text-xs text-foreground-tertiary">{conv.messageCount} messages</p>
-                </button>
+                  <div className="flex flex-col items-start">
+                    <p className="text-sm font-medium truncate">{conv.title || 'Untitled Chat'}</p>
+                    <p className="text-xs text-foreground-tertiary">{conv.messageCount} messages</p>
+                  </div>
+                </Button>
               ))
             )}
           </div>
@@ -738,22 +737,23 @@ export default function AgentChatPage(): React.ReactElement {
 
           {/* Error Message */}
           {error && (
-            <div className="px-4 py-2 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            <div className="px-4 py-2 bg-error/10 border-t border-error/20">
+              <p className="text-sm text-error">{error}</p>
             </div>
           )}
 
           {/* Input Area */}
           <div className="border-t border-border p-4">
             <div className="flex items-end gap-2">
-              <textarea
+              <Textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a message..."
                 rows={1}
-                className="flex-1 px-4 py-3 bg-surface border border-border rounded-lg text-foreground placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none min-h-[48px] max-h-[200px]"
+                resize="none"
+                className="flex-1 min-h-[48px] max-h-[200px]"
                 style={{
                   height: 'auto',
                   minHeight: '48px',

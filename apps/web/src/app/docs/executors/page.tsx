@@ -174,10 +174,10 @@ export default function ExecutorsDocsPage(): React.ReactElement {
               <li>Optionally add an API key if your executor requires authentication</li>
               <li>Click &quot;Verify Connection&quot; to test the configuration</li>
             </ol>
-            <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-              <p className="text-sm text-amber-600 dark:text-amber-400">
+            <div className="p-4 bg-warning/10 border border-warning/30 rounded-lg">
+              <p className="text-sm text-warning">
                 <strong>Security tip:</strong> Set the{' '}
-                <code className="px-1 bg-amber-500/20 rounded">EXECUTOR_API_KEY</code> environment
+                <code className="px-1 bg-warning/20 rounded">EXECUTOR_API_KEY</code> environment
                 variable in your Vercel project to require authentication for all requests.
               </p>
             </div>
@@ -214,7 +214,7 @@ export default function ExecutorsDocsPage(): React.ReactElement {
             {/* GET /health */}
             <div className="mb-8">
               <h3 className="text-lg font-medium text-foreground mb-2">
-                <code className="px-2 py-1 bg-green-500/10 text-green-500 rounded">GET</code>{' '}
+                <code className="px-2 py-1 bg-success/10 text-success rounded">GET</code>{' '}
                 /health
               </h3>
               <p className="text-foreground-secondary mb-4">

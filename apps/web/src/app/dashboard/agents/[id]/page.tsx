@@ -7,8 +7,12 @@ import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Input } from '@tpmjs/ui/Input/Input';
+import { Label } from '@tpmjs/ui/Label/Label';
+import { Select } from '@tpmjs/ui/Select/Select';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import { Switch } from '@tpmjs/ui/Switch/Switch';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import {
   Table,
   TableBody,
@@ -259,17 +263,12 @@ conv = resp.json()  # conv['data']['messages']`,
           onTabChange={setActiveSection}
           size="sm"
         />
-        <select
+        <Select
           value={effectiveLang}
           onChange={(e) => setActiveLang(e.target.value)}
-          className="px-2 py-1 text-sm bg-surface border border-border rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-        >
-          {langOptions.map((opt) => (
-            <option key={opt.id} value={opt.id}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+          size="sm"
+          options={langOptions.map((opt) => ({ value: opt.id, label: opt.label }))}
+        />
       </div>
 
       <div className="p-4">
@@ -1067,121 +1066,82 @@ export default function AgentDetailPage(): React.ReactElement {
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-foreground mb-1">
-                    Name
-                  </label>
-                  <input
+                  <Label htmlFor="name">Name</Label>
+                  <Input
                     type="text"
                     id="name"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label htmlFor="uid" className="block text-sm font-medium text-foreground mb-1">
-                    UID
-                  </label>
-                  <input
+                  <Label htmlFor="uid">UID</Label>
+                  <Input
                     type="text"
                     id="uid"
                     name="uid"
                     value={formData.uid}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Description
-                </label>
-                <textarea
+                <Label htmlFor="description">Description</Label>
+                <Textarea
                   id="description"
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
                   rows={2}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                  resize="none"
+                  size="sm"
                 />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label
-                    htmlFor="provider"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
-                    Provider
-                  </label>
-                  <select
+                  <Label htmlFor="provider">Provider</Label>
+                  <Select
                     id="provider"
                     name="provider"
                     value={formData.provider}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  >
-                    {SUPPORTED_PROVIDERS.map((p) => (
-                      <option key={p} value={p}>
-                        {PROVIDER_DISPLAY_NAMES[p]}
-                      </option>
-                    ))}
-                  </select>
+                    options={SUPPORTED_PROVIDERS.map((p) => ({
+                      value: p,
+                      label: PROVIDER_DISPLAY_NAMES[p],
+                    }))}
+                  />
                 </div>
                 <div>
-                  <label
-                    htmlFor="modelId"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
-                    Model
-                  </label>
-                  <select
+                  <Label htmlFor="modelId">Model</Label>
+                  <Select
                     id="modelId"
                     name="modelId"
                     value={formData.modelId}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
-                  >
-                    {models.map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
+                    options={models.map((m) => ({ value: m.id, label: m.name }))}
+                  />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="systemPrompt"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  System Prompt
-                </label>
-                <textarea
+                <Label htmlFor="systemPrompt">System Prompt</Label>
+                <Textarea
                   id="systemPrompt"
                   name="systemPrompt"
                   value={formData.systemPrompt}
                   onChange={handleChange}
                   rows={6}
-                  className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none"
+                  resize="none"
                 />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label
-                    htmlFor="temperature"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
-                    Temperature
-                  </label>
-                  <input
+                  <Label htmlFor="temperature">Temperature</Label>
+                  <Input
                     type="number"
                     id="temperature"
                     name="temperature"
@@ -1190,17 +1150,11 @@ export default function AgentDetailPage(): React.ReactElement {
                     min={0}
                     max={2}
                     step={0.1}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="maxToolCallsPerTurn"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
-                    Max Tool Calls
-                  </label>
-                  <input
+                  <Label htmlFor="maxToolCallsPerTurn">Max Tool Calls</Label>
+                  <Input
                     type="number"
                     id="maxToolCallsPerTurn"
                     name="maxToolCallsPerTurn"
@@ -1208,17 +1162,11 @@ export default function AgentDetailPage(): React.ReactElement {
                     onChange={handleChange}
                     min={1}
                     max={100}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="maxMessagesInContext"
-                    className="block text-sm font-medium text-foreground mb-1"
-                  >
-                    Context Messages
-                  </label>
-                  <input
+                  <Label htmlFor="maxMessagesInContext">Context Messages</Label>
+                  <Input
                     type="number"
                     id="maxMessagesInContext"
                     name="maxMessagesInContext"
@@ -1226,7 +1174,6 @@ export default function AgentDetailPage(): React.ReactElement {
                     onChange={handleChange}
                     min={1}
                     max={100}
-                    className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
                   />
                 </div>
               </div>

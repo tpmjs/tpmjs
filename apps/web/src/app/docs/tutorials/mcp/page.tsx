@@ -65,19 +65,19 @@ const slides: Slide[] = [
             <h4 className="text-lg font-semibold text-foreground mb-3">Without MCP</h4>
             <ul className="space-y-3 text-foreground-secondary">
               <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-0.5">✗</span>
+                <span className="text-error mt-0.5">✗</span>
                 <span>AI can only process text</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-0.5">✗</span>
+                <span className="text-error mt-0.5">✗</span>
                 <span>No access to external data</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-0.5">✗</span>
+                <span className="text-error mt-0.5">✗</span>
                 <span>Can&apos;t take real actions</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-red-500 mt-0.5">✗</span>
+                <span className="text-error mt-0.5">✗</span>
                 <span>Limited to knowledge cutoff</span>
               </li>
             </ul>
@@ -86,19 +86,19 @@ const slides: Slide[] = [
             <h4 className="text-lg font-semibold text-foreground mb-3">With MCP + TPMJS</h4>
             <ul className="space-y-3 text-foreground-secondary">
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Execute code in 40+ languages</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Fetch data from any URL</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Search the web in real-time</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-green-500 mt-0.5">✓</span>
+                <span className="text-success mt-0.5">✓</span>
                 <span>Use specialized tools</span>
               </li>
             </ul>
@@ -362,16 +362,16 @@ const slides: Slide[] = [
         </div>
         <div className="flex justify-center gap-3 text-sm text-foreground-secondary">
           <span className="flex items-center gap-1">
-            <span className="text-green-500">✓</span> Code execution
+            <span className="text-success">✓</span> Code execution
           </span>
           <span className="flex items-center gap-1">
-            <span className="text-green-500">✓</span> Web fetching
+            <span className="text-success">✓</span> Web fetching
           </span>
           <span className="flex items-center gap-1">
-            <span className="text-green-500">✓</span> Web search
+            <span className="text-success">✓</span> Web search
           </span>
           <span className="flex items-center gap-1">
-            <span className="text-green-500">✓</span> And more!
+            <span className="text-success">✓</span> And more!
           </span>
         </div>
       </div>

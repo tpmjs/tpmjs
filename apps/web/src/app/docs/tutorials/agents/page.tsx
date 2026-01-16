@@ -224,15 +224,15 @@ const slides: Slide[] = [
             </p>
             <ul className="space-y-2 text-sm text-foreground-secondary">
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span className="text-success">✓</span>
                 <span>Execute JavaScript/Python</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span className="text-success">✓</span>
                 <span>Fetch web pages</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span className="text-success">✓</span>
                 <span>Web search</span>
               </li>
             </ul>
@@ -244,15 +244,15 @@ const slides: Slide[] = [
             </p>
             <ul className="space-y-2 text-sm text-foreground-secondary">
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span className="text-success">✓</span>
                 <span>Pre-curated tool sets</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span className="text-success">✓</span>
                 <span>One-click to add many tools</span>
               </li>
               <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
+                <span className="text-success">✓</span>
                 <span>Community collections</span>
               </li>
             </ul>
@@ -308,7 +308,7 @@ const slides: Slide[] = [
             </div>
           </div>
         </div>
-        <div className="max-w-2xl mx-auto p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+        <div className="max-w-2xl mx-auto p-4 bg-success/10 border border-success/20 rounded-lg">
           <p className="text-sm text-foreground text-center">
             🎉 <strong>Conversations are automatically saved</strong> — pick up where you left off
             anytime!

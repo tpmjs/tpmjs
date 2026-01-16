@@ -3,6 +3,7 @@
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Input } from '@tpmjs/ui/Input/Input';
 import {
   Table,
   TableBody,
@@ -277,16 +278,13 @@ export default function TpmjsApiKeysPage(): React.ReactElement {
         <div className="bg-surface border border-border rounded-lg p-6 mb-6">
           <h2 className="text-lg font-medium text-foreground mb-4">Create API Key</h2>
           {createError && <p className="text-error text-sm mb-3">{createError}</p>}
-          <div className="space-y-3">
-            <input
-              type="text"
-              value={newKeyName}
-              onChange={(e) => setNewKeyName(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-              placeholder="Key name (e.g., Production Server, CI/CD)"
-              className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-foreground text-sm placeholder:text-foreground-tertiary focus:outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
+          <Input
+            type="text"
+            value={newKeyName}
+            onChange={(e) => setNewKeyName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+            placeholder="Key name (e.g., Production Server, CI/CD)"
+          />
           <div className="flex items-center gap-2 mt-4">
             <Button onClick={handleCreate} disabled={creating || !newKeyName.trim()}>
               {creating ? 'Creating...' : 'Create Key'}

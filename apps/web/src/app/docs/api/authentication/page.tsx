@@ -88,8 +88,8 @@ export default function AuthenticationPage(): React.ReactElement {
             <li>Copy your key and store it securely</li>
           </ol>
 
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
-            <p className="text-amber-600 dark:text-amber-400 font-medium">Important</p>
+          <div className="bg-warning/10 border border-warning/20 rounded-lg p-4">
+            <p className="text-warning font-medium">Important</p>
             <p className="text-foreground-secondary text-sm mt-1">
               Your API key is displayed only once when created. Make sure to copy and store it
               securely. If you lose it, you&apos;ll need to generate a new one.

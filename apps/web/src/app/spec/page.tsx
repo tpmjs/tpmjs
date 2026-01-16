@@ -2,6 +2,7 @@
 
 import { TPMJS_CATEGORIES } from '@tpmjs/types/tpmjs';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
+import { Button } from '@tpmjs/ui/Button/Button';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { useState } from 'react';
@@ -122,28 +123,22 @@ export default function SpecPage(): React.ReactElement {
 
               {/* View Toggle */}
               <div className="flex gap-1 p-1 bg-surface rounded-lg border border-border self-center md:self-auto">
-                <button
-                  type="button"
+                <Button
+                  variant={view === 'spec' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setView('spec')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    view === 'spec'
-                      ? 'bg-foreground text-background'
-                      : 'text-foreground-secondary hover:text-foreground'
-                  }`}
+                  className="rounded-md"
                 >
                   Specification
-                </button>
-                <button
-                  type="button"
+                </Button>
+                <Button
+                  variant={view === 'example' ? 'default' : 'ghost'}
+                  size="sm"
                   onClick={() => setView('example')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                    view === 'example'
-                      ? 'bg-foreground text-background'
-                      : 'text-foreground-secondary hover:text-foreground'
-                  }`}
+                  className="rounded-md"
                 >
                   Full Example
-                </button>
+                </Button>
               </div>
             </div>
           </Container>

@@ -3,6 +3,7 @@
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Select } from '@tpmjs/ui/Select/Select';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
@@ -107,17 +108,16 @@ export default function UsagePage(): React.ReactElement {
       title="Usage"
       subtitle="Monitor your API usage and costs"
       actions={
-        <div className="flex items-center gap-2">
-          <select
-            value={period}
-            onChange={(e) => setPeriod(e.target.value as Period)}
-            className="px-3 py-1.5 bg-surface border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            <option value="hourly">Hourly</option>
-            <option value="daily">Daily</option>
-            <option value="monthly">Monthly</option>
-          </select>
-        </div>
+        <Select
+          value={period}
+          onChange={(e) => setPeriod(e.target.value as Period)}
+          size="sm"
+          options={[
+            { value: 'hourly', label: 'Hourly' },
+            { value: 'daily', label: 'Daily' },
+            { value: 'monthly', label: 'Monthly' },
+          ]}
+        />
       }
     >
       {isLoading ? (

@@ -1,3 +1,4 @@
+import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
 import Link from 'next/link';
 import { AppHeader } from '~/components/AppHeader';
@@ -450,20 +451,10 @@ export default function TermsPage(): React.ReactElement {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="mailto:hello@tpmjs.com">
-                <button
-                  type="button"
-                  className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
-                >
-                  Contact Us
-                </button>
+                <Button size="lg">Contact Us</Button>
               </a>
               <Link href="/">
-                <button
-                  type="button"
-                  className="px-6 py-3 border border-border rounded-lg font-medium hover:bg-surface transition-colors text-foreground"
-                >
-                  Back to Home
-                </button>
+                <Button variant="outline" size="lg">Back to Home</Button>
               </Link>
             </div>
           </div>

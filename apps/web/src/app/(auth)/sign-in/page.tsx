@@ -3,6 +3,7 @@
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { Label } from '@tpmjs/ui/Label/Label';
 import Link from 'next/link';
 import { useState } from 'react';
 import { signIn } from '~/lib/auth-client';
@@ -77,9 +78,7 @@ export default function SignInPage() {
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
-            Email
-          </label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
@@ -92,9 +91,7 @@ export default function SignInPage() {
 
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label htmlFor="password" className="block text-sm font-medium text-foreground">
-              Password
-            </label>
+            <Label htmlFor="password" className="mb-0">Password</Label>
             <Link
               href="/forgot-password"
               className="text-sm text-foreground-secondary hover:text-foreground hover:underline"
@@ -112,14 +109,16 @@ export default function SignInPage() {
               placeholder="Enter your password"
               className="pr-10"
             />
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground-tertiary hover:text-foreground transition-colors"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               <Icon icon={showPassword ? 'eyeOff' : 'eye'} size="sm" />
-            </button>
+            </Button>
           </div>
         </div>
 
