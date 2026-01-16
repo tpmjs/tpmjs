@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-hllm",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "HLLM API client tools for AI agents. Manage topologies, sessions, prompts, files, and more.",
   "type": "module",
   "keywords": [
@@ -197,7 +197,7 @@
       },
       {
         "name": "deleteApiKey",
-        "description": "Delete an API key."
+        "description": "Delete an existing API key from the account."
       }
     ]
   },
