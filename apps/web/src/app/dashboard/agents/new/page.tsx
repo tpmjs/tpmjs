@@ -42,7 +42,7 @@ export default function NewAgentPage(): React.ReactElement {
     uid: '',
     description: '',
     provider: 'OPENAI',
-    modelId: 'gpt-4o',
+    modelId: 'gpt-4.1-mini',
     systemPrompt: '',
     temperature: 0.7,
     maxToolCallsPerTurn: 20,

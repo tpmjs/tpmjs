@@ -237,6 +237,8 @@ export const CONVERSATION_LIMITS = {
 
 export const PROVIDER_MODELS = {
   OPENAI: [
+    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini', contextWindow: 1000000 },
+    { id: 'gpt-4.1', name: 'GPT-4.1', contextWindow: 1000000 },
     { id: 'gpt-4o', name: 'GPT-4o', contextWindow: 128000 },
     { id: 'gpt-4o-mini', name: 'GPT-4o Mini', contextWindow: 128000 },
     { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', contextWindow: 128000 },

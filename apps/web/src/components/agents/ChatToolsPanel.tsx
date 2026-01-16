@@ -2,6 +2,7 @@
 
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { useCallback, useState } from 'react';
 
 export interface ToolInfo {
   id: string;
@@ -27,6 +28,12 @@ export interface CollectionInfo {
   };
 }
 
+interface CollectionToolData {
+  tools: ToolInfo[];
+  loading: boolean;
+  error: string | null;
+}
+
 interface ChatToolsPanelProps {
   tools: ToolInfo[];
   collections: CollectionInfo[];
@@ -42,6 +49,63 @@ export function ChatToolsPanel({
   onClose,
   onToolClick,
 }: ChatToolsPanelProps) {
+  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
+  const [collectionTools, setCollectionTools] = useState<Record<string, CollectionToolData>>({});
+
+  const fetchCollectionTools = useCallback(async (collectionId: string) => {
+    const existingData = collectionTools[collectionId];
+    if (existingData?.tools && existingData.tools.length > 0) return;
+
+    setCollectionTools((prev) => ({
+      ...prev,
+      [collectionId]: { tools: [], loading: true, error: null },
+    }));
+
+    try {
+      const response = await fetch(`/api/collections/${collectionId}/tools`);
+      const data = await response.json();
+
+      if (data.success) {
+        // Transform the response to match ToolInfo structure
+        const transformedTools: ToolInfo[] = (data.data || []).map(
+          (ct: { id: string; toolId: string; tool: ToolInfo['tool'] }) => ({
+            id: ct.id,
+            toolId: ct.toolId,
+            tool: ct.tool,
+          })
+        );
+        setCollectionTools((prev) => ({
+          ...prev,
+          [collectionId]: { tools: transformedTools, loading: false, error: null },
+        }));
+      } else {
+        setCollectionTools((prev) => ({
+          ...prev,
+          [collectionId]: { tools: [], loading: false, error: data.error || 'Failed to load' },
+        }));
+      }
+    } catch {
+      setCollectionTools((prev) => ({
+        ...prev,
+        [collectionId]: { tools: [], loading: false, error: 'Failed to load tools' },
+      }));
+    }
+  }, [collectionTools]);
+
+  const toggleCollection = (collectionId: string) => {
+    setExpandedCollections((prev) => {
+      const next = new Set(prev);
+      if (next.has(collectionId)) {
+        next.delete(collectionId);
+      } else {
+        next.add(collectionId);
+        // Fetch tools when expanding
+        fetchCollectionTools(collectionId);
+      }
+      return next;
+    });
+  };
+
   if (!isOpen) return null;
 
   const totalToolsFromCollections = collections.reduce(
@@ -106,22 +170,82 @@ export function ChatToolsPanel({
               from collections ({totalToolsFromCollections})
             </legend>
             <div className="p-2 space-y-2">
-              {collections.map((c) => (
-                <div
-                  key={c.id}
-                  className="p-2 border border-dashed border-border/50 rounded bg-surface-secondary/30"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon icon="folder" size="xs" className="text-foreground-tertiary" />
-                    <span className="font-mono text-xs text-foreground truncate">
-                      {c.collection.name}
-                    </span>
+              {collections.map((c) => {
+                const isExpanded = expandedCollections.has(c.collectionId);
+                const toolData = collectionTools[c.collectionId];
+
+                return (
+                  <div
+                    key={c.id}
+                    className="border border-dashed border-border/50 rounded bg-surface-secondary/30 overflow-hidden"
+                  >
+                    {/* collection header - clickable */}
+                    <button
+                      type="button"
+                      onClick={() => toggleCollection(c.collectionId)}
+                      className="w-full p-2 flex items-center gap-2 hover:bg-surface-secondary transition-colors"
+                    >
+                      <Icon
+                        icon="chevronRight"
+                        size="xs"
+                        className={`text-foreground-tertiary transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                      />
+                      <Icon icon="folder" size="xs" className="text-foreground-tertiary" />
+                      <span className="font-mono text-xs text-foreground truncate flex-1 text-left">
+                        {c.collection.name}
+                      </span>
+                      <span className="text-[10px] text-foreground-tertiary">
+                        {c.collection.toolCount}
+                      </span>
+                    </button>
+
+                    {/* expanded tools */}
+                    {isExpanded && (
+                      <div className="border-t border-dashed border-border/50">
+                        {toolData?.loading ? (
+                          <div className="p-3 flex items-center justify-center gap-2">
+                            <Icon icon="loader" size="xs" className="animate-spin text-foreground-tertiary" />
+                            <span className="text-xs text-foreground-tertiary">loading...</span>
+                          </div>
+                        ) : toolData?.error ? (
+                          <div className="p-3 text-xs text-error text-center">
+                            {toolData.error}
+                          </div>
+                        ) : toolData?.tools.length === 0 ? (
+                          <div className="p-3 text-xs text-foreground-tertiary text-center">
+                            no tools in collection
+                          </div>
+                        ) : (
+                          <div className="p-2 space-y-1 max-h-64 overflow-y-auto">
+                            {toolData?.tools.map((t) => (
+                              <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => onToolClick(t)}
+                                className="w-full text-left p-2 rounded hover:bg-primary/5 border border-transparent hover:border-primary/20 transition-colors group"
+                              >
+                                <div className="flex items-start gap-2">
+                                  <div className="w-1.5 h-1.5 rounded-full bg-primary/50 mt-1.5 flex-shrink-0" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-mono text-xs text-foreground truncate group-hover:text-primary transition-colors">
+                                      {t.tool.name}
+                                    </p>
+                                    {t.tool.description && (
+                                      <p className="text-[10px] text-foreground-tertiary mt-0.5 line-clamp-1">
+                                        {t.tool.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-xs text-foreground-tertiary mt-1 pl-5">
-                    {c.collection.toolCount} tools
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </fieldset>
         )}
