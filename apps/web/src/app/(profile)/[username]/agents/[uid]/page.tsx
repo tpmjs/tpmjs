@@ -2,6 +2,7 @@
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
+import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
@@ -69,6 +70,113 @@ interface PublicAgent {
       username: string;
     };
   } | null;
+}
+
+function AgentApiSection({
+  agentId,
+  provider,
+  isOwner,
+}: {
+  agentId: string;
+  provider: string;
+  isOwner: boolean;
+}) {
+  const [showExample, setShowExample] = useState(false);
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
+  const apiUrl = `${baseUrl}/api/agents/${agentId}/conversation`;
+
+  const apiExampleSnippet = `// Create a conversation and send a message
+const createConvo = await fetch("${apiUrl}", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer YOUR_TPMJS_API_KEY"
+  },
+  body: JSON.stringify({
+    name: "My Conversation"
+  })
+});
+const { data: { conversation } } = await createConvo.json();
+
+// Send a message (include providerApiKey for non-owners)
+const response = await fetch(\`${apiUrl}/\${conversation.id}\`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer YOUR_TPMJS_API_KEY"
+  },
+  body: JSON.stringify({
+    message: "Hello!",
+    providerApiKey: "YOUR_${provider.toUpperCase()}_API_KEY",  // Required for non-owners
+    env: {
+      // Your env vars for any tools the agent uses
+      "SOME_API_KEY": "your-key-here"
+    }
+  })
+});`;
+
+  return (
+    <section className="p-4 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 border border-primary/20 rounded-xl">
+      <div className="flex items-center gap-2 mb-4">
+        <div className="p-1.5 bg-primary/10 rounded-lg">
+          <Icon icon="link" className="w-4 h-4 text-primary" />
+        </div>
+        <h3 className="font-semibold text-foreground">API Access</h3>
+      </div>
+
+      <div className="space-y-3">
+        <div className="group">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
+              Conversation API
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
+              {apiUrl}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Note for non-owners */}
+      {!isOwner && (
+        <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg">
+          <p className="text-sm text-warning-foreground">
+            <Icon icon="info" className="w-4 h-4 inline mr-1" />
+            You&apos;ll need to provide your own <strong>{provider}</strong> API key via the{' '}
+            <code className="font-mono text-xs bg-surface px-1 rounded">providerApiKey</code> field,
+            plus any tool credentials via the{' '}
+            <code className="font-mono text-xs bg-surface px-1 rounded">env</code> parameter.
+          </p>
+        </div>
+      )}
+
+      <div className="mt-4 pt-4 border-t border-border/50">
+        <button
+          type="button"
+          onClick={() => setShowExample(!showExample)}
+          className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+        >
+          <Icon icon={showExample ? 'chevronDown' : 'chevronRight'} className="w-4 h-4" />
+          <span>Show API usage example</span>
+        </button>
+
+        {showExample && (
+          <div className="mt-3">
+            <CodeBlock language="typescript" code={apiExampleSnippet} />
+          </div>
+        )}
+      </div>
+
+      <p className="mt-3 text-xs text-foreground-tertiary">
+        <Link href="/docs/tutorials/agents" className="text-primary hover:underline">
+          Learn more about the Agent Conversation API
+        </Link>
+      </p>
+    </section>
+  );
 }
 
 export default function PrettyAgentDetailPage(): React.ReactElement {
@@ -154,14 +262,12 @@ export default function PrettyAgentDetailPage(): React.ReactElement {
               <div className="flex items-center gap-2">
                 <LikeButton entityType="agent" entityId={agent.id} initialCount={agent.likeCount} />
                 <ForkButton type="agent" sourceId={agent.id} sourceName={agent.name} />
-                {isOwner && (
-                  <Link href={`/${username}/agents/${uid}/chat`}>
-                    <Button>
-                      <Icon icon="message" className="w-4 h-4 mr-2" />
-                      Chat
-                    </Button>
-                  </Link>
-                )}
+                <Link href={`/${username}/agents/${uid}/chat`}>
+                  <Button>
+                    <Icon icon="message" className="w-4 h-4 mr-2" />
+                    Chat
+                  </Button>
+                </Link>
               </div>
             </div>
 
@@ -185,10 +291,8 @@ export default function PrettyAgentDetailPage(): React.ReactElement {
               <span>Temperature: {agent.temperature}</span>
             </div>
 
-            {/* Fork CTA for non-owners */}
-            {!isOwner && (
-              <ForkButton type="agent" sourceId={agent.id} sourceName={agent.name} variant="full" />
-            )}
+            {/* API Access - Available to everyone (non-owners must provide their own credentials) */}
+            <AgentApiSection agentId={agent.id} provider={agent.provider} isOwner={!!isOwner} />
 
             {/* System Prompt */}
             {agent.systemPrompt && (

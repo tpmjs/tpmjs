@@ -74,9 +74,18 @@ interface PublicCollection {
   useCasesGeneratedAt: string | null;
 }
 
-function McpUrlSection({ username, slug }: { username: string; slug: string }) {
+function McpUrlSection({
+  username,
+  slug,
+  isOwner,
+}: {
+  username: string;
+  slug: string;
+  isOwner: boolean;
+}) {
   const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
   const [showConfig, setShowConfig] = useState(false);
+  const [showApiExample, setShowApiExample] = useState(false);
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
   const httpUrl = `${baseUrl}/api/mcp/${username}/${slug}/http`;
@@ -99,6 +108,28 @@ function McpUrlSection({ username, slug }: { username: string; slug: string }) {
     }
   }
 }`;
+
+  const apiExampleSnippet = `// Call a tool with your own credentials
+const response = await fetch("${httpUrl}", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer YOUR_TPMJS_API_KEY"
+  },
+  body: JSON.stringify({
+    jsonrpc: "2.0",
+    method: "tools/call",
+    params: {
+      name: "tool-name",
+      arguments: { /* tool args */ },
+      env: {
+        // Your env vars for the tools
+        "API_KEY": "your-key-here"
+      }
+    },
+    id: 1
+  })
+});`;
 
   return (
     <section className="p-4 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 border border-primary/20 rounded-xl">
@@ -159,8 +190,20 @@ function McpUrlSection({ username, slug }: { username: string; slug: string }) {
         </div>
       </div>
 
+      {/* Note for non-owners */}
+      {!isOwner && (
+        <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg">
+          <p className="text-sm text-warning-foreground">
+            <Icon icon="info" className="w-4 h-4 inline mr-1" />
+            You&apos;ll need to provide your own API keys for any tools that require them. Pass
+            credentials via the <code className="font-mono text-xs bg-surface px-1 rounded">env</code>{' '}
+            parameter in your API calls.
+          </p>
+        </div>
+      )}
+
       {/* Config snippet toggle */}
-      <div className="mt-4 pt-4 border-t border-border/50">
+      <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
         <button
           type="button"
           onClick={() => setShowConfig(!showConfig)}
@@ -174,6 +217,25 @@ function McpUrlSection({ username, slug }: { username: string; slug: string }) {
           <div className="mt-3">
             <CodeBlock language="json" code={configSnippet} />
           </div>
+        )}
+
+        {!isOwner && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowApiExample(!showApiExample)}
+              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+            >
+              <Icon icon={showApiExample ? 'chevronDown' : 'chevronRight'} className="w-4 h-4" />
+              <span>Show API usage example</span>
+            </button>
+
+            {showApiExample && (
+              <div className="mt-3">
+                <CodeBlock language="typescript" code={apiExampleSnippet} />
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -310,17 +372,8 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
               )}
             </div>
 
-            {/* MCP Server URLs - Only shown for owner */}
-            {isOwner ? (
-              <McpUrlSection username={username} slug={collection.slug} />
-            ) : (
-              <ForkButton
-                type="collection"
-                sourceId={collection.id}
-                sourceName={collection.name}
-                variant="full"
-              />
-            )}
+            {/* MCP Server URLs - Available to everyone (non-owners must provide their own credentials) */}
+            <McpUrlSection username={username} slug={collection.slug} isOwner={!!isOwner} />
 
             {/* Tools */}
             {collection.tools.length > 0 ? (
