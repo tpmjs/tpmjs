@@ -11,7 +11,7 @@ const SPRITES_API_BASE = 'https://api.sprites.dev/v1';
 
 export interface Sprite {
   name: string;
-  status: 'creating' | 'running' | 'stopped' | 'error' | 'cold';
+  status: 'creating' | 'running' | 'stopped' | 'error' | 'cold' | 'warm';
   createdAt: string;
   runtime?: string;
   metadata?: Record<string, unknown>;
@@ -96,7 +96,8 @@ export const spritesListTool = tool({
 
       // Validate status is a known value
       // Note: "cold" is returned for sprites that have been idle
-      if (status && !['creating', 'running', 'stopped', 'error', 'cold'].includes(status)) {
+      // Note: "warm" is returned for sprites that are warming up
+      if (status && !['creating', 'running', 'stopped', 'error', 'cold', 'warm'].includes(status)) {
         throw new Error(`Invalid sprite status: ${status}`);
       }
 
