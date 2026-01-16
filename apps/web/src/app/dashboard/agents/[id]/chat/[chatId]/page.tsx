@@ -1,6 +1,7 @@
 'use client';
 
 import type { AIProvider } from '@tpmjs/types/agent';
+import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
@@ -8,6 +9,11 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Streamdown } from 'streamdown';
+import type { AgentSettings } from '~/components/agents/ChatSettingsDrawer';
+import { ChatSettingsDrawer } from '~/components/agents/ChatSettingsDrawer';
+import type { CollectionInfo, ToolInfo } from '~/components/agents/ChatToolsPanel';
+import { ChatToolsPanel } from '~/components/agents/ChatToolsPanel';
+import { ToolDetailsModal } from '~/components/agents/ToolDetailsModal';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 interface Agent {
@@ -17,6 +23,12 @@ interface Agent {
   description: string | null;
   provider: AIProvider;
   modelId: string;
+  systemPrompt: string | null;
+  temperature: number;
+  maxToolCallsPerTurn: number;
+  maxMessagesInContext: number;
+  tools: ToolInfo[];
+  collections: CollectionInfo[];
 }
 
 interface MessageToolCall {
@@ -71,7 +83,7 @@ function getErrorMessage(output: unknown): string | null {
 }
 
 /**
- * Sexy tool call debug card component
+ * Tool call card with style guide aesthetics
  */
 function ToolCallCard({
   toolCall,
@@ -82,7 +94,6 @@ function ToolCallCard({
   isExpanded: boolean;
   onToggle: () => void;
 }) {
-  // Detect if the output contains an error
   const hasError = Boolean(toolCall.output && isToolError(toolCall.output));
   const errorMessage = hasError ? getErrorMessage(toolCall.output) : null;
   const effectiveStatus = hasError ? 'error' : toolCall.status;
@@ -110,10 +121,12 @@ function ToolCallCard({
   };
 
   return (
-    <div
-      className={`rounded-lg border overflow-hidden font-mono text-xs ${hasError ? 'border-error/50 bg-error/5' : 'border-border bg-surface-secondary/50'}`}
+    <fieldset
+      className={`border border-dashed overflow-hidden font-mono text-xs ${
+        hasError ? 'border-error/50 bg-error/5' : 'border-border bg-surface-secondary/30'
+      }`}
     >
-      {/* Header */}
+      {/* header */}
       <Button
         variant="ghost"
         onClick={onToggle}
@@ -126,41 +139,38 @@ function ToolCallCard({
             className={effectiveStatus === 'running' ? 'animate-spin' : ''}
           />
         </div>
-        <div className="flex-1 text-left">
+        <div className="flex-1 text-left min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-foreground font-semibold">{toolCall.toolName}</span>
+            <span className="text-foreground font-semibold truncate">{toolCall.toolName}</span>
             <span className="text-foreground-tertiary text-[10px]">
               {toolCall.toolCallId.slice(0, 8)}...
             </span>
             {hasError && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-error/10 text-error">
-                ERROR
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-error/10 text-error uppercase">
+                error
               </span>
             )}
           </div>
-          {/* Show error message preview in header */}
           {hasError && errorMessage && !isExpanded && (
-            <div className="text-error text-[10px] mt-1 truncate max-w-[300px]">
-              {errorMessage}
-            </div>
+            <div className="text-error text-[10px] mt-1 truncate max-w-[300px]">{errorMessage}</div>
           )}
         </div>
         <Icon
           icon="chevronRight"
           size="xs"
-          className={`text-foreground-tertiary transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+          className={`text-foreground-tertiary transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`}
         />
       </Button>
 
-      {/* Expanded Content */}
+      {/* expanded content */}
       {isExpanded && (
-        <div className="border-t border-border">
-          {/* Input Section */}
+        <div className="border-t border-dashed border-border">
+          {/* input */}
           {toolCall.input !== undefined && toolCall.input !== null ? (
-            <div className="p-3 border-b border-border/50">
+            <div className="p-3 border-b border-dashed border-border/50">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[10px] uppercase tracking-wider text-foreground-tertiary">
-                  Input
+                  input
                 </span>
                 <div className="flex-1 h-px bg-border/50" />
               </div>
@@ -170,25 +180,25 @@ function ToolCallCard({
             </div>
           ) : null}
 
-          {/* Error Message Section */}
+          {/* error message */}
           {hasError && errorMessage && (
-            <div className="p-3 bg-error/10 border-b border-error/20">
+            <div className="p-3 bg-error/10 border-b border-dashed border-error/20">
               <div className="flex items-center gap-2 mb-2">
                 <Icon icon="alertCircle" size="xs" className="text-error" />
                 <span className="text-[10px] uppercase tracking-wider text-error font-semibold">
-                  Error
+                  error
                 </span>
               </div>
               <p className="text-[11px] text-error">{errorMessage}</p>
             </div>
           )}
 
-          {/* Output Section */}
+          {/* output */}
           {toolCall.output !== undefined && toolCall.output !== null ? (
             <div className="p-3">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[10px] uppercase tracking-wider text-foreground-tertiary">
-                  {hasError ? 'Full Response' : 'Output'}
+                  {hasError ? 'full response' : 'output'}
                 </span>
                 <div className="flex-1 h-px bg-border/50" />
               </div>
@@ -200,16 +210,16 @@ function ToolCallCard({
             </div>
           ) : null}
 
-          {/* Status indicator for running */}
+          {/* running indicator */}
           {toolCall.status === 'running' && !toolCall.output && (
             <div className="p-3 flex items-center gap-2 text-foreground-tertiary">
               <Icon icon="loader" size="xs" className="animate-spin" />
-              <span>Executing...</span>
+              <span>executing...</span>
             </div>
           )}
         </div>
       )}
-    </div>
+    </fieldset>
   );
 }
 
@@ -241,7 +251,6 @@ export default function AgentChatPage(): React.ReactElement {
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  // Use chatId from URL as the active conversation
   const activeConversationId = chatId;
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -251,6 +260,11 @@ export default function AgentChatPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
   const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
+
+  // UI state
+  const [showToolsPanel, setShowToolsPanel] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<ToolInfo | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -314,11 +328,6 @@ export default function AgentChatPage(): React.ReactElement {
 
       if (data.success) {
         const msgs = data.data.messages || [];
-        console.log(
-          '[fetchMessages] Received messages:',
-          msgs.length,
-          msgs.map((m: Message) => ({ role: m.role, toolName: m.toolName }))
-        );
         setMessages(msgs);
       }
     } catch (err) {
@@ -352,7 +361,6 @@ export default function AgentChatPage(): React.ReactElement {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   });
 
-  // Navigate to conversation when selected from sidebar
   const handleSelectConversation = (convSlug: string) => {
     router.push(`/dashboard/agents/${agentId}/chat/${convSlug}`);
   };
@@ -367,7 +375,6 @@ export default function AgentChatPage(): React.ReactElement {
     setError(null);
     setToolCalls([]);
 
-    // Use the chatId from URL
     const conversationId = activeConversationId || chatId;
 
     // Optimistically add user message
@@ -406,7 +413,7 @@ export default function AgentChatPage(): React.ReactElement {
 
         // Parse SSE events
         const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+        buffer = lines.pop() || '';
 
         let eventType = '';
         for (const line of lines) {
@@ -420,7 +427,6 @@ export default function AgentChatPage(): React.ReactElement {
                 setStreamingContent((prev) => prev + data.text);
                 break;
               case 'tool_call':
-                // Add tool call to tracking
                 setToolCalls((prev) => [
                   ...prev,
                   {
@@ -430,11 +436,9 @@ export default function AgentChatPage(): React.ReactElement {
                     status: 'running',
                   },
                 ]);
-                // Auto-expand new tool calls
                 setExpandedToolCalls((prev) => new Set([...prev, data.toolCallId]));
                 break;
               case 'tool_result':
-                // Update tool call with result
                 setToolCalls((prev) =>
                   prev.map((tc) =>
                     tc.toolCallId === data.toolCallId
@@ -444,13 +448,10 @@ export default function AgentChatPage(): React.ReactElement {
                 );
                 break;
               case 'complete':
-                // Refresh messages
-                console.log('[SSE] Complete event received, fetching messages...');
                 await fetchMessages();
                 await fetchConversations();
                 setStreamingContent('');
                 setToolCalls([]);
-                console.log('[SSE] Messages and conversations refreshed');
                 break;
               case 'error':
                 throw new Error(data.message);
@@ -461,7 +462,6 @@ export default function AgentChatPage(): React.ReactElement {
     } catch (err) {
       console.error('Failed to send message:', err);
       setError(err instanceof Error ? err.message : 'Failed to send message');
-      // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
     } finally {
       setIsSending(false);
@@ -480,6 +480,15 @@ export default function AgentChatPage(): React.ReactElement {
   const startNewConversation = () => {
     const newId = generateConversationId();
     router.push(`/dashboard/agents/${agentId}/chat/${newId}`);
+  };
+
+  const handleSettingsChange = (newSettings: AgentSettings) => {
+    if (agent) {
+      setAgent({
+        ...agent,
+        ...newSettings,
+      });
+    }
   };
 
   if (isLoading) {
@@ -531,13 +540,37 @@ export default function AgentChatPage(): React.ReactElement {
 
   return (
     <DashboardLayout
-      title={`Chat with ${agent.name}`}
-      subtitle={PROVIDER_DISPLAY_NAMES[agent.provider]}
+      title={agent.name}
+      subtitle={`${PROVIDER_DISPLAY_NAMES[agent.provider]} / ${agent.modelId}`}
       showBackButton
       backUrl={`/dashboard/agents/${agent.id}`}
       fullHeight
       actions={
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowToolsPanel(!showToolsPanel)}
+            title={showToolsPanel ? 'Hide tools panel' : 'Show tools panel'}
+            className={showToolsPanel ? 'bg-primary/10 text-primary' : ''}
+          >
+            <Icon icon="puzzle" size="xs" className="mr-1.5" />
+            <span className="hidden sm:inline">Tools</span>
+            {agent.tools.length > 0 && (
+              <Badge variant="secondary" className="ml-1.5 text-[10px]">
+                {agent.tools.length}
+              </Badge>
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowSettings(true)}
+            title="Agent settings"
+          >
+            <Icon icon="edit" size="xs" className="mr-1.5" />
+            <span className="hidden sm:inline">Settings</span>
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -549,11 +582,10 @@ export default function AgentChatPage(): React.ReactElement {
             }}
             title="View conversation as JSON"
           >
-            <Icon icon="terminal" size="xs" className="mr-2" />
-            JSON
+            <Icon icon="terminal" size="xs" />
           </Button>
           <Button variant="outline" size="sm" onClick={startNewConversation}>
-            <Icon icon="plus" size="xs" className="mr-2" />
+            <Icon icon="plus" size="xs" className="mr-1.5" />
             New Chat
           </Button>
         </div>
@@ -561,50 +593,57 @@ export default function AgentChatPage(): React.ReactElement {
     >
       <div className="flex h-full overflow-hidden">
         {/* Conversations Sidebar */}
-        <div className="w-64 border-r border-border flex flex-col bg-surface-secondary/30 hidden md:flex">
-          {/* Conversations List */}
+        <div className="w-56 border-r border-dashed border-border flex flex-col bg-surface hidden md:flex">
+          <div className="p-3 border-b border-dashed border-border">
+            <span className="font-mono text-xs text-foreground-tertiary lowercase">
+              conversations
+            </span>
+          </div>
           <div className="flex-1 overflow-y-auto p-2">
             {conversations.length === 0 ? (
-              <p className="text-sm text-foreground-tertiary text-center py-4">
-                No conversations yet
+              <p className="text-xs text-foreground-tertiary text-center py-4 font-mono">
+                no conversations yet
               </p>
             ) : (
               conversations.map((conv) => (
-                <Button
+                <button
+                  type="button"
                   key={conv.id}
-                  variant="ghost"
                   onClick={() => handleSelectConversation(conv.slug)}
-                  className={`w-full text-left h-auto py-2 px-3 justify-start mb-1 ${
+                  className={`w-full text-left p-2 mb-1 rounded border border-transparent transition-colors ${
                     chatId === conv.slug
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-foreground-secondary hover:bg-surface-secondary'
+                      ? 'bg-primary/10 border-primary/20 text-primary'
+                      : 'text-foreground-secondary hover:bg-surface-secondary hover:border-border'
                   }`}
                 >
-                  <div className="flex flex-col items-start">
-                    <p className="text-sm font-medium truncate">{conv.title || 'Untitled Chat'}</p>
-                    <p className="text-xs text-foreground-tertiary">{conv.messageCount} messages</p>
-                  </div>
-                </Button>
+                  <p className="text-sm font-medium truncate">{conv.title || 'Untitled Chat'}</p>
+                  <p className="text-[10px] text-foreground-tertiary font-mono mt-0.5">
+                    {conv.messageCount} messages
+                  </p>
+                </button>
               ))
             )}
           </div>
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && !streamingContent && (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <fieldset className="border border-dashed border-border p-8 max-w-md text-center">
+                  <legend className="px-2 font-mono text-xs text-foreground-tertiary lowercase">
+                    new conversation
+                  </legend>
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                     <Icon icon="message" size="lg" className="text-primary" />
                   </div>
-                  <h3 className="text-lg font-medium text-foreground mb-2">Start a conversation</h3>
-                  <p className="text-foreground-secondary max-w-sm">
-                    Send a message to start chatting with {agent.name}.
+                  <h3 className="font-mono text-foreground mb-2 lowercase">start chatting</h3>
+                  <p className="text-sm text-foreground-secondary">
+                    Send a message to start a conversation with {agent.name}.
                   </p>
-                </div>
+                </fieldset>
               </div>
             )}
 
@@ -628,7 +667,6 @@ export default function AgentChatPage(): React.ReactElement {
               }
 
               return messages.map((message) => {
-                // Check if this ASSISTANT message has embedded tool calls
                 const hasEmbeddedToolCalls =
                   message.role === 'ASSISTANT' &&
                   message.toolCalls &&
@@ -641,13 +679,12 @@ export default function AgentChatPage(): React.ReactElement {
                     {hasEmbeddedToolCalls && (
                       <div className="space-y-2">
                         {message.toolCalls?.map((tc) => {
-                          // Look up the output for this tool call
                           const toolOutput = toolResultsMap.get(tc.toolCallId);
                           const hasOutput = toolOutput !== undefined;
 
                           return (
                             <div key={tc.toolCallId} className="flex justify-start">
-                              <div className="max-w-[80%]">
+                              <div className="max-w-[85%]">
                                 <ToolCallCard
                                   toolCall={{
                                     toolCallId: tc.toolCallId,
@@ -666,16 +703,16 @@ export default function AgentChatPage(): React.ReactElement {
                       </div>
                     )}
 
-                    {/* Render the message content - skip TOOL messages as they're shown with their calls */}
+                    {/* Render the message content - skip TOOL messages */}
                     {message.role !== 'TOOL' && (
                       <div
                         className={`flex ${message.role === 'USER' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-[80%] rounded-lg p-4 ${
+                          className={`max-w-[85%] rounded-lg p-4 ${
                             message.role === 'USER'
                               ? 'bg-primary text-primary-foreground'
-                              : 'bg-surface-secondary'
+                              : 'bg-surface border border-dashed border-border'
                           }`}
                         >
                           {message.role === 'USER' ? (
@@ -698,7 +735,7 @@ export default function AgentChatPage(): React.ReactElement {
               <div className="space-y-2">
                 {toolCalls.map((tc) => (
                   <div key={tc.toolCallId} className="flex justify-start">
-                    <div className="max-w-[80%]">
+                    <div className="max-w-[85%]">
                       <ToolCallCard
                         toolCall={tc}
                         isExpanded={expandedToolCalls.has(tc.toolCallId)}
@@ -712,7 +749,7 @@ export default function AgentChatPage(): React.ReactElement {
 
             {streamingContent && (
               <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
+                <div className="max-w-[85%] rounded-lg p-4 bg-surface border border-dashed border-border">
                   <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
                     <Streamdown>{streamingContent}</Streamdown>
                   </div>
@@ -723,10 +760,10 @@ export default function AgentChatPage(): React.ReactElement {
 
             {isSending && !streamingContent && toolCalls.length === 0 && (
               <div className="flex justify-start">
-                <div className="rounded-lg p-4 bg-surface-secondary">
+                <div className="rounded-lg p-4 bg-surface border border-dashed border-border">
                   <div className="flex items-center gap-2 text-foreground-secondary">
                     <Icon icon="loader" size="sm" className="animate-spin" />
-                    <span className="text-sm">Thinking...</span>
+                    <span className="text-sm font-mono lowercase">thinking...</span>
                   </div>
                 </div>
               </div>
@@ -737,13 +774,13 @@ export default function AgentChatPage(): React.ReactElement {
 
           {/* Error Message */}
           {error && (
-            <div className="px-4 py-2 bg-error/10 border-t border-error/20">
-              <p className="text-sm text-error">{error}</p>
+            <div className="px-4 py-2 bg-error/10 border-t border-dashed border-error/20">
+              <p className="text-sm text-error font-mono">{error}</p>
             </div>
           )}
 
           {/* Input Area */}
-          <div className="border-t border-border p-4">
+          <div className="border-t border-dashed border-border p-4 bg-surface">
             <div className="flex items-end gap-2">
               <Textarea
                 ref={inputRef}
@@ -753,7 +790,7 @@ export default function AgentChatPage(): React.ReactElement {
                 placeholder="Type a message..."
                 rows={1}
                 resize="none"
-                className="flex-1 min-h-[48px] max-h-[200px]"
+                className="flex-1 min-h-[48px] max-h-[200px] font-mono"
                 style={{
                   height: 'auto',
                   minHeight: '48px',
@@ -768,12 +805,45 @@ export default function AgentChatPage(): React.ReactElement {
                 <Icon icon="send" size="sm" />
               </Button>
             </div>
-            <p className="text-xs text-foreground-tertiary mt-2">
-              Press Enter to send, Shift+Enter for new line
+            <p className="text-[10px] text-foreground-tertiary mt-2 font-mono">
+              enter to send, shift+enter for new line
             </p>
           </div>
         </div>
+
+        {/* Tools Panel */}
+        <ChatToolsPanel
+          tools={agent.tools}
+          collections={agent.collections}
+          isOpen={showToolsPanel}
+          onClose={() => setShowToolsPanel(false)}
+          onToolClick={setSelectedTool}
+        />
       </div>
+
+      {/* Tool Details Modal */}
+      <ToolDetailsModal
+        tool={selectedTool}
+        open={!!selectedTool}
+        onClose={() => setSelectedTool(null)}
+      />
+
+      {/* Settings Drawer */}
+      <ChatSettingsDrawer
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        agentId={agent.id}
+        settings={{
+          name: agent.name,
+          provider: agent.provider,
+          modelId: agent.modelId,
+          systemPrompt: agent.systemPrompt,
+          temperature: agent.temperature,
+          maxToolCallsPerTurn: agent.maxToolCallsPerTurn,
+          maxMessagesInContext: agent.maxMessagesInContext,
+        }}
+        onSettingsChange={handleSettingsChange}
+      />
     </DashboardLayout>
   );
 }
