@@ -31,6 +31,102 @@ interface RouteContext {
 }
 
 /**
+ * GET /api/collections/[id]/tools
+ * List all tools in a collection
+ */
+export async function GET(
+  _request: NextRequest,
+  context: RouteContext
+): Promise<NextResponse<ApiResponse>> {
+  const requestId = crypto.randomUUID();
+  const { id: collectionId } = await context.params;
+
+  try {
+    // Check if collection exists and is accessible
+    const collection = await prisma.collection.findUnique({
+      where: { id: collectionId },
+      select: { id: true, isPublic: true, userId: true },
+    });
+
+    if (!collection) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'NOT_FOUND', message: 'Collection not found' },
+          meta: { version: API_VERSION, timestamp: new Date().toISOString(), requestId },
+        },
+        { status: 404 }
+      );
+    }
+
+    // For private collections, check ownership
+    if (!collection.isPublic) {
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+
+      if (!session || collection.userId !== session.user.id) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'FORBIDDEN', message: 'Access denied' },
+            meta: { version: API_VERSION, timestamp: new Date().toISOString(), requestId },
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Fetch tools in the collection
+    const collectionTools = await prisma.collectionTool.findMany({
+      where: { collectionId },
+      include: {
+        tool: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            package: {
+              select: {
+                npmPackageName: true,
+                category: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { position: 'asc' },
+    });
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: collectionTools.map((ct) => ({
+          id: ct.id,
+          toolId: ct.toolId,
+          position: ct.position,
+          note: ct.note,
+          addedAt: ct.addedAt,
+          tool: ct.tool,
+        })),
+        meta: { version: API_VERSION, timestamp: new Date().toISOString(), requestId },
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('[API Error] GET /api/collections/[id]/tools:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'INTERNAL_ERROR', message: 'Failed to fetch collection tools' },
+        meta: { version: API_VERSION, timestamp: new Date().toISOString(), requestId },
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * POST /api/collections/[id]/tools
  * Add a tool to a collection
  */
