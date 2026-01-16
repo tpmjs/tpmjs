@@ -4,6 +4,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
 import Link from 'next/link';
 import { AppHeader } from '../components/AppHeader';
+// import { ArchitectureDiagramWrapper } from '../components/home/ArchitectureDiagramWrapper';
 import { HeroSection } from '../components/home/HeroSection';
 
 export const dynamic = 'force-dynamic';
@@ -82,6 +83,22 @@ export default async function HomePage(): Promise<React.ReactElement> {
       <main>
         {/* Hero Section - Dithered Design */}
         <HeroSection stats={data.stats} />
+
+        {/* Architecture Diagram Section - temporarily disabled
+        <section className="py-16 bg-background border-b border-border">
+          <Container size="xl" padding="lg">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                How It Works
+              </h2>
+              <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
+                Publish once to npm, reach every AI agent. Your tool goes live in minutes.
+              </p>
+            </div>
+            <ArchitectureDiagramWrapper />
+          </Container>
+        </section>
+        */}
 
         {/* Featured Tools Section */}
         <section className="py-16 bg-background">

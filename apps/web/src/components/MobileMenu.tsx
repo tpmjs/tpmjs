@@ -24,12 +24,6 @@ const navSections: NavSection[] = [
       { href: '/tool/tool-search', label: 'Tools', description: 'Browse all tools' },
       { href: '/collections', label: 'Collections', description: 'Discover curated tool sets' },
       { href: '/agents', label: 'Agents', description: 'AI agents with tools' },
-      {
-        href: 'https://playground.tpmjs.com',
-        label: 'Playground',
-        description: 'Try tools live',
-        external: true,
-      },
     ],
   },
   {
@@ -50,6 +44,7 @@ const navSections: NavSection[] = [
       { href: '/faq', label: 'FAQ', description: 'Common questions' },
       { href: '/changelog', label: 'Changelog', description: 'Latest updates' },
       { href: '/stats', label: 'Stats', description: 'Platform metrics' },
+      { href: '/style-guide', label: 'Style Guide', description: 'UI components' },
     ],
   },
 ];

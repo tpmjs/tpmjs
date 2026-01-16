@@ -9,13 +9,15 @@ export function FieldsetSection({
   title,
   children,
   id,
+  className = '',
 }: {
   title: string;
   children: React.ReactNode;
   id?: string;
+  className?: string;
 }): React.ReactElement {
   return (
-    <fieldset id={id} className="border border-dashed border-border p-8 mb-16 scroll-mt-24">
+    <fieldset id={id} className={`border border-dashed border-border p-8 mb-16 scroll-mt-24 ${className}`}>
       <legend className="font-mono text-sm text-foreground-secondary px-3 lowercase">
         {title}
       </legend>

@@ -1,6 +1,13 @@
 'use client';
 
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@tpmjs/ui/Accordion/Accordion';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
+import { Breadcrumbs } from '@tpmjs/ui/Breadcrumbs/Breadcrumbs';
 import { Button } from '@tpmjs/ui/Button/Button';
 import {
   Card,
@@ -12,15 +19,35 @@ import {
 } from '@tpmjs/ui/Card/Card';
 import { Checkbox } from '@tpmjs/ui/Checkbox/Checkbox';
 import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
+import { Drawer, DrawerContent, DrawerTrigger } from '@tpmjs/ui/Drawer/Drawer';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@tpmjs/ui/DropdownMenu/DropdownMenu';
+import { EmptyState } from '@tpmjs/ui/EmptyState/EmptyState';
+import { ErrorState } from '@tpmjs/ui/ErrorState/ErrorState';
 import { FormField } from '@tpmjs/ui/FormField/FormField';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
+import { InstallSnippet } from '@tpmjs/ui/InstallSnippet/InstallSnippet';
+import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
+import { Modal, ModalContent, ModalTrigger } from '@tpmjs/ui/Modal/Modal';
+import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
+import { Pagination } from '@tpmjs/ui/Pagination/Pagination';
+import { Popover, PopoverContent, PopoverTrigger } from '@tpmjs/ui/Popover/Popover';
+import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
+import { QualityScore } from '@tpmjs/ui/QualityScore/QualityScore';
 import { Radio } from '@tpmjs/ui/Radio/Radio';
 import { RadioGroup } from '@tpmjs/ui/Radio/RadioGroup';
 import { Select } from '@tpmjs/ui/Select/Select';
+import { Skeleton } from '@tpmjs/ui/Skeleton/Skeleton';
+import { Slider } from '@tpmjs/ui/Slider/Slider';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
+import { StatCard } from '@tpmjs/ui/StatCard/StatCard';
 import { Switch } from '@tpmjs/ui/Switch/Switch';
-import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import {
   Table,
   TableBody,
@@ -30,7 +57,11 @@ import {
   TableHeader,
   TableRow,
 } from '@tpmjs/ui/Table/Table';
+import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
+import { Toast, ToastProvider } from '@tpmjs/ui/Toast/Toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@tpmjs/ui/Tooltip/Tooltip';
+import { useState } from 'react';
 import { FieldsetSection, SubSection } from './shared';
 
 interface SectionComponentsProps {
@@ -44,8 +75,12 @@ export function SectionComponents({
   activeTab,
   onTabChange,
   radioValue,
-  onRadioChange
+  onRadioChange,
 }: SectionComponentsProps): React.ReactElement {
+  const [sliderValue, setSliderValue] = useState(50);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showToast, setShowToast] = useState(false);
+
   return (
     <FieldsetSection title="12. components" id="components">
       <p className="text-foreground-secondary mb-8 font-sans prose-width">
@@ -74,7 +109,9 @@ export function SectionComponents({
               <Button size="sm">small</Button>
               <Button size="md">medium</Button>
               <Button size="lg">large</Button>
-              <Button size="icon"><Icon icon="plus" size="sm" /></Button>
+              <Button size="icon">
+                <Icon icon="plus" size="sm" />
+              </Button>
             </div>
           </div>
           <div>
@@ -117,20 +154,63 @@ export function SectionComponents({
       {/* Card */}
       <SubSection title="card">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(['default', 'elevated', 'outline', 'blueprint', 'featured', 'brutalist'] as const).map((variant) => (
-            <Card key={variant} variant={variant}>
-              <CardHeader>
-                <CardTitle>{variant} card</CardTitle>
-                <CardDescription>card variant example</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-foreground-secondary text-sm">card content goes here.</p>
-              </CardContent>
-              <CardFooter>
-                <Button size="sm">action</Button>
-              </CardFooter>
-            </Card>
-          ))}
+          {(['default', 'elevated', 'outline', 'blueprint', 'featured', 'brutalist'] as const).map(
+            (variant) => (
+              <Card key={variant} variant={variant}>
+                <CardHeader>
+                  <CardTitle>{variant} card</CardTitle>
+                  <CardDescription>card variant example</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-foreground-secondary text-sm">card content goes here.</p>
+                </CardContent>
+                <CardFooter>
+                  <Button size="sm">action</Button>
+                </CardFooter>
+              </Card>
+            )
+          )}
+        </div>
+      </SubSection>
+
+      {/* Accordion */}
+      <SubSection title="accordion">
+        <Accordion type="single" collapsible className="w-full max-w-lg">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>What is TPMJS?</AccordionTrigger>
+            <AccordionContent>
+              TPMJS is a tool package manager for JavaScript that helps you discover, publish, and
+              use AI tools.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-2">
+            <AccordionTrigger>How do I publish a tool?</AccordionTrigger>
+            <AccordionContent>
+              Add the tpmjs keyword to your package.json and publish to npm. Your tool will be
+              automatically discovered.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-3">
+            <AccordionTrigger>Is it free to use?</AccordionTrigger>
+            <AccordionContent>
+              Yes, TPMJS is free for open source tools. Enterprise features are available for
+              private registries.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </SubSection>
+
+      {/* Breadcrumbs */}
+      <SubSection title="breadcrumbs">
+        <div className="space-y-4">
+          <Breadcrumbs
+            items={[
+              { label: 'Home', href: '/' },
+              { label: 'Tools', href: '/tools' },
+              { label: 'Category', href: '/tools/category' },
+              { label: 'Current Page' },
+            ]}
+          />
         </div>
       </SubSection>
 
@@ -189,6 +269,36 @@ export function SectionComponents({
         </div>
       </SubSection>
 
+      {/* Slider */}
+      <SubSection title="slider">
+        <div className="max-w-md space-y-4">
+          <Slider value={sliderValue} onChange={setSliderValue} min={0} max={100} step={1} />
+          <p className="font-mono text-xs text-foreground-secondary">Value: {sliderValue}</p>
+        </div>
+      </SubSection>
+
+      {/* Progress Bar */}
+      <SubSection title="progress bar">
+        <div className="space-y-6 max-w-md">
+          <div>
+            <p className="font-mono text-xs text-foreground-secondary mb-2">25%</p>
+            <ProgressBar value={25} />
+          </div>
+          <div>
+            <p className="font-mono text-xs text-foreground-secondary mb-2">50%</p>
+            <ProgressBar value={50} />
+          </div>
+          <div>
+            <p className="font-mono text-xs text-foreground-secondary mb-2">75%</p>
+            <ProgressBar value={75} />
+          </div>
+          <div>
+            <p className="font-mono text-xs text-foreground-secondary mb-2">100%</p>
+            <ProgressBar value={100} />
+          </div>
+        </div>
+      </SubSection>
+
       {/* Tabs */}
       <SubSection title="tabs">
         <div className="space-y-6">
@@ -240,6 +350,100 @@ export function SectionComponents({
         </Table>
       </SubSection>
 
+      {/* Pagination */}
+      <SubSection title="pagination">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={10}
+          onPageChange={setCurrentPage}
+        />
+      </SubSection>
+
+      {/* Dropdown Menu */}
+      <SubSection title="dropdown menu">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              Open Menu <Icon icon="chevronDown" size="sm" className="ml-2" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Logout</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SubSection>
+
+      {/* Popover */}
+      <SubSection title="popover">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline">Open Popover</Button>
+          </PopoverTrigger>
+          <PopoverContent>
+            <div className="space-y-2">
+              <h4 className="font-medium text-foreground">Popover Title</h4>
+              <p className="text-sm text-foreground-secondary">
+                This is the popover content. It can contain any elements.
+              </p>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </SubSection>
+
+      {/* Tooltip */}
+      <SubSection title="tooltip">
+        <TooltipProvider>
+          <div className="flex gap-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline">Hover me</Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>This is a tooltip</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
+      </SubSection>
+
+      {/* Modal */}
+      <SubSection title="modal">
+        <Modal>
+          <ModalTrigger asChild>
+            <Button>Open Modal</Button>
+          </ModalTrigger>
+          <ModalContent title="Modal Title" description="This is a modal dialog.">
+            <div className="py-4">
+              <p className="text-foreground-secondary">Modal content goes here.</p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline">Cancel</Button>
+              <Button>Confirm</Button>
+            </div>
+          </ModalContent>
+        </Modal>
+      </SubSection>
+
+      {/* Drawer */}
+      <SubSection title="drawer">
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="outline">Open Drawer</Button>
+          </DrawerTrigger>
+          <DrawerContent>
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Drawer Content</h3>
+              <p className="text-foreground-secondary">
+                This is the drawer content. It slides in from the bottom.
+              </p>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      </SubSection>
+
       {/* Spinner */}
       <SubSection title="spinner">
         <div className="flex flex-wrap gap-12 items-center">
@@ -264,6 +468,122 @@ export function SectionComponents({
             <p className="font-mono text-xs text-foreground-secondary mt-4">xl</p>
           </div>
         </div>
+      </SubSection>
+
+      {/* Skeleton */}
+      <SubSection title="skeleton">
+        <div className="space-y-4 max-w-md">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+          <div className="flex items-center gap-4 mt-6">
+            <Skeleton className="h-12 w-12 rounded-full" />
+            <div className="space-y-2 flex-1">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          </div>
+        </div>
+      </SubSection>
+
+      {/* State Components */}
+      <SubSection title="state components">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="border border-dashed border-border p-4">
+            <p className="font-mono text-xs text-foreground-secondary mb-4">empty state</p>
+            <EmptyState
+              icon="inbox"
+              title="No items yet"
+              description="Get started by creating your first item."
+              action={<Button size="sm">Create Item</Button>}
+            />
+          </div>
+          <div className="border border-dashed border-border p-4">
+            <p className="font-mono text-xs text-foreground-secondary mb-4">error state</p>
+            <ErrorState
+              title="Something went wrong"
+              message="Failed to load data. Please try again."
+              onRetry={() => {}}
+            />
+          </div>
+          <div className="border border-dashed border-border p-4">
+            <p className="font-mono text-xs text-foreground-secondary mb-4">loading state</p>
+            <LoadingState message="Loading data..." />
+          </div>
+        </div>
+      </SubSection>
+
+      {/* Page Header */}
+      <SubSection title="page header">
+        <div className="border border-dashed border-border p-4">
+          <PageHeader
+            title="Page Title"
+            description="This is a description of the page content."
+            actions={
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  Secondary
+                </Button>
+                <Button size="sm">Primary</Button>
+              </div>
+            }
+          />
+        </div>
+      </SubSection>
+
+      {/* Stat Card */}
+      <SubSection title="stat card">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <StatCard title="Total Tools" value="1,234" change="+12%" changeType="positive" />
+          <StatCard title="Downloads" value="45.2K" change="-3%" changeType="negative" />
+          <StatCard title="Users" value="892" change="0%" changeType="neutral" />
+        </div>
+      </SubSection>
+
+      {/* Quality Score */}
+      <SubSection title="quality score">
+        <div className="flex flex-wrap gap-8 items-center">
+          <div className="text-center">
+            <QualityScore score={0.95} size="lg" />
+            <p className="font-mono text-xs text-foreground-secondary mt-2">excellent</p>
+          </div>
+          <div className="text-center">
+            <QualityScore score={0.75} size="lg" />
+            <p className="font-mono text-xs text-foreground-secondary mt-2">good</p>
+          </div>
+          <div className="text-center">
+            <QualityScore score={0.5} size="lg" />
+            <p className="font-mono text-xs text-foreground-secondary mt-2">average</p>
+          </div>
+          <div className="text-center">
+            <QualityScore score={0.25} size="lg" />
+            <p className="font-mono text-xs text-foreground-secondary mt-2">poor</p>
+          </div>
+        </div>
+      </SubSection>
+
+      {/* Install Snippet */}
+      <SubSection title="install snippet">
+        <InstallSnippet packageName="@tpmjs/example-tool" />
+      </SubSection>
+
+      {/* Toast */}
+      <SubSection title="toast">
+        <ToastProvider>
+          <div className="space-y-4">
+            <Button onClick={() => setShowToast(true)}>Show Toast</Button>
+            <Toast
+              open={showToast}
+              onClose={() => setShowToast(false)}
+              title="Success!"
+              description="Your action was completed successfully."
+              variant="success"
+            />
+            <p className="font-mono text-xs text-foreground-secondary">
+              Toast variants: default, success, error, warning, info
+            </p>
+          </div>
+        </ToastProvider>
       </SubSection>
 
       {/* Code Block */}

@@ -171,6 +171,7 @@ const resourceItems: DropdownItem[] = [
   { href: '/faq', label: 'FAQ', description: 'Common questions' },
   { href: '/changelog', label: 'Changelog', description: 'Latest updates' },
   { href: '/stats', label: 'Stats', description: 'Platform metrics' },
+  { href: '/style-guide', label: 'Style Guide', description: 'UI components' },
 ];
 
 /**
@@ -217,11 +218,6 @@ export function AppHeader(): React.ReactElement {
                   Agents
                 </Button>
               </Link>
-              <a href="https://playground.tpmjs.com" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
-                  Playground
-                </Button>
-              </a>
 
               {/* Separator */}
               <span className="text-foreground-tertiary mx-2">|</span>
