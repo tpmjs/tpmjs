@@ -50,6 +50,7 @@ const NAV_SECTIONS = [
       { id: 'fork-agents', label: 'Fork Agents' },
       { id: 'fork-collections', label: 'Fork Collections' },
       { id: 'fork-attribution', label: 'Attribution' },
+      { id: 'viewing-parent-updates', label: 'Viewing Parent Updates' },
     ],
   },
   {
@@ -1257,6 +1258,103 @@ Always cite your sources and be transparent about limitations.`}
                   they&apos;ve been forked. This indicates popularity and usefulness to the
                   community.
                 </p>
+              </DocSubSection>
+            </DocSection>
+
+            <DocSection id="viewing-parent-updates" title="Viewing Parent Updates">
+              <p className="text-foreground-secondary mb-6">
+                After forking, you can check what the original parent has changed by visiting
+                its page. This lets you see new tools or collections the parent author has added.
+              </p>
+              <DocSubSection title="How to View Parent Changes">
+                <div className="space-y-3 text-foreground-secondary">
+                  <p>
+                    1. Go to your forked agent or collection in the dashboard
+                  </p>
+                  <p>
+                    2. Click the &quot;Forked from&quot; badge to navigate to the parent
+                  </p>
+                  <p>
+                    3. The parent&apos;s page shows its <strong>current</strong> tools and collections
+                  </p>
+                  <p>
+                    4. Compare with your fork to see what&apos;s different
+                  </p>
+                </div>
+              </DocSubSection>
+              <DocSubSection title="What You Can See">
+                <p className="text-foreground-secondary mb-4">
+                  When you visit the parent, you&apos;ll see its current state:
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 border border-border rounded-lg bg-surface">
+                    <h4 className="font-semibold text-foreground mb-2">For Agents</h4>
+                    <ul className="text-sm text-foreground-secondary space-y-1">
+                      <li>• Current attached tools</li>
+                      <li>• Current collections</li>
+                      <li>• Updated system prompt</li>
+                      <li>• Model and provider changes</li>
+                      <li>• Temperature and settings</li>
+                    </ul>
+                  </div>
+                  <div className="p-4 border border-border rounded-lg bg-surface">
+                    <h4 className="font-semibold text-foreground mb-2">For Collections</h4>
+                    <ul className="text-sm text-foreground-secondary space-y-1">
+                      <li>• Current tools in collection</li>
+                      <li>• Tool order and positions</li>
+                      <li>• Updated description</li>
+                      <li>• Newly added tools</li>
+                      <li>• Removed tools</li>
+                    </ul>
+                  </div>
+                </div>
+              </DocSubSection>
+              <DocSubSection title="Manual Updates">
+                <p className="text-foreground-secondary mb-4">
+                  TPMJS uses a manual update model—your fork doesn&apos;t automatically sync with
+                  the parent. To incorporate parent changes:
+                </p>
+                <div className="space-y-3 text-foreground-secondary">
+                  <p>
+                    1. View the parent&apos;s current tools/collections
+                  </p>
+                  <p>
+                    2. Go to your fork&apos;s edit page
+                  </p>
+                  <p>
+                    3. Manually add or remove tools to match (or improve upon) the parent
+                  </p>
+                  <p>
+                    4. Update settings as needed
+                  </p>
+                </div>
+                <div className="mt-4 p-4 border border-border rounded-lg bg-surface-elevated">
+                  <p className="text-sm text-foreground-secondary">
+                    <strong>Note:</strong> This manual approach gives you full control over what
+                    changes to accept. You can cherry-pick specific updates without taking
+                    everything the parent has changed.
+                  </p>
+                </div>
+              </DocSubSection>
+              <DocSubSection title="API Access">
+                <p className="text-foreground-secondary mb-4">
+                  You can also fetch parent information via the API:
+                </p>
+                <CodeBlock
+                  language="bash"
+                  code={`# Get a public agent's current tools
+curl "https://tpmjs.com/api/public/users/{username}/agents/{uid}"
+
+# Response includes current tools and collections:
+{
+  "id": "...",
+  "name": "Research Assistant",
+  "tools": [...],        // Current attached tools
+  "collections": [...],  // Current attached collections
+  "forkedFromId": "...", // Your fork has this pointing to parent
+  "forkedFrom": { ... }  // Parent info (if you're viewing your fork)
+}`}
+                />
               </DocSubSection>
             </DocSection>
 
