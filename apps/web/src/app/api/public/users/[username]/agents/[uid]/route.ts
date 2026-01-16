@@ -62,8 +62,12 @@ export async function GET(_request: NextRequest, context: RouteContext) {
             collection: {
               select: {
                 id: true,
+                slug: true,
                 name: true,
                 description: true,
+                user: {
+                  select: { username: true },
+                },
                 _count: { select: { tools: true } },
               },
             },
@@ -128,9 +132,11 @@ export async function GET(_request: NextRequest, context: RouteContext) {
           collectionId: ac.collectionId,
           collection: {
             id: ac.collection.id,
+            slug: ac.collection.slug,
             name: ac.collection.name,
             description: ac.collection.description,
             toolCount: ac.collection._count.tools,
+            user: ac.collection.user,
           },
         })),
         forkedFromId: agent.forkedFromId,

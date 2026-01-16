@@ -33,9 +33,13 @@ interface AgentCollection {
   collectionId: string;
   collection: {
     id: string;
+    slug: string;
     name: string;
     description: string | null;
     toolCount: number;
+    user: {
+      username: string;
+    };
   };
 }
 
@@ -345,7 +349,11 @@ export default function PrettyAgentDetailPage(): React.ReactElement {
                 <h2 className="text-lg font-semibold text-foreground mb-4">Collections</h2>
                 <div className="grid gap-3 md:grid-cols-2">
                   {agent.collections.map((ac) => (
-                    <div key={ac.id} className="p-4 bg-surface border border-border rounded-lg">
+                    <Link
+                      key={ac.id}
+                      href={`/${ac.collection.user.username}/collections/${ac.collection.slug}`}
+                      className="block p-4 bg-surface border border-border rounded-lg hover:border-foreground-secondary transition-colors"
+                    >
                       <h3 className="font-medium text-foreground">{ac.collection.name}</h3>
                       {ac.collection.description && (
                         <p className="text-sm text-foreground-secondary mt-1 line-clamp-2">
@@ -355,7 +363,7 @@ export default function PrettyAgentDetailPage(): React.ReactElement {
                       <span className="text-xs text-foreground-tertiary mt-2 inline-block">
                         {ac.collection.toolCount} tools
                       </span>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </section>
