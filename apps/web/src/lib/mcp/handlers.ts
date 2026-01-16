@@ -1,4 +1,5 @@
 import { prisma } from '@tpmjs/db';
+import type { TpmjsEnv } from '@tpmjs/types/tpmjs';
 import { queueBridgeToolCall, waitForBridgeResult } from '~/app/api/bridge/route';
 import { executeWithExecutor, parseExecutorConfig } from '../executors';
 import {
@@ -16,7 +17,7 @@ interface JsonRpcResponse {
   jsonrpc: '2.0';
   id: JsonRpcId;
   result?: unknown;
-  error?: { code: number; message: string };
+  error?: { code: number; message: string; data?: unknown };
 }
 
 /**
@@ -120,15 +121,19 @@ export async function handleToolsList(
 interface ToolsCallParams {
   name: string;
   arguments?: Record<string, unknown>;
+  env?: Record<string, string>; // Caller-provided env vars for non-owners
 }
 
 /**
  * Handle MCP tools/call request
+ * @param callerEnvVars - Optional env vars from caller (non-owner accessing public collection)
+ *                        When provided, these are used INSTEAD of collection's stored env vars
  */
 export async function handleToolsCall(
   collectionId: string,
   params: ToolsCallParams,
-  requestId: JsonRpcId
+  requestId: JsonRpcId,
+  callerEnvVars?: Record<string, string>
 ): Promise<JsonRpcResponse> {
   try {
     const parsed = parseToolName(params.name);
@@ -196,20 +201,49 @@ export async function handleToolsCall(
     const actualPackageName = collectionTool.tool.package.npmPackageName;
     const actualVersion = collectionTool.tool.package.npmVersion;
 
+    // When caller provides env vars (non-owner), validate required env vars
+    if (callerEnvVars !== undefined) {
+      const packageEnv = collectionTool.tool.package.env as TpmjsEnv[] | null;
+      if (packageEnv && Array.isArray(packageEnv)) {
+        const missingVars = packageEnv.filter(
+          (env) => env.required !== false && !env.default && !callerEnvVars[env.name]
+        );
+
+        if (missingVars.length > 0) {
+          return {
+            jsonrpc: '2.0',
+            id: requestId,
+            error: {
+              code: -32602,
+              message: 'Missing required environment variables',
+              data: {
+                missingVars: missingVars.map((e) => ({
+                  name: e.name,
+                  description: e.description,
+                })),
+              },
+            },
+          };
+        }
+      }
+    }
+
     // Resolve executor configuration (collection config only for MCP - no agent context)
     const executorConfig = parseExecutorConfig(
       collection?.executorType,
       collection?.executorConfig
     );
 
-    // Execute via resolved executor with collection's environment variables
+    // Execute via resolved executor
+    // Use caller-provided env vars if given (non-owner), otherwise use collection's stored env vars
+    const effectiveEnvVars = callerEnvVars ?? (collection?.envVars as Record<string, string>) ?? {};
     // Pass explicit version to avoid Deno HTTP import cache issues with @latest
     const result = await executeWithExecutor(executorConfig, {
       packageName: actualPackageName,
       name: parsed.toolName,
       version: actualVersion,
       params: params.arguments ?? {},
-      env: (collection?.envVars as Record<string, string>) ?? undefined,
+      env: Object.keys(effectiveEnvVars).length > 0 ? effectiveEnvVars : undefined,
     });
 
     if (!result.success) {

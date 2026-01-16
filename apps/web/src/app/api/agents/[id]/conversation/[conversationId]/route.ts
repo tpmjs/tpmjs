@@ -117,23 +117,22 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     // Fetch agent with all tool relations using agent ID
     const { fetchAgentWithTools, buildAgentTools } = await import('@/lib/agents/build-tools');
+    const { getRequiredEnvVarsForAgent, getMissingEnvVars } = await import(
+      '@/lib/agents/env-helpers'
+    );
     const agent = await fetchAgentWithTools(agentId);
 
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
     }
 
-    // Owner-only enforcement: Only the agent owner can chat with the agent
-    if (authResult.userId !== agent.userId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            'Fork this agent to use it. Only the agent owner can chat with agents. ' +
-            'Visit the agent page to fork it to your account.',
-        },
-        { status: 403 }
-      );
+    // Check ownership
+    const isOwner = authResult.userId === agent.userId;
+
+    // Non-owners can only access PUBLIC agents
+    if (!isOwner && !agent.isPublic) {
+      // Don't reveal that the agent exists - return 404
+      return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
     }
 
     // Map provider to expected key name format
@@ -153,28 +152,75 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
-    // Get user's API key for this provider
-    const userApiKey = await prisma.userApiKey.findUnique({
-      where: {
-        userId_keyName: {
-          userId: agent.userId,
-          keyName,
-        },
-      },
-    });
+    let apiKey: string;
+    let callerEnvVars: Record<string, string> | undefined;
 
-    if (!userApiKey) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: `No API key configured for ${agent.provider}. Please add your API key in settings.`,
+    if (isOwner) {
+      // Owner: use stored encrypted keys
+      const userApiKey = await prisma.userApiKey.findUnique({
+        where: {
+          userId_keyName: {
+            userId: agent.userId,
+            keyName,
+          },
         },
-        { status: 400 }
-      );
+      });
+
+      if (!userApiKey) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `No API key configured for ${agent.provider}. Please add your API key in settings.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Decrypt the API key
+      apiKey = decryptApiKey(userApiKey.encryptedKey, userApiKey.keyIv);
+      // callerEnvVars stays undefined - buildAgentTools will use agent's stored env vars
+    } else {
+      // Non-owner accessing public agent: must provide their own credentials
+      if (!parsed.data.providerApiKey) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Public agent access requires your own API key',
+            details: {
+              code: 'MISSING_PROVIDER_KEY',
+              requiredProvider: agent.provider,
+              hint: `Provide your ${agent.provider} API key in the 'providerApiKey' field`,
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      apiKey = parsed.data.providerApiKey;
+      callerEnvVars = parsed.data.env || {};
+
+      // Check for required environment variables
+      const requiredEnvVars = getRequiredEnvVarsForAgent(agent);
+      const missingEnvVars = getMissingEnvVars(requiredEnvVars, callerEnvVars);
+
+      if (missingEnvVars.length > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Missing required environment variables',
+            details: {
+              code: 'MISSING_ENV_VARS',
+              missingVars: missingEnvVars.map((e) => ({
+                name: e.name,
+                description: e.description,
+              })),
+              hint: "Provide these variables in the 'env' field of your request",
+            },
+          },
+          { status: 400 }
+        );
+      }
     }
-
-    // Decrypt the API key
-    const apiKey = decryptApiKey(userApiKey.encryptedKey, userApiKey.keyIv);
 
     // Get or create conversation
     let conversation = await prisma.conversation.findUnique({
@@ -285,7 +331,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     messages.push({ role: 'user', content: parsed.data.message });
 
     // Build tools from agent configuration
-    const tools = buildAgentTools(agent);
+    // Build tools - pass callerEnvVars if non-owner accessing public agent
+    const tools = buildAgentTools(agent, callerEnvVars);
 
     // Get the provider model
     const model = await getProviderModel(agent.provider, agent.modelId, apiKey);

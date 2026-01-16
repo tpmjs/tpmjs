@@ -126,6 +126,8 @@ export const CreateConversationSchema = z.object({
 export const SendMessageSchema = z.object({
   message: z.string().min(1, 'Message is required').max(50000, 'Message too long'),
   env: z.record(z.string(), z.string()).optional(),
+  // For non-owners accessing public agents: provide your own LLM API key
+  providerApiKey: z.string().optional(),
 });
 
 // ============================================================================

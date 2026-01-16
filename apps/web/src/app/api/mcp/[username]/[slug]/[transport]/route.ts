@@ -87,7 +87,8 @@ interface JsonRpcResponse {
 async function processJsonRpcRequest(
   collectionId: string,
   collectionName: string,
-  body: JsonRpcRequest
+  body: JsonRpcRequest,
+  isOwner: boolean
 ): Promise<JsonRpcResponse> {
   const requestId = body.id ?? null;
 
@@ -98,12 +99,19 @@ async function processJsonRpcRequest(
     case 'tools/list':
       return await handleToolsList(collectionId, requestId);
 
-    case 'tools/call':
-      return await handleToolsCall(
-        collectionId,
-        body.params as { name: string; arguments?: Record<string, unknown> },
-        requestId
-      );
+    case 'tools/call': {
+      const params = body.params as {
+        name: string;
+        arguments?: Record<string, unknown>;
+        env?: Record<string, string>;
+      };
+
+      // For non-owners, use caller-provided env vars (or empty if not provided)
+      // For owners, callerEnvVars is undefined so handleToolsCall uses stored env vars
+      const callerEnvVars = isOwner ? undefined : params.env || {};
+
+      return await handleToolsCall(collectionId, params, requestId, callerEnvVars);
+    }
 
     case 'notifications/initialized':
     case 'ping':
@@ -125,7 +133,8 @@ async function processJsonRpcRequest(
 async function handleHttpTransport(
   request: NextRequest,
   collectionId: string,
-  collectionName: string
+  collectionName: string,
+  isOwner: boolean
 ): Promise<NextResponse> {
   let body: JsonRpcRequest;
   try {
@@ -137,7 +146,7 @@ async function handleHttpTransport(
     );
   }
 
-  const response = await processJsonRpcRequest(collectionId, collectionName, body);
+  const response = await processJsonRpcRequest(collectionId, collectionName, body, isOwner);
   return NextResponse.json(response);
 }
 
@@ -148,7 +157,8 @@ async function handleHttpTransport(
 async function handleSseTransport(
   request: NextRequest,
   collectionId: string,
-  collectionName: string
+  collectionName: string,
+  isOwner: boolean
 ): Promise<Response> {
   let body: JsonRpcRequest;
   try {
@@ -167,7 +177,7 @@ async function handleSseTransport(
     );
   }
 
-  const response = await processJsonRpcRequest(collectionId, collectionName, body);
+  const response = await processJsonRpcRequest(collectionId, collectionName, body, isOwner);
 
   // For SSE, we send the response as an event and then close
   const encoder = new TextEncoder();
@@ -331,7 +341,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     // Authorization check:
     // - Owners can always access their own collections (public or private)
-    // - Non-owners can only access public collections (and must fork to use)
+    // - Non-owners can access PUBLIC collections with their own env vars
     const isOwner = authResult.userId === collection.userId;
 
     if (!isOwner) {
@@ -342,27 +352,15 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           { status: 404 }
         );
       }
-      // Public collection but not the owner - they need to fork it
-      return NextResponse.json(
-        {
-          jsonrpc: '2.0',
-          error: {
-            code: -32403,
-            message:
-              'Fork this collection to use it. Only the collection owner can execute tools via MCP. ' +
-              'Visit the collection page to fork it to your account.',
-          },
-          id: null,
-        },
-        { status: 403 }
-      );
+      // Public collection - non-owners can access but must provide their own env vars
+      // The env vars are validated per-tool in handleToolsCall
     }
 
     let response: Response;
     if (transport === 'sse') {
-      response = await handleSseTransport(request, collection.id, collection.name);
+      response = await handleSseTransport(request, collection.id, collection.name, isOwner);
     } else {
-      response = await handleHttpTransport(request, collection.id, collection.name);
+      response = await handleHttpTransport(request, collection.id, collection.name, isOwner);
     }
 
     // Track usage for authenticated requests

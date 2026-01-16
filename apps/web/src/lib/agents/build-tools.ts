@@ -237,9 +237,14 @@ function mergeEnvVars(
  * - Collection env vars are used as base
  * - Agent env vars override collection env vars for same keys
  * - Both are merged together for unique keys
+ *
+ * @param agent - The agent with tool relations
+ * @param callerEnvVars - Optional env vars provided by the caller (for non-owners accessing public agents).
+ *                        When provided, these are used INSTEAD of the agent's stored env vars.
  */
 export function buildAgentTools(
-  agent: AgentWithRelations
+  agent: AgentWithRelations,
+  callerEnvVars?: Record<string, string>
 ): Record<string, ReturnType<typeof createToolDefinition>> {
   const tools: Record<string, ReturnType<typeof createToolDefinition>> = {};
   const seenTools = new Set<string>();
@@ -247,8 +252,10 @@ export function buildAgentTools(
   // Parse agent-level executor config
   const agentExecutorConfig = parseExecutorConfig(agent.executorType, agent.executorConfig);
 
-  // Parse agent-level env vars
-  const agentEnvVars = parseEnvVars(agent.envVars);
+  // When callerEnvVars is provided (non-owner using public agent), use those exclusively.
+  // Otherwise, use the agent's stored env vars.
+  const useCallerEnvVars = callerEnvVars !== undefined;
+  const agentEnvVars = useCallerEnvVars ? callerEnvVars : parseEnvVars(agent.envVars);
 
   // Add tools from collections first
   for (const agentCollection of agent.collections) {
@@ -264,7 +271,8 @@ export function buildAgentTools(
     const resolvedConfig = resolveExecutorConfig(agentExecutorConfig, collectionExecutorConfig);
 
     // Parse collection-level env vars and merge with agent env vars
-    const collectionEnvVars = parseEnvVars(collection.envVars);
+    // When callerEnvVars is provided, skip collection env vars entirely
+    const collectionEnvVars = useCallerEnvVars ? {} : parseEnvVars(collection.envVars);
     const mergedEnvVars = mergeEnvVars(collectionEnvVars, agentEnvVars);
 
     for (const collectionTool of collection.tools) {

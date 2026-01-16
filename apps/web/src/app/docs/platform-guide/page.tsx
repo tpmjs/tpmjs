@@ -64,6 +64,15 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    title: 'Access Model',
+    items: [
+      { id: 'access-model', label: 'Overview' },
+      { id: 'agent-access', label: 'Agent API Access' },
+      { id: 'collection-access', label: 'Collection MCP Access' },
+      { id: 'error-reference', label: 'Error Reference' },
+    ],
+  },
+  {
     title: 'Reference',
     items: [
       { id: 'limits', label: 'Platform Limits' },
@@ -1633,36 +1642,48 @@ X-RateLimit-Reset: 1704067200`}
             </DocSection>
 
             {/* ==================== ACCESS MODEL ==================== */}
-            <DocSection id="access-model" title="Access Model: Fork to Use">
+            <DocSection id="access-model" title="Access Model: Public Access with Your Credentials">
               <p className="text-foreground-secondary mb-6">
-                TPMJS uses a <strong className="text-foreground">&quot;fork to use&quot;</strong>{' '}
-                model. You cannot directly use someone else&apos;s public agent or collection with
-                your API key—you must fork it first.
+                You can access public agents and collections using your own API key—but you must
+                provide <strong className="text-foreground">all required credentials</strong>{' '}
+                (LLM keys, tool environment variables) in the request. The owner&apos;s stored
+                credentials are never shared.
               </p>
-              <div className="p-4 border border-warning/30 rounded-lg bg-warning/5 mb-6">
-                <p className="text-sm text-foreground-secondary">
-                  <strong className="text-warning">Important:</strong> Even with a valid API key,
-                  you cannot call another user&apos;s agent or collection endpoints. You&apos;ll
-                  receive a 403 error instructing you to fork the resource first.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <h4 className="font-semibold text-foreground mb-2">Owners</h4>
+                  <ul className="text-sm text-foreground-secondary space-y-1">
+                    <li>• Use stored credentials from dashboard</li>
+                    <li>• Access public and private resources</li>
+                    <li>• No extra parameters needed in API calls</li>
+                  </ul>
+                </div>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <h4 className="font-semibold text-foreground mb-2">Non-Owners</h4>
+                  <ul className="text-sm text-foreground-secondary space-y-1">
+                    <li>• Can only access PUBLIC resources</li>
+                    <li>• Must provide credentials in each request</li>
+                    <li>• Owner&apos;s credentials are never used</li>
+                  </ul>
+                </div>
               </div>
-              <DocSubSection title="Why Fork to Use?">
+              <DocSubSection title="Why This Model?">
                 <ul className="list-disc list-inside space-y-2 text-foreground-secondary">
                   <li>
-                    <strong className="text-foreground">Security</strong> - Owners control their own
-                    API keys and environment variables
+                    <strong className="text-foreground">Security</strong> - Owner credentials stay
+                    private, never shared with callers
                   </li>
                   <li>
-                    <strong className="text-foreground">Cost Control</strong> - You pay for your own
-                    usage, not someone else&apos;s
+                    <strong className="text-foreground">Transparency</strong> - Callers pay for
+                    their own LLM/tool usage
                   </li>
                   <li>
-                    <strong className="text-foreground">Customization</strong> - Forking lets you
-                    modify tools, prompts, and settings
+                    <strong className="text-foreground">Flexibility</strong> - Use public resources
+                    without forking
                   </li>
                   <li>
-                    <strong className="text-foreground">Privacy</strong> - Your conversations and
-                    usage stay in your account
+                    <strong className="text-foreground">Control</strong> - Fork when you want to
+                    customize
                   </li>
                 </ul>
               </DocSubSection>
@@ -1670,239 +1691,164 @@ X-RateLimit-Reset: 1704067200`}
 
             <DocSection id="agent-access" title="Accessing Agents via API">
               <p className="text-foreground-secondary mb-6">
-                When you call the agent conversation API, strict ownership checks apply.
+                Public agents can be accessed by any authenticated user who provides their own
+                credentials.
               </p>
-              <DocSubSection title="Can I Chat with Someone Else&apos;s Public Agent?">
+              <DocSubSection title="Accessing Your Own Agent">
                 <p className="text-foreground-secondary mb-4">
-                  <strong className="text-foreground">No.</strong> Even if an agent is public, you
-                  must be the owner to use the conversation API. Attempting to call another
-                  user&apos;s agent returns:
+                  As the owner, just send your message—your stored LLM key and env vars are used:
                 </p>
                 <CodeBlock
                   language="json"
-                  code={`{
-  "success": false,
-  "error": "Fork this agent to use it. Only the agent owner can chat with agents. Visit the agent page to fork it to your account."
-}
-// HTTP 403 Forbidden`}
+                  code={`POST /api/agents/{agentId}/conversation/{conversationId}
+Authorization: Bearer YOUR_TPMJS_API_KEY
+
+{
+  "message": "Hello, help me with..."
+}`}
                 />
               </DocSubSection>
-              <DocSubSection title="Who Pays for Agent LLM Calls?">
+              <DocSubSection title="Accessing Someone Else&apos;s Public Agent">
                 <p className="text-foreground-secondary mb-4">
-                  The <strong className="text-foreground">agent owner</strong> always pays. The
-                  system uses the owner&apos;s stored LLM provider API keys (OpenAI, Anthropic,
-                  etc.), not the caller&apos;s.
+                  You must provide your own LLM provider key and any tool environment variables:
                 </p>
-                <div className="p-4 border border-border rounded-lg bg-surface">
-                  <p className="text-sm text-foreground-secondary">
-                    Since you must own the agent to use it, and the owner&apos;s API keys are
-                    used—you&apos;re always paying for your own usage.
-                  </p>
-                </div>
+                <CodeBlock
+                  language="json"
+                  code={`POST /api/agents/{agentId}/conversation/{conversationId}
+Authorization: Bearer YOUR_TPMJS_API_KEY
+
+{
+  "message": "Hello, help me with...",
+  "providerApiKey": "sk-your-openai-key...",
+  "env": {
+    "UNSANDBOX_API_KEY": "your-unsandbox-key",
+    "FIRECRAWL_API_KEY": "your-firecrawl-key"
+  }
+}`}
+                />
               </DocSubSection>
-              <DocSubSection title="Missing Provider API Keys">
+              <DocSubSection title="Missing Provider API Key">
                 <p className="text-foreground-secondary mb-4">
-                  If you haven&apos;t configured your LLM provider API key, you&apos;ll receive:
+                  If you don&apos;t provide <code>providerApiKey</code> for a public agent:
                 </p>
                 <CodeBlock
                   language="json"
                   code={`{
   "success": false,
-  "error": "No API key configured for OPENAI. Please add your API key in settings."
+  "error": "Public agent access requires your own API key",
+  "details": {
+    "code": "MISSING_PROVIDER_KEY",
+    "requiredProvider": "OPENAI",
+    "hint": "Provide your OPENAI API key in the 'providerApiKey' field"
+  }
 }
 // HTTP 400 Bad Request`}
                 />
-                <p className="text-foreground-secondary mt-4">
-                  Add your provider keys at{' '}
-                  <Link
-                    href="/dashboard/settings/api-keys"
-                    className="text-primary hover:underline"
-                  >
-                    Dashboard → Settings → API Keys
-                  </Link>
-                  .
-                </p>
               </DocSubSection>
-              <DocSubSection title="Agent API Workflow">
-                <div className="space-y-3">
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
-                        1
-                      </span>
-                      <span className="font-medium text-foreground">Find a public agent</span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary ml-8">
-                      Browse at tpmjs.com/{'{username}'}/agents/{'{uid}'}
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
-                        2
-                      </span>
-                      <span className="font-medium text-foreground">Fork it to your account</span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary ml-8">
-                      Click &quot;Fork&quot; to create your own copy
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
-                        3
-                      </span>
-                      <span className="font-medium text-foreground">Add your LLM API key</span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary ml-8">
-                      Configure your provider key (not copied during fork)
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
-                        4
-                      </span>
-                      <span className="font-medium text-foreground">
-                        Use your fork via API
-                      </span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary ml-8">
-                      Call /api/{'{your-username}'}/agents/{'{uid}'}/conversation/{'{id}'}
-                    </p>
-                  </div>
+              <DocSubSection title="Missing Environment Variables">
+                <p className="text-foreground-secondary mb-4">
+                  If the agent&apos;s tools require env vars you didn&apos;t provide:
+                </p>
+                <CodeBlock
+                  language="json"
+                  code={`{
+  "success": false,
+  "error": "Missing required environment variables",
+  "details": {
+    "code": "MISSING_ENV_VARS",
+    "missingVars": [
+      { "name": "UNSANDBOX_API_KEY", "description": "API key for code execution" },
+      { "name": "FIRECRAWL_API_KEY", "description": "API key for web scraping" }
+    ],
+    "hint": "Provide these variables in the 'env' field of your request"
+  }
+}
+// HTTP 400 Bad Request`}
+                />
+              </DocSubSection>
+              <DocSubSection title="Who Pays?">
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <p className="text-foreground-secondary">
+                    <strong className="text-foreground">The caller always pays.</strong> When
+                    accessing a public agent, you provide your own LLM API key—so LLM costs go to
+                    your account. When accessing your own agent, your stored keys are used.
+                  </p>
                 </div>
               </DocSubSection>
             </DocSection>
 
             <DocSection id="collection-access" title="Accessing Collections via MCP">
               <p className="text-foreground-secondary mb-6">
-                MCP endpoints for collections follow the same fork-to-use model.
+                Public collections can be accessed by any authenticated user who provides their own
+                environment variables.
               </p>
-              <DocSubSection title="Can I Use Someone Else&apos;s Public Collection?">
+              <DocSubSection title="Accessing Your Own Collection">
                 <p className="text-foreground-secondary mb-4">
-                  <strong className="text-foreground">No.</strong> Even if a collection is public,
-                  you must be the owner to execute tools via MCP. Attempting to call another
-                  user&apos;s collection returns:
+                  As the owner, just make MCP calls—your stored env vars are used:
                 </p>
                 <CodeBlock
                   language="json"
                   code={`{
   "jsonrpc": "2.0",
-  "error": {
-    "code": -32403,
-    "message": "Fork this collection to use it. Only the collection owner can execute tools via MCP. Visit the collection page to fork it to your account."
-  }
-}
-// HTTP 403 Forbidden`}
+  "method": "tools/call",
+  "params": {
+    "name": "tpmjs-unsandbox-executeCode",
+    "arguments": { "code": "print('hello')" }
+  },
+  "id": 1
+}`}
                 />
               </DocSubSection>
-              <DocSubSection title="Who Pays for Tool Execution?">
+              <DocSubSection title="Accessing Someone Else&apos;s Public Collection">
                 <p className="text-foreground-secondary mb-4">
-                  The <strong className="text-foreground">caller</strong> (API key owner) pays for
-                  tool execution. Usage is tracked against your account and counts against your rate
-                  limits.
+                  You must provide environment variables in the <code>env</code> field of{' '}
+                  <code>params</code>:
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 border border-border rounded-lg bg-surface">
-                    <h4 className="font-semibold text-foreground mb-2">You Provide</h4>
-                    <ul className="text-sm text-foreground-secondary space-y-1">
-                      <li>• Your TPMJS API key (for auth)</li>
-                      <li>• Your rate limit quota</li>
-                    </ul>
-                  </div>
-                  <div className="p-4 border border-border rounded-lg bg-surface">
-                    <h4 className="font-semibold text-foreground mb-2">Collection Provides</h4>
-                    <ul className="text-sm text-foreground-secondary space-y-1">
-                      <li>• Tool environment variables</li>
-                      <li>• Executor configuration</li>
-                    </ul>
-                  </div>
-                </div>
-              </DocSubSection>
-              <DocSubSection title="Environment Variables">
-                <p className="text-foreground-secondary mb-4">
-                  Tools use the <strong className="text-foreground">collection owner&apos;s</strong>{' '}
-                  stored environment variables—not yours. You cannot pass custom env vars via the
-                  MCP request.
-                </p>
-                <div className="p-4 border border-border rounded-lg bg-surface">
-                  <p className="text-sm text-foreground-secondary">
-                    <strong className="text-foreground">Example:</strong> If you fork a web scraping
-                    collection, you must add your own FIRECRAWL_API_KEY in the collection settings.
-                    The original owner&apos;s key is not copied.
-                  </p>
-                </div>
+                <CodeBlock
+                  language="json"
+                  code={`{
+  "jsonrpc": "2.0",
+  "method": "tools/call",
+  "params": {
+    "name": "tpmjs-unsandbox-executeCode",
+    "arguments": { "code": "print('hello')" },
+    "env": {
+      "UNSANDBOX_API_KEY": "your-unsandbox-key"
+    }
+  },
+  "id": 1
+}`}
+                />
               </DocSubSection>
               <DocSubSection title="Missing Environment Variables">
                 <p className="text-foreground-secondary mb-4">
-                  If tools require environment variables that aren&apos;t configured, the behavior
-                  depends on the tool. Most tools will return an error in the result:
+                  If you don&apos;t provide required env vars:
                 </p>
                 <CodeBlock
                   language="json"
                   code={`{
   "jsonrpc": "2.0",
   "id": 1,
-  "result": {
-    "content": [{ "type": "text", "text": "Error: FIRECRAWL_API_KEY is required" }],
-    "isError": true
+  "error": {
+    "code": -32602,
+    "message": "Missing required environment variables",
+    "data": {
+      "missingVars": [
+        { "name": "UNSANDBOX_API_KEY", "description": "API key for code execution" }
+      ]
+    }
   }
 }`}
                 />
-                <p className="text-foreground-secondary mt-4">
-                  Check each tool&apos;s required environment variables and add them in your
-                  collection&apos;s Env Vars tab.
-                </p>
               </DocSubSection>
-              <DocSubSection title="Collection MCP Workflow">
-                <div className="space-y-3">
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
-                        1
-                      </span>
-                      <span className="font-medium text-foreground">Find a public collection</span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary ml-8">
-                      Browse at tpmjs.com/{'{username}'}/collections/{'{slug}'}
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
-                        2
-                      </span>
-                      <span className="font-medium text-foreground">Fork it to your account</span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary ml-8">
-                      Click &quot;Fork&quot; to create your own copy
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
-                        3
-                      </span>
-                      <span className="font-medium text-foreground">Add environment variables</span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary ml-8">
-                      Configure tool API keys (not copied during fork)
-                    </p>
-                  </div>
-                  <div className="p-3 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs">
-                        4
-                      </span>
-                      <span className="font-medium text-foreground">
-                        Use your fork via MCP
-                      </span>
-                    </div>
-                    <p className="text-xs text-foreground-secondary ml-8">
-                      Connect to /api/mcp/{'{your-username}'}/{'{slug}'}/http
-                    </p>
-                  </div>
+              <DocSubSection title="Who Pays?">
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <p className="text-foreground-secondary">
+                    <strong className="text-foreground">The caller always pays.</strong> When
+                    accessing a public collection, you provide your own tool API keys—so tool costs
+                    (if any) go to your accounts. Rate limits are tracked against your TPMJS API
+                    key.
+                  </p>
                 </div>
               </DocSubSection>
             </DocSection>
@@ -1940,13 +1886,13 @@ X-RateLimit-Reset: 1704067200`}
                 <div className="p-4 border border-border rounded-lg bg-surface">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge variant="error" size="sm">
-                      403
+                      404
                     </Badge>
-                    <code className="text-foreground font-mono text-sm">Fork Required</code>
+                    <code className="text-foreground font-mono text-sm">Not Found / Private</code>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    You&apos;re trying to use someone else&apos;s agent/collection. Fork it first,
-                    then use your own copy.
+                    Resource doesn&apos;t exist or is private. Non-owners can only access PUBLIC
+                    agents/collections.
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-surface">
@@ -1957,8 +1903,20 @@ X-RateLimit-Reset: 1704067200`}
                     <code className="text-foreground font-mono text-sm">Missing Provider Key</code>
                   </div>
                   <p className="text-sm text-foreground-secondary">
-                    Agent&apos;s LLM provider key not configured. Add it at Dashboard → Settings →
-                    API Keys.
+                    For public agents: provide <code>providerApiKey</code> in your request. For your
+                    own agents: add your LLM key in Dashboard → Settings.
+                  </p>
+                </div>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="warning" size="sm">
+                      400
+                    </Badge>
+                    <code className="text-foreground font-mono text-sm">Missing Env Vars</code>
+                  </div>
+                  <p className="text-sm text-foreground-secondary">
+                    Tools require environment variables you didn&apos;t provide. Check the error
+                    details for the list of required vars.
                   </p>
                 </div>
                 <div className="p-4 border border-border rounded-lg bg-surface">
