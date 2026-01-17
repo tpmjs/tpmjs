@@ -6,6 +6,7 @@ import { Label } from '@tpmjs/ui/Label/Label';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
+import { authClient } from '~/lib/auth-client';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -39,20 +40,13 @@ function ResetPasswordForm() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          token,
-          newPassword: password,
-        }),
+      const { error: resetError } = await authClient.resetPassword({
+        newPassword: password,
+        token,
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        setError(data.message || 'Failed to reset password');
+      if (resetError) {
+        setError(resetError.message || 'Failed to reset password');
         setLoading(false);
         return;
       }

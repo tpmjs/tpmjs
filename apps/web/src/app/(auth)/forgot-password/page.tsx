@@ -5,6 +5,7 @@ import { Input } from '@tpmjs/ui/Input/Input';
 import { Label } from '@tpmjs/ui/Label/Label';
 import Link from 'next/link';
 import { useState } from 'react';
+import { authClient } from '~/lib/auth-client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -18,21 +19,13 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      // Call the password reset API endpoint
-      const response = await fetch('/api/auth/forget-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          redirectTo: `${window.location.origin}/reset-password`,
-        }),
+      const { error: resetError } = await authClient.forgetPassword({
+        email,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        setError(data.message || 'Failed to send reset email');
+      if (resetError) {
+        setError(resetError.message || 'Failed to send reset email');
         setLoading(false);
         return;
       }
