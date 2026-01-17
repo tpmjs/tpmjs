@@ -1,7 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
-import { sendVerificationEmail } from './email';
+import { sendResetPasswordEmail, sendVerificationEmail } from './email';
 
 // Determine base URL for auth - MUST match the domain users are browsing on
 // VERCEL_URL is the deployment URL (e.g., tpmjs-xxx.vercel.app), not the custom domain
@@ -26,6 +26,9 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendResetPasswordEmail(user.email, url);
+    },
   },
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {

@@ -49,3 +49,37 @@ export async function sendVerificationEmail(to: string, verificationUrl: string)
     throw new Error('Failed to send verification email');
   }
 }
+
+export async function sendResetPasswordEmail(to: string, resetUrl: string) {
+  const { error } = await getResend().emails.send({
+    from: 'TPMJS <noreply@tpmjs.com>',
+    to,
+    subject: 'Reset your password - TPMJS',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #333; font-size: 24px; margin-bottom: 20px;">Reset your password</h1>
+          <p style="color: #666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">
+            Click the button below to reset your password. If you didn't request this, you can safely ignore this email.
+          </p>
+          <a href="${resetUrl}" style="display: inline-block; background-color: #000; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 16px; font-weight: 500;">
+            Reset Password
+          </a>
+          <p style="color: #999; font-size: 14px; margin-top: 30px;">
+            This link will expire in 1 hour for security reasons.
+          </p>
+        </body>
+      </html>
+    `,
+  });
+
+  if (error) {
+    console.error('Failed to send reset password email:', error);
+    throw new Error('Failed to send reset password email');
+  }
+}
