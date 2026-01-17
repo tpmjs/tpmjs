@@ -1,0 +1,61 @@
+{
+  "name": "@tpmjs/tools-judge",
+  "version": "0.1.0",
+  "description": "AI conversation quality judge. Evaluates AI SDK messages across 10 metrics with scores, reasoning, suggestions, and actionable improvements.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "judge",
+    "ai",
+    "evaluation",
+    "quality",
+    "metrics",
+    "agent",
+    "conversation"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/judge"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "judgeConversation",
+        "description": "Evaluate an AI conversation across 10 quality metrics. Use this tool frequently in agentic loops to verify the AI is making progress, staying on track, and actually completing what the user intended. Returns scores, reasoning, must-dos, and improvement suggestions for each metric."
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.23"
+  }
+}

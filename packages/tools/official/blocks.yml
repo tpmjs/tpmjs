@@ -7539,6 +7539,71 @@ blocks:
         extra_prompt: "Include a playful, cozy message about taking a little rest. Examples: '😴 zzz... had a lovely {duration} second nap!', '💤 *yawn* refreshed after snoozing for {duration}s', '🛏️ ahh, that was a nice little rest...'"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
 
+  # ---------------------------------------------------------------------------
+  # Agent Quality Tools
+  # ---------------------------------------------------------------------------
+  agent.judgeConversation:
+    type: utility
+    description: "Evaluate an AI conversation across 10 quality metrics to ensure the AI is making real progress and completing user intent. Use this tool FREQUENTLY in agentic loops to verify progress, catch stuck states, and get actionable improvements."
+    path: "judge"
+    domain_rules:
+      - id: metric_evaluation
+        description: "Must evaluate all 10 metrics: taskCompletion, accuracy, relevance, clarity, efficiency, userIntentAlignment, actionability, progress, errorHandling, completeness"
+      - id: loop_detection
+        description: "Must detect conversation loops, repetition patterns, and oscillation"
+      - id: tool_analysis
+        description: "Must analyze tool call patterns and success/failure rates"
+      - id: verdict_generation
+        description: "Must return a verdict (pass/retry/fail) with actionable must-dos"
+    inputs:
+      - name: messages
+        type: array
+        description: "Array of AI SDK messages with role, content, toolCalls, and toolResults"
+      - name: originalUserRequest
+        type: string
+        optional: true
+        description: "The original user request if different from first message"
+      - name: context
+        type: string
+        optional: true
+        description: "Additional context about what the conversation should accomplish"
+      - name: strictMode
+        type: boolean
+        optional: true
+        description: "If true, requires higher scores to pass (default: false)"
+    outputs:
+      - name: overallScore
+        type: number
+        description: "Weighted average score across all metrics (0-10)"
+      - name: verdict
+        type: string
+        description: "pass, retry, or fail"
+      - name: verdictReason
+        type: string
+        description: "Explanation for the verdict"
+      - name: metrics
+        type: array
+        description: "Individual metric evaluations with scores, reasons, mustDos, and suggestions"
+      - name: criticalIssues
+        type: array
+        description: "List of blocking issues that must be addressed"
+      - name: mustDos
+        type: array
+        description: "Critical actions that MUST be taken"
+      - name: suggestions
+        type: array
+        description: "Helpful improvements"
+      - name: nextSteps
+        type: array
+        description: "Recommended next actions"
+      - name: loopDetected
+        type: boolean
+        description: "Whether a conversation loop was detected"
+      - name: conversationSummary
+        type: string
+        description: "Brief summary of the conversation"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
 # =============================================================================
 # VALIDATORS - Which validators to run against each block
 # =============================================================================
