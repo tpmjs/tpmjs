@@ -149,6 +149,73 @@ export interface ApiKey {
   createdAt: string;
 }
 
+// Scenario types
+export interface Scenario {
+  id: string;
+  collectionId: string | null;
+  prompt: string;
+  name: string | null;
+  description: string | null;
+  tags: string[];
+  qualityScore: number;
+  totalRuns: number;
+  lastRunAt: string | null;
+  lastRunStatus: string | null;
+  consecutivePasses: number;
+  consecutiveFails: number;
+  createdAt: string;
+  updatedAt: string;
+  collection?: {
+    id: string;
+    name: string;
+    slug: string | null;
+    username: string | null;
+  } | null;
+}
+
+export interface ScenarioRun {
+  id: string;
+  status: string;
+  success: boolean;
+  evaluator: {
+    model: string | null;
+    verdict: string | null;
+    reason: string | null;
+  };
+  assertions: unknown;
+  usage: {
+    inputTokens: number | null;
+    outputTokens: number | null;
+    totalTokens: number | null;
+    executionTimeMs: number | null;
+  };
+  timestamps: {
+    startedAt: string | null;
+    completedAt: string | null;
+    createdAt: string;
+  };
+  quotaRemaining?: number;
+}
+
+export interface ScenarioListOptions extends PaginationOptions {
+  collectionId?: string;
+  tags?: string;
+  sortBy?: 'qualityScore' | 'totalRuns' | 'createdAt' | 'lastRunAt';
+}
+
+export interface CreateScenarioInput {
+  collectionId: string;
+  prompt: string;
+  name?: string;
+  description?: string;
+  tags?: string[];
+}
+
+export interface GenerateScenariosInput {
+  count?: number;
+  skipSimilarityCheck?: boolean;
+}
+
 // Stats types
 export interface Stats {
   tools: {
@@ -175,10 +242,7 @@ export class TpmClient {
     this.timeout = options.timeout ?? 30000;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -199,7 +263,7 @@ export class TpmClient {
         signal: controller.signal,
       });
 
-      const data = await response.json() as T & { message?: string; error?: string };
+      const data = (await response.json()) as T & { message?: string; error?: string };
 
       if (!response.ok) {
         throw new ApiError(
@@ -240,14 +304,16 @@ export class TpmClient {
   }
 
   async getTool(packageName: string, toolName: string): Promise<ApiResponse<Tool>> {
-    return this.request(`/tools/${encodeURIComponent(packageName)}/${encodeURIComponent(toolName)}`);
+    return this.request(
+      `/tools/${encodeURIComponent(packageName)}/${encodeURIComponent(toolName)}`
+    );
   }
 
   async getToolBySlug(slug: string): Promise<ApiResponse<Tool>> {
     // Search for the tool by slug
     const searchResult = await this.searchTools({ query: slug, limit: 1 });
     if (searchResult.data && searchResult.data.length > 0) {
-      const tool = searchResult.data.find(t => t.slug === slug) || searchResult.data[0];
+      const tool = searchResult.data.find((t) => t.slug === slug) || searchResult.data[0];
       return { success: true, data: tool };
     }
     return { success: false, error: 'Tool not found' };
@@ -264,7 +330,9 @@ export class TpmClient {
     return this.request<PaginatedResponse<Tool>>(endpoint);
   }
 
-  async validateTpmjsField(field: unknown): Promise<ApiResponse<{ valid: boolean; tier: string | null; errors?: unknown[] }>> {
+  async validateTpmjsField(
+    field: unknown
+  ): Promise<ApiResponse<{ valid: boolean; tier: string | null; errors?: unknown[] }>> {
     return this.request('/tools/validate', {
       method: 'POST',
       body: JSON.stringify(field),
@@ -285,7 +353,7 @@ export class TpmClient {
     const url = `${this.baseUrl}/tools/${encodeURIComponent(slug)}/execute`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Accept': 'text/event-stream',
+      Accept: 'text/event-stream',
     };
 
     if (this.apiKey) {
@@ -403,7 +471,10 @@ export class TpmClient {
     });
   }
 
-  async updateCollection(id: string, input: UpdateCollectionInput): Promise<ApiResponse<Collection>> {
+  async updateCollection(
+    id: string,
+    input: UpdateCollectionInput
+  ): Promise<ApiResponse<Collection>> {
     return this.request(`/collections/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(input),
@@ -439,6 +510,80 @@ export class TpmClient {
 
   async listApiKeys(): Promise<ApiResponse<ApiKey[]>> {
     return this.request('/user/tpmjs-api-keys');
+  }
+
+  // Scenarios
+  async listScenarios(options: ScenarioListOptions = {}): Promise<PaginatedResponse<Scenario>> {
+    const params = new URLSearchParams();
+    if (options.limit) params.set('limit', String(options.limit));
+    if (options.offset) params.set('offset', String(options.offset));
+    if (options.collectionId) params.set('collectionId', options.collectionId);
+    if (options.tags) params.set('tags', options.tags);
+    if (options.sortBy) params.set('sortBy', options.sortBy);
+
+    const queryString = params.toString();
+    const endpoint = queryString ? `/scenarios?${queryString}` : '/scenarios';
+
+    return this.request<PaginatedResponse<Scenario>>(endpoint);
+  }
+
+  async listCollectionScenarios(
+    collectionId: string,
+    options: PaginationOptions = {}
+  ): Promise<ApiResponse<{ scenarios: Scenario[] }>> {
+    const params = new URLSearchParams();
+    if (options.limit) params.set('limit', String(options.limit));
+    if (options.offset) params.set('offset', String(options.offset));
+
+    const queryString = params.toString();
+    const endpoint = queryString
+      ? `/collections/${collectionId}/scenarios?${queryString}`
+      : `/collections/${collectionId}/scenarios`;
+
+    return this.request<ApiResponse<{ scenarios: Scenario[] }>>(endpoint);
+  }
+
+  async getScenario(id: string): Promise<ApiResponse<Scenario>> {
+    return this.request(`/scenarios/${id}`);
+  }
+
+  async createScenario(input: CreateScenarioInput): Promise<ApiResponse<Scenario>> {
+    return this.request('/scenarios', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async generateScenarios(
+    collectionId: string,
+    input: GenerateScenariosInput = {}
+  ): Promise<ApiResponse<{ scenarios: { scenario: Scenario; similarity?: unknown }[] }>> {
+    return this.request(`/collections/${collectionId}/scenarios/generate`, {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async runScenario(scenarioId: string): Promise<ApiResponse<ScenarioRun>> {
+    return this.request(`/scenarios/${scenarioId}/run`, {
+      method: 'POST',
+    });
+  }
+
+  async getScenarioRuns(
+    scenarioId: string,
+    options: PaginationOptions = {}
+  ): Promise<PaginatedResponse<ScenarioRun>> {
+    const params = new URLSearchParams();
+    if (options.limit) params.set('limit', String(options.limit));
+    if (options.offset) params.set('offset', String(options.offset));
+
+    const queryString = params.toString();
+    const endpoint = queryString
+      ? `/scenarios/${scenarioId}/runs?${queryString}`
+      : `/scenarios/${scenarioId}/runs`;
+
+    return this.request<PaginatedResponse<ScenarioRun>>(endpoint);
   }
 
   // Check if authenticated

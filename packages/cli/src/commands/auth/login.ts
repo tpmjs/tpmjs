@@ -1,9 +1,9 @@
-import { Args, Command, Flags } from '@oclif/core';
-import open from 'open';
 import { createServer } from 'node:http';
 import { URL } from 'node:url';
-import { saveCredentials, getApiUrl } from '../../lib/config.js';
+import { Args, Command, Flags } from '@oclif/core';
+import open from 'open';
 import { TpmClient } from '../../lib/api-client.js';
+import { getApiUrl, saveCredentials } from '../../lib/config.js';
 import { createOutput } from '../../lib/output.js';
 
 export default class Login extends Command {
@@ -62,7 +62,9 @@ export default class Login extends Command {
       output.listItem('tpm auth login --api-key <your-api-key>');
       output.listItem('tpm auth login --browser (opens browser for OAuth)');
       output.newLine();
-      output.text(`Get your API key at: ${output.link('tpmjs.com/dashboard/settings/tpmjs-api-keys', 'https://tpmjs.com/dashboard/settings/tpmjs-api-keys')}`);
+      output.text(
+        `Get your API key at: ${output.link('tpmjs.com/dashboard/settings/tpmjs-api-keys', 'https://tpmjs.com/dashboard/settings/tpmjs-api-keys')}`
+      );
     }
   }
 
@@ -122,6 +124,13 @@ export default class Login extends Command {
     output.info('Opening browser for authentication...');
 
     return new Promise((resolve) => {
+      let timeoutId: NodeJS.Timeout;
+
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        server.close();
+      };
+
       const server = createServer(async (req, res) => {
         const url = new URL(req.url ?? '/', `http://localhost:${port}`);
 
@@ -132,8 +141,10 @@ export default class Login extends Command {
 
           if (error) {
             res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end('<html><body><h1>Authentication Failed</h1><p>You can close this window.</p></body></html>');
-            server.close();
+            res.end(
+              '<html><body><h1>Authentication Failed</h1><p>You can close this window.</p></body></html>'
+            );
+            cleanup();
             output.error(`Authentication failed: ${error}`);
             resolve();
             return;
@@ -141,8 +152,10 @@ export default class Login extends Command {
 
           if (receivedState !== state) {
             res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end('<html><body><h1>Invalid State</h1><p>Authentication failed due to invalid state.</p></body></html>');
-            server.close();
+            res.end(
+              '<html><body><h1>Invalid State</h1><p>Authentication failed due to invalid state.</p></body></html>'
+            );
+            cleanup();
             output.error('Authentication failed: Invalid state parameter');
             resolve();
             return;
@@ -152,8 +165,10 @@ export default class Login extends Command {
             saveCredentials({ apiKey });
 
             res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.end('<html><body><h1>Success!</h1><p>You are now logged in. You can close this window.</p></body></html>');
-            server.close();
+            res.end(
+              '<html><body><h1>Success!</h1><p>You are now logged in. You can close this window.</p></body></html>'
+            );
+            cleanup();
 
             output.success('Logged in successfully via browser');
 
@@ -165,7 +180,7 @@ export default class Login extends Command {
           } else {
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.end('<html><body><h1>Error</h1><p>No API key received.</p></body></html>');
-            server.close();
+            cleanup();
             output.error('No API key received from authentication');
             resolve();
           }
@@ -190,11 +205,14 @@ export default class Login extends Command {
       });
 
       // Timeout after 5 minutes
-      setTimeout(() => {
-        server.close();
-        output.error('Authentication timed out');
-        resolve();
-      }, 5 * 60 * 1000);
+      timeoutId = setTimeout(
+        () => {
+          server.close();
+          output.error('Authentication timed out');
+          resolve();
+        },
+        5 * 60 * 1000
+      );
     });
   }
 }

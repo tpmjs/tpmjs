@@ -467,6 +467,7 @@ model Collection {
   agents      AgentCollection[]
   likes       CollectionLike[]
   bridgeTools CollectionBridgeTool[]
+  scenarios   Scenario[]
 
   // Unique constraint: user can't have duplicate collection slugs
   @@unique([userId, slug])
@@ -1117,4 +1118,137 @@ model ApiUsageSummary {
   @@index([userId])
   @@index([periodType, periodStart])
   @@map("api_usage_summaries")
+}
+
+// ============================================================================
+// Scenario Models (Integration Testing for Collections)
+// ============================================================================
+
+/// Scenario - AI-generated test scenarios for collections
+model Scenario {
+  id           String      @id @default(cuid())
+
+  // Collection relationship (nullable for orphaned scenarios)
+  collectionId String?     @map("collection_id")
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+
+  // Content
+  prompt       String      @db.Text // AI-generated free-form prompt
+  name         String?     @db.VarChar(200) // Optional human-readable name
+  description  String?     @db.Text
+
+  // Validation (optional assertions)
+  assertions   Json?       @db.JsonB // { regex?: string[], schema?: object }
+
+  // AI-generated metadata
+  tags         String[]    @default([]) @db.Text
+
+  // Quality metrics (streak-based scoring)
+  qualityScore      Float   @default(0) @map("quality_score")
+  consecutivePasses Int     @default(0) @map("consecutive_passes")
+  consecutiveFails  Int     @default(0) @map("consecutive_fails")
+  totalRuns         Int     @default(0) @map("total_runs")
+  lastRunAt         DateTime? @map("last_run_at")
+  lastRunStatus     String?   @map("last_run_status") @db.VarChar(20) // 'pass' | 'fail' | 'error'
+
+  // Timestamps
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  runs         ScenarioRun[]
+  embedding    ScenarioEmbedding?
+
+  @@index([collectionId])
+  @@index([qualityScore])
+  @@index([createdAt])
+  @@index([lastRunStatus])
+  @@map("scenarios")
+}
+
+/// ScenarioEmbedding - vector embeddings for scenario similarity detection
+model ScenarioEmbedding {
+  id         String   @id @default(cuid())
+
+  // Scenario relationship
+  scenarioId String   @unique @map("scenario_id")
+  scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  // Embedding data
+  embedding  Json     @db.JsonB // Array of floats (1536 dims for text-embedding-3-small)
+  model      String   @default("text-embedding-3-small") @db.VarChar(50)
+
+  // Timestamps
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([scenarioId])
+  @@map("scenario_embeddings")
+}
+
+/// ScenarioRun - individual execution records for scenarios
+model ScenarioRun {
+  id         String   @id @default(cuid())
+
+  // Scenario relationship
+  scenarioId String   @map("scenario_id")
+  scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+
+  // Execution context
+  userId     String   @map("user_id") // Who triggered the run
+  agentId    String?  @map("agent_id") // Ephemeral agent ID (for debugging)
+
+  // Status
+  status     String   @db.VarChar(20) // 'pending' | 'running' | 'pass' | 'fail' | 'error'
+  retryCount Int      @default(0) @map("retry_count")
+
+  // Results
+  conversation Json?   @db.JsonB // Full message history
+  output       String? @db.Text // Final output from agent
+  errorLog     String? @map("error_log") @db.Text // Full error logs (private to owner)
+
+  // LLM Evaluation
+  evaluatorModel   String? @map("evaluator_model") @db.VarChar(50) // e.g., "claude-3.5-sonnet"
+  evaluatorVerdict String? @map("evaluator_verdict") @db.VarChar(10) // 'pass' | 'fail'
+  evaluatorReason  String? @map("evaluator_reason") @db.Text // Explanation
+
+  // Assertions
+  assertionResults Json? @map("assertion_results") @db.JsonB // { passed: string[], failed: string[] }
+
+  // Cost tracking
+  inputTokens     Int?    @map("input_tokens")
+  outputTokens    Int?    @map("output_tokens")
+  totalTokens     Int?    @map("total_tokens")
+  executionTimeMs Int?    @map("execution_time_ms")
+  estimatedCost   Decimal? @map("estimated_cost") @db.Decimal(10, 6)
+
+  // Timestamps
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@index([scenarioId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("scenario_runs")
+}
+
+/// ScenarioQuota - daily usage quotas for scenario runs
+model ScenarioQuota {
+  id          String   @id @default(cuid())
+
+  // User relationship
+  userId      String   @unique @map("user_id")
+
+  // Quota configuration
+  dailyLimit  Int      @default(50) @map("daily_limit") // Runs per day
+  dailyUsed   Int      @default(0) @map("daily_used")
+  lastResetAt DateTime @default(now()) @map("last_reset_at")
+
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("scenario_quotas")
 }

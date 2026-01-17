@@ -4,9 +4,7 @@
       "aliases": [],
       "args": {},
       "description": "Run diagnostic checks for TPMJS CLI",
-      "examples": [
-        "<%= config.bin %> <%= command.id %>"
-      ],
+      "examples": ["<%= config.bin %> <%= command.id %>"],
       "flags": {
         "json": {
           "description": "Output in JSON format",
@@ -31,11 +29,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "doctor.js"
-      ]
+      "relativePath": ["dist", "commands", "doctor.js"]
     },
     "playground": {
       "aliases": [],
@@ -79,19 +73,13 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "playground.js"
-      ]
+      "relativePath": ["dist", "commands", "playground.js"]
     },
     "update": {
       "aliases": [],
       "args": {},
       "description": "Update the TPMJS CLI to the latest version",
-      "examples": [
-        "<%= config.bin %> <%= command.id %>"
-      ],
+      "examples": ["<%= config.bin %> <%= command.id %>"],
       "flags": {
         "json": {
           "description": "Output in JSON format",
@@ -122,11 +110,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "update.js"
-      ]
+      "relativePath": ["dist", "commands", "update.js"]
     },
     "agent:chat": {
       "aliases": [],
@@ -186,12 +170,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "agent",
-        "chat.js"
-      ]
+      "relativePath": ["dist", "commands", "agent", "chat.js"]
     },
     "agent:create": {
       "aliases": [],
@@ -233,13 +212,7 @@
           "required": true,
           "hasDynamicHelp": false,
           "multiple": false,
-          "options": [
-            "ANTHROPIC",
-            "OPENAI",
-            "GOOGLE",
-            "GROQ",
-            "MISTRAL"
-          ],
+          "options": ["ANTHROPIC", "OPENAI", "GOOGLE", "GROQ", "MISTRAL"],
           "type": "option"
         },
         "model": {
@@ -297,12 +270,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "agent",
-        "create.js"
-      ]
+      "relativePath": ["dist", "commands", "agent", "create.js"]
     },
     "agent:delete": {
       "aliases": [],
@@ -349,12 +317,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "agent",
-        "delete.js"
-      ]
+      "relativePath": ["dist", "commands", "agent", "delete.js"]
     },
     "agent:list": {
       "aliases": [],
@@ -406,12 +369,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "agent",
-        "list.js"
-      ]
+      "relativePath": ["dist", "commands", "agent", "list.js"]
     },
     "agent:update": {
       "aliases": [],
@@ -457,13 +415,7 @@
           "name": "provider",
           "hasDynamicHelp": false,
           "multiple": false,
-          "options": [
-            "ANTHROPIC",
-            "OPENAI",
-            "GOOGLE",
-            "GROQ",
-            "MISTRAL"
-          ],
+          "options": ["ANTHROPIC", "OPENAI", "GOOGLE", "GROQ", "MISTRAL"],
           "type": "option"
         },
         "model": {
@@ -519,12 +471,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "agent",
-        "update.js"
-      ]
+      "relativePath": ["dist", "commands", "agent", "update.js"]
     },
     "auth:login": {
       "aliases": [],
@@ -579,20 +526,13 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "auth",
-        "login.js"
-      ]
+      "relativePath": ["dist", "commands", "auth", "login.js"]
     },
     "auth:logout": {
       "aliases": [],
       "args": {},
       "description": "Log out from TPMJS",
-      "examples": [
-        "<%= config.bin %> <%= command.id %>"
-      ],
+      "examples": ["<%= config.bin %> <%= command.id %>"],
       "flags": {
         "json": {
           "description": "Output in JSON format",
@@ -610,20 +550,13 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "auth",
-        "logout.js"
-      ]
+      "relativePath": ["dist", "commands", "auth", "logout.js"]
     },
     "auth:status": {
       "aliases": [],
       "args": {},
       "description": "Show authentication status",
-      "examples": [
-        "<%= config.bin %> <%= command.id %>"
-      ],
+      "examples": ["<%= config.bin %> <%= command.id %>"],
       "flags": {
         "json": {
           "description": "Output in JSON format",
@@ -648,20 +581,13 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "auth",
-        "status.js"
-      ]
+      "relativePath": ["dist", "commands", "auth", "status.js"]
     },
     "auth:whoami": {
       "aliases": [],
       "args": {},
       "description": "Show current user information",
-      "examples": [
-        "<%= config.bin %> <%= command.id %>"
-      ],
+      "examples": ["<%= config.bin %> <%= command.id %>"],
       "flags": {
         "json": {
           "description": "Output in JSON format",
@@ -686,12 +612,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "auth",
-        "whoami.js"
-      ]
+      "relativePath": ["dist", "commands", "auth", "whoami.js"]
     },
     "collection:add": {
       "aliases": [],
@@ -731,12 +652,7 @@
       "strict": false,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "collection",
-        "add.js"
-      ]
+      "relativePath": ["dist", "commands", "collection", "add.js"]
     },
     "collection:create": {
       "aliases": [],
@@ -793,12 +709,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "collection",
-        "create.js"
-      ]
+      "relativePath": ["dist", "commands", "collection", "create.js"]
     },
     "collection:delete": {
       "aliases": [],
@@ -845,12 +756,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "collection",
-        "delete.js"
-      ]
+      "relativePath": ["dist", "commands", "collection", "delete.js"]
     },
     "collection:import": {
       "aliases": [],
@@ -899,12 +805,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "collection",
-        "import.js"
-      ]
+      "relativePath": ["dist", "commands", "collection", "import.js"]
     },
     "collection:list": {
       "aliases": [],
@@ -956,12 +857,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "collection",
-        "list.js"
-      ]
+      "relativePath": ["dist", "commands", "collection", "list.js"]
     },
     "collection:remove": {
       "aliases": [],
@@ -978,9 +874,7 @@
         }
       },
       "description": "Remove a tool from a collection",
-      "examples": [
-        "<%= config.bin %> <%= command.id %> my-collection tool-id-1"
-      ],
+      "examples": ["<%= config.bin %> <%= command.id %> my-collection tool-id-1"],
       "flags": {
         "json": {
           "description": "Output in JSON format",
@@ -1005,12 +899,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "collection",
-        "remove.js"
-      ]
+      "relativePath": ["dist", "commands", "collection", "remove.js"]
     },
     "collection:update": {
       "aliases": [],
@@ -1072,12 +961,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "collection",
-        "update.js"
-      ]
+      "relativePath": ["dist", "commands", "collection", "update.js"]
     },
     "mcp:config": {
       "aliases": [],
@@ -1102,12 +986,7 @@
           "default": "claude",
           "hasDynamicHelp": false,
           "multiple": false,
-          "options": [
-            "claude",
-            "cursor",
-            "windsurf",
-            "generic"
-          ],
+          "options": ["claude", "cursor", "windsurf", "generic"],
           "type": "option"
         },
         "output": {
@@ -1142,12 +1021,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "mcp",
-        "config.js"
-      ]
+      "relativePath": ["dist", "commands", "mcp", "config.js"]
     },
     "mcp:serve": {
       "aliases": [],
@@ -1208,12 +1082,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "mcp",
-        "serve.js"
-      ]
+      "relativePath": ["dist", "commands", "mcp", "serve.js"]
     },
     "publish:check": {
       "aliases": [],
@@ -1253,12 +1122,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "publish",
-        "check.js"
-      ]
+      "relativePath": ["dist", "commands", "publish", "check.js"]
     },
     "publish:preview": {
       "aliases": [],
@@ -1301,12 +1165,271 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "publish",
-        "preview.js"
-      ]
+      "relativePath": ["dist", "commands", "publish", "preview.js"]
+    },
+    "scenario:generate": {
+      "aliases": [],
+      "args": {
+        "collection": {
+          "description": "Collection ID or slug",
+          "name": "collection",
+          "required": true
+        }
+      },
+      "description": "Generate AI-powered scenarios for a collection",
+      "examples": [
+        "<%= config.bin %> <%= command.id %> my-collection",
+        "<%= config.bin %> <%= command.id %> my-collection --count 3",
+        "<%= config.bin %> <%= command.id %> my-collection --skip-similarity-check"
+      ],
+      "flags": {
+        "count": {
+          "char": "n",
+          "description": "Number of scenarios to generate (1-10)",
+          "name": "count",
+          "default": 1,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "skip-similarity-check": {
+          "description": "Skip checking for similar existing scenarios",
+          "name": "skip-similarity-check",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "json": {
+          "description": "Output in JSON format",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "verbose": {
+          "char": "v",
+          "description": "Show verbose output",
+          "name": "verbose",
+          "allowNo": false,
+          "type": "boolean"
+        }
+      },
+      "hasDynamicHelp": false,
+      "hiddenAliases": [],
+      "id": "scenario:generate",
+      "pluginAlias": "@tpmjs/cli",
+      "pluginName": "@tpmjs/cli",
+      "pluginType": "core",
+      "strict": true,
+      "enableJsonFlag": false,
+      "isESM": true,
+      "relativePath": ["dist", "commands", "scenario", "generate.js"]
+    },
+    "scenario:info": {
+      "aliases": [],
+      "args": {
+        "scenarioId": {
+          "description": "Scenario ID",
+          "name": "scenarioId",
+          "required": true
+        }
+      },
+      "description": "Show detailed information about a scenario",
+      "examples": [
+        "<%= config.bin %> <%= command.id %> clu123abc456",
+        "<%= config.bin %> <%= command.id %> clu123abc456 --runs 20",
+        "<%= config.bin %> <%= command.id %> clu123abc456 --json"
+      ],
+      "flags": {
+        "runs": {
+          "char": "r",
+          "description": "Number of recent runs to show",
+          "name": "runs",
+          "default": 10,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "json": {
+          "description": "Output in JSON format",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "verbose": {
+          "char": "v",
+          "description": "Show verbose output",
+          "name": "verbose",
+          "allowNo": false,
+          "type": "boolean"
+        }
+      },
+      "hasDynamicHelp": false,
+      "hiddenAliases": [],
+      "id": "scenario:info",
+      "pluginAlias": "@tpmjs/cli",
+      "pluginName": "@tpmjs/cli",
+      "pluginType": "core",
+      "strict": true,
+      "enableJsonFlag": false,
+      "isESM": true,
+      "relativePath": ["dist", "commands", "scenario", "info.js"]
+    },
+    "scenario:list": {
+      "aliases": [],
+      "args": {
+        "collection": {
+          "description": "Collection ID or slug (optional - shows all public scenarios if omitted)",
+          "name": "collection",
+          "required": false
+        }
+      },
+      "description": "List scenarios for a collection or all public scenarios",
+      "examples": [
+        "<%= config.bin %> <%= command.id %>",
+        "<%= config.bin %> <%= command.id %> my-collection",
+        "<%= config.bin %> <%= command.id %> --limit 20 --json"
+      ],
+      "flags": {
+        "limit": {
+          "char": "l",
+          "description": "Maximum number of results",
+          "name": "limit",
+          "default": 20,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "offset": {
+          "char": "o",
+          "description": "Offset for pagination",
+          "name": "offset",
+          "default": 0,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "tags": {
+          "char": "t",
+          "description": "Filter by tags (comma-separated)",
+          "name": "tags",
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        },
+        "json": {
+          "description": "Output in JSON format",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "verbose": {
+          "char": "v",
+          "description": "Show verbose output",
+          "name": "verbose",
+          "allowNo": false,
+          "type": "boolean"
+        }
+      },
+      "hasDynamicHelp": false,
+      "hiddenAliases": [],
+      "id": "scenario:list",
+      "pluginAlias": "@tpmjs/cli",
+      "pluginName": "@tpmjs/cli",
+      "pluginType": "core",
+      "strict": true,
+      "enableJsonFlag": false,
+      "isESM": true,
+      "relativePath": ["dist", "commands", "scenario", "list.js"]
+    },
+    "scenario:run": {
+      "aliases": [],
+      "args": {
+        "collection": {
+          "description": "Collection ID or slug",
+          "name": "collection",
+          "required": true
+        }
+      },
+      "description": "Run all scenarios for a collection",
+      "examples": [
+        "<%= config.bin %> <%= command.id %> my-collection",
+        "<%= config.bin %> <%= command.id %> my-collection --json",
+        "<%= config.bin %> <%= command.id %> my-collection --verbose"
+      ],
+      "flags": {
+        "json": {
+          "description": "Output in JSON format",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "verbose": {
+          "char": "v",
+          "description": "Show verbose output",
+          "name": "verbose",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "limit": {
+          "char": "l",
+          "description": "Maximum number of scenarios to run",
+          "name": "limit",
+          "default": 50,
+          "hasDynamicHelp": false,
+          "multiple": false,
+          "type": "option"
+        }
+      },
+      "hasDynamicHelp": false,
+      "hiddenAliases": [],
+      "id": "scenario:run",
+      "pluginAlias": "@tpmjs/cli",
+      "pluginName": "@tpmjs/cli",
+      "pluginType": "core",
+      "strict": true,
+      "enableJsonFlag": false,
+      "isESM": true,
+      "relativePath": ["dist", "commands", "scenario", "run.js"]
+    },
+    "scenario:test": {
+      "aliases": [],
+      "args": {
+        "scenarioId": {
+          "description": "Scenario ID to run",
+          "name": "scenarioId",
+          "required": true
+        }
+      },
+      "description": "Run a single scenario by ID",
+      "examples": [
+        "<%= config.bin %> <%= command.id %> clu123abc456",
+        "<%= config.bin %> <%= command.id %> clu123abc456 --json",
+        "<%= config.bin %> <%= command.id %> clu123abc456 --verbose"
+      ],
+      "flags": {
+        "json": {
+          "description": "Output in JSON format",
+          "name": "json",
+          "allowNo": false,
+          "type": "boolean"
+        },
+        "verbose": {
+          "char": "v",
+          "description": "Show verbose output including full reason",
+          "name": "verbose",
+          "allowNo": false,
+          "type": "boolean"
+        }
+      },
+      "hasDynamicHelp": false,
+      "hiddenAliases": [],
+      "id": "scenario:test",
+      "pluginAlias": "@tpmjs/cli",
+      "pluginName": "@tpmjs/cli",
+      "pluginType": "core",
+      "strict": true,
+      "enableJsonFlag": false,
+      "isESM": true,
+      "relativePath": ["dist", "commands", "scenario", "test.js"]
     },
     "tool:execute": {
       "aliases": [],
@@ -1379,12 +1502,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "tool",
-        "execute.js"
-      ]
+      "relativePath": ["dist", "commands", "tool", "execute.js"]
     },
     "tool:info": {
       "aliases": [],
@@ -1429,12 +1547,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "tool",
-        "info.js"
-      ]
+      "relativePath": ["dist", "commands", "tool", "info.js"]
     },
     "tool:init": {
       "aliases": [],
@@ -1459,10 +1572,7 @@
           "default": "minimal",
           "hasDynamicHelp": false,
           "multiple": false,
-          "options": [
-            "minimal",
-            "rich"
-          ],
+          "options": ["minimal", "rich"],
           "type": "option"
         },
         "category": {
@@ -1519,12 +1629,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "tool",
-        "init.js"
-      ]
+      "relativePath": ["dist", "commands", "tool", "init.js"]
     },
     "tool:search": {
       "aliases": [],
@@ -1591,12 +1696,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "tool",
-        "search.js"
-      ]
+      "relativePath": ["dist", "commands", "tool", "search.js"]
     },
     "tool:trending": {
       "aliases": [],
@@ -1639,12 +1739,7 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "tool",
-        "trending.js"
-      ]
+      "relativePath": ["dist", "commands", "tool", "trending.js"]
     },
     "tool:validate": {
       "aliases": [],
@@ -1687,13 +1782,8 @@
       "strict": true,
       "enableJsonFlag": false,
       "isESM": true,
-      "relativePath": [
-        "dist",
-        "commands",
-        "tool",
-        "validate.js"
-      ]
+      "relativePath": ["dist", "commands", "tool", "validate.js"]
     }
   },
-  "version": "0.1.2"
+  "version": "0.1.3"
 }

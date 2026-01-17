@@ -173,6 +173,27 @@ export class OutputFormatter {
     // OSC 8 hyperlink support for modern terminals
     return `\x1b]8;;${url}\x07${pc.underline(pc.blue(text))}\x1b]8;;\x07`;
   }
+
+  // Color helpers
+  green(text: string): string {
+    return pc.green(text);
+  }
+
+  red(text: string): string {
+    return pc.red(text);
+  }
+
+  yellow(text: string): string {
+    return pc.yellow(text);
+  }
+
+  blue(text: string): string {
+    return pc.blue(text);
+  }
+
+  cyan(text: string): string {
+    return pc.cyan(text);
+  }
 }
 
 // Convenience function to create formatter from command flags
