@@ -3,12 +3,12 @@
  * Manage topologies, sessions, prompts, files, and more.
  *
  * @requires HLLM_API_KEY environment variable (hllm_xxxx_xxx format)
- * @requires HLLM_BASE_URL environment variable (optional, defaults to https://hllm.ai/api)
+ * @requires HLLM_BASE_URL environment variable (optional, defaults to https://hllm.dev/api)
  */
 
 import { jsonSchema, tool } from 'ai';
 
-const DEFAULT_BASE_URL = 'https://hllm.ai/api';
+const DEFAULT_BASE_URL = 'https://hllm.dev/api';
 
 /**
  * Topology types supported by HLLM
@@ -40,7 +40,7 @@ function getApiConfig(): { apiKey: string; baseUrl: string } {
 
   if (!apiKey) {
     throw new Error(
-      'HLLM_API_KEY environment variable is required. Get your API key from https://hllm.ai/settings/api-keys'
+      'HLLM_API_KEY environment variable is required. Get your API key from https://hllm.dev/settings/api-keys'
     );
   }
 
