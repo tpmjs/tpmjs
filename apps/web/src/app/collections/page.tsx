@@ -269,7 +269,7 @@ export default function PublicCollectionsPage(): React.ReactElement {
                   TableRow: (props) => (
                     <tr
                       {...props}
-                      className="border-b border-border bg-white dark:bg-zinc-900 hover:bg-surface transition-all duration-150 group"
+                      className="border-b border-border bg-surface hover:bg-surface-secondary transition-all duration-150 group"
                     />
                   ),
                 }}
