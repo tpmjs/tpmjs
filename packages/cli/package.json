@@ -1,0 +1,103 @@
+{
+  "name": "@tpmjs/cli",
+  "version": "0.1.2",
+  "description": "TPMJS command-line interface for AI tool discovery and execution",
+  "author": "TPMJS",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://tpmjs.com",
+  "keywords": [
+    "tpmjs",
+    "cli",
+    "mcp",
+    "ai",
+    "tools",
+    "agents"
+  ],
+  "type": "module",
+  "bin": {
+    "tpm": "./bin/run.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "bin",
+    "oclif.manifest.json"
+  ],
+  "oclif": {
+    "bin": "tpm",
+    "dirname": "tpmjs",
+    "commands": "./dist/commands",
+    "plugins": [
+      "@oclif/plugin-help",
+      "@oclif/plugin-plugins",
+      "@oclif/plugin-autocomplete"
+    ],
+    "hooks": {
+      "init": "./dist/hooks/init"
+    },
+    "topics": {
+      "tool": {
+        "description": "Tool discovery and execution"
+      },
+      "agent": {
+        "description": "AI agent management"
+      },
+      "collection": {
+        "description": "Collection management"
+      },
+      "auth": {
+        "description": "Authentication"
+      },
+      "mcp": {
+        "description": "MCP integration"
+      },
+      "publish": {
+        "description": "Publishing workflow"
+      }
+    },
+    "topicSeparator": " "
+  },
+  "scripts": {
+    "build": "tsup && oclif manifest",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo oclif.manifest.json",
+    "postpack": "rm -f oclif.manifest.json",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@oclif/core": "^4.2.10",
+    "@oclif/plugin-help": "^6.2.27",
+    "@oclif/plugin-plugins": "^5.4.36",
+    "@oclif/plugin-autocomplete": "^3.2.25",
+    "conf": "^13.1.0",
+    "open": "^10.1.0",
+    "picocolors": "^1.1.1",
+    "ora": "^8.2.0",
+    "eventsource-parser": "^3.0.1",
+    "cli-table3": "^0.6.5"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@types/node": "^22.15.29",
+    "oclif": "^4.17.35",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
