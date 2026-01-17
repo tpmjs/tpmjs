@@ -550,21 +550,21 @@ export function FeaturesSection(): React.ReactElement {
             delay={0}
           />
           <FeatureCard
-            icon="shield"
+            icon="key"
             title="secure execution"
             description="Every tool runs in an isolated Deno sandbox. Rate limiting, timeout handling, and error recovery built-in."
             stats="sandboxed"
             delay={100}
           />
           <FeatureCard
-            icon="zap"
+            icon="star"
             title="quality scoring"
             description="Automatic scoring based on documentation, downloads, and health status. Find the best tools instantly."
             stats="0.0 - 1.0"
             delay={200}
           />
           <FeatureCard
-            icon="users"
+            icon="user"
             title="ai agents"
             description="Build custom AI agents with curated tool collections. Share publicly or keep private."
             stats="unlimited"
@@ -578,7 +578,7 @@ export function FeaturesSection(): React.ReactElement {
             delay={400}
           />
           <FeatureCard
-            icon="code"
+            icon="terminal"
             title="rest & mcp api"
             description="Full REST API and MCP protocol support. Works with Claude, Cursor, Windsurf, and any compatible client."
             stats="json-rpc 2.0"
