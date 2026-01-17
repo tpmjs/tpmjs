@@ -1980,6 +1980,22 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/tools/official/judge:
+    dependencies:
+      ai:
+        specifier: 6.0.23
+        version: 6.0.23(zod@4.3.5)
+    devDependencies:
+      '@tpmjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../../config/tsconfig
+      tsup:
+        specifier: ^8.5.1
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/tools/official/lead-score:
     dependencies:
       ai:
