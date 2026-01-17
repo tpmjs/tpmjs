@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-hllm",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "HLLM API client tools for AI agents. Manage topologies, sessions, prompts, files, and more.",
   "type": "module",
   "keywords": [

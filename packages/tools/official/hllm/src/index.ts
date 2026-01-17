@@ -110,14 +110,14 @@ function handleApiError(status: number, errorText: string): never {
 // ============================================================================
 
 export interface ExecuteTopologyInput {
-  topology: TopologyType;
-  prompt: string;
-  model?: string;
-  systemPrompt?: string;
-  temperature?: number;
-  maxTokens?: number;
-  tools?: string[];
+  topologyId: TopologyType;
+  intent: string;
+  config?: Record<string, unknown>;
   sessionId?: string;
+  conversationHistory?: Array<{
+    role: 'user' | 'assistant' | 'system';
+    content: string;
+  }>;
 }
 
 export interface ExecuteTopologyResult {
@@ -139,6 +139,7 @@ export interface ExecuteTopologyResult {
 
 /**
  * Execute a topology with the given configuration.
+ * Returns streaming SSE response with text chunks and event objects.
  */
 export const executeTopology = tool({
   description:
@@ -146,58 +147,106 @@ export const executeTopology = tool({
   inputSchema: jsonSchema<ExecuteTopologyInput>({
     type: 'object',
     properties: {
-      topology: {
+      topologyId: {
         type: 'string',
         enum: [...TOPOLOGY_TYPES],
         description: 'Type of topology to execute.',
       },
-      prompt: {
+      intent: {
         type: 'string',
-        description: 'The prompt to send to the topology.',
+        description: 'The task or prompt for execution (1-50,000 characters).',
       },
-      model: {
-        type: 'string',
-        description: 'Model to use (e.g., "gpt-4", "claude-3-opus"). Uses default if not specified.',
-      },
-      systemPrompt: {
-        type: 'string',
-        description: 'System prompt to set the context.',
-      },
-      temperature: {
-        type: 'number',
-        description: 'Temperature for response randomness (0-2). Default: 0.7',
-      },
-      maxTokens: {
-        type: 'number',
-        description: 'Maximum tokens in response.',
-      },
-      tools: {
-        type: 'array',
-        items: { type: 'string' },
-        description: 'Tool IDs to make available to the topology.',
+      config: {
+        type: 'object',
+        description: 'Topology-specific configuration (e.g., maxIterations for reflection).',
+        additionalProperties: true,
       },
       sessionId: {
         type: 'string',
-        description: 'Session ID to continue a conversation.',
+        description: 'Associate execution with a chat session.',
+      },
+      conversationHistory: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            role: { type: 'string', enum: ['user', 'assistant', 'system'] },
+            content: { type: 'string' },
+          },
+          required: ['role', 'content'],
+        },
+        description: 'Previous messages for context continuity.',
       },
     },
-    required: ['topology', 'prompt'],
+    required: ['topologyId', 'intent'],
     additionalProperties: false,
   }),
   async execute(input: ExecuteTopologyInput): Promise<ExecuteTopologyResult> {
+    const { apiKey, baseUrl } = getApiConfig();
+
     const body: Record<string, unknown> = {
-      topology: input.topology,
-      prompt: input.prompt,
+      topologyId: input.topologyId,
+      intent: input.intent,
     };
 
-    if (input.model) body.model = input.model;
-    if (input.systemPrompt) body.systemPrompt = input.systemPrompt;
-    if (input.temperature !== undefined) body.temperature = input.temperature;
-    if (input.maxTokens) body.maxTokens = input.maxTokens;
-    if (input.tools) body.tools = input.tools;
+    if (input.config) body.config = input.config;
     if (input.sessionId) body.sessionId = input.sessionId;
+    if (input.conversationHistory) body.conversationHistory = input.conversationHistory;
 
-    return apiRequest<ExecuteTopologyResult>('POST', '/topology/execute', body);
+    // The /api/execute endpoint returns a streaming SSE response
+    // We need to collect the full response
+    const response = await fetch(`${baseUrl}/execute`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => 'Unknown error');
+      handleApiError(response.status, errorText);
+    }
+
+    // Parse streaming response - collect text chunks
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response body');
+    }
+
+    const decoder = new TextDecoder();
+    let fullText = '';
+    let lastEvent: Record<string, unknown> | null = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('text:')) {
+          fullText += line.slice(5);
+        } else if (line.startsWith('event:')) {
+          try {
+            lastEvent = JSON.parse(line.slice(6));
+          } catch {
+            // Ignore parse errors
+          }
+        }
+      }
+    }
+
+    return {
+      id: (lastEvent?.id as string) || 'unknown',
+      status: 'completed',
+      output: fullText,
+      tokens: lastEvent?.tokens as ExecuteTopologyResult['tokens'],
+      duration: lastEvent?.duration as number,
+      steps: lastEvent?.steps as ExecuteTopologyResult['steps'],
+    };
   },
 });
 
@@ -251,7 +300,7 @@ export const listSessions = tool({
     if (input.limit) params.set('limit', input.limit.toString());
     if (input.offset) params.set('offset', input.offset.toString());
     const query = params.toString() ? `?${params.toString()}` : '';
-    return apiRequest<ListSessionsResult>('GET', `/sessions${query}`, undefined);
+    return apiRequest<ListSessionsResult>('GET', `/chat/sessions${query}`, undefined);
   },
 });
 
@@ -280,7 +329,7 @@ export const createSession = tool({
     additionalProperties: false,
   }),
   async execute(input: CreateSessionInput): Promise<Session> {
-    return apiRequest<Session>('POST', '/sessions', input);
+    return apiRequest<Session>('POST', '/chat/sessions', input);
   },
 });
 
@@ -303,7 +352,7 @@ export const getSession = tool({
   async execute(input: { sessionId: string }): Promise<SessionWithMessages> {
     return apiRequest<SessionWithMessages>(
       'GET',
-      `/sessions/${encodeURIComponent(input.sessionId)}`,
+      `/chat/sessions/${encodeURIComponent(input.sessionId)}`,
       undefined
     );
   },
@@ -343,7 +392,7 @@ export const updateSession = tool({
     const { sessionId, ...body } = input;
     return apiRequest<Session>(
       'PATCH',
-      `/sessions/${encodeURIComponent(sessionId)}`,
+      `/chat/sessions/${encodeURIComponent(sessionId)}`,
       body
     );
   },
@@ -368,7 +417,7 @@ export const deleteSession = tool({
   async execute(input: { sessionId: string }): Promise<{ success: boolean }> {
     return apiRequest<{ success: boolean }>(
       'DELETE',
-      `/sessions/${encodeURIComponent(input.sessionId)}`,
+      `/chat/sessions/${encodeURIComponent(input.sessionId)}`,
       undefined
     );
   },
@@ -420,7 +469,7 @@ export const addMessage = tool({
     const { sessionId, ...body } = input;
     return apiRequest<Message>(
       'POST',
-      `/sessions/${encodeURIComponent(sessionId)}/messages`,
+      `/chat/sessions/${encodeURIComponent(sessionId)}/messages`,
       body
     );
   },
@@ -445,7 +494,7 @@ export const clearMessages = tool({
   async execute(input: { sessionId: string }): Promise<{ success: boolean; clearedCount: number }> {
     return apiRequest<{ success: boolean; clearedCount: number }>(
       'DELETE',
-      `/sessions/${encodeURIComponent(input.sessionId)}/messages`,
+      `/chat/sessions/${encodeURIComponent(input.sessionId)}/messages`,
       undefined
     );
   },
@@ -818,7 +867,7 @@ export const listEnvVars = tool({
     additionalProperties: false,
   }),
   async execute(): Promise<ListEnvVarsResult> {
-    return apiRequest<ListEnvVarsResult>('GET', '/env-vars', undefined);
+    return apiRequest<ListEnvVarsResult>('GET', '/user/tpmjs-env', undefined);
   },
 });
 
@@ -848,7 +897,7 @@ export const setEnvVar = tool({
     additionalProperties: false,
   }),
   async execute(input: SetEnvVarInput): Promise<EnvVar> {
-    return apiRequest<EnvVar>('PUT', '/env-vars', input);
+    return apiRequest<EnvVar>('PUT', '/user/tpmjs-env', input);
   },
 });
 
@@ -871,7 +920,7 @@ export const deleteEnvVar = tool({
   async execute(input: { key: string }): Promise<{ success: boolean }> {
     return apiRequest<{ success: boolean }>(
       'DELETE',
-      `/env-vars/${encodeURIComponent(input.key)}`,
+      `/user/tpmjs-env/${encodeURIComponent(input.key)}`,
       undefined
     );
   },
@@ -1112,7 +1161,7 @@ export const getAgentMetrics = tool({
   }),
   async execute(input: { period?: 'hour' | 'day' | 'week' | 'month' }): Promise<AgentMetrics> {
     const query = input.period ? `?period=${input.period}` : '';
-    return apiRequest<AgentMetrics>('GET', `/metrics${query}`, undefined);
+    return apiRequest<AgentMetrics>('GET', `/metrics/agents${query}`, undefined);
   },
 });
 
@@ -1154,7 +1203,7 @@ export const listTools = tool({
   }),
   async execute(input: { category?: string }): Promise<ListToolsResult> {
     const query = input.category ? `?category=${encodeURIComponent(input.category)}` : '';
-    return apiRequest<ListToolsResult>('GET', `/tools${query}`, undefined);
+    return apiRequest<ListToolsResult>('GET', `/tpmjs/tools${query}`, undefined);
   },
 });
 
@@ -1176,9 +1225,9 @@ export const describeTool = tool({
   }),
   async execute(input: { toolId: string }): Promise<ToolInfo> {
     return apiRequest<ToolInfo>(
-      'GET',
-      `/tools/${encodeURIComponent(input.toolId)}`,
-      undefined
+      'POST',
+      '/tpmjs/describe',
+      { toolId: input.toolId }
     );
   },
 });
@@ -1218,8 +1267,8 @@ export const executeTool = tool({
   async execute(input: ExecuteToolInput): Promise<ExecuteToolResult> {
     return apiRequest<ExecuteToolResult>(
       'POST',
-      `/tools/${encodeURIComponent(input.toolId)}/execute`,
-      { parameters: input.parameters }
+      '/tpmjs/execute',
+      { toolId: input.toolId, parameters: input.parameters }
     );
   },
 });
@@ -1265,7 +1314,7 @@ export const generatePrompt = tool({
     additionalProperties: false,
   }),
   async execute(input: GeneratePromptInput): Promise<GeneratePromptResult> {
-    return apiRequest<GeneratePromptResult>('POST', '/prompts/generate', input);
+    return apiRequest<GeneratePromptResult>('POST', '/prompt-generate', input);
   },
 });
 
@@ -1295,7 +1344,7 @@ export const improvePrompt = tool({
     additionalProperties: false,
   }),
   async execute(input: ImprovePromptInput): Promise<GeneratePromptResult> {
-    return apiRequest<GeneratePromptResult>('POST', '/prompts/improve', input);
+    return apiRequest<GeneratePromptResult>('POST', '/prompt-improve', input);
   },
 });
 
@@ -1455,7 +1504,7 @@ export const listApiKeys = tool({
     additionalProperties: false,
   }),
   async execute(): Promise<ListApiKeysResult> {
-    return apiRequest<ListApiKeysResult>('GET', '/api-keys', undefined);
+    return apiRequest<ListApiKeysResult>('GET', '/user/api-keys', undefined);
   },
 });
 
@@ -1487,7 +1536,7 @@ export const createApiKey = tool({
     additionalProperties: false,
   }),
   async execute(input: CreateApiKeyInput): Promise<CreateApiKeyResult> {
-    return apiRequest<CreateApiKeyResult>('POST', '/api-keys', input);
+    return apiRequest<CreateApiKeyResult>('POST', '/user/api-keys', input);
   },
 });
 
@@ -1510,7 +1559,7 @@ export const deleteApiKey = tool({
   async execute(input: { keyId: string }): Promise<{ success: boolean }> {
     return apiRequest<{ success: boolean }>(
       'DELETE',
-      `/api-keys/${encodeURIComponent(input.keyId)}`,
+      `/user/api-keys/${encodeURIComponent(input.keyId)}`,
       undefined
     );
   },
