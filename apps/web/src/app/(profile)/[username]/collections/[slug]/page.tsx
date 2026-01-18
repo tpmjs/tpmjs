@@ -11,6 +11,7 @@ import { AppHeader } from '~/components/AppHeader';
 import { ForkButton } from '~/components/ForkButton';
 import { ForkedFromBadge } from '~/components/ForkedFromBadge';
 import { LikeButton } from '~/components/LikeButton';
+import { ScenariosSection } from '~/components/ScenariosSection';
 import { UseCasesSection } from '~/components/UseCasesSection';
 import { useSession } from '~/lib/auth-client';
 
@@ -196,8 +197,9 @@ const response = await fetch("${httpUrl}", {
           <p className="text-sm text-warning-foreground">
             <Icon icon="info" className="w-4 h-4 inline mr-1" />
             You&apos;ll need to provide your own API keys for any tools that require them. Pass
-            credentials via the <code className="font-mono text-xs bg-surface px-1 rounded">env</code>{' '}
-            parameter in your API calls.
+            credentials via the{' '}
+            <code className="font-mono text-xs bg-surface px-1 rounded">env</code> parameter in your
+            API calls.
           </p>
         </div>
       )}
@@ -420,6 +422,16 @@ export default function PrettyCollectionDetailPage(): React.ReactElement {
                 <Icon icon="box" className="w-12 h-12 mx-auto text-foreground-secondary mb-4" />
                 <p className="text-foreground-secondary">This collection is empty.</p>
               </div>
+            )}
+
+            {/* Scenarios Section */}
+            {collection.tools.length > 0 && (
+              <ScenariosSection
+                collectionId={collection.id}
+                collectionOwnerId={collection.createdBy.id}
+                username={username}
+                slug={collection.slug}
+              />
             )}
 
             {/* Use Cases Section - at the bottom */}
