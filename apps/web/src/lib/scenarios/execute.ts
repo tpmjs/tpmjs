@@ -14,7 +14,7 @@ import {
   runAssertions,
 } from './evaluate';
 
-const DEFAULT_EVALUATOR: EvaluatorModelId = 'claude-3-5-haiku-latest';
+const DEFAULT_EVALUATOR: EvaluatorModelId = 'gpt-4.1-mini';
 const MAX_RETRIES = 1;
 
 interface ExecutionOptions {

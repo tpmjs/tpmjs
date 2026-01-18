@@ -24,7 +24,8 @@ export type EvaluatorModelId =
   | 'claude-3-5-sonnet-latest'
   | 'claude-3-5-haiku-latest'
   | 'gpt-4o'
-  | 'gpt-4o-mini';
+  | 'gpt-4o-mini'
+  | 'gpt-4.1-mini';
 
 /**
  * Get the model instance for an evaluator model ID
@@ -39,12 +40,14 @@ function getEvaluatorModel(modelId: EvaluatorModelId) {
       return openai('gpt-4o');
     case 'gpt-4o-mini':
       return openai('gpt-4o-mini');
+    case 'gpt-4.1-mini':
+      return openai('gpt-4.1-mini');
     default:
-      return anthropic('claude-3-5-haiku-latest');
+      return openai('gpt-4.1-mini');
   }
 }
 
-const DEFAULT_EVALUATOR: EvaluatorModelId = 'claude-3-5-haiku-latest';
+const DEFAULT_EVALUATOR: EvaluatorModelId = 'gpt-4.1-mini';
 
 /**
  * Evaluate if a scenario execution was successful
