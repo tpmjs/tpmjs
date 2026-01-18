@@ -2,6 +2,7 @@ import { prisma } from '@tpmjs/db';
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
+import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { AppHeader } from '../components/AppHeader';
 // import { ArchitectureDiagramWrapper } from '../components/home/ArchitectureDiagramWrapper';
@@ -13,41 +14,89 @@ export const dynamic = 'force-dynamic';
 async function getHomePageData() {
   try {
     // Fetch stats in parallel
-    const [packageCount, toolCount, featuredTools, categoryStats] = await Promise.all([
-      // Total package count
-      prisma.package.count(),
+    const [packageCount, toolCount, featuredTools, categoryStats, featuredScenarios] =
+      await Promise.all([
+        // Total package count
+        prisma.package.count(),
 
-      // Total tool count
-      prisma.tool.count(),
+        // Total tool count
+        prisma.tool.count(),
 
-      // Top 6 featured tools by quality score
-      prisma.tool.findMany({
-        orderBy: [{ qualityScore: 'desc' }, { package: { npmDownloadsLastMonth: 'desc' } }],
-        take: 6,
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          qualityScore: true,
-          package: {
-            select: {
-              npmPackageName: true,
-              category: true,
-              npmDownloadsLastMonth: true,
-              isOfficial: true,
+        // Top 6 featured tools by quality score
+        prisma.tool.findMany({
+          orderBy: [{ qualityScore: 'desc' }, { package: { npmDownloadsLastMonth: 'desc' } }],
+          take: 6,
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            qualityScore: true,
+            package: {
+              select: {
+                npmPackageName: true,
+                category: true,
+                npmDownloadsLastMonth: true,
+                isOfficial: true,
+              },
             },
           },
-        },
-      }),
+        }),
 
-      // Category distribution for stats (group by package category)
-      prisma.package.groupBy({
-        by: ['category'],
-        _count: {
-          _all: true,
-        },
-      }),
-    ]);
+        // Category distribution for stats (group by package category)
+        prisma.package.groupBy({
+          by: ['category'],
+          _count: {
+            _all: true,
+          },
+        }),
+
+        // Featured scenarios - mix of high quality, diverse, and fresh
+        (async () => {
+          // Get high quality scenarios
+          const highQuality = await prisma.scenario.findMany({
+            where: {
+              collection: { isPublic: true },
+              qualityScore: { gte: 0.3 },
+              totalRuns: { gte: 1 },
+            },
+            orderBy: { qualityScore: 'desc' },
+            take: 3,
+            include: {
+              collection: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  user: { select: { username: true } },
+                },
+              },
+            },
+          });
+
+          // Get fresh scenarios (excluding already selected)
+          const seenIds = new Set(highQuality.map((s) => s.id));
+          const fresh = await prisma.scenario.findMany({
+            where: {
+              collection: { isPublic: true },
+              id: { notIn: Array.from(seenIds) },
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 3,
+            include: {
+              collection: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  user: { select: { username: true } },
+                },
+              },
+            },
+          });
+
+          return [...highQuality, ...fresh].slice(0, 6);
+        })(),
+      ]);
 
     return {
       stats: {
@@ -60,6 +109,7 @@ async function getHomePageData() {
         name: c.category,
         count: c._count._all,
       })),
+      featuredScenarios,
     };
   } catch (error) {
     console.error('Failed to fetch homepage data:', error);
@@ -71,6 +121,7 @@ async function getHomePageData() {
       },
       featuredTools: [],
       categories: [],
+      featuredScenarios: [],
     };
   }
 }
@@ -192,6 +243,117 @@ export default async function HomePage(): Promise<React.ReactElement> {
           </Container>
         </section>
 
+        {/* Featured Scenarios Section */}
+        {data.featuredScenarios.length > 0 && (
+          <section className="py-16 bg-surface border-t border-border">
+            <Container size="xl" padding="lg">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+                  Test Scenarios
+                </h2>
+                <p className="text-lg text-foreground-secondary max-w-2xl mx-auto mb-8">
+                  See how tool collections are tested with AI-generated scenarios. Real execution,
+                  real results.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-12">
+                {data.featuredScenarios.map((scenario) => {
+                  const qualityPercent = Math.round(scenario.qualityScore * 100);
+                  const qualityColor =
+                    qualityPercent >= 70
+                      ? 'text-success'
+                      : qualityPercent >= 40
+                        ? 'text-warning'
+                        : 'text-foreground-tertiary';
+
+                  return (
+                    <Link
+                      key={scenario.id}
+                      href={
+                        scenario.collection
+                          ? `/@${scenario.collection.user.username}/collections/${scenario.collection.slug}/scenarios/${scenario.id}`
+                          : `/scenarios/${scenario.id}`
+                      }
+                      className="group"
+                    >
+                      <div className="p-6 border border-border rounded-lg bg-background hover:border-foreground transition-colors h-full flex flex-col">
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <h3 className="text-lg font-semibold text-foreground group-hover:text-brutalist-accent transition-colors min-w-0 break-words line-clamp-1">
+                            {scenario.name ||
+                              (scenario.prompt.length > 50
+                                ? `${scenario.prompt.slice(0, 50)}...`
+                                : scenario.prompt)}
+                          </h3>
+                          {scenario.lastRunStatus === 'pass' && (
+                            <Badge
+                              size="sm"
+                              className="flex-shrink-0 bg-success/10 text-success border-success/20"
+                            >
+                              <Icon icon="check" className="w-3 h-3 mr-1" />
+                              Pass
+                            </Badge>
+                          )}
+                          {scenario.lastRunStatus === 'fail' && (
+                            <Badge
+                              size="sm"
+                              className="flex-shrink-0 bg-error/10 text-error border-error/20"
+                            >
+                              <Icon icon="x" className="w-3 h-3 mr-1" />
+                              Fail
+                            </Badge>
+                          )}
+                        </div>
+
+                        <p className="text-sm text-foreground-secondary mb-4 flex-1 line-clamp-2">
+                          {scenario.prompt}
+                        </p>
+
+                        {scenario.collection && (
+                          <div className="flex items-center gap-2 mb-4">
+                            <Badge variant="outline" size="sm">
+                              {scenario.collection.name}
+                            </Badge>
+                            <span className="text-xs text-foreground-tertiary">
+                              by @{scenario.collection.user.username}
+                            </span>
+                          </div>
+                        )}
+
+                        {scenario.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mb-4">
+                            {scenario.tags.slice(0, 3).map((tag) => (
+                              <Badge key={tag} variant="secondary" size="sm" className="text-xs">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="mt-auto pt-4 border-t border-border flex items-center justify-between text-xs text-foreground-tertiary">
+                          <span className={`flex items-center gap-1 ${qualityColor}`}>
+                            <Icon icon="star" className="w-3.5 h-3.5" />
+                            {qualityPercent}% quality
+                          </span>
+                          <span>{scenario.totalRuns} runs</span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="flex justify-center">
+                <Link href="/scenarios">
+                  <Button size="lg" variant="outline">
+                    Browse All Scenarios
+                  </Button>
+                </Link>
+              </div>
+            </Container>
+          </section>
+        )}
+
         {/* Integration Section */}
         <section className="py-20 bg-surface border-y border-border">
           <Container size="xl" padding="lg">
@@ -243,9 +405,7 @@ export default async function HomePage(): Promise<React.ReactElement> {
                   <div className="font-mono text-lg font-medium text-foreground group-hover:text-primary transition-colors">
                     Windsurf
                   </div>
-                  <p className="font-mono text-xs text-foreground-tertiary mt-1">
-                    agentic ide
-                  </p>
+                  <p className="font-mono text-xs text-foreground-tertiary mt-1">agentic ide</p>
                 </div>
                 <div className="group p-6 border border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all">
                   <div className="w-10 h-10 bg-primary/10 flex items-center justify-center mb-4">
@@ -273,21 +433,35 @@ export default async function HomePage(): Promise<React.ReactElement> {
                 <div className="bg-background border border-border p-4 font-mono text-sm overflow-x-auto">
                   <pre className="text-foreground">
                     <span className="text-foreground-tertiary">{'{'}</span>
-                    {'\n  '}<span className="text-primary">"mcpServers"</span>: <span className="text-foreground-tertiary">{'{'}</span>
-                    {'\n    '}<span className="text-primary">"tpmjs"</span>: <span className="text-foreground-tertiary">{'{'}</span>
-                    {'\n      '}<span className="text-primary">"command"</span>: <span className="text-success">"npx"</span>,
-                    {'\n      '}<span className="text-primary">"args"</span>: [<span className="text-success">"-y"</span>, <span className="text-success">"@anthropic/mcp-remote"</span>,
-                    {'\n        '}<span className="text-success">"https://tpmjs.com/api/mcp/ajax/ajax-collection/sse"</span>]
-                    {'\n    '}<span className="text-foreground-tertiary">{'}'}</span>
-                    {'\n  '}<span className="text-foreground-tertiary">{'}'}</span>
-                    {'\n'}<span className="text-foreground-tertiary">{'}'}</span>
+                    {'\n  '}
+                    <span className="text-primary">"mcpServers"</span>:{' '}
+                    <span className="text-foreground-tertiary">{'{'}</span>
+                    {'\n    '}
+                    <span className="text-primary">"tpmjs"</span>:{' '}
+                    <span className="text-foreground-tertiary">{'{'}</span>
+                    {'\n      '}
+                    <span className="text-primary">"command"</span>:{' '}
+                    <span className="text-success">"npx"</span>,{'\n      '}
+                    <span className="text-primary">"args"</span>: [
+                    <span className="text-success">"-y"</span>,{' '}
+                    <span className="text-success">"@anthropic/mcp-remote"</span>,{'\n        '}
+                    <span className="text-success">
+                      "https://tpmjs.com/api/mcp/ajax/ajax-collection/sse"
+                    </span>
+                    ]{'\n    '}
+                    <span className="text-foreground-tertiary">{'}'}</span>
+                    {'\n  '}
+                    <span className="text-foreground-tertiary">{'}'}</span>
+                    {'\n'}
+                    <span className="text-foreground-tertiary">{'}'}</span>
                   </pre>
                 </div>
               </div>
               <div className="flex items-center gap-3 pt-4 border-t border-dashed border-border">
                 <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
                 <p className="font-mono text-xs text-foreground-secondary">
-                  add to config → instant access to <span className="text-primary font-medium">170+ tools</span>
+                  add to config → instant access to{' '}
+                  <span className="text-primary font-medium">170+ tools</span>
                 </p>
               </div>
             </fieldset>
