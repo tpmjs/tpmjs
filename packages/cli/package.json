@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/cli",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "TPMJS command-line interface for AI tool discovery and execution",
   "author": "TPMJS",
   "license": "MIT",
