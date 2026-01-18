@@ -1,12 +1,18 @@
 /**
  * Scenario Execution Service
  *
- * Orchestrates scenario execution using ephemeral agents.
- * Currently implements a simulated execution - full agent integration coming in Phase 3.
+ * Orchestrates scenario execution using collection tools with AI SDK.
+ * Executes scenarios by building tools from the associated collection
+ * and running them through an LLM agent loop.
  */
 
-import type { Scenario, ScenarioRun } from '@prisma/client';
+import { openai } from '@ai-sdk/openai';
+import type { Collection, Package, Scenario, ScenarioRun, Tool } from '@prisma/client';
 import { prisma } from '@tpmjs/db';
+import { generateText, stepCountIs } from 'ai';
+
+import { createToolDefinition } from '../ai-agent/tool-executor-agent';
+import { parseExecutorConfig, resolveExecutorConfig } from '../executors';
 import {
   determineFinalVerdict,
   type EvaluatorModelId,
@@ -15,7 +21,18 @@ import {
 } from './evaluate';
 
 const DEFAULT_EVALUATOR: EvaluatorModelId = 'gpt-4.1-mini';
+const DEFAULT_MODEL = 'gpt-4.1-mini';
 const MAX_RETRIES = 1;
+const MAX_TOOL_STEPS = 10;
+
+/**
+ * Collection type with full tool relations
+ */
+type CollectionWithTools = Collection & {
+  tools: Array<{
+    tool: Tool & { package: Package };
+  }>;
+};
 
 interface ExecutionOptions {
   evaluatorModel?: EvaluatorModelId;
@@ -119,10 +136,14 @@ export async function updateScenarioMetrics(
 }
 
 /**
- * Execute a scenario
+ * Execute a scenario using real agent with collection tools
  *
- * NOTE: This currently uses simulated execution.
- * Full agent integration will be added in Phase 3.
+ * 1. Creates run record with 'pending' status
+ * 2. Builds AI SDK tools from the scenario's collection
+ * 3. Executes the scenario prompt with multi-step tool loop
+ * 4. Evaluates the result with LLM judgment
+ * 5. Runs any configured assertions
+ * 6. Updates scenario quality metrics based on result
  *
  * @param scenario The scenario to execute
  * @param userId The user triggering the execution
@@ -162,9 +183,8 @@ export async function executeScenario(
         },
       });
 
-      // TODO: Phase 3 - Replace with actual agent execution
-      // For now, we simulate execution
-      const executionResult = await simulateExecution(scenario);
+      // Execute scenario using real agent with collection tools
+      const executionResult = await executeWithAgent(scenario);
 
       // Evaluate with LLM
       const evaluation = await evaluateScenarioRun(
@@ -236,11 +256,90 @@ export async function executeScenario(
 }
 
 /**
- * Simulated execution for development/testing
- *
- * This will be replaced with actual agent execution in Phase 3.
+ * Fetch collection with all tool relations needed for execution
  */
-async function simulateExecution(scenario: Scenario): Promise<{
+async function fetchCollectionWithTools(collectionId: string): Promise<CollectionWithTools | null> {
+  return prisma.collection.findUnique({
+    where: { id: collectionId },
+    include: {
+      tools: {
+        include: {
+          tool: {
+            include: { package: true },
+          },
+        },
+        orderBy: { position: 'asc' },
+      },
+    },
+  });
+}
+
+/**
+ * Sanitize npm package name to valid tool name
+ * OpenAI limits tool names to 64 characters
+ */
+function sanitizeToolName(name: string): string {
+  const sanitized = name.replace(/[@/]/g, '-').replace(/^-+/, '');
+  return sanitized.slice(0, 64);
+}
+
+/**
+ * Parse environment variables from JSON field
+ */
+function parseEnvVars(envVars: unknown): Record<string, string> {
+  if (!envVars || typeof envVars !== 'object') {
+    return {};
+  }
+  const result: Record<string, string> = {};
+  for (const [key, value] of Object.entries(envVars)) {
+    if (typeof value === 'string') {
+      result[key] = value;
+    }
+  }
+  return result;
+}
+
+/**
+ * Build AI SDK tools from a collection
+ * Similar to buildAgentTools but works directly with Collection
+ */
+function buildCollectionTools(
+  collection: CollectionWithTools
+): Record<string, ReturnType<typeof createToolDefinition>> {
+  const tools: Record<string, ReturnType<typeof createToolDefinition>> = {};
+  const seenTools = new Set<string>();
+
+  // Parse collection-level executor config
+  const collectionExecutorConfig = parseExecutorConfig(
+    collection.executorType,
+    collection.executorConfig
+  );
+
+  // Resolve executor config (collection config or system default)
+  const resolvedConfig = resolveExecutorConfig(null, collectionExecutorConfig);
+
+  // Parse collection env vars
+  const envVars = parseEnvVars(collection.envVars);
+
+  for (const collectionTool of collection.tools) {
+    const tool = collectionTool.tool;
+    const toolKey = `${tool.package.npmPackageName}::${tool.name}`;
+
+    // Avoid duplicates
+    if (seenTools.has(toolKey)) continue;
+    seenTools.add(toolKey);
+
+    const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
+    tools[toolName] = createToolDefinition(tool, resolvedConfig, envVars);
+  }
+
+  return tools;
+}
+
+/**
+ * Execute scenario using real agent with collection tools
+ */
+async function executeWithAgent(scenario: Scenario): Promise<{
   output: string;
   conversation: unknown[];
   usage: {
@@ -250,33 +349,107 @@ async function simulateExecution(scenario: Scenario): Promise<{
   };
   durationMs: number;
 }> {
-  // Simulate some processing time
-  const durationMs = Math.floor(Math.random() * 3000) + 1000;
-  await new Promise((resolve) => setTimeout(resolve, 100)); // Small delay
+  const startTime = Date.now();
 
-  // Generate simulated output based on the prompt
-  const passRate = 0.7; // 70% pass rate for simulated runs
-  const willPass = Math.random() < passRate;
+  // Verify scenario has a collection
+  if (!scenario.collectionId) {
+    throw new Error('Scenario has no associated collection');
+  }
 
-  const output = willPass
-    ? `[SIMULATED] Successfully completed task: ${scenario.prompt.slice(0, 100)}...\n\nThe scenario was executed successfully. All requested operations were performed.`
-    : `[SIMULATED] Failed to complete task: ${scenario.prompt.slice(0, 100)}...\n\nEncountered an error during execution. The requested operation could not be completed.`;
+  // Fetch collection with tools
+  const collection = await fetchCollectionWithTools(scenario.collectionId);
+  if (!collection) {
+    throw new Error(`Collection not found: ${scenario.collectionId}`);
+  }
 
-  const conversation = [
-    { role: 'user', content: scenario.prompt },
-    { role: 'assistant', content: output },
-  ];
+  if (collection.tools.length === 0) {
+    throw new Error('Collection has no tools configured');
+  }
 
-  const inputTokens = Math.floor(scenario.prompt.length / 4);
-  const outputTokens = Math.floor(output.length / 4);
+  // Build tools from collection
+  const tools = buildCollectionTools(collection);
+
+  console.log('[executeWithAgent] Executing scenario with tools:', Object.keys(tools));
+
+  // Build system prompt for scenario execution
+  const systemPrompt = `You are an AI assistant tasked with completing the following scenario using the available tools.
+
+IMPORTANT: You must actually USE the tools to complete the task. Do not just describe what you would do - execute the tools.
+
+Available tools: ${Object.keys(tools).join(', ')}
+
+Complete the user's task to the best of your ability using the tools provided.`;
+
+  // Execute with generateText and multi-step tool loop
+  const result = await generateText({
+    model: openai(DEFAULT_MODEL),
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: scenario.prompt },
+    ],
+    tools,
+    stopWhen: stepCountIs(MAX_TOOL_STEPS),
+  });
+
+  // Build conversation history from response
+  const conversation: unknown[] = [{ role: 'user', content: scenario.prompt }];
+
+  // Add all steps to conversation
+  for (const step of result.steps || []) {
+    if (step.toolCalls && step.toolCalls.length > 0) {
+      for (const toolCall of step.toolCalls) {
+        conversation.push({
+          role: 'assistant',
+          toolCall: {
+            id: toolCall.toolCallId,
+            name: toolCall.toolName,
+            // AI SDK v6 uses 'input' property for DynamicToolCall
+            input: (toolCall as { input?: unknown }).input,
+          },
+        });
+      }
+    }
+
+    if (step.toolResults && step.toolResults.length > 0) {
+      for (const toolResult of step.toolResults) {
+        conversation.push({
+          role: 'tool',
+          toolCallId: toolResult.toolCallId,
+          output: toolResult.output,
+        });
+      }
+    }
+
+    if (step.text) {
+      conversation.push({ role: 'assistant', content: step.text });
+    }
+  }
+
+  // Final assistant message
+  if (result.text) {
+    conversation.push({ role: 'assistant', content: result.text });
+  }
+
+  const durationMs = Date.now() - startTime;
+
+  // Get token usage
+  const usage = result.usage || { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
+
+  console.log(
+    '[executeWithAgent] Completed in',
+    durationMs,
+    'ms with',
+    result.steps?.length || 0,
+    'steps'
+  );
 
   return {
-    output,
+    output: result.text || '[No output generated]',
     conversation,
     usage: {
-      inputTokens,
-      outputTokens,
-      totalTokens: inputTokens + outputTokens,
+      inputTokens: usage.inputTokens ?? 0,
+      outputTokens: usage.outputTokens ?? 0,
+      totalTokens: (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0),
     },
     durationMs,
   };
