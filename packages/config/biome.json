@@ -114,6 +114,17 @@
       }
     },
     {
+      "includes": ["**/NodeDetailOverlay.tsx"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useKeyWithClickEvents": "off",
+            "noStaticElementInteractions": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/style-guide/**"],
       "linter": {
         "rules": {

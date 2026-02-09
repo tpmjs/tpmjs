@@ -68,8 +68,6 @@ export function NodeDetailOverlay({
     <>
       {/* Backdrop */}
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-      {/* biome-ignore lint/a11y/noStaticElementInteractions: backdrop dismiss pattern */}
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: backdrop dismiss pattern */}
       <div
         className={`fixed inset-0 z-50 bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${
           isVisible ? 'opacity-100' : 'opacity-0'
@@ -80,8 +78,6 @@ export function NodeDetailOverlay({
       {/* Modal */}
       <div className="fixed inset-4 md:inset-8 lg:inset-12 z-50 flex items-center justify-center pointer-events-none">
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
-        {/* biome-ignore lint/a11y/noStaticElementInteractions: stop propagation on modal */}
-        {/* biome-ignore lint/a11y/useKeyWithClickEvents: stop propagation on modal */}
         <div
           className={`relative w-full max-w-6xl max-h-full bg-background border border-border rounded-2xl shadow-2xl overflow-hidden pointer-events-auto flex flex-col transition-all duration-250 ease-out ${
             isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-5'
