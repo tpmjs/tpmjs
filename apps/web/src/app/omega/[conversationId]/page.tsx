@@ -128,9 +128,15 @@ export default function OmegaChatPage(): React.ReactElement {
   );
   // Environment variable warnings for tools that need API keys
   const [envWarnings, setEnvWarnings] = useState<EnvVarWarning[]>([]);
+  // Status message from SSE status events
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  // AbortController for stop button
+  const abortControllerRef = useRef<AbortController | null>(null);
+  // Smart auto-scroll: only scroll when user is near bottom
+  const isNearBottomRef = useRef(true);
 
   // Fetch conversation details
   const fetchConversation = useCallback(async () => {
@@ -165,10 +171,16 @@ export default function OmegaChatPage(): React.ReactElement {
     fetchConversation();
   }, [fetchConversation]);
 
-  // Auto-scroll to bottom when messages change or streaming
+  // Smart auto-scroll: only scroll when user is near the bottom
+  const handleScroll = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    isNearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+  }, []);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: We intentionally trigger scroll when messages/streamingContent change
   useEffect(() => {
-    if (messagesContainerRef.current) {
+    if (isNearBottomRef.current && messagesContainerRef.current) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   }, [messages, streamingContent]);
@@ -188,6 +200,31 @@ export default function OmegaChatPage(): React.ReactElement {
     }
   }, [conversationId, messages.length]);
 
+  // Stop button handler
+  const handleStop = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsSending(false);
+    setStatusMessage(null);
+    // Keep partial streaming content as a message
+    setStreamingContent((prev) => {
+      if (prev) {
+        const partialMessage: Message = {
+          id: `partial-${Date.now()}`,
+          role: 'ASSISTANT',
+          content: prev,
+          createdAt: new Date().toISOString(),
+        };
+        setMessages((msgs) => [...msgs, partialMessage]);
+      }
+      return '';
+    });
+    setToolCalls([]);
+    inputRef.current?.focus();
+  }, []);
+
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Chat send handler with streaming and tool calls
   const handleSendWithContent = async (messageContent: string) => {
     if (!messageContent.trim() || isSending) return;
@@ -197,6 +234,11 @@ export default function OmegaChatPage(): React.ReactElement {
     setStreamingContent('');
     setError(null);
     setToolCalls([]);
+    setStatusMessage(null);
+
+    // Create AbortController for this request
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     // Optimistically add user message
     const userMessage: Message = {
@@ -207,11 +249,16 @@ export default function OmegaChatPage(): React.ReactElement {
     };
     setMessages((prev) => [...prev, userMessage]);
 
+    // Track accumulated data for constructing final message
+    let accumulatedContent = '';
+    let completedToolCalls: ToolCall[] = [];
+
     try {
       const response = await fetch(`/api/omega/conversations/${conversationId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: messageContent }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -249,93 +296,163 @@ export default function OmegaChatPage(): React.ReactElement {
           if (line.startsWith('event: ')) {
             eventType = line.slice(7);
           } else if (line.startsWith('data: ')) {
-            const data = JSON.parse(line.slice(6));
+            // SSE parse safety: wrap JSON.parse in try/catch
+            let data: unknown;
+            try {
+              data = JSON.parse(line.slice(6));
+            } catch {
+              console.warn('Failed to parse SSE data:', line.slice(6));
+              continue;
+            }
+
+            const d = data as Record<string, unknown>;
 
             switch (eventType) {
+              case 'status':
+                // Display status messages from the server
+                if (d.message && typeof d.message === 'string') {
+                  setStatusMessage(d.message);
+                }
+                break;
               case 'env.warning':
                 // Set environment variable warnings
-                if (data.missingEnvVars && Array.isArray(data.missingEnvVars)) {
-                  setEnvWarnings(data.missingEnvVars);
+                if (d.missingEnvVars && Array.isArray(d.missingEnvVars)) {
+                  setEnvWarnings(d.missingEnvVars as EnvVarWarning[]);
                 }
                 break;
               case 'message.delta':
-                setStreamingContent((prev) => prev + data.content);
+                setStatusMessage(null);
+                accumulatedContent += (d as { content: string }).content;
+                setStreamingContent((prev) => prev + (d as { content: string }).content);
                 break;
               case 'run.step.tool.started':
+                setStatusMessage(null);
                 // Add tool call to tracking
-                setToolCalls((prev) => [
-                  ...prev,
-                  {
-                    toolCallId: data.toolCallId,
-                    toolName: data.toolName,
-                    input: data.input,
-                    status: 'running',
-                  },
-                ]);
+                setToolCalls((prev) => {
+                  const updated = [
+                    ...prev,
+                    {
+                      toolCallId: d.toolCallId as string,
+                      toolName: d.toolName as string,
+                      input: d.input,
+                      status: 'running' as const,
+                    },
+                  ];
+                  completedToolCalls = updated;
+                  return updated;
+                });
                 break;
               case 'run.step.tool.completed':
                 // Update tool call with result
-                setToolCalls((prev) =>
+                setToolCalls((prev) => {
                   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Tool call update logic
-                  prev.map((tc) =>
-                    tc.toolCallId === data.toolCallId
+                  const updated = prev.map((tc) =>
+                    tc.toolCallId === d.toolCallId
                       ? {
                           ...tc,
-                          output: data.output,
-                          status: data.isError ? ('error' as const) : ('success' as const),
-                          isError: data.isError,
+                          output: d.output,
+                          status: d.isError ? ('error' as const) : ('success' as const),
+                          isError: d.isError as boolean | undefined,
                         }
                       : tc
-                  )
-                );
+                  );
+                  completedToolCalls = updated;
+                  return updated;
+                });
                 break;
               case 'run.completed': {
-                // Capture tool info for this message
-                const toolDiscovery: ToolDiscoveryInfo = {
-                  staticTools: data.staticTools,
-                  dynamicToolsLoaded: data.dynamicToolsLoaded,
-                  autoDiscoveredTools: data.autoDiscoveredTools,
+                // Build the assistant message from accumulated SSE data
+                const assistantMessage: Message = {
+                  id: (d.messageId as string) || `msg-${Date.now()}`,
+                  role: 'ASSISTANT',
+                  content: accumulatedContent,
+                  toolCalls: completedToolCalls
+                    .filter((tc) => tc.status === 'success' || tc.status === 'error')
+                    .map((tc) => ({
+                      toolCallId: tc.toolCallId,
+                      toolName: tc.toolName,
+                      args: tc.input,
+                      output: tc.output,
+                    })),
+                  inputTokens: d.inputTokens as number,
+                  outputTokens: d.outputTokens as number,
+                  createdAt: new Date().toISOString(),
                 };
 
-                // Refresh messages then attach tool discovery to the new assistant message
-                const refreshResponse = await fetch(`/api/omega/conversations/${conversationId}`);
-                if (refreshResponse.ok) {
-                  const respData = await refreshResponse.json();
-                  const { messages: messageList, ...conversationData } = respData.data;
-                  setConversation(conversationData);
-                  setMessages(messageList || []);
+                // Build tool results message if there were tool calls
+                const toolResultEntries = completedToolCalls
+                  .filter((tc) => tc.output !== undefined)
+                  .map((tc) => ({
+                    toolCallId: tc.toolCallId,
+                    toolName: tc.toolName,
+                    output: tc.output,
+                  }));
 
-                  // Find the newest assistant message and associate tool discovery with it
-                  const assistantMessages = (messageList || []).filter(
-                    (m: Message) => m.role === 'ASSISTANT'
-                  );
-                  if (assistantMessages.length > 0) {
-                    const newestAssistant = assistantMessages[assistantMessages.length - 1];
-                    setMessageToolDiscovery((prev) => {
-                      const next = new Map(prev);
-                      next.set(newestAssistant.id, toolDiscovery);
-                      return next;
+                setMessages((prev) => {
+                  const updated = [...prev, assistantMessage];
+                  if (toolResultEntries.length > 0) {
+                    updated.push({
+                      id: `tool-${Date.now()}`,
+                      role: 'TOOL',
+                      content: 'Tool results',
+                      toolCalls: toolResultEntries,
+                      createdAt: new Date().toISOString(),
                     });
                   }
+                  return updated;
+                });
+
+                // Update conversation token totals locally
+                if (conversation) {
+                  setConversation({
+                    ...conversation,
+                    inputTokensTotal:
+                      conversation.inputTokensTotal + ((d.inputTokens as number) || 0),
+                    outputTokensTotal:
+                      conversation.outputTokensTotal + ((d.outputTokens as number) || 0),
+                    executionState: 'idle',
+                  });
                 }
+
+                // Associate tool discovery info
+                const toolDiscovery: ToolDiscoveryInfo = {
+                  staticTools: d.staticTools as string[],
+                  dynamicToolsLoaded: d.dynamicToolsLoaded as string[],
+                  autoDiscoveredTools:
+                    d.autoDiscoveredTools as ToolDiscoveryInfo['autoDiscoveredTools'],
+                };
+                setMessageToolDiscovery((prev) => {
+                  const next = new Map(prev);
+                  next.set(assistantMessage.id, toolDiscovery);
+                  return next;
+                });
+
                 setStreamingContent('');
                 setToolCalls([]);
+                setStatusMessage(null);
                 break;
               }
               case 'run.failed':
-                throw new Error(data.error);
+                throw new Error(d.error as string);
             }
           }
         }
       }
     } catch (err) {
+      // Handle AbortError gracefully (user clicked stop)
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // Already handled in handleStop
+        return;
+      }
       console.error('Failed to send message:', err);
       setError(err instanceof Error ? err.message : 'Failed to send message');
       // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
     } finally {
+      abortControllerRef.current = null;
       setIsSending(false);
       setStreamingContent('');
+      setStatusMessage(null);
       inputRef.current?.focus();
     }
   };
@@ -578,17 +695,17 @@ export default function OmegaChatPage(): React.ReactElement {
                                   Auto-Discovered via BM25 ({discovery.autoDiscoveredTools.length})
                                 </div>
                                 <div className="space-y-1">
-                                  {discovery.autoDiscoveredTools.map((tool) => (
+                                  {discovery.autoDiscoveredTools.map((t) => (
                                     <div
-                                      key={tool.toolId}
+                                      key={t.toolId}
                                       className="text-[10px] font-mono bg-background/50 rounded px-2 py-1"
                                     >
-                                      <span className="text-primary">{tool.packageName}</span>
+                                      <span className="text-primary">{t.packageName}</span>
                                       <span className="text-foreground-tertiary">::</span>
-                                      <span className="text-foreground">{tool.name}</span>
+                                      <span className="text-foreground">{t.name}</span>
                                       <span className="text-foreground-tertiary ml-2">
-                                        - {tool.description?.slice(0, 60)}
-                                        {(tool.description?.length || 0) > 60 ? '...' : ''}
+                                        - {t.description?.slice(0, 60)}
+                                        {(t.description?.length || 0) > 60 ? '...' : ''}
                                       </span>
                                     </div>
                                   ))}
@@ -674,7 +791,11 @@ export default function OmegaChatPage(): React.ReactElement {
                   </div>
                 </div>
               ) : (
-                <div ref={messagesContainerRef} className="h-full overflow-y-auto">
+                <div
+                  ref={messagesContainerRef}
+                  className="h-full overflow-y-auto"
+                  onScroll={handleScroll}
+                >
                   <div className="max-w-4xl mx-auto">
                     {/* Messages */}
                     {messages.map((message) => (
@@ -761,14 +882,16 @@ export default function OmegaChatPage(): React.ReactElement {
                       </div>
                     )}
 
-                    {/* Thinking indicator */}
+                    {/* Thinking indicator with status message */}
                     {isSending && !streamingContent && toolCalls.length === 0 && (
                       <div className="px-4 pb-4">
                         <div className="flex justify-start">
                           <div className="rounded-lg p-4 bg-surface-secondary">
                             <div className="flex items-center gap-2 text-foreground-secondary">
                               <Icon icon="loader" size="sm" className="animate-spin" />
-                              <span className="text-sm">Omega is thinking...</span>
+                              <span className="text-sm">
+                                {statusMessage || 'Omega is thinking...'}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -815,9 +938,15 @@ export default function OmegaChatPage(): React.ReactElement {
                     target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
                   }}
                 />
-                <Button onClick={handleSend} disabled={isSending || !input.trim()}>
-                  <Icon icon="send" size="sm" />
-                </Button>
+                {isSending ? (
+                  <Button onClick={handleStop} variant="destructive">
+                    <Icon icon="x" size="sm" />
+                  </Button>
+                ) : (
+                  <Button onClick={handleSend} disabled={!input.trim()}>
+                    <Icon icon="send" size="sm" />
+                  </Button>
+                )}
               </div>
               <p className="text-xs text-foreground-tertiary mt-2 max-w-4xl mx-auto">
                 Press Enter to send, Shift+Enter for new line

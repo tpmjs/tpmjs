@@ -12,7 +12,14 @@
 import { Prisma, prisma } from '@tpmjs/db';
 import { registryExecuteTool } from '@tpmjs/registry-execute';
 import { registrySearchTool } from '@tpmjs/registry-search';
-import { jsonSchema, type ModelMessage, wrapLanguageModel } from 'ai';
+import {
+  jsonSchema,
+  type ModelMessage,
+  stepCountIs,
+  streamText,
+  tool,
+  wrapLanguageModel,
+} from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { authenticateRequest } from '~/lib/api-keys/middleware';
@@ -83,16 +90,16 @@ function detectMissingEnvVars(
   const warnings: EnvVarWarning[] = [];
   const userEnvKeys = new Set(Object.keys(userEnvVars));
 
-  for (const tool of tools) {
-    if (!tool.env || !Array.isArray(tool.env)) continue;
+  for (const t of tools) {
+    if (!t.env || !Array.isArray(t.env)) continue;
 
-    for (const envVar of tool.env) {
+    for (const envVar of t.env) {
       // Only warn about required env vars that are not set
       if (envVar.required && !userEnvKeys.has(envVar.name)) {
         warnings.push({
-          toolId: tool.toolId,
-          toolName: tool.name,
-          packageName: tool.packageName,
+          toolId: t.toolId,
+          toolName: t.name,
+          packageName: t.packageName,
           envVar: {
             name: envVar.name,
             description: envVar.description || '',
@@ -191,15 +198,15 @@ async function searchRelevantTools(
   const toolsArray = data.results?.tools || [];
 
   // biome-ignore lint/suspicious/noExplicitAny: API response types vary
-  return toolsArray.map((tool: any) => ({
-    toolId: `${tool.package.npmPackageName}::${tool.name}`,
-    packageName: tool.package.npmPackageName,
-    name: tool.name,
-    description: tool.description || `Tool: ${tool.name}`,
-    version: tool.package.npmVersion,
-    importUrl: `https://esm.sh/${tool.package.npmPackageName}@${tool.package.npmVersion}`,
-    inputSchema: tool.inputSchema,
-    env: tool.package.env || [],
+  return toolsArray.map((t: any) => ({
+    toolId: `${t.package.npmPackageName}::${t.name}`,
+    packageName: t.package.npmPackageName,
+    name: t.name,
+    description: t.description || `Tool: ${t.name}`,
+    version: t.package.npmVersion,
+    importUrl: `https://esm.sh/${t.package.npmPackageName}@${t.package.npmVersion}`,
+    inputSchema: t.inputSchema,
+    env: t.package.env || [],
   }));
 }
 
@@ -261,9 +268,6 @@ async function createDynamicTool(
   },
   userEnvVars: Record<string, string>
 ) {
-  // Import tool() dynamically to avoid top-level await
-  const { tool } = await import('ai');
-
   // If inputSchema is missing from the database, fetch it from the executor
   let schema = toolMeta.inputSchema;
   if (!schema) {
@@ -351,7 +355,7 @@ function sanitizeToolName(name: string): string {
 }
 
 /**
- * Add dynamically found tools to the conversation state
+ * Add dynamically found tools to the conversation state (parallel schema fetching)
  */
 async function addToolsToConversation(
   conversationId: string,
@@ -372,18 +376,32 @@ async function addToolsToConversation(
   // biome-ignore lint/style/noNonNullAssertion: We just ensured it exists
   const state = conversationStates.get(conversationId)!;
 
-  const addedTools: string[] = [];
+  // Filter to only tools not yet loaded
+  const newToolMetas = toolMetas.filter((tm) => {
+    const sanitizedName = sanitizeToolName(tm.toolId);
+    return !state.loadedTools[sanitizedName];
+  });
 
-  for (const toolMeta of toolMetas) {
-    const sanitizedName = sanitizeToolName(toolMeta.toolId);
-    if (!state.loadedTools[sanitizedName]) {
-      try {
-        state.loadedTools[sanitizedName] = await createDynamicTool(toolMeta, userEnvVars);
-        addedTools.push(sanitizedName);
-        console.log(`✅ Added dynamic tool: ${sanitizedName}`);
-      } catch (error) {
-        console.error(`❌ Failed to create tool wrapper for ${toolMeta.toolId}:`, error);
-      }
+  if (newToolMetas.length === 0) return [];
+
+  // Fetch schemas in parallel using Promise.allSettled
+  const results = await Promise.allSettled(
+    newToolMetas.map(async (toolMeta) => {
+      const sanitizedName = sanitizeToolName(toolMeta.toolId);
+      const dynamicTool = await createDynamicTool(toolMeta, userEnvVars);
+      return { sanitizedName, dynamicTool };
+    })
+  );
+
+  const addedTools: string[] = [];
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      const { sanitizedName, dynamicTool } = result.value;
+      state.loadedTools[sanitizedName] = dynamicTool;
+      addedTools.push(sanitizedName);
+      console.log(`✅ Added dynamic tool: ${sanitizedName}`);
+    } else {
+      console.error(`❌ Failed to create tool wrapper:`, result.reason);
     }
   }
 
@@ -394,12 +412,14 @@ async function addToolsToConversation(
  * POST /api/omega/conversations/[id]/messages
  * Send a message and stream the AI response via SSE
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex streaming logic required
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
-  const startTime = Date.now();
+  // --- Tier A: Auth, params, body in parallel ---
+  const [authResult, { id: conversationId }, body] = await Promise.all([
+    authenticateRequest(),
+    context.params,
+    request.json(),
+  ]);
 
-  // Authenticate request
-  const authResult = await authenticateRequest();
   if (!authResult.authenticated || !authResult.userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -410,27 +430,30 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     return rateLimitResponse;
   }
 
-  const { id: conversationId } = await context.params;
+  const parsed = SendMessageSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid request', details: parsed.error.flatten() },
+      { status: 400 }
+    );
+  }
+
+  const userId = authResult.userId;
 
   try {
-    const body = await request.json();
-    const parsed = SendMessageSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid request', details: parsed.error.flatten() },
-        { status: 400 }
-      );
-    }
-
-    // Fetch conversation and verify access
-    const conversation = await prisma.omegaConversation.findUnique({
-      where: { id: conversationId },
-      include: {
-        participants: {
-          select: { userId: true },
-        },
-      },
-    });
+    // --- Tier B: All user/conversation data in parallel ---
+    const [conversation, user, userSettings, userEnvVars] = await Promise.all([
+      prisma.omegaConversation.findUnique({
+        where: { id: conversationId },
+        include: { participants: { select: { userId: true } } },
+      }),
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, name: true, email: true },
+      }),
+      prisma.omegaUserSettings.findUnique({ where: { userId } }),
+      getUserEnvVarsDecrypted(userId),
+    ]);
 
     if (!conversation) {
       return NextResponse.json(
@@ -440,45 +463,50 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     }
 
     // Check if user is owner or participant
-    const isOwner = authResult.userId === conversation.ownerId;
-    const isParticipant = conversation.participants.some((p) => p.userId === authResult.userId);
+    const isOwner = userId === conversation.ownerId;
+    const isParticipant = conversation.participants.some((p) => p.userId === userId);
 
     if (!isOwner && !isParticipant) {
       return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
     }
 
-    // Get user info
-    const user = await prisma.user.findUnique({
-      where: { id: authResult.userId },
-      select: { id: true, name: true, email: true },
-    });
-
-    // Get user settings for pinned/blocked tools and custom prompt
-    const userSettings = await prisma.omegaUserSettings.findUnique({
-      where: { userId: authResult.userId },
-    });
-
-    // Fetch user's environment variables (decrypted) for tool execution
-    const userEnvVars = await getUserEnvVarsDecrypted(authResult.userId);
     console.log(`🔑 Loaded ${Object.keys(userEnvVars).length} user env vars`);
 
-    // Update conversation state to running
-    await prisma.omegaConversation.update({
-      where: { id: conversationId },
-      data: { executionState: 'running' },
-    });
+    // Check OpenAI API key early before doing more work
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { success: false, error: 'Omega is not configured. Missing OPENAI_API_KEY.' },
+        { status: 500 }
+      );
+    }
 
-    // Save user message
-    await prisma.omegaMessage.create({
-      data: {
-        conversationId,
-        role: 'USER',
-        content: parsed.data.message,
-        authorId: user?.id,
-        authorEmail: user?.email,
-        authorName: user?.name,
-      },
-    });
+    // --- Tier C: Write operations + tool search + recent messages in parallel ---
+    const [, , relevantTools, recentMessages] = await Promise.all([
+      prisma.omegaConversation.update({
+        where: { id: conversationId },
+        data: { executionState: 'running' },
+      }),
+      prisma.omegaMessage.create({
+        data: {
+          conversationId,
+          role: 'USER',
+          content: parsed.data.message,
+          authorId: user?.id,
+          authorEmail: user?.email,
+          authorName: user?.name,
+        },
+      }),
+      searchRelevantTools(parsed.data.message, 10, request.url),
+      prisma.omegaMessage.findMany({
+        where: { conversationId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+    ]);
+
+    console.log(`📦 Found ${relevantTools.length} relevant tools via BM25`);
+    recentMessages.reverse();
 
     // Initialize or get conversation state
     if (!conversationStates.has(conversationId)) {
@@ -487,16 +515,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     // biome-ignore lint/style/noNonNullAssertion: We just ensured it exists
     const state = conversationStates.get(conversationId)!;
 
-    // 🔍 Auto-search for relevant tools based on user's message (BM25)
-    console.log(`🔍 Auto-searching for tools matching: "${parsed.data.message}"`);
-    const relevantTools = await searchRelevantTools(parsed.data.message, 10, request.url);
-    console.log(`📦 Found ${relevantTools.length} relevant tools via BM25`);
-
-    // Add auto-discovered tools to conversation state
-    const autoAddedTools = await addToolsToConversation(conversationId, relevantTools, userEnvVars);
-    console.log(`✨ Auto-added ${autoAddedTools.length} new tools`);
-
-    // Detect missing required environment variables
+    // Detect missing required environment variables (sync, no await needed)
     const missingEnvVars = detectMissingEnvVars(relevantTools, userEnvVars);
     if (missingEnvVars.length > 0) {
       console.log(
@@ -505,51 +524,93 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
-    // Build final tools object: static tools + dynamically loaded tools
-    // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool types
-    const tools: Record<string, any> = {
-      // Static tools - these are the ones users can import into their own agents
-      registrySearchTool,
-      registryExecuteTool,
-      // Dynamically loaded tools from this conversation
-      ...state.loadedTools,
-    };
+    // Get the provider model (using OpenAI by default)
+    const { createOpenAI } = await import('@ai-sdk/openai');
+    const openai = createOpenAI({ apiKey });
+    const baseModel = openai('gpt-4.1-mini');
 
-    console.log(
-      `🔧 ${Object.keys(tools).length} total tools available (2 static + ${Object.keys(state.loadedTools).length} dynamic)`
-    );
+    // Wrap with devtools middleware in development
+    const devtoolsMiddleware = await getDevtools();
+    const model = devtoolsMiddleware
+      ? wrapLanguageModel({ model: baseModel, middleware: devtoolsMiddleware })
+      : baseModel;
 
-    // Fetch recent messages for context
-    const recentMessages = await prisma.omegaMessage.findMany({
-      where: { conversationId },
-      orderBy: { createdAt: 'desc' },
-      take: 20, // Last 20 messages for context
-    });
-    recentMessages.reverse();
+    if (devtoolsMiddleware) {
+      console.log('[Omega] Model wrapped with DevTools middleware');
+    }
 
-    // Build AI SDK messages
-    const messages: ModelMessage[] = [];
+    // Open SSE stream early — do tool loading inside start()
+    const stream = new ReadableStream({
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex streaming logic
+      async start(controller) {
+        const encoder = new TextEncoder();
 
-    // Build tool list for system prompt
-    const staticToolsList = [
-      '- registrySearchTool: Search the TPMJS registry to find AI SDK tools by keyword. Returns toolIds for registryExecuteTool.',
-      '- registryExecuteTool: Execute any tool from the TPMJS registry by toolId. Use registrySearchTool first to find tools.',
-    ].join('\n');
+        const sendEvent = (event: string, data: unknown) => {
+          const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+          controller.enqueue(encoder.encode(message));
+        };
 
-    const dynamicToolsList = Object.entries(state.loadedTools)
-      .map(([name, t]) => {
-        const tool = t as { description?: string };
-        return `- ${name}: ${tool.description || 'No description'}`;
-      })
-      .join('\n');
+        // Emit env var warnings at the start of the stream
+        if (missingEnvVars.length > 0) {
+          sendEvent('env.warning', { missingEnvVars });
+        }
 
-    // Add system prompt with available tools
-    const baseSystemPrompt = buildSystemPrompt({
-      customSystemPrompt: userSettings?.customSystemPrompt,
-      pinnedToolIds: userSettings?.pinnedToolIds || [],
-    });
+        try {
+          // --- Status: searching for tools ---
+          sendEvent('status', { phase: 'searching', message: 'Finding relevant tools...' });
 
-    const systemPrompt = `${baseSystemPrompt}
+          // Add auto-discovered tools to conversation state (parallel schema fetching)
+          const autoAddedTools = await addToolsToConversation(
+            conversationId,
+            relevantTools,
+            userEnvVars
+          );
+          console.log(`✨ Auto-added ${autoAddedTools.length} new tools`);
+
+          // --- Status: tools loaded ---
+          const dynamicToolCount = Object.keys(state.loadedTools).length;
+          if (dynamicToolCount > 0) {
+            sendEvent('status', {
+              phase: 'loading',
+              message: `Loading ${dynamicToolCount} tool${dynamicToolCount !== 1 ? 's' : ''}...`,
+            });
+          }
+
+          // Build final tools object: static tools + dynamically loaded tools
+          // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool types
+          const allTools: Record<string, any> = {
+            registrySearchTool,
+            registryExecuteTool,
+            ...state.loadedTools,
+          };
+
+          console.log(
+            `🔧 ${Object.keys(allTools).length} total tools available (2 static + ${dynamicToolCount} dynamic)`
+          );
+
+          // Build AI SDK messages
+          const messages: ModelMessage[] = [];
+
+          // Build tool list for system prompt
+          const staticToolsList = [
+            '- registrySearchTool: Search the TPMJS registry to find AI SDK tools by keyword. Returns toolIds for registryExecuteTool.',
+            '- registryExecuteTool: Execute any tool from the TPMJS registry by toolId. Use registrySearchTool first to find tools.',
+          ].join('\n');
+
+          const dynamicToolsList = Object.entries(state.loadedTools)
+            .map(([name, t]) => {
+              const tl = t as { description?: string };
+              return `- ${name}: ${tl.description || 'No description'}`;
+            })
+            .join('\n');
+
+          // Add system prompt with available tools
+          const baseSystemPrompt = buildSystemPrompt({
+            customSystemPrompt: userSettings?.customSystemPrompt,
+            pinnedToolIds: userSettings?.pinnedToolIds || [],
+          });
+
+          const systemPrompt = `${baseSystemPrompt}
 
 ## Static Tools (Always Available)
 
@@ -578,114 +639,70 @@ User: "Get the weather in Tokyo"
 
 Remember: Your value is in EXECUTING tools to get real results, not just describing what tools could do.`;
 
-    messages.push({ role: 'system', content: systemPrompt });
+          messages.push({ role: 'system', content: systemPrompt });
 
-    // Add conversation history
-    for (const msg of recentMessages.slice(0, -1)) {
-      // Exclude the message we just added
-      if (msg.role === 'USER') {
-        messages.push({ role: 'user', content: msg.content });
-      } else if (msg.role === 'ASSISTANT') {
-        if (msg.toolCalls && Array.isArray(msg.toolCalls) && msg.toolCalls.length > 0) {
-          const toolCallParts = (
-            msg.toolCalls as Array<{ toolCallId: string; toolName: string; args: unknown }>
-          ).map((tc) => ({
-            type: 'tool-call' as const,
-            toolCallId: tc.toolCallId,
-            toolName: tc.toolName,
-            input: tc.args,
-          }));
+          // Add conversation history
+          for (const msg of recentMessages.slice(0, -1)) {
+            // Exclude the message we just added
+            if (msg.role === 'USER') {
+              messages.push({ role: 'user', content: msg.content });
+            } else if (msg.role === 'ASSISTANT') {
+              if (msg.toolCalls && Array.isArray(msg.toolCalls) && msg.toolCalls.length > 0) {
+                const toolCallParts = (
+                  msg.toolCalls as Array<{ toolCallId: string; toolName: string; args: unknown }>
+                ).map((tc) => ({
+                  type: 'tool-call' as const,
+                  toolCallId: tc.toolCallId,
+                  toolName: tc.toolName,
+                  input: tc.args,
+                }));
 
-          const content: Array<
-            | { type: 'text'; text: string }
-            | { type: 'tool-call'; toolCallId: string; toolName: string; input: unknown }
-          > = [];
+                const content: Array<
+                  | { type: 'text'; text: string }
+                  | { type: 'tool-call'; toolCallId: string; toolName: string; input: unknown }
+                > = [];
 
-          if (msg.content) {
-            content.push({ type: 'text', text: msg.content });
+                if (msg.content) {
+                  content.push({ type: 'text', text: msg.content });
+                }
+                content.push(...toolCallParts);
+                messages.push({ role: 'assistant', content });
+              } else {
+                messages.push({ role: 'assistant', content: msg.content });
+              }
+            } else if (msg.role === 'TOOL') {
+              // Handle tool results (stored in toolCalls as a workaround)
+              const toolResults = msg.toolCalls as Array<{
+                toolCallId: string;
+                toolName: string;
+                output: unknown;
+              }> | null;
+              if (toolResults && toolResults.length > 0) {
+                for (const tr of toolResults) {
+                  messages.push({
+                    role: 'tool',
+                    content: [
+                      {
+                        type: 'tool-result' as const,
+                        toolCallId: tr.toolCallId,
+                        toolName: tr.toolName,
+                        output: {
+                          type: 'json' as const,
+                          value: tr.output as Parameters<typeof JSON.stringify>[0],
+                        },
+                      },
+                    ],
+                  });
+                }
+              }
+            }
           }
-          content.push(...toolCallParts);
-          messages.push({ role: 'assistant', content });
-        } else {
-          messages.push({ role: 'assistant', content: msg.content });
-        }
-      } else if (msg.role === 'TOOL') {
-        // Handle tool results (stored in toolCalls as a workaround)
-        const toolResults = msg.toolCalls as Array<{
-          toolCallId: string;
-          toolName: string;
-          output: unknown;
-        }> | null;
-        if (toolResults && toolResults.length > 0) {
-          for (const tr of toolResults) {
-            messages.push({
-              role: 'tool',
-              content: [
-                {
-                  type: 'tool-result' as const,
-                  toolCallId: tr.toolCallId,
-                  toolName: tr.toolName,
-                  output: {
-                    type: 'json' as const,
-                    value: tr.output as Parameters<typeof JSON.stringify>[0],
-                  },
-                },
-              ],
-            });
-          }
-        }
-      }
-    }
 
-    // Add new user message
-    messages.push({ role: 'user', content: parsed.data.message });
+          // Add new user message
+          messages.push({ role: 'user', content: parsed.data.message });
 
-    // Get the provider model (using OpenAI by default)
-    const { createOpenAI } = await import('@ai-sdk/openai');
-    const apiKey = process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      await prisma.omegaConversation.update({
-        where: { id: conversationId },
-        data: { executionState: 'idle' },
-      });
-      return NextResponse.json(
-        { success: false, error: 'Omega is not configured. Missing OPENAI_API_KEY.' },
-        { status: 500 }
-      );
-    }
-
-    const openai = createOpenAI({ apiKey });
-    const baseModel = openai('gpt-4.1-mini');
-
-    // Wrap with devtools middleware in development
-    const devtoolsMiddleware = await getDevtools();
-    const model = devtoolsMiddleware
-      ? wrapLanguageModel({ model: baseModel, middleware: devtoolsMiddleware })
-      : baseModel;
-
-    if (devtoolsMiddleware) {
-      console.log('[Omega] Model wrapped with DevTools middleware');
-    }
-
-    // Create SSE stream
-    const stream = new ReadableStream({
-      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex streaming logic
-      async start(controller) {
-        const encoder = new TextEncoder();
-
-        const sendEvent = (event: string, data: unknown) => {
-          const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-          controller.enqueue(encoder.encode(message));
-        };
-
-        // Emit env var warnings at the start of the stream
-        if (missingEnvVars.length > 0) {
-          sendEvent('env.warning', { missingEnvVars });
-        }
-
-        try {
-          const { streamText, stepCountIs } = await import('ai');
+          // --- Status: streaming ---
+          sendEvent('status', { phase: 'streaming', message: 'Generating response...' });
 
           let fullContent = '';
           const toolCallsMap: Map<string, { toolCallId: string; toolName: string; args: unknown }> =
@@ -698,10 +715,13 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
           let inputTokens = 0;
           let outputTokens = 0;
 
+          // Track per-tool start times for accurate executionTimeMs
+          const toolStartTimes = new Map<string, number>();
+
           const result = streamText({
             model,
             messages,
-            tools: Object.keys(tools).length > 0 ? tools : undefined,
+            tools: Object.keys(allTools).length > 0 ? allTools : undefined,
             stopWhen: stepCountIs(10), // Allow up to 10 tool calls for search + execute patterns
             onChunk: async (chunk) => {
               // Handle tool call (complete tool call with args)
@@ -713,15 +733,20 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                       ? (chunk.chunk as { args: unknown }).args
                       : {};
 
-                // Create tool run record
-                await prisma.omegaToolRun.create({
-                  data: {
-                    conversationId,
-                    toolName: chunk.chunk.toolName,
-                    input: input as Prisma.InputJsonValue,
-                    status: 'running',
-                  },
-                });
+                // Track tool start time
+                toolStartTimes.set(chunk.chunk.toolCallId, Date.now());
+
+                // Fire-and-forget: create tool run record
+                prisma.omegaToolRun
+                  .create({
+                    data: {
+                      conversationId,
+                      toolName: chunk.chunk.toolName,
+                      input: input as Prisma.InputJsonValue,
+                      status: 'running',
+                    },
+                  })
+                  .catch(console.error);
 
                 sendEvent('run.step.tool.started', {
                   toolCallId: chunk.chunk.toolCallId,
@@ -801,12 +826,17 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                     }
                   }
 
+                  // Compute per-tool execution time
+                  const toolStart = toolStartTimes.get(tr.toolCallId);
+                  const executionTimeMs = toolStart ? Date.now() - toolStart : 0;
+                  toolStartTimes.delete(tr.toolCallId);
+
                   // Build update data for tool run
                   const toolRunUpdateData: Prisma.OmegaToolRunUpdateManyMutationInput = {
                     output: tr.output as Prisma.InputJsonValue,
                     status: isError ? 'error' : 'success',
                     completedAt: new Date(),
-                    executionTimeMs: Date.now() - startTime,
+                    executionTimeMs,
                   };
 
                   // Add error message if the tool execution failed
@@ -817,15 +847,17 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                         : 'Unknown error';
                   }
 
-                  // Update tool run record
-                  await prisma.omegaToolRun.updateMany({
-                    where: {
-                      conversationId,
-                      toolName: tr.toolName,
-                      status: 'running',
-                    },
-                    data: toolRunUpdateData,
-                  });
+                  // Fire-and-forget: update tool run record
+                  prisma.omegaToolRun
+                    .updateMany({
+                      where: {
+                        conversationId,
+                        toolName: tr.toolName,
+                        status: 'running',
+                      },
+                      data: toolRunUpdateData,
+                    })
+                    .catch(console.error);
 
                   sendEvent('run.step.tool.completed', {
                     toolCallId: tr.toolCallId,
@@ -891,27 +923,24 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
             });
           }
 
-          // Update conversation token totals
+          // Update conversation: tokens, state, and title if first message pair
+          // Uses recentMessages.length to avoid count() query
+          const isFirstMessagePair = recentMessages.length <= 1;
           await prisma.omegaConversation.update({
             where: { id: conversationId },
             data: {
               executionState: 'idle',
               inputTokensTotal: { increment: inputTokens },
               outputTokensTotal: { increment: outputTokens },
+              ...(isFirstMessagePair && !conversation.title
+                ? {
+                    title:
+                      parsed.data.message.slice(0, 50) +
+                      (parsed.data.message.length > 50 ? '...' : ''),
+                  }
+                : {}),
             },
           });
-
-          // Update title if this is the first message pair
-          const messageCount = await prisma.omegaMessage.count({ where: { conversationId } });
-          if (messageCount <= 3 && !conversation.title) {
-            // Use first 50 chars of user message as title
-            const title =
-              parsed.data.message.slice(0, 50) + (parsed.data.message.length > 50 ? '...' : '');
-            await prisma.omegaConversation.update({
-              where: { id: conversationId },
-              data: { title },
-            });
-          }
 
           sendEvent('run.completed', {
             messageId: assistantMessage.id,
