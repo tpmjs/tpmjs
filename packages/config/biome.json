@@ -18,7 +18,8 @@
       "!**/.turbo",
       "!**/storybook-static",
       "!**/*.tsbuildinfo",
-      "!**/next-env.d.ts"
+      "!**/next-env.d.ts",
+      "!**/oclif.manifest.json"
     ]
   },
   "formatter": {
