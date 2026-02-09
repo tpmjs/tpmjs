@@ -12,8 +12,8 @@ on:
 
 jobs:
   trigger-claude:
-    # Only run when 'tool-request' label is added or manual dispatch
-    if: github.event.label.name == 'tool-request' || github.event_name == 'workflow_dispatch'
+    # Only run on main repo when 'tool-request' label is added or manual dispatch
+    if: github.repository_owner == 'tpmjs' && (github.event.label.name == 'tool-request' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -70,7 +70,7 @@ jobs:
   # Auto-close published issues after 24 hours
   auto-close:
     runs-on: ubuntu-latest
-    if: github.event.label.name == 'published'
+    if: github.repository_owner == 'tpmjs' && github.event.label.name == 'published'
     permissions:
       issues: write
     steps:

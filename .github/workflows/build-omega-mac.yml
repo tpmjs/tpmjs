@@ -5,6 +5,7 @@ on:
 
 jobs:
   build:
+    if: github.repository_owner == 'tpmjs'
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4

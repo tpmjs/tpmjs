@@ -12,6 +12,7 @@ on:
 
 jobs:
   update-docs:
+    if: github.repository_owner == 'tpmjs'
     runs-on: ubuntu-latest
     permissions:
       contents: write

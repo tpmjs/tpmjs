@@ -14,10 +14,12 @@ jobs:
   # Standard Claude trigger - responds to @claude mentions
   claude:
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'assigned') && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      github.repository_owner == 'tpmjs' && (
+        (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
+        (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
+        (github.event_name == 'issues' && (github.event.action == 'opened' || github.event.action == 'assigned') && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      )
     runs-on: ubuntu-latest
     permissions:
       contents: write      # Push branches, create commits
@@ -44,7 +46,7 @@ jobs:
 
   # Label-triggered Claude - for tool-request pipeline
   claude-label-trigger:
-    if: github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'claude-working'
+    if: github.repository_owner == 'tpmjs' && github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'claude-working'
     runs-on: ubuntu-latest
     permissions:
       contents: write

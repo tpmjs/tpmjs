@@ -20,6 +20,7 @@ env:
 
 jobs:
   health-check:
+    if: github.repository_owner == 'tpmjs'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 

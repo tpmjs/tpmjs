@@ -8,6 +8,7 @@ on:
 
 jobs:
   sync-keyword:
+    if: github.repository_owner == 'tpmjs'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger keyword search sync

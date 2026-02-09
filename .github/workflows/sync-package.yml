@@ -10,6 +10,7 @@ on:
 
 jobs:
   sync-package:
+    if: github.repository_owner == 'tpmjs'
     runs-on: ubuntu-latest
     steps:
       - name: Sync package

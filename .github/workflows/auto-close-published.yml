@@ -8,6 +8,7 @@ on:
 
 jobs:
   auto-close:
+    if: github.repository_owner == 'tpmjs'
     runs-on: ubuntu-latest
     permissions:
       issues: write

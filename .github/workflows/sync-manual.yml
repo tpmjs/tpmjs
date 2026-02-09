@@ -15,6 +15,7 @@ on:
 
 jobs:
   sync-manual:
+    if: github.repository_owner == 'tpmjs'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

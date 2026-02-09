@@ -8,6 +8,7 @@ on:
 
 jobs:
   sync-changes:
+    if: github.repository_owner == 'tpmjs'
     runs-on: ubuntu-latest
     steps:
       - name: Trigger changes feed sync
