@@ -117,7 +117,7 @@ function computeSignature(
  * Make an authenticated request to the Unsandbox API
  */
 async function apiRequest<T>(
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE',
   path: string,
   body?: unknown
 ): Promise<T> {
@@ -1300,6 +1300,127 @@ export const deleteSession = tool({
 });
 
 // ============================================================================
+// Extend Session TTL
+// ============================================================================
+
+export interface ExtendSessionInput {
+  session_id: string;
+  seconds?: number;
+}
+
+export interface ExtendSessionResult {
+  ttl: number;
+}
+
+/**
+ * Extend a session's time-to-live.
+ */
+export const extendSession = tool({
+  description: 'Add additional time to a session\'s TTL. Default adds 3600 seconds (1 hour).',
+  inputSchema: jsonSchema<ExtendSessionInput>({
+    type: 'object',
+    properties: {
+      session_id: { type: 'string', description: 'The session ID' },
+      seconds: {
+        type: 'number',
+        description: 'Seconds to add to TTL. Default: 3600',
+      },
+    },
+    required: ['session_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: ExtendSessionInput): Promise<ExtendSessionResult> {
+    const body: Record<string, unknown> = {};
+    if (input.seconds !== undefined) body.seconds = input.seconds;
+
+    return apiRequest<ExtendSessionResult>(
+      'POST',
+      `/sessions/${encodeURIComponent(input.session_id)}/extend`,
+      body
+    );
+  },
+});
+
+// ============================================================================
+// Boost Session Resources
+// ============================================================================
+
+export interface BoostSessionInput {
+  session_id: string;
+  vcpu?: number;
+}
+
+export interface BoostSessionResult {
+  success: boolean;
+  message: string;
+  session: {
+    session_id: string;
+    status: string;
+    vcpu: number;
+  };
+}
+
+/**
+ * Boost session vCPU and memory.
+ */
+export const boostSession = tool({
+  description: 'Increase session vCPU and memory. Each vCPU includes 2GB RAM. Consumes additional concurrency slots.',
+  inputSchema: jsonSchema<BoostSessionInput>({
+    type: 'object',
+    properties: {
+      session_id: { type: 'string', description: 'The session ID' },
+      vcpu: {
+        type: 'number',
+        description: 'Target vCPU count (1-8). Default: 2',
+      },
+    },
+    required: ['session_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: BoostSessionInput): Promise<BoostSessionResult> {
+    const body: Record<string, unknown> = {};
+    if (input.vcpu !== undefined) {
+      if (input.vcpu < 1 || input.vcpu > 8) {
+        throw new Error('vCPU must be between 1 and 8');
+      }
+      body.vcpu = input.vcpu;
+    }
+
+    return apiRequest<BoostSessionResult>(
+      'POST',
+      `/sessions/${encodeURIComponent(input.session_id)}/boost`,
+      body
+    );
+  },
+});
+
+// ============================================================================
+// Unboost Session Resources
+// ============================================================================
+
+/**
+ * Return session to base resources.
+ */
+export const unboostSession = tool({
+  description: 'Reduce session back to default vCPU and memory allocation.',
+  inputSchema: jsonSchema<SessionIdInput>({
+    type: 'object',
+    properties: {
+      session_id: { type: 'string', description: 'The session ID' },
+    },
+    required: ['session_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: SessionIdInput): Promise<BoostSessionResult> {
+    return apiRequest<BoostSessionResult>(
+      'POST',
+      `/sessions/${encodeURIComponent(input.session_id)}/unboost`,
+      {}
+    );
+  },
+});
+
+// ============================================================================
 // Services
 // ============================================================================
 
@@ -1767,6 +1888,318 @@ export const deleteService = tool({
       'DELETE',
       `/services/${encodeURIComponent(input.service_id)}`,
       undefined
+    );
+  },
+});
+
+// ============================================================================
+// Update Service Settings
+// ============================================================================
+
+export interface UpdateServiceInput {
+  service_id: string;
+  vcpu?: number;
+  unfreeze_on_demand?: boolean;
+  show_freeze_page?: boolean;
+}
+
+export interface UpdateServiceResult {
+  success: boolean;
+  service_id: string;
+  vcpu?: number;
+  unfreeze_on_demand?: boolean;
+  show_freeze_page?: boolean;
+}
+
+/**
+ * Update service settings (resize, auto-unfreeze, freeze page).
+ */
+export const updateService = tool({
+  description: 'Update service settings. Supports vCPU resize (1-8, each gets 2GB RAM), auto-unfreeze on HTTP request, and branded freeze page. One setting per request.',
+  inputSchema: jsonSchema<UpdateServiceInput>({
+    type: 'object',
+    properties: {
+      service_id: { type: 'string', description: 'The service ID' },
+      vcpu: {
+        type: 'number',
+        description: 'Target vCPU count (1-8, each gets 2GB RAM)',
+      },
+      unfreeze_on_demand: {
+        type: 'boolean',
+        description: 'Auto-unfreeze on first HTTP request when frozen',
+      },
+      show_freeze_page: {
+        type: 'boolean',
+        description: 'Show branded freeze page instead of 502 when frozen',
+      },
+    },
+    required: ['service_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: UpdateServiceInput): Promise<UpdateServiceResult> {
+    const body: Record<string, unknown> = {};
+    if (input.vcpu !== undefined) {
+      if (input.vcpu < 1 || input.vcpu > 8) {
+        throw new Error('vCPU must be between 1 and 8');
+      }
+      body.vcpu = input.vcpu;
+    }
+    if (input.unfreeze_on_demand !== undefined) body.unfreeze_on_demand = input.unfreeze_on_demand;
+    if (input.show_freeze_page !== undefined) body.show_freeze_page = input.show_freeze_page;
+
+    if (Object.keys(body).length === 0) {
+      throw new Error('Must provide vcpu, unfreeze_on_demand, or show_freeze_page');
+    }
+
+    return apiRequest<UpdateServiceResult>(
+      'PATCH',
+      `/services/${encodeURIComponent(input.service_id)}`,
+      body
+    );
+  },
+});
+
+// ============================================================================
+// Check Service Port
+// ============================================================================
+
+export interface CheckServicePortInput {
+  service_id: string;
+  port: number;
+}
+
+export interface CheckServicePortResult {
+  listening: boolean;
+  port: number;
+  service_id: string;
+}
+
+/**
+ * Check if a port is listening inside the service container.
+ */
+export const checkServicePort = tool({
+  description: 'Check if a specific port is listening inside the service container.',
+  inputSchema: jsonSchema<CheckServicePortInput>({
+    type: 'object',
+    properties: {
+      service_id: { type: 'string', description: 'The service ID' },
+      port: {
+        type: 'number',
+        description: 'Port number to check (1-65535)',
+      },
+    },
+    required: ['service_id', 'port'],
+    additionalProperties: false,
+  }),
+  async execute(input: CheckServicePortInput): Promise<CheckServicePortResult> {
+    if (input.port < 1 || input.port > 65535) {
+      throw new Error('Port must be between 1 and 65535');
+    }
+
+    return apiRequest<CheckServicePortResult>(
+      'GET',
+      `/services/${encodeURIComponent(input.service_id)}/port?port=${input.port}`,
+      undefined
+    );
+  },
+});
+
+// ============================================================================
+// Service Upgrade Progress
+// ============================================================================
+
+export interface UpgradeProgressResult {
+  upgrading: boolean;
+  state?: string;
+  progress?: number;
+  current_version?: string;
+  target_version?: string;
+}
+
+/**
+ * Get OS upgrade progress for a service.
+ */
+export const getUpgradeProgress = tool({
+  description: 'Get OS upgrade progress for a service including state, progress percentage, and version chain.',
+  inputSchema: jsonSchema<ServiceIdInput>({
+    type: 'object',
+    properties: {
+      service_id: { type: 'string', description: 'The service ID' },
+    },
+    required: ['service_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: ServiceIdInput): Promise<UpgradeProgressResult> {
+    return apiRequest<UpgradeProgressResult>(
+      'GET',
+      `/services/${encodeURIComponent(input.service_id)}/upgrade/progress`,
+      undefined
+    );
+  },
+});
+
+// ============================================================================
+// Service Upgrade Logs
+// ============================================================================
+
+export interface GetUpgradeLogsInput {
+  service_id: string;
+  lines?: number;
+}
+
+export interface UpgradeLogsResult {
+  log: string;
+  message?: string;
+}
+
+/**
+ * Get OS upgrade logs for a service.
+ */
+export const getUpgradeLogs = tool({
+  description: 'Get OS upgrade log output for a service. Optionally limit to last N lines.',
+  inputSchema: jsonSchema<GetUpgradeLogsInput>({
+    type: 'object',
+    properties: {
+      service_id: { type: 'string', description: 'The service ID' },
+      lines: {
+        type: 'number',
+        description: 'Limit to last N lines (default: all)',
+      },
+    },
+    required: ['service_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: GetUpgradeLogsInput): Promise<UpgradeLogsResult> {
+    let path = `/services/${encodeURIComponent(input.service_id)}/upgrade/logs`;
+    if (input.lines !== undefined) {
+      path += `?lines=${input.lines}`;
+    }
+
+    return apiRequest<UpgradeLogsResult>('GET', path, undefined);
+  },
+});
+
+// ============================================================================
+// Update Service Domains
+// ============================================================================
+
+export interface UpdateServiceDomainsInput {
+  service_id: string;
+  custom_domains?: string[];
+  add?: string[];
+  remove?: string[];
+}
+
+export interface UpdateServiceDomainsResult {
+  success: boolean;
+  service_id: string;
+  custom_domains: string[];
+}
+
+/**
+ * Update custom domains for a service.
+ */
+export const updateServiceDomains = tool({
+  description: 'Manage custom domain names for a service. Use custom_domains to replace all, add to append, or remove to delete specific domains.',
+  inputSchema: jsonSchema<UpdateServiceDomainsInput>({
+    type: 'object',
+    properties: {
+      service_id: { type: 'string', description: 'The service ID' },
+      custom_domains: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Replace all domains with this list',
+      },
+      add: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Add these domains to existing list',
+      },
+      remove: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Remove these domains from existing list',
+      },
+    },
+    required: ['service_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: UpdateServiceDomainsInput): Promise<UpdateServiceDomainsResult> {
+    const body: Record<string, unknown> = {};
+    if (input.custom_domains) body.custom_domains = input.custom_domains;
+    if (input.add) body.add = input.add;
+    if (input.remove) body.remove = input.remove;
+
+    if (Object.keys(body).length === 0) {
+      throw new Error('Must provide custom_domains, add, or remove');
+    }
+
+    return apiRequest<UpdateServiceDomainsResult>(
+      'PUT',
+      `/services/${encodeURIComponent(input.service_id)}/domains`,
+      body
+    );
+  },
+});
+
+// ============================================================================
+// Export Service Env
+// ============================================================================
+
+export interface ExportServiceEnvResult {
+  env: string;
+}
+
+/**
+ * Export service environment variables as .env format.
+ */
+export const exportServiceEnv = tool({
+  description: 'Export all environment variables as a .env formatted string. Requires HMAC authentication.',
+  inputSchema: jsonSchema<ServiceIdInput>({
+    type: 'object',
+    properties: {
+      service_id: { type: 'string', description: 'The service ID' },
+    },
+    required: ['service_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: ServiceIdInput): Promise<ExportServiceEnvResult> {
+    return apiRequest<ExportServiceEnvResult>(
+      'POST',
+      `/services/${encodeURIComponent(input.service_id)}/env/export`,
+      {}
+    );
+  },
+});
+
+// ============================================================================
+// Restore Service from Snapshot
+// ============================================================================
+
+export interface RestoreServiceInput {
+  service_id: string;
+  snapshot_id: string;
+}
+
+/**
+ * Restore a service from a snapshot.
+ */
+export const restoreService = tool({
+  description: 'Restore a service to a previous snapshot state.',
+  inputSchema: jsonSchema<RestoreServiceInput>({
+    type: 'object',
+    properties: {
+      service_id: { type: 'string', description: 'The service ID' },
+      snapshot_id: { type: 'string', description: 'The snapshot ID to restore from' },
+    },
+    required: ['service_id', 'snapshot_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: RestoreServiceInput): Promise<ServiceStateResult> {
+    return apiRequest<ServiceStateResult>(
+      'POST',
+      `/services/${encodeURIComponent(input.service_id)}/restore`,
+      { snapshot_id: input.snapshot_id }
     );
   },
 });
@@ -2385,6 +2818,104 @@ export const deleteImage = tool({
 });
 
 // ============================================================================
+// List Owned Images
+// ============================================================================
+
+/**
+ * List images owned by the authenticated API key.
+ */
+export const listOwnedImages = tool({
+  description: 'List only images owned by the authenticated API key. Includes management fields like trusted_keys.',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<ListImagesResult> {
+    const result = await apiRequest<ListImagesResult>('GET', '/images/owned', undefined);
+    return { images: result.images || [] };
+  },
+});
+
+// ============================================================================
+// List Shared Images
+// ============================================================================
+
+/**
+ * List images shared with the authenticated API key.
+ */
+export const listSharedImages = tool({
+  description: 'List images shared with you via trusted_keys (images you can use but don\'t own).',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<ListImagesResult> {
+    const result = await apiRequest<ListImagesResult>('GET', '/images/shared', undefined);
+    return { images: result.images || [] };
+  },
+});
+
+// ============================================================================
+// List Public Images
+// ============================================================================
+
+/**
+ * List all public images (marketplace).
+ */
+export const listPublicImages = tool({
+  description: 'List all public images available in the marketplace.',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<ListImagesResult> {
+    const result = await apiRequest<ListImagesResult>('GET', '/images/public', undefined);
+    return { images: result.images || [] };
+  },
+});
+
+// ============================================================================
+// Clone Image
+// ============================================================================
+
+export interface CloneImageInput {
+  image_id: string;
+  name?: string;
+  description?: string;
+}
+
+/**
+ * Clone an image to create your own copy.
+ */
+export const cloneImage = tool({
+  description: 'Create a copy of an image. The cloned image will be owned by you with private visibility.',
+  inputSchema: jsonSchema<CloneImageInput>({
+    type: 'object',
+    properties: {
+      image_id: { type: 'string', description: 'The image ID to clone' },
+      name: { type: 'string', description: 'Name for the cloned image (defaults to original + " (copy)")' },
+      description: { type: 'string', description: 'Description for the cloned image' },
+    },
+    required: ['image_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: CloneImageInput): Promise<ImageResult> {
+    const body: Record<string, unknown> = {};
+    if (input.name) body.name = input.name;
+    if (input.description) body.description = input.description;
+
+    return apiRequest<ImageResult>(
+      'POST',
+      `/images/${encodeURIComponent(input.image_id)}/clone`,
+      body
+    );
+  },
+});
+
+// ============================================================================
 // System
 // ============================================================================
 
@@ -2505,6 +3036,445 @@ export const listPools = tool({
 });
 
 // ============================================================================
+// Get Pool Stats
+// ============================================================================
+
+export interface GetPoolStatsInput {
+  pool_id: string;
+}
+
+export interface PoolStatsResult {
+  mode: string;
+  pool_size: number;
+  total_containers: number;
+  available: number;
+  allocated: number;
+  spawning: number;
+  network_mode: string;
+  load_avg?: {
+    load1: string;
+    load5: string;
+    load15: string;
+  };
+  memory?: {
+    total_mb: number;
+    used_mb: number;
+    available_mb: number;
+    used_percent: number;
+  };
+  network_breakdown?: {
+    zerotrust?: { total: number; available: number; allocated: number };
+    semitrusted?: { total: number; available: number; allocated: number; services?: number };
+  };
+}
+
+/**
+ * Get detailed stats for a specific pool.
+ */
+export const getPoolStats = tool({
+  description: 'Get detailed stats for a specific pool including load averages, memory usage, and network breakdown.',
+  inputSchema: jsonSchema<GetPoolStatsInput>({
+    type: 'object',
+    properties: {
+      pool_id: {
+        type: 'string',
+        description: 'Pool identifier (e.g., ai, cammy)',
+      },
+    },
+    required: ['pool_id'],
+    additionalProperties: false,
+  }),
+  async execute(input: GetPoolStatsInput): Promise<PoolStatsResult> {
+    return apiRequest<PoolStatsResult>(
+      'GET',
+      `/pools/${encodeURIComponent(input.pool_id)}/stats`,
+      undefined
+    );
+  },
+});
+
+// ============================================================================
+// API Keys - Validate
+// ============================================================================
+
+export interface ValidateKeyResult {
+  valid: boolean;
+  public_key: string;
+  rate_per_minute: number;
+  burst: number;
+  concurrency_limit: number;
+  expires_at: string | null;
+  tier: string;
+}
+
+/**
+ * Validate API key pair.
+ */
+export const validateKey = tool({
+  description: 'Validate your API key pair and retrieve its configuration including rate limits, concurrency limits, and expiration status.',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<ValidateKeyResult> {
+    return apiRequest<ValidateKeyResult>('POST', '/keys/validate', {});
+  },
+});
+
+// ============================================================================
+// API Keys - Get Self
+// ============================================================================
+
+export interface KeyInfoResult {
+  key: string;
+  email: string;
+  sudo_required: boolean;
+  tier: number;
+  created_at: string;
+  contacts_count: number;
+}
+
+/**
+ * Get current API key info.
+ */
+export const getKeyInfo = tool({
+  description: 'Get metadata for the authenticated API key including email, tier, and contacts count.',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<KeyInfoResult> {
+    return apiRequest<KeyInfoResult>('GET', '/keys/self', undefined);
+  },
+});
+
+// ============================================================================
+// API Keys - Update Self
+// ============================================================================
+
+export interface UpdateKeyInput {
+  email?: string;
+  sudo_required?: boolean;
+}
+
+export interface UpdateKeyResult {
+  success: boolean;
+  key: {
+    key: string;
+    email: string;
+    sudo_required: boolean;
+  };
+}
+
+/**
+ * Update API key settings.
+ */
+export const updateKeySettings = tool({
+  description: 'Update email or sudo settings for the authenticated API key.',
+  inputSchema: jsonSchema<UpdateKeyInput>({
+    type: 'object',
+    properties: {
+      email: { type: 'string', description: 'New email address' },
+      sudo_required: {
+        type: 'boolean',
+        description: 'Require OTP for destructive operations',
+      },
+    },
+    additionalProperties: false,
+  }),
+  async execute(input: UpdateKeyInput): Promise<UpdateKeyResult> {
+    const body: Record<string, unknown> = {};
+    if (input.email !== undefined) body.email = input.email;
+    if (input.sudo_required !== undefined) body.sudo_required = input.sudo_required;
+
+    if (Object.keys(body).length === 0) {
+      throw new Error('Must provide email or sudo_required');
+    }
+
+    return apiRequest<UpdateKeyResult>('PATCH', '/keys/self', body);
+  },
+});
+
+// ============================================================================
+// API Keys - Contacts
+// ============================================================================
+
+export interface Contact {
+  email: string;
+  role: 'owner' | 'operator' | 'reader';
+  verified: boolean;
+  invited_by?: string;
+  created_at?: string;
+}
+
+export interface ListContactsResult {
+  contacts: Contact[];
+}
+
+/**
+ * List contacts for the authenticated API key.
+ */
+export const listContacts = tool({
+  description: 'List all contacts associated with the authenticated API key.',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<ListContactsResult> {
+    return apiRequest<ListContactsResult>('GET', '/keys/self/contacts', undefined);
+  },
+});
+
+// ============================================================================
+// API Keys - Add Contact
+// ============================================================================
+
+export interface AddContactInput {
+  email: string;
+  role?: 'owner' | 'operator' | 'reader';
+}
+
+export interface AddContactResult {
+  success: boolean;
+  contact: Contact;
+}
+
+/**
+ * Add a contact to the API key.
+ */
+export const addContact = tool({
+  description: 'Add a new contact to the API key. Sends an invitation email. Roles: owner (full control), operator (manage services), reader (view-only).',
+  inputSchema: jsonSchema<AddContactInput>({
+    type: 'object',
+    properties: {
+      email: { type: 'string', description: 'Contact email address' },
+      role: {
+        type: 'string',
+        enum: ['owner', 'operator', 'reader'],
+        description: 'Contact role. Default: reader',
+      },
+    },
+    required: ['email'],
+    additionalProperties: false,
+  }),
+  async execute(input: AddContactInput): Promise<AddContactResult> {
+    const body: Record<string, unknown> = { email: input.email };
+    if (input.role) body.role = input.role;
+
+    return apiRequest<AddContactResult>('POST', '/keys/self/contacts', body);
+  },
+});
+
+// ============================================================================
+// API Keys - Update Contact Role
+// ============================================================================
+
+export interface UpdateContactInput {
+  email: string;
+  role: 'owner' | 'operator' | 'reader';
+}
+
+export interface UpdateContactResult {
+  success: boolean;
+  contact: {
+    email: string;
+    role: string;
+  };
+}
+
+/**
+ * Update a contact's role.
+ */
+export const updateContact = tool({
+  description: 'Change a contact\'s role. Only owners can manage contacts.',
+  inputSchema: jsonSchema<UpdateContactInput>({
+    type: 'object',
+    properties: {
+      email: { type: 'string', description: 'Contact email address' },
+      role: {
+        type: 'string',
+        enum: ['owner', 'operator', 'reader'],
+        description: 'New role for the contact',
+      },
+    },
+    required: ['email', 'role'],
+    additionalProperties: false,
+  }),
+  async execute(input: UpdateContactInput): Promise<UpdateContactResult> {
+    return apiRequest<UpdateContactResult>(
+      'PATCH',
+      `/keys/self/contacts/${encodeURIComponent(input.email)}`,
+      { role: input.role }
+    );
+  },
+});
+
+// ============================================================================
+// API Keys - Remove Contact
+// ============================================================================
+
+export interface RemoveContactInput {
+  email: string;
+}
+
+export interface RemoveContactResult {
+  success: boolean;
+}
+
+/**
+ * Remove a contact from the API key.
+ */
+export const removeContact = tool({
+  description: 'Remove a contact from the API key. Only owners can manage contacts.',
+  inputSchema: jsonSchema<RemoveContactInput>({
+    type: 'object',
+    properties: {
+      email: { type: 'string', description: 'Contact email to remove' },
+    },
+    required: ['email'],
+    additionalProperties: false,
+  }),
+  async execute(input: RemoveContactInput): Promise<RemoveContactResult> {
+    return apiRequest<RemoveContactResult>(
+      'DELETE',
+      `/keys/self/contacts/${encodeURIComponent(input.email)}`,
+      undefined
+    );
+  },
+});
+
+// ============================================================================
+// API Keys - Audit Log
+// ============================================================================
+
+export interface AuditLogEntry {
+  action: string;
+  resource_type: string;
+  resource_id: string;
+  result: 'success' | 'failure';
+  client_ip: string;
+  metadata?: Record<string, unknown>;
+  timestamp: string;
+}
+
+export interface AuditLogResult {
+  entries: AuditLogEntry[];
+  count: number;
+}
+
+/**
+ * Get audit log for the authenticated API key.
+ */
+export const getAuditLog = tool({
+  description: 'Retrieve audit log entries for the authenticated API key. Logs all major operations: create, destroy, freeze, unfreeze, snapshot, etc.',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<AuditLogResult> {
+    return apiRequest<AuditLogResult>('GET', '/keys/self/audit-log', undefined);
+  },
+});
+
+// ============================================================================
+// Live Tokens - Mint
+// ============================================================================
+
+export interface MintTokenInput {
+  ttl?: number;
+}
+
+export interface MintTokenResult {
+  token: string;
+  expires_at: string;
+}
+
+/**
+ * Mint a short-lived live token.
+ */
+export const mintToken = tool({
+  description: 'Create a short-lived token for client-side use (e.g., browser WebSocket connections). Inherits parent key permissions.',
+  inputSchema: jsonSchema<MintTokenInput>({
+    type: 'object',
+    properties: {
+      ttl: {
+        type: 'number',
+        description: 'Token TTL in seconds',
+      },
+    },
+    additionalProperties: false,
+  }),
+  async execute(input: MintTokenInput): Promise<MintTokenResult> {
+    const body: Record<string, unknown> = {};
+    if (input.ttl !== undefined) body.ttl = input.ttl;
+
+    return apiRequest<MintTokenResult>('POST', '/mint-token', body);
+  },
+});
+
+// ============================================================================
+// Live Tokens - Revoke
+// ============================================================================
+
+export interface RevokeTokenInput {
+  token: string;
+}
+
+export interface RevokeTokenResult {
+  success: boolean;
+}
+
+/**
+ * Revoke a live token.
+ */
+export const revokeToken = tool({
+  description: 'Immediately invalidate a previously minted live token.',
+  inputSchema: jsonSchema<RevokeTokenInput>({
+    type: 'object',
+    properties: {
+      token: { type: 'string', description: 'The token to revoke' },
+    },
+    required: ['token'],
+    additionalProperties: false,
+  }),
+  async execute(input: RevokeTokenInput): Promise<RevokeTokenResult> {
+    return apiRequest<RevokeTokenResult>('POST', '/revoke-token', { token: input.token });
+  },
+});
+
+// ============================================================================
+// Live Tokens - List
+// ============================================================================
+
+export interface TokenInfo {
+  token: string;
+  expires_at: string;
+}
+
+export interface ListTokensResult {
+  tokens: TokenInfo[];
+}
+
+/**
+ * List active live tokens.
+ */
+export const listTokens = tool({
+  description: 'List all active (non-expired, non-revoked) live tokens for the authenticated API key.',
+  inputSchema: jsonSchema<Record<string, never>>({
+    type: 'object',
+    properties: {},
+    additionalProperties: false,
+  }),
+  async execute(): Promise<ListTokensResult> {
+    return apiRequest<ListTokensResult>('POST', '/list-tokens', {});
+  },
+});
+
+// ============================================================================
 // Default Export
 // ============================================================================
 
@@ -2533,6 +3503,9 @@ export default {
   createSessionSnapshot,
   restoreSession,
   deleteSession,
+  extendSession,
+  boostSession,
+  unboostSession,
   // Services
   createService,
   getService,
@@ -2549,6 +3522,13 @@ export default {
   setServiceEnv,
   deleteServiceEnv,
   deleteService,
+  updateService,
+  checkServicePort,
+  getUpgradeProgress,
+  getUpgradeLogs,
+  updateServiceDomains,
+  exportServiceEnv,
+  restoreService,
   // Snapshots
   createSnapshot,
   getSnapshot,
@@ -2571,9 +3551,27 @@ export default {
   spawnFromImage,
   getImageTrustedKeys,
   deleteImage,
+  listOwnedImages,
+  listSharedImages,
+  listPublicImages,
+  cloneImage,
   // System
   healthCheck,
   getClusterStatus,
   getSystemStats,
   listPools,
+  getPoolStats,
+  // API Keys
+  validateKey,
+  getKeyInfo,
+  updateKeySettings,
+  listContacts,
+  addContact,
+  updateContact,
+  removeContact,
+  getAuditLog,
+  // Live Tokens
+  mintToken,
+  revokeToken,
+  listTokens,
 };

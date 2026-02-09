@@ -127,6 +127,21 @@
         "description": "Delete a session and release all associated resources."
       },
       {
+        "name": "extendSession",
+        "description": "Add additional time to a session's TTL.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "boostSession",
+        "description": "Increase session vCPU and memory. Each vCPU includes 2GB RAM.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "unboostSession",
+        "description": "Return session to base vCPU and memory allocation.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
         "name": "createService",
         "description": "Create a long-running service with persistent state, networking, and auto-restart capabilities."
       },
@@ -185,6 +200,41 @@
       {
         "name": "deleteService",
         "description": "Delete a service and release all associated resources."
+      },
+      {
+        "name": "updateService",
+        "description": "Update service settings: vCPU resize, auto-unfreeze on HTTP, or freeze page display.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "checkServicePort",
+        "description": "Check if a specific port is listening inside the service container.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "getUpgradeProgress",
+        "description": "Get OS upgrade progress including state, percentage, and version chain.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "getUpgradeLogs",
+        "description": "Get OS upgrade log output for a service.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "updateServiceDomains",
+        "description": "Manage custom domain names for a service (replace, add, or remove domains).",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "exportServiceEnv",
+        "description": "Export all environment variables as a .env formatted string.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "restoreService",
+        "description": "Restore a service to a previous snapshot state.",
+        "healthCheck": { "skipExecution": true }
       },
       {
         "name": "createSnapshot",
@@ -267,6 +317,23 @@
         "description": "Delete an image and free associated storage."
       },
       {
+        "name": "listOwnedImages",
+        "description": "List only images owned by the authenticated API key."
+      },
+      {
+        "name": "listSharedImages",
+        "description": "List images shared with you via trusted_keys."
+      },
+      {
+        "name": "listPublicImages",
+        "description": "List all public images available in the marketplace."
+      },
+      {
+        "name": "cloneImage",
+        "description": "Create a copy of an image owned by you with private visibility.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
         "name": "healthCheck",
         "description": "Check the health status of the Unsandbox API service."
       },
@@ -281,6 +348,64 @@
       {
         "name": "listPools",
         "description": "List available execution pools with their configurations and current status."
+      },
+      {
+        "name": "getPoolStats",
+        "description": "Get detailed stats for a specific pool including load, memory, and network breakdown.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "validateKey",
+        "description": "Validate API key pair and retrieve rate limits, concurrency, and expiration."
+      },
+      {
+        "name": "getKeyInfo",
+        "description": "Get metadata for the authenticated API key including email, tier, and contacts."
+      },
+      {
+        "name": "updateKeySettings",
+        "description": "Update email or sudo settings for the authenticated API key.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "listContacts",
+        "description": "List all contacts associated with the authenticated API key."
+      },
+      {
+        "name": "addContact",
+        "description": "Add a contact with role (owner, operator, reader). Sends invitation email.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "updateContact",
+        "description": "Change a contact's role. Only owners can manage contacts.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "removeContact",
+        "description": "Remove a contact from the API key.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "getAuditLog",
+        "description": "Retrieve audit log entries for all major operations on the API key."
+      },
+      {
+        "name": "mintToken",
+        "description": "Create a short-lived token for client-side use (e.g., browser WebSocket).",
+        "healthCheck": {
+          "testParams": {},
+          "cleanup": [{ "tool": "revokeToken", "mapping": { "token": "token" } }]
+        }
+      },
+      {
+        "name": "revokeToken",
+        "description": "Immediately invalidate a previously minted live token.",
+        "healthCheck": { "skipExecution": true }
+      },
+      {
+        "name": "listTokens",
+        "description": "List all active live tokens for the authenticated API key."
       }
     ]
   },
