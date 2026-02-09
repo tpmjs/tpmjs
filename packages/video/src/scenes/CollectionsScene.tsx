@@ -1,5 +1,5 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { colors, typography, springConfigs } from '../design-tokens';
+import { colors, springConfigs, typography } from '../design-tokens';
 
 /**
  * Scene 8: Collections (3:00 - 3:20)

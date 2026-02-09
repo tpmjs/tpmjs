@@ -1,12 +1,5 @@
-import {
-  AbsoluteFill,
-  interpolate,
-  spring,
-  useCurrentFrame,
-  useVideoConfig,
-  Easing,
-} from 'remotion';
-import { colors, typography, springConfigs } from '../../design-tokens';
+import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
+import { colors, springConfigs, typography } from '../../design-tokens';
 
 /**
  * Features Closing Scene (1:22 - 1:30)
@@ -86,7 +79,7 @@ export const FeaturesClosingScene = () => {
           opacity: gridProgress,
         }}
       >
-        {features.map((feature, i) => (
+        {features.map((feature, _i) => (
           <div
             key={feature}
             style={{

@@ -1,18 +1,17 @@
 import { AbsoluteFill, Sequence, useVideoConfig } from 'remotion';
 import { colors } from './design-tokens';
-
-// Scene imports
-import { FeaturesOpeningScene } from './scenes/features/FeaturesOpeningScene';
-import { ToolRegistryScene } from './scenes/features/ToolRegistryScene';
-import { OmegaAgentScene } from './scenes/features/OmegaAgentScene';
 import { CollectionsFeatureScene } from './scenes/features/CollectionsFeatureScene';
 import { CustomAgentsScene } from './scenes/features/CustomAgentsScene';
-import { MCPProtocolScene } from './scenes/features/MCPProtocolScene';
-import { SecureExecutionScene } from './scenes/features/SecureExecutionScene';
-import { TestScenariosScene } from './scenes/features/TestScenariosScene';
-import { LivingSkillsScene } from './scenes/features/LivingSkillsScene';
 import { DeveloperSDKScene } from './scenes/features/DeveloperSDKScene';
 import { FeaturesClosingScene } from './scenes/features/FeaturesClosingScene';
+// Scene imports
+import { FeaturesOpeningScene } from './scenes/features/FeaturesOpeningScene';
+import { LivingSkillsScene } from './scenes/features/LivingSkillsScene';
+import { MCPProtocolScene } from './scenes/features/MCPProtocolScene';
+import { OmegaAgentScene } from './scenes/features/OmegaAgentScene';
+import { SecureExecutionScene } from './scenes/features/SecureExecutionScene';
+import { TestScenariosScene } from './scenes/features/TestScenariosScene';
+import { ToolRegistryScene } from './scenes/features/ToolRegistryScene';
 
 /**
  * TPMJS Features Showcase Video

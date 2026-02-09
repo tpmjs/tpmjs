@@ -1,5 +1,5 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { colors, typography, springConfigs } from '../design-tokens';
+import { colors, springConfigs, typography } from '../design-tokens';
 
 /**
  * Scene 10: Omega Agent (3:50 - 4:20)
@@ -263,7 +263,6 @@ export const OmegaScene = () => {
         {/* Messages */}
         <div style={{ padding: 24, minHeight: 300 }}>
           <ChatMessage
-            role="user"
             content="Analyze the sentiment of recent tech news about AI regulations"
             delay={fps * 1}
           />
@@ -294,7 +293,6 @@ export const OmegaScene = () => {
           )}
 
           <ChatMessage
-            role="assistant"
             content="I'll search for recent AI regulation news and analyze the sentiment. Found 12 articles - overall sentiment is cautiously optimistic with 67% positive coverage..."
             delay={fps * 4.5}
             typing

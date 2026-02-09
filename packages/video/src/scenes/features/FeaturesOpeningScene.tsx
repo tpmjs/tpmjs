@@ -1,12 +1,12 @@
 import {
   AbsoluteFill,
+  Easing,
   interpolate,
   spring,
   useCurrentFrame,
   useVideoConfig,
-  Easing,
 } from 'remotion';
-import { colors, typography, springConfigs } from '../../design-tokens';
+import { colors, springConfigs, typography } from '../../design-tokens';
 
 /**
  * Features Opening Scene (0:00 - 0:06)

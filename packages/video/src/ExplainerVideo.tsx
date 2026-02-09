@@ -1,21 +1,20 @@
 import { AbsoluteFill, Sequence, useVideoConfig } from 'remotion';
 import { colors } from './design-tokens';
-
-// Scene imports
-import { OpeningScene } from './scenes/OpeningScene';
-import { ProblemScene } from './scenes/ProblemScene';
-import { IntroScene } from './scenes/IntroScene';
-import { PillarsScene } from './scenes/PillarsScene';
-import { PublishingScene } from './scenes/PublishingScene';
+import { CategoriesScene } from './scenes/CategoriesScene';
 import { CLIScene } from './scenes/CLIScene';
-import { WebPlatformScene } from './scenes/WebPlatformScene';
+import { ClosingScene } from './scenes/ClosingScene';
 import { CollectionsScene } from './scenes/CollectionsScene';
+import { GetStartedScene } from './scenes/GetStartedScene';
+import { IntroScene } from './scenes/IntroScene';
 import { MCPScene } from './scenes/MCPScene';
 import { OmegaScene } from './scenes/OmegaScene';
-import { CategoriesScene } from './scenes/CategoriesScene';
+// Scene imports
+import { OpeningScene } from './scenes/OpeningScene';
+import { PillarsScene } from './scenes/PillarsScene';
+import { ProblemScene } from './scenes/ProblemScene';
+import { PublishingScene } from './scenes/PublishingScene';
 import { SecurityScene } from './scenes/SecurityScene';
-import { GetStartedScene } from './scenes/GetStartedScene';
-import { ClosingScene } from './scenes/ClosingScene';
+import { WebPlatformScene } from './scenes/WebPlatformScene';
 
 /**
  * TPMJS 5-Minute Explainer Video

@@ -1,5 +1,5 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { colors, typography, springConfigs } from '../design-tokens';
+import { colors, springConfigs, typography } from '../design-tokens';
 
 /**
  * Scene 5: Publishing a Tool (1:30 - 2:10)

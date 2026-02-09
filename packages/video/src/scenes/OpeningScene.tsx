@@ -1,5 +1,5 @@
-import { AbsoluteFill, interpolate, useCurrentFrame, useVideoConfig, Easing } from 'remotion';
-import { colors, typography, springConfigs } from '../design-tokens';
+import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
+import { colors, typography } from '../design-tokens';
 
 /**
  * Scene 1: Opening Impact (0:00 - 0:10)

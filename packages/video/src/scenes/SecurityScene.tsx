@@ -1,5 +1,5 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { colors, typography, springConfigs } from '../design-tokens';
+import { colors, springConfigs, typography } from '../design-tokens';
 
 /**
  * Scene 12: Security (4:35 - 4:45)

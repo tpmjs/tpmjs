@@ -1,12 +1,12 @@
 import {
   AbsoluteFill,
   interpolate,
+  random,
   spring,
   useCurrentFrame,
   useVideoConfig,
-  random,
 } from 'remotion';
-import { colors, typography, springConfigs } from '../design-tokens';
+import { colors, springConfigs, typography } from '../design-tokens';
 
 /**
  * Scene 2: The Problem (0:10 - 0:30)

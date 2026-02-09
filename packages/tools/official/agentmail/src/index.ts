@@ -146,8 +146,7 @@ export interface CreateInboxInput {
 }
 
 export const createInbox = tool({
-  description:
-    'Create a new email inbox for an AI agent with optional custom username and domain.',
+  description: 'Create a new email inbox for an AI agent with optional custom username and domain.',
   inputSchema: jsonSchema<CreateInboxInput>({
     type: 'object',
     properties: {
@@ -555,7 +554,9 @@ export const listThreads = tool({
       if (input.limit !== undefined) params.append('limit', String(input.limit));
       if (input.page_token) params.append('page_token', input.page_token);
       if (Array.isArray(input.labels)) {
-        const validLabels = input.labels.filter((label) => typeof label === 'string' && label.trim().length > 0);
+        const validLabels = input.labels.filter(
+          (label) => typeof label === 'string' && label.trim().length > 0
+        );
         for (const label of validLabels) {
           params.append('labels', label);
         }

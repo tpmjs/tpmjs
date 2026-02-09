@@ -1316,7 +1316,7 @@ export interface ExtendSessionResult {
  * Extend a session's time-to-live.
  */
 export const extendSession = tool({
-  description: 'Add additional time to a session\'s TTL. Default adds 3600 seconds (1 hour).',
+  description: "Add additional time to a session's TTL. Default adds 3600 seconds (1 hour).",
   inputSchema: jsonSchema<ExtendSessionInput>({
     type: 'object',
     properties: {
@@ -1364,7 +1364,8 @@ export interface BoostSessionResult {
  * Boost session vCPU and memory.
  */
 export const boostSession = tool({
-  description: 'Increase session vCPU and memory. Each vCPU includes 2GB RAM. Consumes additional concurrency slots.',
+  description:
+    'Increase session vCPU and memory. Each vCPU includes 2GB RAM. Consumes additional concurrency slots.',
   inputSchema: jsonSchema<BoostSessionInput>({
     type: 'object',
     properties: {
@@ -1915,7 +1916,8 @@ export interface UpdateServiceResult {
  * Update service settings (resize, auto-unfreeze, freeze page).
  */
 export const updateService = tool({
-  description: 'Update service settings. Supports vCPU resize (1-8, each gets 2GB RAM), auto-unfreeze on HTTP request, and branded freeze page. One setting per request.',
+  description:
+    'Update service settings. Supports vCPU resize (1-8, each gets 2GB RAM), auto-unfreeze on HTTP request, and branded freeze page. One setting per request.',
   inputSchema: jsonSchema<UpdateServiceInput>({
     type: 'object',
     properties: {
@@ -2020,7 +2022,8 @@ export interface UpgradeProgressResult {
  * Get OS upgrade progress for a service.
  */
 export const getUpgradeProgress = tool({
-  description: 'Get OS upgrade progress for a service including state, progress percentage, and version chain.',
+  description:
+    'Get OS upgrade progress for a service including state, progress percentage, and version chain.',
   inputSchema: jsonSchema<ServiceIdInput>({
     type: 'object',
     properties: {
@@ -2100,7 +2103,8 @@ export interface UpdateServiceDomainsResult {
  * Update custom domains for a service.
  */
 export const updateServiceDomains = tool({
-  description: 'Manage custom domain names for a service. Use custom_domains to replace all, add to append, or remove to delete specific domains.',
+  description:
+    'Manage custom domain names for a service. Use custom_domains to replace all, add to append, or remove to delete specific domains.',
   inputSchema: jsonSchema<UpdateServiceDomainsInput>({
     type: 'object',
     properties: {
@@ -2154,7 +2158,8 @@ export interface ExportServiceEnvResult {
  * Export service environment variables as .env format.
  */
 export const exportServiceEnv = tool({
-  description: 'Export all environment variables as a .env formatted string. Requires HMAC authentication.',
+  description:
+    'Export all environment variables as a .env formatted string. Requires HMAC authentication.',
   inputSchema: jsonSchema<ServiceIdInput>({
     type: 'object',
     properties: {
@@ -2825,7 +2830,8 @@ export const deleteImage = tool({
  * List images owned by the authenticated API key.
  */
 export const listOwnedImages = tool({
-  description: 'List only images owned by the authenticated API key. Includes management fields like trusted_keys.',
+  description:
+    'List only images owned by the authenticated API key. Includes management fields like trusted_keys.',
   inputSchema: jsonSchema<Record<string, never>>({
     type: 'object',
     properties: {},
@@ -2845,7 +2851,7 @@ export const listOwnedImages = tool({
  * List images shared with the authenticated API key.
  */
 export const listSharedImages = tool({
-  description: 'List images shared with you via trusted_keys (images you can use but don\'t own).',
+  description: "List images shared with you via trusted_keys (images you can use but don't own).",
   inputSchema: jsonSchema<Record<string, never>>({
     type: 'object',
     properties: {},
@@ -2891,12 +2897,16 @@ export interface CloneImageInput {
  * Clone an image to create your own copy.
  */
 export const cloneImage = tool({
-  description: 'Create a copy of an image. The cloned image will be owned by you with private visibility.',
+  description:
+    'Create a copy of an image. The cloned image will be owned by you with private visibility.',
   inputSchema: jsonSchema<CloneImageInput>({
     type: 'object',
     properties: {
       image_id: { type: 'string', description: 'The image ID to clone' },
-      name: { type: 'string', description: 'Name for the cloned image (defaults to original + " (copy)")' },
+      name: {
+        type: 'string',
+        description: 'Name for the cloned image (defaults to original + " (copy)")',
+      },
       description: { type: 'string', description: 'Description for the cloned image' },
     },
     required: ['image_id'],
@@ -3072,7 +3082,8 @@ export interface PoolStatsResult {
  * Get detailed stats for a specific pool.
  */
 export const getPoolStats = tool({
-  description: 'Get detailed stats for a specific pool including load averages, memory usage, and network breakdown.',
+  description:
+    'Get detailed stats for a specific pool including load averages, memory usage, and network breakdown.',
   inputSchema: jsonSchema<GetPoolStatsInput>({
     type: 'object',
     properties: {
@@ -3111,7 +3122,8 @@ export interface ValidateKeyResult {
  * Validate API key pair.
  */
 export const validateKey = tool({
-  description: 'Validate your API key pair and retrieve its configuration including rate limits, concurrency limits, and expiration status.',
+  description:
+    'Validate your API key pair and retrieve its configuration including rate limits, concurrency limits, and expiration status.',
   inputSchema: jsonSchema<Record<string, never>>({
     type: 'object',
     properties: {},
@@ -3139,7 +3151,8 @@ export interface KeyInfoResult {
  * Get current API key info.
  */
 export const getKeyInfo = tool({
-  description: 'Get metadata for the authenticated API key including email, tier, and contacts count.',
+  description:
+    'Get metadata for the authenticated API key including email, tier, and contacts count.',
   inputSchema: jsonSchema<Record<string, never>>({
     type: 'object',
     properties: {},
@@ -3246,7 +3259,8 @@ export interface AddContactResult {
  * Add a contact to the API key.
  */
 export const addContact = tool({
-  description: 'Add a new contact to the API key. Sends an invitation email. Roles: owner (full control), operator (manage services), reader (view-only).',
+  description:
+    'Add a new contact to the API key. Sends an invitation email. Roles: owner (full control), operator (manage services), reader (view-only).',
   inputSchema: jsonSchema<AddContactInput>({
     type: 'object',
     properties: {
@@ -3289,7 +3303,7 @@ export interface UpdateContactResult {
  * Update a contact's role.
  */
 export const updateContact = tool({
-  description: 'Change a contact\'s role. Only owners can manage contacts.',
+  description: "Change a contact's role. Only owners can manage contacts.",
   inputSchema: jsonSchema<UpdateContactInput>({
     type: 'object',
     properties: {
@@ -3369,7 +3383,8 @@ export interface AuditLogResult {
  * Get audit log for the authenticated API key.
  */
 export const getAuditLog = tool({
-  description: 'Retrieve audit log entries for the authenticated API key. Logs all major operations: create, destroy, freeze, unfreeze, snapshot, etc.',
+  description:
+    'Retrieve audit log entries for the authenticated API key. Logs all major operations: create, destroy, freeze, unfreeze, snapshot, etc.',
   inputSchema: jsonSchema<Record<string, never>>({
     type: 'object',
     properties: {},
@@ -3397,7 +3412,8 @@ export interface MintTokenResult {
  * Mint a short-lived live token.
  */
 export const mintToken = tool({
-  description: 'Create a short-lived token for client-side use (e.g., browser WebSocket connections). Inherits parent key permissions.',
+  description:
+    'Create a short-lived token for client-side use (e.g., browser WebSocket connections). Inherits parent key permissions.',
   inputSchema: jsonSchema<MintTokenInput>({
     type: 'object',
     properties: {
@@ -3463,7 +3479,8 @@ export interface ListTokensResult {
  * List active live tokens.
  */
 export const listTokens = tool({
-  description: 'List all active (non-expired, non-revoked) live tokens for the authenticated API key.',
+  description:
+    'List all active (non-expired, non-revoked) live tokens for the authenticated API key.',
   inputSchema: jsonSchema<Record<string, never>>({
     type: 'object',
     properties: {},

@@ -125,6 +125,19 @@
       }
     },
     {
+      "includes": ["**/video/src/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/style-guide/**"],
       "linter": {
         "rules": {

@@ -1,5 +1,5 @@
 import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } from 'remotion';
-import { colors, typography, springConfigs } from '../design-tokens';
+import { colors, typography } from '../design-tokens';
 
 /**
  * Scene 3: Introducing TPMJS (0:30 - 0:50)
@@ -196,7 +196,7 @@ export const IntroScene = () => {
       >
         <span
           style={{
-            fontSize: typography.fontSize['xl'],
+            fontSize: typography.fontSize.xl,
             color: colors.text.secondary,
           }}
         >
