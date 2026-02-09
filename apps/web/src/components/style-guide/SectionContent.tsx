@@ -36,16 +36,17 @@ export function SectionContent(): React.ReactElement {
             <h4 className="font-mono text-sm font-medium mb-4 text-error">we are not</h4>
             <ul className="space-y-2 text-sm text-foreground-secondary font-sans">
               <li>
-                • <strong>Marketing-speak:</strong> No "revolutionary" or "game-changing"
+                • <strong>Marketing-speak:</strong> No {'"'}revolutionary{'"'} or {'"'}game-changing
+                {'"'}
               </li>
               <li>
                 • <strong>Cute:</strong> No jokes, puns, or playful language
               </li>
               <li>
-                • <strong>Vague:</strong> No "something went wrong"
+                • <strong>Vague:</strong> No {'"'}something went wrong{'"'}
               </li>
               <li>
-                • <strong>Condescending:</strong> No "simply" or "just"
+                • <strong>Condescending:</strong> No {'"'}simply{'"'} or {'"'}just{'"'}
               </li>
             </ul>
           </div>
@@ -87,11 +88,11 @@ export function SectionContent(): React.ReactElement {
             </p>
             <div className="space-y-3">
               <div className="p-3 bg-error-light border border-error text-sm">
-                <strong>Good:</strong> "API key is invalid. Generate a new key in your dashboard
-                settings."
+                <strong>Good:</strong> {'"'}API key is invalid. Generate a new key in your dashboard
+                settings.{'"'}
               </div>
               <div className="p-3 bg-error-light border border-error text-sm">
-                <strong>Bad:</strong> "Error: Invalid credentials"
+                <strong>Bad:</strong> {'"'}Error: Invalid credentials{'"'}
               </div>
             </div>
           </div>

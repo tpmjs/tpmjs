@@ -27,7 +27,7 @@ export function useDiagramSetup(options: UseDiagramSetupOptions = {}) {
 
   // Handle mounting
   useEffect(() => {
-    setMounted(true);
+    queueMicrotask(() => setMounted(true));
   }, []);
 
   // Handle resize
@@ -270,6 +270,7 @@ export function useDiagramSetup(options: UseDiagramSetupOptions = {}) {
         delay?: number;
         icon?: string;
       }
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: canvas drawing with many options
     ) => {
       const { label, sublabel, type = 'neutral', tooltip, delay = 0, icon } = options;
       const color = colors[type as keyof ThemeColors] ??

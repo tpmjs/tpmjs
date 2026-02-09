@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid -- style guide demo anchors use href="#" intentionally */
 'use client';
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';

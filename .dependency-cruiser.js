@@ -144,8 +144,12 @@ export default {
       path: ['node_modules', '\\.next', 'dist', '\\.turbo', 'storybook-static'],
     },
     exclude: {
-      // Exclude railway-executor - it's a Deno app with HTTP imports that can't be resolved
-      path: '^apps/railway-executor',
+      // Exclude apps/packages with unresolvable deps in this monorepo context
+      path: [
+        '^apps/railway-executor', // Deno app with HTTP imports
+        '^apps/omega-mac', // Swift/macOS app with native deps
+        '^packages/tools/official', // Tool packages built independently with tsup
+      ],
     },
     tsPreCompilationDeps: true,
     tsConfig: {

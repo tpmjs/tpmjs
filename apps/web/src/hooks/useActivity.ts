@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-internal-modules
 import useSWRInfinite from 'swr/infinite';
 
 export interface Activity {

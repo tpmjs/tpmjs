@@ -164,8 +164,12 @@ export function SectionContentGuidelines(): React.ReactElement {
         <div className="mt-4 bg-surface p-4 border border-dashed border-border">
           <h4 className="font-mono text-sm font-medium mb-3">exceptions</h4>
           <ul className="space-y-2 text-sm text-foreground-secondary font-sans">
-            <li>• Proper nouns: "GitHub", "Anthropic", "Claude"</li>
-            <li>• Product names: "TPMJS", "MCP"</li>
+            <li>
+              • Proper nouns: {'"'}GitHub{'"'}, {'"'}Anthropic{'"'}, {'"'}Claude{'"'}
+            </li>
+            <li>
+              • Product names: {'"'}TPMJS{'"'}, {'"'}MCP{'"'}
+            </li>
             <li>• Start of sentences in paragraphs</li>
           </ul>
         </div>

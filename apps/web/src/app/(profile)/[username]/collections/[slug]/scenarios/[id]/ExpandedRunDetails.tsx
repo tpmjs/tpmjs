@@ -1,6 +1,6 @@
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
-import type { ScenarioRun } from './page';
+import type { ScenarioRun } from './types';
 
 interface ExpandedRunDetailsProps {
   run: ScenarioRun;
@@ -121,6 +121,7 @@ function ConversationMessage({ msg }: { msg: NonNullable<ScenarioRun['conversati
   return null;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: display component with many conditional sections
 export function ExpandedRunDetails({ run }: ExpandedRunDetailsProps) {
   const hasAssertions =
     run.assertions && (run.assertions.passed.length > 0 || run.assertions.failed.length > 0);

@@ -95,7 +95,8 @@ export async function findSimilarScenarios(
 
     if (similarity >= threshold) {
       // Remove embedding from returned scenario to keep response light
-      const { embedding: _, ...scenarioWithoutEmbedding } = scenario;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { embedding: _omit, ...scenarioWithoutEmbedding } = scenario;
       similar.push({
         scenario: scenarioWithoutEmbedding as Scenario,
         similarity,

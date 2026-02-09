@@ -9,8 +9,8 @@ export function SectionAccessibility(): React.ReactElement {
   return (
     <FieldsetSection title="6. accessibility" id="accessibility">
       <p className="text-foreground-secondary mb-8 font-sans prose-width">
-        TPMJS targets WCAG 2.1 AA compliance. Accessibility is not optional—it's a core requirement
-        for every component.
+        TPMJS targets WCAG 2.1 AA compliance. Accessibility is not optional—it{"'"}s a core
+        requirement for every component.
       </p>
 
       <SubSection title="standards">

@@ -483,19 +483,38 @@ export default async function HomePage(): Promise<React.ReactElement> {
                   <pre className="text-foreground">
                     <span className="text-foreground-tertiary">{'{'}</span>
                     {'\n  '}
-                    <span className="text-primary">"mcpServers"</span>:{' '}
-                    <span className="text-foreground-tertiary">{'{'}</span>
+                    <span className="text-primary">
+                      {'"'}mcpServers{'"'}
+                    </span>
+                    : <span className="text-foreground-tertiary">{'{'}</span>
                     {'\n    '}
-                    <span className="text-primary">"tpmjs"</span>:{' '}
-                    <span className="text-foreground-tertiary">{'{'}</span>
+                    <span className="text-primary">
+                      {'"'}tpmjs{'"'}
+                    </span>
+                    : <span className="text-foreground-tertiary">{'{'}</span>
                     {'\n      '}
-                    <span className="text-primary">"command"</span>:{' '}
-                    <span className="text-success">"npx"</span>,{'\n      '}
-                    <span className="text-primary">"args"</span>: [
-                    <span className="text-success">"-y"</span>,{' '}
-                    <span className="text-success">"@anthropic/mcp-remote"</span>,{'\n        '}
+                    <span className="text-primary">
+                      {'"'}command{'"'}
+                    </span>
+                    :{' '}
                     <span className="text-success">
-                      "https://tpmjs.com/api/mcp/ajax/ajax-collection/sse"
+                      {'"'}npx{'"'}
+                    </span>
+                    ,{'\n      '}
+                    <span className="text-primary">
+                      {'"'}args{'"'}
+                    </span>
+                    : [
+                    <span className="text-success">
+                      {'"'}-y{'"'}
+                    </span>
+                    ,{' '}
+                    <span className="text-success">
+                      {'"'}@anthropic/mcp-remote{'"'}
+                    </span>
+                    ,{'\n        '}
+                    <span className="text-success">
+                      {'"'}https://tpmjs.com/api/mcp/ajax/ajax-collection/sse{'"'}
                     </span>
                     ]{'\n    '}
                     <span className="text-foreground-tertiary">{'}'}</span>

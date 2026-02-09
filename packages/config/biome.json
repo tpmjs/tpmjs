@@ -112,6 +112,23 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/style-guide/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useValidAnchor": "off",
+            "useButtonType": "off",
+            "useKeyWithClickEvents": "off",
+            "noStaticElementInteractions": "off",
+            "noLabelWithoutControl": "off"
+          },
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
     }
   ]
 }

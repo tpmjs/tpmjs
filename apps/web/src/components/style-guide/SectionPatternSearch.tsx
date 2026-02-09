@@ -121,36 +121,39 @@ export function SectionPatternSearch(): React.ReactElement {
             <h4 className="font-mono text-sm font-medium mb-4">filters</h4>
             <div className="space-y-4">
               <div>
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label className="font-mono text-xs text-foreground-secondary block mb-2">
                   category
+                  <Select
+                    placeholder="all categories"
+                    options={[
+                      { value: 'utility', label: 'Utility' },
+                      { value: 'validation', label: 'Validation' },
+                      { value: 'data', label: 'Data' },
+                    ]}
+                  />
                 </label>
-                <Select
-                  placeholder="all categories"
-                  options={[
-                    { value: 'utility', label: 'Utility' },
-                    { value: 'validation', label: 'Validation' },
-                    { value: 'data', label: 'Data' },
-                  ]}
-                />
               </div>
               <div>
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label className="font-mono text-xs text-foreground-secondary block mb-2">
                   status
+                  <Select
+                    placeholder="all statuses"
+                    options={[
+                      { value: 'active', label: 'Active' },
+                      { value: 'beta', label: 'Beta' },
+                      { value: 'deprecated', label: 'Deprecated' },
+                    ]}
+                  />
                 </label>
-                <Select
-                  placeholder="all statuses"
-                  options={[
-                    { value: 'active', label: 'Active' },
-                    { value: 'beta', label: 'Beta' },
-                    { value: 'deprecated', label: 'Deprecated' },
-                  ]}
-                />
               </div>
               <div>
+                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
                 <label className="font-mono text-xs text-foreground-secondary block mb-2">
                   min downloads
+                  <Input type="number" placeholder="0" />
                 </label>
-                <Input type="number" placeholder="0" />
               </div>
               <div className="pt-4 border-t border-dashed border-border">
                 <Button size="sm" className="w-full">

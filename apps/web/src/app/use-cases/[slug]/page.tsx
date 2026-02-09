@@ -53,6 +53,9 @@ export async function generateMetadata({ params }: Props) {
 export default async function UseCasePage({ params }: Props) {
   const { slug } = await params;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: API response data typed by component
+  let data: any;
   try {
     const response = await fetch(
       `${process.env.BETTER_AUTH_URL || 'http://localhost:3000'}/api/use-cases/${slug}`,
@@ -65,16 +68,17 @@ export default async function UseCasePage({ params }: Props) {
       notFound();
     }
 
-    const { data } = await response.json();
-
-    return (
-      <Suspense fallback={<UseCaseSkeleton />}>
-        <UseCaseCaseStudy useCase={data} />
-      </Suspense>
-    );
+    const json = await response.json();
+    data = json.data;
   } catch {
     notFound();
   }
+
+  return (
+    <Suspense fallback={<UseCaseSkeleton />}>
+      <UseCaseCaseStudy useCase={data} />
+    </Suspense>
+  );
 }
 
 function UseCaseSkeleton() {

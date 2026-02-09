@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/anchor-is-valid -- style guide demo anchors use href="#" intentionally */
 'use client';
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
@@ -88,7 +89,7 @@ export function SectionPatternFeedback(): React.ReactElement {
             <div>
               <p className="font-mono text-sm font-medium">api rate limit</p>
               <p className="font-sans text-xs text-foreground-secondary">
-                You've used 90% of your monthly quota
+                You{"'"}ve used 90% of your monthly quota
               </p>
             </div>
           </div>
@@ -250,8 +251,8 @@ export function SectionPatternFeedback(): React.ReactElement {
             <div className="flex-1">
               <p className="font-mono text-sm font-medium mb-1">failed to load tools</p>
               <p className="font-sans text-xs text-foreground-secondary mb-4">
-                We couldn't connect to the server. This could be a network issue or the service may
-                be temporarily unavailable.
+                We couldn{"'"}t connect to the server. This could be a network issue or the service
+                may be temporarily unavailable.
               </p>
               <div className="flex gap-2">
                 <Button size="sm">retry</Button>

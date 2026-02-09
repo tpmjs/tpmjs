@@ -275,19 +275,25 @@ const handleClose = () => {
             <h4 className="font-mono text-sm font-medium mb-3">aria-live regions</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-3 bg-surface-2">
-                <code className="text-xs">aria-live="polite"</code>
+                <code className="text-xs">
+                  aria-live={'"'}polite{'"'}
+                </code>
                 <p className="text-xs text-foreground-secondary mt-2">
                   Toast notifications, status updates
                 </p>
               </div>
               <div className="p-3 bg-surface-2">
-                <code className="text-xs">aria-live="assertive"</code>
+                <code className="text-xs">
+                  aria-live={'"'}assertive{'"'}
+                </code>
                 <p className="text-xs text-foreground-secondary mt-2">
                   Error messages, critical alerts
                 </p>
               </div>
               <div className="p-3 bg-surface-2">
-                <code className="text-xs">role="status"</code>
+                <code className="text-xs">
+                  role={'"'}status{'"'}
+                </code>
                 <p className="text-xs text-foreground-secondary mt-2">
                   Loading states, progress updates
                 </p>
@@ -308,25 +314,25 @@ const handleClose = () => {
                 <TableRow>
                   <TableCell className="font-mono text-sm">Toast shown</TableCell>
                   <TableCell className="text-sm text-foreground-secondary">
-                    "[message content]"
+                    {'"'}[message content]{'"'}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-mono text-sm">Modal opened</TableCell>
                   <TableCell className="text-sm text-foreground-secondary">
-                    "[dialog title], dialog"
+                    {'"'}[dialog title], dialog{'"'}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-mono text-sm">Form error</TableCell>
                   <TableCell className="text-sm text-foreground-secondary">
-                    "Error: [field name], [error message]"
+                    {'"'}Error: [field name], [error message]{'"'}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell className="font-mono text-sm">Loading complete</TableCell>
                   <TableCell className="text-sm text-foreground-secondary">
-                    "Loading complete, [N] results"
+                    {'"'}Loading complete, [N] results{'"'}
                   </TableCell>
                 </TableRow>
               </TableBody>

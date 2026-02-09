@@ -37,7 +37,7 @@ async function isServerAvailable(): Promise<boolean> {
 describe.skipIf(!INTEGRATION_TESTS_ENABLED)('Scenarios CRUD Integration', () => {
   let serverAvailable = false;
   let testCollection: { id: string; slug: string | null; userId: string } | null = null;
-  let testScenarioId: string | null = null;
+  const testScenarioId: string | null = null;
 
   beforeAll(async () => {
     serverAvailable = await isServerAvailable();

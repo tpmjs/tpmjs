@@ -158,7 +158,8 @@ export async function updateScenarioMetrics(
 
   if (!scenario) return;
 
-  let { consecutivePasses, consecutiveFails, qualityScore, totalRuns } = scenario;
+  const { totalRuns } = scenario;
+  let { consecutivePasses, consecutiveFails, qualityScore } = scenario;
 
   if (status === 'pass') {
     consecutivePasses += 1;

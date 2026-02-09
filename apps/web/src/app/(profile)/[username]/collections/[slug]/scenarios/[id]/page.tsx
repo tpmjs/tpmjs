@@ -8,33 +8,9 @@ import { notFound, useParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 import { ExpandedRunDetails } from './ExpandedRunDetails';
+import type { ScenarioRun } from './types';
 
-export interface ScenarioRun {
-  id: string;
-  status: string;
-  retryCount: number;
-  evaluator: {
-    model: string | null;
-    verdict: string | null;
-    reason: string | null;
-  } | null;
-  assertions: { passed: string[]; failed: string[] } | null;
-  usage: {
-    inputTokens: number | null;
-    outputTokens: number | null;
-    totalTokens: number | null;
-    executionTimeMs: number | null;
-    estimatedCost: number | null;
-  } | null;
-  timestamps: {
-    startedAt: string | null;
-    completedAt: string | null;
-    createdAt: string | null;
-  };
-  output?: string;
-  errorLog?: string;
-  conversation?: Message[];
-}
+export type { ScenarioRun };
 
 interface ScenarioDetail {
   id: string;
@@ -60,16 +36,6 @@ interface ScenarioDetail {
   } | null;
   recentRuns: ScenarioRun[];
   runCount: number;
-}
-
-interface Message {
-  id: string;
-  role: 'USER' | 'ASSISTANT' | 'TOOL';
-  content: string;
-  toolName?: string;
-  toolCallId?: string;
-  toolResult?: unknown;
-  createdAt?: string;
 }
 
 function StatusBadge({ status }: { status: string | null }) {
@@ -153,6 +119,7 @@ function formatDate(dateString: string | null): string {
   });
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: page component with conditional rendering
 export default function CollectionScenarioDetailPage(): React.ReactElement {
   const params = useParams();
   const rawUsername = params.username as string;
