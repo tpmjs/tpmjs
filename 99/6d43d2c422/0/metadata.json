@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "996d43d2c422",
+  "session_id": "95583c67-e96f-4380-a79c-1b7c637d7939",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-10T23:59:52.081604Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/memories/search/route.ts",
+    "apps/web/src/lib/ai/memory-embedding.ts",
+    "packages/tools/official/memory/package.json",
+    "packages/tools/official/memory/src/index.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "4514f945-85b8-4d99-9cad-6b6625783b38",
+  "checkpoint_transcript_start": 2214,
+  "transcript_lines_at_start": 2214,
+  "token_usage": {
+    "input_tokens": 27,
+    "cache_creation_tokens": 50285,
+    "cache_read_tokens": 2799015,
+    "output_tokens": 3427,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-10T23:59:50.789518Z",
+    "agent_lines": 12,
+    "human_added": 5,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 17,
+    "agent_percentage": 70.58823529411765
+  }
+}
