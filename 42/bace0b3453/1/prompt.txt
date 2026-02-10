@@ -1,0 +1,360 @@
+Implement the following plan:
+
+# Plan: Bulk Add Tools by Package + Execution Event Tracking
+
+## Context
+
+Two feature requests from the team:
+1. When adding tools to a collection, users should be able to add **all tools from the same package** at once instead of one-by-one
+2. Add **far more tracking** for how often users execute agents, collections, and tools — currently tracking is fragmented (Simulation for playground, Message for agents, ApiUsageRecord for API-level requests) with no unified per-tool execution tracking
+
+---
+
+## Feature 1: Bulk Add Tools from Package
+
+### 1.1 New Zod Schema
+**File**: `packages/types/src/collection.ts`
+- Add `BulkAddToolsFromPackageSchema` accepting `npmPackageName` (string, required)
+- Export type `BulkAddToolsFromPackageInput`
+
+### 1.2 New Bulk-Add API Route
+**File**: `apps/web/src/app/api/collections/[id]/tools/from-package/route.ts` (new)
+- `POST /api/collections/[id]/tools/from-package` with body `{ npmPackageName }`
+- Auth check, ownership check (same pattern as existing `[id]/tools/route.ts`)
+- Resolve package by `npmPackageName`, fetch all its tools via `prisma.tool.findMany({ where: { packageId } })`
+- Fetch existing CollectionTool entries to determine dupes
+- Calculate `availableSlots = MAX_TOOLS_PER_COLLECTION - currentCount`
+- Use `prisma.collectionTool.createMany({ skipDuplicates: true })` for bulk insert
+- Log activity (fire-and-forget)
+- Return `{ added, skipped, limitReached, tools }`
+
+### 1.3 UI: Group Search Results by Package
+**File**: `apps/web/src/components/collections/AddToolSearch.tsx`
+- Add `addingPackage` state
+- Group `filteredResults` by `tool.package.npmPackageName` via `useMemo`
+- Show "Add all N tools" button as a package group header when a package has 2+ results in search
+- New `handleAddPackage(npmPackageName)` handler calls the bulk API
+- Remove added tools from results on success, call `onToolAdded` per added tool
+
+### 1.4 CLI Support
+**Files**: `packages/cli/src/lib/api-client.ts`, `packages/cli/src/commands/collection/add.ts`
+- Add `addToolsFromPackage(collectionId, npmPackageName)` method to API client
+- Add `--package` / `-p` flag to `collection add` command
+
+---
+
+## Feature 2: Unified Execution Event Tracking
+
+### 2.1 New `ExecutionEvent` Prisma Model
+**File**: `packages/db/prisma/schema.prisma`
+```
+ExecutionEvent:
+  id, eventType (tool_call|agent_run|collection_use|scenario_run),
+  source (mcp_http|mcp_sse|agent_chat|ui_simulation|scenario|omega),
+  userId?, apiKeyId?, toolId?, agentId?, collectionId?,
+  toolName?, packageName? (denormalized for fast queries),
+  status (success|error|timeout), durationMs?,
+  tokensIn?, tokensOut?,
+  errorCode?, errorMessage?,
+  createdAt
+```
+- No FK constraints (like ApiUsageRecord — tracking must never fail due to entity deletion)
+- Composite indexes: `(userId, createdAt)`, `(collectionId, createdAt)`, `(toolId, createdAt)`
+
+### 2.2 New `trackExecution()` Function
+**File**: `apps/web/src/lib/tracking/executions.ts` (new)
+- Fire-and-forget pattern matching `logActivity()` in `~/lib/activity.ts`
+- `trackExecution(params)` calls async insert, `.catch()` logs error but never throws
+- Also add `cleanupOldExecutionEvents(daysToKeep = 90)` for cron cleanup
+
+### 2.3 Instrument MCP Tool Calls
+**File**: `apps/web/src/lib/mcp/handlers.ts`
+- Add optional `trackingContext` param to `handleToolsCall()` and `handleBridgeToolCall()`
+- Wrap `executeWithExecutor()` call with timing (`Date.now()` before/after)
+- Call `trackExecution({ eventType: 'tool_call', source, toolId, collectionId, durationMs, status })`
+
+**File**: `apps/web/src/app/api/mcp/[username]/[slug]/[transport]/route.ts`
+- Pass `{ userId, apiKeyId, source: transport }` as `trackingContext` to `handleToolsCall()`
+
+**File**: `apps/web/src/app/(profile)/[username]/collections/[slug]/mcp/route.ts`
+- Same — pass tracking context to MCP handlers
+
+### 2.4 Instrument Agent Conversations
+**File**: `apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts`
+- In `onStepFinish`: track each tool call via `trackExecution({ eventType: 'tool_call', source: 'agent_chat' })`
+- After stream completes: track `{ eventType: 'agent_run', durationMs, tokensIn, tokensOut }`
+- In catch block: track error `{ eventType: 'agent_run', status: 'error' }`
+
+**File**: `apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts`
+- Same instrumentation (public agent route)
+
+### 2.5 Query API
+**File**: `apps/web/src/app/api/stats/executions/events/route.ts` (new)
+- `GET /api/stats/executions/events` with filters: `eventType`, `source`, `toolId`, `collectionId`, `agentId`, `userId`
+- Pagination via `take: limit + 1` pattern (per CLAUDE.md)
+- Auth required (session or API key with `usage:read` scope)
+
+### 2.6 Update StatsSnapshot
+**File**: `apps/web/src/app/api/sync/stats-snapshot/route.ts`
+- Add daily execution event counts to snapshot aggregation
+- Count by `eventType` (tool_call, agent_run) for the previous day
+
+### 2.7 Update ActivityType Enum
+**File**: `packages/db/prisma/schema.prisma` — add `COLLECTION_TOOLS_BULK_ADDED` to `ActivityType` enum
+**File**: `apps/web/src/lib/activity.ts` — add message and icon for new type
+
+---
+
+## Implementation Order
+
+1. Prisma schema changes (ExecutionEvent model + ActivityType additions) + migration
+2. `trackExecution()` function
+3. Bulk-add API route + Zod schema
+4. MCP handler instrumentation
+5. Agent conversation instrumentation
+6. AddToolSearch.tsx UI changes
+7. Query API endpoint
+8. StatsSnapshot update
+9. CLI changes
+10. Type-check and lint
+
+## Verification
+
+- `pnpm --filter=@tpmjs/db db:generate && pnpm --filter=@tpmjs/db db:push` — verify schema applies
+- `pnpm type-check` — verify no type errors across all packages
+- `pnpm lint` — verify linting passes
+- Manual test: search for a multi-tool package in collection UI, verify "Add all" button works
+- Manual test: call a tool via MCP, check `execution_events` table has a row
+- `pnpm build` — verify build passes
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+Push the current Prisma schema to the database without creating migrations:
+
+1. Run `pnpm --filter=@tpmjs/db db:push` to sync schema changes to the database
+2. After push completes, regenerate the Prisma client with `pnpm --filter=@tpmjs/db db:generate`
+3. Report the results to the user
+
+This is useful for development when you want to quickly iterate on schema changes without creating migration files. Do NOT use this in production - use db:migrate instead.
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. The user provided a detailed implementation plan with two major features:
+   - Feature 1: Bulk Add Tools from Package
+   - Feature 2: Unified Execution Event Tracking
+
+2. The plan had 10 implementation steps with specific files and code changes.
+
+3. I created task items for each step and then began exploring the codebase extensively.
+
+4. I read many files to understand patterns:
+   - Prisma schema (full schema)
+   - activity.ts (fire-and-forget pattern)
+   - collection types (Zod schemas)
+   - existing tools route
+   - AddToolSearch.tsx component
+   - MCP handlers
+   - MCP transport routes (both)
+   - Agent conversation routes (both ID-based and username/slug-based)
+   - Stats snapshot route
+   - CLI api-client.ts
+   - CLI collection/add.ts command
+
+5. Implementation progress:
+   - Task 1 (Prisma schema): COMPLETED - Added ExecutionEvent model and COLLECTION_TOOLS_BULK_ADDED to ActivityType enum
+   - Task 2 (trackExecution): COMPLETED - Created fire-and-forget tracking function
+   - Task 3 (Bulk-add API + Zod): COMPLETED - Added schema and route
+   - Task 4 (MCP instrumentation): COMPLETED - Added tracking to handlers and both MCP routes
+   - Task 5 (Agent instrumentation): COMPLETED - Added tracking to both agent conversation routes
+   - Task 6 (UI changes): COMPLETED - Updated AddToolSearch.tsx with grouping and "Add all" button
+   - Task 7 (Query API): COMPLETED - Created execution events query endpoint
+   - Task 8 (StatsSnapshot): COMPLETED - Added execution event counts
+   - Task 9 (CLI changes): COMPLETED - Added --package flag and API client method
+   - Task 10 (Verification): IN PROGRESS - Type-check failed with one error
+
+6. The type-check error was in the execution events query route:
+   ```
+   ./src/app/api/stats/executions/events/route.ts:77:13
+   Type error: Object is possibly 'undefined'.
+   ```
+   The issue is `paginatedEvents[paginatedEvents.length - 1]` could be undefined.
+
+7. The db:push initially failed due to missing DATABASE_URL_UNPOOLED env var, but was fixed by sourcing .env.local.
+
+Let me now compile all the details needed for the summary.
+
+Summary:
+1. Primary Request and Intent:
+   The user asked me to implement a detailed two-feature plan:
+   - **Feature 1: Bulk Add Tools by Package** — Allow users to add all tools from the same npm package to a collection at once, instead of one-by-one. This includes a new Zod schema, a new API route, UI changes to group search results by package with "Add all N tools" buttons, and CLI support with a `--package` flag.
+   - **Feature 2: Unified Execution Event Tracking** — Add comprehensive tracking for tool calls, agent runs, collection use, and scenario runs via a new `ExecutionEvent` Prisma model. Instrument MCP handlers and agent conversation routes. Create a query API endpoint and update the StatsSnapshot cron with execution event counts.
+
+   The plan specified 10 implementation steps in order, specific file paths, and verification steps at the end.
+
+2. Key Technical Concepts:
+   - Turborepo monorepo with pnpm workspaces
+   - Next.js 16 App Router (apps/web)
+   - Prisma ORM with PostgreSQL (Neon)
+   - Fire-and-forget tracking pattern (matching `logActivity()`)
+   - JSON-RPC MCP protocol with HTTP and SSE transports
+   - Zod schema validation
+   - `take: limit + 1` pagination pattern (per CLAUDE.md)
+   - `createMany({ skipDuplicates: true })` for bulk insert
+   - AI SDK streamText with tool calls and onStepFinish callbacks
+   - oclif CLI framework
+   - No FK constraints on tracking tables for resilience
+   - `@tpmjs/ui` components required (no raw HTML)
+
+3. Files and Code Sections:
+
+   - **`packages/db/prisma/schema.prisma`** — Core schema file. Added `ExecutionEvent` model and `COLLECTION_TOOLS_BULK_ADDED` to `ActivityType` enum, plus `eventToolCalls` and `eventAgentRuns` fields to `StatsSnapshot`.
+     - ExecutionEvent model:
+     ```prisma
+     model ExecutionEvent {
+       id        String @id @default(cuid())
+       eventType String @map("event_type") @db.VarChar(30)
+       source    String @db.VarChar(30)
+       userId   String? @map("user_id")
+       apiKeyId String? @map("api_key_id")
+       toolId       String? @map("tool_id")
+       agentId      String? @map("agent_id")
+       collectionId String? @map("collection_id")
+       toolName    String? @map("tool_name") @db.VarChar(200)
+       packageName String? @map("package_name") @db.VarChar(214)
+       status     String  @db.VarChar(20)
+       durationMs Int?    @map("duration_ms")
+       tokensIn  Int? @map("tokens_in")
+       tokensOut Int? @map("tokens_out")
+       errorCode    String? @map("error_code") @db.VarChar(50)
+       errorMessage String? @map("error_message") @db.Text
+       createdAt DateTime @default(now()) @map("created_at")
+       @@index([userId, createdAt])
+       @@index([collectionId, createdAt])
+       @@index([toolId, createdAt])
+       @@index([eventType, createdAt])
+       @@index([createdAt])
+       @@map("execution_events")
+     }
+     ```
+     - StatsSnapshot additions: `eventToolCalls Int @default(0) @map("event_tool_calls")` and `eventAgentRuns Int @default(0) @map("event_agent_runs")`
+
+   - **`apps/web/src/lib/activity.ts`** — Activity logging. Added `COLLECTION_TOOLS_BULK_ADDED` message and icon mapping.
+
+   - **`apps/web/src/lib/tracking/executions.ts`** — NEW FILE. Fire-and-forget `trackExecution()` function and `cleanupOldExecutionEvents()`.
+     ```typescript
+     export function trackExecution(params: TrackExecutionParams): void {
+       prisma.executionEvent.create({ data: { ... } })
+         .catch((error) => { console.error('[trackExecution] Failed:', error); });
+     }
+     ```
+
+   - **`packages/types/src/collection.ts`** — Added `BulkAddToolsFromPackageSchema` Zod schema:
+     ```typescript
+     export const BulkAddToolsFromPackageSchema = z.object({
+       npmPackageName: z.string().min(1, 'Package name is required').max(214),
+     });
+     export type BulkAddToolsFromPackageInput = z.infer<typeof BulkAddToolsFromPackageSchema>;
+     ```
+
+   - **`apps/web/src/app/api/collections/[id]/tools/from-package/route.ts`** — NEW FILE. POST endpoint for bulk adding tools from a package. Follows same auth/ownership patterns as existing tools route. Uses `createMany({ skipDuplicates: true })`. Returns `{ added, skipped, limitReached, tools }`.
+
+   - **`apps/web/src/lib/mcp/handlers.ts`** — Added `TrackingContext` interface and `trackingCtx` parameter to `handleToolsCall()`. Wraps `executeWithExecutor()` with timing and calls `trackExecution()` after execution.
+     ```typescript
+     export interface TrackingContext {
+       userId?: string;
+       apiKeyId?: string;
+       collectionId?: string;
+       source: TrackExecutionParams['source'];
+     }
+     ```
+     Signature changed: `handleToolsCall(collectionId, params, requestId, callerEnvVars?, trackingCtx?)`
+
+   - **`apps/web/src/app/api/mcp/[username]/[slug]/[transport]/route.ts`** — Updated to construct `TrackingContext` and pass it through `processJsonRpcRequest` → `handleHttpTransport`/`handleSseTransport` → `handleToolsCall`. Source is `transport === 'sse' ? 'mcp_sse' : 'mcp_http'`.
+
+   - **`apps/web/src/app/(profile)/[username]/collections/[slug]/mcp/route.ts`** — Same tracking context changes as the transport route. Source is always `'mcp_http'`.
+
+   - **`apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts`** — Added `import { trackExecution }`. In `onStepFinish`: tracks each tool result as `tool_call` event. After stream completes: tracks `agent_run` with `success` status, durationMs, tokens. In catch block: tracks `agent_run` with `error` status.
+
+   - **`apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts`** — Same instrumentation as the ID-based agent route.
+
+   - **`apps/web/src/components/collections/AddToolSearch.tsx`** — Major UI update. Added `addingPackage` state, `handleAddPackage()` handler, `groupedResults` via `useMemo`. Results are grouped by `npmPackageName`. When a package has 2+ tools in results, a header shows "packageName (N tools)" with an "Add all N" button. Individual tools still have "Add" buttons. The `isAdding` flag disables all buttons during any add operation.
+
+   - **`apps/web/src/app/api/stats/executions/events/route.ts`** — NEW FILE. GET endpoint with filters (eventType, source, toolId, collectionId, agentId) and cursor-based pagination. Requires auth with `usage:read` scope. **Has a type error that needs fixing.**
+
+   - **`apps/web/src/app/api/sync/stats-snapshot/route.ts`** — Added two new parallel queries counting `ExecutionEvent` records for the previous day by `eventType`, and writes `eventToolCalls` and `eventAgentRuns` to the snapshot.
+
+   - **`packages/cli/src/lib/api-client.ts`** — Added `addToolsFromPackage(collectionId, npmPackageName)` method to `TpmClient`.
+
+   - **`packages/cli/src/commands/collection/add.ts`** — Added `--package` / `-p` flag. When present, calls `client.addToolsFromPackage()` instead of individual tool adds.
+
+4. Errors and fixes:
+   - **`DATABASE_URL_UNPOOLED` not found during `db:push`**: Prisma reads env from `packages/db/.env` but credentials were in root `.env.local`. Fixed by running `set -a && . ../../.env.local && set +a && npx prisma db push` from the db package directory.
+   - **Type error in `route.ts:77`** (`Object is possibly 'undefined'`): In `apps/web/src/app/api/stats/executions/events/route.ts`, line 77 accesses `paginatedEvents[paginatedEvents.length - 1].createdAt.toISOString()` but TypeScript says the array element could be undefined. **This is NOT yet fixed** — it was caught during the type-check/build verification step.
+
+5. Problem Solving:
+   - All 9 implementation tasks (Tasks 1-9) completed successfully.
+   - Task 10 (verification) is in progress. The `pnpm type-check` (which runs build + type-check across all packages) failed with one type error in the new execution events query route. The error is a simple fix — need to add a null check or non-null assertion for the array access.
+
+6. All user messages:
+   - First message: "Implement the following plan: [detailed plan for Bulk Add Tools by Package + Execution Event Tracking]" — This was the only substantive user message. The plan included full specifications for both features across 10 implementation steps with specific file paths, code structures, and verification steps.
+
+7. Pending Tasks:
+   - **Fix type error** in `apps/web/src/app/api/stats/executions/events/route.ts:77` — `Object is possibly 'undefined'`
+   - **Re-run verification**: `pnpm type-check` and `pnpm lint` after fix
+   - **Run `pnpm build`** to verify full build passes
+
+8. Current Work:
+   Task 10 (Type-check, lint, and build verification) is in progress. Running `pnpm type-check` revealed one type error:
+   ```
+   ./src/app/api/stats/executions/events/route.ts:77:13
+   Type error: Object is possibly 'undefined'.
+   ```
+   At line 77:
+   ```typescript
+   nextCursor: hasMore
+     ? paginatedEvents[paginatedEvents.length - 1].createdAt.toISOString()
+     : null,
+   ```
+   The `paginatedEvents[paginatedEvents.length - 1]` could be undefined if the array is empty (though logically `hasMore` being true means the array isn't empty, TypeScript can't infer this).
+
+9. Optional Next Step:
+   Fix the type error in `apps/web/src/app/api/stats/executions/events/route.ts` by adding a safe access, e.g.:
+   ```typescript
+   nextCursor: hasMore && paginatedEvents.length > 0
+     ? paginatedEvents[paginatedEvents.length - 1].createdAt.toISOString()
+     : null,
+   ```
+   Then re-run `pnpm type-check` and `pnpm lint` to verify everything passes. This is directly in line with Task 10 from the plan: "Type-check and lint" verification step.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+<task-notification>
+<task-id>b4f17e3</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b4f17e3.output</output-file>
+<status>failed</status>
+<summary>Background command "Type-check all packages" failed with exit code 1</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b4f17e3.output
+
+---
+
+is this all commit and pushed
+
+---
+
+just the stuff you were working on
+
+---
+
+[Request interrupted by user]

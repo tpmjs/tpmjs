@@ -1,7 +1,9 @@
 {
   "cli_version": "0.4.2",
   "checkpoint_id": "42bace0b3453",
+  "session_id": "93640acd-413a-4562-a828-8d751994773a",
   "strategy": "manual-commit",
+  "created_at": "2026-02-10T23:17:59.727293Z",
   "branch": "main",
   "checkpoints_count": 1,
   "files_touched": [
@@ -20,30 +22,23 @@
     "packages/cli/src/lib/api-client.ts",
     "packages/db/prisma/schema.prisma",
     "packages/tools/official/memory/README.md",
-    "packages/types/src/collection.ts",
-    "tam-analysis-prompt.md"
+    "packages/types/src/collection.ts"
   ],
-  "sessions": [
-    {
-      "metadata": "/42/bace0b3453/0/metadata.json",
-      "transcript": "/42/bace0b3453/0/full.jsonl",
-      "context": "/42/bace0b3453/0/context.md",
-      "content_hash": "/42/bace0b3453/0/content_hash.txt",
-      "prompt": "/42/bace0b3453/0/prompt.txt"
-    },
-    {
-      "metadata": "/42/bace0b3453/1/metadata.json",
-      "transcript": "/42/bace0b3453/1/full.jsonl",
-      "context": "/42/bace0b3453/1/context.md",
-      "content_hash": "/42/bace0b3453/1/content_hash.txt",
-      "prompt": "/42/bace0b3453/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
   "token_usage": {
-    "input_tokens": 130,
-    "cache_creation_tokens": 305589,
-    "cache_read_tokens": 12594121,
-    "output_tokens": 28279,
-    "api_call_count": 119
+    "input_tokens": 118,
+    "cache_creation_tokens": 240532,
+    "cache_read_tokens": 12093562,
+    "output_tokens": 24414,
+    "api_call_count": 109
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-10T23:17:58.205732Z",
+    "agent_lines": 950,
+    "human_added": 2122,
+    "human_modified": 15,
+    "human_removed": 0,
+    "total_committed": 3087,
+    "agent_percentage": 30.774214447683836
   }
 }
