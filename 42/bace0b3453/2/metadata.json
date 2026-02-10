@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "42bace0b3453",
+  "session_id": "c15a6e08-96bd-4c8f-a80f-9551c8acedc8",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-10T23:18:01.498474Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/tools/official/memory/README.md",
+    "packages/tools/official/memory/block.ts",
+    "packages/tools/official/memory/index.ts",
+    "tam-analysis-prompt.md",
+    "tam-analysis.md"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 9,
+    "cache_creation_tokens": 28561,
+    "cache_read_tokens": 135711,
+    "output_tokens": 8551,
+    "api_call_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-10T23:18:01.320058Z",
+    "agent_lines": 649,
+    "human_added": 2438,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 3087,
+    "agent_percentage": 21.0236475542598
+  }
+}

@@ -3,7 +3,7 @@
   "checkpoint_id": "42bace0b3453",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
     "apps/web/src/app/(profile)/[username]/collections/[slug]/mcp/route.ts",
     "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
@@ -20,8 +20,11 @@
     "packages/cli/src/lib/api-client.ts",
     "packages/db/prisma/schema.prisma",
     "packages/tools/official/memory/README.md",
+    "packages/tools/official/memory/block.ts",
+    "packages/tools/official/memory/index.ts",
     "packages/types/src/collection.ts",
-    "tam-analysis-prompt.md"
+    "tam-analysis-prompt.md",
+    "tam-analysis.md"
   ],
   "sessions": [
     {
@@ -37,13 +40,20 @@
       "context": "/42/bace0b3453/1/context.md",
       "content_hash": "/42/bace0b3453/1/content_hash.txt",
       "prompt": "/42/bace0b3453/1/prompt.txt"
+    },
+    {
+      "metadata": "/42/bace0b3453/2/metadata.json",
+      "transcript": "/42/bace0b3453/2/full.jsonl",
+      "context": "/42/bace0b3453/2/context.md",
+      "content_hash": "/42/bace0b3453/2/content_hash.txt",
+      "prompt": "/42/bace0b3453/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 130,
-    "cache_creation_tokens": 305589,
-    "cache_read_tokens": 12594121,
-    "output_tokens": 28279,
-    "api_call_count": 119
+    "input_tokens": 139,
+    "cache_creation_tokens": 334150,
+    "cache_read_tokens": 12729832,
+    "output_tokens": 36830,
+    "api_call_count": 124
   }
 }
