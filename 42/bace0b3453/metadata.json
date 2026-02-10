@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "42bace0b3453",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "tam-analysis-prompt.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/42/bace0b3453/0/metadata.json",
+      "transcript": "/42/bace0b3453/0/full.jsonl",
+      "context": "/42/bace0b3453/0/context.md",
+      "content_hash": "/42/bace0b3453/0/content_hash.txt",
+      "prompt": "/42/bace0b3453/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 65057,
+    "cache_read_tokens": 500559,
+    "output_tokens": 3865,
+    "api_call_count": 10
+  }
+}

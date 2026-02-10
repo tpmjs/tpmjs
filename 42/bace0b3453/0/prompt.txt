@@ -1,0 +1,17 @@
+when adding tools to a collection, you should just be able to add all tools from the same package name,
+:fire:
+Click to react
+:thumbsup:
+Click to react
+:laughing:
+Click to react
+Add Reaction
+Edit
+Forward
+More
+[7:13 AM]Wednesday 11 February 2026 at 7:13 AM
+add far more tracking stacks for how often users execute agents, collections and tools
+
+---
+
+[Request interrupted by user for tool use]
