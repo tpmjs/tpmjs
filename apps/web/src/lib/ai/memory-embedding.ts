@@ -11,7 +11,7 @@ import { embed } from 'ai';
 import { cosineSimilarity } from './skills-embedding';
 
 const MEMORY_EMBEDDING_MODEL = 'text-embedding-3-large';
-const DEFAULT_SIMILARITY_THRESHOLD = 0.7;
+const DEFAULT_SIMILARITY_THRESHOLD = 0.4;
 
 /**
  * Compute embedding for memory content

@@ -35,7 +35,7 @@ export async function POST(request: Request) {
   const queryEmbedding = await embedMemoryContent(query);
 
   const results = await findSimilarMemories(queryEmbedding, auth!.userId!, {
-    threshold: threshold ?? 0.7,
+    threshold: threshold ?? 0.4,
     limit: Math.min(limit ?? 10, 50),
     namespace,
     tags,

@@ -111,7 +111,11 @@ export const createMemoryTool = tool({
     type: 'object',
     properties: {
       content: {
-        description: 'Arbitrary JSON payload to store as the memory content',
+        type: 'object',
+        description:
+          'The actual data to persist as a JSON object. Include all relevant details, facts, and context. ' +
+          'Example: {"decision": "Use PostgreSQL", "reason": "Team expertise", "date": "2024-01-15"}. ' +
+          'Do NOT leave this empty — put the real information here, not just in the summary.',
       },
       summary: {
         type: 'string',
@@ -168,7 +172,8 @@ export const searchMemoryTool = tool({
     properties: {
       query: {
         type: 'string',
-        description: 'Natural language search query',
+        description:
+          'Natural language search query. Use descriptive phrases for best results (e.g., "database decision for project X" not just "database").',
       },
       namespace: {
         type: 'string',
@@ -185,7 +190,8 @@ export const searchMemoryTool = tool({
       },
       threshold: {
         type: 'number',
-        description: 'Minimum similarity threshold 0-1 (default: 0.7)',
+        description:
+          'Minimum similarity threshold 0-1 (default: 0.4). Lower values return more results.',
       },
     },
     required: ['query'],

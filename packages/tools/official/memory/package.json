@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/official-memory",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Persistent, semantically-searchable memory tools for AI agents. Create and search memories across sessions.",
   "type": "module",
   "keywords": [
