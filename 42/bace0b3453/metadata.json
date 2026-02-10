@@ -3,26 +3,39 @@
   "checkpoint_id": "42bace0b3453",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 2,
+  "checkpoints_count": 6,
   "files_touched": [
     "apps/web/src/app/(profile)/[username]/collections/[slug]/mcp/route.ts",
     "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
     "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
     "apps/web/src/app/api/collections/[id]/tools/from-package/route.ts",
     "apps/web/src/app/api/mcp/[username]/[slug]/[transport]/route.ts",
+    "apps/web/src/app/api/memories/[id]/route.ts",
+    "apps/web/src/app/api/memories/route.ts",
+    "apps/web/src/app/api/memories/search/route.ts",
     "apps/web/src/app/api/stats/executions/events/route.ts",
     "apps/web/src/app/api/sync/stats-snapshot/route.ts",
+    "apps/web/src/app/dashboard/memories/page.tsx",
     "apps/web/src/components/collections/AddToolSearch.tsx",
+    "apps/web/src/components/dashboard/DashboardLayout.tsx",
     "apps/web/src/lib/activity.ts",
+    "apps/web/src/lib/ai/memory-embedding.ts",
+    "apps/web/src/lib/api-keys/index.ts",
     "apps/web/src/lib/mcp/handlers.ts",
     "apps/web/src/lib/tracking/executions.ts",
     "packages/cli/src/commands/collection/add.ts",
     "packages/cli/src/lib/api-client.ts",
     "packages/db/prisma/schema.prisma",
+    "packages/tools/official/blocks.yml",
     "packages/tools/official/memory/README.md",
     "packages/tools/official/memory/block.ts",
     "packages/tools/official/memory/index.ts",
+    "packages/tools/official/memory/package.json",
+    "packages/tools/official/memory/src/index.ts",
+    "packages/tools/official/memory/tsconfig.json",
+    "packages/tools/official/memory/tsup.config.ts",
     "packages/types/src/collection.ts",
+    "packages/ui/src/Icon/icons.ts",
     "tam-analysis-prompt.md",
     "tam-analysis.md"
   ],
@@ -47,13 +60,20 @@
       "context": "/42/bace0b3453/2/context.md",
       "content_hash": "/42/bace0b3453/2/content_hash.txt",
       "prompt": "/42/bace0b3453/2/prompt.txt"
+    },
+    {
+      "metadata": "/42/bace0b3453/3/metadata.json",
+      "transcript": "/42/bace0b3453/3/full.jsonl",
+      "context": "/42/bace0b3453/3/context.md",
+      "content_hash": "/42/bace0b3453/3/content_hash.txt",
+      "prompt": "/42/bace0b3453/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 139,
-    "cache_creation_tokens": 334150,
-    "cache_read_tokens": 12729832,
-    "output_tokens": 36830,
-    "api_call_count": 124
+    "input_tokens": 489,
+    "cache_creation_tokens": 611413,
+    "cache_read_tokens": 41206226,
+    "output_tokens": 69012,
+    "api_call_count": 378
   }
 }
