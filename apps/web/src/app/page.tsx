@@ -8,6 +8,7 @@ import { AppHeader } from '../components/AppHeader';
 import { EcosystemStats } from '../components/home/EcosystemStats';
 import { FeaturesSection } from '../components/home/FeaturesSection';
 import { HeroSection } from '../components/home/HeroSection';
+import { McpSection } from '../components/home/McpSection';
 
 export const dynamic = 'force-dynamic';
 
@@ -403,140 +404,8 @@ export default async function HomePage(): Promise<React.ReactElement> {
           </section>
         )}
 
-        {/* Integration Section */}
-        <section className="py-20 bg-surface border-y border-border">
-          <Container size="xl" padding="lg">
-            {/* Section Header */}
-            <div className="text-center mb-16">
-              <p className="font-mono text-xs text-primary uppercase tracking-widest mb-3">
-                universal compatibility
-              </p>
-              <h2 className="font-mono text-3xl md:text-4xl font-semibold mb-4 text-foreground lowercase">
-                works everywhere
-              </h2>
-              <p className="text-base text-foreground-secondary max-w-xl mx-auto font-sans">
-                Use TPMJS tools with any MCP-compatible AI client. One URL, instant access.
-              </p>
-            </div>
-
-            {/* Client Cards - Fieldset Style */}
-            <fieldset className="border border-dashed border-border p-8 mb-12">
-              <legend className="font-mono text-sm text-foreground-secondary px-3 lowercase">
-                supported clients
-              </legend>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="group p-6 border border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all">
-                  <div className="w-10 h-10 bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="font-mono text-lg text-primary">C</span>
-                  </div>
-                  <div className="font-mono text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                    Claude
-                  </div>
-                  <p className="font-mono text-xs text-foreground-tertiary mt-1">
-                    desktop / projects / api
-                  </p>
-                </div>
-                <div className="group p-6 border border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all">
-                  <div className="w-10 h-10 bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="font-mono text-lg text-primary">{'>_'}</span>
-                  </div>
-                  <div className="font-mono text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                    Cursor
-                  </div>
-                  <p className="font-mono text-xs text-foreground-tertiary mt-1">
-                    ai-powered code editor
-                  </p>
-                </div>
-                <div className="group p-6 border border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all">
-                  <div className="w-10 h-10 bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="font-mono text-lg text-primary">W</span>
-                  </div>
-                  <div className="font-mono text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                    Windsurf
-                  </div>
-                  <p className="font-mono text-xs text-foreground-tertiary mt-1">agentic ide</p>
-                </div>
-                <div className="group p-6 border border-dashed border-border hover:border-primary hover:bg-primary/5 transition-all">
-                  <div className="w-10 h-10 bg-primary/10 flex items-center justify-center mb-4">
-                    <span className="font-mono text-lg text-primary">*</span>
-                  </div>
-                  <div className="font-mono text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                    Any MCP
-                  </div>
-                  <p className="font-mono text-xs text-foreground-tertiary mt-1">
-                    open protocol support
-                  </p>
-                </div>
-              </div>
-            </fieldset>
-
-            {/* Code Example - Fieldset Style */}
-            <fieldset className="border border-dashed border-border p-8 max-w-2xl mx-auto">
-              <legend className="font-mono text-sm text-foreground-secondary px-3 lowercase">
-                quick start
-              </legend>
-              <div className="mb-4">
-                <p className="font-mono text-xs text-foreground-tertiary uppercase tracking-wider mb-2">
-                  claude_desktop_config.json
-                </p>
-                <div className="bg-background border border-border p-4 font-mono text-sm overflow-x-auto">
-                  <pre className="text-foreground">
-                    <span className="text-foreground-tertiary">{'{'}</span>
-                    {'\n  '}
-                    <span className="text-primary">
-                      {'"'}mcpServers{'"'}
-                    </span>
-                    : <span className="text-foreground-tertiary">{'{'}</span>
-                    {'\n    '}
-                    <span className="text-primary">
-                      {'"'}tpmjs{'"'}
-                    </span>
-                    : <span className="text-foreground-tertiary">{'{'}</span>
-                    {'\n      '}
-                    <span className="text-primary">
-                      {'"'}command{'"'}
-                    </span>
-                    :{' '}
-                    <span className="text-success">
-                      {'"'}npx{'"'}
-                    </span>
-                    ,{'\n      '}
-                    <span className="text-primary">
-                      {'"'}args{'"'}
-                    </span>
-                    : [
-                    <span className="text-success">
-                      {'"'}-y{'"'}
-                    </span>
-                    ,{' '}
-                    <span className="text-success">
-                      {'"'}@anthropic/mcp-remote{'"'}
-                    </span>
-                    ,{'\n        '}
-                    <span className="text-success">
-                      {'"'}https://tpmjs.com/api/mcp/ajax/ajax-collection/sse{'"'}
-                    </span>
-                    ]{'\n    '}
-                    <span className="text-foreground-tertiary">{'}'}</span>
-                    {'\n  '}
-                    <span className="text-foreground-tertiary">{'}'}</span>
-                    {'\n'}
-                    <span className="text-foreground-tertiary">{'}'}</span>
-                  </pre>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 pt-4 border-t border-dashed border-border">
-                <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                <p className="font-mono text-xs text-foreground-secondary">
-                  add to config → instant access to{' '}
-                  <span className="text-primary font-medium">
-                    {data.stats.toolCount > 0 ? `${data.stats.toolCount}+` : '100+'} tools
-                  </span>
-                </p>
-              </div>
-            </fieldset>
-          </Container>
-        </section>
+        {/* MCP Integration Section */}
+        <McpSection toolCount={data.stats.toolCount} />
 
         {/* Publish Your Tool Section */}
         <section className="py-16 bg-surface">
