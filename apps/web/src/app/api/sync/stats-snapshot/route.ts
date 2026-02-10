@@ -82,6 +82,10 @@ export async function POST(request: NextRequest) {
       publicAgentsCount,
       totalSimulationsCount,
 
+      // Execution events (daily)
+      eventToolCallsCount,
+      eventAgentRunsCount,
+
       // Quality distribution
       qualityDistribution,
     ] = await Promise.all([
@@ -159,6 +163,14 @@ export async function POST(request: NextRequest) {
       prisma.collection.count({ where: { isPublic: true } }),
       prisma.agent.count({ where: { isPublic: true } }),
       prisma.simulation.count(),
+
+      // Execution events (daily counts from ExecutionEvent table)
+      prisma.executionEvent.count({
+        where: { createdAt: { gte: yesterday, lt: today }, eventType: 'tool_call' },
+      }),
+      prisma.executionEvent.count({
+        where: { createdAt: { gte: yesterday, lt: today }, eventType: 'agent_run' },
+      }),
 
       // Quality score distribution
       prisma.$queryRaw<{ bucket: string; count: bigint }[]>`
@@ -265,6 +277,10 @@ export async function POST(request: NextRequest) {
         totalCollections: publicCollectionsCount,
         totalAgents: publicAgentsCount,
         totalSimulations: totalSimulationsCount,
+
+        // Execution event counts
+        eventToolCalls: eventToolCallsCount,
+        eventAgentRuns: eventAgentRunsCount,
       },
     });
 

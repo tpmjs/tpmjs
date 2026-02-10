@@ -89,6 +89,10 @@ export const API_KEY_SCOPES = {
   USAGE_READ: 'usage:read',
   /** Read collection data */
   COLLECTION_READ: 'collection:read',
+  /** Read memories */
+  MEMORY_READ: 'memory:read',
+  /** Create/update/delete memories */
+  MEMORY_WRITE: 'memory:write',
 } as const;
 
 export type ApiKeyScope = (typeof API_KEY_SCOPES)[keyof typeof API_KEY_SCOPES];
@@ -102,6 +106,8 @@ export const DEFAULT_API_KEY_SCOPES: ApiKeyScope[] = [
   API_KEY_SCOPES.BRIDGE_CONNECT,
   API_KEY_SCOPES.USAGE_READ,
   API_KEY_SCOPES.COLLECTION_READ,
+  API_KEY_SCOPES.MEMORY_READ,
+  API_KEY_SCOPES.MEMORY_WRITE,
 ];
 
 /**

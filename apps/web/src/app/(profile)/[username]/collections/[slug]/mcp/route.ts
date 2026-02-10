@@ -9,7 +9,12 @@ import {
   getRateLimitHeaders,
 } from '~/lib/api-keys/rate-limit';
 import { trackUsage } from '~/lib/api-keys/usage';
-import { handleInitialize, handleToolsCall, handleToolsList } from '~/lib/mcp/handlers';
+import {
+  handleInitialize,
+  handleToolsCall,
+  handleToolsList,
+  type TrackingContext,
+} from '~/lib/mcp/handlers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -86,7 +91,8 @@ async function processJsonRpcRequest(
   collectionId: string,
   collectionName: string,
   body: JsonRpcRequest,
-  isOwner: boolean
+  isOwner: boolean,
+  trackingCtx?: TrackingContext
 ): Promise<JsonRpcResponse> {
   const requestId = body.id ?? null;
 
@@ -108,7 +114,7 @@ async function processJsonRpcRequest(
       // For owners, callerEnvVars is undefined so handleToolsCall uses stored env vars
       const callerEnvVars = isOwner ? undefined : params.env || {};
 
-      return await handleToolsCall(collectionId, params, requestId, callerEnvVars);
+      return await handleToolsCall(collectionId, params, requestId, callerEnvVars, trackingCtx);
     }
 
     case 'notifications/initialized':
@@ -240,8 +246,22 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
+    // Build tracking context for execution event tracking
+    const trackingCtx: TrackingContext = {
+      userId: authResult.authenticated ? (authResult.userId ?? undefined) : undefined,
+      apiKeyId: authResult.authenticated ? (authResult.apiKeyId ?? undefined) : undefined,
+      collectionId: collection.id,
+      source: 'mcp_http',
+    };
+
     // Process the request
-    const response = await processJsonRpcRequest(collection.id, collection.name, body, isOwner);
+    const response = await processJsonRpcRequest(
+      collection.id,
+      collection.name,
+      body,
+      isOwner,
+      trackingCtx
+    );
     const jsonResponse = NextResponse.json(response);
 
     // Track usage for authenticated requests

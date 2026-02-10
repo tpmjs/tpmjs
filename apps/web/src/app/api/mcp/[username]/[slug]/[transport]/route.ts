@@ -9,7 +9,12 @@ import {
   getRateLimitHeaders,
 } from '~/lib/api-keys/rate-limit';
 import { trackUsage } from '~/lib/api-keys/usage';
-import { handleInitialize, handleToolsCall, handleToolsList } from '~/lib/mcp/handlers';
+import {
+  handleInitialize,
+  handleToolsCall,
+  handleToolsList,
+  type TrackingContext,
+} from '~/lib/mcp/handlers';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -88,7 +93,8 @@ async function processJsonRpcRequest(
   collectionId: string,
   collectionName: string,
   body: JsonRpcRequest,
-  isOwner: boolean
+  isOwner: boolean,
+  trackingCtx?: TrackingContext
 ): Promise<JsonRpcResponse> {
   const requestId = body.id ?? null;
 
@@ -110,7 +116,7 @@ async function processJsonRpcRequest(
       // For owners, callerEnvVars is undefined so handleToolsCall uses stored env vars
       const callerEnvVars = isOwner ? undefined : params.env || {};
 
-      return await handleToolsCall(collectionId, params, requestId, callerEnvVars);
+      return await handleToolsCall(collectionId, params, requestId, callerEnvVars, trackingCtx);
     }
 
     case 'notifications/initialized':
@@ -134,7 +140,8 @@ async function handleHttpTransport(
   request: NextRequest,
   collectionId: string,
   collectionName: string,
-  isOwner: boolean
+  isOwner: boolean,
+  trackingCtx?: TrackingContext
 ): Promise<NextResponse> {
   let body: JsonRpcRequest;
   try {
@@ -146,7 +153,13 @@ async function handleHttpTransport(
     );
   }
 
-  const response = await processJsonRpcRequest(collectionId, collectionName, body, isOwner);
+  const response = await processJsonRpcRequest(
+    collectionId,
+    collectionName,
+    body,
+    isOwner,
+    trackingCtx
+  );
   return NextResponse.json(response);
 }
 
@@ -158,7 +171,8 @@ async function handleSseTransport(
   request: NextRequest,
   collectionId: string,
   collectionName: string,
-  isOwner: boolean
+  isOwner: boolean,
+  trackingCtx?: TrackingContext
 ): Promise<Response> {
   let body: JsonRpcRequest;
   try {
@@ -177,7 +191,13 @@ async function handleSseTransport(
     );
   }
 
-  const response = await processJsonRpcRequest(collectionId, collectionName, body, isOwner);
+  const response = await processJsonRpcRequest(
+    collectionId,
+    collectionName,
+    body,
+    isOwner,
+    trackingCtx
+  );
 
   // For SSE, we send the response as an event and then close
   const encoder = new TextEncoder();
@@ -356,11 +376,31 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       // The env vars are validated per-tool in handleToolsCall
     }
 
+    // Build tracking context for execution event tracking
+    const trackingCtx: TrackingContext = {
+      userId: authResult.userId ?? undefined,
+      apiKeyId: authResult.apiKeyId ?? undefined,
+      collectionId: collection.id,
+      source: transport === 'sse' ? 'mcp_sse' : 'mcp_http',
+    };
+
     let response: Response;
     if (transport === 'sse') {
-      response = await handleSseTransport(request, collection.id, collection.name, isOwner);
+      response = await handleSseTransport(
+        request,
+        collection.id,
+        collection.name,
+        isOwner,
+        trackingCtx
+      );
     } else {
-      response = await handleHttpTransport(request, collection.id, collection.name, isOwner);
+      response = await handleHttpTransport(
+        request,
+        collection.id,
+        collection.name,
+        isOwner,
+        trackingCtx
+      );
     }
 
     // Track usage for authenticated requests

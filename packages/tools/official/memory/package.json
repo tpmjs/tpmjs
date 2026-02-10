@@ -1,0 +1,75 @@
+{
+  "name": "@tpmjs/official-memory",
+  "version": "0.1.2",
+  "description": "Persistent, semantically-searchable memory tools for AI agents. Create and search memories across sessions.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "memory",
+    "ai",
+    "semantic-search",
+    "embeddings"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/memory"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "TPMJS_API_KEY",
+        "description": "Your TPMJS Platform API key with memory:read and memory:write scopes",
+        "required": true
+      },
+      {
+        "name": "TPMJS_BASE_URL",
+        "description": "TPMJS API base URL (defaults to https://tpmjs.com)",
+        "required": false,
+        "default": "https://tpmjs.com"
+      }
+    ],
+    "tools": [
+      {
+        "name": "createMemoryTool",
+        "description": "Store a persistent memory that can be retrieved later via semantic search. Use for saving context, decisions, preferences, or any information that should persist across sessions."
+      },
+      {
+        "name": "searchMemoryTool",
+        "description": "Search memories using natural language semantic search. Returns the most relevant memories ranked by similarity."
+      }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  }
+}

@@ -13653,6 +13653,83 @@ blocks:
         description: "Matching rows with count"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
 
+  # ---------------------------------------------------------------------------
+  # Memory (Persistent Semantic Memory for AI Agents)
+  # ---------------------------------------------------------------------------
+  agent.createMemory:
+    type: utility
+    description: "Store a persistent memory that can be retrieved later via semantic search. Use for saving context, decisions, preferences, or any information that should persist across sessions."
+    path: "memory"
+    domain_rules:
+      - id: api_authentication
+        description: "Must authenticate with TPMJS API key via Bearer token"
+      - id: memory_creation
+        description: "Must POST to /api/memories with content, optional summary, namespace, tags, expiresAt"
+      - id: source_tracking
+        description: "Must auto-set source to 'createMemoryTool' for provenance"
+    inputs:
+      - name: content
+        type: object
+        description: "Arbitrary JSON payload to store as the memory content"
+      - name: summary
+        type: string
+        optional: true
+        description: "Human-readable summary of the memory (max 500 chars). Auto-generated if not provided."
+      - name: namespace
+        type: string
+        optional: true
+        description: "Optional grouping namespace (e.g., 'project-x', 'personal')"
+      - name: tags
+        type: array
+        optional: true
+        description: "Tags for categorization"
+      - name: expiresAt
+        type: string
+        optional: true
+        description: "ISO 8601 datetime for automatic expiration (TTL)"
+    outputs:
+      - name: memory
+        type: Memory
+        description: "The created memory object with id, content, summary, namespace, tags, and timestamps"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.searchMemory:
+    type: utility
+    description: "Search memories using natural language semantic search. Returns the most relevant memories ranked by similarity."
+    path: "memory"
+    domain_rules:
+      - id: api_authentication
+        description: "Must authenticate with TPMJS API key via Bearer token"
+      - id: semantic_search
+        description: "Must POST to /api/memories/search with query and optional filters"
+      - id: result_ranking
+        description: "Results must include similarity scores and be sorted by relevance"
+    inputs:
+      - name: query
+        type: string
+        description: "Natural language search query"
+      - name: namespace
+        type: string
+        optional: true
+        description: "Filter results to a specific namespace"
+      - name: tags
+        type: array
+        optional: true
+        description: "Filter results to memories with any of these tags"
+      - name: limit
+        type: number
+        optional: true
+        description: "Maximum number of results (default: 10, max: 50)"
+      - name: threshold
+        type: number
+        optional: true
+        description: "Minimum similarity threshold 0-1 (default: 0.7)"
+    outputs:
+      - name: results
+        type: SearchResult[]
+        description: "Array of matching memories with similarity scores"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
 # =============================================================================
 # VALIDATORS - Which validators to run against each block
 # =============================================================================

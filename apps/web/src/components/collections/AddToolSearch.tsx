@@ -4,7 +4,7 @@ import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface Tool {
   id: string;
@@ -42,6 +42,7 @@ export function AddToolSearch({
   const [isSearching, setIsSearching] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [addingPackage, setAddingPackage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -161,8 +162,70 @@ export function AddToolSearch({
     }
   };
 
+  const handleAddPackage = async (npmPackageName: string) => {
+    setAddingPackage(npmPackageName);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/collections/${collectionId}/tools/from-package`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ npmPackageName }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Notify parent for each added tool
+        for (const tool of data.data.tools) {
+          onToolAdded({
+            id: tool.id,
+            name: tool.name,
+            description: tool.description,
+            package: tool.package,
+          });
+        }
+        // Remove added tools from results
+        const addedIds = new Set(data.data.tools.map((t: { id: string }) => t.id));
+        const remainingResults = results.filter((t) => !addedIds.has(t.id));
+        setResults(remainingResults);
+        if (remainingResults.length === 0) {
+          setIsOpen(false);
+          setQuery('');
+        }
+        if (data.data.limitReached) {
+          setError(
+            `Collection limit reached. Added ${data.data.added} of ${data.data.added + data.data.skipped} tools.`
+          );
+        }
+      } else {
+        setError(data.error?.message || 'Failed to add tools from package');
+      }
+    } catch (err) {
+      console.error('Failed to add package tools:', err);
+      setError('Failed to add tools from package');
+    } finally {
+      setAddingPackage(null);
+    }
+  };
+
   // Filter out already added tools
   const filteredResults = results.filter((tool) => !existingToolIds.includes(tool.id));
+
+  // Group results by package
+  const groupedResults = useMemo(() => {
+    const groups: Record<string, SearchResult[]> = {};
+    for (const tool of filteredResults) {
+      const pkg = tool.package.npmPackageName;
+      if (!groups[pkg]) {
+        groups[pkg] = [];
+      }
+      groups[pkg].push(tool);
+    }
+    return groups;
+  }, [filteredResults]);
+
+  const isAdding = addingId !== null || addingPackage !== null;
 
   return (
     <div ref={containerRef} className="relative">
@@ -196,36 +259,60 @@ export function AddToolSearch({
 
       {isOpen && filteredResults.length > 0 && (
         <div className="absolute z-50 w-full mt-2 bg-background border border-border rounded-lg shadow-lg max-h-80 overflow-y-auto">
-          {filteredResults.map((tool) => (
-            <div
-              key={tool.id}
-              className="p-3 hover:bg-surface-secondary transition-colors border-b border-border last:border-b-0"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-foreground truncate">{tool.name}</span>
-                    <Badge variant="secondary" size="sm">
-                      {tool.package.category}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-foreground-secondary line-clamp-2">
-                    {tool.description}
-                  </p>
-                  <p className="text-xs text-foreground-tertiary mt-1">
-                    {tool.package.npmPackageName}
-                  </p>
+          {Object.entries(groupedResults).map(([npmPackageName, tools]) => (
+            <div key={npmPackageName}>
+              {/* Show "Add all" header when package has 2+ tools */}
+              {tools.length >= 2 && (
+                <div className="flex items-center justify-between px-3 py-2 bg-surface-secondary border-b border-border">
+                  <span className="text-xs font-medium text-foreground-secondary truncate">
+                    {npmPackageName} ({tools.length} tools)
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={() => handleAddPackage(npmPackageName)}
+                    loading={addingPackage === npmPackageName}
+                    disabled={isAdding}
+                  >
+                    <Icon icon="plus" size="sm" className="mr-1" />
+                    Add all {tools.length}
+                  </Button>
                 </div>
-                <Button
-                  size="sm"
-                  onClick={() => handleAddTool(tool)}
-                  loading={addingId === tool.id}
-                  disabled={addingId !== null}
+              )}
+              {tools.map((tool) => (
+                <div
+                  key={tool.id}
+                  className="p-3 hover:bg-surface-secondary transition-colors border-b border-border last:border-b-0"
                 >
-                  <Icon icon="plus" size="sm" className="mr-1" />
-                  Add
-                </Button>
-              </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-foreground truncate">{tool.name}</span>
+                        <Badge variant="secondary" size="sm">
+                          {tool.package.category}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-foreground-secondary line-clamp-2">
+                        {tool.description}
+                      </p>
+                      {tools.length < 2 && (
+                        <p className="text-xs text-foreground-tertiary mt-1">
+                          {tool.package.npmPackageName}
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleAddTool(tool)}
+                      loading={addingId === tool.id}
+                      disabled={isAdding}
+                    >
+                      <Icon icon="plus" size="sm" className="mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>

@@ -89,6 +89,10 @@ export const ACTIVITY_MESSAGES: Record<
   COLLECTION_UNLIKED: (name) => `Unliked collection "${name}"`,
   AGENT_LIKED: (name) => `Liked agent "${name}"`,
   AGENT_UNLIKED: (name) => `Unliked agent "${name}"`,
+  COLLECTION_TOOLS_BULK_ADDED: (name, meta) =>
+    meta?.count
+      ? `Added ${meta.count} tools from "${meta.packageName}" to collection "${name}"`
+      : `Bulk added tools to collection "${name}"`,
 };
 
 /**
@@ -117,4 +121,5 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
   COLLECTION_UNLIKED: 'heartOff',
   AGENT_LIKED: 'heart',
   AGENT_UNLIKED: 'heartOff',
+  COLLECTION_TOOLS_BULK_ADDED: 'folderPlus',
 };

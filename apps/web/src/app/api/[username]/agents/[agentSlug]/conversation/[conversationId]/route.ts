@@ -21,6 +21,7 @@ import { decryptApiKey } from '@/lib/crypto/api-keys';
 import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
 import { trackUsage } from '~/lib/api-keys/usage';
 import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
+import { trackExecution } from '~/lib/tracking/executions';
 
 /**
  * Rate limit for chat messages: 30 requests per minute
@@ -420,6 +421,17 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                     toolName: tr.toolName,
                     output: tr.output,
                   });
+
+                  // Track each tool call execution event
+                  trackExecution({
+                    eventType: 'tool_call',
+                    source: 'agent_chat',
+                    userId: authResult.userId ?? undefined,
+                    apiKeyId: authResult.apiKeyId ?? undefined,
+                    agentId: agent.id,
+                    toolName: tr.toolName,
+                    status: isError ? 'error' : 'success',
+                  });
                 }
               }
 
@@ -501,6 +513,19 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             executionTimeMs,
           });
 
+          // Track agent run execution event
+          trackExecution({
+            eventType: 'agent_run',
+            source: 'agent_chat',
+            userId: authResult.userId ?? undefined,
+            apiKeyId: authResult.apiKeyId ?? undefined,
+            agentId: agent.id,
+            status: 'success',
+            durationMs: executionTimeMs,
+            tokensIn: inputTokens,
+            tokensOut: outputTokens,
+          });
+
           // Track usage
           if (authResult.userId) {
             trackUsage({
@@ -527,6 +552,18 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           });
           sendEvent('error', {
             message: error instanceof Error ? error.message : 'Unknown error',
+          });
+
+          // Track agent run error
+          trackExecution({
+            eventType: 'agent_run',
+            source: 'agent_chat',
+            userId: authResult.userId ?? undefined,
+            apiKeyId: authResult.apiKeyId ?? undefined,
+            agentId: agent.id,
+            status: 'error',
+            durationMs: Date.now() - startTime,
+            errorMessage: error instanceof Error ? error.message : 'Unknown error',
           });
 
           // Track error

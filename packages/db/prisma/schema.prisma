@@ -336,6 +336,10 @@ model StatsSnapshot {
   totalAgents      Int @default(0) @map("total_agents")
   totalSimulations Int @default(0) @map("total_simulations")
 
+  // Execution Event Tracking (daily counts from ExecutionEvent table)
+  eventToolCalls  Int @default(0) @map("event_tool_calls")
+  eventAgentRuns  Int @default(0) @map("event_agent_runs")
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -390,6 +394,7 @@ model User {
   bridgeConnection BridgeConnection?
   tpmjsApiKeys     TpmjsApiKey[]     @relation("UserTpmjsApiKeys")
   usageSummaries   ApiUsageSummary[] @relation("UserUsageSummaries")
+  memories         Memory[]
 
   @@index([username])
   @@map("users")
@@ -911,6 +916,7 @@ enum ActivityType {
   COLLECTION_UNLIKED
   AGENT_LIKED
   AGENT_UNLIKED
+  COLLECTION_TOOLS_BULK_ADDED
 }
 
 /// UserActivity - tracks user actions for activity stream
@@ -1783,4 +1789,95 @@ model SkillSession {
   @@index([collectionId])
   @@index([expiresAt])
   @@map("skill_sessions")
+}
+
+// ============================================================================
+// Memory Models (Persistent Semantic Memory for AI Tool Collections)
+// ============================================================================
+
+/// Memory - user-owned persistent memories for AI agents
+model Memory {
+  id               String    @id @default(cuid())
+
+  // Owner relationship
+  userId           String    @map("user_id")
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Content
+  content          Json      @db.JsonB // Arbitrary JSON payload
+  summary          String    @db.VarChar(500) // Auto-generated or user-provided preview
+  namespace        String?   @db.VarChar(100) // Grouping like "project-x", "personal"
+  tags             String[]  @default([]) @db.Text // Categorization tags
+
+  // Embedding for semantic search
+  embedding        Json      @db.JsonB // 3072-dim float array (text-embedding-3-large)
+
+  // Provenance tracking
+  source           String    @db.VarChar(100) // Which tool created it ("createMemoryTool", "dashboard")
+  sourceAgent      String?   @map("source_agent") @db.VarChar(200) // Agent name/identifier
+  sourceContext    Json?     @map("source_context") @db.JsonB // Additional creation context
+
+  // Size tracking
+  contentSizeBytes Int       @map("content_size_bytes")
+
+  // TTL support
+  expiresAt        DateTime? @map("expires_at")
+
+  // Timestamps
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([userId, namespace])
+  @@index([userId, createdAt])
+  @@index([expiresAt])
+  @@map("memories")
+}
+
+// ============================================================================
+// Execution Event Tracking (Unified per-tool execution tracking)
+// ============================================================================
+
+/// ExecutionEvent - unified tracking for tool calls, agent runs, collection use, and scenario runs
+model ExecutionEvent {
+  id        String @id @default(cuid())
+
+  // Event classification
+  eventType String @map("event_type") @db.VarChar(30) // 'tool_call' | 'agent_run' | 'collection_use' | 'scenario_run'
+  source    String @db.VarChar(30) // 'mcp_http' | 'mcp_sse' | 'agent_chat' | 'ui_simulation' | 'scenario' | 'omega'
+
+  // Actor (no FK constraints - tracking must never fail due to entity deletion)
+  userId   String? @map("user_id")
+  apiKeyId String? @map("api_key_id")
+
+  // Entity references (no FK constraints for resilience)
+  toolId       String? @map("tool_id")
+  agentId      String? @map("agent_id")
+  collectionId String? @map("collection_id")
+
+  // Denormalized for fast queries without joins
+  toolName    String? @map("tool_name") @db.VarChar(200)
+  packageName String? @map("package_name") @db.VarChar(214)
+
+  // Outcome
+  status     String  @db.VarChar(20) // 'success' | 'error' | 'timeout'
+  durationMs Int?    @map("duration_ms")
+
+  // Token usage (for agent runs)
+  tokensIn  Int? @map("tokens_in")
+  tokensOut Int? @map("tokens_out")
+
+  // Error details
+  errorCode    String? @map("error_code") @db.VarChar(50)
+  errorMessage String? @map("error_message") @db.Text
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@index([collectionId, createdAt])
+  @@index([toolId, createdAt])
+  @@index([eventType, createdAt])
+  @@index([createdAt])
+  @@map("execution_events")
 }

@@ -26,6 +26,7 @@ const navSections: NavSection[] = [
       { href: '/dashboard', label: 'Overview', icon: 'home' },
       { href: '/dashboard/agents', label: 'Agents', icon: 'terminal' },
       { href: '/dashboard/collections', label: 'Collections', icon: 'folder' },
+      { href: '/dashboard/memories', label: 'Memories', icon: 'database' },
     ],
   },
   {

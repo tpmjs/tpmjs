@@ -68,6 +68,16 @@ export const ReorderToolsSchema = z.object({
 });
 
 // ============================================================================
+// Bulk Add Tools from Package Schema
+// ============================================================================
+
+export const BulkAddToolsFromPackageSchema = z.object({
+  npmPackageName: z.string().min(1, 'Package name is required').max(214),
+});
+
+export type BulkAddToolsFromPackageInput = z.infer<typeof BulkAddToolsFromPackageSchema>;
+
+// ============================================================================
 // Bridge Tool Schemas
 // ============================================================================
 

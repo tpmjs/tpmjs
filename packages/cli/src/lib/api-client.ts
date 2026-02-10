@@ -497,6 +497,16 @@ export class TpmClient {
     return { success: true };
   }
 
+  async addToolsFromPackage(
+    collectionId: string,
+    npmPackageName: string
+  ): Promise<ApiResponse<{ added: number; skipped: number; limitReached: boolean }>> {
+    return this.request(`/collections/${collectionId}/tools/from-package`, {
+      method: 'POST',
+      body: JSON.stringify({ npmPackageName }),
+    });
+  }
+
   async removeToolFromCollection(id: string, toolId: string): Promise<ApiResponse<void>> {
     return this.request(`/collections/${id}/tools/${toolId}`, {
       method: 'DELETE',

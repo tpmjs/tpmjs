@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import type { TpmjsEnv } from '@tpmjs/types/tpmjs';
 import { queueBridgeToolCall, waitForBridgeResult } from '~/app/api/bridge/route';
+import { type TrackExecutionParams, trackExecution } from '~/lib/tracking/executions';
 import { executeWithExecutor, parseExecutorConfig } from '../executors';
 import {
   type BridgeTool,
@@ -124,16 +125,25 @@ interface ToolsCallParams {
   env?: Record<string, string>; // Caller-provided env vars for non-owners
 }
 
+export interface TrackingContext {
+  userId?: string;
+  apiKeyId?: string;
+  collectionId?: string;
+  source: TrackExecutionParams['source'];
+}
+
 /**
  * Handle MCP tools/call request
  * @param callerEnvVars - Optional env vars from caller (non-owner accessing public collection)
  *                        When provided, these are used INSTEAD of collection's stored env vars
+ * @param trackingCtx - Optional tracking context for execution event tracking
  */
 export async function handleToolsCall(
   collectionId: string,
   params: ToolsCallParams,
   requestId: JsonRpcId,
-  callerEnvVars?: Record<string, string>
+  callerEnvVars?: Record<string, string>,
+  trackingCtx?: TrackingContext
 ): Promise<JsonRpcResponse> {
   try {
     const parsed = parseToolName(params.name);
@@ -239,6 +249,7 @@ export async function handleToolsCall(
     const effectiveEnvVars = callerEnvVars ?? (collection?.envVars as Record<string, string>) ?? {};
     // Pass explicit version to avoid Deno HTTP import cache issues with @latest
     // Use actual tool name from DB, not parsed name (which may have wrong suffix)
+    const execStart = Date.now();
     const result = await executeWithExecutor(executorConfig, {
       packageName: actualPackageName,
       name: collectionTool.tool.name,
@@ -246,6 +257,24 @@ export async function handleToolsCall(
       params: params.arguments ?? {},
       env: Object.keys(effectiveEnvVars).length > 0 ? effectiveEnvVars : undefined,
     });
+    const execDurationMs = Date.now() - execStart;
+
+    // Track execution event (fire-and-forget)
+    if (trackingCtx) {
+      trackExecution({
+        eventType: 'tool_call',
+        source: trackingCtx.source,
+        userId: trackingCtx.userId,
+        apiKeyId: trackingCtx.apiKeyId,
+        toolId: collectionTool.tool.id,
+        collectionId: trackingCtx.collectionId ?? collectionId,
+        toolName: collectionTool.tool.name,
+        packageName: actualPackageName,
+        status: result.success ? 'success' : 'error',
+        durationMs: execDurationMs,
+        errorMessage: result.success ? undefined : String(result.error),
+      });
+    }
 
     if (!result.success) {
       return {
