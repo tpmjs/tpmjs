@@ -173,6 +173,7 @@ const developerItems: DropdownItem[] = [
 
 const resourceItems: DropdownItem[] = [
   { href: '/how-it-works', label: 'How It Works', description: 'Learn the basics' },
+  { href: '/compare', label: 'Compare', description: 'TPMJS vs alternatives' },
   { href: '/faq', label: 'FAQ', description: 'Common questions' },
   { href: '/changelog', label: 'Changelog', description: 'Latest updates' },
   { href: '/stats', label: 'Stats', description: 'Platform metrics' },

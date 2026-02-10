@@ -1,43 +1,81 @@
-# TPMJS
+<p align="center">
+  <a href="https://tpmjs.com">
+    <h1 align="center">TPMJS</h1>
+  </a>
+</p>
 
-[![CI](https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml/badge.svg)](https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml)
+<p align="center">
+  <strong>The Tool Package Manager for AI Agents</strong>
+</p>
 
-**TPMJS is a registry for discovering AI tools published to npm.**
+<p align="center">
+  <a href="https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml"><img src="https://github.com/tpmjs/tpmjs/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@tpmjs/cli"><img src="https://img.shields.io/npm/v/@tpmjs/cli.svg" alt="npm version"></a>
+  <a href="https://github.com/tpmjs/tpmjs/blob/main/LICENSE"><img src="https://img.shields.io/github/license/tpmjs/tpmjs" alt="License"></a>
+  <a href="https://www.npmjs.com/package/@tpmjs/cli"><img src="https://img.shields.io/npm/dm/@tpmjs/cli.svg" alt="Downloads"></a>
+</p>
 
-Browse, search, and find tools at [tpmjs.com](https://tpmjs.com). Publish your tool by adding the `tpmjs` keyword to your package.json—it appears in the registry within 15 minutes.
+<p align="center">
+  <a href="https://tpmjs.com">Website</a> &middot;
+  <a href="https://tpmjs.com/docs">Docs</a> &middot;
+  <a href="https://tpmjs.com/docs/quickstart">Quick Start</a> &middot;
+  <a href="https://github.com/tpmjs/tpmjs/issues">Issues</a>
+</p>
 
-## Why TPMJS?
+---
 
-- **Discover tools** - Search and browse AI tools by category, quality score, and popularity
-- **Publish easily** - Add one keyword to package.json, publish to npm, done
-- **Quality metrics** - Tools are scored based on documentation, downloads, and metadata completeness
-- **Agent integration** - Optional SDK for agents to search and execute tools at runtime
+TPMJS is an open-source registry for discovering, sharing, and integrating AI tools published to npm. Browse tools at [tpmjs.com](https://tpmjs.com), publish your own by adding a keyword to `package.json`, or give your AI agent access to the entire registry via MCP or SDK.
 
-## Quick Start
+## Getting Started
 
-### Publishing a Tool
+### Publish a Tool
+
+Add the `tpmjs` keyword to your `package.json` and publish to npm. Your tool appears on [tpmjs.com](https://tpmjs.com) within 15 minutes.
+
+```json
+{
+  "name": "my-tool",
+  "keywords": ["tpmjs"],
+  "tpmjs": {
+    "category": "data"
+  }
+}
+```
+
+Or scaffold a new tool:
 
 ```bash
 npx @tpmjs/create-basic-tools
 ```
 
-Or add manually to your package.json:
+See [HOW_TO_PUBLISH_A_TOOL.md](./HOW_TO_PUBLISH_A_TOOL.md) for the full publishing guide.
+
+### Use the CLI
+
+```bash
+npm install -g @tpmjs/cli
+
+tpmjs tool search "sentiment analysis"
+tpmjs tool execute @tpmjs/tools-sentiment --input "I love this product"
+tpmjs tool trending
+```
+
+### Connect via MCP
+
+TPMJS collections are available as [Model Context Protocol](https://modelcontextprotocol.io) servers. Add one to Claude Desktop, Cursor, or any MCP-compatible client:
+
 ```json
 {
-  "keywords": ["tpmjs"],
-  "tpmjs": {
-    "category": "text-analysis"
+  "mcpServers": {
+    "tpmjs": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-remote", "https://tpmjs.com/api/mcp/<username>/<collection>/sse"]
+    }
   }
 }
 ```
 
-Publish to npm and your tool appears on [tpmjs.com](https://tpmjs.com) within 15 minutes.
-
-See [HOW_TO_PUBLISH_A_TOOL.md](./HOW_TO_PUBLISH_A_TOOL.md) for the full guide.
-
-### For AI Agents (Optional)
-
-Agents can search and execute tools from the registry:
+### Use in Your Agent
 
 ```bash
 npm install @tpmjs/registry-search @tpmjs/registry-execute
@@ -47,219 +85,114 @@ npm install @tpmjs/registry-search @tpmjs/registry-execute
 import { registrySearchTool } from '@tpmjs/registry-search';
 import { registryExecuteTool } from '@tpmjs/registry-execute';
 
-// Add to your agent's tools
 const tools = [registrySearchTool, registryExecuteTool];
 ```
 
----
+## Features
 
-## Monorepo Structure
+- **Tool Registry** — Search and browse AI tools by category, quality score, and popularity
+- **One-Keyword Publishing** — Add `"tpmjs"` to your `package.json` keywords, publish to npm, done
+- **Quality Scoring** — Tools scored on documentation, downloads, and metadata completeness
+- **MCP Support** — Expose tool collections as MCP servers for Claude, Cursor, and other clients
+- **CLI** — Search, execute, and manage tools from the terminal
+- **Agent SDK** — Let agents discover and execute tools at runtime
+- **Collections** — Group tools into reusable sets
+- **Scenarios** — Define test scenarios for validating tool behavior
+- **Bridge** — Connect local MCP servers to the TPMJS platform
 
-```
-apps/
-  web/          - Next.js 16 App Router application
-packages/
-  config/       - Shared configurations (Biome, ESLint, Tailwind, TypeScript)
-  ui/           - React component library (.ts-only, no barrels)
-  utils/        - Utility functions
-  types/        - Shared TypeScript types
-  env/          - Zod environment schema loader
-  test/         - Vitest shared configuration
-  mocks/        - MSW mock server
-  storybook/    - Storybook documentation
-```
+## Packages
 
-## Getting Started
+| Package | Description |
+|---------|-------------|
+| [`@tpmjs/cli`](https://www.npmjs.com/package/@tpmjs/cli) | Command-line interface |
+| [`@tpmjs/registry-search`](https://www.npmjs.com/package/@tpmjs/registry-search) | Search the tool registry from your agent |
+| [`@tpmjs/registry-execute`](https://www.npmjs.com/package/@tpmjs/registry-execute) | Execute registry tools from your agent |
+| [`@tpmjs/bridge`](https://www.npmjs.com/package/@tpmjs/bridge) | Connect local MCP servers to TPMJS |
+| [`@tpmjs/mcp-client`](https://www.npmjs.com/package/@tpmjs/mcp-client) | MCP client library |
+| [`@tpmjs/types`](https://www.npmjs.com/package/@tpmjs/types) | Shared TypeScript types and Zod schemas |
+| [`@tpmjs/ui`](https://www.npmjs.com/package/@tpmjs/ui) | React component library |
+| [`@tpmjs/utils`](https://www.npmjs.com/package/@tpmjs/utils) | Utility functions |
+| [`@tpmjs/env`](https://www.npmjs.com/package/@tpmjs/env) | Environment variable validation |
+
+## Contributing
 
 ### Prerequisites
 
-- Node.js >= 22 (LTS)
-- pnpm >= 8
-- nvm (recommended for Node version management)
+- [Node.js](https://nodejs.org/) >= 22
+- [pnpm](https://pnpm.io/) >= 8
 
-### Installation
+### Setup
 
 ```bash
+git clone https://github.com/tpmjs/tpmjs.git
+cd tpmjs
 pnpm install
 ```
 
 ### Development
 
 ```bash
-# Run all apps in development mode
-pnpm dev
+# Start the dev server
+pnpm dev --filter=@tpmjs/web
 
-# Run specific app
-pnpm --filter @tpmjs/web dev
-pnpm --filter @tpmjs/storybook dev
-```
-
-### Building
-
-```bash
-# Build all packages and apps
-pnpm build
-
-# Build specific package
-pnpm --filter @tpmjs/ui build
-```
-
-### Testing
-
-```bash
-# Run all tests
+# Run tests
 pnpm test
 
-# Run tests in watch mode with UI
-pnpm test:ui
-```
-
-### Linting & Formatting
-
-```bash
-# Lint all packages
+# Lint and format
 pnpm lint
-
-# Format all files
 pnpm format
 
-# Check formatting
-pnpm format:check
+# Type check
+pnpm type-check
+```
+
+### Project Structure
+
+```
+apps/
+  web/                 Next.js web application (tpmjs.com)
+packages/
+  cli/                 CLI (@tpmjs/cli)
+  bridge/              MCP bridge
+  mcp-client/          MCP client library
+  ui/                  React component library
+  types/               Shared TypeScript types
+  utils/               Utility functions
+  env/                 Environment schema loader
+  db/                  Prisma database layer
+  config/              Shared configs (Biome, ESLint, Tailwind, TypeScript)
+  tools/official/      189 official tools
+  test/                Vitest shared config
+  mocks/               MSW mock server
 ```
 
 ### Quality Gates
 
-```bash
-# Check architecture/dependency rules
-pnpm check-architecture
+Pre-commit hooks run format, lint, and type-check automatically. CI enforces:
 
-# Find unused code and dependencies
-pnpm find-deadcode
-
-# Check type coverage
-pnpm type-coverage
-```
+- Linting (ESLint + Biome)
+- Type checking (TypeScript strict mode)
+- Tests (Vitest)
+- Production build
+- Architecture validation (no circular deps, module boundaries)
+- Dead code detection
 
 See [QUALITY-GATES.md](./QUALITY-GATES.md) for details.
 
-## Component Usage
-
-Components are imported directly without barrel exports:
-
-```typescript
-import { Button } from '@tpmjs/ui/Button/Button';
-import { Card, CardHeader } from '@tpmjs/ui/Card/Card';
-```
-
-**Important:** All UI components use `.ts` extension (not `.tsx`) and use `createElement` instead of JSX.
-
-## Publishing Workflow
-
-### 1. Create Changesets
-
-After making changes to publishable packages:
+### Releasing
 
 ```bash
-pnpm changeset
-```
-
-Follow the prompts to describe your changes and select which packages are affected.
-
-### 2. Version Packages
-
-When ready to release:
-
-```bash
-pnpm changeset:version
-```
-
-This updates package versions and generates CHANGELOGs.
-
-### 3. Publish to npm
-
-```bash
-pnpm changeset:publish
-```
-
-This builds and publishes all packages with changesets to npm.
-
-### 4. Push to GitHub
-
-```bash
+pnpm changeset            # Create a changeset
+pnpm changeset:version    # Version packages
+pnpm changeset:publish    # Publish to npm
 git push --follow-tags
 ```
 
-## Published Packages
+## Community
 
-- `@tpmjs/ui` - React component library
-- `@tpmjs/utils` - Utility functions
-- `@tpmjs/types` - TypeScript types
-- `@tpmjs/env` - Environment schema loader
-
-## Deployment
-
-The project is configured to only deploy to Vercel when all CI checks pass. This ensures production always has high-quality, tested code.
-
-**CI Checks:**
-- Linting & formatting
-- Type checking
-- Tests
-- Production build
-- Architecture validation
-- Dead code detection
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for full configuration details.
-
-## Module Boundaries
-
-ESLint enforces module boundaries:
-
-- Apps can import from published packages only
-- Packages cannot import from apps
-- No barrel exports (`index.ts`) allowed
-- Direct imports required: `@tpmjs/ui/Button/Button`
-
-## Architecture Decisions
-
-### Why .ts-only Components?
-
-Using `.ts` instead of `.tsx` for React components:
-- Enforces explicit `createElement` calls
-- Makes React's runtime nature more visible
-- Prevents JSX spreading anti-patterns
-- Better for code generation and tooling
-
-### Why No Barrel Exports?
-
-- Clearer dependency graphs
-- Better tree-shaking
-- Explicit imports show what's actually used
-- Prevents circular dependencies
-
-### Why Biome + ESLint?
-
-- Biome: Fast formatting and basic linting
-- ESLint: Semantic rules (module boundaries, TypeScript strictness)
-- Each tool focuses on what it does best
-
-## Scripts Reference
-
-- `dev` - Start development servers
-- `build` - Build all packages
-- `test` - Run tests
-- `test:ui` - Run tests with UI
-- `lint` - Lint code
-- `format` - Format code with Biome
-- `format:check` - Check formatting
-- `type-check` - TypeScript type checking
-- `type-coverage` - Check type coverage (no implicit any)
-- `check-architecture` - Validate dependency rules
-- `find-deadcode` - Find unused code/dependencies
-- `clean` - Remove build artifacts
-- `changeset` - Create a changeset
-- `changeset:version` - Version packages
-- `changeset:publish` - Publish to npm
+- [GitHub Issues](https://github.com/tpmjs/tpmjs/issues) — Bug reports and feature requests
+- [tpmjs.com](https://tpmjs.com) — Browse the registry
 
 ## License
 
-MIT
+[MIT](./LICENSE)
