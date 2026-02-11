@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "bc435de1acf1",
+  "session_id": "b3291c5e-f6ee-4851-9f62-3e213e77af25",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-11T15:50:31.864327Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "apps/web/src/app/api/sync/execution-rollup/route.ts",
+    "apps/web/src/app/api/user/activity-dashboard/route.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 136400,
+    "cache_read_tokens": 633986,
+    "output_tokens": 4382,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-11T15:50:31.057923Z",
+    "agent_lines": 352,
+    "human_added": 883,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1235,
+    "agent_percentage": 28.502024291497975
+  }
+}
