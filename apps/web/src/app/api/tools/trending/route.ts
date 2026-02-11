@@ -38,8 +38,8 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
 
   // Parse comma-separated fields for response shaping
   const { searchParams } = new URL(request.url);
-  const fields = searchParams.get('fields') as string;
-  const fieldList = fields.split(',');
+  const fields = searchParams.get('fields');
+  const fieldList = fields ? fields.split(',') : [];
   const requestedFieldCount = fieldList.length;
 
   try {
