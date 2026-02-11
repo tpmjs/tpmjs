@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "1b8224567d24",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/pipelines/auto-fix.md",
+    ".env.example",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/sentry-auto-fix.yml",
+    ".github/workflows/claude-auto-fix.yml",
+    "apps/web/next.config.ts",
+    "apps/web/sentry.client.config.ts",
+    "apps/web/sentry.edge.config.ts",
+    "apps/web/sentry.server.config.ts",
+    "apps/web/src/app/api/sentry/webhook/route.ts",
+    "apps/web/src/app/api/tools/trending/route.ts",
+    "apps/web/src/app/error.tsx",
+    "apps/web/src/app/global-error.tsx",
+    "apps/web/src/env.ts",
+    "apps/web/src/instrumentation-client.ts",
+    "apps/web/src/instrumentation.ts",
+    "docs/auto-fix-pipeline.md",
+    "docs/sentry-setup.md",
+    "knip.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1b/8224567d24/0/metadata.json",
+      "transcript": "/1b/8224567d24/0/full.jsonl",
+      "context": "/1b/8224567d24/0/context.md",
+      "content_hash": "/1b/8224567d24/0/content_hash.txt",
+      "prompt": "/1b/8224567d24/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 41,
+    "cache_creation_tokens": 29942,
+    "cache_read_tokens": 3239055,
+    "output_tokens": 5681,
+    "api_call_count": 27
+  }
+}
