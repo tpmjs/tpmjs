@@ -137,13 +137,15 @@ export interface TrackingContext {
  * @param callerEnvVars - Optional env vars from caller (non-owner accessing public collection)
  *                        When provided, these are used INSTEAD of collection's stored env vars
  * @param trackingCtx - Optional tracking context for execution event tracking
+ * @param headerEnvVars - Optional env vars extracted from request headers (e.g. tpmjs-api-key → TPMJS_API_KEY)
  */
 export async function handleToolsCall(
   collectionId: string,
   params: ToolsCallParams,
   requestId: JsonRpcId,
   callerEnvVars?: Record<string, string>,
-  trackingCtx?: TrackingContext
+  trackingCtx?: TrackingContext,
+  headerEnvVars?: Record<string, string>
 ): Promise<JsonRpcResponse> {
   try {
     const parsed = parseToolName(params.name);
@@ -246,7 +248,11 @@ export async function handleToolsCall(
 
     // Execute via resolved executor
     // Use caller-provided env vars if given (non-owner), otherwise use collection's stored env vars
-    const effectiveEnvVars = callerEnvVars ?? (collection?.envVars as Record<string, string>) ?? {};
+    // Merge in any env vars extracted from request headers (e.g. tpmjs-api-key → TPMJS_API_KEY)
+    const effectiveEnvVars = {
+      ...(callerEnvVars ?? (collection?.envVars as Record<string, string>) ?? {}),
+      ...headerEnvVars,
+    };
     // Pass explicit version to avoid Deno HTTP import cache issues with @latest
     // Use actual tool name from DB, not parsed name (which may have wrong suffix)
     const execStart = Date.now();

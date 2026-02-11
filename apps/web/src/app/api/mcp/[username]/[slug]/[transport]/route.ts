@@ -94,7 +94,8 @@ async function processJsonRpcRequest(
   collectionName: string,
   body: JsonRpcRequest,
   isOwner: boolean,
-  trackingCtx?: TrackingContext
+  trackingCtx?: TrackingContext,
+  headerEnvVars?: Record<string, string>
 ): Promise<JsonRpcResponse> {
   const requestId = body.id ?? null;
 
@@ -116,7 +117,14 @@ async function processJsonRpcRequest(
       // For owners, callerEnvVars is undefined so handleToolsCall uses stored env vars
       const callerEnvVars = isOwner ? undefined : params.env || {};
 
-      return await handleToolsCall(collectionId, params, requestId, callerEnvVars, trackingCtx);
+      return await handleToolsCall(
+        collectionId,
+        params,
+        requestId,
+        callerEnvVars,
+        trackingCtx,
+        headerEnvVars
+      );
     }
 
     case 'notifications/initialized':
@@ -130,6 +138,21 @@ async function processJsonRpcRequest(
         error: { code: -32601, message: `Method not found: ${body.method}` },
       };
   }
+}
+
+/**
+ * Extract env vars from request headers.
+ * Converts headers like `tpmjs-api-key` → `TPMJS_API_KEY`.
+ */
+function extractEnvVarsFromHeaders(request: NextRequest): Record<string, string> {
+  const envVars: Record<string, string> = {};
+  request.headers.forEach((value, key) => {
+    if (key.startsWith('tpmjs-')) {
+      const envKey = key.toUpperCase().replace(/-/g, '_');
+      envVars[envKey] = value;
+    }
+  });
+  return envVars;
 }
 
 /**
@@ -153,12 +176,14 @@ async function handleHttpTransport(
     );
   }
 
+  const headerEnvVars = extractEnvVarsFromHeaders(request);
   const response = await processJsonRpcRequest(
     collectionId,
     collectionName,
     body,
     isOwner,
-    trackingCtx
+    trackingCtx,
+    Object.keys(headerEnvVars).length > 0 ? headerEnvVars : undefined
   );
   return NextResponse.json(response);
 }
@@ -191,12 +216,14 @@ async function handleSseTransport(
     );
   }
 
+  const headerEnvVars = extractEnvVarsFromHeaders(request);
   const response = await processJsonRpcRequest(
     collectionId,
     collectionName,
     body,
     isOwner,
-    trackingCtx
+    trackingCtx,
+    Object.keys(headerEnvVars).length > 0 ? headerEnvVars : undefined
   );
 
   // For SSE, we send the response as an event and then close
