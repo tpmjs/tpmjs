@@ -36,8 +36,13 @@ interface ApiResponse<T = unknown> {
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse>> {
   const requestId = crypto.randomUUID();
 
+  // Parse comma-separated fields for response shaping
+  const { searchParams } = new URL(request.url);
+  const fields = searchParams.get('fields') as string;
+  const fieldList = fields.split(',');
+  const requestedFieldCount = fieldList.length;
+
   try {
-    const { searchParams } = new URL(request.url);
     const limit = Math.min(50, Math.max(1, Number(searchParams.get('limit')) || 20));
     const offset = Math.max(0, Number(searchParams.get('offset')) || 0);
     const category = searchParams.get('category');
@@ -159,7 +164,12 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
     return NextResponse.json({
       success: true,
       data: toolsWithScores,
-      meta: { version: API_VERSION, timestamp: new Date().toISOString(), requestId },
+      meta: {
+        version: API_VERSION,
+        timestamp: new Date().toISOString(),
+        requestId,
+        fieldCount: requestedFieldCount,
+      },
       pagination: {
         limit,
         offset,
