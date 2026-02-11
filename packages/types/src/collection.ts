@@ -94,6 +94,43 @@ export const UpdateCollectionBridgeToolSchema = z.object({
 });
 
 // ============================================================================
+// Custom MCP Server Schemas
+// ============================================================================
+
+export const AddCustomMcpServerSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be 100 characters or less'),
+  url: z
+    .string()
+    .url('Must be a valid URL')
+    .refine(
+      (url) => url.startsWith('http://') || url.startsWith('https://'),
+      'URL must start with http:// or https://'
+    ),
+  authType: z.enum(['bearer', 'header']).nullable().optional(),
+  authHeader: z.string().max(100).optional(),
+  authToken: z.string().optional(),
+});
+
+export const UpdateCustomMcpServerSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  authType: z.enum(['bearer', 'header']).nullable().optional(),
+  authHeader: z.string().max(100).nullable().optional(),
+  authToken: z.string().nullable().optional(),
+});
+
+export const AddCustomToolToCollectionSchema = z.object({
+  serverId: z.string().min(1, 'Server ID is required'),
+  toolName: z.string().min(1, 'Tool name is required').max(200),
+  displayName: z.string().max(100).optional(),
+  note: z.string().max(500, 'Note must be 500 characters or less').optional(),
+});
+
+export const UpdateCollectionCustomToolSchema = z.object({
+  displayName: z.string().max(100).nullable().optional(),
+  note: z.string().max(500, 'Note must be 500 characters or less').nullable().optional(),
+});
+
+// ============================================================================
 // Clone Schemas
 // ============================================================================
 
@@ -191,6 +228,10 @@ export type ReorderToolsInput = z.infer<typeof ReorderToolsSchema>;
 export type CloneCollectionInput = z.infer<typeof CloneCollectionSchema>;
 export type AddBridgeToolToCollectionInput = z.infer<typeof AddBridgeToolToCollectionSchema>;
 export type UpdateCollectionBridgeToolInput = z.infer<typeof UpdateCollectionBridgeToolSchema>;
+export type AddCustomMcpServerInput = z.infer<typeof AddCustomMcpServerSchema>;
+export type UpdateCustomMcpServerInput = z.infer<typeof UpdateCustomMcpServerSchema>;
+export type AddCustomToolToCollectionInput = z.infer<typeof AddCustomToolToCollectionSchema>;
+export type UpdateCollectionCustomToolInput = z.infer<typeof UpdateCollectionCustomToolSchema>;
 export type Collection = z.infer<typeof CollectionSchema>;
 export type CollectionTool = z.infer<typeof CollectionToolSchema>;
 export type CollectionWithTools = z.infer<typeof CollectionWithToolsSchema>;
@@ -203,6 +244,8 @@ export const COLLECTION_LIMITS = {
   MAX_COLLECTIONS_PER_USER: 50,
   MAX_TOOLS_PER_COLLECTION: 100,
   MAX_BRIDGE_TOOLS_PER_COLLECTION: 50,
+  MAX_CUSTOM_SERVERS_PER_USER: 10,
+  MAX_CUSTOM_TOOLS_PER_COLLECTION: 50,
   MAX_NAME_LENGTH: 100,
   MAX_DESCRIPTION_LENGTH: 500,
   MAX_NOTE_LENGTH: 500,

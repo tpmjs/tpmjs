@@ -399,6 +399,7 @@ model User {
   tpmjsApiKeys     TpmjsApiKey[]     @relation("UserTpmjsApiKeys")
   usageSummaries   ApiUsageSummary[] @relation("UserUsageSummaries")
   memories         Memory[]
+  customMcpServers CustomMcpServer[]
 
   @@index([username])
   @@map("users")
@@ -516,6 +517,7 @@ model Collection {
   agents                 AgentCollection[]
   likes                  CollectionLike[]
   bridgeTools            CollectionBridgeTool[]
+  customTools            CollectionCustomTool[]
   scenarios              Scenario[]
   skillsGenerationJobs   SkillsGenerationJob[]
   skillQuestions         SkillQuestion[]
@@ -1059,6 +1061,75 @@ model CollectionBridgeTool {
   @@unique([collectionId, serverId, toolName])
   @@index([collectionId])
   @@map("collection_bridge_tools")
+}
+
+// ============================================================================
+// Custom MCP Server Models
+// ============================================================================
+
+/// CustomMcpServer - user-registered remote MCP servers (SSE/HTTP)
+model CustomMcpServer {
+  id            String    @id @default(cuid())
+
+  // Owner relationship
+  userId        String    @map("user_id")
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Server identity
+  name          String    @db.VarChar(100)
+  url           String    @db.Text // SSE or HTTP endpoint URL
+
+  // Authentication
+  authType      String?   @map("auth_type") @db.VarChar(20) // 'bearer' | 'header' | null
+  authHeader    String?   @map("auth_header") @db.VarChar(100) // Header name (default: Authorization)
+  authToken     String?   @map("auth_token") @db.Text // Token value (encrypted)
+
+  // Cached tool definitions from remote server
+  tools         Json      @default("[]") @db.JsonB
+  lastSyncAt    DateTime? @map("last_sync_at")
+  lastSyncError String?   @map("last_sync_error") @db.Text
+  status        String    @default("pending") @db.VarChar(20) // 'pending' | 'synced' | 'error'
+
+  // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  collectionTools CollectionCustomTool[]
+
+  @@unique([userId, url])
+  @@index([userId])
+  @@index([status])
+  @@map("custom_mcp_servers")
+}
+
+/// CollectionCustomTool - junction table for custom MCP server tools added to collections
+model CollectionCustomTool {
+  id           String          @id @default(cuid())
+
+  // Collection relationship
+  collectionId String          @map("collection_id")
+  collection   Collection      @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  // Custom MCP server relationship
+  serverId     String          @map("server_id")
+  server       CustomMcpServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  // Tool reference
+  toolName     String          @map("tool_name") @db.VarChar(200)
+
+  // Display customization
+  displayName  String?         @map("display_name") @db.VarChar(100)
+  note         String?         @db.VarChar(500)
+
+  // Timestamps
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  @@unique([collectionId, serverId, toolName])
+  @@index([collectionId])
+  @@index([serverId])
+  @@map("collection_custom_tools")
 }
 
 // ============================================================================

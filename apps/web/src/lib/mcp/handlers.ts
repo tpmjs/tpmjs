@@ -4,9 +4,12 @@ import { queueBridgeToolCall, waitForBridgeResult } from '~/app/api/bridge/route
 import { logActivity } from '~/lib/activity';
 import { type TrackExecutionParams, trackExecution } from '~/lib/tracking/executions';
 import { executeWithExecutor, parseExecutorConfig } from '../executors';
+import { callRemoteTool } from './remote-client';
 import {
   type BridgeTool,
+  type CustomMcpTool,
   convertBridgeToolToMcp,
+  convertCustomToolToMcp,
   convertToMcpTool,
   parseToolName,
 } from './tool-converter';
@@ -68,6 +71,9 @@ export async function handleToolsList(
             orderBy: { position: 'asc' },
           },
           bridgeTools: true,
+          customTools: {
+            include: { server: true },
+          },
           user: {
             include: {
               bridgeConnection: true,
@@ -106,10 +112,32 @@ export async function handleToolsList(
       }
     }
 
+    // Convert custom MCP server tools to MCP format
+    // Uses cached tool definitions so they appear even if the remote server is temporarily down
+    const customTools: ReturnType<typeof convertCustomToolToMcp>[] = [];
+
+    if (collection?.customTools.length) {
+      for (const ct of collection.customTools) {
+        if (ct.server.status !== 'synced') continue;
+
+        const cachedTools = (ct.server.tools as unknown as CustomMcpTool[]) || [];
+        const toolDef = cachedTools.find((t) => t.name === ct.toolName);
+
+        if (toolDef) {
+          customTools.push(
+            convertCustomToolToMcp(
+              { ...toolDef, serverId: ct.serverId, serverName: ct.server.name },
+              ct.displayName
+            )
+          );
+        }
+      }
+    }
+
     return {
       jsonrpc: '2.0',
       id: requestId,
-      result: { tools: [...registryTools, ...bridgeTools] },
+      result: { tools: [...registryTools, ...bridgeTools, ...customTools] },
     };
   } catch (error) {
     console.error('[MCP tools/list] Error:', error);
@@ -158,6 +186,17 @@ export async function handleToolsCall(
         id: requestId,
         error: { code: -32602, message: `Invalid tool name: ${params.name}` },
       };
+    }
+
+    // Handle custom MCP server tool calls
+    if (parsed.type === 'custom') {
+      return handleCustomToolCall(
+        collectionId,
+        parsed.serverId,
+        parsed.toolName,
+        params.arguments ?? {},
+        requestId
+      );
     }
 
     // Handle bridge tool calls
@@ -479,6 +518,96 @@ async function handleBridgeToolCall(
       jsonrpc: '2.0',
       id: requestId,
       error: { code: -32603, message: error instanceof Error ? error.message : 'Internal error' },
+    };
+  }
+}
+
+/**
+ * Handle a custom MCP server tool call by proxying to the remote server
+ */
+async function handleCustomToolCall(
+  collectionId: string,
+  serverId: string,
+  toolName: string,
+  args: Record<string, unknown>,
+  requestId: JsonRpcId
+): Promise<JsonRpcResponse> {
+  try {
+    // Verify the custom tool exists in the collection and get server config
+    const customTool = await withTimeout(
+      prisma.collectionCustomTool.findFirst({
+        where: {
+          collectionId,
+          serverId,
+          toolName,
+        },
+        include: { server: true },
+      }),
+      DB_TIMEOUT_MS,
+      'Database query timed out'
+    );
+
+    if (!customTool) {
+      return {
+        jsonrpc: '2.0',
+        id: requestId,
+        error: {
+          code: -32602,
+          message: `Custom tool not found in collection: ${serverId}/${toolName}`,
+        },
+      };
+    }
+
+    if (customTool.server.status !== 'synced') {
+      return {
+        jsonrpc: '2.0',
+        id: requestId,
+        result: {
+          content: [
+            {
+              type: 'text',
+              text: `Error: Remote MCP server "${customTool.server.name}" is not synced (status: ${customTool.server.status}). Try re-syncing the server.`,
+            },
+          ],
+          isError: true,
+        },
+      };
+    }
+
+    // Call the remote MCP server
+    const result = await callRemoteTool(
+      {
+        url: customTool.server.url,
+        authType: customTool.server.authType as 'bearer' | 'header' | null,
+        authHeader: customTool.server.authHeader,
+        authToken: customTool.server.authToken,
+      },
+      toolName,
+      args
+    );
+
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      result: {
+        content: result.content,
+        isError: result.isError,
+      },
+    };
+  } catch (error) {
+    console.error('[MCP custom tool call] Error:', error);
+    return {
+      jsonrpc: '2.0',
+      id: requestId,
+      result: {
+        content: [
+          {
+            type: 'text',
+            text: `Error calling remote MCP server: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          },
+        ],
+        isError: true,
+      },
     };
   }
 }

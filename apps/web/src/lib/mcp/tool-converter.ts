@@ -255,7 +255,45 @@ export function convertToMcpTool(tool: Tool & { package: Package }): McpToolDefi
 }
 
 /**
- * Parsed tool name result - either a registry tool or a bridge tool
+ * Custom MCP tool definition from a remote server's cached tools
+ */
+export interface CustomMcpTool {
+  serverId: string;
+  serverName: string;
+  name: string;
+  description?: string;
+  inputSchema?: Record<string, unknown>;
+}
+
+/**
+ * Create MCP name for a custom remote server tool
+ * Example: clxyz123 + get_weather → custom--clxyz123--get_weather
+ */
+export function sanitizeCustomToolName(serverId: string, toolName: string): string {
+  const sanitizedServer = serverId.replace(/[^a-zA-Z0-9_-]/g, '-');
+  const sanitizedTool = toolName.replace(/[^a-zA-Z0-9_-]/g, '-');
+  return `custom--${sanitizedServer}--${sanitizedTool}`;
+}
+
+/**
+ * Convert a custom MCP tool definition to an MCP tool definition.
+ * Sanitizes inputSchema to ensure it conforms to Claude's JSON Schema subset.
+ */
+export function convertCustomToolToMcp(
+  tool: CustomMcpTool,
+  displayName?: string | null
+): McpToolDefinition {
+  return {
+    name: sanitizeCustomToolName(tool.serverId, tool.name),
+    description: displayName
+      ? `[${tool.serverName}] ${displayName}`
+      : tool.description || `${tool.name} from ${tool.serverName}`,
+    inputSchema: sanitizeInputSchema(tool.inputSchema),
+  };
+}
+
+/**
+ * Parsed tool name result - either a registry tool, bridge tool, or custom tool
  */
 export type ParsedToolName =
   | {
@@ -266,7 +304,8 @@ export type ParsedToolName =
       possiblePackages: string[];
       possibleToolNames: string[];
     }
-  | { type: 'bridge'; serverId: string; toolName: string };
+  | { type: 'bridge'; serverId: string; toolName: string }
+  | { type: 'custom'; serverId: string; toolName: string };
 
 /**
  * Parse an MCP tool name back into its components.
@@ -277,6 +316,16 @@ export type ParsedToolName =
  * Bridge: bridge--chrome-devtools--screenshot → { type: 'bridge', serverId: "chrome-devtools", toolName: "screenshot" }
  */
 export function parseToolName(mcpName: string): ParsedToolName | null {
+  // Check if it's a custom remote MCP server tool
+  const customMatch = mcpName.match(/^custom--([^-]+(?:-[^-]+)*)--(.+)$/);
+  if (customMatch?.[1] && customMatch[2]) {
+    return {
+      type: 'custom',
+      serverId: customMatch[1],
+      toolName: customMatch[2],
+    };
+  }
+
   // Check if it's a bridge tool
   const bridgeMatch = mcpName.match(/^bridge--([^-]+(?:-[^-]+)*)--(.+)$/);
   if (bridgeMatch?.[1] && bridgeMatch[2]) {

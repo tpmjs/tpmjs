@@ -19,6 +19,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AddToolSearch } from '~/components/collections/AddToolSearch';
 import { CollectionForm } from '~/components/collections/CollectionForm';
+import { CustomServerPanel } from '~/components/collections/CustomServerPanel';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { EnvVarsEditor } from '~/components/EnvVarsEditor';
 import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
@@ -91,9 +92,9 @@ interface Collection {
   tools: CollectionTool[];
 }
 
-type TabId = 'tools' | 'connect' | 'env-vars' | 'settings';
+type TabId = 'tools' | 'mcp-servers' | 'connect' | 'env-vars' | 'settings';
 
-const VALID_TABS: TabId[] = ['tools', 'connect', 'env-vars', 'settings'];
+const VALID_TABS: TabId[] = ['tools', 'mcp-servers', 'connect', 'env-vars', 'settings'];
 
 export default function CollectionDetailPage(): React.ReactElement {
   const params = useParams();
@@ -389,6 +390,7 @@ export default function CollectionDetailPage(): React.ReactElement {
 
   const tabs = [
     { id: 'tools' as const, label: 'Tools', count: collection.toolCount },
+    { id: 'mcp-servers' as const, label: 'MCP Servers' },
     { id: 'connect' as const, label: 'Connect' },
     {
       id: 'env-vars' as const,
@@ -517,6 +519,21 @@ export default function CollectionDetailPage(): React.ReactElement {
               </TableBody>
             </Table>
           </div>
+        </div>
+      )}
+
+      {/* MCP Servers Tab */}
+      {activeTab === 'mcp-servers' && collection.isOwner && (
+        <CustomServerPanel collectionId={collection.id} />
+      )}
+
+      {activeTab === 'mcp-servers' && !collection.isOwner && (
+        <div className="text-center py-16">
+          <Icon icon="globe" size="lg" className="mx-auto text-foreground-tertiary mb-4" />
+          <h2 className="text-lg font-medium text-foreground mb-2">MCP Servers Unavailable</h2>
+          <p className="text-foreground-secondary">
+            You can only manage MCP servers for collections you own.
+          </p>
         </div>
       )}
 
