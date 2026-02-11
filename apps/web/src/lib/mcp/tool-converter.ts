@@ -301,14 +301,18 @@ export function parseToolName(mcpName: string): ParsedToolName | null {
   // Generate possible package names to try:
   // 1. @tpmjs/tools-{pkg} (shortened tpmjs-tools- prefix)
   // 2. @tpmjs/{pkg} (shortened tpmjs- prefix)
-  // 3. @{scope}/{name} (standard scoped, first dash becomes /)
+  // 3. All @{scope}/{name} splits (try every dash as the scope/name boundary)
+  //    e.g. "perplexity-ai-ai-sdk" → @perplexity/ai-ai-sdk, @perplexity-ai/ai-sdk, @perplexity-ai-ai/sdk
   // 4. {pkg} as literal (non-scoped packages)
-  const possiblePackages = [
-    `@tpmjs/tools-${pkg}`,
-    `@tpmjs/${pkg}`,
-    pkg.includes('-') ? `@${pkg.replace('-', '/')}` : `@${pkg}`,
-    pkg,
-  ];
+  const possiblePackages = [`@tpmjs/tools-${pkg}`, `@tpmjs/${pkg}`];
+
+  // Try every dash position as the scope/name boundary for scoped packages
+  const dashPositions = [...pkg.matchAll(/-/g)].map((m) => m.index);
+  for (const pos of dashPositions) {
+    possiblePackages.push(`@${pkg.slice(0, pos)}/${pkg.slice(pos + 1)}`);
+  }
+
+  possiblePackages.push(pkg);
 
   // Return the first scoped interpretation as primary, with literal as fallback
   return {
