@@ -1,0 +1,407 @@
+Implement the following plan:
+
+# Custom MCP Server Support for Collections
+
+## Context
+
+Users can currently build collections of tools from two sources: **registry tools** (npm packages) and **bridge tools** (local MCP servers via the bridge CLI). This feature adds a third source: **custom remote MCP servers** that users connect via URL. When a user adds a remote MCP server URL, the system discovers its tools, lets the user enable/disable individual tools into their collection, and proxies tool calls to the remote server at execution time.
+
+This makes TPMJS an MCP aggregator - a single MCP endpoint that unifies tools from npm registry, local bridge servers, and remote MCP servers.
+
+---
+
+## Database Schema
+
+**File: `packages/db/prisma/schema.prisma`**
+
+### New model: `CustomMcpServer` (user-level, like `BridgeConnection`)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | String @id | cuid |
+| userId | String | FK to User (cascade delete) |
+| name | String(100) | User-provided display name |
+| url | String(Text) | SSE/HTTP endpoint URL |
+| authType | String?(20) | `'bearer'` \| `'header'` \| null |
+| authHeader | String?(100) | Header name (default: Authorization) |
+| authToken | String?(Text) | Token value (encrypted same as envVars) |
+| tools | Json (default []) | Cached tool definitions from remote server |
+| lastSyncAt | DateTime? | When tools were last fetched |
+| lastSyncError | String?(Text) | Last sync error message |
+| status | String(20) | `'pending'` \| `'synced'` \| `'error'` |
+| @@unique | [userId, url] | One registration per URL per user |
+
+### New model: `CollectionCustomTool` (junction, like `CollectionBridgeTool`)
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | String @id | cuid |
+| collectionId | String | FK to Collection (cascade delete) |
+| serverId | String | FK to CustomMcpServer (cascade delete) |
+| toolName | String(200) | Tool name from cached tools |
+| displayName | String?(100) | Optional display override |
+| note | String?(500) | User notes |
+| @@unique | [collectionId, serverId, toolName] | No duplicates |
+
+### Relations to add
+- `Collection.customTools` → `CollectionCustomTool[]`
+- `User.customMcpServers` → `CustomMcpServer[]`
+
+---
+
+## Types & Validation
+
+**File: `packages/types/src/collection.ts`**
+
+Add Zod schemas:
+- `AddCustomMcpServerSchema` - name, url (http or https), authType?, authHeader?, authToken?
+- `UpdateCustomMcpServerSchema` - name?, auth fields?
+- `AddCustomToolToCollectionSchema` - serverId, toolName, displayName?, note?
+- `UpdateCollectionCustomToolSchema` - displayName?, note?
+
+Add limits:
+- `MAX_CUSTOM_SERVERS_PER_USER: 10`
+- `MAX_CUSTOM_TOOLS_PER_COLLECTION: 50`
+
+---
+
+## Remote MCP Client (server-side)
+
+**New file: `apps/web/src/lib/mcp/remote-client.ts`**
+
+Two stateless functions (connect-per-call, suitable for serverless):
+
+### `discoverRemoteTools(config)` → `RemoteMcpTool[]`
+- Creates MCP `Client` from SDK
+- Tries `StreamableHTTPClientTransport` first, falls back to `SSEClientTransport`
+- Calls `client.listTools()`, returns tool definitions
+- Disconnects immediately after
+- Used during "Add Server" and "Sync" operations
+
+### `callRemoteTool(config, toolName, args)` → `{ content, isError }`
+- Same connect/disconnect pattern
+- Calls `client.callTool()` on the remote server
+- Used when proxying tool execution at MCP runtime
+- ~1-3s overhead per call (acceptable for MVP)
+
+Auth handling: Builds headers from `authType`/`authHeader`/`authToken` config.
+
+---
+
+## Tool Converter Updates
+
+**File: `apps/web/src/lib/mcp/tool-converter.ts`**
+
+- Add `CustomMcpTool` interface
+- Add `sanitizeCustomToolName(serverId, toolName)` → `custom--{serverId}--{toolName}`
+- Add `convertCustomToolToMcp(tool, displayName?)` → `McpToolDefinition`
+- Extend `ParsedToolName` union with `{ type: 'custom', serverId, toolName }`
+- Update `parseToolName()` to match `custom--` prefix before `bridge--`
+
+---
+
+## MCP Handler Updates
+
+**File: `apps/web/src/lib/mcp/handlers.ts`**
+
+### `handleToolsList` changes:
+- Include `customTools: { include: { server: true } }` in Prisma query
+- Build custom tools array from `collection.customTools` (only if server.status === 'synced')
+- Return `[...registryTools, ...bridgeTools, ...customTools]`
+- Custom tools always appear in list (even if server is temporarily down) since we use cached definitions
+
+### `handleToolsCall` changes:
+- Add `if (parsed.type === 'custom')` branch before registry handling
+- Route to new `handleCustomToolCall()` function
+
+### New `handleCustomToolCall(collectionId, serverId, toolName, args, requestId)`:
+- Verify custom tool exists in collection (Prisma lookup)
+- Call `callRemoteTool()` with server config
+- Return result in JSON-RPC format
+- Error handling: return clear error if remote server unreachable
+
+---
+
+## API Routes
+
+### Custom MCP Servers (user-level CRUD)
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/custom-mcp-servers` | GET | List user's servers |
+| `/api/custom-mcp-servers` | POST | Add server + trigger sync |
+| `/api/custom-mcp-servers/[serverId]` | GET | Server detail with tools |
+| `/api/custom-mcp-servers/[serverId]` | PATCH | Update name/auth |
+| `/api/custom-mcp-servers/[serverId]` | DELETE | Remove server + cascade |
+| `/api/custom-mcp-servers/[serverId]/sync` | POST | Re-discover tools from remote |
+
+### Collection Custom Tools (per-collection)
+
+| Route | Method | Description |
+|-------|--------|-------------|
+| `/api/collections/[id]/custom-tools` | GET | List custom tools in collection |
+| `/api/collections/[id]/custom-tools` | POST | Add tool to collection |
+| `/api/collections/[id]/custom-tools/[toolId]` | PATCH | Update display name/note |
+| `/api/collections/[id]/custom-tools/[toolId]` | DELETE | Remove tool from collection |
+
+All routes follow existing conventions: `runtime = 'nodejs'`, `maxDuration = 60`, session auth, ownership checks.
+
+Pattern to follow: `apps/web/src/app/api/collections/[id]/bridge-tools/route.ts`
+
+---
+
+## Frontend
+
+**File: `apps/web/src/app/dashboard/collections/[id]/page.tsx`**
+
+Add new **"MCP Servers"** tab to the collection editor.
+
+### New component: `CustomServerPanel.tsx`
+- Lists user's custom MCP servers in a table (name, URL, status badge, tool count, last synced)
+- "Add Server" form: URL input, name input, optional auth fields
+- Per-server: expand to show tool picker, sync button, delete button
+
+### New component: `CustomServerToolPicker.tsx`
+- Shows checkboxes for each tool in the server's cached tool list
+- Checked = tool is added to this collection
+- Toggle adds/removes via `POST/DELETE /api/collections/[id]/custom-tools`
+- Shows tool name, description, and input schema preview
+
+Uses existing `@tpmjs/ui` components: Table, Input, Button, Badge, Icon, Checkbox.
+
+---
+
+## Implementation Sequence
+
+1. **Schema + Types** - Prisma models, Zod schemas, `db:generate` + `db:push`
+2. **Remote client** - `remote-client.ts` with discover + call functions
+3. **Tool converter** - Custom tool name/parse/convert functions
+4. **MCP handlers** - Update `handleToolsList` and `handleToolsCall`
+5. **API routes** - Server CRUD + collection custom tools CRUD
+6. **Frontend** - CustomServerPanel + CustomServerToolPicker + tab
+
+---
+
+## Verification
+
+1. Add a public MCP server URL via the dashboard
+2. Verify tools are discovered and cached in the DB
+3. Enable a tool into a collection
+4. Call `tools/list` on the collection's MCP endpoint - verify custom tool appears
+5. Call `tools/call` on the custom tool - verify it proxies to the remote server
+6. Run `pnpm type-check` and `pnpm lint` to verify no type errors
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me go through the conversation chronologically:
+
+1. The user provided a detailed implementation plan for "Custom MCP Server Support for Collections" - adding support for remote MCP servers as a third tool source alongside registry tools and bridge tools.
+
+2. I explored the codebase to understand existing patterns:
+   - Read the Prisma schema (`packages/db/prisma/schema.prisma`)
+   - Read collection types (`packages/types/src/collection.ts`)
+   - Read tool converter (`apps/web/src/lib/mcp/tool-converter.ts`)
+   - Read MCP handlers (`apps/web/src/lib/mcp/handlers.ts`)
+   - Used explore agents to find bridge tools API routes, auth patterns, encryption, MCP SDK details
+   - Read bridge tools API routes for patterns
+   - Read the collection detail page for frontend patterns
+   - Read MCP SDK type definitions
+
+3. I created 8 tasks and implemented them:
+   - Task 1: Prisma schema - Added `CustomMcpServer` and `CollectionCustomTool` models
+   - Task 2: Zod schemas - Added validation schemas and types
+   - Task 3: Remote MCP client - Created `remote-client.ts`
+   - Task 4: Tool converter updates - Added custom tool support
+   - Task 5: MCP handler updates - Added custom tool listing and calling
+   - Task 6: API routes - Created all CRUD routes
+   - Task 7: Frontend components - Created `CustomServerPanel` and `CustomServerToolPicker`, added MCP Servers tab
+   - Task 8: Verification - Generated Prisma client, ran type-check
+
+4. Encountered one type error: `result.isError` was `unknown` type, needed cast to `boolean | undefined`. Fixed it.
+
+5. The build was re-run and appeared to succeed (the output showed successful compilation).
+
+Let me now document all the specific files, code, and changes in detail.
+
+Summary:
+1. Primary Request and Intent:
+   The user provided a comprehensive implementation plan for adding "Custom MCP Server Support for Collections" to the TPMJS monorepo. This feature adds a third tool source (remote MCP servers) alongside existing registry tools (npm packages) and bridge tools (local MCP servers). The plan specified:
+   - Database schema changes (2 new Prisma models)
+   - Zod validation schemas and types
+   - A remote MCP client for discovering and calling tools on remote servers
+   - Updates to the tool converter and MCP handlers
+   - Full CRUD API routes for custom MCP servers and collection custom tools
+   - Frontend components (CustomServerPanel + CustomServerToolPicker) with a new tab in the collection editor
+   - The implementation should follow existing patterns (bridge tools as reference)
+
+2. Key Technical Concepts:
+   - Turborepo monorepo with pnpm workspaces
+   - Next.js 16 App Router (`apps/web`)
+   - PostgreSQL via Prisma ORM (`packages/db`)
+   - MCP (Model Context Protocol) SDK (`@modelcontextprotocol/sdk` v1.25.2)
+   - StreamableHTTPClientTransport and SSEClientTransport for MCP connections
+   - JSON-RPC 2.0 protocol for MCP communication
+   - Zod for schema validation (`@tpmjs/types`)
+   - Better-auth for session authentication
+   - Tool name conventions: `custom--{serverId}--{toolName}` prefix pattern
+   - `ParsedToolName` union type with `registry`, `bridge`, and now `custom` variants
+   - API response pattern: `{ success, data, error: { code, message }, meta: { version, timestamp, requestId } }`
+   - `@tpmjs/ui` component library (no raw HTML elements)
+   - No barrel exports - direct imports like `@tpmjs/ui/Button/Button`
+
+3. Files and Code Sections:
+
+   - **`packages/db/prisma/schema.prisma`** (Modified)
+     - Added `customMcpServers CustomMcpServer[]` relation to `User` model
+     - Added `customTools CollectionCustomTool[]` relation to `Collection` model
+     - Added two new models between `CollectionBridgeTool` and API Key models:
+     ```prisma
+     model CustomMcpServer {
+       id            String    @id @default(cuid())
+       userId        String    @map("user_id")
+       user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+       name          String    @db.VarChar(100)
+       url           String    @db.Text
+       authType      String?   @map("auth_type") @db.VarChar(20)
+       authHeader    String?   @map("auth_header") @db.VarChar(100)
+       authToken     String?   @map("auth_token") @db.Text
+       tools         Json      @default("[]") @db.JsonB
+       lastSyncAt    DateTime? @map("last_sync_at")
+       lastSyncError String?   @map("last_sync_error") @db.Text
+       status        String    @default("pending") @db.VarChar(20)
+       createdAt     DateTime  @default(now()) @map("created_at")
+       updatedAt     DateTime  @updatedAt @map("updated_at")
+       collectionTools CollectionCustomTool[]
+       @@unique([userId, url])
+       @@index([userId])
+       @@index([status])
+       @@map("custom_mcp_servers")
+     }
+
+     model CollectionCustomTool {
+       id           String          @id @default(cuid())
+       collectionId String          @map("collection_id")
+       collection   Collection      @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+       serverId     String          @map("server_id")
+       server       CustomMcpServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+       toolName     String          @map("tool_name") @db.VarChar(200)
+       displayName  String?         @map("display_name") @db.VarChar(100)
+       note         String?         @db.VarChar(500)
+       createdAt    DateTime        @default(now()) @map("created_at")
+       updatedAt    DateTime        @updatedAt @map("updated_at")
+       @@unique([collectionId, serverId, toolName])
+       @@index([collectionId])
+       @@index([serverId])
+       @@map("collection_custom_tools")
+     }
+     ```
+
+   - **`packages/types/src/collection.ts`** (Modified)
+     - Added 4 new Zod schemas: `AddCustomMcpServerSchema`, `UpdateCustomMcpServerSchema`, `AddCustomToolToCollectionSchema`, `UpdateCollectionCustomToolSchema`
+     - Added type exports for the 4 new schemas
+     - Added `MAX_CUSTOM_SERVERS_PER_USER: 10` and `MAX_CUSTOM_TOOLS_PER_COLLECTION: 50` to `COLLECTION_LIMITS`
+
+   - **`apps/web/src/lib/mcp/remote-client.ts`** (Created)
+     - Two stateless functions for serverless: `discoverRemoteTools(config)` and `callRemoteTool(config, toolName, args)`
+     - `connectToRemote()` helper that tries StreamableHTTP first, falls back to SSE
+     - `buildAuthHeaders()` for bearer/header auth types
+     - 15-second connection timeout
+     - Connect-per-call pattern (suitable for serverless)
+
+   - **`apps/web/src/lib/mcp/tool-converter.ts`** (Modified)
+     - Added `CustomMcpTool` interface (serverId, serverName, name, description, inputSchema)
+     - Added `sanitizeCustomToolName(serverId, toolName)` → `custom--{serverId}--{toolName}`
+     - Added `convertCustomToolToMcp(tool, displayName?)` → `McpToolDefinition`
+     - Extended `ParsedToolName` union with `{ type: 'custom'; serverId: string; toolName: string }`
+     - Updated `parseToolName()` to match `custom--` prefix before `bridge--`
+
+   - **`apps/web/src/lib/mcp/handlers.ts`** (Modified)
+     - Added imports for `CustomMcpTool`, `convertCustomToolToMcp`, `callRemoteTool`
+     - Updated `handleToolsList`: Added `customTools: { include: { server: true } }` to Prisma query, builds custom tools array from cached definitions (only if server.status === 'synced'), returns `[...registryTools, ...bridgeTools, ...customTools]`
+     - Updated `handleToolsCall`: Added `if (parsed.type === 'custom')` branch before bridge handling
+     - Added `handleCustomToolCall()` function: verifies tool exists in collection, checks server sync status, calls `callRemoteTool()`, returns JSON-RPC formatted result
+
+   - **`apps/web/src/app/api/custom-mcp-servers/route.ts`** (Created)
+     - GET: List user's custom MCP servers
+     - POST: Add server + trigger discovery (calls `discoverRemoteTools`, updates status to 'synced' or 'error')
+
+   - **`apps/web/src/app/api/custom-mcp-servers/[serverId]/route.ts`** (Created)
+     - GET: Server detail with cached tools
+     - PATCH: Update name/auth config
+     - DELETE: Remove server (cascades to collection custom tools)
+
+   - **`apps/web/src/app/api/custom-mcp-servers/[serverId]/sync/route.ts`** (Created)
+     - POST: Re-discover tools from remote server
+
+   - **`apps/web/src/app/api/collections/[id]/custom-tools/route.ts`** (Created)
+     - GET: List custom tools in collection
+     - POST: Add custom tool to collection (validates server ownership, tool exists in cached list, checks limits/duplicates)
+
+   - **`apps/web/src/app/api/collections/[id]/custom-tools/[toolId]/route.ts`** (Created)
+     - PATCH: Update displayName/note
+     - DELETE: Remove custom tool from collection
+
+   - **`apps/web/src/components/collections/CustomServerPanel.tsx`** (Created)
+     - Lists user's custom MCP servers in a table (name, URL, status badge, tool count)
+     - "Add Server" form with URL, name, auth type selection (none/bearer/header), token input
+     - Per-server: expand to show tool picker, sync button, delete button
+     - Uses @tpmjs/ui components: Table, Input, Button, Badge, Icon
+
+   - **`apps/web/src/components/collections/CustomServerToolPicker.tsx`** (Created)
+     - Shows checkboxes for each tool in server's cached tool list
+     - Toggle adds/removes via POST/DELETE `/api/collections/[id]/custom-tools`
+     - Shows tool name (mono), description, saving state
+     - Uses @tpmjs/ui Checkbox component
+
+   - **`apps/web/src/app/dashboard/collections/[id]/page.tsx`** (Modified)
+     - Added import for `CustomServerPanel`
+     - Extended `TabId` type to include `'mcp-servers'`
+     - Added `{ id: 'mcp-servers', label: 'MCP Servers' }` tab
+     - Added tab content: `<CustomServerPanel>` for owners, "unavailable" message for non-owners
+
+4. Errors and fixes:
+   - **Type error in `remote-client.ts`**: `result.isError` was type `unknown` (from the MCP SDK's `callTool` return type which is a union), not assignable to `boolean | undefined`. Fixed by adding explicit cast: `isError: result.isError as boolean | undefined`.
+
+5. Problem Solving:
+   - Followed existing bridge tools patterns exactly for API routes (same auth, response format, error codes)
+   - Used connect-per-call pattern in remote client (suitable for serverless environments)
+   - Custom tools use cached definitions for `tools/list` so they appear even if remote server is temporarily down
+   - Tool calls proxy to remote server in real-time via `callRemoteTool()`
+   - `parseToolName()` checks `custom--` prefix before `bridge--` to avoid mismatches
+
+6. All user messages:
+   - Message 1: "Implement the following plan: [detailed Custom MCP Server Support for Collections plan with database schema, types, remote client, tool converter updates, MCP handler updates, API routes, frontend components, implementation sequence, and verification steps]"
+
+7. Pending Tasks:
+   - Task 8 (Run db:generate, type-check and lint) is in progress - the type error was fixed and rebuild appeared successful but the full `pnpm type-check` has not been re-run to completion after the fix
+   - `pnpm lint` and `pnpm format` have not been run
+   - `db:push` has not been run (pushes schema to actual database)
+
+8. Current Work:
+   Was working on Task 8 (verification). After generating Prisma client successfully, ran `pnpm type-check` which failed with a type error in `remote-client.ts` line 144 (`isError` type mismatch). Fixed the error by casting `result.isError as boolean | undefined`. Then re-ran `pnpm --filter=@tpmjs/web build` which compiled successfully (output showed "Compiled successfully" and all routes listed). Need to complete full verification (re-run `pnpm type-check` across entire monorepo, run `pnpm lint`).
+
+9. Optional Next Step:
+   Complete Task 8 verification by running `pnpm type-check` and `pnpm lint` across the entire monorepo to confirm no remaining errors after the `isError` type fix. Then optionally run `pnpm --filter=@tpmjs/db db:push` to push schema changes to the database.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+<task-notification>
+<task-id>b43b85f</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b43b85f.output</output-file>
+<status>failed</status>
+<summary>Background command "Type-check entire monorepo" failed with exit code 1</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b43b85f.output
+
+---
+
+can you make sure its all tested and work

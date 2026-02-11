@@ -3,8 +3,9 @@
   "checkpoint_id": "21b8615bd5ce",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 3,
   "files_touched": [
+    ".claude/hooks/post-commit-changeset.sh",
     ".claude/hooks/post-commit-discord.sh",
     ".claude/settings.json",
     "apps/web/src/app/(profile)/[username]/agents/[uid]/page.tsx",
@@ -15,7 +16,12 @@
     "apps/web/src/app/api/agents/[id]/route.ts",
     "apps/web/src/app/api/bridge/route.ts",
     "apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/collections/[id]/custom-tools/[toolId]/route.ts",
+    "apps/web/src/app/api/collections/[id]/custom-tools/route.ts",
     "apps/web/src/app/api/collections/[id]/route.ts",
+    "apps/web/src/app/api/custom-mcp-servers/[serverId]/route.ts",
+    "apps/web/src/app/api/custom-mcp-servers/[serverId]/sync/route.ts",
+    "apps/web/src/app/api/custom-mcp-servers/route.ts",
     "apps/web/src/app/api/public/users/[username]/agents/[uid]/route.ts",
     "apps/web/src/app/api/sync/execution-rollup/route.ts",
     "apps/web/src/app/api/user/activity-dashboard/route.ts",
@@ -23,15 +29,22 @@
     "apps/web/src/app/api/user/tpmjs-api-keys/[id]/route.ts",
     "apps/web/src/app/api/user/tpmjs-api-keys/route.ts",
     "apps/web/src/app/dashboard/activity/page.tsx",
+    "apps/web/src/app/dashboard/collections/[id]/page.tsx",
     "apps/web/src/app/tool/[...slug]/ToolDetailClient.tsx",
     "apps/web/src/app/tool/[...slug]/page.tsx",
+    "apps/web/src/components/collections/CustomServerPanel.tsx",
+    "apps/web/src/components/collections/CustomServerToolPicker.tsx",
     "apps/web/src/components/dashboard/DashboardLayout.tsx",
     "apps/web/src/lib/activity.ts",
     "apps/web/src/lib/mcp/handlers.ts",
+    "apps/web/src/lib/mcp/remote-client.ts",
+    "apps/web/src/lib/mcp/tool-converter.ts",
     "packages/db/prisma/schema.prisma",
     "packages/db/scripts/backfill-execution-counts.ts",
+    "packages/types/src/collection.ts",
     "packages/ui/src/Icon/Icon.tsx",
     "packages/ui/src/Icon/icons.ts",
+    "test-integration.ts",
     "vercel.json"
   ],
   "sessions": [
@@ -41,13 +54,20 @@
       "context": "/21/b8615bd5ce/0/context.md",
       "content_hash": "/21/b8615bd5ce/0/content_hash.txt",
       "prompt": "/21/b8615bd5ce/0/prompt.txt"
+    },
+    {
+      "metadata": "/21/b8615bd5ce/1/metadata.json",
+      "transcript": "/21/b8615bd5ce/1/full.jsonl",
+      "context": "/21/b8615bd5ce/1/context.md",
+      "content_hash": "/21/b8615bd5ce/1/content_hash.txt",
+      "prompt": "/21/b8615bd5ce/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1778,
-    "cache_creation_tokens": 386462,
-    "cache_read_tokens": 29618558,
-    "output_tokens": 36031,
-    "api_call_count": 272
+    "input_tokens": 1959,
+    "cache_creation_tokens": 685097,
+    "cache_read_tokens": 46308808,
+    "output_tokens": 80123,
+    "api_call_count": 443
   }
 }

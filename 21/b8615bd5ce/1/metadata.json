@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "21b8615bd5ce",
+  "session_id": "2e048284-22b8-41bf-8b93-10283248fb5c",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-11T16:53:43.666493Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".claude/hooks/post-commit-changeset.sh",
+    "apps/web/src/app/api/collections/[id]/custom-tools/[toolId]/route.ts",
+    "apps/web/src/app/api/collections/[id]/custom-tools/route.ts",
+    "apps/web/src/app/api/custom-mcp-servers/[serverId]/route.ts",
+    "apps/web/src/app/api/custom-mcp-servers/[serverId]/sync/route.ts",
+    "apps/web/src/app/api/custom-mcp-servers/route.ts",
+    "apps/web/src/app/dashboard/collections/[id]/page.tsx",
+    "apps/web/src/components/collections/CustomServerPanel.tsx",
+    "apps/web/src/components/collections/CustomServerToolPicker.tsx",
+    "apps/web/src/lib/mcp/handlers.ts",
+    "apps/web/src/lib/mcp/remote-client.ts",
+    "apps/web/src/lib/mcp/tool-converter.ts",
+    "packages/db/prisma/schema.prisma",
+    "packages/types/src/collection.ts",
+    "test-integration.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 181,
+    "cache_creation_tokens": 298635,
+    "cache_read_tokens": 16690250,
+    "output_tokens": 44092,
+    "api_call_count": 171
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-11T16:53:42.790828Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 10,
+    "human_removed": 2321,
+    "total_committed": 10,
+    "agent_percentage": 0
+  }
+}
