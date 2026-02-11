@@ -5,7 +5,7 @@ export interface LogActivityParams {
   userId: string;
   type: ActivityType;
   targetName: string;
-  targetType: 'agent' | 'collection' | 'tool';
+  targetType: 'agent' | 'collection' | 'tool' | 'api_key' | 'bridge';
   agentId?: string;
   collectionId?: string;
   toolId?: string;
@@ -93,6 +93,15 @@ export const ACTIVITY_MESSAGES: Record<
     meta?.count
       ? `Added ${meta.count} tools from "${meta.packageName}" to collection "${name}"`
       : `Bulk added tools to collection "${name}"`,
+  API_KEY_CREATED: (name) => `Created API key "${name}"`,
+  API_KEY_DELETED: (name) => `Deleted API key "${name}"`,
+  COLLECTION_ENV_UPDATED: (name) => `Updated environment variables on "${name}"`,
+  AGENT_CONFIG_UPDATED: (name) => `Updated configuration for agent "${name}"`,
+  BRIDGE_CONNECTED: () => 'Bridge connected',
+  BRIDGE_DISCONNECTED: () => 'Bridge disconnected',
+  TOOL_EXECUTED: (name, meta) =>
+    meta?.source ? `Executed "${name}" via ${meta.source}` : `Executed "${name}"`,
+  AGENT_CONVERSATION_STARTED: (name) => `Started conversation with "${name}"`,
 };
 
 /**
@@ -122,4 +131,12 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
   AGENT_LIKED: 'heart',
   AGENT_UNLIKED: 'heartOff',
   COLLECTION_TOOLS_BULK_ADDED: 'folderPlus',
+  API_KEY_CREATED: 'key',
+  API_KEY_DELETED: 'key',
+  COLLECTION_ENV_UPDATED: 'edit',
+  AGENT_CONFIG_UPDATED: 'edit',
+  BRIDGE_CONNECTED: 'link',
+  BRIDGE_DISCONNECTED: 'link',
+  TOOL_EXECUTED: 'terminal',
+  AGENT_CONVERSATION_STARTED: 'message',
 };

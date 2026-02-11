@@ -72,6 +72,7 @@ export interface Tool {
   lastHealthCheck?: string | null;
   likeCount?: number;
   viewCount?: number;
+  executionCount?: number;
   averageRating?: string | null;
   ratingCount?: number;
   reviewCount?: number;
@@ -611,6 +612,14 @@ console.log(result.text);`}
                     <p className="text-sm text-foreground-secondary mb-1">Views</p>
                     <p className="text-2xl font-bold text-foreground">
                       {tool.viewCount?.toLocaleString()}
+                    </p>
+                  </div>
+                )}
+                {(tool.executionCount ?? 0) > 0 && (
+                  <div>
+                    <p className="text-sm text-foreground-secondary mb-1">Executions</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {tool.executionCount?.toLocaleString()}
                     </p>
                   </div>
                 )}

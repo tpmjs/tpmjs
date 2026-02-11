@@ -83,6 +83,7 @@ export interface PublicCollection {
   likeCount: number;
   toolCount: number;
   forkCount: number;
+  executionCount: number;
   createdAt: string;
   createdBy: {
     id: string;
@@ -393,6 +394,12 @@ export function CollectionDetailClient({
               <span className="flex items-center gap-1">
                 <Icon icon="gitFork" className="w-4 h-4" />
                 {collection.forkCount} forks
+              </span>
+            )}
+            {collection.executionCount > 0 && (
+              <span className="flex items-center gap-1">
+                <Icon icon="terminal" className="w-4 h-4" />
+                {collection.executionCount.toLocaleString()} executions
               </span>
             )}
           </div>

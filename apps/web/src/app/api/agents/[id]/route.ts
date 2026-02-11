@@ -131,6 +131,7 @@ export async function GET(_request: NextRequest, context: RouteContext) {
  * PATCH /api/agents/[id]
  * Update an agent's configuration
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: large PATCH handler with many optional fields
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const requestId = crypto.randomUUID();
 
@@ -209,9 +210,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     });
 
     // Log activity (fire-and-forget)
+    const hasConfigChange =
+      parsed.data.modelId !== undefined ||
+      parsed.data.temperature !== undefined ||
+      parsed.data.systemPrompt !== undefined ||
+      parsed.data.provider !== undefined;
     logActivity({
       userId: authResult.userId,
-      type: 'AGENT_UPDATED',
+      type: hasConfigChange ? 'AGENT_CONFIG_UPDATED' : 'AGENT_UPDATED',
       targetName: agent.name,
       targetType: 'agent',
       agentId: agent.id,

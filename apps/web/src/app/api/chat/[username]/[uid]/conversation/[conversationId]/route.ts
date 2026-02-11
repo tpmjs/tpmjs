@@ -15,6 +15,7 @@ import { SendMessageSchema } from '@tpmjs/types/agent';
 import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { decryptApiKey } from '@/lib/crypto/api-keys';
+import { logActivity } from '~/lib/activity';
 import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
 
 /**
@@ -85,6 +86,7 @@ async function getProviderModel(
  * POST /api/chat/[username]/[uid]/conversation/[conversationId]
  * Send a message and stream the AI response via SSE
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: large streaming chat handler with auth, validation, and SSE logic
 export async function POST(request: NextRequest, context: RouteContext): Promise<Response> {
   // Check rate limit first to prevent expensive LLM calls
   const rateLimitResponse = checkRateLimit(request, CHAT_RATE_LIMIT);
@@ -172,6 +174,17 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           title: parsed.data.message.slice(0, 100),
         },
       });
+
+      // Log activity for new conversation (fire-and-forget)
+      if (agent.userId) {
+        logActivity({
+          userId: agent.userId,
+          type: 'AGENT_CONVERSATION_STARTED',
+          targetName: agent.name,
+          targetType: 'agent',
+          agentId: agent.id,
+        });
+      }
     }
 
     // Fetch recent messages for context
@@ -288,6 +301,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     // Create SSE stream
     const stream = new ReadableStream({
+      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE streaming with tool calls and error handling
       async start(controller) {
         const encoder = new TextEncoder();
 
@@ -334,6 +348,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                 });
               }
             },
+            // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: step finish handler with tool call tracking and usage aggregation
             onStepFinish: async ({ toolCalls, toolResults, usage }) => {
               // Capture tool calls from step finish (backup in case onChunk missed any)
               if (toolCalls && Array.isArray(toolCalls)) {

@@ -18,6 +18,7 @@ import { SendMessageSchema } from '@tpmjs/types/agent';
 import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { decryptApiKey } from '@/lib/crypto/api-keys';
+import { logActivity } from '~/lib/activity';
 import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
 import { trackUsage } from '~/lib/api-keys/usage';
 import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
@@ -198,6 +199,17 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           title: parsed.data.message.slice(0, 100),
         },
       });
+
+      // Log activity for new conversation (fire-and-forget)
+      if (agent.userId) {
+        logActivity({
+          userId: agent.userId,
+          type: 'AGENT_CONVERSATION_STARTED',
+          targetName: agent.name,
+          targetType: 'agent',
+          agentId: agent.id,
+        });
+      }
     }
 
     // Fetch recent messages for context

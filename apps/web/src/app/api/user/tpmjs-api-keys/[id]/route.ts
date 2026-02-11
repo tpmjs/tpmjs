@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { logActivity } from '~/lib/activity';
 import { maskApiKey } from '~/lib/api-keys';
 import { auth } from '~/lib/auth';
 
@@ -80,6 +81,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
  *   expiresAt?: string | null;
  * }
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: PATCH handler with multiple optional field updates and scope validation
 export async function PATCH(request: Request, { params }: RouteParams) {
   try {
     const session = await auth.api.getSession({ headers: await headers() });
@@ -209,6 +211,14 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
 
     await prisma.tpmjsApiKey.delete({
       where: { id },
+    });
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'API_KEY_DELETED',
+      targetName: existing.name,
+      targetType: 'api_key',
     });
 
     return NextResponse.json({

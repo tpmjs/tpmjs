@@ -299,13 +299,23 @@ export async function PATCH(
     });
 
     // Log activity (fire-and-forget)
-    logActivity({
-      userId: authResult.userId,
-      type: 'COLLECTION_UPDATED',
-      targetName: collection.name,
-      targetType: 'collection',
-      collectionId: collection.id,
-    });
+    if (envVars !== undefined) {
+      logActivity({
+        userId: authResult.userId,
+        type: 'COLLECTION_ENV_UPDATED',
+        targetName: collection.name,
+        targetType: 'collection',
+        collectionId: collection.id,
+      });
+    } else {
+      logActivity({
+        userId: authResult.userId,
+        type: 'COLLECTION_UPDATED',
+        targetName: collection.name,
+        targetType: 'collection',
+        collectionId: collection.id,
+      });
+    }
 
     return NextResponse.json({
       success: true,

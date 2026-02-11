@@ -1,3 +1,4 @@
+import type { ActivityType } from '@prisma/client';
 import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -59,9 +60,15 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
     const { searchParams } = new URL(request.url);
     const limit = Math.min(Math.max(Number.parseInt(searchParams.get('limit') || '20', 10), 1), 50);
     const cursor = searchParams.get('cursor');
+    const targetType = searchParams.get('targetType');
+    const type = searchParams.get('type');
 
     const activities = await prisma.userActivity.findMany({
-      where: { userId: session.user.id },
+      where: {
+        userId: session.user.id,
+        ...(targetType && { targetType }),
+        ...(type && { type: type as ActivityType }),
+      },
       orderBy: { createdAt: 'desc' },
       take: limit + 1,
       ...(cursor && {

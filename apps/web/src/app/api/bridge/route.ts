@@ -1,5 +1,6 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { logActivity } from '~/lib/activity';
 import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
 import { trackUsage } from '~/lib/api-keys/usage';
 
@@ -18,7 +19,7 @@ export const maxDuration = 60;
  * Requires 'bridge:connect' scope for API key access.
  */
 
-// POST: Register bridge and its tools
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: bridge registration with auth, validation, and upsert logic
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   let authResult: Awaited<ReturnType<typeof authenticateRequest>> | null = null;
@@ -80,6 +81,14 @@ export async function POST(request: NextRequest) {
         statusCode: 200,
         latencyMs: Date.now() - startTime,
         resourceType: 'bridge',
+      });
+
+      // Log activity (fire-and-forget)
+      logActivity({
+        userId,
+        type: 'BRIDGE_CONNECTED',
+        targetName: 'Bridge',
+        targetType: 'bridge',
       });
 
       return NextResponse.json({
@@ -210,6 +219,14 @@ export async function DELETE(_request: NextRequest) {
     await prisma.bridgeConnection.update({
       where: { userId },
       data: { status: 'disconnected' },
+    });
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId,
+      type: 'BRIDGE_DISCONNECTED',
+      targetName: 'Bridge',
+      targetType: 'bridge',
     });
 
     return NextResponse.json({ success: true });

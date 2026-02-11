@@ -66,6 +66,10 @@
       "schedule": "30 0 * * *"
     },
     {
+      "path": "/api/sync/execution-rollup",
+      "schedule": "0 1 * * *"
+    },
+    {
       "path": "/api/sync/cleanup-activity",
       "schedule": "0 3 * * *"
     },

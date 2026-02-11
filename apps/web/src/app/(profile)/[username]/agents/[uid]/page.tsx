@@ -55,6 +55,9 @@ interface PublicAgent {
   temperature: number;
   likeCount: number;
   forkCount: number;
+  conversationCount: number;
+  messageCount: number;
+  executionCount: number;
   toolCount: number;
   collectionCount: number;
   createdAt: string;
@@ -294,6 +297,23 @@ export default function PrettyAgentDetailPage(): React.ReactElement {
                 <span className="flex items-center gap-1">
                   <Icon icon="gitFork" className="w-4 h-4" />
                   {agent.forkCount} forks
+                </span>
+              )}
+              {agent.conversationCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <Icon icon="message" className="w-4 h-4" />
+                  {agent.conversationCount.toLocaleString()} conversations
+                </span>
+              )}
+              {agent.messageCount > 0 && (
+                <span className="flex items-center gap-1">
+                  {agent.messageCount.toLocaleString()} messages
+                </span>
+              )}
+              {agent.executionCount > 0 && (
+                <span className="flex items-center gap-1">
+                  <Icon icon="terminal" className="w-4 h-4" />
+                  {agent.executionCount.toLocaleString()} tool calls
                 </span>
               )}
               <span>Model: {agent.modelId}</span>

@@ -96,7 +96,10 @@ model Tool {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // View tracking (denormalized, rolled up daily)
-  viewCount    Int      @default(0) @map("view_count")
+  viewCount      Int      @default(0) @map("view_count")
+
+  // Execution tracking (denormalized, rolled up daily)
+  executionCount Int      @default(0) @map("execution_count")
 
   // Rating aggregates
   averageRating Decimal? @map("average_rating") @db.Decimal(2, 1) // 1.0 to 5.0
@@ -120,6 +123,7 @@ model Tool {
   @@index([averageRating])
   @@index([ratingCount])
   @@index([viewCount])
+  @@index([executionCount])
   @@index([reviewCount])
   @@index([importHealth])
   @@index([executionHealth])
@@ -472,7 +476,10 @@ model Collection {
   likeCount   Int      @default(0) @map("like_count")
 
   // View tracking (denormalized, rolled up daily)
-  viewCount   Int      @default(0) @map("view_count")
+  viewCount      Int      @default(0) @map("view_count")
+
+  // Execution tracking (denormalized, rolled up daily)
+  executionCount Int      @default(0) @map("execution_count")
 
   // Executor configuration (optional - uses system default if not set)
   executorType   String? @map("executor_type") @db.VarChar(50)
@@ -522,6 +529,7 @@ model Collection {
   @@index([isPublic])
   @@index([likeCount])
   @@index([viewCount])
+  @@index([executionCount])
   @@index([createdAt])
   @@index([forkedFromId])
   @@index([forkCount])
@@ -603,6 +611,11 @@ model Agent {
   // View tracking (denormalized, rolled up daily)
   viewCount            Int        @default(0) @map("view_count")
 
+  // Execution/conversation tracking (denormalized, rolled up daily)
+  conversationCount    Int        @default(0) @map("conversation_count")
+  messageCount         Int        @default(0) @map("message_count")
+  executionCount       Int        @default(0) @map("execution_count")
+
   // Executor configuration (optional - uses system default if not set)
   // Agent executor overrides collection executor overrides system default
   executorType         String?    @map("executor_type") @db.VarChar(50)
@@ -634,6 +647,8 @@ model Agent {
   @@index([isPublic])
   @@index([likeCount])
   @@index([viewCount])
+  @@index([conversationCount])
+  @@index([executionCount])
   @@index([createdAt])
   @@index([forkedFromId])
   @@index([forkCount])
@@ -917,6 +932,14 @@ enum ActivityType {
   AGENT_LIKED
   AGENT_UNLIKED
   COLLECTION_TOOLS_BULK_ADDED
+  API_KEY_CREATED
+  API_KEY_DELETED
+  COLLECTION_ENV_UPDATED
+  AGENT_CONFIG_UPDATED
+  BRIDGE_CONNECTED
+  BRIDGE_DISCONNECTED
+  TOOL_EXECUTED
+  AGENT_CONVERSATION_STARTED
 }
 
 /// UserActivity - tracks user actions for activity stream

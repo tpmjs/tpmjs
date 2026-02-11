@@ -90,6 +90,7 @@ async function getCollection(username: string, slug: string): Promise<Collection
       likeCount: collection.likeCount,
       toolCount: collection.tools.length,
       forkCount: collection.forkCount,
+      executionCount: collection.executionCount,
       createdAt: collection.createdAt.toISOString(),
       createdBy: {
         id: collection.user.id,

@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { logActivity } from '~/lib/activity';
 import {
   type ApiKeyScope,
   DEFAULT_API_KEY_SCOPES,
@@ -129,6 +130,14 @@ export async function POST(request: Request) {
         scopes: validScopes,
         expiresAt: expiresAtDate,
       },
+    });
+
+    // Log activity (fire-and-forget)
+    logActivity({
+      userId: session.user.id,
+      type: 'API_KEY_CREATED',
+      targetName: apiKey.name,
+      targetType: 'api_key',
     });
 
     // Return the raw key - ONLY TIME it's shown!

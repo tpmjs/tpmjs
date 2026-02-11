@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import type { TpmjsEnv } from '@tpmjs/types/tpmjs';
 import { queueBridgeToolCall, waitForBridgeResult } from '~/app/api/bridge/route';
+import { logActivity } from '~/lib/activity';
 import { type TrackExecutionParams, trackExecution } from '~/lib/tracking/executions';
 import { executeWithExecutor, parseExecutorConfig } from '../executors';
 import {
@@ -52,6 +53,7 @@ export function handleInitialize(collectionName: string, requestId: JsonRpcId): 
 /**
  * Handle MCP tools/list request
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: MCP tools list handler with schema transformation
 export async function handleToolsList(
   collectionId: string,
   requestId: JsonRpcId
@@ -139,6 +141,7 @@ export interface TrackingContext {
  * @param trackingCtx - Optional tracking context for execution event tracking
  * @param headerEnvVars - Optional env vars extracted from request headers (e.g. tpmjs-api-key → TPMJS_API_KEY)
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: MCP tool execution with env resolution, tracking, and error handling
 export async function handleToolsCall(
   collectionId: string,
   params: ToolsCallParams,
@@ -280,6 +283,23 @@ export async function handleToolsCall(
         durationMs: execDurationMs,
         errorMessage: result.success ? undefined : String(result.error),
       });
+
+      // Log user-facing activity (fire-and-forget)
+      if (trackingCtx.userId) {
+        logActivity({
+          userId: trackingCtx.userId,
+          type: 'TOOL_EXECUTED',
+          targetName: collectionTool.tool.name,
+          targetType: 'tool',
+          toolId: collectionTool.tool.id,
+          collectionId: trackingCtx.collectionId ?? collectionId,
+          metadata: {
+            source: trackingCtx.source,
+            status: result.success ? 'success' : 'error',
+            packageName: actualPackageName,
+          },
+        });
+      }
     }
 
     if (!result.success) {
