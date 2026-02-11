@@ -1,0 +1,382 @@
+Implement the following plan:
+
+# Plan: Autonomous Production Error Remediation Loop
+
+## Context
+
+TPMJS has no production error monitoring. The existing `error.tsx` only calls `console.error`, meaning production errors are invisible. This plan adds Sentry for error capture, wires it into GitHub Issues via Sentry's GitHub integration, and creates a Claude Code auto-fix pipeline that autonomously generates PRs for production errors.
+
+## Implementation Order
+
+### 1. Install & Configure Sentry (`@sentry/nextjs`)
+
+**Install dependency:**
+```bash
+pnpm --filter=@tpmjs/web add @sentry/nextjs
+```
+
+**New files:**
+- `apps/web/sentry.client.config.ts` — Client-side Sentry init (DSN, 10% trace sampling, replay on errors only, release = `VERCEL_GIT_COMMIT_SHA`)
+- `apps/web/sentry.server.config.ts` — Server-side init (DSN, 10% traces, release tracking)
+- `apps/web/sentry.edge.config.ts` — Edge runtime init (5% traces for high-volume middleware)
+- `apps/web/src/instrumentation.ts` — Next.js instrumentation hook, dynamically imports server/edge configs, exports `onRequestError = Sentry.captureRequestError`
+- `apps/web/src/app/global-error.tsx` — Root layout error boundary with `Sentry.captureException`
+
+**Modified files:**
+- `apps/web/next.config.ts` — Wrap with `withSentryConfig()` for source map upload, add `tunnelRoute: '/monitoring'` to bypass ad-blockers
+- `apps/web/src/app/error.tsx` — Replace `console.error` with `Sentry.captureException(error)`
+- `apps/web/src/env.ts` — Add optional Sentry env var schemas (SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN)
+- `.env.example` — Add Sentry section documenting all vars
+- `knip.json` — Add `sentry.*.config.ts` to `apps/*` entry points so knip doesn't flag them as dead code
+
+**Key decisions:**
+- All Sentry vars are optional (zod `.optional()`) so dev/CI builds work without them
+- `withSentryConfig` skips source map upload when `SENTRY_AUTH_TOKEN` is missing
+- Production-only: `enabled: process.env.NODE_ENV === 'production'`
+- `tunnelRoute: '/monitoring'` proxies events through our domain
+
+### 2. GitHub Issue Template
+
+**New files:**
+- `.github/ISSUE_TEMPLATE/config.yml` — Enable blank issues, add contact links
+- `.REDACTED.yml` — YAML form-based template with fields: Sentry URL, error title, stack trace, affected route, release, frequency, affected users. Auto-applies `auto-fix` + `production-error` labels.
+
+### 3. Auto-Fix Pipeline Specification
+
+**New file:** `.claude/pipelines/auto-fix.md`
+
+Following the pattern established by `.claude/pipelines/tool-request.md`:
+- Analysis steps (parse issue, locate files, check git history, identify root cause)
+- Fix constraints (allowed: bug fixes, null checks, error handling; prohibited: schema changes, new deps, auth changes, deployment config)
+- Scope limits (max 5 files, surgical changes only)
+- Validation checklist (type-check, lint, build, test, format)
+- PR template (root cause, fix explanation, validation checklist, Sentry reference)
+- Label management (`auto-fix` → `claude-working` → `fix-submitted` or `needs-human-review`)
+- Error handling (escalation paths for each failure mode)
+
+### 4. Claude Auto-Fix Workflow
+
+**New file:** `.github/workflows/claude-auto-fix.yml`
+
+Follows the exact pattern of `tool-request.yml`:
+- Triggers on `issues.labeled` with `auto-fix` label
+- **Loop prevention**: Counts `auto-fix` label events in issue timeline; after 2+ attempts, removes `auto-fix`, adds `needs-human-review`, posts explanation comment
+- Adds `claude-working` label
+- Posts structured `@claude` comment referencing `.claude/pipelines/auto-fix.md`
+- The existing `claude-label-trigger` job in `claude.yml` handles the actual Claude invocation (no changes to `claude.yml` needed)
+- Includes `workflow_dispatch` for manual triggering
+
+### 5. Documentation
+
+**New files:**
+- `docs/auto-fix-pipeline.md` — End-to-end pipeline docs (flow diagram, setup requirements, manual triggering, troubleshooting)
+- `docs/sentry-setup.md` — Manual Sentry configuration steps (project setup, DSN, GitHub integration, alert rules for new issues/regressions → GitHub issues with `auto-fix` label)
+
+## Files Summary
+
+| Action | File |
+|--------|------|
+| **Create** | `apps/web/sentry.client.config.ts` |
+| **Create** | `apps/web/sentry.server.config.ts` |
+| **Create** | `apps/web/sentry.edge.config.ts` |
+| **Create** | `apps/web/src/instrumentation.ts` |
+| **Create** | `apps/web/src/app/global-error.tsx` |
+| **Create** | `.github/ISSUE_TEMPLATE/config.yml` |
+| **Create** | `.REDACTED.yml` |
+| **Create** | `.github/workflows/claude-auto-fix.yml` |
+| **Create** | `.claude/pipelines/auto-fix.md` |
+| **Create** | `docs/auto-fix-pipeline.md` |
+| **Create** | `docs/sentry-setup.md` |
+| **Modify** | `apps/web/next.config.ts` |
+| **Modify** | `apps/web/src/app/error.tsx` |
+| **Modify** | `apps/web/src/env.ts` |
+| **Modify** | `.env.example` |
+| **Modify** | `knip.json` |
+| **Install** | `@sentry/nextjs` in `apps/web` |
+
+## Verification
+
+1. `pnpm --filter=@tpmjs/web build` succeeds without Sentry env vars (source maps skipped gracefully)
+2. `pnpm type-check` passes
+3. `pnpm lint` passes
+4. All new files are syntactically correct
+5. The auto-fix workflow YAML validates
+6. After setting Sentry env vars in Vercel, a test error in production should appear in Sentry with mapped source lines
+7. Applying `auto-fix` label to a test issue should trigger the Claude workflow chain
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+sentry asked me to post this i suppose it contains my keys Integrate Better Stack Error tracking using the Sentry SDK for Next.js, using the following DSN: https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722. If Sentry SDK is already present sending data to a different destination, please replace the current implementation with this one. put those keys everywhere they need to be and use vercel cli to push em to prod
+
+---
+
+can you trigger an error and is all committed and deployed etc
+
+---
+
+<task-notification>
+<task-id>bee7d28</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bee7d28.output</output-file>
+<status>failed</status>
+<summary>Background command "Watch CI run to completion" failed with exit code 1</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bee7d28.output
+
+---
+
+<task-notification>
+<task-id>b0ec089</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b0ec089.output</output-file>
+<status>completed</status>
+<summary>Background command "Commit and push DSN fix" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b0ec089.output
+
+---
+
+i can see them in sentry. can you create an error that can be fixed, trigger it, and then make sure the github action actually gets claude code to fix it and deploy all automatically
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the entire conversation:
+
+1. **Initial Request**: User asked to implement a detailed plan for "Autonomous Production Error Remediation Loop" - adding Sentry error monitoring, GitHub issue templates, and a Claude Code auto-fix pipeline.
+
+2. **Phase 1 - Reading existing files**: I read next.config.ts, error.tsx, env.ts, .env.example, knip.json, claude.yml, tool-request.yml, tool-request pipeline spec, and package.json to understand the codebase.
+
+3. **Phase 2 - Installing @sentry/nextjs**: First attempt failed due to lefthook pre-push.old conflict. Fixed by removing the .old file and retrying.
+
+4. **Phase 3 - Creating Sentry config files**: Created sentry.client.config.ts, sentry.server.config.ts, sentry.edge.config.ts, instrumentation.ts, global-error.tsx.
+
+5. **Phase 4 - Modifying existing files**: Updated next.config.ts (wrapped with withSentryConfig), error.tsx (replaced console.error with Sentry.captureException), env.ts (added Sentry env vars), .env.example (added Sentry section), knip.json (added sentry.*.config.ts to entry points).
+
+6. **Phase 5 - Type check error**: `disableSourceMapUpload` doesn't exist in `SentryBuildOptions`. Read the actual type definitions and found the correct option is `sourcemaps.disable`.
+
+7. **Phase 6 - Deprecation warnings**: `disableLogger` and `automaticVercelMonitors` were deprecated. Changed to `bundleSizeOptimizations.excludeDebugStatements`.
+
+8. **Phase 7 - GitHub issue templates and auto-fix pipeline**: Created config.yml, sentry-auto-fix.yml, auto-fix.md pipeline spec, claude-auto-fix.yml workflow, and documentation files.
+
+9. **Phase 8 - User asked about Better Stack DSN**: User provided DSN `https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722` and asked to put keys everywhere and push to Vercel prod.
+
+10. **Phase 9 - Vercel env vars**: Had to relink Vercel project first (old project.json was stale). Then added SENTRY_DSN and NEXT_PUBLIC_SENTRY_DSN to Vercel production.
+
+11. **Phase 10 - User asked to trigger error and verify**: Committed, pushed, waited for deploy. First deploy didn't have DSN baked in because NEXT_PUBLIC_* env vars need to be present at build time. Pushed empty commit to trigger redeploy.
+
+12. **Phase 11 - DSN not in client bundle**: After redeploy, found that NEXT_PUBLIC_SENTRY_DSN wasn't being inlined because sentry.client.config.ts is outside src/ and Turbopack doesn't replace env vars there. Hardcoded the DSN directly in all three sentry config files.
+
+13. **Phase 12 - Still no Sentry requests**: Even with hardcoded DSN, no network requests to Better Stack. Discovered that `sentry.client.config.ts` is loaded via webpack entry modification, but the project uses Turbopack (Next.js 16). The fix: create `src/instrumentation-client.ts` which is the Turbopack-compatible way to initialize client-side Sentry.
+
+14. **Phase 13 - Success**: After deploying with instrumentation-client.ts, confirmed 6 POST requests to Better Stack all returning 200.
+
+15. **Phase 14 - User asked for end-to-end auto-fix test**: User wants to create a real bug, deploy it, trigger it, and have the GitHub Action get Claude Code to fix it automatically.
+
+16. **Phase 15 - Introducing the bug**: Tried to add a null reference bug in /api/tools/trending/route.ts. First attempt: `fields.split(',')` where fields is null. TypeScript caught it. Added `as string` cast. Second attempt failed because `_hasPackageFields` is unused and the build treats unused variables as errors. This is where we left off.
+
+Key errors and fixes:
+- lefthook pre-push.old conflict → removed old file
+- `disableSourceMapUpload` not in type → changed to `sourcemaps.disable`
+- Deprecation warnings → changed to `bundleSizeOptimizations`
+- Vercel project link stale → `vercel link --yes`
+- NEXT_PUBLIC_* not inlined in Turbopack → hardcoded DSN
+- sentry.client.config.ts not loaded by Turbopack → created instrumentation-client.ts
+- TypeScript catching null reference → used `as string` cast
+- Unused variable error → still needs fixing
+
+Current state: The bug introduction in trending/route.ts failed the pre-commit hook because `_hasPackageFields` is declared but never read. Need to fix this to get the commit through.
+
+Summary:
+1. Primary Request and Intent:
+   - **Initial request**: Implement a detailed plan for "Autonomous Production Error Remediation Loop" - installing Sentry (@sentry/nextjs), configuring it for Next.js 16 with Turbopack, creating GitHub issue templates, auto-fix pipeline specification, Claude auto-fix workflow, and documentation.
+   - **Second request**: User provided Better Stack DSN (`https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722`) and asked to put the keys in all config files and push to Vercel production using the Vercel CLI.
+   - **Third request**: User asked to trigger a test error and verify everything is committed and deployed. Wanted to see errors flowing to Better Stack.
+   - **Fourth request (current)**: User asked to "create an error that can be fixed, trigger it, and then make sure the github action actually gets claude code to fix it and deploy all automatically" — a full end-to-end test of the auto-fix pipeline.
+
+2. Key Technical Concepts:
+   - **Sentry SDK with Better Stack**: Using `@sentry/nextjs` to send errors to Better Stack's Sentry-compatible endpoint
+   - **Turbopack vs Webpack**: Next.js 16 uses Turbopack by default. `sentry.client.config.ts` is only auto-loaded via webpack entry modification — Turbopack requires `instrumentation-client.ts` instead
+   - **NEXT_PUBLIC_* env var inlining**: These are only replaced at build time in files within the app directory tree. Files outside `src/` (like `sentry.client.config.ts`) don't get env var replacement with Turbopack
+   - **Sentry tunnel route**: `tunnelRoute: '/monitoring'` proxies client events through the app's domain, but only works for sentry.io domains. Better Stack URLs go direct (which is fine since ad-blockers target sentry.io, not betterstackdata.com)
+   - **Claude Code auto-fix pipeline**: Label-triggered GitHub Actions workflow (`auto-fix` label → `claude-auto-fix.yml` → adds `claude-working` → posts `@claude` comment → `claude.yml`'s `claude-label-trigger` job picks it up)
+   - **Loop prevention**: The workflow counts `auto-fix` label events in issue timeline; after 2+ attempts, escalates to `needs-human-review`
+   - **`onRequestError`**: Next.js instrumentation hook wired to `Sentry.captureRequestError` for server-side error capture
+   - **`onRouterTransitionStart`**: Required export from `instrumentation-client.ts` for Sentry to instrument client-side navigations
+
+3. Files and Code Sections:
+
+   - **`apps/web/package.json`** — Added `@sentry/nextjs` dependency (v10.38.0)
+
+   - **`apps/web/sentry.client.config.ts`** — Client-side Sentry init (kept for webpack compatibility but NOT loaded by Turbopack)
+     ```typescript
+     import * as Sentry from '@sentry/nextjs';
+     Sentry.init({
+       dsn: 'https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722',
+       enabled: process.env.NODE_ENV === 'production',
+       tracesSampleRate: 0.1,
+       replaysSessionSampleRate: 0,
+       replaysOnErrorSampleRate: 1.0,
+       integrations: [Sentry.replayIntegration()],
+       release: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
+     });
+     ```
+
+   - **`apps/web/src/instrumentation-client.ts`** — **THE ACTUAL client-side init for Turbopack builds**. This is the file that makes Sentry work on the client.
+     ```typescript
+     import * as Sentry from '@sentry/nextjs';
+     Sentry.init({
+       dsn: 'https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722',
+       enabled: process.env.NODE_ENV === 'production',
+       tracesSampleRate: 0.1,
+       replaysSessionSampleRate: 0,
+       replaysOnErrorSampleRate: 1.0,
+       integrations: [Sentry.replayIntegration()],
+     });
+     export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+     ```
+
+   - **`apps/web/sentry.server.config.ts`** — Server-side Sentry init
+     ```typescript
+     import * as Sentry from '@sentry/nextjs';
+     Sentry.init({
+       dsn: 'https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722',
+       enabled: process.env.NODE_ENV === 'production',
+       tracesSampleRate: 0.1,
+       release: process.env.VERCEL_GIT_COMMIT_SHA,
+     });
+     ```
+
+   - **`apps/web/sentry.edge.config.ts`** — Edge runtime Sentry init (5% trace sampling)
+     ```typescript
+     import * as Sentry from '@sentry/nextjs';
+     Sentry.init({
+       dsn: 'https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722',
+       enabled: process.env.NODE_ENV === 'production',
+       tracesSampleRate: 0.05,
+       release: process.env.VERCEL_GIT_COMMIT_SHA,
+     });
+     ```
+
+   - **`apps/web/src/instrumentation.ts`** — Next.js instrumentation hook for server/edge
+     ```typescript
+     import * as Sentry from '@sentry/nextjs';
+     export async function register() {
+       if (process.env.NEXT_RUNTIME === 'nodejs') {
+         await import('../sentry.server.config');
+       }
+       if (process.env.NEXT_RUNTIME === 'edge') {
+         await import('../sentry.edge.config');
+       }
+     }
+     export const onRequestError = Sentry.captureRequestError;
+     ```
+
+   - **`apps/web/src/app/global-error.tsx`** — Root layout error boundary with Sentry capture
+     ```typescript
+     'use client';
+     import * as Sentry from '@sentry/nextjs';
+     import { useEffect } from 'react';
+     export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void; }): React.ReactElement {
+       useEffect(() => { Sentry.captureException(error); }, [error]);
+       return (
+         <html lang="en"><body>
+           <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'system-ui' }}>
+             <h1>Something went wrong</h1>
+             <p>An unexpected error occurred. This has been reported automatically.</p>
+             <button type="button" onClick={reset} style={{ marginTop: '1rem', padding: '0.5rem 1rem' }}>Try Again</button>
+           </div>
+         </body></html>
+       );
+     }
+     ```
+
+   - **`apps/web/next.config.ts`** — Wrapped with `withSentryConfig()`
+     ```typescript
+     import { withSentryConfig } from '@sentry/nextjs';
+     import type { NextConfig } from 'next';
+     const nextConfig: NextConfig = { /* existing config unchanged */ };
+     export default withSentryConfig(nextConfig, {
+       org: process.env.SENTRY_ORG,
+       project: process.env.SENTRY_PROJECT,
+       authToken: process.env.SENTRY_AUTH_TOKEN,
+       silent: !process.env.CI,
+       sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+       tunnelRoute: '/monitoring',
+       widenClientFileUpload: true,
+       bundleSizeOptimizations: { excludeDebugStatements: true },
+     });
+     ```
+
+   - **`apps/web/src/app/error.tsx`** — Replaced `console.error` with `Sentry.captureException(error)`. Added `import * as Sentry from '@sentry/nextjs'`.
+
+   - **`apps/web/src/env.ts`** — Added optional Sentry env vars: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`
+
+   - **`.env.example`** — Added Sentry section with placeholder values
+
+   - **`knip.json`** — Added `"sentry.*.config.ts"` to `apps/*` entry points
+
+   - **`.github/ISSUE_TEMPLATE/config.yml`** — Enables blank issues, adds Discord and docs contact links
+
+   - **`.REDACTED.yml`** — Form-based template with fields: Sentry URL, error title, stack trace, affected route, release, frequency, affected users. Auto-applies `auto-fix` + `production-error` labels.
+
+   - **`.github/workflows/claude-auto-fix.yml`** — Triggers on `auto-fix` label or workflow_dispatch. Has loop prevention (2 attempts max), adds `claude-working` label, posts `@claude` comment referencing `.claude/pipelines/auto-fix.md`.
+
+   - **`.claude/pipelines/auto-fix.md`** — Full pipeline spec: analysis steps, fix constraints (allowed: null checks, error handling, etc; prohibited: schema changes, new deps, auth changes), scope limits (max 5 files), validation checklist, PR template, label management, error handling/escalation.
+
+   - **`docs/auto-fix-pipeline.md`** — End-to-end flow documentation, setup requirements, manual triggering, troubleshooting
+
+   - **`docs/sentry-setup.md`** — Sentry/Better Stack setup guide, env vars, alert rules
+
+   - **`apps/web/src/app/api/tools/trending/route.ts`** — **Currently being modified with an intentional bug for testing.** The current state has a bug that was rejected by pre-commit hooks (unused variable `_hasPackageFields`).
+
+4. Errors and Fixes:
+   - **lefthook pre-push.old conflict**: `pnpm install` failed because `.git/hooks/pre-push.old` already existed. Fixed by `rm -f .git/hooks/pre-push.old`.
+   - **`disableSourceMapUpload` not in SentryBuildOptions**: Read the actual type definition file and found the correct option is `sourcemaps: { disable: boolean }`.
+   - **Deprecation warnings for `disableLogger` and `automaticVercelMonitors`**: Changed to `bundleSizeOptimizations: { excludeDebugStatements: true }` and removed `automaticVercelMonitors`.
+   - **Vercel project link stale**: `.vercel/project.json` had old project ID. Fixed with `vercel link --yes` which relinked to `thomasdavis-projects/tpmjs`.
+   - **NEXT_PUBLIC_SENTRY_DSN not inlined at build time**: First deploy had env vars set after the build. Pushed empty commit to trigger redeploy. Still didn't work because...
+   - **DSN not in client bundle even after redeploy**: `NEXT_PUBLIC_*` env vars aren't replaced in files outside `src/` during Turbopack builds. Fixed by hardcoding the DSN directly in all three sentry config files.
+   - **sentry.client.config.ts not loaded by Turbopack**: The file is only auto-loaded via webpack entry modification. Turbopack requires `instrumentation-client.ts`. Created `apps/web/src/instrumentation-client.ts` with the Sentry init code. This fixed the issue — confirmed 6 POST requests to Better Stack all returning 200.
+   - **TypeScript caught null reference in bug introduction**: `fields.split(',')` where `fields` is `string | null`. Added `as string` cast to suppress the type error.
+   - **Unused variable `_hasPackageFields` build error (CURRENT)**: The pre-commit hook runs the full build which treats unused variables as errors. The intentional bug code declares `_hasPackageFields` but never uses it.
+
+5. Problem Solving:
+   - Successfully set up Sentry error monitoring via Better Stack on a Next.js 16 Turbopack project — required discovering that `sentry.client.config.ts` doesn't work with Turbopack and `instrumentation-client.ts` is needed instead.
+   - Confirmed errors flow to Better Stack (6 POST requests, all 200).
+   - Currently working on introducing a deliberate, realistic bug for end-to-end auto-fix pipeline testing.
+
+6. All User Messages:
+   - "Implement the following plan: [detailed plan for Autonomous Production Error Remediation Loop]"
+   - "sentry asked me to post this i suppose it contains my keys Integrate Better Stack Error tracking using the Sentry SDK for Next.js, using the following DSN: https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722. If Sentry SDK is already present sending data to a different destination, please replace the current implementation with this one. put those keys everywhere they need to be and use vercel cli to push em to prod"
+   - "can you trigger an error and is all committed and deployed etc"
+   - "i can see them in sentry. can you create an error that can be fixed, trigger it, and then make sure the github action actually gets claude code to fix it and deploy all automatically"
+
+7. Pending Tasks:
+   - Fix the intentional bug code so it passes the pre-commit hook (unused variable issue)
+   - Commit and push the buggy code to production
+   - Wait for deploy, then trigger the error (curl the trending endpoint)
+   - Create a GitHub issue using the sentry-auto-fix template with the error details
+   - Apply the `auto-fix` label to trigger the Claude auto-fix workflow
+   - Monitor the workflow to verify Claude fixes the bug and creates a PR
+   - Verify the fix gets deployed
+
+8. Current Work:
+   Attempting to introduce a deliberate null-reference bug in `apps/web/src/app/api/tools/trending/route.ts` for end-to-end testing of the auto-fix pipeline. The bug is `fields.split(',')` where `fields` is the result of `searchParams.get('fields') as string` (which is null when the param isn't provided). The current code:
+   ```typescript
+   // Parse comma-separated fields for response shaping
+   const { searchParams } = new URL(request.url);
+   const fields = searchParams.get('fields') as string;
+   const fieldList = fields.split(',');
+   const _hasPackageFields = fieldList.some((f) => f.startsWith('package.'));
+   ```
+   The last commit attempt failed because `_hasPackageFields` is declared but never read, which the Next.js build treats as an error (strict unused variable checking).
+
+9. Optional Next Step:
+   Fix the unused variable issue in the bug code — either use `_hasPackageFields` somewhere in the response, or remove it and keep only `fields.split(',')` as the crashing line (e.g., assign to a variable that IS used, or use a void expression). Then commit with `--no-verify` would be ideal but the user hasn't authorized skipping hooks, so need to make the code pass type-check while still containing the runtime null-reference bug. The user's exact request was: "can you create an error that can be fixed, trigger it, and then make sure the github action actually gets claude code to fix it and deploy all automatically"
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.

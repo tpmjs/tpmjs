@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "f554e80aa870",
+  "session_id": "1e3d6988-e6c2-4e7b-92a5-47e46e390af3",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-11T19:39:20.790665Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/claude-auto-fix.yml",
+    "apps/web/src/app/api/tools/trending/route.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "e0faeba0-701f-415d-9dba-b2119a3b2dae",
+  "checkpoint_transcript_start": 2073,
+  "transcript_lines_at_start": 2073,
+  "token_usage": {
+    "input_tokens": 104,
+    "cache_creation_tokens": 110673,
+    "cache_read_tokens": 8280187,
+    "output_tokens": 10200,
+    "api_call_count": 96
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-11T19:39:20.3044Z",
+    "agent_lines": 44,
+    "human_added": 193,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 238,
+    "agent_percentage": 18.487394957983195
+  }
+}
