@@ -25,6 +25,10 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(
   ({ className, icon, size = 'md', ...props }, ref) => {
     const iconData = icons[icon];
 
+    if (!iconData) {
+      return null;
+    }
+
     return (
       <svg
         ref={ref}
