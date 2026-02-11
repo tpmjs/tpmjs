@@ -11,11 +11,15 @@ on:
         type: number
 
 jobs:
-  trigger-claude:
+  auto-fix:
     if: github.repository_owner == 'tpmjs' && (github.event.label.name == 'auto-fix' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     permissions:
+      contents: write
+      pull-requests: write
       issues: write
+      id-token: write
+      actions: read
 
     steps:
       - name: Check for retry loop
@@ -77,8 +81,9 @@ jobs:
               labels: ['claude-working']
             });
 
-      - name: Comment to trigger Claude
+      - name: Build prompt from issue
         if: steps.loop-check.outputs.should_continue == 'true'
+        id: build-prompt
         uses: actions/github-script@v7
         with:
           script: |
@@ -89,8 +94,8 @@ jobs:
               issue_number: issueNumber
             });
 
-            const lines = [
-              '@claude Please fix this production error.',
+            const prompt = [
+              'Please fix this production error.',
               '',
               '## Instructions',
               '1. Read the pipeline specification at `.claude/pipelines/auto-fix.md`',
@@ -103,12 +108,29 @@ jobs:
               `- Author: @${issue.user.login}`,
               `- Labels: ${issue.labels.map(l => l.name).join(', ')}`,
               '',
+              '## Issue Body',
+              issue.body,
+              '',
               'Begin analysis and fix.'
-            ];
+            ].join('\n');
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber,
-              body: lines.join('\n')
-            });
+            core.setOutput('prompt', prompt);
+
+      - name: Checkout repository
+        if: steps.loop-check.outputs.should_continue == 'true'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code
+        if: steps.loop-check.outputs.should_continue == 'true'
+        uses: anthropics/claude-code-action@v1
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          additional_permissions: |
+            actions: read
+          prompt: ${{ steps.build-prompt.outputs.prompt }}
+          issue_number: ${{ github.event.issue.number || inputs.issue_number }}
