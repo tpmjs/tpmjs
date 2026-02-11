@@ -133,4 +133,4 @@ jobs:
           additional_permissions: |
             actions: read
           prompt: ${{ steps.build-prompt.outputs.prompt }}
-          issue_number: ${{ github.event.issue.number || inputs.issue_number }}
+          claude_args: '--allowedTools "Bash(gh:*)" "Bash(npm:*)" "Bash(pnpm:*)" "Bash(git:*)" "Bash(npx:*)"'
