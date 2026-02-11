@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "21b8615bd5ce",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/hooks/post-commit-discord.sh",
+    ".claude/settings.json",
+    "apps/web/src/app/(profile)/[username]/agents/[uid]/page.tsx",
+    "apps/web/src/app/(profile)/[username]/collections/[slug]/CollectionDetailClient.tsx",
+    "apps/web/src/app/(profile)/[username]/collections/[slug]/page.tsx",
+    "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/route.ts",
+    "apps/web/src/app/api/bridge/route.ts",
+    "apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/collections/[id]/route.ts",
+    "apps/web/src/app/api/public/users/[username]/agents/[uid]/route.ts",
+    "apps/web/src/app/api/sync/execution-rollup/route.ts",
+    "apps/web/src/app/api/user/activity-dashboard/route.ts",
+    "apps/web/src/app/api/user/activity/route.ts",
+    "apps/web/src/app/api/user/tpmjs-api-keys/[id]/route.ts",
+    "apps/web/src/app/api/user/tpmjs-api-keys/route.ts",
+    "apps/web/src/app/dashboard/activity/page.tsx",
+    "apps/web/src/app/tool/[...slug]/ToolDetailClient.tsx",
+    "apps/web/src/app/tool/[...slug]/page.tsx",
+    "apps/web/src/components/dashboard/DashboardLayout.tsx",
+    "apps/web/src/lib/activity.ts",
+    "apps/web/src/lib/mcp/handlers.ts",
+    "packages/db/prisma/schema.prisma",
+    "packages/db/scripts/backfill-execution-counts.ts",
+    "packages/ui/src/Icon/Icon.tsx",
+    "packages/ui/src/Icon/icons.ts",
+    "vercel.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/21/b8615bd5ce/0/metadata.json",
+      "transcript": "/21/b8615bd5ce/0/full.jsonl",
+      "context": "/21/b8615bd5ce/0/context.md",
+      "content_hash": "/21/b8615bd5ce/0/content_hash.txt",
+      "prompt": "/21/b8615bd5ce/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1778,
+    "cache_creation_tokens": 386462,
+    "cache_read_tokens": 29618558,
+    "output_tokens": 36031,
+    "api_call_count": 272
+  }
+}
