@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "31b0bb2d156b",
+  "session_id": "95583c67-e96f-4380-a79c-1b7c637d7939",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-11T00:32:31.640394Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/mcp/[username]/[slug]/[transport]/route.ts",
+    "apps/web/src/app/api/memories/[id]/route.ts",
+    "apps/web/src/app/api/memories/route.ts",
+    "apps/web/src/app/api/memories/search/route.ts",
+    "apps/web/src/app/dashboard/memories/page.tsx",
+    "apps/web/src/components/dashboard/DashboardLayout.tsx",
+    "apps/web/src/lib/ai/memory-embedding.ts",
+    "apps/web/src/lib/api-keys/index.ts",
+    "apps/web/src/lib/mcp/handlers.ts",
+    "packages/db/prisma/schema.prisma",
+    "packages/tools/official/blocks.yml",
+    "packages/tools/official/memory/README.md",
+    "packages/tools/official/memory/block.ts",
+    "packages/tools/official/memory/index.ts",
+    "packages/tools/official/memory/package.json",
+    "packages/tools/official/memory/src/index.ts",
+    "packages/tools/official/memory/tsconfig.json",
+    "packages/tools/official/memory/tsup.config.ts",
+    "packages/ui/src/Icon/icons.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "53a56da1-76f1-4aad-8d3a-2a890d79eb4b",
+  "token_usage": {
+    "input_tokens": 428,
+    "cache_creation_tokens": 432633,
+    "cache_read_tokens": 33303920,
+    "output_tokens": 43203,
+    "api_call_count": 312
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-11T00:32:29.872198Z",
+    "agent_lines": 0,
+    "human_added": 38,
+    "human_modified": 6,
+    "human_removed": 0,
+    "total_committed": 38,
+    "agent_percentage": 0
+  }
+}

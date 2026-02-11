@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "31b0bb2d156b",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/mcp/[username]/[slug]/[transport]/route.ts",
+    "apps/web/src/app/api/memories/[id]/route.ts",
+    "apps/web/src/app/api/memories/route.ts",
+    "apps/web/src/app/api/memories/search/route.ts",
+    "apps/web/src/app/dashboard/memories/page.tsx",
+    "apps/web/src/components/dashboard/DashboardLayout.tsx",
+    "apps/web/src/lib/ai/memory-embedding.ts",
+    "apps/web/src/lib/api-keys/index.ts",
+    "apps/web/src/lib/mcp/handlers.ts",
+    "packages/db/prisma/schema.prisma",
+    "packages/tools/official/blocks.yml",
+    "packages/tools/official/memory/README.md",
+    "packages/tools/official/memory/block.ts",
+    "packages/tools/official/memory/index.ts",
+    "packages/tools/official/memory/package.json",
+    "packages/tools/official/memory/src/index.ts",
+    "packages/tools/official/memory/tsconfig.json",
+    "packages/tools/official/memory/tsup.config.ts",
+    "packages/ui/src/Icon/icons.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/31/b0bb2d156b/0/metadata.json",
+      "transcript": "/31/b0bb2d156b/0/full.jsonl",
+      "context": "/31/b0bb2d156b/0/context.md",
+      "content_hash": "/31/b0bb2d156b/0/content_hash.txt",
+      "prompt": "/31/b0bb2d156b/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 428,
+    "cache_creation_tokens": 432633,
+    "cache_read_tokens": 33303920,
+    "output_tokens": 43203,
+    "api_call_count": 312
+  }
+}
