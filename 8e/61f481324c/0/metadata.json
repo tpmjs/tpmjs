@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "8e61f481324c",
+  "session_id": "1e3d6988-e6c2-4e7b-92a5-47e46e390af3",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-11T23:06:58.867095Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".claude/pipelines/auto-fix.md",
+    ".env.example",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/sentry-auto-fix.yml",
+    ".github/workflows/claude-auto-fix.yml",
+    "apps/web/next.config.ts",
+    "apps/web/sentry.client.config.ts",
+    "apps/web/sentry.edge.config.ts",
+    "apps/web/sentry.server.config.ts",
+    "apps/web/src/app/api/sentry/webhook/route.ts",
+    "apps/web/src/app/api/tools/trending/route.ts",
+    "apps/web/src/app/error.tsx",
+    "apps/web/src/app/global-error.tsx",
+    "apps/web/src/env.ts",
+    "apps/web/src/instrumentation-client.ts",
+    "apps/web/src/instrumentation.ts",
+    "docs/auto-fix-pipeline.md",
+    "docs/sentry-setup.md",
+    "knip.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "0beadd79-1c79-4b5d-8dbc-a65abeb98bb0",
+  "checkpoint_transcript_start": 6706,
+  "transcript_lines_at_start": 6706,
+  "token_usage": {
+    "input_tokens": 32,
+    "cache_creation_tokens": 28600,
+    "cache_read_tokens": 2551503,
+    "output_tokens": 5253,
+    "api_call_count": 22
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-11T23:06:55.524434Z",
+    "agent_lines": 0,
+    "human_added": 105,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 105,
+    "agent_percentage": 0
+  }
+}
