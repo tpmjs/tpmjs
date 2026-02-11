@@ -36,8 +36,14 @@ interface ApiResponse<T = unknown> {
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse>> {
   const requestId = crypto.randomUUID();
 
-  // Parse comma-separated fields for response shaping
   const { searchParams } = new URL(request.url);
+
+  // Test error trigger for monitoring pipeline validation
+  if (searchParams.get('test_error') === 'true') {
+    throw new Error('Test error: monitoring pipeline validation');
+  }
+
+  // Parse comma-separated fields for response shaping
   const fields = searchParams.get('fields');
   const fieldList = fields ? fields.split(',') : [];
   const requestedFieldCount = fieldList.length;
