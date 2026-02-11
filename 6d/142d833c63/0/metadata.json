@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "6d142d833c63",
+  "session_id": "95583c67-e96f-4380-a79c-1b7c637d7939",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-11T01:06:53.276582Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "CLAUDE.md",
+    "apps/web/src/lib/mcp/tool-converter.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "af773f11-a18f-470b-b580-1567f6f5d3b8",
+  "token_usage": {
+    "input_tokens": 1486,
+    "cache_creation_tokens": 656811,
+    "cache_read_tokens": 36965965,
+    "output_tokens": 48930,
+    "api_call_count": 344
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-11T01:06:51.39576Z",
+    "agent_lines": 11,
+    "human_added": 6,
+    "human_modified": 4,
+    "human_removed": 0,
+    "total_committed": 21,
+    "agent_percentage": 52.38095238095239
+  }
+}
