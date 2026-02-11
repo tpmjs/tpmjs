@@ -21,4 +21,11 @@ export const env = createEnv({
   DISCORD_SUMMARY_AGENT_ID: z.string().optional(), // Agent ID for Discord summary cron
   DISCORD_GUILD_ID: z.string().optional(), // Discord server ID to summarize
   DISCORD_SUMMARY_CHANNEL_ID: z.string().optional(), // Channel to post summaries to
+
+  // Sentry
+  SENTRY_DSN: z.string().url().optional(), // Sentry DSN for server-side error reporting
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(), // Sentry DSN for client-side error reporting
+  SENTRY_ORG: z.string().optional(), // Sentry organization slug
+  SENTRY_PROJECT: z.string().optional(), // Sentry project slug
+  SENTRY_AUTH_TOKEN: z.string().optional(), // Sentry auth token for source map uploads
 });

@@ -1,5 +1,6 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
@@ -14,8 +15,7 @@ export default function ErrorPage({
   reset: () => void;
 }): React.ReactElement {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Error boundary caught:', error);
+    Sentry.captureException(error);
   }, [error]);
 
   return (

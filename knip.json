@@ -23,7 +23,8 @@
         "pages/**/*.ts",
         "pages/**/*.tsx",
         "src/**/*.ts",
-        "src/**/*.tsx"
+        "src/**/*.tsx",
+        "sentry.*.config.ts"
       ],
       "project": ["**/*.ts", "**/*.tsx"]
     },

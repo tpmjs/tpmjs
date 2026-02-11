@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discord
+    url: https://discord.gg/tpmjs
+    about: Chat with the community on Discord
+  - name: Documentation
+    url: https://tpmjs.com/how-it-works
+    about: Read the documentation
