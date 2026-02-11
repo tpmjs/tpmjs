@@ -1,0 +1,116 @@
+Implement the following plan:
+
+# Plan: Autonomous Production Error Remediation Loop
+
+## Context
+
+TPMJS has no production error monitoring. The existing `error.tsx` only calls `console.error`, meaning production errors are invisible. This plan adds Sentry for error capture, wires it into GitHub Issues via Sentry's GitHub integration, and creates a Claude Code auto-fix pipeline that autonomously generates PRs for production errors.
+
+## Implementation Order
+
+### 1. Install & Configure Sentry (`@sentry/nextjs`)
+
+**Install dependency:**
+```bash
+pnpm --filter=@tpmjs/web add @sentry/nextjs
+```
+
+**New files:**
+- `apps/web/sentry.client.config.ts` — Client-side Sentry init (DSN, 10% trace sampling, replay on errors only, release = `VERCEL_GIT_COMMIT_SHA`)
+- `apps/web/sentry.server.config.ts` — Server-side init (DSN, 10% traces, release tracking)
+- `apps/web/sentry.edge.config.ts` — Edge runtime init (5% traces for high-volume middleware)
+- `apps/web/src/instrumentation.ts` — Next.js instrumentation hook, dynamically imports server/edge configs, exports `onRequestError = Sentry.captureRequestError`
+- `apps/web/src/app/global-error.tsx` — Root layout error boundary with `Sentry.captureException`
+
+**Modified files:**
+- `apps/web/next.config.ts` — Wrap with `withSentryConfig()` for source map upload, add `tunnelRoute: '/monitoring'` to bypass ad-blockers
+- `apps/web/src/app/error.tsx` — Replace `console.error` with `Sentry.captureException(error)`
+- `apps/web/src/env.ts` — Add optional Sentry env var schemas (SENTRY_DSN, NEXT_PUBLIC_SENTRY_DSN, SENTRY_ORG, SENTRY_PROJECT, SENTRY_AUTH_TOKEN)
+- `.env.example` — Add Sentry section documenting all vars
+- `knip.json` — Add `sentry.*.config.ts` to `apps/*` entry points so knip doesn't flag them as dead code
+
+**Key decisions:**
+- All Sentry vars are optional (zod `.optional()`) so dev/CI builds work without them
+- `withSentryConfig` skips source map upload when `SENTRY_AUTH_TOKEN` is missing
+- Production-only: `enabled: process.env.NODE_ENV === 'production'`
+- `tunnelRoute: '/monitoring'` proxies events through our domain
+
+### 2. GitHub Issue Template
+
+**New files:**
+- `.github/ISSUE_TEMPLATE/config.yml` — Enable blank issues, add contact links
+- `.REDACTED.yml` — YAML form-based template with fields: Sentry URL, error title, stack trace, affected route, release, frequency, affected users. Auto-applies `auto-fix` + `production-error` labels.
+
+### 3. Auto-Fix Pipeline Specification
+
+**New file:** `.claude/pipelines/auto-fix.md`
+
+Following the pattern established by `.claude/pipelines/tool-request.md`:
+- Analysis steps (parse issue, locate files, check git history, identify root cause)
+- Fix constraints (allowed: bug fixes, null checks, error handling; prohibited: schema changes, new deps, auth changes, deployment config)
+- Scope limits (max 5 files, surgical changes only)
+- Validation checklist (type-check, lint, build, test, format)
+- PR template (root cause, fix explanation, validation checklist, Sentry reference)
+- Label management (`auto-fix` → `claude-working` → `fix-submitted` or `needs-human-review`)
+- Error handling (escalation paths for each failure mode)
+
+### 4. Claude Auto-Fix Workflow
+
+**New file:** `.github/workflows/claude-auto-fix.yml`
+
+Follows the exact pattern of `tool-request.yml`:
+- Triggers on `issues.labeled` with `auto-fix` label
+- **Loop prevention**: Counts `auto-fix` label events in issue timeline; after 2+ attempts, removes `auto-fix`, adds `needs-human-review`, posts explanation comment
+- Adds `claude-working` label
+- Posts structured `@claude` comment referencing `.claude/pipelines/auto-fix.md`
+- The existing `claude-label-trigger` job in `claude.yml` handles the actual Claude invocation (no changes to `claude.yml` needed)
+- Includes `workflow_dispatch` for manual triggering
+
+### 5. Documentation
+
+**New files:**
+- `docs/auto-fix-pipeline.md` — End-to-end pipeline docs (flow diagram, setup requirements, manual triggering, troubleshooting)
+- `docs/sentry-setup.md` — Manual Sentry configuration steps (project setup, DSN, GitHub integration, alert rules for new issues/regressions → GitHub issues with `auto-fix` label)
+
+## Files Summary
+
+| Action | File |
+|--------|------|
+| **Create** | `apps/web/sentry.client.config.ts` |
+| **Create** | `apps/web/sentry.server.config.ts` |
+| **Create** | `apps/web/sentry.edge.config.ts` |
+| **Create** | `apps/web/src/instrumentation.ts` |
+| **Create** | `apps/web/src/app/global-error.tsx` |
+| **Create** | `.github/ISSUE_TEMPLATE/config.yml` |
+| **Create** | `.REDACTED.yml` |
+| **Create** | `.github/workflows/claude-auto-fix.yml` |
+| **Create** | `.claude/pipelines/auto-fix.md` |
+| **Create** | `docs/auto-fix-pipeline.md` |
+| **Create** | `docs/sentry-setup.md` |
+| **Modify** | `apps/web/next.config.ts` |
+| **Modify** | `apps/web/src/app/error.tsx` |
+| **Modify** | `apps/web/src/env.ts` |
+| **Modify** | `.env.example` |
+| **Modify** | `knip.json` |
+| **Install** | `@sentry/nextjs` in `apps/web` |
+
+## Verification
+
+1. `pnpm --filter=@tpmjs/web build` succeeds without Sentry env vars (source maps skipped gracefully)
+2. `pnpm type-check` passes
+3. `pnpm lint` passes
+4. All new files are syntactically correct
+5. The auto-fix workflow YAML validates
+6. After setting Sentry env vars in Vercel, a test error in production should appear in Sentry with mapped source lines
+7. Applying `auto-fix` label to a test issue should trigger the Claude workflow chain
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+sentry asked me to post this i suppose it contains my keys Integrate Better Stack Error tracking using the Sentry SDK for Next.js, using the following DSN: https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722. If Sentry SDK is already present sending data to a different destination, please replace the current implementation with this one. put those keys everywhere they need to be and use vercel cli to push em to prod
+
+---
+
+can you trigger an error and is all committed and deployed etc
