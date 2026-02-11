@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "77973cd371a7",
+  "session_id": "1e3d6988-e6c2-4e7b-92a5-47e46e390af3",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-11T22:30:46.413108Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/sentry.client.config.ts",
+    "apps/web/sentry.edge.config.ts",
+    "apps/web/sentry.server.config.ts",
+    "apps/web/src/instrumentation-client.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "f8af3865-e151-47f7-a36b-a85ca2a65eec",
+  "checkpoint_transcript_start": 6496,
+  "transcript_lines_at_start": 6496,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 7442,
+    "cache_read_tokens": 1133467,
+    "output_tokens": 1784,
+    "api_call_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-11T22:30:45.396756Z",
+    "agent_lines": 0,
+    "human_added": 5,
+    "human_modified": 4,
+    "human_removed": 0,
+    "total_committed": 5,
+    "agent_percentage": 0
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "77973cd371a7",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/sentry.client.config.ts",
+    "apps/web/sentry.edge.config.ts",
+    "apps/web/sentry.server.config.ts",
+    "apps/web/src/instrumentation-client.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/77/973cd371a7/0/metadata.json",
+      "transcript": "/77/973cd371a7/0/full.jsonl",
+      "context": "/77/973cd371a7/0/context.md",
+      "content_hash": "/77/973cd371a7/0/content_hash.txt",
+      "prompt": "/77/973cd371a7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 7442,
+    "cache_read_tokens": 1133467,
+    "output_tokens": 1784,
+    "api_call_count": 11
+  }
+}
