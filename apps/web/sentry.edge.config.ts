@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/nextjs';
 
 Sentry.init({
-  dsn: 'https://JSTtH3BXAb9myCFMxX2kVsh9@s1729722.eu-fsn-3.betterstackdata.com/1729722',
+  dsn: 'https://0b61db9cf233f36811d7b33d17757251@o4510869662203904.ingest.us.sentry.io/4510869663055872',
   enabled: process.env.NODE_ENV === 'production',
 
   tracesSampleRate: 0.05,
