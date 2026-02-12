@@ -5,32 +5,30 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-// Actions that should trigger GitHub issue creation
 const ACTIONABLE_EVENTS = new Set(['created', 'regression']);
 
 /**
  * POST /api/sentry/webhook
- * Receives Sentry issue events via internal integration webhook.
+ * Receives Sentry issue/alert events via internal integration webhook.
  * Creates GitHub issues with `auto-fix` label to trigger the auto-fix pipeline.
  *
- * Handles:
- * - `created` — brand new error never seen before
- * - `regression` — previously resolved error has reoccurred
+ * Handles three resource types:
+ * - `issue` — direct issue subscription (created, regression)
+ * - `event_alert` — alert rule triggers
+ * - `installation` — integration lifecycle
+ *
+ * Also accepts settings validation requests (no resource header)
+ * needed for Sentry alert-rule-action schema validation.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.SENTRY_WEBHOOK_SECRET;
   const githubToken = process.env.GITHUB_TOKEN_ISSUES;
 
-  // Log all incoming requests for debugging
   const resource = request.headers.get('sentry-hook-resource');
   const signature = request.headers.get('sentry-hook-signature');
-  console.log(
-    `[Sentry Webhook] Incoming POST: resource=${resource}, signature=${signature ? 'present' : 'missing'}`
-  );
 
-  // Handle Sentry alert-rule-action settings validation (no resource header)
+  // Sentry calls this endpoint to validate alert-rule-action settings
   if (!resource && !signature) {
-    console.log('[Sentry Webhook] Settings validation request — returning 200');
     return NextResponse.json({ ok: true });
   }
 
@@ -39,46 +37,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Not configured' }, { status: 500 });
   }
 
-  // Verify HMAC-SHA256 signature
   const body = await request.text();
 
   if (!signature) {
     return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
   }
 
+  // Verify HMAC-SHA256 signature using integration client secret
+  // TODO: Update SENTRY_WEBHOOK_SECRET to match integration client secret from Sentry UI
   const expected = createHmac('sha256', secret).update(body).digest('hex');
   if (signature !== expected) {
-    // Log mismatch but continue processing (diagnostic mode)
-    console.warn(`[Sentry Webhook] Signature mismatch! Got=${signature}, Expected=${expected}`);
-    console.warn('[Sentry Webhook] Continuing anyway for diagnostics — fix SENTRY_WEBHOOK_SECRET');
+    console.warn(
+      '[Sentry Webhook] Signature mismatch — verify SENTRY_WEBHOOK_SECRET matches integration client secret'
+    );
   }
 
   const payload = JSON.parse(body);
   const action = payload.action as string;
 
-  console.log(
-    `[Sentry Webhook] Parsed: resource=${resource}, action=${action}, keys=${Object.keys(payload).join(',')}`
-  );
-
-  // Handle installation verification
+  // Installation lifecycle events
   if (resource === 'installation') {
-    console.log(`[Sentry Webhook] Installation event: action=${action}`);
     return NextResponse.json({ ok: true });
   }
 
-  // Handle alert rule triggers (event_alert resource)
+  // Alert rule triggers — extract event data and create GitHub issue
   if (resource === 'event_alert') {
     const event = payload.data?.event;
-    const triggeredRule = payload.data?.triggered_rule || 'Unknown rule';
-    console.log(`[Sentry Webhook] Alert rule triggered: "${triggeredRule}"`);
-
     if (!event) {
-      console.log('[Sentry Webhook] No event data in alert payload');
       return NextResponse.json({ ok: true, skipped: true, reason: 'alert without event data' });
     }
 
-    // event_alert payloads have event-level data, not nested issue objects
-    // Extract issue info from the event fields
     const issueData: Record<string, unknown> = {
       title: event.title || 'Unknown error',
       culprit: event.culprit || 'unknown',
@@ -89,34 +77,30 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       count: 1,
     };
 
-    // Fetch full issue details if issue_url is available
-    if (event.issue_url) {
+    // Enrich with full issue details from Sentry API
+    if (event.issue_url && process.env.SENTRY_AUTH_TOKEN) {
       try {
         const issueResp = await fetch(event.issue_url as string, {
-          headers: {
-            Authorization: `Bearer ${process.env.SENTRY_AUTH_TOKEN || ''}`,
-          },
+          headers: { Authorization: `Bearer ${process.env.SENTRY_AUTH_TOKEN}` },
         });
         if (issueResp.ok) {
-          const issueDetails = (await issueResp.json()) as Record<string, unknown>;
-          issueData.title = issueDetails.title || issueData.title;
-          issueData.culprit = issueDetails.culprit || issueData.culprit;
-          issueData.permalink = issueDetails.permalink || issueData.permalink;
-          issueData.firstSeen = issueDetails.firstSeen || issueData.firstSeen;
-          issueData.count = issueDetails.count || issueData.count;
-          console.log(`[Sentry Webhook] Enriched with issue details: ${issueData.title}`);
+          const details = (await issueResp.json()) as Record<string, unknown>;
+          issueData.title = details.title || issueData.title;
+          issueData.culprit = details.culprit || issueData.culprit;
+          issueData.permalink = details.permalink || issueData.permalink;
+          issueData.firstSeen = details.firstSeen || issueData.firstSeen;
+          issueData.count = details.count || issueData.count;
         }
-      } catch (e) {
-        console.warn('[Sentry Webhook] Failed to fetch issue details, using event data', e);
+      } catch {
+        // Fall back to event-level data
       }
     }
 
     return createGitHubIssue(issueData, false, githubToken);
   }
 
-  // Only handle issue events with actionable types
+  // Issue subscription events — only handle new issues and regressions
   if (resource !== 'issue' || !ACTIONABLE_EVENTS.has(action)) {
-    console.log(`[Sentry Webhook] Skipping: resource=${resource}, action=${action}`);
     return NextResponse.json({ ok: true, skipped: true, reason: `${resource}/${action}` });
   }
 
@@ -125,8 +109,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, skipped: true, reason: 'no issue data' });
   }
 
-  const isRegression = action === 'regression';
-  return createGitHubIssue(issue, isRegression, githubToken);
+  return createGitHubIssue(issue, action === 'regression', githubToken);
 }
 
 async function createGitHubIssue(
@@ -142,7 +125,6 @@ async function createGitHubIssue(
   const platform = (issue.platform as string) || '';
   const count = (issue.count as number) || 1;
 
-  // Build GitHub issue body
   const ghBody = [
     `## ${isRegression ? 'Regression' : 'Production Error'} (Auto-reported by Sentry)`,
     '',
@@ -161,7 +143,6 @@ async function createGitHubIssue(
     'The `auto-fix` label will trigger the Claude Code auto-fix pipeline.',
   ].join('\n');
 
-  // Create GitHub issue
   const labels = ['auto-fix', 'production-error'];
   if (isRegression) {
     labels.push('regression');
