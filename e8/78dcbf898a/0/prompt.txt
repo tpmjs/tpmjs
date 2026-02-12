@@ -1,0 +1,59 @@
+Implement the following plan:
+
+# Test Plan: Sentry Auto-Fix Pipeline
+
+## Context
+
+The Sentry auto-fix pipeline (error → webhook → GitHub issue → Claude auto-fix → PR → Discord notification) is working end-to-end in production but has zero test coverage. We need unit tests for the webhook endpoint — the core logic with branching, signature verification, and external API calls.
+
+## What to Test
+
+**Webhook endpoint** (`apps/web/src/app/api/sentry/webhook/route.ts`):
+
+1. Settings validation requests (no resource/signature headers) → `{ ok: true }`
+2. Missing env vars → 500
+3. Missing signature header → 401
+4. Valid HMAC signature → passes verification
+5. Invalid HMAC signature → logs warning, still processes
+6. Issue `created` event → creates GitHub issue with `auto-fix` + `production-error` labels
+7. Issue `regression` event → adds `regression` label
+8. Non-actionable issue event (`resolved`) → skips
+9. Installation event → `{ ok: true }`
+10. `event_alert` with event data → creates GitHub issue from event fields
+11. `event_alert` with Sentry API enrichment → merges full issue details
+12. `event_alert` without event data → skips
+13. Issue event without issue data in payload → skips
+14. GitHub API failure → 500
+
+## Approach
+
+Single test file: `apps/web/src/app/api/sentry/webhook/route.test.ts`
+
+- Uses existing vitest config (`apps/web/vitest.config.mjs`, node env, globals)
+- Mock `global.fetch` to intercept GitHub and Sentry API calls
+- Helper to build `NextRequest` with headers + JSON body
+- Helper to compute HMAC-SHA256 signatures
+- Set/restore `process.env` per test
+
+## Files
+
+| Action | Path |
+|--------|------|
+| Create | `apps/web/src/app/api/sentry/webhook/route.test.ts` |
+
+## Verification
+
+```bash
+pnpm --filter=@tpmjs/web test -- src/app/api/sentry/webhook/route.test.ts
+```
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+set it up so we can track all frontend problemds too in sentry.io and autofix them
+
+---
+
+[Request interrupted by user for tool use]

@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "e878dcbf898a",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/sentry/webhook/route.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/e8/78dcbf898a/0/metadata.json",
+      "transcript": "/e8/78dcbf898a/0/full.jsonl",
+      "context": "/e8/78dcbf898a/0/context.md",
+      "content_hash": "/e8/78dcbf898a/0/content_hash.txt",
+      "prompt": "/e8/78dcbf898a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 17,
+    "cache_creation_tokens": 48727,
+    "cache_read_tokens": 640989,
+    "output_tokens": 5051,
+    "api_call_count": 14
+  }
+}
