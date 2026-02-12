@@ -6,13 +6,30 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 /**
+ * GET /api/sentry/webhook
+ * Health check — returns env var availability (not values).
+ */
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const auth = request.headers.get('authorization');
+  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return NextResponse.json({
+    hasWebhookSecret: !!process.env.SENTRY_WEBHOOK_SECRET,
+    hasGithubToken: !!process.env.GITHUB_TOKEN_ISSUES,
+    webhookSecretLength: process.env.SENTRY_WEBHOOK_SECRET?.length ?? 0,
+    githubTokenLength: process.env.GITHUB_TOKEN_ISSUES?.length ?? 0,
+  });
+}
+
+/**
  * POST /api/sentry/webhook
  * Receives Sentry issue events via internal integration webhook.
  * Creates GitHub issues with `auto-fix` label to trigger the auto-fix pipeline.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const secret = process.env.SENTRY_WEBHOOK_SECRET;
-  const githubToken = process.env.GITHUB_TOKEN_ISSUES;
+  const secret = process.env['SENTRY_WEBHOOK_SECRET'];
+  const githubToken = process.env['GITHUB_TOKEN_ISSUES'];
 
   if (!secret || !githubToken) {
     console.error('[Sentry Webhook] Missing SENTRY_WEBHOOK_SECRET or GITHUB_TOKEN_ISSUES');
