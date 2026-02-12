@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface UseCountUpOptions {
   /**
@@ -82,6 +82,8 @@ export function useCountUp(options: UseCountUpOptions): {
 
   const [count, setCount] = useState(startValue);
   const [isAnimating, setIsAnimating] = useState(false);
+  const hasStartedRef = useRef(false);
+  const isAnimatingRef = useRef(false);
 
   const animate = useCallback((): void => {
     const startTime = Date.now();
@@ -102,22 +104,27 @@ export function useCountUp(options: UseCountUpOptions): {
         requestAnimationFrame(updateCount);
       } else {
         setCount(Number(end.toFixed(decimals)));
+        isAnimatingRef.current = false;
         setIsAnimating(false);
       }
     };
 
+    isAnimatingRef.current = true;
     setIsAnimating(true);
     requestAnimationFrame(updateCount);
   }, [duration, end, startValue, easing, decimals]);
 
   const start = useCallback((): void => {
-    if (!isAnimating) {
+    if (!isAnimatingRef.current && !hasStartedRef.current) {
+      hasStartedRef.current = true;
       animate();
     }
-  }, [isAnimating, animate]);
+  }, [animate]);
 
   const reset = useCallback((): void => {
     setCount(startValue);
+    hasStartedRef.current = false;
+    isAnimatingRef.current = false;
     setIsAnimating(false);
   }, [startValue]);
 

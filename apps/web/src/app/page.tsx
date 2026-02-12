@@ -122,21 +122,70 @@ async function getHomePageData() {
       }),
     ]);
 
+    // Always query all-time avg execution time (snapshot only has daily value)
+    // If no snapshot, also query other live data as fallback
+    let ecosystemStats: {
+      publishedTools: number;
+      activeDevelopers: number;
+      totalExecutions: number;
+      avgResponseMs: number | null;
+      totalDownloads: number;
+    };
+
+    if (latestSnapshot) {
+      const avgExecTime = await prisma.simulation.aggregate({
+        where: { status: 'success', executionTimeMs: { not: null } },
+        _avg: { executionTimeMs: true },
+      });
+
+      ecosystemStats = {
+        publishedTools: latestSnapshot.totalTools,
+        activeDevelopers: latestSnapshot.activeDevs7d,
+        totalExecutions: latestSnapshot.totalSimulations,
+        avgResponseMs: avgExecTime._avg.executionTimeMs
+          ? Math.round(avgExecTime._avg.executionTimeMs)
+          : null,
+        totalDownloads: latestSnapshot.totalNpmDownloads,
+      };
+    } else {
+      // No snapshot — query live data directly
+      const [activeDevsResult, totalSimulations, avgExecTime, npmDownloads] = await Promise.all([
+        prisma.userActivity
+          .groupBy({
+            by: ['userId'],
+            where: {
+              createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+            },
+          })
+          .then((r) => r.length),
+        prisma.simulation.count(),
+        prisma.simulation.aggregate({
+          where: { status: 'success', executionTimeMs: { not: null } },
+          _avg: { executionTimeMs: true },
+        }),
+        prisma.package.aggregate({ _sum: { npmDownloadsLastMonth: true } }),
+      ]);
+
+      ecosystemStats = {
+        publishedTools: toolCount,
+        activeDevelopers: activeDevsResult,
+        totalExecutions: totalSimulations,
+        avgResponseMs: avgExecTime._avg.executionTimeMs
+          ? Math.round(avgExecTime._avg.executionTimeMs)
+          : null,
+        totalDownloads: npmDownloads._sum.npmDownloadsLastMonth ?? 0,
+      };
+    }
+
     return {
       stats: {
         packageCount,
         toolCount,
         categoryCount: categoryStats.length,
-        totalDownloads: latestSnapshot?.totalNpmDownloads ?? 0,
+        totalDownloads: latestSnapshot?.totalNpmDownloads ?? ecosystemStats.totalDownloads,
         totalStars: latestSnapshot?.totalGithubStars ?? 0,
       },
-      ecosystemStats: {
-        publishedTools: latestSnapshot?.totalTools ?? toolCount,
-        activeDevelopers: latestSnapshot?.activeDevs7d ?? 0,
-        totalExecutions: latestSnapshot?.totalSimulations ?? 0,
-        avgResponseMs: latestSnapshot?.executionsAvgTimeMs ?? null,
-        totalDownloads: latestSnapshot?.totalNpmDownloads ?? 0,
-      },
+      ecosystemStats,
       featuredTools,
       categories: categoryStats.slice(0, 5).map((c) => ({
         name: c.category,

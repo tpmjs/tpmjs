@@ -36,10 +36,11 @@ export function EcosystemStats({ stats }: EcosystemStatsProps): React.ReactEleme
       suffix: '',
     },
     {
-      value: stats.avgResponseMs ?? 0,
+      value: stats.avgResponseMs ? Math.round(stats.avgResponseMs / 100) / 10 : 0,
       label: 'Avg Response',
       subtext: 'Execution latency',
-      suffix: 'ms',
+      suffix: 's',
+      decimals: 1,
     },
   ];
 
@@ -63,6 +64,7 @@ export function EcosystemStats({ stats }: EcosystemStatsProps): React.ReactEleme
                 label={stat.label}
                 subtext={stat.subtext}
                 suffix={stat.suffix}
+                decimals={stat.decimals}
                 variant="brutalist"
                 size="md"
                 showBar={true}

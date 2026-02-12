@@ -58,6 +58,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
       size = 'md',
       showBar = false,
       barProgress = 80,
+      decimals = 0,
       ...props
     },
     ref
@@ -97,6 +98,7 @@ export const StatCard = forwardRef<HTMLDivElement, StatCardProps>(
             prefix={prefix}
             suffix={suffix}
             separator={separator}
+            decimals={decimals}
             duration={2000}
             startOn="viewport"
             easing="easeOutExpo"

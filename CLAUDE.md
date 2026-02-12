@@ -126,13 +126,38 @@ cd packages/db && npx tsx scripts/my-script.ts
 
 ### Manual Cron Triggers
 
+All cron endpoints require `Authorization: Bearer <CRON_SECRET>`. The `CRON_SECRET` value lives in `.env.local` at the repo root (and `apps/web/.env.local`). Source it before running:
+
 ```bash
-curl -X POST https://tpmjs.com/api/sync/changes -H "Authorization: Bearer $CRON_SECRET"
-curl -X POST https://tpmjs.com/api/sync/keyword -H "Authorization: Bearer $CRON_SECRET"
-curl -X POST https://tpmjs.com/api/sync/metrics -H "Authorization: Bearer $CRON_SECRET"
-curl -X POST https://tpmjs.com/api/sync/view-rollup -H "Authorization: Bearer $CRON_SECRET"
-curl -X POST https://tpmjs.com/api/sync/stats-snapshot -H "Authorization: Bearer $CRON_SECRET"
+source .env.local
 ```
+
+**Sync endpoints** (discovery, enrichment, metrics):
+```bash
+curl -X POST https://tpmjs.com/api/sync/changes -H "Authorization: Bearer $CRON_SECRET"          # NPM changes feed (every 4h)
+curl -X POST https://tpmjs.com/api/sync/keyword -H "Authorization: Bearer $CRON_SECRET"          # NPM keyword search (every 6h)
+curl -X POST https://tpmjs.com/api/sync/enrich -H "Authorization: Bearer $CRON_SECRET"           # Schema extraction + health (every 2min)
+curl -X POST https://tpmjs.com/api/sync/metrics -H "Authorization: Bearer $CRON_SECRET"          # Download stats + quality scores (daily)
+curl -X POST https://tpmjs.com/api/sync/health-check -H "Authorization: Bearer $CRON_SECRET"     # Full health check for all tools (daily 2am UTC)
+curl -X POST https://tpmjs.com/api/sync/package -H "Authorization: Bearer $CRON_SECRET" \
+  -H "Content-Type: application/json" -d '{"packageName":"some-package"}'                         # Sync a specific package
+```
+
+**Rollup / snapshot endpoints** (aggregation):
+```bash
+curl -X POST https://tpmjs.com/api/sync/stats-snapshot -H "Authorization: Bearer $CRON_SECRET"   # Daily stats snapshot (homepage depends on this)
+curl -X POST https://tpmjs.com/api/sync/view-rollup -H "Authorization: Bearer $CRON_SECRET"      # Roll up page views (daily 0:30 UTC)
+curl -X POST https://tpmjs.com/api/sync/execution-rollup -H "Authorization: Bearer $CRON_SECRET" # Roll up executions (daily 1am UTC)
+curl -X POST https://tpmjs.com/api/sync/cleanup-activity -H "Authorization: Bearer $CRON_SECRET"  # Delete old activity >90d (daily 3am UTC)
+```
+
+**Other cron endpoints**:
+```bash
+curl -X POST https://tpmjs.com/api/cron/discord-summary -H "Authorization: Bearer $CRON_SECRET"  # Discord daily summary (daily 9am UTC)
+curl -X POST https://tpmjs.com/api/cron/use-cases -H "Authorization: Bearer $CRON_SECRET"        # Generate use cases (daily)
+```
+
+Cron schedules are defined in `vercel.json` at the repo root.
 
 ## Discord
 

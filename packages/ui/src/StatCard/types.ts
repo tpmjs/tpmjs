@@ -61,6 +61,12 @@ export interface StatCardProps extends HTMLAttributes<HTMLDivElement> {
    * @default 80
    */
   barProgress?: number;
+
+  /**
+   * Number of decimal places for the animated counter
+   * @default 0
+   */
+  decimals?: number;
 }
 
 /**
