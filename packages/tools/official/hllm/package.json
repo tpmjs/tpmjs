@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-hllm",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "HLLM API client tools for AI agents. Manage topologies, sessions, prompts, files, and more.",
   "type": "module",
   "keywords": [
@@ -198,6 +198,10 @@
       {
         "name": "deleteApiKey",
         "description": "Delete an existing API key from the account."
+      },
+      {
+        "name": "textToSpeech",
+        "description": "Convert text to speech using the configured TTS provider."
       }
     ]
   },

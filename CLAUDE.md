@@ -134,6 +134,15 @@ curl -X POST https://tpmjs.com/api/sync/view-rollup -H "Authorization: Bearer $C
 curl -X POST https://tpmjs.com/api/sync/stats-snapshot -H "Authorization: Bearer $CRON_SECRET"
 ```
 
+## Discord
+
+When using Discord MCP tools, default to the **blah** server (guild ID `1349727923434815519`) and **#tpmjs** channel (channel ID `1442666515425132644`) unless the user specifies otherwise.
+
+## Resend
+
+If sending an email via resend, send address should be admin@tpmjs.com 
+Send emails to thomasalwyndavis@gmail.com if not specified otherwise
+
 ## Publishing Packages
 
 ```bash

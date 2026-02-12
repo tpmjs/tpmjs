@@ -498,6 +498,10 @@ domain:
       fields: [id, name, keyHint, createdAt, lastUsedAt]
       description: "An HLLM API key"
 
+    hllm_tts_result:
+      fields: [audioUrl, duration, format, size]
+      description: "Result of text-to-speech conversion in HLLM"
+
     # -------------------------------------------------------------------------
     # Postmark email entities
     # -------------------------------------------------------------------------
@@ -7576,6 +7580,35 @@ blocks:
       - name: success
         type: boolean
         description: "Whether deletion was successful"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  hllm.textToSpeech:
+    type: utility
+    description: "Convert text to speech using the configured TTS provider."
+    path: "hllm"
+    domain_rules:
+      - id: api_integration
+        description: "Must call HLLM API POST /tts endpoint"
+    inputs:
+      - name: text
+        type: string
+        description: "The text to convert to speech"
+      - name: voice
+        type: string
+        optional: true
+        description: "Voice ID or name to use"
+      - name: speed
+        type: number
+        optional: true
+        description: "Speech speed multiplier (0.5-2.0)"
+      - name: format
+        type: string
+        optional: true
+        description: "Audio output format (mp3, wav, ogg)"
+    outputs:
+      - name: ttsResult
+        type: hllm_tts_result
+        description: "TTS conversion result with audio URL and metadata"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
 
   # ---------------------------------------------------------------------------

@@ -73,6 +73,19 @@
             "command": "entire hooks claude-code post-todo"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-commit-discord.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/hooks/post-commit-changeset.sh"
+          }
+        ]
       }
     ]
   },

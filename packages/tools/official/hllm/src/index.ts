@@ -27,6 +27,7 @@ export const TOPOLOGY_TYPES = [
   'rhetorical-triangle',
   'tree-of-thoughts',
   'react',
+  'karpathy-council',
 ] as const;
 
 export type TopologyType = (typeof TOPOLOGY_TYPES)[number];
@@ -1546,6 +1547,64 @@ export const deleteApiKey = tool({
 });
 
 // ============================================================================
+// Text-to-Speech
+// ============================================================================
+
+export interface TextToSpeechInput {
+  text: string;
+  voice?: string;
+  speed?: number;
+  format?: 'mp3' | 'wav' | 'ogg';
+}
+
+export interface TextToSpeechResult {
+  audioUrl: string;
+  duration: number;
+  format: string;
+  size: number;
+}
+
+/**
+ * Convert text to speech.
+ */
+export const textToSpeech = tool({
+  description: 'Convert text to speech using the configured TTS provider.',
+  inputSchema: jsonSchema<TextToSpeechInput>({
+    type: 'object',
+    properties: {
+      text: {
+        type: 'string',
+        description: 'The text to convert to speech.',
+      },
+      voice: {
+        type: 'string',
+        description: 'Voice ID or name to use for synthesis.',
+      },
+      speed: {
+        type: 'number',
+        description: 'Speech speed multiplier (0.5-2.0). Default: 1.0',
+      },
+      format: {
+        type: 'string',
+        enum: ['mp3', 'wav', 'ogg'],
+        description: 'Audio output format. Default: mp3',
+      },
+    },
+    required: ['text'],
+    additionalProperties: false,
+  }),
+  async execute(input: TextToSpeechInput): Promise<TextToSpeechResult> {
+    if (!input.text || input.text.trim().length === 0) {
+      throw new Error('text is required and must be non-empty');
+    }
+    if (input.speed !== undefined && (input.speed < 0.5 || input.speed > 2.0)) {
+      throw new Error('speed must be between 0.5 and 2.0');
+    }
+    return apiRequest<TextToSpeechResult>('POST', '/tts', input);
+  },
+});
+
+// ============================================================================
 // Default Export
 // ============================================================================
 
@@ -1603,4 +1662,6 @@ export default {
   listApiKeys,
   createApiKey,
   deleteApiKey,
+  // TTS
+  textToSpeech,
 };

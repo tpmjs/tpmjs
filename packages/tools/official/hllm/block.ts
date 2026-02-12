@@ -51,6 +51,8 @@ import {
   // Tools
   listTools,
   setEnvVar,
+  // TTS
+  textToSpeech,
   updatePrompt,
   updateSession,
   updateUserProfile,
@@ -116,6 +118,8 @@ export const block = {
     listApiKeys,
     createApiKey,
     deleteApiKey,
+    // TTS
+    textToSpeech,
   },
 };
 
