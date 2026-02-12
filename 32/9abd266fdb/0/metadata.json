@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "329abd266fdb",
+  "session_id": "f6312e90-c5a0-4f57-91e2-b814949f6f53",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-12T20:16:58.157083Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "vercel.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "c36f735b-936d-4fc8-91ed-b19ca946ab1c",
+  "checkpoint_transcript_start": 1350,
+  "transcript_lines_at_start": 1350,
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 4738,
+    "cache_read_tokens": 1174384,
+    "output_tokens": 1080,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-12T20:16:56.373373Z",
+    "agent_lines": 0,
+    "human_added": 183,
+    "human_modified": 76,
+    "human_removed": 0,
+    "total_committed": 183,
+    "agent_percentage": 0
+  }
+}
