@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "f5d559743408",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "apps/playground/tsconfig.json",
+    "apps/tutorial/tsconfig.json",
+    "apps/web/tsconfig.json",
+    "package.json",
+    "packages/config/tsconfig/base.json",
+    "turbo.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f5/d559743408/0/metadata.json",
+      "transcript": "/f5/d559743408/0/full.jsonl",
+      "context": "/f5/d559743408/0/context.md",
+      "content_hash": "/f5/d559743408/0/content_hash.txt",
+      "prompt": "/f5/d559743408/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10257,
+    "cache_creation_tokens": 257656,
+    "cache_read_tokens": 17236155,
+    "output_tokens": 27690,
+    "api_call_count": 161
+  }
+}

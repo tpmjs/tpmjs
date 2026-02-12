@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "f5d559743408",
+  "session_id": "cea5cd26-f116-41cb-9cae-eee40134248a",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-12T22:02:37.686138Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/ci.yml",
+    "apps/playground/tsconfig.json",
+    "apps/tutorial/tsconfig.json",
+    "apps/web/tsconfig.json",
+    "package.json",
+    "packages/config/tsconfig/base.json",
+    "turbo.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 10257,
+    "cache_creation_tokens": 257656,
+    "cache_read_tokens": 17236155,
+    "output_tokens": 27690,
+    "api_call_count": 161
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-12T22:02:35.576364Z",
+    "agent_lines": 18,
+    "human_added": 447,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 465,
+    "agent_percentage": 3.870967741935484
+  }
+}
