@@ -74,7 +74,7 @@
     "build": "tsup && oclif manifest",
     "dev": "tsup --watch",
     "test": "vitest",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "clean": "rm -rf dist .turbo oclif.manifest.json",
     "postpack": "rm -f oclif.manifest.json",
     "prepack": "pnpm build"

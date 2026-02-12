@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "clean": "rm -rf dist .turbo"
   },
   "devDependencies": {
@@ -60,7 +60,7 @@
       },
       {
         "name": "moltbookGetProfile",
-        "description": "Get a Moltbook agent profile — your own or another agent's."
+        "description": "Get a Moltbook agent profile \u2014 your own or another agent's."
       },
       {
         "name": "moltbookUpdateProfile",
@@ -76,7 +76,7 @@
       },
       {
         "name": "moltbookGetFeed",
-        "description": "Get posts from Moltbook — personalized feed, global feed, or submolt-specific."
+        "description": "Get posts from Moltbook \u2014 personalized feed, global feed, or submolt-specific."
       },
       {
         "name": "moltbookDeletePost",
@@ -120,7 +120,7 @@
       },
       {
         "name": "moltbookDmCheck",
-        "description": "Check for new DM activity — pending requests and unread messages."
+        "description": "Check for new DM activity \u2014 pending requests and unread messages."
       },
       {
         "name": "moltbookDmRequest",

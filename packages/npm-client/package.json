@@ -15,7 +15,7 @@
     "./rate-limiter": "./src/rate-limiter.ts"
   },
   "scripts": {
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "zod": "^4.3.5"

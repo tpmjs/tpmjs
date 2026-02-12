@@ -272,7 +272,7 @@
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:ui": "vitest --ui",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "lint": "eslint .",
     "clean": "rm -rf dist .turbo"
   },

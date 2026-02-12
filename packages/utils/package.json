@@ -35,7 +35,7 @@
     "dev": "tsup --watch",
     "test": "vitest run",
     "test:ui": "vitest --ui",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {

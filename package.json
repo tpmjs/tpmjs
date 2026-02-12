@@ -36,6 +36,8 @@
     "test": "turbo test",
     "test:ui": "turbo test:ui",
     "lint": "turbo lint",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
     "format": "biome format --write .",
     "format:check": "biome format .",
     "type-check": "turbo type-check",

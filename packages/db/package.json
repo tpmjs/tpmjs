@@ -13,7 +13,7 @@
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:backfill-usernames": "tsx prisma/backfill-usernames.ts",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo"
   },
   "dependencies": {
     "@prisma/client": "^6.19.1",

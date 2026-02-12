@@ -1,7 +1,7 @@
 {
   "name": "@tpmjs/tools-agentmail",
   "version": "0.1.0",
-  "description": "AgentMail API tools for AI agents — create inboxes, send/receive emails, manage threads, drafts, and more",
+  "description": "AgentMail API tools for AI agents \u2014 create inboxes, send/receive emails, manage threads, drafts, and more",
   "type": "module",
   "keywords": [
     "tpmjs",
@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "clean": "rm -rf dist .turbo"
   },
   "devDependencies": {
