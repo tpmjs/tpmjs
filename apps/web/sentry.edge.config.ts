@@ -6,5 +6,9 @@ Sentry.init({
 
   tracesSampleRate: 0.05,
 
+  initialScope: {
+    tags: { runtime: 'edge' },
+  },
+
   release: process.env.VERCEL_GIT_COMMIT_SHA,
 });

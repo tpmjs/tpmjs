@@ -90,6 +90,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
           issueData.permalink = details.permalink || issueData.permalink;
           issueData.firstSeen = details.firstSeen || issueData.firstSeen;
           issueData.count = details.count || issueData.count;
+
+          // Extract runtime tag for auto-fix pipeline context
+          const tags = details.tags as Array<{ key: string; value: string }> | undefined;
+          const runtimeTag = tags?.find((t) => t.key === 'runtime');
+          if (runtimeTag) {
+            issueData.runtime = runtimeTag.value;
+          }
         }
       } catch {
         // Fall back to event-level data
@@ -109,6 +116,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, skipped: true, reason: 'no issue data' });
   }
 
+  // Extract runtime tag from issue tags array if present
+  const tags = issue.tags as Array<{ key: string; value: string }> | undefined;
+  const runtimeTag = tags?.find((t: { key: string }) => t.key === 'runtime');
+  if (runtimeTag) {
+    issue.runtime = runtimeTag.value;
+  }
+
   return createGitHubIssue(issue, action === 'regression', githubToken);
 }
 
@@ -124,6 +138,7 @@ async function createGitHubIssue(
   const sentryUrl = (issue.permalink as string) || '';
   const platform = (issue.platform as string) || '';
   const count = (issue.count as number) || 1;
+  const runtime = (issue.runtime as string) || '';
 
   const ghBody = [
     `## ${isRegression ? 'Regression' : 'Production Error'} (Auto-reported by Sentry)`,
@@ -132,6 +147,7 @@ async function createGitHubIssue(
     `**Location:** ${culprit}`,
     `**Level:** ${level}`,
     `**Platform:** ${platform}`,
+    ...(runtime ? [`**Runtime:** ${runtime}`] : []),
     `**First seen:** ${firstSeen}`,
     `**Occurrences:** ${count}`,
     `**Type:** ${isRegression ? 'Regression (previously resolved)' : 'New issue'}`,
