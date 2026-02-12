@@ -10,13 +10,11 @@ export const maxDuration = 60;
  * Health check — returns env var availability (not values).
  */
 export async function GET(_request: NextRequest): Promise<NextResponse> {
-  // Temporary debug: show all env var keys (no values) to diagnose missing vars
-  const allKeys = Object.keys(process.env).sort();
   return NextResponse.json({
     hasWebhookSecret: !!process.env.SENTRY_WEBHOOK_SECRET,
     hasGithubToken: !!process.env.GITHUB_TOKEN_ISSUES,
-    totalEnvVars: allKeys.length,
-    allKeys,
+    projectId: process.env.VERCEL_PROJECT_ID,
+    projectName: process.env.VERCEL_PROJECT_NAME,
   });
 }
 
