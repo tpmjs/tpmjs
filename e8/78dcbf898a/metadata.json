@@ -5,14 +5,34 @@
   "branch": "main",
   "checkpoints_count": 2,
   "files_touched": [
+    ".claude/pipelines/auto-fix.md",
+    ".env.example",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/ISSUE_TEMPLATE/sentry-auto-fix.yml",
+    ".github/workflows/claude-auto-fix.yml",
+    ".vercel/project.json",
     "CLAUDE.md",
+    "apps/web/next.config.ts",
+    "apps/web/sentry.client.config.ts",
+    "apps/web/sentry.edge.config.ts",
+    "apps/web/sentry.server.config.ts",
     "apps/web/src/app/api/sentry/webhook/route.test.ts",
+    "apps/web/src/app/api/sentry/webhook/route.ts",
+    "apps/web/src/app/api/tools/trending/route.ts",
+    "apps/web/src/app/error.tsx",
+    "apps/web/src/app/global-error.tsx",
     "apps/web/src/app/page.tsx",
     "apps/web/src/app/style-guide/page.tsx",
     "apps/web/src/components/home/EcosystemStats.tsx",
     "apps/web/src/components/style-guide/SectionPrinciples.tsx",
     "apps/web/src/components/style-guide/index.ts",
     "apps/web/src/components/style-guide/shared.tsx",
+    "apps/web/src/env.ts",
+    "apps/web/src/instrumentation-client.ts",
+    "apps/web/src/instrumentation.ts",
+    "docs/auto-fix-pipeline.md",
+    "docs/sentry-setup.md",
+    "knip.json",
     "packages/ui/src/StatCard/StatCard.tsx",
     "packages/ui/src/StatCard/types.ts",
     "packages/ui/src/system/hooks/useCountUp.ts"
@@ -31,13 +51,20 @@
       "context": "/e8/78dcbf898a/1/context.md",
       "content_hash": "/e8/78dcbf898a/1/content_hash.txt",
       "prompt": "/e8/78dcbf898a/1/prompt.txt"
+    },
+    {
+      "metadata": "/e8/78dcbf898a/2/metadata.json",
+      "transcript": "/e8/78dcbf898a/2/full.jsonl",
+      "context": "/e8/78dcbf898a/2/context.md",
+      "content_hash": "/e8/78dcbf898a/2/content_hash.txt",
+      "prompt": "/e8/78dcbf898a/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 354,
-    "cache_creation_tokens": 430043,
-    "cache_read_tokens": 11317628,
-    "output_tokens": 27699,
-    "api_call_count": 113
+    "input_tokens": 366,
+    "cache_creation_tokens": 449505,
+    "cache_read_tokens": 12557623,
+    "output_tokens": 29850,
+    "api_call_count": 122
   }
 }
