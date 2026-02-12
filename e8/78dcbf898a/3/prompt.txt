@@ -1,0 +1,92 @@
+Implement the following plan:
+
+# Plan: Enhance Sentry Frontend Error Tracking for Auto-Fix
+
+## Context
+
+Sentry SDK (`@sentry/nextjs` v10.38.0) is already installed with client, server, and edge configs. Error boundaries exist. The auto-fix webhook pipeline (Sentry → GitHub issue → Claude fix → PR) works. But the **client config is minimal** — just replay and basic tracing. Many classes of frontend errors slip through or lack context needed for auto-fix.
+
+## Changes
+
+### 1. Enhance `sentry.client.config.ts`
+
+Add integrations and tags so the client SDK captures more frontend problems with richer context:
+
+- **`httpClientIntegration()`** — captures failed fetch/XHR (4xx/5xx) as Sentry errors. Currently client-side API failures are invisible unless wrapped in try/catch.
+- **`captureConsoleIntegration({ levels: ['error'] })`** — promotes `console.error()` calls to Sentry events. Many libraries/components log errors this way.
+- **`browserTracingIntegration({ enableInp: true })`** — explicit browser tracing with INP (Interaction to Next Paint) metric for performance issues.
+- **`extraErrorDataIntegration()`** — attaches extra error properties (e.g., `cause`, custom fields) as context.
+- **`Sentry.setTag('runtime', 'browser')`** — helps the auto-fix pipeline distinguish frontend vs backend errors.
+- **`environment`** — set from `NEXT_PUBLIC_VERCEL_ENV` so staging errors don't pollute production.
+- Bump `replaysSessionSampleRate` from `0` to `0.1` — captures 10% of sessions for context, not just error replays.
+
+### 2. Tag server/edge configs with `runtime`
+
+Add `initialScope.tags.runtime` to `sentry.server.config.ts` (`'server'`) and `sentry.edge.config.ts` (`'edge'`) so all errors are tagged with their origin. This helps the auto-fix pipeline and GitHub issue body distinguish where errors come from.
+
+### 3. Enrich webhook GitHub issue body with runtime tag
+
+Update `apps/web/src/app/api/sentry/webhook/route.ts` — when enriching from the Sentry API, include the `runtime` tag in the GitHub issue body if available, so Claude knows if it's a frontend or backend error.
+
+### 4. Add tests for new webhook behavior
+
+Update `route.test.ts` to cover the runtime tag in GitHub issue creation.
+
+## Files
+
+| Action | Path |
+|--------|------|
+| Edit | `apps/web/sentry.client.config.ts` |
+| Edit | `apps/web/sentry.server.config.ts` |
+| Edit | `apps/web/sentry.edge.config.ts` |
+| Edit | `apps/web/src/app/api/sentry/webhook/route.ts` |
+| Edit | `apps/web/src/app/api/sentry/webhook/route.test.ts` |
+
+## Verification
+
+```bash
+pnpm --filter=@tpmjs/web test -- src/app/api/sentry/webhook/route.test.ts
+pnpm type-check
+pnpm build
+```
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+keep going
+
+---
+
+<task-notification>
+<task-id>b4298ef</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b4298ef.output</output-file>
+<status>failed</status>
+<summary>Background command "Type-check web app only" failed with exit code 1</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b4298ef.output
+
+---
+
+<task-notification>
+<task-id>bb1f764</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bb1f764.output</output-file>
+<status>completed</status>
+<summary>Background command "Run webhook tests" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bb1f764.output
+
+---
+
+<task-notification>
+<task-id>be3faf2</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/be3faf2.output</output-file>
+<status>completed</status>
+<summary>Background command "Type-check web app" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/be3faf2.output
+
+---
+
+commit everything

@@ -3,7 +3,7 @@
   "checkpoint_id": "e878dcbf898a",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 2,
+  "checkpoints_count": 4,
   "files_touched": [
     ".claude/pipelines/auto-fix.md",
     ".env.example",
@@ -58,13 +58,20 @@
       "context": "/e8/78dcbf898a/2/context.md",
       "content_hash": "/e8/78dcbf898a/2/content_hash.txt",
       "prompt": "/e8/78dcbf898a/2/prompt.txt"
+    },
+    {
+      "metadata": "/e8/78dcbf898a/3/metadata.json",
+      "transcript": "/e8/78dcbf898a/3/full.jsonl",
+      "context": "/e8/78dcbf898a/3/context.md",
+      "content_hash": "/e8/78dcbf898a/3/content_hash.txt",
+      "prompt": "/e8/78dcbf898a/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 366,
-    "cache_creation_tokens": 449505,
-    "cache_read_tokens": 12557623,
-    "output_tokens": 29850,
-    "api_call_count": 122
+    "input_tokens": 425,
+    "cache_creation_tokens": 613189,
+    "cache_read_tokens": 15876476,
+    "output_tokens": 37241,
+    "api_call_count": 169
   }
 }
