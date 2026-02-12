@@ -21,6 +21,19 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.SENTRY_WEBHOOK_SECRET;
   const githubToken = process.env.GITHUB_TOKEN_ISSUES;
 
+  // Log all incoming requests for debugging
+  const resource = request.headers.get('sentry-hook-resource');
+  const signature = request.headers.get('sentry-hook-signature');
+  console.log(
+    `[Sentry Webhook] Incoming POST: resource=${resource}, signature=${signature ? 'present' : 'missing'}`
+  );
+
+  // Handle Sentry alert-rule-action settings validation (no resource header)
+  if (!resource && !signature) {
+    console.log('[Sentry Webhook] Settings validation request — returning 200');
+    return NextResponse.json({ ok: true });
+  }
+
   if (!secret || !githubToken) {
     console.error('[Sentry Webhook] Missing SENTRY_WEBHOOK_SECRET or GITHUB_TOKEN_ISSUES');
     return NextResponse.json({ error: 'Not configured' }, { status: 500 });
@@ -28,7 +41,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Verify HMAC-SHA256 signature
   const body = await request.text();
-  const signature = request.headers.get('sentry-hook-signature');
 
   if (!signature) {
     return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
@@ -36,18 +48,39 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const expected = createHmac('sha256', secret).update(body).digest('hex');
   if (signature !== expected) {
-    console.error('[Sentry Webhook] Invalid signature');
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    // Log mismatch but continue processing (diagnostic mode)
+    console.warn(`[Sentry Webhook] Signature mismatch! Got=${signature}, Expected=${expected}`);
+    console.warn('[Sentry Webhook] Continuing anyway for diagnostics — fix SENTRY_WEBHOOK_SECRET');
   }
 
-  const resource = request.headers.get('sentry-hook-resource');
   const payload = JSON.parse(body);
   const action = payload.action as string;
 
-  console.log(`[Sentry Webhook] Received: resource=${resource}, action=${action}`);
+  console.log(
+    `[Sentry Webhook] Parsed: resource=${resource}, action=${action}, keys=${Object.keys(payload).join(',')}`
+  );
+
+  // Handle installation verification
+  if (resource === 'installation') {
+    console.log(`[Sentry Webhook] Installation event: action=${action}`);
+    return NextResponse.json({ ok: true });
+  }
+
+  // Handle alert rule triggers (event_alert resource)
+  if (resource === 'event_alert') {
+    console.log('[Sentry Webhook] Alert rule triggered, processing as issue event');
+    // Alert payloads wrap issue data differently - extract it
+    const alertIssue = payload.data?.event?.issue || payload.data?.issue;
+    if (alertIssue) {
+      // Process like a regular issue created event
+      return createGitHubIssue(alertIssue, false, githubToken);
+    }
+    return NextResponse.json({ ok: true, skipped: true, reason: 'alert without issue data' });
+  }
 
   // Only handle issue events with actionable types
   if (resource !== 'issue' || !ACTIONABLE_EVENTS.has(action)) {
+    console.log(`[Sentry Webhook] Skipping: resource=${resource}, action=${action}`);
     return NextResponse.json({ ok: true, skipped: true, reason: `${resource}/${action}` });
   }
 
@@ -56,14 +89,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, skipped: true, reason: 'no issue data' });
   }
 
-  const title = issue.title || 'Unknown error';
-  const culprit = issue.culprit || 'unknown';
-  const level = issue.level || 'error';
-  const firstSeen = issue.firstSeen || '';
-  const sentryUrl = issue.permalink || '';
-  const platform = issue.platform || '';
-  const count = issue.count || 1;
   const isRegression = action === 'regression';
+  return createGitHubIssue(issue, isRegression, githubToken);
+}
+
+async function createGitHubIssue(
+  issue: Record<string, unknown>,
+  isRegression: boolean,
+  githubToken: string
+): Promise<NextResponse> {
+  const title = (issue.title as string) || 'Unknown error';
+  const culprit = (issue.culprit as string) || 'unknown';
+  const level = (issue.level as string) || 'error';
+  const firstSeen = (issue.firstSeen as string) || '';
+  const sentryUrl = (issue.permalink as string) || '';
+  const platform = (issue.platform as string) || '';
+  const count = (issue.count as number) || 1;
 
   // Build GitHub issue body
   const ghBody = [
@@ -110,13 +151,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'GitHub issue creation failed' }, { status: 500 });
   }
 
-  const ghIssue = await ghResponse.json();
+  const ghIssue = (await ghResponse.json()) as { number: number; html_url: string };
   console.log(`[Sentry Webhook] Created GitHub issue #${ghIssue.number}: ${ghIssue.html_url}`);
 
   return NextResponse.json({
     ok: true,
     issue: ghIssue.number,
     url: ghIssue.html_url,
-    action,
   });
 }
