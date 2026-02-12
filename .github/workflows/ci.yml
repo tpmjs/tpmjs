@@ -37,7 +37,7 @@ jobs:
         run: pnpm lint
 
       - name: Format check
-        run: pnpm biome ci .
+        run: pnpm format:check
 
   type-check:
     runs-on: ubuntu-latest
