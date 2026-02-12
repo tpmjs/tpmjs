@@ -38,11 +38,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
 
   const { searchParams } = new URL(request.url);
 
-  // Test error trigger for monitoring pipeline validation
-  if (searchParams.get('test_error') === 'true') {
-    throw new Error('Test error: full pipeline validation - Sentry webhook to GitHub issue');
-  }
-
   // Parse comma-separated fields for response shaping
   const fields = searchParams.get('fields');
   const fieldList = fields ? fields.split(',') : [];
