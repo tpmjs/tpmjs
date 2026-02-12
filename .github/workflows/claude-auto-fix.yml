@@ -134,3 +134,62 @@ jobs:
             actions: read
           prompt: ${{ steps.build-prompt.outputs.prompt }}
           claude_args: '--allowedTools "Edit" "Write" "Bash(gh:*)" "Bash(npm:*)" "Bash(pnpm:*)" "Bash(git:*)" "Bash(npx:*)"'
+
+      - name: Notify Discord
+        if: always() && steps.loop-check.outputs.should_continue == 'true'
+        uses: actions/github-script@v7
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+        with:
+          script: |
+            const issueNumber = context.issue?.number || ${{ inputs.issue_number || 0 }};
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber
+            });
+
+            const labels = issue.labels.map(l => l.name);
+            const fixSubmitted = labels.includes('fix-submitted');
+            const needsHuman = labels.includes('needs-human-review');
+
+            // Find linked PR from issue comments
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              per_page: 10
+            });
+            const prMatch = comments
+              .map(c => c.body?.match(/https:\/\/github\.com\/tpmjs\/tpmjs\/pull\/(\d+)/))
+              .find(m => m);
+            const prUrl = prMatch ? prMatch[0] : null;
+
+            let message;
+            if (fixSubmitted && prUrl) {
+              message = `**Auto-fix submitted** for production error\n\n` +
+                `**Error:** ${issue.title.replace('[Sentry] ', '')}\n` +
+                `**Issue:** https://github.com/tpmjs/tpmjs/issues/${issueNumber}\n` +
+                `**PR:** ${prUrl}\n\n` +
+                `Claude analyzed the error and created a fix PR automatically.`;
+            } else if (needsHuman) {
+              message = `**Auto-fix needs human review** ⚠️\n\n` +
+                `**Error:** ${issue.title.replace('[Sentry] ', '')}\n` +
+                `**Issue:** https://github.com/tpmjs/tpmjs/issues/${issueNumber}\n\n` +
+                `Claude couldn't fix this automatically — needs manual investigation.`;
+            } else {
+              message = `**Auto-fix completed** for production error\n\n` +
+                `**Error:** ${issue.title.replace('[Sentry] ', '')}\n` +
+                `**Issue:** https://github.com/tpmjs/tpmjs/issues/${issueNumber}\n` +
+                `**Workflow:** https://github.com/tpmjs/tpmjs/actions/runs/${{ github.run_id }}`;
+            }
+
+            const channelId = '1442666515425132644';
+            await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ content: message }),
+            });
