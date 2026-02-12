@@ -38,11 +38,6 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
 
   const { searchParams } = new URL(request.url);
 
-  // Test error trigger for pipeline validation
-  if (searchParams.get('test_error') === 'true') {
-    throw new Error(`Pipeline test: trending endpoint failure [${Date.now()}]`);
-  }
-
   // Parse comma-separated fields for response shaping
   const fields = searchParams.get('fields');
   const fieldList = fields ? fields.split(',') : [];
