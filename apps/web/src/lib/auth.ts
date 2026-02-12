@@ -46,6 +46,30 @@ export const auth = betterAuth({
     },
   },
   trustedOrigins: ['https://tpmjs.com', 'http://localhost:3000', 'http://localhost:3002'],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          // Update signup source after user creation
+          // The provider is determined by the account that was just created
+          try {
+            const account = await prisma.account.findFirst({
+              where: { userId: user.id },
+              orderBy: { createdAt: 'desc' },
+              select: { providerId: true },
+            });
+            const source = account?.providerId || 'direct';
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { signupSource: source },
+            });
+          } catch (error) {
+            console.error('[auth] Failed to set signup source:', error);
+          }
+        },
+      },
+    },
+  },
   advanced: {
     defaultCookieAttributes: {
       sameSite: 'lax',

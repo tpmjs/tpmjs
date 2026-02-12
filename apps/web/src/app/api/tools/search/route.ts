@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit, STRICT_RATE_LIMIT } from '~/lib/rate-limit';
+import { trackSearch } from '~/lib/tracking/search';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -87,6 +88,8 @@ export async function GET(request: NextRequest) {
   if (rateLimitResponse) {
     return rateLimitResponse;
   }
+
+  const searchStart = performance.now();
 
   try {
     const { searchParams } = new URL(request.url);
@@ -222,6 +225,16 @@ export async function GET(request: NextRequest) {
     const results = hasMore ? topResults.slice(0, limit) : topResults;
 
     console.log(`✅ [SEARCH API] Returning ${results.length} results (hasMore: ${hasMore})`);
+
+    // Track search query (fire-and-forget)
+    if (query) {
+      const latencyMs = Math.round(performance.now() - searchStart);
+      trackSearch({
+        query,
+        resultCount: results.length,
+        latencyMs,
+      });
+    }
 
     // Format response to match existing /api/tools structure
     return NextResponse.json({

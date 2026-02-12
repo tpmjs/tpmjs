@@ -8,12 +8,15 @@ export const maxDuration = 10;
 // Only show these activity types publicly (positive actions, not deletions/unlikes)
 const PUBLIC_ACTIVITY_TYPES = [
   'TOOL_LIKED',
+  'TOOL_EXECUTED',
   'COLLECTION_CREATED',
   'COLLECTION_FORKED',
   'COLLECTION_TOOL_ADDED',
+  'COLLECTION_TOOLS_BULK_ADDED',
   'AGENT_CREATED',
   'AGENT_FORKED',
   'AGENT_LIKED',
+  'AGENT_CONVERSATION_STARTED',
   'COLLECTION_LIKED',
 ] as const;
 
@@ -71,8 +74,10 @@ export async function GET() {
 function mapActivityType(type: string): 'invoked' | 'published' | 'updated' {
   switch (type) {
     case 'TOOL_LIKED':
+    case 'TOOL_EXECUTED':
     case 'COLLECTION_LIKED':
     case 'AGENT_LIKED':
+    case 'AGENT_CONVERSATION_STARTED':
       return 'invoked';
     case 'COLLECTION_CREATED':
     case 'AGENT_CREATED':
@@ -80,6 +85,7 @@ function mapActivityType(type: string): 'invoked' | 'published' | 'updated' {
     case 'COLLECTION_FORKED':
     case 'AGENT_FORKED':
     case 'COLLECTION_TOOL_ADDED':
+    case 'COLLECTION_TOOLS_BULK_ADDED':
       return 'updated';
     default:
       return 'updated';

@@ -86,6 +86,19 @@ export async function POST(request: NextRequest) {
       eventToolCallsCount,
       eventAgentRunsCount,
 
+      // Active user counts
+      dauResult,
+      wauResult,
+      mauResult,
+
+      // Search metrics
+      searchCountResult,
+      avgSearchLatencyResult,
+      topSearchQueriesResult,
+
+      // MCP unique clients
+      mcpUniqueClientsResult,
+
       // Quality distribution
       qualityDistribution,
     ] = await Promise.all([
@@ -171,6 +184,49 @@ export async function POST(request: NextRequest) {
       prisma.executionEvent.count({
         where: { createdAt: { gte: yesterday, lt: today }, eventType: 'agent_run' },
       }),
+
+      // DAU - distinct users active in last 24h
+      prisma.userActivity.groupBy({
+        by: ['userId'],
+        where: { createdAt: { gte: yesterday, lt: today } },
+      }),
+      // WAU - distinct users active in last 7 days
+      prisma.userActivity.groupBy({
+        by: ['userId'],
+        where: { createdAt: { gte: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000) } },
+      }),
+      // MAU - distinct users active in last 30 days
+      prisma.userActivity.groupBy({
+        by: ['userId'],
+        where: { createdAt: { gte: new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000) } },
+      }),
+
+      // Search volume (last 24h)
+      prisma.searchLog.count({
+        where: { createdAt: { gte: yesterday, lt: today } },
+      }),
+      // Average search latency
+      prisma.searchLog.aggregate({
+        where: { createdAt: { gte: yesterday, lt: today } },
+        _avg: { latencyMs: true },
+      }),
+      // Top 10 search queries by frequency
+      prisma.$queryRaw<{ query: string; count: bigint }[]>`
+        SELECT query, COUNT(*) as count
+        FROM search_logs
+        WHERE created_at >= ${yesterday} AND created_at < ${today}
+        GROUP BY query
+        ORDER BY count DESC
+        LIMIT 10
+      `,
+
+      // MCP unique clients (distinct userId or sessionId from ExecutionEvent where source starts with 'mcp')
+      prisma.$queryRaw<{ count: bigint }[]>`
+        SELECT COUNT(DISTINCT COALESCE(user_id, 'anon')) as count
+        FROM execution_events
+        WHERE source LIKE 'mcp_%'
+          AND created_at >= ${new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)}
+      `,
 
       // Quality score distribution
       prisma.$queryRaw<{ bucket: string; count: bigint }[]>`
@@ -281,6 +337,24 @@ export async function POST(request: NextRequest) {
         // Execution event counts
         eventToolCalls: eventToolCallsCount,
         eventAgentRuns: eventAgentRunsCount,
+
+        // Active user counts
+        dauCount: dauResult.length,
+        wauCount: wauResult.length,
+        mauCount: mauResult.length,
+
+        // Search metrics
+        searchCount: searchCountResult,
+        avgSearchLatencyMs: avgSearchLatencyResult._avg.latencyMs
+          ? Math.round(avgSearchLatencyResult._avg.latencyMs)
+          : null,
+        topSearchQueries: topSearchQueriesResult.map((r) => ({
+          query: r.query,
+          count: Number(r.count),
+        })),
+
+        // MCP unique clients
+        mcpUniqueClients: Number(mcpUniqueClientsResult[0]?.count ?? 0),
       },
     });
 

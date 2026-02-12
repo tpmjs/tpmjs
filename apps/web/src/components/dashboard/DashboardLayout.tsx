@@ -42,6 +42,11 @@ const navSections: NavSection[] = [
   },
 ];
 
+const adminNavItems: NavItem[] = [
+  { href: '/dashboard/admin', label: 'Overview', icon: 'barChart' },
+  { href: '/dashboard/admin/users', label: 'Users', icon: 'user' },
+];
+
 const likesNavItems: NavItem[] = [
   { href: '/dashboard/likes/tools', label: 'Tools', icon: 'puzzle' },
   { href: '/dashboard/likes/collections', label: 'Collections', icon: 'folder' },
@@ -77,6 +82,7 @@ export function DashboardLayout({
   const router = useRouter();
   const { data: session, isPending } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAdminUser, setIsAdminUser] = useState(false);
   const [likesExpanded, setLikesExpanded] = useState(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('dashboard-likes-expanded');
@@ -104,6 +110,15 @@ export function DashboardLayout({
       router.push('/sign-in');
     }
   }, [isPending, session, router]);
+
+  // Check admin status
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetch('/api/admin/stats', { method: 'GET' })
+        .then((res) => setIsAdminUser(res.ok))
+        .catch(() => setIsAdminUser(false));
+    }
+  }, [session?.user?.id]);
 
   // Close sidebar on route change - intentional route-based UI sync
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname triggers effect
@@ -248,6 +263,34 @@ export function DashboardLayout({
                 </div>
               )}
             </div>
+
+            {/* Admin Section - only shown for admin users */}
+            {isAdminUser && (
+              <div>
+                <h3 className="px-3 mb-2 text-xs font-semibold text-foreground-tertiary uppercase tracking-wider">
+                  Admin
+                </h3>
+                <div className="space-y-1">
+                  {adminNavItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`
+                        flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                        ${
+                          isActive(item.href)
+                            ? 'bg-primary/10 text-primary'
+                            : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+                        }
+                      `}
+                    >
+                      <Icon icon={item.icon} size="sm" />
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </nav>
 
           {/* User section at bottom */}

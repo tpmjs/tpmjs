@@ -344,6 +344,19 @@ model StatsSnapshot {
   eventToolCalls  Int @default(0) @map("event_tool_calls")
   eventAgentRuns  Int @default(0) @map("event_agent_runs")
 
+  // Active user counts (from UserActivity)
+  dauCount Int @default(0) @map("dau_count") // Daily active users
+  wauCount Int @default(0) @map("wau_count") // Weekly active users
+  mauCount Int @default(0) @map("mau_count") // Monthly active users
+
+  // Search metrics (from SearchLog)
+  searchCount        Int  @default(0) @map("search_count")
+  avgSearchLatencyMs Int? @map("avg_search_latency_ms")
+  topSearchQueries   Json? @map("top_search_queries") @db.JsonB // Array of { query, count }
+
+  // MCP unique clients (from ExecutionEvent where source = 'mcp_*')
+  mcpUniqueClients   Int @default(0) @map("mcp_unique_clients")
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -380,6 +393,12 @@ model User {
 
   // Tier for rate limiting and feature access
   tier          UserTier  @default(FREE)
+
+  // Role for access control (admin dashboard, etc.)
+  role          UserRole  @default(USER)
+
+  // Signup source tracking (e.g., 'github', 'google', 'direct')
+  signupSource  String?   @map("signup_source") @db.VarChar(50)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1141,6 +1160,12 @@ enum UserTier {
   FREE
   PRO
   ENTERPRISE
+}
+
+/// User role enum - determines access level
+enum UserRole {
+  USER
+  ADMIN
 }
 
 /// TpmjsApiKey - user-owned API keys for programmatic access
@@ -1974,4 +1999,29 @@ model ExecutionEvent {
   @@index([eventType, createdAt])
   @@index([createdAt])
   @@map("execution_events")
+}
+
+// ============================================================================
+// Search Log (Query Tracking)
+// ============================================================================
+
+/// SearchLog - tracks search queries, result counts, and latency
+model SearchLog {
+  id          String   @id @default(cuid())
+
+  // Search data
+  query       String   @db.VarChar(500)
+  resultCount Int      @map("result_count")
+  latencyMs   Int      @map("latency_ms")
+
+  // Optional actor
+  userId      String?  @map("user_id")
+  sessionId   String?  @map("session_id")
+
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([query])
+  @@map("search_logs")
 }

@@ -149,6 +149,9 @@ curl -X POST https://tpmjs.com/api/sync/stats-snapshot -H "Authorization: Bearer
 curl -X POST https://tpmjs.com/api/sync/view-rollup -H "Authorization: Bearer $CRON_SECRET"      # Roll up page views (daily 0:30 UTC)
 curl -X POST https://tpmjs.com/api/sync/execution-rollup -H "Authorization: Bearer $CRON_SECRET" # Roll up executions (daily 1am UTC)
 curl -X POST https://tpmjs.com/api/sync/cleanup-activity -H "Authorization: Bearer $CRON_SECRET"  # Delete old activity >90d (daily 3am UTC)
+curl -X POST https://tpmjs.com/api/sync/cleanup-executions -H "Authorization: Bearer $CRON_SECRET" # Delete old execution events >90d (daily 3:15am UTC)
+curl -X POST https://tpmjs.com/api/sync/cleanup-api-usage -H "Authorization: Bearer $CRON_SECRET"  # Delete old API usage records >30d (daily 3:30am UTC)
+curl -X POST https://tpmjs.com/api/sync/cleanup-search-logs -H "Authorization: Bearer $CRON_SECRET" # Delete old search logs >90d (daily 3:45am UTC)
 ```
 
 **Other cron endpoints**:
@@ -158,6 +161,20 @@ curl -X POST https://tpmjs.com/api/cron/use-cases -H "Authorization: Bearer $CRO
 ```
 
 Cron schedules are defined in `vercel.json` at the repo root.
+
+## Admin Dashboard
+
+Admin routes are at `/dashboard/admin` (overview) and `/dashboard/admin/users` (user management). Only users with `role = 'ADMIN'` can access these.
+
+**API routes** (require admin session):
+- `GET /api/admin/stats` — latest StatsSnapshot + 30-day trend data
+- `GET /api/admin/users` — paginated user list with search, sorting
+- `GET /api/admin/search-logs` — recent searches, top queries, daily volume
+
+**Promote a user to admin:**
+```sql
+UPDATE users SET role = 'ADMIN' WHERE email = 'user@example.com';
+```
 
 ## Discord
 
