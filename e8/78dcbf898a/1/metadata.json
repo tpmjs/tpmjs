@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "e878dcbf898a",
+  "session_id": "137b0ff7-ddfb-4540-8364-1be1bf4e853c",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-12T16:41:17.609475Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "CLAUDE.md",
+    "apps/web/src/app/page.tsx",
+    "apps/web/src/app/style-guide/page.tsx",
+    "apps/web/src/components/home/EcosystemStats.tsx",
+    "apps/web/src/components/style-guide/SectionPrinciples.tsx",
+    "apps/web/src/components/style-guide/index.ts",
+    "apps/web/src/components/style-guide/shared.tsx",
+    "packages/ui/src/StatCard/StatCard.tsx",
+    "packages/ui/src/StatCard/types.ts",
+    "packages/ui/src/system/hooks/useCountUp.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "b419383d-adb5-40cd-8d8c-c7f2c6911ed6",
+  "checkpoint_transcript_start": 475,
+  "transcript_lines_at_start": 475,
+  "token_usage": {
+    "input_tokens": 337,
+    "cache_creation_tokens": 381316,
+    "cache_read_tokens": 10676639,
+    "output_tokens": 22648,
+    "api_call_count": 99
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-12T16:41:15.958834Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 479,
+    "human_removed": 1769,
+    "total_committed": 218,
+    "agent_percentage": 0
+  }
+}
