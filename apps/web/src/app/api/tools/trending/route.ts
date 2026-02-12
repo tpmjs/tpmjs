@@ -40,7 +40,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
 
   // Test error trigger for monitoring pipeline validation
   if (searchParams.get('test_error') === 'true') {
-    throw new Error('Test error: Sentry to GitHub auto-fix pipeline validation');
+    throw new Error('Test error: full pipeline validation - Sentry webhook to GitHub issue');
   }
 
   // Parse comma-separated fields for response shaping
