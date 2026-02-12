@@ -1,20 +1,17 @@
 {
   "cli_version": "0.4.2",
   "checkpoint_id": "5b0f883bdd57",
+  "session_id": "f6312e90-c5a0-4f57-91e2-b814949f6f53",
   "strategy": "manual-commit",
+  "created_at": "2026-02-12T19:17:46.817898Z",
   "branch": "main",
   "checkpoints_count": 2,
   "files_touched": [
     "CLAUDE.md",
-    "apps/web/sentry.client.config.ts",
-    "apps/web/sentry.edge.config.ts",
-    "apps/web/sentry.server.config.ts",
     "apps/web/src/app/api/activity/public/route.ts",
     "apps/web/src/app/api/admin/search-logs/route.ts",
     "apps/web/src/app/api/admin/stats/route.ts",
     "apps/web/src/app/api/admin/users/route.ts",
-    "apps/web/src/app/api/sentry/webhook/route.test.ts",
-    "apps/web/src/app/api/sentry/webhook/route.ts",
     "apps/web/src/app/api/sync/cleanup-api-usage/route.ts",
     "apps/web/src/app/api/sync/cleanup-executions/route.ts",
     "apps/web/src/app/api/sync/cleanup-search-logs/route.ts",
@@ -30,27 +27,21 @@
     "packages/db/prisma/schema.prisma",
     "vercel.json"
   ],
-  "sessions": [
-    {
-      "metadata": "/5b/0f883bdd57/0/metadata.json",
-      "transcript": "/5b/0f883bdd57/0/full.jsonl",
-      "context": "/5b/0f883bdd57/0/context.md",
-      "content_hash": "/5b/0f883bdd57/0/content_hash.txt",
-      "prompt": "/5b/0f883bdd57/0/prompt.txt"
-    },
-    {
-      "metadata": "/5b/0f883bdd57/1/metadata.json",
-      "transcript": "/5b/0f883bdd57/1/full.jsonl",
-      "context": "/5b/0f883bdd57/1/context.md",
-      "content_hash": "/5b/0f883bdd57/1/content_hash.txt",
-      "prompt": "/5b/0f883bdd57/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
   "token_usage": {
-    "input_tokens": 634,
-    "cache_creation_tokens": 318198,
-    "cache_read_tokens": 12111762,
-    "output_tokens": 28585,
-    "api_call_count": 126
+    "input_tokens": 604,
+    "cache_creation_tokens": 221328,
+    "cache_read_tokens": 10497513,
+    "output_tokens": 23907,
+    "api_call_count": 112
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-12T19:17:44.683374Z",
+    "agent_lines": 1255,
+    "human_added": 0,
+    "human_modified": 53,
+    "human_removed": 124,
+    "total_committed": 1308,
+    "agent_percentage": 95.9480122324159
   }
 }
