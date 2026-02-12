@@ -6,19 +6,6 @@ export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 /**
- * GET /api/sentry/webhook
- * Health check — returns env var availability (not values).
- */
-export async function GET(_request: NextRequest): Promise<NextResponse> {
-  return NextResponse.json({
-    hasWebhookSecret: !!process.env.SENTRY_WEBHOOK_SECRET,
-    hasGithubToken: !!process.env.GITHUB_TOKEN_ISSUES,
-    projectId: process.env.VERCEL_PROJECT_ID,
-    projectName: process.env.VERCEL_PROJECT_NAME,
-  });
-}
-
-/**
  * POST /api/sentry/webhook
  * Receives Sentry issue events via internal integration webhook.
  * Creates GitHub issues with `auto-fix` label to trigger the auto-fix pipeline.
