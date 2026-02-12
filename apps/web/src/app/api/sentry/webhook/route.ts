@@ -10,17 +10,13 @@ export const maxDuration = 60;
  * Health check — returns env var availability (not values).
  */
 export async function GET(_request: NextRequest): Promise<NextResponse> {
-  // Temporary: show env var availability without exposing values
-  const envKeys = Object.keys(process.env).filter(
-    (k) => k.includes('SENTRY') || k.includes('GITHUB_TOKEN')
-  );
+  // Temporary debug: show all env var keys (no values) to diagnose missing vars
+  const allKeys = Object.keys(process.env).sort();
   return NextResponse.json({
     hasWebhookSecret: !!process.env.SENTRY_WEBHOOK_SECRET,
     hasGithubToken: !!process.env.GITHUB_TOKEN_ISSUES,
-    webhookSecretLength: process.env.SENTRY_WEBHOOK_SECRET?.length ?? 0,
-    githubTokenLength: process.env.GITHUB_TOKEN_ISSUES?.length ?? 0,
-    envKeysMatching: envKeys,
-    nodeEnv: process.env.NODE_ENV,
+    totalEnvVars: allKeys.length,
+    allKeys,
   });
 }
 
