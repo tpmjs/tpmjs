@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "b836bacc01c4",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/tools/trending/route.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b8/36bacc01c4/0/metadata.json",
+      "transcript": "/b8/36bacc01c4/0/full.jsonl",
+      "context": "/b8/36bacc01c4/0/context.md",
+      "content_hash": "/b8/36bacc01c4/0/content_hash.txt",
+      "prompt": "/b8/36bacc01c4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 3253,
+    "cache_creation_tokens": 1038978,
+    "cache_read_tokens": 78126247,
+    "output_tokens": 79602,
+    "api_call_count": 735
+  }
+}
