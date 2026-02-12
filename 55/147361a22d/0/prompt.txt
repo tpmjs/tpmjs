@@ -1,0 +1,21 @@
+the stats on homepage dont seem corrrect
+
+---
+
+[Image: source: REDACTED 2026-02-13 at 12.09.02 AM.png]
+
+---
+
+you trigger it also update claude.md on how to do things with CRON_SECRET and where the value is located
+
+---
+
+the numbers keep animating the count upwards in a loop, it hsould only do it once, also latency seems off.
+
+---
+
+[Image: source: REDACTED 2026-02-13 at 12.35.31 AM.png]
+
+---
+
+did you push
