@@ -13,7 +13,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import { useState } from 'react';
-import { FieldsetSection, SubSection } from './shared';
+import { FieldsetSection, Kbd, RuleBox, SubSection } from './shared';
 
 export function SectionPatternNavigation(): React.ReactElement {
   const [activeTab, setActiveTab] = useState('overview');
@@ -69,15 +69,14 @@ export function SectionPatternNavigation(): React.ReactElement {
             </div>
           </div>
         </div>
-        <div className="mt-4 bg-surface p-4 border border-dashed border-border">
-          <h4 className="font-mono text-sm font-medium mb-3">guidelines</h4>
+        <RuleBox title="guidelines">
           <ul className="space-y-2 text-sm text-foreground-secondary font-sans">
             <li>• Maximum 5-6 top-level items to avoid cognitive overload</li>
             <li>• Use visible active states (underline or background)</li>
             <li>• Logo always links to home</li>
             <li>• Auth actions stay in top-right corner</li>
           </ul>
-        </div>
+        </RuleBox>
       </SubSection>
 
       <SubSection title="sidebar navigation">
@@ -142,25 +141,22 @@ export function SectionPatternNavigation(): React.ReactElement {
             </nav>
           </div>
         </div>
-        <div className="mt-4 bg-surface p-4 border border-dashed border-border">
-          <h4 className="font-mono text-sm font-medium mb-3">keyboard shortcuts</h4>
+        <RuleBox title="keyboard shortcuts">
           <div className="grid grid-cols-2 gap-4 text-sm text-foreground-secondary font-sans">
             <div>
-              <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">[</kbd> collapse/expand
-              sidebar
+              <Kbd>[</Kbd> collapse/expand sidebar
             </div>
             <div>
-              <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">g then h</kbd> go to home
+              <Kbd>g then h</Kbd> go to home
             </div>
             <div>
-              <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">g then t</kbd> go to tools
+              <Kbd>g then t</Kbd> go to tools
             </div>
             <div>
-              <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">g then s</kbd> go to
-              settings
+              <Kbd>g then s</Kbd> go to settings
             </div>
           </div>
-        </div>
+        </RuleBox>
       </SubSection>
 
       <SubSection title="breadcrumbs">
@@ -231,28 +227,22 @@ export function SectionPatternNavigation(): React.ReactElement {
             />
           </div>
 
-          <div className="bg-surface p-4 border border-dashed border-border">
-            <h4 className="font-mono text-sm font-medium mb-3">keyboard behavior</h4>
+          <RuleBox title="keyboard behavior">
             <ul className="space-y-2 text-sm text-foreground-secondary font-sans">
               <li>
-                • <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">←</kbd> /{' '}
-                <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">→</kbd> navigate between
-                tabs
+                • <Kbd>←</Kbd> / <Kbd>→</Kbd> navigate between tabs
               </li>
               <li>
-                • <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">Home</kbd> focus first
-                tab
+                • <Kbd>Home</Kbd> focus first tab
               </li>
               <li>
-                • <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">End</kbd> focus last tab
+                • <Kbd>End</Kbd> focus last tab
               </li>
               <li>
-                • <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">Enter</kbd> /{' '}
-                <kbd className="px-2 py-1 bg-surface-2 font-mono text-xs">Space</kbd> activate
-                focused tab
+                • <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> activate focused tab
               </li>
             </ul>
-          </div>
+          </RuleBox>
         </div>
       </SubSection>
 

@@ -7,7 +7,7 @@ import { Input } from '@tpmjs/ui/Input/Input';
 import { Label } from '@tpmjs/ui/Label/Label';
 import { Select } from '@tpmjs/ui/Select/Select';
 import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
-import { DoDontCard, FieldsetSection, SubSection } from './shared';
+import { DoDontCard, FieldsetSection, InfoCard, RuleBox, SubSection } from './shared';
 
 export function SectionPatternForms(): React.ReactElement {
   return (
@@ -22,24 +22,22 @@ export function SectionPatternForms(): React.ReactElement {
           Choose validation timing based on the field type and user expectations.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-surface p-6 border border-dashed border-border">
-            <h4 className="font-mono text-sm font-medium mb-4">validate on blur</h4>
+          <InfoCard title="validate on blur">
             <p className="font-sans text-xs text-foreground-secondary mb-4">
               Best for: format validation, required fields
             </p>
             <FormField label="email" error="Please enter a valid email address">
               <Input placeholder="user@example.com" state="error" />
             </FormField>
-          </div>
-          <div className="bg-surface p-6 border border-dashed border-border">
-            <h4 className="font-mono text-sm font-medium mb-4">validate on submit</h4>
+          </InfoCard>
+          <InfoCard title="validate on submit">
             <p className="font-sans text-xs text-foreground-secondary mb-4">
               Best for: async validation, complex rules
             </p>
             <FormField label="package name" helperText="We'll check if this name is available">
               <Input placeholder="@scope/package-name" />
             </FormField>
-          </div>
+          </InfoCard>
         </div>
       </SubSection>
 
@@ -142,12 +140,12 @@ export function SectionPatternForms(): React.ReactElement {
             </div>
           </div>
         </div>
-        <div className="bg-surface p-4 border border-dashed border-border">
+        <RuleBox>
           <p className="font-sans text-sm text-foreground-secondary">
             <strong>Rule:</strong> Mark the minority. If most fields are required, mark optional
             fields. If most are optional, mark required fields.
           </p>
-        </div>
+        </RuleBox>
       </SubSection>
 
       <SubSection title="field grouping">

@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@tpmjs/ui/Table/Table';
-import { FieldsetSection, SubSection } from './shared';
+import { FieldsetSection, InfoCard, SubSection } from './shared';
 
 type A11yRequirement = {
   component: string;
@@ -221,7 +221,7 @@ export function SectionA11yChecklists(): React.ReactElement {
           Proper focus management is critical for keyboard and screen reader users.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-surface p-6 border border-dashed border-border">
+          <InfoCard>
             <h4 className="font-mono text-sm font-medium mb-4 flex items-center gap-2">
               <Icon icon="check" size="sm" className="text-success" />
               focus trap required
@@ -231,8 +231,8 @@ export function SectionA11yChecklists(): React.ReactElement {
               <li>Drawer sheets - trap until closed</li>
               <li>Full-screen overlays</li>
             </ul>
-          </div>
-          <div className="bg-surface p-6 border border-dashed border-border">
+          </InfoCard>
+          <InfoCard>
             <h4 className="font-mono text-sm font-medium mb-4 flex items-center gap-2">
               <Icon icon="arrowRight" size="sm" className="text-accent" />
               focus restoration
@@ -242,10 +242,9 @@ export function SectionA11yChecklists(): React.ReactElement {
               <li>Save and restore focus position</li>
               <li>Skip links for long content</li>
             </ul>
-          </div>
+          </InfoCard>
         </div>
-        <div className="mt-6 bg-surface p-4 border border-dashed border-border">
-          <h4 className="font-mono text-sm font-medium mb-3">implementation pattern</h4>
+        <InfoCard className="mt-6 p-4" title="implementation pattern">
           <pre className="text-xs font-mono text-foreground-secondary overflow-x-auto">
             {`// Focus trap implementation
 const dialogRef = useRef<HTMLDivElement>(null);
@@ -263,7 +262,7 @@ const handleClose = () => {
   triggerRef.current?.focus();
 };`}
           </pre>
-        </div>
+        </InfoCard>
       </SubSection>
 
       <SubSection title="screen reader announcements">
@@ -271,8 +270,7 @@ const handleClose = () => {
           Use live regions to announce dynamic content changes.
         </p>
         <div className="space-y-4">
-          <div className="bg-surface p-4 border border-dashed border-border">
-            <h4 className="font-mono text-sm font-medium mb-3">aria-live regions</h4>
+          <InfoCard className="p-4" title="aria-live regions">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="p-3 bg-surface-2">
                 <code className="text-xs">
@@ -299,10 +297,9 @@ const handleClose = () => {
                 </p>
               </div>
             </div>
-          </div>
+          </InfoCard>
 
-          <div className="bg-surface p-4 border border-dashed border-border">
-            <h4 className="font-mono text-sm font-medium mb-3">component announcements</h4>
+          <InfoCard className="p-4" title="component announcements">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -337,7 +334,7 @@ const handleClose = () => {
                 </TableRow>
               </TableBody>
             </Table>
-          </div>
+          </InfoCard>
         </div>
       </SubSection>
 
@@ -367,15 +364,14 @@ const handleClose = () => {
               </Badge>
             </div>
           </div>
-          <div className="bg-surface p-4 border border-dashed border-border">
-            <h4 className="font-mono text-sm font-medium mb-3">contrast verification</h4>
+          <InfoCard className="p-4" title="contrast verification">
             <ul className="space-y-2 text-sm text-foreground-secondary font-sans">
               <li>• Test all color combinations in both themes</li>
               <li>• Verify focus indicators (3:1 minimum)</li>
               <li>• Ensure error states meet requirements</li>
               <li>• Check interactive state contrast changes</li>
             </ul>
-          </div>
+          </InfoCard>
         </div>
       </SubSection>
 
@@ -384,8 +380,7 @@ const handleClose = () => {
           Respect the <code className="px-1 bg-surface-2 text-xs">prefers-reduced-motion</code>{' '}
           media query for users who experience motion sickness or vestibular disorders.
         </p>
-        <div className="bg-surface p-4 border border-dashed border-border">
-          <h4 className="font-mono text-sm font-medium mb-3">implementation</h4>
+        <InfoCard className="p-4" title="implementation">
           <pre className="text-xs font-mono text-foreground-secondary overflow-x-auto">
             {`// CSS approach
 @media (prefers-reduced-motion: reduce) {
@@ -408,7 +403,7 @@ function AnimatedComponent() {
   );
 }`}
           </pre>
-        </div>
+        </InfoCard>
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="p-3 bg-success-light border border-success">
             <p className="font-mono text-sm text-success mb-1">always animate</p>
@@ -430,7 +425,7 @@ function AnimatedComponent() {
           Before shipping any component, verify accessibility with these tests.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-surface p-4 border border-dashed border-border">
+          <InfoCard className="p-4">
             <h4 className="font-mono text-sm font-medium mb-3 flex items-center gap-2">
               <Icon icon="terminal" size="sm" />
               keyboard testing
@@ -457,8 +452,8 @@ function AnimatedComponent() {
                 Test arrow key navigation
               </li>
             </ul>
-          </div>
-          <div className="bg-surface p-4 border border-dashed border-border">
+          </InfoCard>
+          <InfoCard className="p-4">
             <h4 className="font-mono text-sm font-medium mb-3 flex items-center gap-2">
               <Icon icon="search" size="sm" />
               screen reader testing
@@ -485,7 +480,7 @@ function AnimatedComponent() {
                 Test live region updates
               </li>
             </ul>
-          </div>
+          </InfoCard>
         </div>
       </SubSection>
     </FieldsetSection>

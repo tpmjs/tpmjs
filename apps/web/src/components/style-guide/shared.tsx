@@ -30,7 +30,7 @@ export function FieldsetSection({
 }
 
 /**
- * Sub-section with title
+ * Sub-section with title and copper dot indicator
  */
 export function SubSection({
   title,
@@ -40,10 +40,69 @@ export function SubSection({
   children: React.ReactNode;
 }): React.ReactElement {
   return (
-    <div className="mb-10 last:mb-0">
-      <h3 className="font-mono text-base font-medium mb-6 text-foreground lowercase">{title}</h3>
+    <div className="mb-14 last:mb-0">
+      <div className="flex items-center gap-2 mb-6">
+        <div className="w-1 h-1 bg-accent" />
+        <h3 className="font-mono text-[11px] font-semibold tracking-widest uppercase text-foreground-secondary">
+          {title}
+        </h3>
+      </div>
       {children}
     </div>
+  );
+}
+
+/**
+ * Hover-interactive info card (replaces flat bg-surface boxes)
+ */
+export function InfoCard({
+  title,
+  children,
+  className = '',
+}: {
+  title?: string;
+  children: React.ReactNode;
+  className?: string;
+}): React.ReactElement {
+  return (
+    <div
+      className={`group relative bg-surface border border-border p-6 transition-all duration-150 hover:-translate-y-px hover:shadow-sm hover:border-accent/20 ${className}`}
+    >
+      <div className="absolute left-0 top-0 bottom-0 w-0 bg-accent/40 transition-all duration-200 group-hover:w-[2px]" />
+      {title && <h4 className="font-mono text-sm font-medium mb-4">{title}</h4>}
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Copper-accented rule box for guidelines and requirements
+ */
+export function RuleBox({
+  title,
+  children,
+  className = '',
+}: {
+  title?: string;
+  children: React.ReactNode;
+  className?: string;
+}): React.ReactElement {
+  return (
+    <div className={`border-l-[3px] border-l-accent bg-surface-2 p-6 ${className}`}>
+      {title && <h4 className="font-mono text-sm font-medium mb-4">{title}</h4>}
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Styled keyboard shortcut display
+ */
+export function Kbd({ children }: { children: React.ReactNode }): React.ReactElement {
+  return (
+    <kbd className="inline-flex items-center justify-center min-w-[24px] px-2 py-0.5 bg-surface-2 border border-border font-mono text-[11px] text-foreground-secondary shadow-[0_1px_0_0] shadow-border">
+      {children}
+    </kbd>
   );
 }
 

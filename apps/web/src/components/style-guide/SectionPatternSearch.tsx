@@ -5,7 +5,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { Select } from '@tpmjs/ui/Select/Select';
-import { FieldsetSection, SubSection } from './shared';
+import { FieldsetSection, InfoCard, SubSection } from './shared';
 
 export function SectionPatternSearch(): React.ReactElement {
   return (
@@ -21,7 +21,7 @@ export function SectionPatternSearch(): React.ReactElement {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Default state */}
-          <div className="bg-surface p-4 border border-dashed border-border">
+          <InfoCard className="p-4">
             <p className="font-mono text-xs text-foreground-tertiary mb-3">default</p>
             <div className="relative">
               <Icon
@@ -31,10 +31,10 @@ export function SectionPatternSearch(): React.ReactElement {
               />
               <Input placeholder="search tools..." className="pl-10" />
             </div>
-          </div>
+          </InfoCard>
 
           {/* Active state */}
-          <div className="bg-surface p-4 border border-dashed border-border">
+          <InfoCard className="p-4">
             <p className="font-mono text-xs text-foreground-tertiary mb-3">active / has value</p>
             <div className="relative">
               <Icon
@@ -47,10 +47,10 @@ export function SectionPatternSearch(): React.ReactElement {
                 <Icon icon="x" size="sm" />
               </button>
             </div>
-          </div>
+          </InfoCard>
 
           {/* Loading state */}
-          <div className="bg-surface p-4 border border-dashed border-border">
+          <InfoCard className="p-4">
             <p className="font-mono text-xs text-foreground-tertiary mb-3">loading</p>
             <div className="relative">
               <Icon
@@ -60,10 +60,10 @@ export function SectionPatternSearch(): React.ReactElement {
               />
               <Input defaultValue="validator" className="pl-10" readOnly />
             </div>
-          </div>
+          </InfoCard>
 
           {/* No results state */}
-          <div className="bg-surface p-4 border border-dashed border-border">
+          <InfoCard className="p-4">
             <p className="font-mono text-xs text-foreground-tertiary mb-3">no results</p>
             <div className="relative">
               <Icon
@@ -77,7 +77,7 @@ export function SectionPatternSearch(): React.ReactElement {
               </button>
             </div>
             <p className="text-xs text-foreground-tertiary mt-2">No results found</p>
-          </div>
+          </InfoCard>
         </div>
       </SubSection>
 
@@ -85,7 +85,7 @@ export function SectionPatternSearch(): React.ReactElement {
         <p className="font-sans text-sm text-foreground-secondary mb-4">
           Use chips to show active filters with easy removal.
         </p>
-        <div className="bg-surface p-4 border border-dashed border-border">
+        <InfoCard className="p-4">
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge variant="default" className="pr-1 flex items-center gap-1">
               category: utility
@@ -108,7 +108,7 @@ export function SectionPatternSearch(): React.ReactElement {
             <button className="font-mono text-xs text-accent hover:underline">clear all</button>
           </div>
           <p className="font-mono text-xs text-foreground-secondary">showing 42 of 128 tools</p>
-        </div>
+        </InfoCard>
       </SubSection>
 
       <SubSection title="filter panel">
@@ -117,8 +117,7 @@ export function SectionPatternSearch(): React.ReactElement {
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Filter panel */}
-          <div className="bg-surface border border-dashed border-border p-4">
-            <h4 className="font-mono text-sm font-medium mb-4">filters</h4>
+          <InfoCard className="p-4" title="filters">
             <div className="space-y-4">
               <div>
                 {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
@@ -161,10 +160,10 @@ export function SectionPatternSearch(): React.ReactElement {
                 </Button>
               </div>
             </div>
-          </div>
+          </InfoCard>
 
           {/* Results preview */}
-          <div className="md:col-span-2 bg-surface border border-dashed border-border p-4">
+          <InfoCard className="md:col-span-2 p-4">
             <p className="font-mono text-xs text-foreground-tertiary mb-4">results area</p>
             <div className="space-y-2">
               {['@tpmjs/parser', '@tpmjs/validator', '@tpmjs/transform'].map((name) => (
@@ -179,7 +178,7 @@ export function SectionPatternSearch(): React.ReactElement {
                 </div>
               ))}
             </div>
-          </div>
+          </InfoCard>
         </div>
       </SubSection>
 
@@ -187,7 +186,7 @@ export function SectionPatternSearch(): React.ReactElement {
         <p className="font-sans text-sm text-foreground-secondary mb-4">
           Allow users to save and recall filter combinations.
         </p>
-        <div className="bg-surface p-4 border border-dashed border-border">
+        <InfoCard className="p-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <span className="font-mono text-sm font-medium">saved views</span>
@@ -223,14 +222,14 @@ export function SectionPatternSearch(): React.ReactElement {
               </Badge>
             </button>
           </div>
-        </div>
+        </InfoCard>
       </SubSection>
 
       <SubSection title="query syntax display">
         <p className="font-sans text-sm text-foreground-secondary mb-4">
           For power users, display the underlying query syntax.
         </p>
-        <div className="bg-surface p-4 border border-dashed border-border">
+        <InfoCard className="p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="font-mono text-sm font-medium">query</span>
             <button className="font-mono text-xs text-accent hover:underline flex items-center gap-1">
@@ -251,7 +250,7 @@ export function SectionPatternSearch(): React.ReactElement {
           <p className="font-sans text-xs text-foreground-tertiary mt-3">
             Tip: Use this syntax directly in the search box for quick filtering.
           </p>
-        </div>
+        </InfoCard>
       </SubSection>
 
       <SubSection title="command palette">

@@ -74,18 +74,6 @@
       "schedule": "0 3 * * *"
     },
     {
-      "path": "/api/sync/cleanup-executions",
-      "schedule": "15 3 * * *"
-    },
-    {
-      "path": "/api/sync/cleanup-api-usage",
-      "schedule": "30 3 * * *"
-    },
-    {
-      "path": "/api/sync/cleanup-search-logs",
-      "schedule": "45 3 * * *"
-    },
-    {
       "path": "/api/cron/discord-summary",
       "schedule": "0 9 * * *"
     },
