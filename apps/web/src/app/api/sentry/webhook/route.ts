@@ -68,14 +68,50 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   // Handle alert rule triggers (event_alert resource)
   if (resource === 'event_alert') {
-    console.log('[Sentry Webhook] Alert rule triggered, processing as issue event');
-    // Alert payloads wrap issue data differently - extract it
-    const alertIssue = payload.data?.event?.issue || payload.data?.issue;
-    if (alertIssue) {
-      // Process like a regular issue created event
-      return createGitHubIssue(alertIssue, false, githubToken);
+    const event = payload.data?.event;
+    const triggeredRule = payload.data?.triggered_rule || 'Unknown rule';
+    console.log(`[Sentry Webhook] Alert rule triggered: "${triggeredRule}"`);
+
+    if (!event) {
+      console.log('[Sentry Webhook] No event data in alert payload');
+      return NextResponse.json({ ok: true, skipped: true, reason: 'alert without event data' });
     }
-    return NextResponse.json({ ok: true, skipped: true, reason: 'alert without issue data' });
+
+    // event_alert payloads have event-level data, not nested issue objects
+    // Extract issue info from the event fields
+    const issueData: Record<string, unknown> = {
+      title: event.title || 'Unknown error',
+      culprit: event.culprit || 'unknown',
+      level: event.level || 'error',
+      platform: event.platform || '',
+      permalink: event.web_url || event.url || '',
+      firstSeen: event.datetime || '',
+      count: 1,
+    };
+
+    // Fetch full issue details if issue_url is available
+    if (event.issue_url) {
+      try {
+        const issueResp = await fetch(event.issue_url as string, {
+          headers: {
+            Authorization: `Bearer ${process.env.SENTRY_AUTH_TOKEN || ''}`,
+          },
+        });
+        if (issueResp.ok) {
+          const issueDetails = (await issueResp.json()) as Record<string, unknown>;
+          issueData.title = issueDetails.title || issueData.title;
+          issueData.culprit = issueDetails.culprit || issueData.culprit;
+          issueData.permalink = issueDetails.permalink || issueData.permalink;
+          issueData.firstSeen = issueDetails.firstSeen || issueData.firstSeen;
+          issueData.count = issueDetails.count || issueData.count;
+          console.log(`[Sentry Webhook] Enriched with issue details: ${issueData.title}`);
+        }
+      } catch (e) {
+        console.warn('[Sentry Webhook] Failed to fetch issue details, using event data', e);
+      }
+    }
+
+    return createGitHubIssue(issueData, false, githubToken);
   }
 
   // Only handle issue events with actionable types
