@@ -1,0 +1,339 @@
+Implement the following plan:
+
+# Plan: Enhance Sentry Frontend Error Tracking for Auto-Fix
+
+## Context
+
+Sentry SDK (`@sentry/nextjs` v10.38.0) is already installed with client, server, and edge configs. Error boundaries exist. The auto-fix webhook pipeline (Sentry → GitHub issue → Claude fix → PR) works. But the **client config is minimal** — just replay and basic tracing. Many classes of frontend errors slip through or lack context needed for auto-fix.
+
+## Changes
+
+### 1. Enhance `sentry.client.config.ts`
+
+Add integrations and tags so the client SDK captures more frontend problems with richer context:
+
+- **`httpClientIntegration()`** — captures failed fetch/XHR (4xx/5xx) as Sentry errors. Currently client-side API failures are invisible unless wrapped in try/catch.
+- **`captureConsoleIntegration({ levels: ['error'] })`** — promotes `console.error()` calls to Sentry events. Many libraries/components log errors this way.
+- **`browserTracingIntegration({ enableInp: true })`** — explicit browser tracing with INP (Interaction to Next Paint) metric for performance issues.
+- **`extraErrorDataIntegration()`** — attaches extra error properties (e.g., `cause`, custom fields) as context.
+- **`Sentry.setTag('runtime', 'browser')`** — helps the auto-fix pipeline distinguish frontend vs backend errors.
+- **`environment`** — set from `NEXT_PUBLIC_VERCEL_ENV` so staging errors don't pollute production.
+- Bump `replaysSessionSampleRate` from `0` to `0.1` — captures 10% of sessions for context, not just error replays.
+
+### 2. Tag server/edge configs with `runtime`
+
+Add `initialScope.tags.runtime` to `sentry.server.config.ts` (`'server'`) and `sentry.edge.config.ts` (`'edge'`) so all errors are tagged with their origin. This helps the auto-fix pipeline and GitHub issue body distinguish where errors come from.
+
+### 3. Enrich webhook GitHub issue body with runtime tag
+
+Update `apps/web/src/app/api/sentry/webhook/route.ts` — when enriching from the Sentry API, include the `runtime` tag in the GitHub issue body if available, so Claude knows if it's a frontend or backend error.
+
+### 4. Add tests for new webhook behavior
+
+Update `route.test.ts` to cover the runtime tag in GitHub issue creation.
+
+## Files
+
+| Action | Path |
+|--------|------|
+| Edit | `apps/web/sentry.client.config.ts` |
+| Edit | `apps/web/sentry.server.config.ts` |
+| Edit | `apps/web/sentry.edge.config.ts` |
+| Edit | `apps/web/src/app/api/sentry/webhook/route.ts` |
+| Edit | `apps/web/src/app/api/sentry/webhook/route.test.ts` |
+
+## Verification
+
+```bash
+pnpm --filter=@tpmjs/web test -- src/app/api/sentry/webhook/route.test.ts
+pnpm type-check
+pnpm build
+```
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+keep going
+
+---
+
+<task-notification>
+<task-id>b4298ef</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b4298ef.output</output-file>
+<status>failed</status>
+<summary>Background command "Type-check web app only" failed with exit code 1</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b4298ef.output
+
+---
+
+<task-notification>
+<task-id>bb1f764</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bb1f764.output</output-file>
+<status>completed</status>
+<summary>Background command "Run webhook tests" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bb1f764.output
+
+---
+
+<task-notification>
+<task-id>be3faf2</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/be3faf2.output</output-file>
+<status>completed</status>
+<summary>Background command "Type-check web app" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/be3faf2.output
+
+---
+
+commit everything
+
+---
+
+<task-notification>
+<task-id>bb89314</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bb89314.output</output-file>
+<status>completed</status>
+<summary>Background command "Stage Sentry files and commit" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bb89314.output
+
+---
+
+what do i have to do to get it working?
+
+---
+
+so this will pick up front end errors, automatically fix them and then report to discord when its done?
+
+---
+
+i want our metrics, usage, events to be super comphrensive, for admins, users, and public stats, do a full review, and list out every single thing we ain't tracking
+
+---
+
+do all of it
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. **Initial Task**: User asked to implement a plan for enhancing Sentry frontend error tracking for auto-fix. The plan was already written out in detail.
+
+2. **Implementation Phase 1 - Sentry Client Config**: 
+   - Read existing files (sentry.server.config.ts, route.test.ts)
+   - Created task list with 5 tasks
+   - Wrote new `sentry.client.config.ts` with new integrations (httpClientIntegration, captureConsoleIntegration, browserTracingIntegration with INP, extraErrorDataIntegration), runtime tag, environment, bumped replaysSessionSampleRate
+   - Wrote new `sentry.edge.config.ts` with runtime: 'edge' tag
+   - Server config was modified by linter to add runtime: 'server' tag
+
+3. **Implementation Phase 2 - Webhook Route**:
+   - Modified `route.ts` to extract runtime tag from Sentry API enrichment (tags array)
+   - Also extract runtime from issue subscription payload tags
+   - Added `runtime` field to GitHub issue body conditionally
+
+4. **Implementation Phase 3 - Tests**:
+   - Added 3 new tests: runtime from enrichment, runtime from issue tags, runtime absent
+
+5. **Type-check failure**: 
+   - First type-check failed with `Object is possibly 'undefined'` errors on `fetchSpy.mock.calls[0][1]` patterns
+   - Fixed by adding `!` non-null assertions to all `fetchSpy.mock.calls` accesses
+   - Re-ran type-check - passed
+   - Build passed
+
+6. **Commit**: User asked to commit everything. Only staged Sentry-related files (not style-guide changes). Commit succeeded with pre-commit hooks passing.
+
+7. **User asked "what do i have to do to get it working?"** - Answered: just push, no new env vars needed.
+
+8. **User asked about the full pipeline** - Confirmed the flow: browser error → Sentry → webhook → GitHub issue → Claude auto-fix → Discord notification.
+
+9. **User asked for comprehensive metrics audit** - Launched explore agent that did a thorough audit of all tracking/metrics/analytics in the codebase. Identified 18 gaps.
+
+10. **User said "do all of it"** - Entered plan mode to design implementation.
+
+11. **User said "use posthog"** - Noted.
+
+12. **User said "actually dont use posthog, we already use vercel analytics"** - Changed approach.
+
+13. **Plan mode exploration**: Launched 3 parallel explore agents to investigate:
+    - Tracking infrastructure (hooks, APIs, DB schema, cron patterns)
+    - Admin/stats pages and dashboard UI patterns
+    - DB schema and environment patterns
+
+14. **Plan design**: Launched Plan agent to design comprehensive implementation. Got back a detailed 6-batch plan.
+
+15. **Verification reads**: Read critical files to verify plan accuracy:
+    - `cleanup-activity/route.ts` - cron pattern reference
+    - `tracking/executions.ts` - cleanup function signature
+    - `api-keys/usage.ts` - usage tracking interface
+    - `tools/search/route.ts` - search endpoint (needs tracking added)
+    - `stats-snapshot/route.ts` - full snapshot cron
+
+16. **Current state**: Still in plan mode. Need to write the final plan to the plan file and call ExitPlanMode.
+
+Key technical details to preserve:
+- The cron pattern from cleanup-activity (exact code)
+- The stats-snapshot structure (all queries in Promise.all)
+- The search endpoint structure (where to add tracking)
+- The DashboardLayout nav structure
+- No admin role exists - need to add UserRole enum
+- Vercel Analytics handles page-level tracking, no PostHog needed
+- Better Auth with no admin plugin
+- d3 v7 charts available
+- Fire-and-forget tracking pattern used throughout
+
+Summary:
+1. Primary Request and Intent:
+   - **Completed**: Implement enhanced Sentry frontend error tracking for auto-fix pipeline. Add new SDK integrations, tag all configs with runtime (browser/server/edge), surface runtime tag in webhook-created GitHub issues, and add tests.
+   - **Completed**: Commit the Sentry changes.
+   - **In Progress**: User wants comprehensive metrics, usage, and event tracking for admins, users, and public stats. Asked for a full audit of what's NOT being tracked, then said "do all of it" to implement fixes for all gaps.
+   - User initially said "use posthog" then changed to "actually dont use posthog, we already use vercel analytics" — so no new analytics providers; leverage existing Vercel Analytics + custom Prisma-based tracking.
+
+2. Key Technical Concepts:
+   - Turborepo monorepo with pnpm workspaces, Next.js 16 App Router
+   - Sentry SDK v10.38.0 (`@sentry/nextjs`) with client/server/edge configs
+   - Vercel Analytics (`@vercel/analytics` v1.6.1) already in root layout — handles page views, referrers, sessions for ALL pages
+   - Custom analytics pipeline: PageView (daily buckets) → ExecutionEvent → UserActivity → ApiUsageRecord/Summary → StatsSnapshot (daily cron)
+   - Fire-and-forget tracking pattern: `prisma.model.create().catch(console.error)` — never blocks request
+   - Cron pattern: Auth via `CRON_SECRET` header, log to `SyncLog`, upsert `SyncCheckpoint`
+   - Dashboard pattern: Client components wrapping `<DashboardLayout>`, fetching from API routes
+   - d3 v7 charts (AreaChart, BarChart, DonutChart) in `apps/web/src/components/stats/`
+   - Better Auth with prismaAdapter, no admin/RBAC plugin, no role field on User
+   - `UserTier` enum (FREE/PRO/ENTERPRISE) for rate limiting, but no `UserRole`
+   - Prisma schema in `packages/db/prisma/schema.prisma` (1978 lines)
+
+3. Files and Code Sections:
+
+   - **`apps/web/sentry.client.config.ts`** (MODIFIED - committed)
+     - Enhanced with new integrations, runtime tag, environment, bumped replay rate
+     ```ts
+     import * as Sentry from '@sentry/nextjs';
+     Sentry.init({
+       dsn: 'https://0b61db9cf233f36811d7b33d17757251@o4510869662203904.ingest.us.sentry.io/4510869663055872',
+       enabled: process.env.NODE_ENV === 'production',
+       environment: process.env.NEXT_PUBLIC_VERCEL_ENV || 'development',
+       tracesSampleRate: 0.1,
+       replaysSessionSampleRate: 0.1,
+       replaysOnErrorSampleRate: 1.0,
+       integrations: [
+         Sentry.replayIntegration(),
+         Sentry.browserTracingIntegration({ enableInp: true }),
+         Sentry.httpClientIntegration(),
+         Sentry.captureConsoleIntegration({ levels: ['error'] }),
+         Sentry.extraErrorDataIntegration(),
+       ],
+       release: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
+     });
+     Sentry.setTag('runtime', 'browser');
+     ```
+
+   - **`apps/web/sentry.server.config.ts`** (MODIFIED - committed)
+     - Added `initialScope: { tags: { runtime: 'server' } }`
+
+   - **`apps/web/sentry.edge.config.ts`** (MODIFIED - committed)
+     - Added `initialScope: { tags: { runtime: 'edge' } }`
+
+   - **`apps/web/src/app/api/sentry/webhook/route.ts`** (MODIFIED - committed)
+     - Extracts runtime tag from Sentry API enrichment response (event_alert path with `tags` array)
+     - Extracts runtime tag from issue subscription payload tags array
+     - Conditionally includes `**Runtime:** <value>` in GitHub issue body
+
+   - **`apps/web/src/app/api/sentry/webhook/route.test.ts`** (CREATED - committed)
+     - 17 tests total (14 existing + 3 new runtime tag tests)
+     - New tests: runtime from enrichment, runtime from issue tags, runtime absent
+
+   - **`apps/web/src/app/api/sync/cleanup-activity/route.ts`** (READ - reference pattern for new crons)
+     - Critical cron pattern: auth check, try/catch, syncLog.create, syncCheckpoint.upsert
+     - `export const runtime = 'nodejs'`, `export const maxDuration = 300`
+
+   - **`apps/web/src/lib/tracking/executions.ts`** (READ - has cleanup function)
+     - `trackExecution(params: TrackExecutionParams): void` — fire-and-forget
+     - `cleanupOldExecutionEvents(daysToKeep = 90): Promise<number>` — EXISTS but NO CRON wired
+
+   - **`apps/web/src/lib/api-keys/usage.ts`** (READ - has cleanup function)
+     - `trackUsage(event: UsageEvent): void` — fire-and-forget
+     - `cleanupOldUsageRecords(daysToKeep = 30): Promise<number>` — EXISTS but NO CRON wired
+
+   - **`apps/web/src/app/api/tools/search/route.ts`** (READ - needs search tracking added)
+     - BM25 scoring, no tracking calls at all
+     - Uses `STRICT_RATE_LIMIT` (200 req/min)
+     - Would add `trackSearch()` call before the final `return NextResponse.json(...)` at line 227
+
+   - **`apps/web/src/app/api/sync/stats-snapshot/route.ts`** (READ - needs retention/search/MCP metrics added)
+     - 20+ parallel Prisma queries in `Promise.all` (lines 48-198)
+     - Creates snapshot with `prisma.statsSnapshot.create()` (lines 225-285)
+     - Needs new queries for: DAU/WAU/MAU, search volume, MCP unique clients
+
+   - **`apps/web/src/components/dashboard/DashboardLayout.tsx`** (explored by agent)
+     - Hardcoded `navSections` array defines sidebar items
+     - Uses `useSession()` for auth guard
+     - Need to add conditional admin nav section
+     - No role field available yet — need `UserRole` enum first
+
+   - **`packages/db/prisma/schema.prisma`** (explored by agent - 1978 lines)
+     - User model has `tier` (UserTier) but NO `role` field
+     - No SearchLog table exists
+     - StatsSnapshot has `activeDevs7d` but no DAU/WAU/MAU fields
+
+   - **`vercel.json`** (explored - cron schedules)
+     - 10 existing crons, need to add 3 new cleanup crons
+
+4. Errors and Fixes:
+   - **Type-check failure on test file**: `fetchSpy.mock.calls[0][1]` — `Object is possibly 'undefined'` (TS2532) on 9 lines
+     - Fixed by adding `!` non-null assertions: `fetchSpy.mock.calls[0]![1]` on all affected lines
+     - These were pre-existing TS issues that surfaced because the linter reformatted the file
+   - **Background task timeout**: The first `pnpm type-check` background task (bfd243a) timed out during the full monorepo build. Fixed by re-running with `--filter=@tpmjs/web` to only type-check the web app.
+
+5. Problem Solving:
+   - Sentry enhancement implemented and committed successfully (commit `d14a4afa`)
+   - Full analytics audit completed identifying 18 gaps
+   - Comprehensive implementation plan designed covering all gaps in 6 batches
+   - Currently in plan mode — need to write final plan file and get user approval
+
+6. All User Messages:
+   - "Implement the following plan: [detailed Sentry enhancement plan]"
+   - "keep going" (after session resume, type-check was running)
+   - "commit everything"
+   - "what do i have to do to get it working?"
+   - "so this will pick up front end errors, automatically fix them and then report to discord when its done?"
+   - "i want our metrics, usage, events to be super comphrensive, for admins, users, and public stats, do a full review, and list out every single thing we ain't tracking"
+   - "do all of it"
+   - "use posthog"
+   - "actually dont use posthog, we already use vercel analytics"
+
+7. Pending Tasks:
+   - Write final plan to plan file (`/Users/ajaxdavis/.claude/plans/mellow-roaming-pancake.md`)
+   - Call ExitPlanMode to get user approval
+   - Then implement all 18 analytics gaps (organized into 6 batches):
+     - Batch 1: Schema migration (UserRole enum, SearchLog model, retention fields on StatsSnapshot, signupSource on User)
+     - Batch 2: Cleanup crons (execution events, API usage records, search logs) + search tracking
+     - Batch 3: Stats snapshot enhancements (DAU/WAU/MAU, search metrics, MCP client metrics)
+     - Batch 4: Admin dashboard (admin auth helper, admin API routes, admin pages, DashboardLayout sidebar)
+     - Batch 5: Homepage live data, public activity stream enhancement, conversion tracking
+     - Batch 6: CLAUDE.md documentation updates
+
+8. Current Work:
+   Currently in **plan mode** (Phase 3-4: Review and Final Plan). Have completed:
+   - Phase 1: Explored codebase with 3 parallel agents
+   - Phase 2: Got detailed plan from Plan agent
+   - Phase 3: Read critical reference files to verify plan accuracy
+
+   Need to: Write the final plan to the plan file at `/Users/ajaxdavis/.claude/plans/mellow-roaming-pancake.md` and call ExitPlanMode.
+
+   The plan covers implementing all analytics gaps. Key files to create: 12 new files (3 cleanup crons, search tracking lib, admin auth helper, 3 admin API routes, user role endpoint, signup source endpoint, 2 admin dashboard pages). Key files to modify: 8 existing files (Prisma schema, vercel.json, search route, stats-snapshot route, DashboardLayout, public activity route, CLAUDE.md).
+
+9. Optional Next Step:
+   Write the final plan to `/Users/ajaxdavis/.claude/plans/mellow-roaming-pancake.md` and call ExitPlanMode for user approval. The user's most recent explicit request was "do all of it" (referring to implementing all 18 tracking gaps) with the constraint "actually dont use posthog, we already use vercel analytics". We are in plan mode and need to finalize the plan before implementation can begin.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+[Request interrupted by user for tool use]
