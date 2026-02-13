@@ -1,4 +1,4 @@
-import { prisma } from '@tpmjs/db';
+import { Prisma, prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '~/env';
 import { performHealthCheck } from '~/lib/health-check/health-check-service';
@@ -40,6 +40,9 @@ export async function POST(request: NextRequest) {
   const errorMessages: string[] = [];
 
   try {
+    // Ensure Prisma client is connected
+    await prisma.$connect();
+
     const now = new Date();
     const retryCutoff = new Date(now.getTime() - RETRY_COOLDOWN_MS);
 
@@ -235,19 +238,37 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Enrichment sync failed:', error);
 
-    await prisma.syncLog.create({
-      data: {
-        source: 'enrichment',
-        status: 'error',
-        processed: enriched + discovered,
-        skipped,
-        errors: errors + 1,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        metadata: {
-          durationMs: Date.now() - startTime,
+    // Handle Prisma initialization errors gracefully
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      console.error('Prisma client initialization failed. Database may be unavailable.');
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Database connection failed',
+          message: 'Unable to connect to database. Please check DATABASE_URL configuration.',
         },
-      },
-    });
+        { status: 503 }
+      );
+    }
+
+    // Try to log the error, but don't fail if logging fails
+    try {
+      await prisma.syncLog.create({
+        data: {
+          source: 'enrichment',
+          status: 'error',
+          processed: enriched + discovered,
+          skipped,
+          errors: errors + 1,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          metadata: {
+            durationMs: Date.now() - startTime,
+          },
+        },
+      });
+    } catch (logError) {
+      console.error('Failed to log error to database:', logError);
+    }
 
     return NextResponse.json(
       {
