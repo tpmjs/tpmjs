@@ -111,16 +111,28 @@ export async function GET(request: NextRequest) {
       prisma.tool.count({ where: { executionHealth: 'UNKNOWN' } }),
 
       // Package data for category/tier/download aggregations
-      prisma.package.findMany({
-        select: {
-          category: true,
-          tier: true,
-          npmDownloadsLastMonth: true,
-          githubStars: true,
-          isOfficial: true,
-          _count: { select: { tools: true } },
-        },
-      }),
+      // Use raw query to avoid N+1 on tool counts
+      prisma.$queryRaw<
+        Array<{
+          category: string | null;
+          tier: string | null;
+          npmDownloadsLastMonth: number | null;
+          githubStars: number | null;
+          isOfficial: boolean;
+          toolCount: bigint;
+        }>
+      >`
+        SELECT
+          p.category,
+          p.tier,
+          p.npm_downloads_last_month as "npmDownloadsLastMonth",
+          p.github_stars as "githubStars",
+          p.is_official as "isOfficial",
+          COUNT(t.id) as "toolCount"
+        FROM packages p
+        LEFT JOIN tools t ON t.package_id = p.id
+        GROUP BY p.id, p.category, p.tier, p.npm_downloads_last_month, p.github_stars, p.is_official
+      `,
 
       // Recent tools
       prisma.tool.count({ where: { createdAt: { gte: last24h } } }),
@@ -236,7 +248,7 @@ export async function GET(request: NextRequest) {
 
       // Category breakdown (by tool count)
       if (pkg.category) {
-        categories[pkg.category] = (categories[pkg.category] || 0) + pkg._count.tools;
+        categories[pkg.category] = (categories[pkg.category] || 0) + Number(pkg.toolCount);
       }
 
       // Tier breakdown (by package count)
