@@ -62,7 +62,7 @@ export interface ExecutorHealthResponse {
 /**
  * Executor type enum
  */
-export const ExecutorTypeSchema = z.enum(['default', 'custom_url']);
+export const ExecutorTypeSchema = z.enum(['default', 'custom_url', 'sandbox']);
 export type ExecutorType = z.infer<typeof ExecutorTypeSchema>;
 
 /**
@@ -84,16 +84,29 @@ export const CustomUrlExecutorConfigSchema = z.object({
 });
 
 /**
+ * Sandbox executor config (stateful sessions with persistent filesystem)
+ */
+export const SandboxExecutorConfigSchema = z.object({
+  type: z.literal('sandbox'),
+  /** Optional URL of the sandbox executor (falls back to AGENT_SANDBOX_URL env var) */
+  url: z.string().url().optional(),
+  /** Optional API key for Bearer token authentication */
+  apiKey: z.string().optional(),
+});
+
+/**
  * Union of all executor config types
  */
 export const ExecutorConfigSchema = z.discriminatedUnion('type', [
   DefaultExecutorConfigSchema,
   CustomUrlExecutorConfigSchema,
+  SandboxExecutorConfigSchema,
 ]);
 
 export type ExecutorConfig = z.infer<typeof ExecutorConfigSchema>;
 export type DefaultExecutorConfig = z.infer<typeof DefaultExecutorConfigSchema>;
 export type CustomUrlExecutorConfig = z.infer<typeof CustomUrlExecutorConfigSchema>;
+export type SandboxExecutorConfig = z.infer<typeof SandboxExecutorConfigSchema>;
 
 // =============================================================================
 // Zod Schemas for Request/Response Validation
@@ -143,4 +156,53 @@ export interface VerifyExecutorResponse {
     executionTimeMs: number;
   };
   errors?: string[];
+}
+
+// =============================================================================
+// Sandbox Session Management
+// =============================================================================
+
+export const CreateSessionRequestSchema = z.object({
+  sessionId: z.string().min(1),
+  timeoutSeconds: z.number().int().min(60).max(7200).optional(),
+});
+
+export interface CreateSessionRequest {
+  sessionId: string;
+  timeoutSeconds?: number;
+}
+
+export interface CreateSessionResponse {
+  sessionId: string;
+  workDir: string;
+  createdAt: string;
+  expiresAt: string;
+  resumed: boolean;
+}
+
+export interface DestroySessionResponse {
+  sessionId: string;
+  destroyed: boolean;
+}
+
+export interface SessionStatusResponse {
+  sessionId: string;
+  workDir: string;
+  createdAt: string;
+  expiresAt: string;
+  toolCallCount: number;
+}
+
+export const SandboxExecuteToolRequestSchema = z.object({
+  packageName: z.string().min(1),
+  name: z.string().min(1),
+  version: z.string().optional(),
+  importUrl: z.string().url().optional(),
+  params: z.record(z.string(), z.unknown()),
+  env: z.record(z.string(), z.string()).optional(),
+  sessionId: z.string().min(1),
+});
+
+export interface SandboxExecuteToolRequest extends ExecuteToolRequest {
+  sessionId: string;
 }

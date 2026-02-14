@@ -743,6 +743,12 @@ export default function AgentDetailPage(): React.ReactElement {
             url: data.data.executorConfig.url,
             apiKey: data.data.executorConfig.apiKey,
           });
+        } else if (data.data.executorType === 'sandbox') {
+          setExecutorConfig({
+            type: 'sandbox',
+            url: data.data.executorConfig?.url,
+            apiKey: data.data.executorConfig?.apiKey,
+          });
         } else {
           setExecutorConfig(data.data.executorType ? { type: 'default' } : null);
         }
@@ -1033,6 +1039,11 @@ export default function AgentDetailPage(): React.ReactElement {
           url: executorConfig.url,
           apiKey: executorConfig.apiKey,
         };
+      } else if (executorConfig.type === 'sandbox') {
+        updatePayload.executorConfig = {
+          url: executorConfig.url,
+          apiKey: executorConfig.apiKey,
+        };
       } else {
         updatePayload.executorConfig = null;
       }
@@ -1154,6 +1165,7 @@ export default function AgentDetailPage(): React.ReactElement {
         {executorConfig?.type === 'custom_url' && (
           <Badge variant="secondary">Custom Executor</Badge>
         )}
+        {executorConfig?.type === 'sandbox' && <Badge variant="secondary">Agent Sandbox</Badge>}
       </div>
 
       {/* Tabs */}

@@ -8,7 +8,7 @@ const UID_REGEX = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
 // Executor config for updates (simplified schema that maps to database JSON)
 const ExecutorConfigUpdateSchema = z
   .object({
-    url: z.string().url(),
+    url: z.string().url().optional(),
     apiKey: z.string().optional(),
   })
   .nullable()

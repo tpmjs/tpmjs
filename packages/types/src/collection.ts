@@ -8,7 +8,7 @@ const NAME_REGEX = /^[a-zA-Z0-9\s\-_]+$/;
 // Executor config for updates (simplified schema that maps to database JSON)
 const ExecutorConfigUpdateSchema = z
   .object({
-    url: z.string().url(),
+    url: z.string().url().optional(),
     apiKey: z.string().optional(),
   })
   .nullable()

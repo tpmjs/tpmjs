@@ -1,6 +1,7 @@
 'use client';
 
 import type { ExecutorConfig } from '@tpmjs/types/executor';
+import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { FormField } from '@tpmjs/ui/FormField/FormField';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
@@ -27,30 +28,47 @@ interface VerificationResult {
   errors: string[];
 }
 
+type ExecutorTypeOption = 'default' | 'custom_url' | 'sandbox';
+
+function getInitialType(value: ExecutorConfig | null): ExecutorTypeOption {
+  if (value?.type === 'custom_url') return 'custom_url';
+  if (value?.type === 'sandbox') return 'sandbox';
+  return 'default';
+}
+
+function getInitialUrl(value: ExecutorConfig | null): string {
+  if (value?.type === 'custom_url') return value.url;
+  if (value?.type === 'sandbox') return value.url ?? '';
+  return '';
+}
+
+function getInitialApiKey(value: ExecutorConfig | null): string {
+  if (value?.type === 'custom_url') return value.apiKey ?? '';
+  if (value?.type === 'sandbox') return value.apiKey ?? '';
+  return '';
+}
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Component has multiple states for executor configuration
 export function ExecutorConfigPanel({
   value,
   onChange,
   disabled = false,
 }: ExecutorConfigPanelProps): React.ReactElement {
-  const [executorType, setExecutorType] = useState<'default' | 'custom_url'>(
-    value?.type === 'custom_url' ? 'custom_url' : 'default'
-  );
-  const [customUrl, setCustomUrl] = useState(value?.type === 'custom_url' ? value.url : '');
-  const [apiKey, setApiKey] = useState(value?.type === 'custom_url' ? (value.apiKey ?? '') : '');
+  const [executorType, setExecutorType] = useState<ExecutorTypeOption>(getInitialType(value));
+  const [customUrl, setCustomUrl] = useState(getInitialUrl(value));
+  const [apiKey, setApiKey] = useState(getInitialApiKey(value));
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
   const [urlError, setUrlError] = useState<string | null>(null);
 
-  const handleTypeChange = (type: 'default' | 'custom_url') => {
+  const handleTypeChange = (type: ExecutorTypeOption) => {
     setExecutorType(type);
     setVerificationResult(null);
     setUrlError(null);
 
     if (type === 'default') {
       onChange({ type: 'default' });
-    } else {
-      // Don't update parent until URL is provided
+    } else if (type === 'custom_url') {
       if (customUrl) {
         onChange({
           type: 'custom_url',
@@ -58,6 +76,12 @@ export function ExecutorConfigPanel({
           apiKey: apiKey || undefined,
         });
       }
+    } else if (type === 'sandbox') {
+      onChange({
+        type: 'sandbox',
+        url: customUrl || undefined,
+        apiKey: apiKey || undefined,
+      });
     }
   };
 
@@ -66,10 +90,16 @@ export function ExecutorConfigPanel({
     setVerificationResult(null);
     setUrlError(null);
 
-    if (url) {
+    if (executorType === 'custom_url' && url) {
       onChange({
         type: 'custom_url',
         url,
+        apiKey: apiKey || undefined,
+      });
+    } else if (executorType === 'sandbox') {
+      onChange({
+        type: 'sandbox',
+        url: url || undefined,
         apiKey: apiKey || undefined,
       });
     }
@@ -78,24 +108,34 @@ export function ExecutorConfigPanel({
   const handleApiKeyChange = (key: string) => {
     setApiKey(key);
 
-    if (customUrl) {
+    if (executorType === 'custom_url' && customUrl) {
       onChange({
         type: 'custom_url',
         url: customUrl,
+        apiKey: key || undefined,
+      });
+    } else if (executorType === 'sandbox') {
+      onChange({
+        type: 'sandbox',
+        url: customUrl || undefined,
         apiKey: key || undefined,
       });
     }
   };
 
   const handleVerify = async () => {
-    if (!customUrl) {
-      setUrlError('URL is required');
+    const urlToVerify = customUrl;
+    if (!urlToVerify) {
+      if (executorType === 'custom_url') {
+        setUrlError('URL is required');
+      } else {
+        setUrlError('URL is required for verification');
+      }
       return;
     }
 
-    // Validate URL format
     try {
-      new URL(customUrl);
+      new URL(urlToVerify);
     } catch {
       setUrlError('Invalid URL format');
       return;
@@ -109,7 +149,7 @@ export function ExecutorConfigPanel({
       const response = await fetch('/api/executors/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: customUrl, apiKey: apiKey || undefined }),
+        body: JSON.stringify({ url: urlToVerify, apiKey: apiKey || undefined }),
       });
 
       const data = await response.json();
@@ -125,6 +165,8 @@ export function ExecutorConfigPanel({
       setIsVerifying(false);
     }
   };
+
+  const showUrlFields = executorType === 'custom_url' || executorType === 'sandbox';
 
   return (
     <div className="space-y-4">
@@ -207,25 +249,69 @@ export function ExecutorConfigPanel({
             </p>
           </div>
         </Button>
+
+        <Button
+          variant="ghost"
+          onClick={() => handleTypeChange('sandbox')}
+          disabled={disabled}
+          className={`flex-1 p-3 h-auto rounded-lg border-2 text-left justify-start transition-colors ${
+            executorType === 'sandbox'
+              ? 'border-primary bg-primary/5'
+              : 'border-border hover:border-foreground-secondary'
+          }`}
+        >
+          <div className="flex flex-col items-start">
+            <div className="flex items-center gap-2">
+              <div
+                className={`w-4 h-4 rounded-full border-2 ${
+                  executorType === 'sandbox'
+                    ? 'border-primary bg-primary'
+                    : 'border-foreground-tertiary'
+                }`}
+              >
+                {executorType === 'sandbox' && (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                  </div>
+                )}
+              </div>
+              <span className="font-medium text-sm text-foreground">Agent Sandbox</span>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                Stateful
+              </Badge>
+            </div>
+            <p className="text-xs text-foreground-tertiary mt-1 ml-6">
+              Persistent filesystem across tool calls
+            </p>
+          </div>
+        </Button>
       </div>
 
-      {/* Custom URL Configuration */}
-      {executorType === 'custom_url' && (
+      {/* URL/API Key Configuration (shared between custom_url and sandbox) */}
+      {showUrlFields && (
         <div className="space-y-3 pt-2 border-t border-border">
           <FormField
-            label="Executor URL"
+            label={executorType === 'sandbox' ? 'Sandbox URL (Optional)' : 'Executor URL'}
             htmlFor="executor-url"
-            required
+            required={executorType === 'custom_url'}
             error={urlError ?? undefined}
             state={urlError ? 'error' : 'default'}
-            helperText="The base URL of your executor (e.g., https://my-executor.vercel.app)"
+            helperText={
+              executorType === 'sandbox'
+                ? 'Leave empty for TPMJS default sandbox'
+                : 'The base URL of your executor (e.g., https://my-executor.vercel.app)'
+            }
           >
             <Input
               id="executor-url"
               type="url"
               value={customUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
-              placeholder="https://my-executor.vercel.app"
+              placeholder={
+                executorType === 'sandbox'
+                  ? 'Leave empty for TPMJS default sandbox'
+                  : 'https://my-executor.vercel.app'
+              }
               state={urlError ? 'error' : 'default'}
               disabled={disabled}
             />
@@ -259,8 +345,13 @@ export function ExecutorConfigPanel({
               Verify Connection
             </Button>
 
-            <Link href="/docs/executors#deploy" className="text-xs text-primary hover:underline">
-              Deploy your own executor
+            <Link
+              href={
+                executorType === 'sandbox' ? '/docs/executors/sandbox' : '/docs/executors#deploy'
+              }
+              className="text-xs text-primary hover:underline"
+            >
+              {executorType === 'sandbox' ? 'Sandbox documentation' : 'Deploy your own executor'}
             </Link>
           </div>
 

@@ -240,6 +240,39 @@ export default function ExecutorsDocsPage(): React.ReactElement {
                   />
                 </div>
               </Link>
+
+              {/* Agent Sandbox Card */}
+              <Link
+                href="/docs/executors/sandbox"
+                className="group p-6 bg-surface border border-border rounded-lg hover:border-primary/50 transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Icon icon="folder" className="w-7 h-7 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                      Agent Sandbox
+                    </h3>
+                    <p className="text-sm text-foreground-secondary mt-1">
+                      Stateful sessions with persistent filesystem across tool calls within a
+                      conversation.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <span className="px-2 py-0.5 text-xs bg-primary/10 text-primary rounded">
+                        Stateful
+                      </span>
+                      <span className="px-2 py-0.5 text-xs bg-surface-secondary rounded text-foreground-tertiary">
+                        Session-scoped
+                      </span>
+                    </div>
+                  </div>
+                  <Icon
+                    icon="chevronRight"
+                    className="w-5 h-5 text-foreground-tertiary group-hover:text-primary transition-colors"
+                  />
+                </div>
+              </Link>
             </div>
 
             <p className="text-sm text-foreground-tertiary mt-4">
@@ -330,6 +363,17 @@ export default function ExecutorsDocsPage(): React.ReactElement {
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <p className="text-sm text-foreground-secondary">
+                <strong className="text-foreground">Need stateful execution?</strong> The{' '}
+                <Link href="/docs/executors/sandbox" className="text-primary hover:underline">
+                  Agent Sandbox
+                </Link>{' '}
+                provides persistent filesystem across tool calls within a conversation. It can be
+                deployed on any of the platforms above or used with the TPMJS default sandbox.
+              </p>
             </div>
           </section>
 

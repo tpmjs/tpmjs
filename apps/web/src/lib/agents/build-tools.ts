@@ -241,10 +241,12 @@ function mergeEnvVars(
  * @param agent - The agent with tool relations
  * @param callerEnvVars - Optional env vars provided by the caller (for non-owners accessing public agents).
  *                        When provided, these are used INSTEAD of the agent's stored env vars.
+ * @param sessionId - Optional session ID for sandbox executors
  */
 export function buildAgentTools(
   agent: AgentWithRelations,
-  callerEnvVars?: Record<string, string>
+  callerEnvVars?: Record<string, string>,
+  sessionId?: string
 ): Record<string, ReturnType<typeof createToolDefinition>> {
   const tools: Record<string, ReturnType<typeof createToolDefinition>> = {};
   const seenTools = new Set<string>();
@@ -284,7 +286,7 @@ export function buildAgentTools(
       seenTools.add(toolKey);
 
       const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
-      tools[toolName] = createToolDefinition(tool, resolvedConfig, mergedEnvVars);
+      tools[toolName] = createToolDefinition(tool, resolvedConfig, mergedEnvVars, sessionId);
     }
   }
 
@@ -302,7 +304,7 @@ export function buildAgentTools(
     seenTools.add(toolKey);
 
     const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
-    tools[toolName] = createToolDefinition(tool, individualToolConfig, agentEnvVars);
+    tools[toolName] = createToolDefinition(tool, individualToolConfig, agentEnvVars, sessionId);
   }
 
   return tools;

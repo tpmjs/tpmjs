@@ -20,6 +20,7 @@ const NAV_SECTIONS = [
     title: 'Features',
     items: [
       { id: 'attaching-tools', label: 'Attaching Tools' },
+      { id: 'sandbox-mode', label: 'Sandbox Mode' },
       { id: 'chat-interface', label: 'Chat Interface' },
       { id: 'providers', label: 'Supported Providers' },
     ],
@@ -539,6 +540,38 @@ Always cite your sources and be transparent about limitations.`}
                     settings. The required environment variables are shown on each tool&apos;s card.
                   </p>
                 </div>
+              </DocSubSection>
+            </DocSection>
+
+            <DocSection id="sandbox-mode" title="Sandbox Mode">
+              <p className="text-foreground-secondary mb-4">
+                Enable <strong className="text-foreground">stateful execution</strong> by setting
+                your agent&apos;s executor to &quot;Agent Sandbox&quot;. This gives each
+                conversation its own persistent filesystem — files created by one tool call are
+                available to all subsequent tool calls in the same conversation.
+              </p>
+              <DocSubSection title="How It Works">
+                <ul className="list-disc list-inside text-foreground-secondary space-y-2">
+                  <li>A sandbox session is automatically created when the first message is sent</li>
+                  <li>Each tool call runs in the session&apos;s workspace directory</li>
+                  <li>The session TTL extends on every message (default: 1 hour)</li>
+                  <li>
+                    Sessions are destroyed when the conversation is deleted or after the TTL expires
+                  </li>
+                </ul>
+              </DocSubSection>
+              <DocSubSection title="Configuration">
+                <p className="text-foreground-secondary mb-2">
+                  In your agent&apos;s settings, select &quot;Agent Sandbox&quot; as the executor
+                  type. You can optionally provide a custom sandbox URL or use the TPMJS default.
+                </p>
+                <p className="text-foreground-secondary">
+                  See the{' '}
+                  <Link href="/docs/executors/sandbox" className="text-primary hover:underline">
+                    Sandbox documentation
+                  </Link>{' '}
+                  for deployment guides and API reference.
+                </p>
               </DocSubSection>
             </DocSection>
 

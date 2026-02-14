@@ -318,8 +318,43 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     // Add new user message
     messages.push({ role: 'user', content: parsed.data.message });
 
+    // Set up sandbox session if agent uses sandbox executor
+    let sessionId: string | undefined;
+    if (agent.executorType === 'sandbox') {
+      const { parseExecutorConfig, resolveSandboxUrl, createSandboxSession } = await import(
+        '@/lib/executors'
+      );
+      const sandboxConfig = parseExecutorConfig(agent.executorType, agent.executorConfig);
+      if (sandboxConfig && sandboxConfig.type === 'sandbox') {
+        const sandboxUrl = resolveSandboxUrl(sandboxConfig);
+        if (!sandboxUrl) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                'Sandbox executor URL not configured. Set AGENT_SANDBOX_URL or provide a custom sandbox URL.',
+            },
+            { status: 502 }
+          );
+        }
+        sessionId = `${agent.id}:${conversationId}`;
+        try {
+          await createSandboxSession(sandboxUrl, sandboxConfig.apiKey, sessionId);
+        } catch (error) {
+          console.error('[Sandbox] Failed to create session:', error);
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Failed to create sandbox session: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            },
+            { status: 502 }
+          );
+        }
+      }
+    }
+
     // Build tools from agent configuration
-    const tools = buildAgentTools(agent);
+    const tools = buildAgentTools(agent, undefined, sessionId);
 
     // Get the provider model
     const model = await getProviderModel(agent.provider, agent.modelId, apiKey);
@@ -810,17 +845,32 @@ export async function DELETE(_request: NextRequest, context: RouteContext): Prom
   const { username, agentSlug, conversationId } = await context.params;
 
   try {
-    // Fetch agent by username and slug
+    // Fetch agent by username and slug (include executor fields for sandbox cleanup)
     const agent = await prisma.agent.findFirst({
       where: {
         uid: agentSlug,
         user: { username },
       },
-      select: { id: true },
+      select: { id: true, executorType: true, executorConfig: true },
     });
 
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+    }
+
+    // Destroy sandbox session if applicable (fire-and-forget)
+    if (agent.executorType === 'sandbox') {
+      const { parseExecutorConfig, resolveSandboxUrl, destroySandboxSession } = await import(
+        '@/lib/executors'
+      );
+      const sandboxConfig = parseExecutorConfig(agent.executorType, agent.executorConfig);
+      if (sandboxConfig && sandboxConfig.type === 'sandbox') {
+        const sandboxUrl = resolveSandboxUrl(sandboxConfig);
+        if (sandboxUrl) {
+          const sessionId = `${agent.id}:${conversationId}`;
+          destroySandboxSession(sandboxUrl, sandboxConfig.apiKey, sessionId).catch(() => {});
+        }
+      }
     }
 
     // Delete conversation (messages cascade)

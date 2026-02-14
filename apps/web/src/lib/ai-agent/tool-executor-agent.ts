@@ -97,11 +97,13 @@ export function tpmjsParamsToZodSchema(parameters: TPMJSParameter[]): z.ZodObjec
  * @param tool - The tool with its package relation
  * @param executorConfig - Optional executor config for custom executors
  * @param envVars - Optional environment variables to pass to the tool
+ * @param sessionId - Optional session ID for sandbox executors
  */
 export function createToolDefinition(
   tool: Tool & { package: Package },
   executorConfig?: ExecutorConfig | null,
-  envVars?: Record<string, string>
+  envVars?: Record<string, string>,
+  sessionId?: string
 ) {
   console.log('[createToolDefinition] Tool:', tool.package.npmPackageName, '/', tool.name);
 
@@ -137,13 +139,17 @@ export function createToolDefinition(
       // Execute the actual npm package using resolved executor
       // Use the actual export name from the Tool record
       // Pass explicit version to avoid Deno HTTP import cache issues with @latest
-      const result = await executeWithExecutor(executorConfig ?? null, {
-        packageName: tool.package.npmPackageName,
-        name: tool.name, // Use actual export name (e.g., "helloWorldTool", "default")
-        version: tool.package.npmVersion,
-        params,
-        env: envVars && Object.keys(envVars).length > 0 ? envVars : undefined,
-      });
+      const result = await executeWithExecutor(
+        executorConfig ?? null,
+        {
+          packageName: tool.package.npmPackageName,
+          name: tool.name, // Use actual export name (e.g., "helloWorldTool", "default")
+          version: tool.package.npmVersion,
+          params,
+          env: envVars && Object.keys(envVars).length > 0 ? envVars : undefined,
+        },
+        sessionId
+      );
 
       if (!result.success) {
         // Log detailed error for debugging
