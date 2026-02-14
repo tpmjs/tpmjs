@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
 
       // Package data for aggregations
       packages,
+      toolCountsByPackage,
 
       // Recent activity
       toolsLast24h,
@@ -113,13 +114,19 @@ export async function GET(request: NextRequest) {
       // Package data for category/tier/download aggregations
       prisma.package.findMany({
         select: {
+          id: true,
           category: true,
           tier: true,
           npmDownloadsLastMonth: true,
           githubStars: true,
           isOfficial: true,
-          _count: { select: { tools: true } },
         },
+      }),
+
+      // Tool counts per package (separate query to avoid N+1)
+      prisma.tool.groupBy({
+        by: ['packageId'],
+        _count: { id: true },
       }),
 
       // Recent tools
@@ -223,6 +230,12 @@ export async function GET(request: NextRequest) {
       `,
     ]);
 
+    // Create a map of package ID to tool count
+    const toolCountMap = new Map<string, number>();
+    for (const item of toolCountsByPackage) {
+      toolCountMap.set(item.packageId, item._count.id);
+    }
+
     // Aggregate package data
     const categories: Record<string, number> = {};
     const tiers = { minimal: 0, rich: 0 };
@@ -236,7 +249,8 @@ export async function GET(request: NextRequest) {
 
       // Category breakdown (by tool count)
       if (pkg.category) {
-        categories[pkg.category] = (categories[pkg.category] || 0) + pkg._count.tools;
+        const toolCount = toolCountMap.get(pkg.id) || 0;
+        categories[pkg.category] = (categories[pkg.category] || 0) + toolCount;
       }
 
       // Tier breakdown (by package count)
