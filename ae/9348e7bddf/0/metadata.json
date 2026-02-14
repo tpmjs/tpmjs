@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "ae9348e7bddf",
+  "session_id": "9709bcdc-1a30-421c-9155-eb889a50264a",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-14T18:56:35.531643Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/dashboard/agents/[id]/page.tsx",
+    "apps/web/src/app/docs/agents/page.tsx",
+    "apps/web/src/app/docs/executors/page.tsx",
+    "apps/web/src/app/docs/executors/sandbox/page.tsx",
+    "apps/web/src/components/ExecutorConfigPanel.tsx",
+    "apps/web/src/lib/agents/build-tools.ts",
+    "apps/web/src/lib/ai-agent/tool-executor-agent.ts",
+    "apps/web/src/lib/executors/index.ts",
+    "packages/types/src/agent.ts",
+    "packages/types/src/collection.ts",
+    "packages/types/src/executor.ts",
+    "templates/agent-sandbox/Dockerfile",
+    "templates/agent-sandbox/README.md",
+    "templates/agent-sandbox/railway.toml",
+    "templates/agent-sandbox/server.ts"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 136,
+    "cache_creation_tokens": 183076,
+    "cache_read_tokens": 13014668,
+    "output_tokens": 37556,
+    "api_call_count": 124
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-14T18:56:30.219959Z",
+    "agent_lines": 0,
+    "human_added": 1808,
+    "human_modified": 46,
+    "human_removed": 0,
+    "total_committed": 1808,
+    "agent_percentage": 0
+  }
+}

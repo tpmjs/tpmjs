@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "ae9348e7bddf",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/dashboard/agents/[id]/page.tsx",
+    "apps/web/src/app/docs/agents/page.tsx",
+    "apps/web/src/app/docs/executors/page.tsx",
+    "apps/web/src/app/docs/executors/sandbox/page.tsx",
+    "apps/web/src/components/ExecutorConfigPanel.tsx",
+    "apps/web/src/lib/agents/build-tools.ts",
+    "apps/web/src/lib/ai-agent/tool-executor-agent.ts",
+    "apps/web/src/lib/executors/index.ts",
+    "packages/types/src/agent.ts",
+    "packages/types/src/collection.ts",
+    "packages/types/src/executor.ts",
+    "templates/agent-sandbox/Dockerfile",
+    "templates/agent-sandbox/README.md",
+    "templates/agent-sandbox/railway.toml",
+    "templates/agent-sandbox/server.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ae/9348e7bddf/0/metadata.json",
+      "transcript": "/ae/9348e7bddf/0/full.jsonl",
+      "context": "/ae/9348e7bddf/0/context.md",
+      "content_hash": "/ae/9348e7bddf/0/content_hash.txt",
+      "prompt": "/ae/9348e7bddf/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 136,
+    "cache_creation_tokens": 183076,
+    "cache_read_tokens": 13014668,
+    "output_tokens": 37556,
+    "api_call_count": 124
+  }
+}

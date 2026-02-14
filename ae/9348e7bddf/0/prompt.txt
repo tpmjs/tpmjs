@@ -1,0 +1,416 @@
+Implement the following plan:
+
+# Agent Sandbox Feature — Implementation Plan
+
+## Context
+
+TPMJS agents currently execute tools statelessly — each tool call is an independent HTTP request with no shared state. The Agent Sandbox feature adds **stateful execution sessions** where files created by one tool call persist for subsequent calls within the same conversation. This enables multi-step workflows (e.g., generate a CSV, then analyze it, then chart it).
+
+Users can specify a sandbox URL or use the TPMJS default sandbox on Railway. Default behavior (no sandbox) remains unchanged. No database migration needed — existing `executorType` (varchar) and `executorConfig` (JSONB) fields accommodate the new type.
+
+---
+
+## Step 1: Types & Schemas
+
+### `packages/types/src/executor.ts`
+- Add `'sandbox'` to `ExecutorTypeSchema`: `z.enum(['default', 'custom_url', 'sandbox'])`
+- Add `SandboxExecutorConfigSchema`: `{ type: 'sandbox', url?: string, apiKey?: string }`
+- Add to `ExecutorConfigSchema` discriminated union
+- Export `SandboxExecutorConfig` type
+- Add session management types and schemas:
+  - `CreateSessionRequestSchema`, `CreateSessionRequest/Response`
+  - `DestroySessionResponse`, `SessionStatusResponse`
+  - `SandboxExecuteToolRequestSchema`, `SandboxExecuteToolRequest` (extends `ExecuteToolRequest` with `sessionId`)
+
+### `packages/types/src/agent.ts`
+- Make `url` optional in `ExecutorConfigUpdateSchema` (sandbox doesn't require a URL)
+
+### `packages/types/src/collection.ts`
+- Same `url` optionality change as agent.ts
+
+---
+
+## Step 2: Executor Resolution & Execution
+
+### `apps/web/src/lib/executors/index.ts`
+
+**New functions:**
+- `resolveSandboxUrl(config)` — returns `config.url || process.env.AGENT_SANDBOX_URL || null`
+- `createSandboxSession(url, apiKey, sessionId, timeoutSeconds?)` — POST to `/sessions`, idempotent (resumes if exists)
+- `destroySandboxSession(url, apiKey, sessionId)` — DELETE `/sessions/:id`, fire-and-forget safe
+- `executeWithSandbox(url, apiKey, request, sessionId, timeout?)` — like `executeWithCustomUrl` but includes `sessionId` in request body
+
+**Modifications:**
+- `parseExecutorConfig()` — add `'sandbox'` case to return `SandboxExecutorConfig`
+- `executeWithExecutor(config, request, sessionId?)` — add optional `sessionId` param, dispatch to `executeWithSandbox` when `type === 'sandbox'`
+- `getExecutorDescription()` — add sandbox case returning "TPMJS Agent Sandbox" or "Sandbox: hostname"
+
+---
+
+## Step 3: Tool Definition Plumbing
+
+### `apps/web/src/lib/ai-agent/tool-executor-agent.ts`
+- Add `sessionId?: string` as 5th param to `createToolDefinition()`
+- Pass `sessionId` as 3rd arg to `executeWithExecutor()` in the execute callback
+
+### `apps/web/src/lib/agents/build-tools.ts`
+- Add `sessionId?: string` as 3rd param to `buildAgentTools()`
+- Pass `sessionId` to both `createToolDefinition()` call sites (collection tools ~line 287, individual tools ~line 305)
+
+---
+
+## Step 4: Conversation Routes (Session Lifecycle)
+
+Three files, same pattern each:
+
+1. `apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts`
+2. `apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts`
+3. `apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts`
+
+**POST handler** (after fetching agent, before building tools):
+1. Check if `agent.executorType === 'sandbox'`
+2. Parse sandbox config, resolve URL (config URL or `AGENT_SANDBOX_URL`)
+3. Generate `sessionId = agentId:conversationId`
+4. Call `createSandboxSession()` — idempotent, extends TTL if exists
+5. On failure: return 502 with clear error
+6. Pass `sessionId` to `buildAgentTools(agent, callerEnvVars, sessionId)`
+
+**DELETE handler**:
+1. Update agent select to include `executorType` and `executorConfig`
+2. If sandbox: resolve URL, call `destroySandboxSession()` fire-and-forget
+3. Then proceed with existing conversation deletion
+
+---
+
+## Step 5: Sandbox Template
+
+### New directory: `templates/agent-sandbox/`
+
+**`server.ts`** — Deno HTTP server based on `apps/railway-executor/server.ts`:
+- In-memory `Map<sessionId, Session>` with `{ workDir, createdAt, expiresAt, toolCallCount }`
+- Session endpoints: `POST /sessions`, `GET /sessions/:id`, `DELETE /sessions/:id`
+- Tool execution: extract `sessionId` from body, set `cwd` to session workspace dir, extend expiry
+- Session workspace: `/tmp/tpmjs-sandbox/sessions/<sessionId>/workspace/`
+- Cleanup interval (60s): GC expired sessions, rm workspace dirs
+- Health endpoint: include `capabilities: { sessions: true }`
+- Limits: MAX_CONCURRENT_SESSIONS=50, per-session disk quota ~100MB, default TTL=3600s
+- Same esm.sh dynamic import pattern as railway executor
+
+**`Dockerfile`** — Based on `apps/railway-executor/Dockerfile`:
+- `denoland/deno:2.1.9` base, add `--allow-write=/tmp` permission
+- `mkdir -p /tmp/tpmjs-sandbox/sessions` in build
+
+**`railway.toml`** — Copy from railway-executor
+
+**`README.md`** — Deployment guide
+
+---
+
+## Step 6: UI Changes
+
+### `apps/web/src/components/ExecutorConfigPanel.tsx`
+- Add third radio button: "Agent Sandbox" with "Stateful" badge
+- Description: "Persistent filesystem across tool calls within a conversation"
+- Share URL/API key fields between `custom_url` and `sandbox` types
+- Sandbox URL placeholder: "Leave empty for TPMJS default sandbox"
+- URL field required only for `custom_url`, optional for `sandbox`
+- Verify button works for both types
+
+### `apps/web/src/app/dashboard/agents/[id]/page.tsx`
+- Update executor config hydration to handle `executorType === 'sandbox'`
+- Update save payload construction for sandbox type
+- Add sandbox badge indicator when active
+
+---
+
+## Step 7: Documentation
+
+### New: `apps/web/src/app/docs/executors/sandbox/page.tsx`
+Following `apps/web/src/app/docs/executors/railway/page.tsx` pattern:
+- What is the Agent Sandbox
+- When to use it (multi-step workflows, filesystem operations, data pipelines)
+- Default sandbox vs self-hosted
+- Session lifecycle (creation, TTL extension, auto-expire, cleanup on delete)
+- API contract reference
+- Deploy your own (Railway, Docker)
+
+### Update: `apps/web/src/app/docs/executors/page.tsx`
+- Add "Agent Sandbox" card to executor types grid
+- Add row to comparison table
+
+### Update: `apps/web/src/app/docs/agents/page.tsx`
+- Add "Sandbox Mode" section
+
+---
+
+## Implementation Order
+
+| Step | Files | Depends On | Can Parallel With |
+|------|-------|------------|-------------------|
+| 1 | `packages/types/src/executor.ts`, `agent.ts`, `collection.ts` | Nothing | — |
+| 2 | `apps/web/src/lib/executors/index.ts` | Step 1 | — |
+| 3 | `tool-executor-agent.ts`, `build-tools.ts` | Step 2 | — |
+| 4 | 3 conversation `route.ts` files | Steps 2, 3 | — |
+| 5 | `templates/agent-sandbox/` (new) | Step 1 | Steps 2-4 |
+| 6 | `ExecutorConfigPanel.tsx`, agent settings page | Step 1 | Steps 2-5 |
+| 7 | Doc pages (new + updates) | Steps 5, 6 | — |
+
+---
+
+## Key Edge Cases
+
+1. **Session idempotency**: `createSandboxSession` must be idempotent — if session exists, extend TTL and return it. Conversation POST is called for every message.
+2. **Cleanup race conditions**: DELETE for non-existent sessions should return gracefully (200 with `destroyed: false`).
+3. **Missing sandbox URL**: When `AGENT_SANDBOX_URL` is unset and no custom URL configured, return clear 502 error.
+4. **Backward compatibility**: `resolveExecutorConfig` still returns `{ type: 'default' }` when no config is set. Zero impact on existing agents.
+5. **Session expiry**: If conversation goes idle > TTL (1hr), next POST recreates session but workspace files are lost. This is expected behavior.
+6. **`url` optionality in `ExecutorConfigUpdateSchema`**: `custom_url` still requires URL at the UI level (required field) and `parseExecutorConfig` level. Only `sandbox` benefits from optional URL.
+
+---
+
+## Verification
+
+1. **Type-check**: `pnpm type-check` passes after all changes
+2. **Build**: `pnpm build` succeeds
+3. **Lint/format**: `pnpm lint && pnpm format` pass
+4. **Unit**: `parseExecutorConfig` handles `'sandbox'` type correctly
+5. **Integration**: Create agent with sandbox executor, send message triggering file write, send second message reading that file — verify persistence
+6. **Session cleanup**: Delete conversation, verify sandbox session is destroyed
+7. **Default sandbox**: Set executor to sandbox with no URL, verify it uses `AGENT_SANDBOX_URL`
+8. **Custom sandbox**: Set custom sandbox URL, verify tool calls route to it
+9. **Backward compat**: Existing agents without sandbox continue working unchanged
+10. **UI**: ExecutorConfigPanel renders sandbox option, saves correctly, verify button works
+11. **Docs**: Navigate to `/docs/executors/sandbox`, verify page renders
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. The user asked to implement an "Agent Sandbox Feature" based on a detailed implementation plan. The plan was for adding stateful execution sessions to TPMJS agents.
+
+2. I created task items for all 8 steps of the implementation.
+
+3. I read all the key files needed:
+   - `packages/types/src/executor.ts` - executor type schemas
+   - `packages/types/src/agent.ts` - agent schemas with ExecutorConfigUpdateSchema
+   - `packages/types/src/collection.ts` - collection schemas with ExecutorConfigUpdateSchema
+   - `apps/web/src/lib/executors/index.ts` - executor resolution and execution logic
+   - `apps/web/src/lib/ai-agent/tool-executor-agent.ts` - tool definition creation
+   - `apps/web/src/lib/agents/build-tools.ts` - agent tool building
+   - All 3 conversation route files
+   - `apps/web/src/components/ExecutorConfigPanel.tsx` - UI panel
+   - `apps/web/src/app/dashboard/agents/[id]/page.tsx` - agent settings page
+   - Railway executor reference files (server.ts, Dockerfile, railway.toml)
+   - Doc pages (executors overview, railway executor, agents)
+
+4. User sent an interrupting message: "post the plan to discord as a summary" - I posted a summary to Discord #tpmjs channel.
+
+5. I then continued implementing all steps:
+
+**Step 1: Types & Schemas** (COMPLETED)
+- Added `'sandbox'` to `ExecutorTypeSchema`
+- Added `SandboxExecutorConfigSchema` with optional url and apiKey
+- Added it to `ExecutorConfigSchema` discriminated union
+- Exported `SandboxExecutorConfig` type
+- Added session management types: `CreateSessionRequestSchema`, `CreateSessionRequest`, `CreateSessionResponse`, `DestroySessionResponse`, `SessionStatusResponse`, `SandboxExecuteToolRequestSchema`, `SandboxExecuteToolRequest`
+- Made `url` optional in both `agent.ts` and `collection.ts` `ExecutorConfigUpdateSchema`
+
+**Step 2: Executor Resolution & Execution** (COMPLETED)
+- Added imports for new types
+- Added `'sandbox'` case to `parseExecutorConfig()`
+- Added `resolveSandboxUrl()`, `createSandboxSession()`, `destroySandboxSession()`, `executeWithSandbox()` functions
+- Modified `executeWithExecutor()` to accept optional `sessionId` and dispatch to sandbox
+- Updated `getExecutorDescription()` for sandbox type
+
+**Step 3: Tool Definition Plumbing** (COMPLETED)
+- Added `sessionId?: string` as 4th param to `createToolDefinition()`
+- Passed `sessionId` to `executeWithExecutor()` call
+- Added `sessionId?: string` as 3rd param to `buildAgentTools()`
+- Passed `sessionId` through both `createToolDefinition()` call sites
+
+**Step 4: Conversation Routes** (COMPLETED)
+- Updated all 3 POST handlers to create sandbox sessions before building tools
+- Updated all 3 DELETE handlers to destroy sandbox sessions (fire-and-forget)
+- Updated `findAgentByUsernameAndUid()` in chat route to include `executorType` and `executorConfig` in select
+
+**Step 5: Sandbox Template** (COMPLETED)
+- Created `templates/agent-sandbox/server.ts` - Deno HTTP server with session management
+- Created `templates/agent-sandbox/Dockerfile`
+- Created `templates/agent-sandbox/railway.toml`
+- Created `templates/agent-sandbox/README.md`
+
+**Step 6: UI Changes** (COMPLETED)
+- Rewrote `ExecutorConfigPanel.tsx` with 3 radio buttons (default, custom, sandbox)
+- Sandbox has "Stateful" badge
+- URL/API key fields shared between custom_url and sandbox
+- Updated agent settings page for sandbox config hydration, save, and badge
+
+**Step 7: Documentation** (COMPLETED)
+- Created `apps/web/src/app/docs/executors/sandbox/page.tsx`
+- Updated `apps/web/src/app/docs/executors/page.tsx` with sandbox card and comparison note
+- Updated `apps/web/src/app/docs/agents/page.tsx` with Sandbox Mode section in sidebar and content
+
+**Step 8: Type-check and Build Verification** (IN PROGRESS)
+- Ran `pnpm type-check` - ALL 222 TASKS PASSED (0 failures)
+
+6. User sent another message: "post a summary to discord #tpmjs" - I need to handle this after completing current work.
+
+No errors were encountered during implementation - the type-check passed cleanly on the first try.
+
+The user's most recent message was "post a summary to discord #tpmjs" which I haven't addressed yet.
+
+Summary:
+1. Primary Request and Intent:
+   The user asked to implement an "Agent Sandbox Feature" based on a comprehensive 7-step implementation plan provided in `AGENT_SANDBOX_PLAN.md`. The feature adds stateful execution sessions to TPMJS agents, where files created by one tool call persist for subsequent calls within the same conversation. This enables multi-step workflows (e.g., generate CSV → analyze → chart). The user also asked twice to post summaries to Discord #tpmjs channel.
+
+2. Key Technical Concepts:
+   - Turborepo monorepo with pnpm workspaces, Next.js 16 App Router
+   - Zod discriminated union schemas for executor config types
+   - Executor cascade resolution: Agent Config → Collection Config → System Default
+   - Session lifecycle: idempotent creation, TTL extension on activity, auto-expire/manual cleanup
+   - Session ID format: `agentId:conversationId`
+   - SSE streaming for conversation responses
+   - AI SDK v6 tool definitions with `inputSchema` and `execute` callbacks
+   - Deno HTTP server with esm.sh dynamic imports for the sandbox template
+   - Fire-and-forget pattern for session cleanup on conversation DELETE
+
+3. Files and Code Sections:
+
+   - **`packages/types/src/executor.ts`** — Core type definitions for all executor types
+     - Added `'sandbox'` to `ExecutorTypeSchema`: `z.enum(['default', 'custom_url', 'sandbox'])`
+     - Added `SandboxExecutorConfigSchema` with optional `url` and `apiKey`
+     - Added to `ExecutorConfigSchema` discriminated union
+     - Added session management types: `CreateSessionRequestSchema`, `CreateSessionResponse`, `DestroySessionResponse`, `SessionStatusResponse`, `SandboxExecuteToolRequestSchema`, `SandboxExecuteToolRequest`
+     ```typescript
+     export const SandboxExecutorConfigSchema = z.object({
+       type: z.literal('sandbox'),
+       url: z.string().url().optional(),
+       apiKey: z.string().optional(),
+     });
+     ```
+
+   - **`packages/types/src/agent.ts`** — Made `url` optional in `ExecutorConfigUpdateSchema`
+     - Changed `url: z.string().url()` to `url: z.string().url().optional()`
+
+   - **`packages/types/src/collection.ts`** — Same `url` optionality change as agent.ts
+
+   - **`apps/web/src/lib/executors/index.ts`** — Core executor resolution and execution logic
+     - Added imports for `CreateSessionResponse`, `DestroySessionResponse`, `SandboxExecutorConfig`
+     - Added `'sandbox'` case to `parseExecutorConfig()`
+     - Added `resolveSandboxUrl(config)` — returns `config.url || process.env.AGENT_SANDBOX_URL || null`
+     - Added `createSandboxSession(url, apiKey, sessionId, timeoutSeconds?)` — POST to `/sessions`, idempotent
+     - Added `destroySandboxSession(url, apiKey, sessionId)` — DELETE `/sessions/:id`, fire-and-forget safe
+     - Added `executeWithSandbox(url, apiKey, request, sessionId, timeout?)` — like `executeWithCustomUrl` but includes `sessionId`
+     - Modified `executeWithExecutor(config, request, sessionId?)` — added optional `sessionId` param, dispatches to sandbox when `type === 'sandbox'`
+     - Updated `getExecutorDescription()` — returns "TPMJS Agent Sandbox" or "Sandbox: hostname"
+
+   - **`apps/web/src/lib/ai-agent/tool-executor-agent.ts`** — Tool definition creation
+     - Added `sessionId?: string` as 4th param to `createToolDefinition()`
+     - Passed `sessionId` to `executeWithExecutor()` call
+
+   - **`apps/web/src/lib/agents/build-tools.ts`** — Agent tool building
+     - Added `sessionId?: string` as 3rd param to `buildAgentTools()`
+     - Passed `sessionId` to both `createToolDefinition()` call sites (collection tools and individual tools)
+
+   - **`apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts`** — Conversation route (ID-based)
+     - POST: Added sandbox session creation block before `buildAgentTools()`, passes `sessionId` to `buildAgentTools(agent, callerEnvVars, sessionId)`
+     - DELETE: Updated agent select to include `executorType` and `executorConfig`, added fire-and-forget `destroySandboxSession()` call
+
+   - **`apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts`** — Conversation route (username/uid)
+     - POST: Added sandbox session creation block, passes `sessionId` to `buildAgentTools(agent, undefined, sessionId)`
+     - DELETE: Updated `findAgentByUsernameAndUid()` select to include `executorType` and `executorConfig`, added fire-and-forget `destroySandboxSession()`
+
+   - **`apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts`** — Conversation route (username/slug)
+     - POST: Added sandbox session creation block, passes `sessionId` to `buildAgentTools(agent, undefined, sessionId)`
+     - DELETE: Updated agent select to include `executorType` and `executorConfig`, added fire-and-forget `destroySandboxSession()`
+
+   - **`templates/agent-sandbox/server.ts`** — NEW: Deno HTTP server for sandbox
+     - In-memory `Map<sessionId, Session>` with `{ workDir, createdAt, expiresAt, toolCallCount }`
+     - Session endpoints: POST `/sessions`, GET `/sessions/:id`, DELETE `/sessions/:id`
+     - Tool execution with `sessionId` extracting workspace dir and extending expiry
+     - Session workspace: `/tmp/tpmjs-sandbox/sessions/<sessionId>/workspace/`
+     - Cleanup interval every 60s for expired sessions
+     - Health endpoint includes `capabilities: { sessions: true }`
+     - Limits: MAX_CONCURRENT_SESSIONS=50, default TTL=3600s
+     - Same esm.sh dynamic import pattern as railway executor
+
+   - **`templates/agent-sandbox/Dockerfile`** — NEW: Based on `denoland/deno:2.1.9`, adds `/tmp/tpmjs-sandbox/sessions` dir
+
+   - **`templates/agent-sandbox/railway.toml`** — NEW: Copy from railway-executor
+
+   - **`templates/agent-sandbox/README.md`** — NEW: Deployment guide with env vars, API examples
+
+   - **`apps/web/src/components/ExecutorConfigPanel.tsx`** — Fully rewritten UI component
+     - Three radio buttons: "TPMJS Default", "Custom Executor", "Agent Sandbox" (with "Stateful" Badge)
+     - Shared URL/API key fields between `custom_url` and `sandbox`
+     - Sandbox URL is optional (placeholder: "Leave empty for TPMJS default sandbox")
+     - Verify button works for both types
+     - Links to `/docs/executors/sandbox` for sandbox type
+
+   - **`apps/web/src/app/dashboard/agents/[id]/page.tsx`** — Agent settings page
+     - Updated executor config hydration to handle `executorType === 'sandbox'`
+     - Updated save payload construction for sandbox type (passes `url` and `apiKey`)
+     - Added `<Badge variant="secondary">Agent Sandbox</Badge>` indicator
+
+   - **`apps/web/src/app/docs/executors/sandbox/page.tsx`** — NEW: Full sandbox documentation page
+     - What is the Agent Sandbox, When to Use It, Session Lifecycle, Default vs Self-hosted comparison, API Reference, Deploy Your Own
+
+   - **`apps/web/src/app/docs/executors/page.tsx`** — Updated executors overview
+     - Added Agent Sandbox card with "Stateful" and "Session-scoped" badges
+     - Added info box about sandbox after comparison table
+
+   - **`apps/web/src/app/docs/agents/page.tsx`** — Updated agents docs
+     - Added `{ id: 'sandbox-mode', label: 'Sandbox Mode' }` to sidebar nav
+     - Added DocSection with how it works and configuration subsections
+
+4. Errors and fixes:
+   - No errors were encountered. The type-check passed on the first attempt with all 222 tasks successful (217 cached, 5 rebuilt).
+
+5. Problem Solving:
+   - The entire 7-step implementation plan was completed without issues. All type-checking passed cleanly. The key architectural decisions followed from the plan: idempotent session creation, fire-and-forget cleanup, optional URL (falls back to `AGENT_SANDBOX_URL` env var), and backward compatibility (existing agents unchanged).
+
+6. All user messages:
+   - "Implement the following plan: [Agent Sandbox Feature — Implementation Plan with detailed 7-step plan]"
+   - "post the plan to discord as a summary" (sent as interruption while reading files)
+   - "post a summary to discord #tpmjs" (sent as interruption while working on docs step)
+
+7. Pending Tasks:
+   - Post a progress summary to Discord #tpmjs (user's second Discord request)
+   - Complete Step 8: Run `pnpm build`, `pnpm lint`, and `pnpm format` verification (type-check already passed)
+
+8. Current Work:
+   Step 8 (Type-check and Build Verification) was in progress. The `pnpm type-check` command completed successfully with "Tasks: 222 successful, 222 total". The remaining verification steps are `pnpm build`, `pnpm lint`, and `pnpm format`. Additionally, the user sent "post a summary to discord #tpmjs" which needs to be addressed.
+
+9. Optional Next Step:
+   The user's most recent explicit request was: "post a summary to discord #tpmjs". This should be addressed immediately. After that, continue Step 8 verification by running `pnpm build` and `pnpm lint && pnpm format` to ensure the full implementation compiles and passes all checks. The type-check already passed with "Tasks: 222 successful, 222 total".
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+write and post a testing script so i can do something, and instructions on what i have to do with railway or something
+
+---
+
+[Request interrupted by user]
+
+---
+
+<task-notification>
+<task-id>b655a8b</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b655a8b.output</output-file>
+<status>completed</status>
+<summary>Background command "Build all packages to verify compilation" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b655a8b.output
+
+---
+
+okay thats great commit and push everythign
