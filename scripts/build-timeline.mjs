@@ -100,6 +100,6 @@ const milestones = [
 const outPath = fileURLToPath(new URL('../apps/web/public/timeline-data.json', import.meta.url));
 mkdirSync(dirname(outPath), { recursive: true });
 
-const json = JSON.stringify({ c: data, m: milestones });
+const json = `${JSON.stringify({ c: data, m: milestones }, null, '  ')}\n`;
 writeFileSync(outPath, json);
 console.log(`Built ${outPath} (${(json.length / 1024).toFixed(0)}KB) with ${data.length} commits`);
