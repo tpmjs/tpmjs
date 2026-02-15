@@ -6527,6 +6527,14 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "5df527428adf6025edf115b77501cc2a5b69fac7",
+      "d": "2026-02-16",
+      "m": "fix: format timeline-data.json with 2-space indent to pass biome check",
+      "t": "fix",
+      "s": "",
+      "u": "format timeline-data.json with 2-space indent to pass biome check"
     }
   ],
   "m": [
