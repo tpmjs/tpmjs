@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
@@ -487,7 +488,6 @@ export function TimelineView(): React.ReactElement {
       </div>
 
       {/* Timeline viewport */}
-      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       {/* biome-ignore lint/a11y/noStaticElementInteractions: drag-to-pan canvas, keyboard nav via window keydown */}
       <div
         ref={scrollRef}
@@ -546,7 +546,6 @@ export function TimelineView(): React.ReactElement {
             {layout.positioned.map((item) => {
               const co = getTypeColor(item.commit.t);
               return (
-                // eslint-disable-next-line jsx-a11y/no-static-element-interactions
                 // biome-ignore lint/a11y/noStaticElementInteractions: tooltip trigger on hover only
                 <div
                   key={item.commit.h}
