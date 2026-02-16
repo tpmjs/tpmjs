@@ -6551,6 +6551,22 @@
       "t": "refactor",
       "s": "",
       "u": "separate sandbox from executor types into independent toggle"
+    },
+    {
+      "h": "d98e7396d236ef517ac9caf3c27b7eea0ca22bd6",
+      "d": "2026-02-16",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "a7d8969bfb79552d1c2a8c62d100f510c8004ec1",
+      "d": "2026-02-17",
+      "m": "chore: increase sandbox session TTL to 24 hours, document expiry behavior",
+      "t": "chore",
+      "s": "",
+      "u": "increase sandbox session TTL to 24 hours, document expiry behavior"
     }
   ],
   "m": [
