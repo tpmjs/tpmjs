@@ -6599,6 +6599,22 @@
       "t": "docs",
       "s": "",
       "u": "simplify Vercel project info in CLAUDE.md, remove stale apps/web/.vercel Entire-Checkpoint: 624468e1b848"
+    },
+    {
+      "h": "8b26a35ea8c70f44187b082b5045f7d691004720",
+      "d": "2026-02-16",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "c5ebd84e1865a18a5569c6b9d6584540d5f9aa95",
+      "d": "2026-02-17",
+      "m": "feat: build sandbox tools into server and pass agent env vars to sandbox",
+      "t": "feat",
+      "s": "",
+      "u": "build sandbox tools into server and pass agent env vars to sandbox"
     }
   ],
   "m": [
