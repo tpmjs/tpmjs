@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "69f72d7264e8",
+  "session_id": "526f2e99-089f-466b-98d7-566241baabab",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-16T21:18:29.591077Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/agents/[id]/logs/route.ts",
+    "apps/web/src/app/dashboard/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/app/dashboard/agents/[id]/page.tsx",
+    "apps/web/src/components/ConversationSandboxLogs.tsx",
+    "apps/web/src/components/SandboxLogEntries.tsx",
+    "apps/web/src/components/SandboxLogsPanel.tsx",
+    "apps/web/src/components/agents/ChatToolsPanel.tsx",
+    "apps/web/src/hooks/useResizableWidth.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "5454e7da-ce6d-44a6-84e5-929ee2940486",
+  "checkpoint_transcript_start": 1250,
+  "transcript_lines_at_start": 1250,
+  "token_usage": {
+    "input_tokens": 29,
+    "cache_creation_tokens": 34735,
+    "cache_read_tokens": 2496696,
+    "output_tokens": 6194,
+    "api_call_count": 25
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-16T21:18:28.844284Z",
+    "agent_lines": 75,
+    "human_added": 38,
+    "human_modified": 12,
+    "human_removed": 0,
+    "total_committed": 125,
+    "agent_percentage": 60
+  }
+}
