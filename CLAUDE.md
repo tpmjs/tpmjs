@@ -47,21 +47,14 @@ Pre-commit runs: format, lint, type-check. Pre-push runs: test. If hooks pass lo
 
 ## Vercel
 
-**IMPORTANT:** There are two Vercel projects. The production site uses `tpmjs-web`, NOT `web`.
+The Vercel project is `tpmjs-web` (configured in `/.vercel/project.json`). Domains: `tpmjs.com`, `tpmjs-web.vercel.app`.
 
-| Project | `.vercel/project.json` | Domains | Use |
-|---------|----------------------|---------|-----|
-| `tpmjs-web` | Root (`/.vercel/`) | `tpmjs.com`, `tpmjs-web.vercel.app` | **Production** — this is what users see |
-| `web` | `apps/web/.vercel/` | `web-tpmjs.vercel.app` | Legacy/unused — do NOT add env vars here |
-
-When adding env vars or redeploying, **always run from the repo root** so the CLI uses the correct project:
+**Always run Vercel CLI commands from the repo root** so it picks up the correct project:
 
 ```bash
-# CORRECT — uses tpmjs-web (production)
-cd /path/to/tpmjs && vercel env add MY_VAR production
-
-# WRONG — uses the old "web" project
-cd /path/to/tpmjs/apps/web && vercel env add MY_VAR production
+vercel env add MY_VAR production              # Add env var
+vercel env ls                                 # List env vars
+vercel redeploy <deployment-url>              # Redeploy with latest env vars
 ```
 
 Build command: `cd ../.. && pnpm install && pnpm --filter=@tpmjs/web... build` (the `...` suffix builds all workspace dependencies first).
