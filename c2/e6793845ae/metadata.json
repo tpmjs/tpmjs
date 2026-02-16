@@ -7,7 +7,15 @@
   "files_touched": [
     ".github/workflows/sandbox-tests.yml",
     "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/dashboard/agents/[id]/page.tsx",
+    "apps/web/src/app/docs/agents/page.tsx",
+    "apps/web/src/app/docs/executors/page.tsx",
     "apps/web/src/app/docs/executors/sandbox/page.tsx",
+    "apps/web/src/components/ExecutorConfigPanel.tsx",
+    "apps/web/src/lib/agents/build-tools.ts",
+    "apps/web/src/lib/ai-agent/tool-executor-agent.ts",
     "apps/web/src/lib/executors/index.ts",
     "apps/web/src/test/integration/sandbox/_helpers/sandbox-client.ts",
     "apps/web/src/test/integration/sandbox/_helpers/sandbox-context.ts",
@@ -28,9 +36,13 @@
     "packages/tools/official/sandbox-shell/src/index.ts",
     "packages/tools/official/sandbox-shell/tsconfig.json",
     "packages/tools/official/sandbox-shell/tsup.config.ts",
+    "packages/types/src/agent.ts",
+    "packages/types/src/collection.ts",
+    "packages/types/src/executor.ts",
     "templates/agent-sandbox/Dockerfile",
     "templates/agent-sandbox/README.md",
     "templates/agent-sandbox/git-credential-env",
+    "templates/agent-sandbox/railway.toml",
     "templates/agent-sandbox/server.ts",
     "templates/agent-sandbox/test-sandbox.sh"
   ],
@@ -55,13 +67,20 @@
       "context": "/c2/e6793845ae/2/context.md",
       "content_hash": "/c2/e6793845ae/2/content_hash.txt",
       "prompt": "/c2/e6793845ae/2/prompt.txt"
+    },
+    {
+      "metadata": "/c2/e6793845ae/3/metadata.json",
+      "transcript": "/c2/e6793845ae/3/full.jsonl",
+      "context": "/c2/e6793845ae/3/context.md",
+      "content_hash": "/c2/e6793845ae/3/content_hash.txt",
+      "prompt": "/c2/e6793845ae/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 22059,
-    "cache_creation_tokens": 896217,
-    "cache_read_tokens": 47099917,
-    "output_tokens": 110721,
-    "api_call_count": 463
+    "input_tokens": 23939,
+    "cache_creation_tokens": 959250,
+    "cache_read_tokens": 48905066,
+    "output_tokens": 126399,
+    "api_call_count": 479
   }
 }
