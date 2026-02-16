@@ -1,0 +1,478 @@
+Implement the following plan:
+
+# Separate Sandbox from Custom Executors
+
+## Context
+
+Currently, "sandbox" is one of three executor types (`default | custom_url | sandbox`). This conflates two independent concepts:
+
+- **Executor** = Where tools run (TPMJS default infrastructure, or a user's own server)
+- **Sandbox** = A persistent workspace with shell, file, and git tools
+
+A user can't have a custom executor AND a sandbox simultaneously. The goal: any agent can "boot up a sandbox" by flipping a toggle, independent of its executor config.
+
+## Design
+
+- Remove `'sandbox'` from executor types. Executors become: `default | custom_url`
+- Add `sandboxEnabled` boolean to the Agent model
+- When enabled, 4 sandbox tools (shellExec, readFile, writeFile, listFiles) are **auto-injected** — no manual collection attachment needed
+- Sandbox tools always route to the sandbox server; other tools route to the configured executor
+- Sandbox URL + API key come from env vars (`AGENT_SANDBOX_URL`, `AGENT_SANDBOX_API_KEY`)
+
+## Files to Modify
+
+### 1. `packages/db/prisma/schema.prisma`
+
+Add to Agent model (after `envVars` line ~647):
+```prisma
+sandboxEnabled       Boolean    @default(false) @map("sandbox_enabled")
+```
+
+### 2. `packages/types/src/executor.ts`
+
+- `ExecutorTypeSchema` → `z.enum(['default', 'custom_url'])` (remove `'sandbox'`)
+- Remove `SandboxExecutorConfigSchema` from `ExecutorConfigSchema` discriminated union
+- Delete `SandboxExecutorConfig` type export
+- Keep all sandbox session types (`CreateSessionRequest/Response`, `DestroySessionResponse`, etc.) — used internally
+
+### 3. `packages/types/src/agent.ts`
+
+- `UpdateAgentSchema`: add `sandboxEnabled: z.boolean().optional()`
+- `CreateAgentSchema`: add `sandboxEnabled: z.boolean().default(false).optional()`
+
+### 4. `apps/web/src/lib/executors/index.ts`
+
+- Remove `'sandbox'` case from `parseExecutorConfig()` (lines 106-118)
+- Remove sandbox routing from `executeWithExecutor()` (lines 444-456)
+- Add new helper:
+  ```typescript
+  export function getSandboxConfig(): { url: string | null; apiKey: string | undefined } {
+    return {
+      url: process.env.AGENT_SANDBOX_URL || null,
+      apiKey: process.env.AGENT_SANDBOX_API_KEY || undefined,
+    };
+  }
+  ```
+- Remove sandbox case from `getExecutorDescription()` (lines 632-644)
+- Keep `createSandboxSession()`, `destroySandboxSession()`, `executeWithSandbox()` unchanged
+
+### 5. `apps/web/src/lib/agents/build-tools.ts`
+
+Add `injectSandboxTools(sandboxUrl, sandboxApiKey, sessionId)` function that returns 4 hard-coded tool definitions:
+
+| Tool | Parameters |
+|------|-----------|
+| `shellExec` | `command` (string, required), `timeout` (number, optional) |
+| `readFile` | `path` (string, required) |
+| `writeFile` | `path` (string, required), `content` (string, required), `createDirs` (boolean, optional) |
+| `listFiles` | `path` (string, optional), `recursive` (boolean, optional), `maxDepth` (number, optional) |
+
+Each tool's `execute()` calls `executeWithSandbox(sandboxUrl, sandboxApiKey, request, sessionId)` directly — bypasses executor resolution.
+
+In `buildAgentTools()`: when `sessionId` is provided, call `injectSandboxTools()` first. Add sandbox tool keys to `seenTools` to deduplicate if the sandbox-shell collection is also attached.
+
+### 6. Conversation Routes (both)
+
+**`apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts`**
+**`apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts`**
+
+POST handler — replace executor-based sandbox check:
+```typescript
+// Before: if (agent.executorType === 'sandbox') { parseExecutorConfig... }
+// After:
+if (agent.sandboxEnabled) {
+  const { url: sandboxUrl, apiKey: sandboxApiKey } = getSandboxConfig();
+  if (!sandboxUrl) { return 502 error }
+  _sandboxUrl = sandboxUrl;
+  _sandboxApiKey = sandboxApiKey;
+  sessionId = `${agent.id}:${conversationId}`;
+  await createSandboxSession(sandboxUrl, sandboxApiKey, sessionId);
+}
+```
+
+Pass `sandboxUrl` and `sandboxApiKey` to `buildAgentTools()` (new params) so sandbox tools can be injected.
+
+DELETE handler — same pattern:
+```typescript
+if (agent.sandboxEnabled) {
+  const { url: sandboxUrl, apiKey: sandboxApiKey } = getSandboxConfig();
+  if (sandboxUrl) {
+    destroySandboxSession(sandboxUrl, sandboxApiKey, sessionId).catch(() => {});
+  }
+}
+```
+
+Update `select` clauses: replace `executorType: true, executorConfig: true` with `sandboxEnabled: true` where those were only used for sandbox checks.
+
+### 7. `apps/web/src/components/ExecutorConfigPanel.tsx`
+
+- Remove "Agent Sandbox" radio button (3rd option)
+- `ExecutorTypeOption` → `'default' | 'custom_url'`
+- Remove `'sandbox'` from `getInitialType`, `getInitialUrl`, `getInitialApiKey`
+- Remove sandbox-specific helper text and doc links
+- `showUrlFields` → only `executorType === 'custom_url'`
+
+### 8. New: `apps/web/src/components/SandboxToggle.tsx`
+
+Simple toggle with description text:
+```
+[Switch] Enable Sandbox
+Gives your agent a persistent workspace with shell, file, and git tools.
+Commands, files, and repos persist across tool calls within each conversation.
+```
+
+Props: `enabled: boolean`, `onChange: (enabled: boolean) => void`, `disabled?: boolean`
+
+### 9. `apps/web/src/app/dashboard/agents/[id]/page.tsx`
+
+- Add `<SandboxToggle>` to Settings tab (above executor config panel)
+- Status badges: show "Sandbox" badge based on `sandboxEnabled` instead of `executorType === 'sandbox'`
+- Wire `sandboxEnabled` into PATCH request on save
+
+### 10. `apps/web/src/app/api/agents/[id]/route.ts`
+
+Handle `sandboxEnabled` in PATCH body → pass to Prisma `update()`.
+
+### 11. `apps/web/src/app/api/agents/[id]/clone/route.ts`
+
+Copy `sandboxEnabled` from source agent (simple boolean, safe to clone).
+
+### 12. Data Migration
+
+```sql
+UPDATE agents SET sandbox_enabled = true WHERE executor_type = 'sandbox';
+UPDATE agents SET executor_type = NULL, executor_config = NULL WHERE executor_type = 'sandbox';
+```
+
+### 13. `apps/web/src/app/docs/executors/sandbox/page.tsx`
+
+Update docs: sandbox is now a toggle, not an executor type. Remove `executorType: 'sandbox'` references.
+
+## Implementation Order
+
+1. Schema: `packages/db/prisma/schema.prisma` + `db:generate` + `db:push`
+2. Types: `packages/types/src/executor.ts` + `packages/types/src/agent.ts`
+3. Backend: `executors/index.ts` → `build-tools.ts` → both conversation routes → agent PATCH route → clone route
+4. Frontend: `ExecutorConfigPanel.tsx` → new `SandboxToggle.tsx` → agent detail page
+5. Data migration SQL
+6. Type-check + test
+
+## Verification
+
+1. `pnpm --filter=@tpmjs/db db:generate && pnpm --filter=@tpmjs/db db:push`
+2. `pnpm type-check`
+3. Build + run sandbox Docker container
+4. Toggle sandbox on for an agent via the UI
+5. Chat with the agent — sandbox tools should appear and work
+6. Run sandbox integration tests
+7. Verify custom executor still works independently (toggle sandbox + custom URL on same agent)
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. The user provided a detailed implementation plan to "Separate Sandbox from Custom Executors" - moving sandbox from being an executor type to being an independent toggle on agents.
+
+2. I created task tracking items and then read all the key files to understand the current codebase.
+
+3. I implemented changes in order:
+   - Schema: Added `sandboxEnabled` Boolean field to Agent model
+   - Types: Removed 'sandbox' from ExecutorTypeSchema, removed SandboxExecutorConfigSchema, added sandboxEnabled to agent schemas
+   - Backend: Updated executors/index.ts, build-tools.ts, conversation routes, agent PATCH route, clone route
+   - Frontend: Simplified ExecutorConfigPanel, created SandboxToggle component, updated agent detail page
+   - Docs: Updated sandbox docs page
+
+4. Key errors:
+   - db:push failed because DATABASE_URL_UNPOOLED env var wasn't available locally (not a code error, just missing env)
+   - Used `require()` in build-tools.ts initially, then fixed to use static imports
+   - The `createToolDefinition` function signature had `sessionId` param that needed to be removed since sandbox tools are now injected separately
+   - Discovered a third conversation route at `apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts` that also needed updating
+
+5. The type-check passed successfully at the end (exit code 0).
+
+6. Current state: Type-check passed. The implementation is essentially complete. Task #5 was in progress (docs update + type-check). The type-check succeeded.
+
+Let me trace through each file change carefully:
+
+**Schema**: Added `sandboxEnabled Boolean @default(false) @map("sandbox_enabled")` after executorConfig fields
+
+**packages/types/src/executor.ts**: 
+- Changed ExecutorTypeSchema to `z.enum(['default', 'custom_url'])` 
+- Removed SandboxExecutorConfigSchema and its type export
+- Removed it from the discriminated union
+
+**packages/types/src/agent.ts**:
+- Added `sandboxEnabled: z.boolean().default(false).optional()` to CreateAgentSchema
+- Added `sandboxEnabled: z.boolean().optional()` to UpdateAgentSchema
+
+**apps/web/src/lib/executors/index.ts**:
+- Removed SandboxExecutorConfig import
+- Removed sandbox case from parseExecutorConfig
+- Replaced resolveSandboxUrl with getSandboxConfig that reads from env vars
+- Made executeWithSandbox exported (was private)
+- Removed sandbox case from executeWithExecutor
+- Removed sessionId param from executeWithExecutor
+- Removed sandbox case from getExecutorDescription
+
+**apps/web/src/lib/agents/build-tools.ts**:
+- Added `import { jsonSchema } from 'ai'`
+- Added `import { executeWithSandbox, ... } from '../executors'`
+- Added `injectSandboxTools()` function that creates 4 hardcoded tool definitions
+- Updated `buildAgentTools()` signature to accept `sandboxUrl` and `sandboxApiKey` params
+- Added sandbox tool injection at the start of buildAgentTools
+- Removed sessionId from createToolDefinition calls
+
+**apps/web/src/lib/ai-agent/tool-executor-agent.ts**:
+- Removed sessionId param from createToolDefinition
+- Removed sessionId from executeWithExecutor call
+
+**3 conversation routes** (username/slug, id-based, chat/username/uid):
+- All replaced executor-type-based sandbox check with `agent.sandboxEnabled` check
+- All now use `getSandboxConfig()` instead of `parseExecutorConfig` + `resolveSandboxUrl`
+- All pass `_sandboxUrl` and `_sandboxApiKey` to `buildAgentTools`
+- DELETE handlers simplified similarly
+- GET handlers updated select clauses to include `sandboxEnabled`
+
+**apps/web/src/app/api/agents/[id]/route.ts**:
+- PATCH handler now destructures `sandboxEnabled` and passes it to updateData
+
+**apps/web/src/app/api/agents/[id]/clone/route.ts**:
+- Copies `sandboxEnabled` from source agent
+
+**ExecutorConfigPanel.tsx**: Completely rewritten to remove sandbox option, now only default | custom_url
+
+**SandboxToggle.tsx**: New component with Switch + description text
+
+**Agent detail page**: Added sandboxEnabled state, SandboxToggle component in settings, updated status badges, updated save logic
+
+**Docs page**: Updated to reference toggle instead of executor type
+
+The data migration SQL was mentioned in the plan but hasn't been executed yet (it's a one-time DB operation).
+
+Pending: The type-check passed. The plan mentioned running format/lint too, and the data migration SQL hasn't been written/executed.
+
+Summary:
+1. Primary Request and Intent:
+   The user asked to implement a detailed plan titled "Separate Sandbox from Custom Executors." The core goal is to decouple "sandbox" (a persistent workspace with shell/file/git tools) from the "executor" concept (where tools run). Previously, `sandbox` was one of three executor types (`default | custom_url | sandbox`), preventing users from having both a custom executor AND a sandbox simultaneously. The new design:
+   - Removes `'sandbox'` from executor types (now just `default | custom_url`)
+   - Adds a `sandboxEnabled` boolean to the Agent model
+   - When enabled, 4 sandbox tools are auto-injected (bypassing executor resolution)
+   - Sandbox URL + API key come from env vars (`AGENT_SANDBOX_URL`, `AGENT_SANDBOX_API_KEY`)
+   
+   The user provided a comprehensive plan with 13 numbered file-change sections and an implementation order.
+
+2. Key Technical Concepts:
+   - Turborepo monorepo with pnpm workspaces
+   - Prisma ORM with PostgreSQL (Neon)
+   - Next.js App Router API routes
+   - AI SDK v6 tool definitions with `jsonSchema()` for input schemas
+   - Zod schema validation for API types
+   - Executor cascade resolution: Agent → Collection → System Default
+   - Server-Sent Events (SSE) streaming for AI conversations
+   - Sandbox session management (create/destroy with retry logic)
+   - Environment variable cascade: Collection base + Agent override
+
+3. Files and Code Sections:
+
+   - **`packages/db/prisma/schema.prisma`** (Agent model)
+     - Added new `sandboxEnabled` field to decouple sandbox from executor config
+     - ```prisma
+       // Sandbox toggle: gives agent persistent workspace with shell, file, and git tools
+       sandboxEnabled       Boolean    @default(false) @map("sandbox_enabled")
+       ```
+
+   - **`packages/types/src/executor.ts`**
+     - Removed 'sandbox' from executor types and removed SandboxExecutorConfigSchema
+     - ```typescript
+       export const ExecutorTypeSchema = z.enum(['default', 'custom_url']);
+       // Removed SandboxExecutorConfigSchema entirely
+       export const ExecutorConfigSchema = z.discriminatedUnion('type', [
+         DefaultExecutorConfigSchema,
+         CustomUrlExecutorConfigSchema,
+       ]);
+       // Removed SandboxExecutorConfig type export
+       // Kept all sandbox session types (CreateSessionRequest/Response, etc.)
+       ```
+
+   - **`packages/types/src/agent.ts`**
+     - Added sandboxEnabled to both Create and Update schemas
+     - ```typescript
+       // In CreateAgentSchema:
+       sandboxEnabled: z.boolean().default(false).optional(),
+       // In UpdateAgentSchema:
+       sandboxEnabled: z.boolean().optional(),
+       ```
+
+   - **`apps/web/src/lib/executors/index.ts`**
+     - Core executor module: removed sandbox executor type handling, added env-var-based config, exported executeWithSandbox
+     - Removed `SandboxExecutorConfig` import, sandbox case from `parseExecutorConfig`, `resolveSandboxUrl` function, sandbox case from `executeWithExecutor` and `getExecutorDescription`
+     - Added:
+       ```typescript
+       export function getSandboxConfig(): { url: string | null; apiKey: string | undefined } {
+         return {
+           url: process.env.AGENT_SANDBOX_URL || null,
+           apiKey: process.env.AGENT_SANDBOX_API_KEY || undefined,
+         };
+       }
+       ```
+     - Made `executeWithSandbox` exported (was private `async function`)
+     - Removed `sessionId` parameter from `executeWithExecutor`
+
+   - **`apps/web/src/lib/ai-agent/tool-executor-agent.ts`**
+     - Removed `sessionId` parameter from `createToolDefinition` function and its `executeWithExecutor` call
+     - ```typescript
+       export function createToolDefinition(
+         tool: Tool & { package: Package },
+         executorConfig?: ExecutorConfig | null,
+         envVars?: Record<string, string>
+       ) {
+       ```
+
+   - **`apps/web/src/lib/agents/build-tools.ts`**
+     - Added sandbox tool injection system. This is the key file where sandbox tools are auto-injected.
+     - Added imports: `import { jsonSchema } from 'ai'` and `import { executeWithSandbox, ... }`
+     - Added `injectSandboxTools()` function that creates 4 hardcoded tools (shellExec, readFile, writeFile, listFiles) that call `executeWithSandbox` directly
+     - Updated `buildAgentTools` signature:
+       ```typescript
+       export function buildAgentTools(
+         agent: AgentWithRelations,
+         callerEnvVars?: Record<string, string>,
+         sessionId?: string,
+         sandboxUrl?: string,
+         sandboxApiKey?: string
+       )
+       ```
+     - Added sandbox injection at start of buildAgentTools:
+       ```typescript
+       if (sandboxUrl && sessionId) {
+         const sandboxTools = injectSandboxTools(sandboxUrl, sandboxApiKey, sessionId);
+         for (const [name, toolDef] of Object.entries(sandboxTools)) {
+           tools[name] = toolDef;
+           seenTools.add(`@tpmjs/sandbox-shell::${name}`);
+         }
+       }
+       ```
+     - Removed `sessionId` from `createToolDefinition` calls
+
+   - **`apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts`**
+     - POST: Replaced `agent.executorType === 'sandbox'` check with `agent.sandboxEnabled`, uses `getSandboxConfig()`, passes `_sandboxUrl` and `_sandboxApiKey` to `buildAgentTools`
+     - GET: Added `sandboxEnabled: true` to select clause
+     - DELETE: Replaced executor-based sandbox check with `agent.sandboxEnabled` + `getSandboxConfig()`
+
+   - **`apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts`**
+     - Same pattern as above for POST, GET, DELETE handlers
+
+   - **`apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts`**
+     - Third conversation route discovered during implementation. Updated `findAgentByUsernameAndUid` select to `{ id: true, sandboxEnabled: true }`, updated POST and DELETE handlers same pattern.
+
+   - **`apps/web/src/app/api/agents/[id]/route.ts`**
+     - PATCH handler updated to handle `sandboxEnabled`:
+       ```typescript
+       const { executorConfig, envVars, sandboxEnabled, ...restData } = parsed.data;
+       const updateData: Prisma.AgentUpdateInput = {
+         ...restData,
+         ...(sandboxEnabled !== undefined && { sandboxEnabled }),
+         // ... existing executor/env handling
+       };
+       ```
+
+   - **`apps/web/src/app/api/agents/[id]/clone/route.ts`**
+     - Added `sandboxEnabled: sourceAgent.sandboxEnabled` to clone data
+
+   - **`apps/web/src/components/ExecutorConfigPanel.tsx`**
+     - Completely rewritten: removed sandbox radio button option, simplified to only `'default' | 'custom_url'`, removed all sandbox-related URL field logic
+
+   - **`apps/web/src/components/SandboxToggle.tsx`** (NEW FILE)
+     - Simple toggle component:
+       ```typescript
+       interface SandboxToggleProps {
+         enabled: boolean;
+         onChange: (enabled: boolean) => void;
+         disabled?: boolean;
+       }
+       ```
+     - Uses `Switch` component from `@tpmjs/ui`, includes "Stateful" badge and description text
+
+   - **`apps/web/src/app/dashboard/agents/[id]/page.tsx`**
+     - Added `SandboxToggle` import, `sandboxEnabled: boolean` to Agent interface, `sandboxEnabled` state, initialization in fetchAgent, wired into save payload, updated status badges to show "Sandbox" badge based on `sandboxEnabled`, added `<SandboxToggle>` component above executor config in Settings tab
+
+   - **`apps/web/src/app/docs/executors/sandbox/page.tsx`**
+     - Updated config example to show `sandboxEnabled` toggle via API and env vars
+     - Changed references from "executor type sandbox" to "sandbox toggle"
+     - Updated nav label from "Executor Config" to "Sandbox Config"
+
+4. Errors and Fixes:
+   - **`pnpm db:push` failed**: `DATABASE_URL_UNPOOLED` environment variable not found. This is expected locally without DB credentials. The `db:generate` succeeded which is what matters for type-checking/building.
+   - **`require()` in build-tools.ts**: Initially used `const { z } = require('zod'); const { jsonSchema } = require('ai');` inside `injectSandboxTools`. Fixed by adding static import `import { jsonSchema } from 'ai'` at the top of the file and removing the require calls. The `z` import was removed entirely as it wasn't actually needed.
+   - **Third conversation route discovered**: The plan only mentioned 2 conversation routes, but grep revealed a third at `apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts` that also had sandbox executor logic. Updated it with the same pattern.
+   - **`createToolDefinition` sessionId propagation**: After removing `sessionId` from `executeWithExecutor`, needed to also remove it from `createToolDefinition`'s signature and the calling code in `buildAgentTools`.
+
+5. Problem Solving:
+   - Successfully decoupled sandbox from executor types across ~12 files
+   - Maintained backward compatibility for existing executor cascade (Agent → Collection → Default)
+   - Sandbox tools are now injected first in `buildAgentTools` and their keys are added to `seenTools` to deduplicate if the sandbox-shell collection is also attached
+   - The `executeWithSandbox` function was made public so sandbox tools in build-tools.ts can call it directly, bypassing executor resolution
+   - Type-check passed successfully (exit code 0)
+
+6. All User Messages:
+   - Message 1: "Implement the following plan: # Separate Sandbox from Custom Executors [full detailed plan with 13 sections, implementation order, and verification steps]" — Also mentioned a transcript file at a specific path for additional context.
+
+7. Pending Tasks:
+   - Data migration SQL needs to be run against the database:
+     ```sql
+     UPDATE agents SET sandbox_enabled = true WHERE executor_type = 'sandbox';
+     UPDATE agents SET executor_type = NULL, executor_config = NULL WHERE executor_type = 'sandbox';
+     ```
+   - `pnpm format` and `pnpm lint` should be run (pre-commit hooks will check these)
+   - The plan's verification section mentions: build + run sandbox Docker container, toggle sandbox on via UI, chat with agent, run sandbox integration tests, verify custom executor still works
+
+8. Current Work:
+   Task #5 "Update docs and run type-check" was in progress. The docs were updated and `pnpm type-check` was run and passed with exit code 0. All 5 implementation tasks are essentially complete. The type-check output showed successful completion across all packages.
+
+9. Optional Next Step:
+   Run `pnpm format` and `pnpm lint` to ensure the code passes the pre-commit hooks (lefthook runs format, lint, and type-check). The plan's verification section step 2 says: "`pnpm type-check`" which passed. The next natural step would be formatting/linting since the plan states "Type-check + test" as step 6 of the implementation order.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+<task-notification>
+<task-id>b0aa9db</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b0aa9db.output</output-file>
+<status>completed</status>
+<summary>Background command "Run TypeScript type-check across the monorepo" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b0aa9db.output
+
+---
+
+<task-notification>
+<task-id>b97395a</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b97395a.output</output-file>
+<status>completed</status>
+<summary>Background command "Run Biome lint on all files" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b97395a.output
+
+---
+
+you do all that
+
+---
+
+have you even set up a railway sandbox yet and will all users use tat one service, use the railway cli
+
+---
+
+is all the ui updated in the agent settings to make sure executors and sandboxes are diffeerent. and al the documentation
+
+---
+
+push everything

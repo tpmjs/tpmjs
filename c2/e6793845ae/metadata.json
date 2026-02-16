@@ -3,17 +3,22 @@
   "checkpoint_id": "c2e6793845ae",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 8,
+  "checkpoints_count": 10,
   "files_touched": [
     ".github/workflows/sandbox-tests.yml",
     "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/clone/route.ts",
     "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/route.ts",
     "apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts",
     "apps/web/src/app/dashboard/agents/[id]/page.tsx",
     "apps/web/src/app/docs/agents/page.tsx",
     "apps/web/src/app/docs/executors/page.tsx",
     "apps/web/src/app/docs/executors/sandbox/page.tsx",
+    "apps/web/src/app/docs/page.tsx",
+    "apps/web/src/app/docs/sdk/page.tsx",
     "apps/web/src/components/ExecutorConfigPanel.tsx",
+    "apps/web/src/components/SandboxToggle.tsx",
     "apps/web/src/lib/agents/build-tools.ts",
     "apps/web/src/lib/ai-agent/tool-executor-agent.ts",
     "apps/web/src/lib/executors/index.ts",
@@ -26,6 +31,7 @@
     "apps/web/src/test/integration/sandbox/sandbox-sessions.integration.test.ts",
     "apps/web/src/test/integration/sandbox/sandbox-shell-e2e.integration.test.ts",
     "apps/web/src/test/integration/sandbox/sandbox-tools.integration.test.ts",
+    "packages/db/prisma/schema.prisma",
     "packages/db/scripts/create-sandbox-agent.ts",
     "packages/db/scripts/setup-sandbox-tools.ts",
     "packages/tools/official/blocks.yml",
@@ -74,13 +80,20 @@
       "context": "/c2/e6793845ae/3/context.md",
       "content_hash": "/c2/e6793845ae/3/content_hash.txt",
       "prompt": "/c2/e6793845ae/3/prompt.txt"
+    },
+    {
+      "metadata": "/c2/e6793845ae/4/metadata.json",
+      "transcript": "/c2/e6793845ae/4/full.jsonl",
+      "context": "/c2/e6793845ae/4/context.md",
+      "content_hash": "/c2/e6793845ae/4/content_hash.txt",
+      "prompt": "/c2/e6793845ae/4/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 23939,
-    "cache_creation_tokens": 959250,
-    "cache_read_tokens": 48905066,
-    "output_tokens": 126399,
-    "api_call_count": 479
+    "input_tokens": 24340,
+    "cache_creation_tokens": 1289239,
+    "cache_read_tokens": 72837179,
+    "output_tokens": 156271,
+    "api_call_count": 707
   }
 }
