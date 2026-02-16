@@ -30,6 +30,20 @@ interface AgentResult {
   modelId: string;
 }
 
+interface CollectionResult {
+  id: string;
+  name: string;
+  description: string | null;
+  tools: Array<{
+    tool: {
+      id: string;
+      name: string;
+      description: string;
+      package: { npmPackageName: string };
+    };
+  }>;
+}
+
 const LOGIC_ITEMS: PaletteItem[] = [
   {
     type: 'TRIGGER',
@@ -82,11 +96,13 @@ interface NodePaletteProps {
 
 export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.ReactElement {
   const [search, setSearch] = useState('');
-  const [tools, setTools] = useState<ToolResult[]>([]);
+  const [searchTools, setSearchTools] = useState<ToolResult[]>([]);
   const [agents, setAgents] = useState<AgentResult[]>([]);
+  const [collections, setCollections] = useState<CollectionResult[]>([]);
   const [toolsLoading, setToolsLoading] = useState(false);
+  const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
 
-  // Fetch user's agents on mount
+  // Fetch user's agents and collections on mount
   useEffect(() => {
     fetch('/api/agents?limit=50')
       .then((res) => res.json())
@@ -94,12 +110,33 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
         if (data.success) setAgents(data.data);
       })
       .catch(() => {});
+
+    fetch('/api/collections?limit=50')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          // For each collection, fetch its tools
+          const cols: CollectionResult[] = data.data || [];
+          Promise.all(
+            cols.map((col: CollectionResult) =>
+              fetch(`/api/collections/${col.id}/tools?limit=50`)
+                .then((res) => res.json())
+                .then((result) => ({
+                  ...col,
+                  tools: result.success ? result.data || [] : [],
+                }))
+                .catch(() => ({ ...col, tools: [] }))
+            )
+          ).then(setCollections);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Debounced tool search
   useEffect(() => {
     if (!search || search.length < 2) {
-      setTools([]);
+      setSearchTools([]);
       return;
     }
 
@@ -108,7 +145,9 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
       fetch(`/api/tools/search?q=${encodeURIComponent(search)}&limit=10`)
         .then((res) => res.json())
         .then((data) => {
-          if (data.success) setTools(data.data || []);
+          if (data.success) {
+            setSearchTools(data.results?.tools || data.data || []);
+          }
         })
         .catch(() => {})
         .finally(() => setToolsLoading(false));
@@ -120,6 +159,18 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
   const onDragStart = useCallback((event: React.DragEvent, item: PaletteItem) => {
     event.dataTransfer.setData('application/workflow-node', JSON.stringify(item));
     event.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const toggleCollection = useCallback((id: string) => {
+    setExpandedCollections((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
   }, []);
 
   if (collapsed) {
@@ -137,21 +188,42 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
     );
   }
 
+  const searchLower = search.toLowerCase();
+
   const filteredLogicItems = search
     ? LOGIC_ITEMS.filter(
         (item) =>
-          item.label.toLowerCase().includes(search.toLowerCase()) ||
-          item.description.toLowerCase().includes(search.toLowerCase())
+          item.label.toLowerCase().includes(searchLower) ||
+          item.description.toLowerCase().includes(searchLower)
       )
     : LOGIC_ITEMS;
 
   const filteredAgents = search
     ? agents.filter(
         (a) =>
-          a.name.toLowerCase().includes(search.toLowerCase()) ||
-          a.description?.toLowerCase().includes(search.toLowerCase())
+          a.name.toLowerCase().includes(searchLower) ||
+          a.description?.toLowerCase().includes(searchLower)
       )
     : agents;
+
+  // Filter collections and their tools by search
+  const filteredCollections = collections
+    .map((col) => {
+      if (!search) return col;
+      const colMatches =
+        col.name.toLowerCase().includes(searchLower) ||
+        col.description?.toLowerCase().includes(searchLower);
+      if (colMatches) return col;
+      const matchingTools = col.tools.filter(
+        (ct) =>
+          ct.tool.name.toLowerCase().includes(searchLower) ||
+          ct.tool.description?.toLowerCase().includes(searchLower) ||
+          ct.tool.package.npmPackageName.toLowerCase().includes(searchLower)
+      );
+      if (matchingTools.length > 0) return { ...col, tools: matchingTools };
+      return null;
+    })
+    .filter((col): col is CollectionResult => col !== null);
 
   return (
     <div className="w-[220px] border-r border-border bg-surface flex flex-col overflow-hidden">
@@ -174,7 +246,7 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search nodes..."
+          placeholder="Search nodes & tools..."
           className="text-xs h-7"
         />
       </div>
@@ -189,13 +261,13 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
           </PaletteSection>
         )}
 
-        {/* Tools */}
-        {(search.length >= 2 || tools.length > 0) && (
-          <PaletteSection title="Tools">
+        {/* Tool Search Results */}
+        {search.length >= 2 && (
+          <PaletteSection title="Tool Search">
             {toolsLoading ? (
               <p className="text-xs text-foreground-tertiary px-2 py-1">Searching...</p>
-            ) : tools.length > 0 ? (
-              tools.map((tool) => (
+            ) : searchTools.length > 0 ? (
+              searchTools.map((tool) => (
                 <PaletteItemRow
                   key={tool.id}
                   item={{
@@ -210,9 +282,59 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
                   onDragStart={onDragStart}
                 />
               ))
-            ) : search.length >= 2 ? (
+            ) : (
               <p className="text-xs text-foreground-tertiary px-2 py-1">No tools found</p>
-            ) : null}
+            )}
+          </PaletteSection>
+        )}
+
+        {/* Collections (with tools) */}
+        {filteredCollections.length > 0 && (
+          <PaletteSection title="Collections">
+            {filteredCollections.map((col) => {
+              const isExpanded = expandedCollections.has(col.id) || search.length > 0;
+              return (
+                <div key={col.id}>
+                  <button
+                    type="button"
+                    onClick={() => toggleCollection(col.id)}
+                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-secondary transition-colors text-left"
+                  >
+                    <Icon
+                      icon={isExpanded ? 'chevronDown' : 'chevronRight'}
+                      size="xs"
+                      className="text-foreground-tertiary flex-shrink-0"
+                    />
+                    <Icon icon="folder" size="xs" className="text-orange-500 flex-shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium text-foreground truncate">{col.name}</p>
+                      <p className="text-[10px] text-foreground-tertiary">
+                        {col.tools.length} tool{col.tools.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </button>
+                  {isExpanded && col.tools.length > 0 && (
+                    <div className="ml-4 space-y-0.5">
+                      {col.tools.map((ct) => (
+                        <PaletteItemRow
+                          key={ct.tool.id}
+                          item={{
+                            type: 'TOOL',
+                            label: ct.tool.name,
+                            description: ct.tool.package.npmPackageName,
+                            icon: 'puzzle',
+                            color: 'text-purple-500',
+                            toolId: ct.tool.id,
+                            packageName: ct.tool.package.npmPackageName,
+                          }}
+                          onDragStart={onDragStart}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </PaletteSection>
         )}
 
@@ -234,6 +356,15 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
               />
             ))}
           </PaletteSection>
+        )}
+
+        {/* Help text when no search */}
+        {!search && collections.length === 0 && agents.length === 0 && (
+          <div className="px-2 py-3 text-center">
+            <p className="text-[10px] text-foreground-tertiary">
+              Type to search the tool registry, or create collections and agents to see them here.
+            </p>
+          </div>
         )}
       </div>
     </div>
