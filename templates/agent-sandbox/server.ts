@@ -24,7 +24,7 @@ globalThis.addEventListener('error', (event) => {
 const PORT = Number(Deno.env.get('PORT') || '3002');
 const EXECUTOR_API_KEY = Deno.env.get('EXECUTOR_API_KEY');
 const MAX_CONCURRENT_SESSIONS = Number(Deno.env.get('MAX_CONCURRENT_SESSIONS') || '50');
-const DEFAULT_SESSION_TTL_SECONDS = Number(Deno.env.get('DEFAULT_SESSION_TTL_SECONDS') || '3600');
+const DEFAULT_SESSION_TTL_SECONDS = Number(Deno.env.get('DEFAULT_SESSION_TTL_SECONDS') || '86400');
 const SESSION_DISK_QUOTA_MB = Number(Deno.env.get('SESSION_DISK_QUOTA_MB') || '100');
 const SESSIONS_BASE_DIR = '/tmp/tpmjs-sandbox/sessions';
 

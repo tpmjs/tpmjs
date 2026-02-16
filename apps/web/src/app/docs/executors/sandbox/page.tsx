@@ -154,7 +154,7 @@ const listFilesResponse = `{
 const createSessionCurl = `curl -X POST https://your-sandbox.up.railway.app/sessions \\
   -H "Content-Type: application/json" \\
   -H "Authorization: Bearer $EXECUTOR_API_KEY" \\
-  -d '{"sessionId": "agent123:conv456", "timeoutSeconds": 3600}'`;
+  -d '{"sessionId": "agent123:conv456", "timeoutSeconds": 86400}'`;
 
 const createSessionResponse = `{
   "sessionId": "agent123:conv456",
@@ -804,7 +804,7 @@ export default function SandboxExecutorPage(): React.ReactElement {
                   {
                     step: '2',
                     title: 'TTL Extended on Activity',
-                    desc: 'Every tool call extends the session TTL (default: 1 hour). Session creation is idempotent — subsequent messages just extend the timeout and resume the workspace.',
+                    desc: 'Every tool call extends the session TTL (default: 24 hours). Session creation is idempotent — subsequent messages just extend the timeout and resume the workspace.',
                   },
                   {
                     step: '3',
@@ -814,7 +814,7 @@ export default function SandboxExecutorPage(): React.ReactElement {
                   {
                     step: '4',
                     title: 'Auto-Expire or Manual Cleanup',
-                    desc: 'Sessions expire after the TTL (1 hour of inactivity). Deleting a conversation immediately destroys the session. A cleanup sweep runs every 60 seconds.',
+                    desc: 'Sessions expire after the TTL (24 hours of inactivity). Deleting a conversation immediately destroys the session. A cleanup sweep runs every 60 seconds.',
                   },
                 ].map((item) => (
                   <div key={item.step} className="flex items-start gap-4">
@@ -832,6 +832,23 @@ export default function SandboxExecutorPage(): React.ReactElement {
                 <strong className="text-foreground">Orphan cleanup:</strong> On server startup, any
                 leftover workspace directories from a previous run are automatically removed.
                 Graceful shutdown (SIGTERM/SIGINT) destroys all active sessions.
+              </div>
+
+              <div className="mt-4 p-4 bg-warning/10 border border-warning/30 rounded-lg text-sm text-foreground-secondary">
+                <strong className="text-foreground">What happens when a session expires?</strong>{' '}
+                After 24 hours of inactivity, the session and its workspace are deleted. If you send
+                a message after that, a new session is created with a fresh, empty workspace &mdash;
+                any files, git repos, or build artifacts from the previous session will be gone. The
+                agent can still use all sandbox tools but starts from scratch.
+              </div>
+
+              {/* TODO: Persist expired session workspaces to object storage (S3/R2)
+                  so they can be restored on session resume. This would give true
+                  persistence across session expirations and server restarts. */}
+              <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded-lg text-sm text-foreground-secondary">
+                <strong className="text-foreground">Coming soon:</strong> Workspace snapshots to
+                object storage. Expired sessions will be automatically archived and restored on
+                resume, giving true persistence across session expirations and server restarts.
               </div>
             </DocSection>
 
@@ -950,8 +967,8 @@ export default function SandboxExecutorPage(): React.ReactElement {
                     },
                     {
                       name: 'DEFAULT_SESSION_TTL_SECONDS',
-                      default_: '3600',
-                      description: 'Session timeout (1 hour)',
+                      default_: '86400',
+                      description: 'Session timeout (24 hours)',
                     },
                     {
                       name: 'SESSION_DISK_QUOTA_MB',
@@ -1143,7 +1160,7 @@ export default function SandboxExecutorPage(): React.ReactElement {
                       },
                       {
                         resource: 'Session TTL',
-                        limit: '1 hour',
+                        limit: '24 hours',
                         config: 'DEFAULT_SESSION_TTL_SECONDS',
                       },
                       {
