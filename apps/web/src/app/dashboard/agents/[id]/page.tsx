@@ -29,11 +29,19 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { EnvVarsEditor } from '~/components/EnvVarsEditor';
 import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
+import { SandboxLogsPanel } from '~/components/SandboxLogsPanel';
 import { SandboxToggle } from '~/components/SandboxToggle';
 
-type PageTabId = 'tools' | 'collections' | 'api' | 'env-vars' | 'settings';
+type PageTabId = 'tools' | 'collections' | 'api' | 'env-vars' | 'sandbox-logs' | 'settings';
 
-const VALID_TABS: PageTabId[] = ['tools', 'collections', 'api', 'env-vars', 'settings'];
+const VALID_TABS: PageTabId[] = [
+  'tools',
+  'collections',
+  'api',
+  'env-vars',
+  'sandbox-logs',
+  'settings',
+];
 
 interface Agent {
   id: string;
@@ -1136,6 +1144,7 @@ export default function AgentDetailPage(): React.ReactElement {
       label: 'Env Vars',
       count: envVarsCount > 0 ? envVarsCount : undefined,
     },
+    ...(sandboxEnabled ? [{ id: 'sandbox-logs' as const, label: 'Sandbox Logs' }] : []),
     { id: 'settings' as const, label: 'Settings' },
   ];
 
@@ -1427,6 +1436,9 @@ export default function AgentDetailPage(): React.ReactElement {
           />
         </div>
       )}
+
+      {/* Sandbox Logs Tab */}
+      {activeTab === 'sandbox-logs' && sandboxEnabled && <SandboxLogsPanel agentId={agent.id} />}
 
       {/* Settings Tab */}
       {activeTab === 'settings' && (

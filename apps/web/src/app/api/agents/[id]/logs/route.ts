@@ -15,6 +15,8 @@ type RouteContext = {
   params: Promise<{ id: string }>;
 };
 
+const SANDBOX_TOOL_NAMES = ['shellExec', 'readFile', 'writeFile', 'listFiles'];
+
 interface LogEntry {
   id: string;
   timestamp: string;
@@ -25,6 +27,8 @@ interface LogEntry {
   content?: string;
   toolName?: string;
   toolCallId?: string;
+  toolResult?: Record<string, unknown>;
+  toolInput?: Record<string, unknown>;
   inputTokens?: number;
   outputTokens?: number;
 }
@@ -42,6 +46,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
   const offset = Number.parseInt(searchParams.get('offset') || '0', 10);
   const conversationSlug = searchParams.get('conversation') || undefined;
   const type = searchParams.get('type') || undefined; // 'message' | 'tool_call' | 'all'
+  const sandbox = searchParams.get('sandbox') === 'true';
 
   try {
     // Fetch agent by id or uid
@@ -54,6 +59,108 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
 
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+    }
+
+    // Sandbox mode: separate queries for TOOL results and ASSISTANT inputs
+    if (sandbox) {
+      const conversationFilter = {
+        agentId: agent.id,
+        ...(conversationSlug && { slug: conversationSlug }),
+      };
+
+      // Query 1: TOOL messages for sandbox tools
+      const toolMessages = await prisma.message.findMany({
+        where: {
+          conversation: conversationFilter,
+          role: 'TOOL',
+          toolName: { in: SANDBOX_TOOL_NAMES },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: limit + 1,
+        skip: offset,
+        include: {
+          conversation: { select: { id: true, slug: true, title: true } },
+        },
+      });
+
+      const hasMore = toolMessages.length > limit;
+      const sliced = hasMore ? toolMessages.slice(0, limit) : toolMessages;
+
+      // Collect toolCallIds to look up inputs
+      const toolCallIds = sliced.map((m) => m.toolCallId).filter((id): id is string => id != null);
+
+      // Query 2: ASSISTANT messages with matching toolCalls (for input extraction)
+      const toolInputMap = new Map<string, Record<string, unknown>>();
+      if (toolCallIds.length > 0) {
+        // Get conversation IDs from the tool messages
+        const conversationIds = [...new Set(sliced.map((m) => m.conversationId))];
+        const assistantMessages = await prisma.message.findMany({
+          where: {
+            conversationId: { in: conversationIds },
+            role: 'ASSISTANT',
+          },
+          select: { toolCalls: true },
+          orderBy: { createdAt: 'desc' },
+          take: 200,
+        });
+
+        const toolCallIdSet = new Set(toolCallIds);
+        for (const msg of assistantMessages) {
+          if (msg.toolCalls && Array.isArray(msg.toolCalls)) {
+            for (const tc of msg.toolCalls as Array<{
+              id?: string;
+              toolCallId?: string;
+              name?: string;
+              toolName?: string;
+              args?: Record<string, unknown>;
+              input?: Record<string, unknown>;
+            }>) {
+              const tcId = tc.id || tc.toolCallId;
+              if (tcId && toolCallIdSet.has(tcId)) {
+                toolInputMap.set(tcId, tc.args || tc.input || {});
+              }
+            }
+          }
+        }
+      }
+
+      const logs: LogEntry[] = sliced.map((msg) => {
+        const tcId = msg.toolCallId || undefined;
+
+        // Parse toolResult JSON
+        let parsedResult: Record<string, unknown> | undefined;
+        if (msg.toolResult && typeof msg.toolResult === 'object') {
+          parsedResult = msg.toolResult as Record<string, unknown>;
+        } else if (msg.content) {
+          try {
+            parsedResult = JSON.parse(msg.content);
+          } catch {
+            parsedResult = { output: msg.content };
+          }
+        }
+
+        return {
+          id: msg.id,
+          timestamp: msg.createdAt.toISOString(),
+          type: 'tool_result' as const,
+          conversationId: msg.conversation.id,
+          conversationSlug: msg.conversation.slug,
+          toolName: msg.toolName || undefined,
+          toolCallId: tcId,
+          toolResult: parsedResult,
+          toolInput: tcId ? toolInputMap.get(tcId) : undefined,
+          content: msg.content.slice(0, 200),
+        };
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          agent: { id: agent.id, uid: agent.uid, name: agent.name },
+          logs,
+          pagination: { limit, offset, hasMore },
+        },
+      });
     }
 
     // Build role filter based on type
