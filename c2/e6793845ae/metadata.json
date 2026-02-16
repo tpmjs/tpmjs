@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "c2e6793845ae",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/lib/executors/index.ts",
+    "apps/web/src/test/integration/sandbox/sandbox-shell-e2e.integration.test.ts",
+    "packages/db/scripts/create-sandbox-agent.ts",
+    "packages/db/scripts/setup-sandbox-tools.ts",
+    "packages/tools/official/blocks.yml",
+    "packages/tools/official/sandbox-shell/block.ts",
+    "packages/tools/official/sandbox-shell/index.ts",
+    "packages/tools/official/sandbox-shell/package.json",
+    "packages/tools/official/sandbox-shell/src/deno.d.ts",
+    "packages/tools/official/sandbox-shell/src/index.ts",
+    "packages/tools/official/sandbox-shell/tsconfig.json",
+    "packages/tools/official/sandbox-shell/tsup.config.ts",
+    "templates/agent-sandbox/Dockerfile",
+    "templates/agent-sandbox/README.md",
+    "templates/agent-sandbox/git-credential-env",
+    "templates/agent-sandbox/server.ts",
+    "templates/agent-sandbox/test-sandbox.sh"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c2/e6793845ae/0/metadata.json",
+      "transcript": "/c2/e6793845ae/0/full.jsonl",
+      "context": "/c2/e6793845ae/0/context.md",
+      "content_hash": "/c2/e6793845ae/0/content_hash.txt",
+      "prompt": "/c2/e6793845ae/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8705,
+    "cache_creation_tokens": 311592,
+    "cache_read_tokens": 18362520,
+    "output_tokens": 52228,
+    "api_call_count": 177
+  }
+}
