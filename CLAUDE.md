@@ -2,6 +2,22 @@
 
 Turborepo monorepo. pnpm workspaces. Next.js 16 App Router (`apps/web`). PostgreSQL via Prisma (`packages/db`). Deployed on Vercel. Database on Neon (via Railway for some services).
 
+## Agent Sandbox
+
+Sandbox and executors are **independent concepts**:
+
+- **Executor** = Where tools run (`default` TPMJS infrastructure, or `custom_url` user's own server)
+- **Sandbox** = A persistent workspace toggle (`agent.sandboxEnabled`) that auto-injects 4 tools: `shellExec`, `readFile`, `writeFile`, `listFiles`
+
+An agent can have both a custom executor AND sandbox enabled simultaneously. Sandbox tools always route to the sandbox server; other tools route to the configured executor.
+
+- Sandbox URL/key come from env vars: `AGENT_SANDBOX_URL`, `AGENT_SANDBOX_API_KEY`
+- Session ID format: `agentId:conversationId`
+- Session TTL: 24 hours of inactivity, extended on each tool call
+- After expiry, workspace is deleted and next message starts fresh (TODO: persist to object storage)
+- Server code: `templates/agent-sandbox/server.ts`
+- Sandbox tools are injected in `apps/web/src/lib/agents/build-tools.ts` → `injectSandboxTools()`
+
 ## Architecture Rules
 
 1. **Use `@tpmjs/ui` components** — never raw HTML `<button>`, `<input>`, `<table>`, etc.
@@ -29,9 +45,59 @@ pnpm --filter=@tpmjs/db db:studio     # Prisma Studio GUI
 
 Pre-commit runs: format, lint, type-check. Pre-push runs: test. If hooks pass locally, CI will pass too.
 
-## Vercel Build
+## Vercel
+
+**IMPORTANT:** There are two Vercel projects. The production site uses `tpmjs-web`, NOT `web`.
+
+| Project | `.vercel/project.json` | Domains | Use |
+|---------|----------------------|---------|-----|
+| `tpmjs-web` | Root (`/.vercel/`) | `tpmjs.com`, `tpmjs-web.vercel.app` | **Production** — this is what users see |
+| `web` | `apps/web/.vercel/` | `web-tpmjs.vercel.app` | Legacy/unused — do NOT add env vars here |
+
+When adding env vars or redeploying, **always run from the repo root** so the CLI uses the correct project:
+
+```bash
+# CORRECT — uses tpmjs-web (production)
+cd /path/to/tpmjs && vercel env add MY_VAR production
+
+# WRONG — uses the old "web" project
+cd /path/to/tpmjs/apps/web && vercel env add MY_VAR production
+```
 
 Build command: `cd ../.. && pnpm install && pnpm --filter=@tpmjs/web... build` (the `...` suffix builds all workspace dependencies first).
+
+Auto-deploys on push to `main` via GitHub integration. To redeploy with new env vars:
+
+```bash
+vercel redeploy <current-deployment-url>      # Redeploy with latest env vars
+```
+
+## Railway
+
+Two services in the `tpmjs` project:
+
+| Service | URL | Purpose |
+|---------|-----|---------|
+| `tpmjs-tools-executor` | `endearing-commitment-production.up.railway.app` | Stateless tool executor (Deno) |
+| `agent-sandbox` | `agent-sandbox-production-aa9f.up.railway.app` | Stateful sandbox server (Deno + Docker) |
+
+Link to a service before running commands:
+
+```bash
+railway service agent-sandbox                 # Link to sandbox service
+railway service tpmjs-tools-executor          # Link to executor service
+railway variables                             # List env vars for linked service
+railway variables --set "KEY=value"           # Set env var (triggers redeploy)
+railway deployment list                       # List recent deployments
+railway up /path/to/dir --path-as-root --detach  # Deploy from a subdirectory
+```
+
+The sandbox server lives in `templates/agent-sandbox/`. Deploy with:
+
+```bash
+railway service agent-sandbox
+railway up templates/agent-sandbox --path-as-root --detach
+```
 
 ## Debugging Production Issues
 
@@ -63,26 +129,25 @@ gh pr checks <pr-number>                      # Check status on a PR
 ### Vercel (Deployments)
 
 ```bash
-vercel ls                                     # List deployments
+vercel ls                                     # List deployments (run from repo root!)
 vercel inspect <deployment-url>               # Build info + lambda list
 vercel logs <deployment-url>                  # Runtime logs
 vercel logs <deployment-url> --since 1h       # Last hour of logs
-vercel env ls                                 # List env vars
+vercel env ls                                 # List env vars (run from repo root!)
 ```
 
 Key things to check:
 - `vercel inspect` shows lambda functions (λ) — if you only see static pages (○), API routes didn't deploy
 - `vercel logs` shows runtime errors, timeouts, and cold start issues
 
-### Railway (Database / Services)
+### Railway (Services)
 
 ```bash
-railway status                                # Current project/environment
-railway logs                                  # Service logs
-railway logs --deployment <id>                # Specific deployment logs
+railway status                                # Current project/environment/service
+railway logs                                  # Service logs (streams, use timeout)
+railway logs --build <deployment-id>          # Build logs for a deployment
 railway variables                             # List env vars
-railway connect postgres                      # Connect to DB directly
-railway up                                    # Deploy current directory
+railway deployment list                       # List recent deployments
 ```
 
 ### Debugging Workflow
