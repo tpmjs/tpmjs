@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "69f72d7264e8",
+  "session_id": "11140ccc-ae16-4013-9d53-5b24b3d9cdc0",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-16T21:14:24.656634Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/update-timeline.yml",
+    "apps/web/src/hooks/useResizableWidth.ts",
+    "vercel.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 1204,
+    "cache_creation_tokens": 44838,
+    "cache_read_tokens": 323196,
+    "output_tokens": 1389,
+    "api_call_count": 8
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-16T21:14:24.497757Z",
+    "agent_lines": 4,
+    "human_added": 364,
+    "human_modified": 87,
+    "human_removed": 0,
+    "total_committed": 455,
+    "agent_percentage": 0.8791208791208791
+  }
+}
