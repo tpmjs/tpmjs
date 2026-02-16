@@ -4,7 +4,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Skeleton } from '@tpmjs/ui/Skeleton/Skeleton';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { LogEntryCard, logsToJson, type SandboxLogEntry } from './SandboxLogEntries';
+import { logsToJson, type SandboxLogEntry, SandboxTerminal } from './SandboxLogEntries';
 
 const PAGE_SIZE = 50;
 
@@ -14,7 +14,6 @@ export function SandboxLogsPanel({ agentId }: { agentId: string }) {
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -56,15 +55,6 @@ export function SandboxLogsPanel({ agentId }: { agentId: string }) {
     setIsLoadingMore(true);
     await fetchLogs(logs.length, true);
     setIsLoadingMore(false);
-  };
-
-  const toggleExpanded = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
   };
 
   const copyJson = async () => {
@@ -131,16 +121,7 @@ export function SandboxLogsPanel({ agentId }: { agentId: string }) {
           </p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {logs.map((entry) => (
-            <LogEntryCard
-              key={entry.id}
-              entry={entry}
-              expanded={expandedIds.has(entry.id)}
-              onToggle={() => toggleExpanded(entry.id)}
-            />
-          ))}
-        </div>
+        <SandboxTerminal logs={logs} showConversation={true} />
       )}
 
       {/* Load more */}

@@ -1,8 +1,5 @@
 'use client';
 
-import { Badge } from '@tpmjs/ui/Badge/Badge';
-import { Icon } from '@tpmjs/ui/Icon/Icon';
-
 export interface SandboxLogEntry {
   id: string;
   timestamp: string;
@@ -14,27 +11,6 @@ export interface SandboxLogEntry {
   toolResult?: Record<string, unknown>;
   toolInput?: Record<string, unknown>;
   content?: string;
-}
-
-export const TOOL_ICONS: Record<
-  string,
-  { icon: 'terminal' | 'eye' | 'edit' | 'folder'; label: string }
-> = {
-  shellExec: { icon: 'terminal', label: 'Shell' },
-  readFile: { icon: 'eye', label: 'Read' },
-  writeFile: { icon: 'edit', label: 'Write' },
-  listFiles: { icon: 'folder', label: 'List' },
-};
-
-export function formatTimestamp(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
 }
 
 /** Convert logs array to a clean JSON structure for LLM pasting */
@@ -49,15 +25,17 @@ export function logsToJson(logs: SandboxLogEntry[]): string {
   return JSON.stringify(cleaned, null, 2);
 }
 
-function ShellExecEntry({
-  entry,
-  expanded,
-  onToggle,
-}: {
-  entry: SandboxLogEntry;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleTimeString(undefined, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+}
+
+function TerminalShellExec({ entry }: { entry: SandboxLogEntry }) {
   const command = (entry.toolInput?.command as string) || (entry.toolInput?.cmd as string) || '';
   const result = entry.toolResult || {};
   const stdout = (result.stdout as string) || '';
@@ -66,219 +44,168 @@ function ShellExecEntry({
   const durationMs = result.durationMs as number | undefined;
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between gap-2 text-left"
-      >
-        <div className="flex items-center gap-2 min-w-0 flex-1">
-          {command && (
-            <code className="text-sm font-mono text-foreground bg-surface-secondary px-2 py-0.5 rounded truncate">
-              {command}
-            </code>
+    <>
+      <div className="flex items-baseline gap-2">
+        <span className="text-[#7ee787] select-none shrink-0">$</span>
+        <span className="text-[#e6edf3] break-all">{command}</span>
+        <span className="ml-auto text-[#484f58] text-[10px] shrink-0 tabular-nums select-none">
+          {durationMs != null && `${durationMs}ms `}
+          {exitCode != null && exitCode !== 0 && (
+            <span className="text-[#f85149]">[exit {exitCode}]</span>
           )}
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {durationMs != null && (
-            <span className="text-xs text-foreground-tertiary">{durationMs}ms</span>
-          )}
-          {exitCode != null && (
-            <Badge variant={exitCode === 0 ? 'success' : 'error'} size="sm">
-              exit {exitCode}
-            </Badge>
-          )}
-          <Icon
-            icon={expanded ? 'chevronDown' : 'chevronRight'}
-            size="xs"
-            className="text-foreground-tertiary"
-          />
-        </div>
-      </button>
-      {expanded && (stdout || stderr) && (
-        <div className="mt-2 space-y-2">
-          {stdout && (
-            <pre className="text-xs font-mono bg-[#0d1117] text-[#c9d1d9] p-3 rounded overflow-x-auto max-h-64 overflow-y-auto whitespace-pre-wrap break-all">
-              {stdout}
-            </pre>
-          )}
-          {stderr && (
-            <pre className="text-xs font-mono bg-[#0d1117] text-[#f85149] p-3 rounded overflow-x-auto max-h-64 overflow-y-auto whitespace-pre-wrap break-all">
-              {stderr}
-            </pre>
-          )}
-        </div>
-      )}
-    </div>
+        </span>
+      </div>
+      {stdout && <pre className="text-[#c9d1d9] whitespace-pre-wrap break-all ml-4">{stdout}</pre>}
+      {stderr && <pre className="text-[#f85149] whitespace-pre-wrap break-all ml-4">{stderr}</pre>}
+    </>
   );
 }
 
-function ReadFileEntry({
-  entry,
-  expanded,
-  onToggle,
-}: {
-  entry: SandboxLogEntry;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+function TerminalReadFile({ entry }: { entry: SandboxLogEntry }) {
   const path = (entry.toolInput?.path as string) || (entry.toolResult?.path as string) || '';
   const content = (entry.toolResult?.content as string) || entry.content || '';
   const size = entry.toolResult?.size as number | undefined;
+  const sizeStr = size != null ? (size > 1024 ? `${(size / 1024).toFixed(1)}K` : `${size}B`) : '';
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between gap-2 text-left"
-      >
-        <code className="text-sm font-mono text-foreground truncate">{path}</code>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {size != null && (
-            <span className="text-xs text-foreground-tertiary">
-              {size > 1024 ? `${(size / 1024).toFixed(1)}KB` : `${size}B`}
-            </span>
-          )}
-          <Icon
-            icon={expanded ? 'chevronDown' : 'chevronRight'}
-            size="xs"
-            className="text-foreground-tertiary"
-          />
-        </div>
-      </button>
-      {expanded && content && (
-        <pre className="mt-2 text-xs font-mono bg-surface-secondary text-foreground-secondary p-3 rounded overflow-x-auto max-h-64 overflow-y-auto whitespace-pre-wrap break-all">
+    <>
+      <div className="flex items-baseline gap-2">
+        <span className="text-[#79c0ff] select-none shrink-0">cat</span>
+        <span className="text-[#e6edf3] break-all">{path}</span>
+        {sizeStr && (
+          <span className="ml-auto text-[#484f58] text-[10px] shrink-0 select-none">{sizeStr}</span>
+        )}
+      </div>
+      {content && (
+        <pre className="text-[#8b949e] whitespace-pre-wrap break-all ml-4 max-h-48 overflow-y-auto">
           {content}
         </pre>
       )}
-    </div>
+    </>
   );
 }
 
-function WriteFileEntry({ entry }: { entry: SandboxLogEntry }) {
+function TerminalWriteFile({ entry }: { entry: SandboxLogEntry }) {
   const path = (entry.toolInput?.path as string) || (entry.toolResult?.path as string) || '';
+  const content = (entry.toolInput?.content as string) || '';
   const success = entry.toolResult?.success as boolean | undefined;
   const bytesWritten = entry.toolResult?.bytesWritten as number | undefined;
+  const sizeStr =
+    bytesWritten != null
+      ? bytesWritten > 1024
+        ? `${(bytesWritten / 1024).toFixed(1)}K`
+        : `${bytesWritten}B`
+      : '';
 
   return (
-    <div className="flex items-center justify-between gap-2">
-      <code className="text-sm font-mono text-foreground truncate">{path}</code>
-      <div className="flex items-center gap-2 flex-shrink-0">
-        {bytesWritten != null && (
-          <span className="text-xs text-foreground-tertiary">
-            {bytesWritten > 1024 ? `${(bytesWritten / 1024).toFixed(1)}KB` : `${bytesWritten}B`}
-          </span>
-        )}
-        {success != null && (
-          <Badge variant={success ? 'success' : 'error'} size="sm">
-            {success ? 'ok' : 'failed'}
-          </Badge>
-        )}
+    <>
+      <div className="flex items-baseline gap-2">
+        <span className="text-[#d2a8ff] select-none shrink-0">write</span>
+        <span className="text-[#e6edf3] break-all">{path}</span>
+        <span className="ml-auto text-[#484f58] text-[10px] shrink-0 select-none">
+          {sizeStr}
+          {success === false && <span className="text-[#f85149] ml-1">[FAILED]</span>}
+        </span>
       </div>
-    </div>
+      {content && (
+        <pre className="text-[#8b949e] whitespace-pre-wrap break-all ml-4 max-h-32 overflow-y-auto">
+          {content}
+        </pre>
+      )}
+    </>
   );
 }
 
-function ListFilesEntry({
-  entry,
-  expanded,
-  onToggle,
-}: {
-  entry: SandboxLogEntry;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
+function TerminalListFiles({ entry }: { entry: SandboxLogEntry }) {
   const path = (entry.toolInput?.path as string) || (entry.toolInput?.directory as string) || '.';
   const entries =
     (entry.toolResult?.entries as Array<{ name: string; type: string; size: number | null }>) || [];
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={onToggle}
-        className="w-full flex items-center justify-between gap-2 text-left"
-      >
-        <code className="text-sm font-mono text-foreground truncate">{path}</code>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-xs text-foreground-tertiary">{entries.length} items</span>
-          <Icon
-            icon={expanded ? 'chevronDown' : 'chevronRight'}
-            size="xs"
-            className="text-foreground-tertiary"
-          />
-        </div>
-      </button>
-      {expanded && entries.length > 0 && (
-        <div className="mt-2 bg-surface-secondary rounded p-3 text-xs font-mono space-y-0.5 max-h-64 overflow-y-auto">
+    <>
+      <div className="flex items-baseline gap-2">
+        <span className="text-[#ffa657] select-none shrink-0">ls</span>
+        <span className="text-[#e6edf3] break-all">{path}</span>
+        <span className="ml-auto text-[#484f58] text-[10px] shrink-0 select-none">
+          {entries.length} items
+        </span>
+      </div>
+      {entries.length > 0 && (
+        <div className="ml-4 flex flex-wrap gap-x-4 gap-y-0.5">
           {entries.map((e) => (
-            <div key={e.name} className="flex items-center gap-2 text-foreground-secondary">
-              <Icon
-                icon={e.type === 'directory' ? 'folder' : 'box'}
-                size="xs"
-                className="flex-shrink-0 text-foreground-tertiary"
-              />
-              <span className="truncate">{e.name}</span>
-              {e.size != null && e.type !== 'directory' && (
-                <span className="text-foreground-tertiary ml-auto flex-shrink-0">
-                  {e.size > 1024 ? `${(e.size / 1024).toFixed(1)}KB` : `${e.size}B`}
-                </span>
-              )}
-            </div>
+            <span
+              key={e.name}
+              className={e.type === 'directory' ? 'text-[#79c0ff]' : 'text-[#c9d1d9]'}
+            >
+              {e.name}
+              {e.type === 'directory' && '/'}
+            </span>
           ))}
         </div>
       )}
+    </>
+  );
+}
+
+function TerminalLogLine({
+  entry,
+  showConversation,
+}: {
+  entry: SandboxLogEntry;
+  showConversation: boolean;
+}) {
+  return (
+    <div className="group py-1.5 border-b border-[#21262d] last:border-b-0">
+      {/* Timestamp + conversation */}
+      <div className="flex items-center gap-2 mb-0.5">
+        <span className="text-[#484f58] text-[10px] tabular-nums select-none">
+          {formatTime(entry.timestamp)}
+        </span>
+        {showConversation && (
+          <span className="text-[#484f58] text-[10px] truncate max-w-[120px]">
+            {entry.conversationSlug}
+          </span>
+        )}
+      </div>
+
+      {/* Tool-specific rendering */}
+      {entry.toolName === 'shellExec' && <TerminalShellExec entry={entry} />}
+      {entry.toolName === 'readFile' && <TerminalReadFile entry={entry} />}
+      {entry.toolName === 'writeFile' && <TerminalWriteFile entry={entry} />}
+      {entry.toolName === 'listFiles' && <TerminalListFiles entry={entry} />}
     </div>
   );
 }
 
-export function LogEntryCard({
-  entry,
-  expanded,
-  onToggle,
+export function SandboxTerminal({
+  logs,
   showConversation = true,
+  className = '',
 }: {
-  entry: SandboxLogEntry;
-  expanded: boolean;
-  onToggle: () => void;
+  logs: SandboxLogEntry[];
   showConversation?: boolean;
+  className?: string;
 }) {
-  const toolInfo = TOOL_ICONS[entry.toolName || ''] || {
-    icon: 'terminal' as const,
-    label: entry.toolName || 'Unknown',
-  };
+  // Logs come newest-first from the API; reverse to show chronological (oldest at top)
+  const chronological = [...logs].reverse();
 
   return (
-    <div className="border border-border rounded-lg bg-surface overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-2 bg-surface-secondary border-b border-border">
-        <Icon icon={toolInfo.icon} size="xs" className="text-foreground-tertiary" />
-        <Badge variant="secondary" size="sm">
-          {toolInfo.label}
-        </Badge>
-        {showConversation && (
-          <span className="text-xs text-foreground-tertiary font-mono">
-            {entry.conversationSlug}
-          </span>
-        )}
-        <span className="text-xs text-foreground-tertiary ml-auto">
-          {formatTimestamp(entry.timestamp)}
-        </span>
+    <div
+      className={`bg-[#0d1117] rounded-lg border border-[#30363d] font-mono text-xs leading-relaxed overflow-hidden ${className}`}
+    >
+      {/* Title bar */}
+      <div className="flex items-center gap-1.5 px-3 py-2 bg-[#161b22] border-b border-[#30363d]">
+        <span className="w-2.5 h-2.5 rounded-full bg-[#f85149]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#e3b341]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#3fb950]" />
+        <span className="ml-2 text-[10px] text-[#484f58] select-none">sandbox</span>
       </div>
 
-      {/* Body */}
-      <div className="px-4 py-3">
-        {entry.toolName === 'shellExec' && (
-          <ShellExecEntry entry={entry} expanded={expanded} onToggle={onToggle} />
-        )}
-        {entry.toolName === 'readFile' && (
-          <ReadFileEntry entry={entry} expanded={expanded} onToggle={onToggle} />
-        )}
-        {entry.toolName === 'writeFile' && <WriteFileEntry entry={entry} />}
-        {entry.toolName === 'listFiles' && (
-          <ListFilesEntry entry={entry} expanded={expanded} onToggle={onToggle} />
-        )}
+      {/* Log content */}
+      <div className="p-3 overflow-y-auto max-h-[600px]">
+        {chronological.map((entry) => (
+          <TerminalLogLine key={entry.id} entry={entry} showConversation={showConversation} />
+        ))}
       </div>
     </div>
   );

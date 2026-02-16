@@ -3,7 +3,7 @@
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { LogEntryCard, logsToJson, type SandboxLogEntry } from './SandboxLogEntries';
+import { logsToJson, type SandboxLogEntry, SandboxTerminal } from './SandboxLogEntries';
 
 const PAGE_SIZE = 50;
 
@@ -23,7 +23,6 @@ export function ConversationSandboxLogs({
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [copied, setCopied] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -74,15 +73,6 @@ export function ConversationSandboxLogs({
     setIsLoadingMore(false);
   };
 
-  const toggleExpanded = (id: string) => {
-    setExpandedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const copyJson = async () => {
     await navigator.clipboard.writeText(logsToJson(logs));
     setCopied(true);
@@ -123,7 +113,7 @@ export function ConversationSandboxLogs({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+      <div className="flex-1 overflow-y-auto p-2">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <Icon icon="loader" size="sm" className="animate-spin text-foreground-tertiary" />
@@ -135,15 +125,7 @@ export function ConversationSandboxLogs({
           </div>
         ) : (
           <>
-            {logs.map((entry) => (
-              <LogEntryCard
-                key={entry.id}
-                entry={entry}
-                expanded={expandedIds.has(entry.id)}
-                onToggle={() => toggleExpanded(entry.id)}
-                showConversation={false}
-              />
-            ))}
+            <SandboxTerminal logs={logs} showConversation={false} />
             {hasMore && (
               <div className="flex justify-center py-2">
                 <Button variant="ghost" size="sm" onClick={loadMore} disabled={isLoadingMore}>
