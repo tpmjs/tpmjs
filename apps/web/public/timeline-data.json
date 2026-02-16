@@ -6583,6 +6583,22 @@
       "t": "docs",
       "s": "",
       "u": "add Vercel project mapping, Railway services, and sandbox architecture to CLAUDE.md"
+    },
+    {
+      "h": "78e381802b89363f4927841e42947c8ad06258be",
+      "d": "2026-02-16",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "0746cc9a377cb232be70fa1a619cd8d67014186e",
+      "d": "2026-02-17",
+      "m": "docs: simplify Vercel project info in CLAUDE.md, remove stale apps/web/.vercel Entire-Checkpoint: 624468e1b848",
+      "t": "docs",
+      "s": "",
+      "u": "simplify Vercel project info in CLAUDE.md, remove stale apps/web/.vercel Entire-Checkpoint: 624468e1b848"
     }
   ],
   "m": [
