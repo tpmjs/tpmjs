@@ -14,6 +14,7 @@ import { ChatSettingsDrawer } from '~/components/agents/ChatSettingsDrawer';
 import type { CollectionInfo, ToolInfo } from '~/components/agents/ChatToolsPanel';
 import { ChatToolsPanel } from '~/components/agents/ChatToolsPanel';
 import { ToolDetailsModal } from '~/components/agents/ToolDetailsModal';
+import { ConversationSandboxLogs } from '~/components/ConversationSandboxLogs';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 
 interface Agent {
@@ -27,6 +28,7 @@ interface Agent {
   temperature: number;
   maxToolCallsPerTurn: number;
   maxMessagesInContext: number;
+  sandboxEnabled: boolean;
   tools: ToolInfo[];
   collections: CollectionInfo[];
 }
@@ -264,6 +266,7 @@ export default function AgentChatPage(): React.ReactElement {
   // UI state
   const [showToolsPanel, setShowToolsPanel] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSandboxLogs, setShowSandboxLogs] = useState(false);
   const [selectedTool, setSelectedTool] = useState<ToolInfo | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -563,6 +566,18 @@ export default function AgentChatPage(): React.ReactElement {
               </Badge>
             )}
           </Button>
+          {agent.sandboxEnabled && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowSandboxLogs(!showSandboxLogs)}
+              title={showSandboxLogs ? 'Hide sandbox logs' : 'Show sandbox logs'}
+              className={showSandboxLogs ? 'bg-primary/10 text-primary' : ''}
+            >
+              <Icon icon="terminal" size="xs" className="mr-1.5" />
+              <span className="hidden sm:inline">Sandbox</span>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -820,6 +835,16 @@ export default function AgentChatPage(): React.ReactElement {
           onClose={() => setShowToolsPanel(false)}
           onToolClick={setSelectedTool}
         />
+
+        {/* Sandbox Logs Panel */}
+        {agent.sandboxEnabled && (
+          <ConversationSandboxLogs
+            agentId={agentId}
+            conversationSlug={chatId}
+            isOpen={showSandboxLogs}
+            onClose={() => setShowSandboxLogs(false)}
+          />
+        )}
       </div>
 
       {/* Tool Details Modal */}
