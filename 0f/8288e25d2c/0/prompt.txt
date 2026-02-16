@@ -1,0 +1,117 @@
+Implement the following plan:
+
+# Add "Sandbox Logs" Tab to Agent Detail Page
+
+## Context
+
+Agents with sandbox enabled execute shell commands, read/write files, and list directories. The stdout/stderr output from these tools is stored in `Message` records (role=TOOL, toolResult JSON). Users want a dedicated tab to view these sandbox tool execution logs — showing what commands ran, what output they produced, and whether they succeeded.
+
+## Design
+
+Add a "sandbox logs" tab to the agent detail page (`/dashboard/agents/[id]?tab=sandbox-logs`). Only shown when `agent.sandboxEnabled === true`. Fetches sandbox-specific tool results from the existing `/api/agents/[id]/logs?type=tool_call` endpoint (enhanced to include `toolResult` data for sandbox tools). Renders each log entry with a terminal-like display for shellExec stdout/stderr.
+
+## Files to Modify
+
+### 1. `apps/web/src/app/api/agents/[id]/logs/route.ts`
+
+Add a new query param `sandbox=true` that filters for sandbox tool names only (`shellExec`, `readFile`, `writeFile`, `listFiles`) and includes `toolResult` JSON in the response (currently truncated to 500 chars — for sandbox logs, return the full result).
+
+Update the `LogEntry` interface to include:
+```typescript
+toolResult?: {
+  // shellExec
+  stdout?: string;
+  stderr?: string;
+  exitCode?: number;
+  durationMs?: number;
+  // readFile
+  content?: string;
+  path?: string;
+  size?: number;
+  // writeFile
+  success?: boolean;
+  bytesWritten?: number;
+  // listFiles
+  entries?: Array<{ name: string; type: string; size: number | null }>;
+  // common
+  truncated?: boolean;
+};
+toolInput?: Record<string, unknown>;
+```
+
+Also extract tool inputs from ASSISTANT messages' `toolCalls` JSON (match by `toolCallId`) so each log entry shows both the input (command, path) and the output (stdout, stderr).
+
+### 2. `apps/web/src/app/dashboard/agents/[id]/page.tsx`
+
+- Add `'sandbox-logs'` to `PageTabId` union type and `VALID_TABS` array
+- Conditionally add the tab to `pageTabs` array only when `agent.sandboxEnabled` is true:
+  ```typescript
+  ...(sandboxEnabled ? [{ id: 'sandbox-logs' as const, label: 'Sandbox Logs' }] : []),
+  ```
+- Add the tab content panel that renders `<SandboxLogsPanel agentId={agent.id} />`
+
+### 3. New: `apps/web/src/components/SandboxLogsPanel.tsx`
+
+A client component that:
+- Fetches `GET /api/agents/{agentId}/logs?sandbox=true&limit=50` on mount
+- Shows a chronological list of sandbox tool executions
+- Each entry is a card showing:
+  - **Header**: Tool name icon + badge, conversation slug, timestamp, duration
+  - **shellExec**: Command in a code block, stdout/stderr in a dark terminal-style `<pre>`, exit code badge (green for 0, red otherwise)
+  - **readFile**: File path, content preview (collapsible)
+  - **writeFile**: File path, bytes written, success badge
+  - **listFiles**: Path, file tree entries
+- "Load more" button at bottom (offset-based pagination)
+- Auto-refresh toggle (poll every 5s when enabled)
+- Empty state when no sandbox logs exist yet
+
+Uses existing `@tpmjs/ui` components: `Badge`, `Button`, `Icon`, `Skeleton` (for loading state).
+
+## Implementation Order
+
+1. Enhance `/api/agents/[id]/logs/route.ts` — add `sandbox=true` filter and full toolResult/toolInput
+2. Create `SandboxLogsPanel.tsx` component
+3. Wire into agent detail page tabs
+
+## Verification
+
+1. `pnpm type-check` passes
+2. Open `/dashboard/agents/{id}?tab=sandbox-logs` for a sandbox-enabled agent
+3. Run some sandbox tools via chat, then verify logs appear with stdout/stderr
+4. Verify non-sandbox agents don't show the tab
+5. Test pagination with "Load more"
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+is it deployed yet
+
+---
+
+of course
+
+---
+
+<task-notification>
+<task-id>b9439ee</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b9439ee.output</output-file>
+<status>failed</status>
+<summary>Background command "Push to main to trigger Vercel deploy" failed with exit code 1</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b9439ee.output
+
+---
+
+<task-notification>
+<task-id>b37ea6f</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b37ea6f.output</output-file>
+<status>completed</status>
+<summary>Background command "Push to main" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b37ea6f.output
+
+---
+
+well the sandbox logs should be on the agent conversations since sandboxes are per converastion. but we can keep the one you put there and it contain all sandbox logs the user has for that agent. make them reuse the same components  make sure there is a copy butter to copy them all to json so i can paste into llms
