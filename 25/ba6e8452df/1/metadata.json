@@ -1,28 +1,22 @@
 {
   "cli_version": "0.4.2",
   "checkpoint_id": "25ba6e8452df",
+  "session_id": "4cb1740c-3626-4f33-aa8c-42843e39dc6b",
   "strategy": "manual-commit",
+  "created_at": "2026-02-16T23:11:35.138476Z",
   "branch": "main",
-  "checkpoints_count": 5,
+  "checkpoints_count": 2,
   "files_touched": [
-    "CLAUDE.md",
     "apps/web/package.json",
-    "apps/web/src/app/api/agents/[id]/logs/route.ts",
     "apps/web/src/app/api/workflows/[id]/execute/route.ts",
     "apps/web/src/app/api/workflows/[id]/executions/[executionId]/route.ts",
     "apps/web/src/app/api/workflows/[id]/executions/route.ts",
     "apps/web/src/app/api/workflows/[id]/graph/route.ts",
     "apps/web/src/app/api/workflows/[id]/route.ts",
     "apps/web/src/app/api/workflows/route.ts",
-    "apps/web/src/app/dashboard/agents/[id]/chat/[chatId]/page.tsx",
-    "apps/web/src/app/dashboard/agents/[id]/page.tsx",
     "apps/web/src/app/dashboard/workflows/[id]/page.tsx",
     "apps/web/src/app/dashboard/workflows/new/page.tsx",
     "apps/web/src/app/dashboard/workflows/page.tsx",
-    "apps/web/src/components/ConversationSandboxLogs.tsx",
-    "apps/web/src/components/SandboxLogEntries.tsx",
-    "apps/web/src/components/SandboxLogsPanel.tsx",
-    "apps/web/src/components/agents/ChatToolsPanel.tsx",
     "apps/web/src/components/dashboard/DashboardLayout.tsx",
     "apps/web/src/components/workflows/NodeInspector.tsx",
     "apps/web/src/components/workflows/NodePalette.tsx",
@@ -48,7 +42,6 @@
     "apps/web/src/components/workflows/nodes/ToolNode.tsx",
     "apps/web/src/components/workflows/nodes/TransformNode.tsx",
     "apps/web/src/components/workflows/nodes/TriggerNode.tsx",
-    "apps/web/src/hooks/useResizableWidth.ts",
     "apps/web/src/lib/activity.ts",
     "apps/web/src/lib/workflows/data-mapping.ts",
     "apps/web/src/lib/workflows/execute.ts",
@@ -63,27 +56,21 @@
     "apps/web/src/lib/workflows/topological-sort.ts",
     "packages/db/prisma/schema.prisma"
   ],
-  "sessions": [
-    {
-      "metadata": "/25/ba6e8452df/0/metadata.json",
-      "transcript": "/25/ba6e8452df/0/full.jsonl",
-      "context": "/25/ba6e8452df/0/context.md",
-      "content_hash": "/25/ba6e8452df/0/content_hash.txt",
-      "prompt": "/25/ba6e8452df/0/prompt.txt"
-    },
-    {
-      "metadata": "/25/ba6e8452df/1/metadata.json",
-      "transcript": "/25/ba6e8452df/1/full.jsonl",
-      "context": "/25/ba6e8452df/1/context.md",
-      "content_hash": "/25/ba6e8452df/1/content_hash.txt",
-      "prompt": "/25/ba6e8452df/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
   "token_usage": {
-    "input_tokens": 738,
-    "cache_creation_tokens": 481240,
-    "cache_read_tokens": 29633127,
-    "output_tokens": 89241,
-    "api_call_count": 262
+    "input_tokens": 157,
+    "cache_creation_tokens": 239809,
+    "cache_read_tokens": 17673603,
+    "output_tokens": 65407,
+    "api_call_count": 147
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-16T23:11:32.128791Z",
+    "agent_lines": 5397,
+    "human_added": 82,
+    "human_modified": 65,
+    "human_removed": 0,
+    "total_committed": 5544,
+    "agent_percentage": 97.34848484848484
   }
 }

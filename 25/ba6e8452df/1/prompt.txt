@@ -1,0 +1,715 @@
+Implement the following plan:
+
+# Workflow Builder - Implementation Plan
+
+## Context
+
+TPMJS has a rich tool registry, agents, and collections system. Users can already compose tools into agents and collections. But there's no way to visually design multi-step pipelines where tools execute in sequence, with data flowing between them, conditional branching, loops, and real-time execution visualization.
+
+This workflow builder fills that gap. Unlike n8n/Dify/Langflow which start from LLM chains or SaaS integrations, TPMJS starts from a **tool registry** - every tool has JSON schemas, so the builder can auto-generate node configurations and suggest compatible connections.
+
+**Goal**: A visual drag-and-drop workflow canvas (React Flow) where users wire together tools, agents, conditions, and transforms, then run them with real-time node-by-node progress.
+
+---
+
+## Phase 1: Data Model + CRUD + List/Create Pages
+
+### 1.1 Prisma Schema
+
+**File**: `packages/db/prisma/schema.prisma`
+
+Add enums and 5 new models:
+
+```
+WorkflowStatus: DRAFT | ACTIVE | ARCHIVED
+WorkflowTriggerType: MANUAL | WEBHOOK | SCHEDULE
+WorkflowNodeType: TRIGGER | TOOL | AGENT | CONDITION | LOOP | TRANSFORM | OUTPUT | NOTE
+WorkflowExecutionStatus: PENDING | RUNNING | COMPLETED | FAILED | CANCELLED
+WorkflowNodeExecutionStatus: PENDING | RUNNING | COMPLETED | FAILED | SKIPPED
+```
+
+**Workflow** - top-level definition owned by user
+- `uid` (unique, URL-friendly), `name`, `description`, `status`
+- `triggerType` + `triggerConfig` (JSON)
+- `canvasViewport` (JSON - persists React Flow zoom/pan)
+- `version` (incremented on each save)
+- `executorType` + `executorConfig` (optional, cascade from existing system)
+- `envVars` (JSON)
+- `executionCount`, `lastExecutedAt` (denormalized)
+- Relations: `nodes[]`, `edges[]`, `executions[]`
+- Indexes: `userId`, `uid`, `status`
+- Unique: `[userId, name]`
+
+**WorkflowNode** - individual nodes in the graph
+- `workflowId`, `nodeId` (React Flow ID, unique within workflow)
+- `type` (WorkflowNodeType enum)
+- `label`, `positionX`, `positionY`
+- `config` (JSON - varies by node type)
+- `toolId` (optional FK to Tool), `agentId` (optional FK to Agent)
+- Unique: `[workflowId, nodeId]`
+
+**WorkflowEdge** - connections between nodes
+- `workflowId`, `edgeId` (React Flow edge ID)
+- `sourceNodeId`, `targetNodeId` (FK to WorkflowNode)
+- `sourceHandle`, `targetHandle` (for branching: "true", "false", etc.)
+- `dataMapping` (JSON - template expressions like `{{source.output.field}}`)
+- Unique: `[workflowId, edgeId]`
+
+**WorkflowExecution** - a single run
+- `workflowId`, `status`, `triggeredBy`
+- `triggerInput`, `output`, `error` (JSON)
+- `startedAt`, `completedAt`, `durationMs`
+- `totalTokensIn`, `totalTokensOut`
+- `workflowVersion` (snapshot)
+
+**WorkflowNodeExecution** - per-node result within a run
+- `executionId`, `nodeId` (FK to WorkflowNode)
+- `status`, `input`, `output`, `error` (JSON)
+- `startedAt`, `completedAt`, `durationMs`
+- `attempt`, `maxRetries`
+
+Also add `workflows Workflow[]` relation to User model and `WORKFLOW_CREATED`, `WORKFLOW_UPDATED`, `WORKFLOW_DELETED`, `WORKFLOW_EXECUTED` to `ActivityType` enum.
+
+### 1.2 Sidebar Navigation
+
+**File**: `apps/web/src/components/dashboard/DashboardLayout.tsx`
+
+Add `{ href: '/dashboard/workflows', label: 'Workflows', icon: 'barChart' }` to first nav section, after Collections (line 30). Will also add a `gitFork` icon entry that better fits the workflow concept if time permits.
+
+### 1.3 Workflows List Page
+
+**File**: `apps/web/src/app/dashboard/workflows/page.tsx`
+
+Follow exact pattern from `apps/web/src/app/dashboard/agents/page.tsx`:
+- `DashboardLayout` wrapper with "New Workflow" button
+- Table columns: Name (icon + name + description), Status (Badge: Draft/Active/Archived), Nodes count, Last Run (relative time), Actions (Run + Delete)
+- Loading skeleton (3 rows), empty state with CTA
+- Fetch from `GET /api/workflows`
+- Click row -> navigate to `/dashboard/workflows/[id]`
+
+### 1.4 Create Workflow Page
+
+**File**: `apps/web/src/app/dashboard/workflows/new/page.tsx`
+
+Follow pattern from `apps/web/src/app/dashboard/agents/new/page.tsx`:
+- Form fields: Name, UID (auto-generated from name), Description, Trigger Type (Select: Manual/Webhook/Schedule)
+- POST to `/api/workflows`, redirect to `/dashboard/workflows/[id]`
+
+### 1.5 API Routes
+
+**`apps/web/src/app/api/workflows/route.ts`**
+- GET: list user workflows with `_count: { nodes: true }`, `take: limit + 1` pagination
+- POST: create workflow, Zod validation, generate UID, check `[userId, name]` uniqueness
+
+**`apps/web/src/app/api/workflows/[id]/route.ts`**
+- GET: full workflow with nodes + edges included
+- PATCH: update metadata (name, description, status, triggerConfig, envVars)
+- DELETE: cascade delete
+
+All routes: `export const runtime = 'nodejs'`, `authenticateRequest()`, standard `{success, data, error}` response format.
+
+### 1.6 Sequence
+1. Schema changes -> `pnpm --filter=@tpmjs/db db:generate && pnpm --filter=@tpmjs/db db:push`
+2. API routes
+3. Pages (list + create)
+4. Sidebar update
+
+---
+
+## Phase 2: React Flow Canvas
+
+### 2.1 Dependencies
+
+Add `@xyflow/react` to `apps/web/package.json`.
+
+### 2.2 Canvas Page
+
+**File**: `apps/web/src/app/dashboard/workflows/[id]/page.tsx`
+
+Uses `DashboardLayout` with `fullHeight={true}` (same pattern as agent chat page). Structure:
+
+```
+DashboardLayout (fullHeight)
+  WorkflowCanvas
+    +-- NodePalette (left sidebar, ~220px, collapsible)
+    +-- ReactFlow (center, flex-1)
+    +-- NodeInspector (right panel, ~320px, shown when node selected)
+    +-- WorkflowToolbar (top overlay bar)
+```
+
+### 2.3 Components
+
+**Directory**: `apps/web/src/components/workflows/`
+
+**`WorkflowCanvas.tsx`** - main orchestrator
+- React Flow state: nodes, edges, onNodesChange, onEdgesChange, onConnect
+- Loads workflow from `GET /api/workflows/[id]` on mount
+- Debounced auto-save (2s) via `PUT /api/workflows/[id]/graph`
+- Selected node state -> drives NodeInspector
+- Drag-and-drop from palette (`onDragOver` + `onDrop`)
+
+**`NodePalette.tsx`** - left sidebar
+- Categorized sections: Triggers, Tools, Logic, Agents, Output
+- Search input at top (filters all categories)
+- **Tools section**: Loads from `/api/tools/search?q=...` with debounced search
+- **Agents section**: Loads from `/api/agents` (user's agents)
+- Each item is draggable (HTML5 drag API with `dataTransfer`)
+- Compact list items showing icon + name + description
+
+**`NodeInspector.tsx`** - right panel
+- Renders when a node is selected
+- Dispatches to type-specific inspector components
+- Header with node type badge + label input
+- Delete node button
+
+**`WorkflowToolbar.tsx`** - top bar
+- Save button with status indicator (Saved / Saving... / Unsaved)
+- Run button (green, triggers execution)
+- Status badge (DRAFT/ACTIVE)
+- Workflow name (editable inline)
+- Back button to workflows list
+
+### 2.4 Custom Node Types
+
+**Directory**: `apps/web/src/components/workflows/nodes/`
+
+All nodes share consistent styling: rounded border, colored header bar by type, icon, label, handles.
+
+| Node | Icon | Color | Handles | Special |
+|------|------|-------|---------|---------|
+| `TriggerNode` | `send` | blue | 1 output (bottom) | Shows trigger type badge |
+| `ToolNode` | `puzzle` | purple | 1 input (top), 1 output (bottom) | Shows tool name + package |
+| `AgentNode` | `terminal` | green | 1 input (top), 1 output (bottom) | Shows agent name + model |
+| `ConditionNode` | `gitFork` | amber | 1 input (top), N outputs (bottom, labeled) | Diamond-ish shape |
+| `LoopNode` | `loader` | teal | 1 input (top), 1 output (bottom) | Shows "Loop over..." |
+| `TransformNode` | `edit` | slate | 1 input (top), 1 output (bottom) | Shows transform label |
+| `OutputNode` | `check` | emerald | 1 input (top) | Rounded bottom |
+| `NoteNode` | `message` | yellow | No handles | Resizable text area |
+
+Each node includes a small status dot (for execution overlay) - grey by default, animated during runs.
+
+### 2.5 Custom Edge
+
+**File**: `apps/web/src/components/workflows/edges/DataEdge.tsx`
+
+Bezier edge with:
+- Default: solid line with subtle arrow
+- During execution: animated dashes (CSS animation)
+- Optional label showing data mapping preview
+
+### 2.6 Graph Save API
+
+**File**: `apps/web/src/app/api/workflows/[id]/graph/route.ts`
+
+`PUT /api/workflows/[id]/graph` - bulk save:
+- Accepts `{ nodes: [...], edges: [...], canvasViewport: {x,y,zoom} }`
+- Prisma transaction: delete all existing nodes/edges, create new ones
+- Validates ownership
+- Increments `version`
+
+This is the primary save endpoint. Auto-save debounces to 2s after any change.
+
+---
+
+## Phase 3: Node Configuration & Data Mapping
+
+### 3.1 Inspector Components
+
+**Directory**: `apps/web/src/components/workflows/inspectors/`
+
+**`ToolNodeInspector.tsx`** - the star feature
+- Fetches tool details (incl. `inputSchema`) from `/api/tools/[toolId]`
+- Auto-generates form from JSON Schema using `SchemaFormGenerator`
+- Each field has a toggle: "Static value" vs "Map from upstream"
+- Static: renders appropriate input (Input, Select, Switch, Textarea based on type)
+- Mapped: dropdown of available upstream outputs using `{{nodeId.output.path}}` syntax
+- Shows tool description, package name, health status
+
+**`AgentNodeInspector.tsx`**
+- Dropdown to select agent (from `/api/agents`)
+- Prompt template (Textarea, supports `{{input.field}}` interpolation)
+- Shows agent model/provider as Badge
+
+**`ConditionNodeInspector.tsx`**
+- Field selector (from upstream outputs)
+- Operator dropdown (`===`, `!==`, `>`, `<`, `includes`, `exists`)
+- Value input
+- "Add Branch" button for multi-way conditions
+- Each branch auto-creates a new output handle on the node
+
+**`LoopNodeInspector.tsx`**
+- Array path selector (dropdown of upstream array outputs)
+- Max iterations input (default 100, safety cap)
+
+**`TransformNodeInspector.tsx`**
+- Output field mapping: table of `fieldName -> expression`
+- Add/remove field rows
+- Expression uses `{{input.field}}` syntax
+
+**`OutputNodeInspector.tsx`**
+- Label input
+- Optional output schema preview
+
+### 3.2 Schema Form Generator
+
+**File**: `apps/web/src/components/workflows/SchemaFormGenerator.tsx`
+
+Reusable component that takes a JSON Schema and renders form fields:
+- `string` -> `Input`
+- `number` -> `Input[type=number]`
+- `boolean` -> `Switch`
+- `enum` -> `Select`
+- `array` -> list with "Add Item" button
+- `object` -> nested fieldset (recursive)
+- Each field supports static value OR mapped expression toggle
+
+### 3.3 Upstream Output Resolution
+
+**File**: `apps/web/src/components/workflows/hooks/useUpstreamOutputs.ts`
+
+Given a node ID and the current graph, walks backward through edges to find all upstream nodes and their output schemas. Returns a structured list for data mapping dropdowns.
+
+---
+
+## Phase 4: Execution Engine
+
+### 4.1 Core Engine
+
+**File**: `apps/web/src/lib/workflows/execute.ts`
+
+```ts
+async function executeWorkflow(
+  workflowId: string,
+  triggerInput: Record<string, unknown>,
+  userId: string,
+  onNodeStatus: (nodeId: string, status, output?) => void
+): Promise<WorkflowExecutionResult>
+```
+
+Algorithm:
+1. Load workflow with nodes + edges
+2. Build adjacency list
+3. Topological sort (Kahn's algorithm) -> execution order
+4. Group by level (same-level nodes = parallel)
+5. For each level, execute all nodes with `Promise.all`:
+   - Resolve inputs via data mapping from upstream outputs
+   - Execute node based on type
+   - Store output in context map
+   - Fire `onNodeStatus` callback
+6. Return final output from Output nodes
+
+**File**: `apps/web/src/lib/workflows/topological-sort.ts` - Kahn's algorithm
+**File**: `apps/web/src/lib/workflows/data-mapping.ts` - resolve `{{nodeId.output.path}}` templates
+
+### 4.2 Node Executors
+
+**Directory**: `apps/web/src/lib/workflows/node-executors/`
+
+| Executor | What it does |
+|----------|-------------|
+| `trigger.ts` | Returns triggerInput as-is |
+| `tool.ts` | Calls `executeWithExecutor()` from `lib/executors` - reuses the entire existing execution system |
+| `agent.ts` | One-shot `generateText` call with agent config, similar to conversation route |
+| `condition.ts` | Evaluates expression, returns `{ branch: 'true'/'false'/label }` |
+| `loop.ts` | Iterates array, executing downstream subgraph per item |
+| `transform.ts` | Applies field mapping |
+| `output.ts` | Passes through input |
+
+Key: Tool execution reuses `executeWithExecutor()` and `resolveExecutorConfig()` from `apps/web/src/lib/executors/index.ts`. Agent execution reuses `createToolDefinition()` and `buildAgentTools()` patterns.
+
+### 4.3 Execution API
+
+**`apps/web/src/app/api/workflows/[id]/execute/route.ts`**
+- POST: starts execution, streams SSE progress events
+- `export const maxDuration = 300` (5 min)
+- SSE events: `node_start`, `node_complete`, `node_error`, `workflow_complete`, `workflow_error`
+
+**`apps/web/src/app/api/workflows/[id]/executions/route.ts`**
+- GET: paginated execution history
+
+**`apps/web/src/app/api/workflows/[id]/executions/[executionId]/route.ts`**
+- GET: single execution with all node results
+
+### 4.4 Execution Overlay
+
+**File**: `apps/web/src/components/workflows/hooks/useWorkflowExecution.ts`
+
+React hook that:
+- Opens EventSource to `/api/workflows/[id]/execute`
+- Maintains `nodeStatuses: Map<nodeId, {status, output, duration}>`
+- Returns `{ isRunning, nodeStatuses, runWorkflow, lastExecution }`
+
+The node components read from this to show status indicators (blue pulse = running, green check = done, red X = failed).
+
+---
+
+## Phase 5: Polish & Templates
+
+### 5.1 MiniMap + Controls
+Add React Flow's `<MiniMap>`, `<Controls>`, `<Background>` to canvas.
+
+### 5.2 Undo/Redo
+**File**: `apps/web/src/components/workflows/hooks/useUndoRedo.ts`
+- History stack of graph snapshots (max 50)
+- Ctrl+Z / Ctrl+Shift+Z shortcuts
+
+### 5.3 Templates
+**File**: `apps/web/src/lib/workflows/templates.ts`
+- "HTTP Request Pipeline" - Trigger -> Tool -> Transform -> Output
+- "Agent Pipeline" - Trigger -> Agent -> Tool -> Output
+- "Conditional Routing" - Trigger -> Condition -> Tool A / Tool B -> Output
+- "Data Processing Loop" - Trigger -> Tool (fetch list) -> Loop -> Tool (process) -> Output
+- Template selector on create page
+
+### 5.4 Runs Tab
+Add Tabs component to workflow page: "Canvas" | "Runs"
+- Runs tab: execution history table with status, duration, timestamp
+- Click a run to overlay results on canvas
+
+---
+
+## File Summary (all phases)
+
+### New Files (~35 files)
+```
+# Phase 1 - Data model & CRUD
+apps/web/src/app/dashboard/workflows/page.tsx
+apps/web/src/app/dashboard/workflows/new/page.tsx
+apps/web/src/app/api/workflows/route.ts
+apps/web/src/app/api/workflows/[id]/route.ts
+
+# Phase 2 - Canvas
+apps/web/src/app/dashboard/workflows/[id]/page.tsx
+apps/web/src/app/api/workflows/[id]/graph/route.ts
+apps/web/src/components/workflows/WorkflowCanvas.tsx
+apps/web/src/components/workflows/NodePalette.tsx
+apps/web/src/components/workflows/NodeInspector.tsx
+apps/web/src/components/workflows/WorkflowToolbar.tsx
+apps/web/src/components/workflows/nodes/TriggerNode.tsx
+apps/web/src/components/workflows/nodes/ToolNode.tsx
+apps/web/src/components/workflows/nodes/AgentNode.tsx
+apps/web/src/components/workflows/nodes/ConditionNode.tsx
+apps/web/src/components/workflows/nodes/LoopNode.tsx
+apps/web/src/components/workflows/nodes/TransformNode.tsx
+apps/web/src/components/workflows/nodes/OutputNode.tsx
+apps/web/src/components/workflows/nodes/NoteNode.tsx
+apps/web/src/components/workflows/edges/DataEdge.tsx
+
+# Phase 3 - Node config
+apps/web/src/components/workflows/inspectors/ToolNodeInspector.tsx
+apps/web/src/components/workflows/inspectors/AgentNodeInspector.tsx
+apps/web/src/components/workflows/inspectors/ConditionNodeInspector.tsx
+apps/web/src/components/workflows/inspectors/LoopNodeInspector.tsx
+apps/web/src/components/workflows/inspectors/TransformNodeInspector.tsx
+apps/web/src/components/workflows/inspectors/OutputNodeInspector.tsx
+apps/web/src/components/workflows/SchemaFormGenerator.tsx
+apps/web/src/components/workflows/hooks/useUpstreamOutputs.ts
+
+# Phase 4 - Execution
+apps/web/src/lib/workflows/execute.ts
+apps/web/src/lib/workflows/topological-sort.ts
+apps/web/src/lib/workflows/data-mapping.ts
+apps/web/src/lib/workflows/node-executors/trigger.ts
+apps/web/src/lib/workflows/node-executors/tool.ts
+apps/web/src/lib/workflows/node-executors/agent.ts
+apps/web/src/lib/workflows/node-executors/condition.ts
+apps/web/src/lib/workflows/node-executors/loop.ts
+apps/web/src/lib/workflows/node-executors/transform.ts
+apps/web/src/lib/workflows/node-executors/output.ts
+apps/web/src/app/api/workflows/[id]/execute/route.ts
+apps/web/src/app/api/workflows/[id]/executions/route.ts
+apps/web/src/app/api/workflows/[id]/executions/[executionId]/route.ts
+apps/web/src/components/workflows/hooks/useWorkflowExecution.ts
+
+# Phase 5 - Polish
+apps/web/src/components/workflows/hooks/useUndoRedo.ts
+apps/web/src/lib/workflows/templates.ts
+apps/web/src/components/workflows/WorkflowRunsTab.tsx
+```
+
+### Modified Files
+```
+packages/db/prisma/schema.prisma          # New models + enums + User relation
+apps/web/src/components/dashboard/DashboardLayout.tsx  # Sidebar nav entry
+apps/web/package.json                     # @xyflow/react dependency
+```
+
+### Existing Code to Reuse
+- `apps/web/src/lib/executors/index.ts` -> `executeWithExecutor()`, `resolveExecutorConfig()`, `parseExecutorConfig()`
+- `apps/web/src/lib/agents/build-tools.ts` -> `buildAgentTools()` pattern for tool composition
+- `apps/web/src/lib/ai-agent/tool-executor-agent.ts` -> `createToolDefinition()` for agent node execution
+- `apps/web/src/lib/api-keys/middleware` -> `authenticateRequest()` for API auth
+- All `@tpmjs/ui` components (no raw HTML, no barrel imports)
+
+---
+
+## Verification Plan
+
+1. **Phase 1**: Visit `/dashboard/workflows`, verify empty state renders. Create a workflow, verify redirect to canvas page. Verify API routes return correct data.
+2. **Phase 2**: Drag a tool from palette onto canvas. Connect two nodes. Verify auto-save fires and persists. Refresh page - graph should reload.
+3. **Phase 3**: Select a tool node, verify form auto-generates from its `inputSchema`. Configure a data mapping. Verify inspector updates node config.
+4. **Phase 4**: Create a simple Trigger -> Tool -> Output workflow. Click Run. Verify SSE stream shows node-by-node progress. Verify execution history shows in Runs tab.
+5. **Full type-check**: `pnpm type-check` passes across all packages.
+6. **Build**: `pnpm build` succeeds.
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me go through the conversation chronologically to capture all important details.
+
+1. The user provided a detailed implementation plan for a "Workflow Builder" feature in the TPMJS monorepo. The plan has 5 phases covering data model, CRUD, React Flow canvas, node configuration, execution engine, and polish features.
+
+2. I started by exploring the codebase to understand patterns, reading key files:
+   - Prisma schema (packages/db/prisma/schema.prisma)
+   - DashboardLayout (apps/web/src/components/dashboard/DashboardLayout.tsx)
+   - Agents page (apps/web/src/app/dashboard/agents/page.tsx)
+   - Create agent page (apps/web/src/app/dashboard/agents/new/page.tsx)
+   - Agents API route (apps/web/src/app/api/agents/route.ts)
+   - Agent [id] route (apps/web/src/app/api/agents/[id]/route.ts)
+   - Auth middleware (apps/web/src/lib/api-keys/middleware.ts)
+   - Activity logging (apps/web/src/lib/activity.ts)
+   - API response helpers (apps/web/src/lib/api-response.ts)
+   - Executors system (apps/web/src/lib/executors/index.ts)
+   - Icon names (packages/ui/src/Icon/icons.ts)
+   - Package.json (apps/web/package.json)
+
+3. I created 8 tasks to track progress.
+
+4. Phase 1 - Schema:
+   - Added enums: WorkflowStatus, WorkflowTriggerType, WorkflowNodeType, WorkflowExecutionStatus, WorkflowNodeExecutionStatus
+   - Added 5 models: Workflow, WorkflowNode, WorkflowEdge, WorkflowExecution, WorkflowNodeExecution
+   - Added `workflows` relation to User model
+   - Added `workflowNodes` relation to Tool and Agent models
+   - Added WORKFLOW_CREATED, WORKFLOW_UPDATED, WORKFLOW_DELETED, WORKFLOW_EXECUTED to ActivityType enum
+   - Updated activity.ts with new types, messages, and icons
+   - Ran `pnpm --filter=@tpmjs/db db:generate` successfully
+   - Had to export env vars manually for `db:push` (DATABASE_URL_UNPOOLED not found initially), fixed by sourcing .env.local and exporting
+
+5. Phase 1 - API Routes:
+   - Created /api/workflows/route.ts (GET list + POST create)
+   - Created /api/workflows/[id]/route.ts (GET/PATCH/DELETE)
+   - Created /api/workflows/[id]/graph/route.ts (PUT bulk save)
+   - Created /api/workflows/[id]/execute/route.ts (POST with SSE streaming)
+   - Created /api/workflows/[id]/executions/route.ts (GET list)
+   - Created /api/workflows/[id]/executions/[executionId]/route.ts (GET detail)
+
+6. Phase 1 - Pages:
+   - Updated DashboardLayout sidebar to add Workflows nav item with gitFork icon
+   - Created /dashboard/workflows/page.tsx (list page)
+   - Created /dashboard/workflows/new/page.tsx (create form)
+
+7. Phase 2 - Canvas:
+   - Attempted to install @xyflow/react via pnpm add, but lefthook prepare script failed
+   - Fixed by manually adding to package.json and running `CI=true pnpm install`
+   - Created all 8 custom node types: TriggerNode, ToolNode, AgentNode, ConditionNode, LoopNode, TransformNode, OutputNode, NoteNode
+   - Created DataEdge custom edge
+   - Created NodePalette (left sidebar with search, categorized items, drag-and-drop)
+   - Created WorkflowToolbar (top bar with save indicator, run button, tabs, undo/redo)
+   - Created NodeInspector (right panel dispatching to type-specific inspectors)
+   - Created WorkflowCanvas (main orchestrator with React Flow, auto-save, drag-and-drop)
+   - Created canvas page at /dashboard/workflows/[id]/page.tsx
+
+8. Phase 3 - Inspectors:
+   - Created ToolNodeInspector (fetches tool details, auto-generates form from inputSchema)
+   - Created AgentNodeInspector (agent selector, prompt template)
+   - Created ConditionNodeInspector (field, operator, value, branches management)
+   - Created LoopNodeInspector (array path, max iterations)
+   - Created TransformNodeInspector (field mappings table)
+   - Created OutputNodeInspector (description field)
+   - Created SchemaFormGenerator (renders form fields from JSON Schema)
+
+9. Phase 4 - Execution:
+   - Created topological-sort.ts (Kahn's algorithm)
+   - Created data-mapping.ts (template expression resolution)
+   - Created all node executors: trigger.ts, tool.ts, agent.ts, condition.ts, loop.ts, transform.ts, output.ts
+   - Created execute.ts (core workflow execution engine)
+
+10. Phase 5 - Polish:
+    - Created useUndoRedo.ts hook
+    - Created WorkflowRunsTab.tsx
+    - Keyboard shortcuts (Ctrl+Z/Ctrl+Shift+Z) already integrated in WorkflowCanvas
+
+11. Still pending:
+    - Templates (apps/web/src/lib/workflows/templates.ts)
+    - useUpstreamOutputs hook
+    - Type-check and build verification
+    - The `CI=true pnpm install` was still running in background
+
+The WorkflowNodeExecutionStatus enum values had to be prefixed with NODE_ to avoid collisions with WorkflowExecutionStatus enum values in Prisma.
+
+The zod import uses `zod/v4` path which is the pattern in this codebase (zod 4.x).
+
+Important: I was working through the tasks sequentially. Tasks 1-5 completed, task 6 was in progress (execution engine), task 7 partly done (undo/redo and runs tab done, templates not yet), task 8 not started (type-check/build verification).
+
+Summary:
+1. Primary Request and Intent:
+   The user asked to implement a comprehensive "Workflow Builder" feature for the TPMJS monorepo following a detailed 5-phase plan. The plan covers: (1) Prisma data model + CRUD + list/create pages, (2) React Flow visual canvas with drag-and-drop, (3) Node configuration & data mapping with auto-generated forms, (4) Execution engine with topological sort and SSE streaming, (5) Polish features including undo/redo, templates, and runs tab. The plan referenced a prior planning session transcript at `/Users/ajaxdavis/.REDACTED.jsonl`.
+
+2. Key Technical Concepts:
+   - **Turborepo monorepo** with pnpm workspaces, Next.js 16 App Router, PostgreSQL via Prisma, deployed on Vercel
+   - **@tpmjs/ui components** - must use direct imports (e.g., `@tpmjs/ui/Button/Button`), never barrel exports
+   - **API route requirements**: `export const runtime = 'nodejs'`, `export const maxDuration = 60`, `authenticateRequest()` for auth
+   - **Pagination pattern**: `take: limit + 1` to avoid `count()` for Vercel serverless
+   - **Activity logging**: fire-and-forget `logActivity()` pattern
+   - **API response helpers**: `apiSuccess`, `apiNotFound`, `apiForbidden`, etc. from `~/lib/api-response`
+   - **React Flow (@xyflow/react)**: Custom node types, edge types, drag-and-drop from palette, debounced auto-save
+   - **SSE streaming** for real-time execution progress
+   - **Topological sort (Kahn's algorithm)** for determining node execution order
+   - **Template expression resolution** (`{{nodeId.output.path}}`) for data mapping between nodes
+   - **Executor cascade**: Agent Config → Collection Config → System Default via `executeWithExecutor()`
+   - **Zod v4** validation (imported as `zod/v4`)
+
+3. Files and Code Sections:
+
+   **READ FILES (for pattern reference):**
+   - `packages/db/prisma/schema.prisma` - Full schema with all existing models, enums, User model (line 386), ActivityType enum (line 935), Tool model relations, Agent model relations. Essential for understanding data model patterns.
+   - `apps/web/src/components/dashboard/DashboardLayout.tsx` - Sidebar navigation structure with navSections array, fullHeight prop for canvas pages, isActive logic. Essential for adding Workflows nav item.
+   - `apps/web/src/app/dashboard/agents/page.tsx` - Complete agent list page pattern with Table, loading skeletons, empty state, delete handling. Template for workflows list page.
+   - `apps/web/src/app/dashboard/agents/new/page.tsx` - Create form pattern with auto-generated UID, AppHeader layout, form validation. Template for workflow create page.
+   - `apps/web/src/app/api/agents/route.ts` - API route pattern: auth check, Zod validation, `take: limit+1` pagination, `_count` to derived fields, `logActivity()`. Template for workflow API routes.
+   - `apps/web/src/app/api/agents/[id]/route.ts` - Single-item route pattern using `RouteContext = { params: Promise<{ id: string }> }`, api-response helpers, ownership checks.
+   - `apps/web/src/lib/api-keys/middleware.ts` - `authenticateRequest()` returns `AuthResult` with `authenticated`, `userId`, `apiKeyId`, etc.
+   - `apps/web/src/lib/activity.ts` - `LogActivityParams` interface, `ACTIVITY_MESSAGES` and `ACTIVITY_ICONS` records.
+   - `apps/web/src/lib/api-response.ts` - Standardized response format helpers: `apiSuccess`, `apiError`, `apiUnauthorized`, `apiForbidden`, `apiNotFound`, `apiValidationError`, `apiConflict`, `apiInternalError`.
+   - `apps/web/src/lib/executors/index.ts` - `executeWithExecutor()`, `resolveExecutorConfig()`, `parseExecutorConfig()`, sandbox management functions.
+   - `packages/ui/src/Icon/icons.ts` - Available icon names including: `gitFork`, `send`, `puzzle`, `terminal`, `check`, `edit`, `loader`, `message`, `plus`, `trash`, etc.
+   - `apps/web/package.json` - Dependencies list, used to add `@xyflow/react`.
+
+   **MODIFIED FILES:**
+   - `packages/db/prisma/schema.prisma`:
+     - Added `workflows Workflow[]` to User model (after `customMcpServers`)
+     - Added `workflowNodes WorkflowNode[]` to Tool model (after `skillQuestions`)
+     - Added `workflowNodes WorkflowNode[]` to Agent model (after `likes`)
+     - Added `WORKFLOW_CREATED`, `WORKFLOW_UPDATED`, `WORKFLOW_DELETED`, `WORKFLOW_EXECUTED` to ActivityType enum
+     - Added 5 new enums and 5 new models at end of schema (see below)
+   - `apps/web/src/lib/activity.ts`:
+     - Added `'workflow'` to `targetType` union in `LogActivityParams`
+     - Added 4 workflow entries to `ACTIVITY_MESSAGES` and `ACTIVITY_ICONS`
+   - `apps/web/src/components/dashboard/DashboardLayout.tsx`:
+     - Added `{ href: '/dashboard/workflows', label: 'Workflows', icon: 'gitFork' }` after Collections in first nav section
+   - `apps/web/package.json`:
+     - Added `"@xyflow/react": "^12.6.0"` to dependencies
+
+   **NEW FILES CREATED:**
+
+   Schema enums/models added to `packages/db/prisma/schema.prisma`:
+   ```prisma
+   enum WorkflowStatus { DRAFT ACTIVE ARCHIVED }
+   enum WorkflowTriggerType { MANUAL WEBHOOK SCHEDULE }
+   enum WorkflowNodeType { TRIGGER TOOL AGENT CONDITION LOOP TRANSFORM OUTPUT NOTE }
+   enum WorkflowExecutionStatus { PENDING RUNNING COMPLETED FAILED CANCELLED }
+   enum WorkflowNodeExecutionStatus { NODE_PENDING NODE_RUNNING NODE_COMPLETED NODE_FAILED NODE_SKIPPED }
+   ```
+   Note: WorkflowNodeExecutionStatus values prefixed with `NODE_` to avoid Prisma enum value collisions.
+
+   - `apps/web/src/app/api/workflows/route.ts` - GET (list with pagination) + POST (create with UID generation, name uniqueness, 50-workflow limit)
+   - `apps/web/src/app/api/workflows/[id]/route.ts` - GET (full workflow with nodes/edges/tools/agents), PATCH (metadata update), DELETE (cascade)
+   - `apps/web/src/app/api/workflows/[id]/graph/route.ts` - PUT bulk save: validates nodes/edges via Zod, transaction deletes all existing then creates new, increments version
+   - `apps/web/src/app/api/workflows/[id]/execute/route.ts` - POST with SSE streaming (`maxDuration = 300`), creates WorkflowExecution record, streams node_start/node_complete/node_error/workflow_complete events
+   - `apps/web/src/app/api/workflows/[id]/executions/route.ts` - GET paginated execution history
+   - `apps/web/src/app/api/workflows/[id]/executions/[executionId]/route.ts` - GET single execution with nodeExecutions
+   - `apps/web/src/app/dashboard/workflows/page.tsx` - Workflows list page with Table, loading skeletons, empty state, delete handling, status badges
+   - `apps/web/src/app/dashboard/workflows/new/page.tsx` - Create workflow form: name, UID (auto-generated), description, trigger type
+   - `apps/web/src/app/dashboard/workflows/[id]/page.tsx` - Canvas page using DashboardLayout with fullHeight, renders WorkflowCanvas
+   - `apps/web/src/components/workflows/WorkflowCanvas.tsx` - Main orchestrator: React Flow state, loads workflow from API, debounced 2s auto-save, drag-and-drop from palette, node selection → inspector, keyboard shortcuts, execution overlay
+   - `apps/web/src/components/workflows/NodePalette.tsx` - Left sidebar: categorized (Logic/Tools/Agents), search with debounced tool search via `/api/tools/search`, HTML5 drag API
+   - `apps/web/src/components/workflows/WorkflowToolbar.tsx` - Top bar: back link, name, status badge, save indicator, Canvas/Runs tabs, undo/redo buttons, Run button
+   - `apps/web/src/components/workflows/NodeInspector.tsx` - Right panel: common label field, dispatches to type-specific inspectors, delete button
+   - `apps/web/src/components/workflows/nodes/TriggerNode.tsx` - Blue header, send icon, 1 output handle (bottom), trigger type badge, status dot
+   - `apps/web/src/components/workflows/nodes/ToolNode.tsx` - Purple header, puzzle icon, input+output handles, tool name + package display
+   - `apps/web/src/components/workflows/nodes/AgentNode.tsx` - Green header, terminal icon, input+output handles, model display
+   - `apps/web/src/components/workflows/nodes/ConditionNode.tsx` - Amber header, gitFork icon, input handle, multiple output handles per branch
+   - `apps/web/src/components/workflows/nodes/LoopNode.tsx` - Teal header, loader icon, input+output handles, array path display
+   - `apps/web/src/components/workflows/nodes/TransformNode.tsx` - Slate header, edit icon, input+output handles
+   - `apps/web/src/components/workflows/nodes/OutputNode.tsx` - Emerald header, check icon, input handle only
+   - `apps/web/src/components/workflows/nodes/NoteNode.tsx` - Yellow, message icon, no handles, displays content
+   - `apps/web/src/components/workflows/edges/DataEdge.tsx` - Bezier edge with animated dashes during execution
+   - `apps/web/src/components/workflows/inspectors/ToolNodeInspector.tsx` - Fetches tool details, shows tool info, renders SchemaFormGenerator for inputSchema
+   - `apps/web/src/components/workflows/inspectors/AgentNodeInspector.tsx` - Agent dropdown, prompt template textarea with {{input.field}} syntax
+   - `apps/web/src/components/workflows/inspectors/ConditionNodeInspector.tsx` - Field path, operator select, value input, branch management (add/remove)
+   - `apps/web/src/components/workflows/inspectors/LoopNodeInspector.tsx` - Array path, max iterations input
+   - `apps/web/src/components/workflows/inspectors/TransformNodeInspector.tsx` - Field mappings table (key → expression pairs)
+   - `apps/web/src/components/workflows/inspectors/OutputNodeInspector.tsx` - Description input
+   - `apps/web/src/components/workflows/SchemaFormGenerator.tsx` - Renders form from JSON Schema: enum→Select, boolean→Select, number→Input[number], long strings→Textarea, default→Input
+   - `apps/web/src/components/workflows/hooks/useWorkflowExecution.ts` - Manages SSE connection, tracks nodeStatuses Map, handles events
+   - `apps/web/src/components/workflows/hooks/useUndoRedo.ts` - History stack (max 50), structuredClone for snapshots
+   - `apps/web/src/components/workflows/WorkflowRunsTab.tsx` - Execution history table: status, triggered by, started, duration, version, error
+   - `apps/web/src/lib/workflows/topological-sort.ts` - Kahn's algorithm returning `string[][]` (levels), cycle detection, `getUpstreamNodes()` helper
+   - `apps/web/src/lib/workflows/data-mapping.ts` - `resolveTemplate()`, `resolveParams()` for `{{nodeId.output.path}}` expressions
+   - `apps/web/src/lib/workflows/execute.ts` - Core engine: loads workflow, topological sorts, executes level-by-level with Promise.all, condition branch routing, calls node executors
+   - `apps/web/src/lib/workflows/node-executors/trigger.ts` - Passes through trigger input
+   - `apps/web/src/lib/workflows/node-executors/tool.ts` - Loads tool from DB, calls `executeWithExecutor()` from existing executor system
+   - `apps/web/src/lib/workflows/node-executors/agent.ts` - Loads agent from DB, lazy-imports AI SDK provider, calls `generateText()`
+   - `apps/web/src/lib/workflows/node-executors/condition.ts` - Evaluates condition (===, !==, >, <, includes, exists), returns `{branch, value}`
+   - `apps/web/src/lib/workflows/node-executors/loop.ts` - Resolves array, caps at maxIterations, returns `{items, count}`
+   - `apps/web/src/lib/workflows/node-executors/transform.ts` - Applies field mappings using resolveTemplate
+   - `apps/web/src/lib/workflows/node-executors/output.ts` - Passes through input
+
+4. Errors and Fixes:
+   - **DATABASE_URL_UNPOOLED not found** when running `pnpm --filter=@tpmjs/db db:push`: The env var wasn't available to Prisma. Fixed by running `source .env.local && export DATABASE_URL && export DATABASE_URL_UNPOOLED && cd packages/db && npx prisma db push` directly.
+   - **@xyflow/react installation failure**: `pnpm add @xyflow/react --filter=@tpmjs/web` failed because lefthook's prepare script errored (`can't rename pre-push to pre-push.old - file already exists`). Fixed by manually adding `"@xyflow/react": "^12.6.0"` to `apps/web/package.json` and running `CI=true pnpm install` (CI=true skips the prepare hook).
+
+5. Problem Solving:
+   - Successfully created the complete data model with proper foreign key relationships, cascade deletes, and indexes
+   - Resolved Prisma enum naming collision by prefixing WorkflowNodeExecutionStatus values with `NODE_`
+   - Built the graph save API as a replace-all-in-transaction strategy (delete existing, create new, increment version)
+   - Implemented SSE streaming for real-time execution progress using fetch with ReadableStream
+   - Implemented condition branch routing in the execution engine by tracking active branches and skipping nodes on inactive branches
+
+6. All User Messages:
+   - "Implement the following plan:" followed by the complete 5-phase Workflow Builder implementation plan with detailed specifications for schema, API routes, pages, canvas components, node types, inspectors, execution engine, and polish features. The plan included a file summary of ~35 new files and ~3 modified files, plus a verification plan.
+
+7. Pending Tasks:
+   - **Task #7 (partially done)**: Templates file (`apps/web/src/lib/workflows/templates.ts`) not yet created
+   - **Task #8**: Type-check and build verification (`pnpm type-check` and `pnpm build`) not yet run
+   - `useUpstreamOutputs` hook (from Phase 3 plan) not yet created
+   - `CI=true pnpm install` was running in background (task b5fb972) - need to verify completion
+
+8. Current Work:
+   I had just completed writing the core execution engine (`apps/web/src/lib/workflows/execute.ts`) and all node executors (trigger, tool, agent, condition, loop, transform, output). Task #6 "Build execution engine and node executors" was in_progress. The last files written were:
+   - `apps/web/src/lib/workflows/node-executors/output.ts`
+   - `apps/web/src/lib/workflows/execute.ts`
+
+   All phases 1-4 of the plan are essentially complete. Phase 5 is partially complete (undo/redo hook and runs tab are done, templates file is not yet created).
+
+9. Optional Next Step:
+   The immediate next steps based on the plan are:
+   1. Create the templates file `apps/web/src/lib/workflows/templates.ts` (remaining Phase 5 item)
+   2. Create the `useUpstreamOutputs` hook (`apps/web/src/components/workflows/hooks/useUpstreamOutputs.ts`) 
+   3. Mark tasks 6 and 7 as completed
+   4. Run `pnpm type-check` and `pnpm build` (Task #8) to verify everything compiles - this is critical as many files were written without incremental type checking
+   5. Fix any type errors that arise
+
+   The plan's verification section states: "Full type-check: `pnpm type-check` passes across all packages" and "Build: `pnpm build` succeeds."
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+<task-notification>
+<task-id>b5fb972</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b5fb972.output</output-file>
+<status>completed</status>
+<summary>Background command "Install deps with CI=true to skip hooks" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b5fb972.output
+
+---
+
+<task-notification>
+<task-id>bf90f83</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bf90f83.output</output-file>
+<status>completed</status>
+<summary>Background command "Build and check final output" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bf90f83.output
+
+---
+
+deploy
