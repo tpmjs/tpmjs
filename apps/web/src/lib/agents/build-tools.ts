@@ -233,7 +233,8 @@ function mergeEnvVars(
 function injectSandboxTools(
   sandboxUrl: string,
   sandboxApiKey: string | undefined,
-  sessionId: string
+  sessionId: string,
+  env?: Record<string, string>
 ): Record<string, ReturnType<typeof createToolDefinition>> {
   const makeSandboxTool = (
     name: string,
@@ -251,6 +252,7 @@ function injectSandboxTools(
           packageName: '@tpmjs/sandbox-shell',
           name,
           params: paramMapper(args),
+          env,
         },
         sessionId
       );
@@ -357,9 +359,14 @@ export function buildAgentTools(
   const tools: Record<string, ReturnType<typeof createToolDefinition>> = {};
   const seenTools = new Set<string>();
 
+  // When callerEnvVars is provided (non-owner using public agent), use those exclusively.
+  // Otherwise, use the agent's stored env vars.
+  const useCallerEnvVars = callerEnvVars !== undefined;
+  const agentEnvVars = useCallerEnvVars ? callerEnvVars : parseEnvVars(agent.envVars);
+
   // Inject sandbox tools first if sandbox is enabled and session is active
   if (sandboxUrl && sessionId) {
-    const sandboxTools = injectSandboxTools(sandboxUrl, sandboxApiKey, sessionId);
+    const sandboxTools = injectSandboxTools(sandboxUrl, sandboxApiKey, sessionId, agentEnvVars);
     for (const [name, toolDef] of Object.entries(sandboxTools)) {
       tools[name] = toolDef;
       // Mark sandbox tool package keys as seen to prevent duplicates
@@ -370,11 +377,6 @@ export function buildAgentTools(
 
   // Parse agent-level executor config
   const agentExecutorConfig = parseExecutorConfig(agent.executorType, agent.executorConfig);
-
-  // When callerEnvVars is provided (non-owner using public agent), use those exclusively.
-  // Otherwise, use the agent's stored env vars.
-  const useCallerEnvVars = callerEnvVars !== undefined;
-  const agentEnvVars = useCallerEnvVars ? callerEnvVars : parseEnvVars(agent.envVars);
 
   // Add tools from collections first
   for (const agentCollection of agent.collections) {
