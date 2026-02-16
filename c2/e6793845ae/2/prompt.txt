@@ -1,0 +1,527 @@
+Implement the following plan:
+
+# Sandbox Shell Tools — Implementation Plan
+
+## Context
+
+TPMJS agents can now run tools in the Agent Sandbox (stateful sessions with persistent filesystem). The next step is to create **tools that let agents clone git repos, read/write files, run shell commands, and commit changes** — all within the sandbox workspace.
+
+The sandbox Deno server already grants `--allow-run` (subprocess execution), so tools can use `Deno.Command` to run `git`, `sh`, etc. The `_sandboxWorkDir` is injected into tool params by the sandbox server (`server.ts:391`).
+
+---
+
+## Step 1: Define in blocks.yml
+
+Add to the `blocks:` section of `packages/tools/official/blocks.yml`:
+
+```yaml
+sandbox.shellExec:
+  type: utility
+  description: "Execute a shell command in the sandbox workspace. Supports git, npm, and any CLI tools."
+  path: "sandbox-shell"
+  domain_rules:
+    - id: sandbox_execution
+      description: "Must execute commands via Deno.Command in the _sandboxWorkDir"
+    - id: timeout_enforcement
+      description: "Must enforce configurable timeout with process kill"
+    - id: output_truncation
+      description: "Must truncate stdout/stderr at 100KB"
+  inputs:
+    - name: command
+      type: string
+      description: "Shell command to execute"
+    - name: timeout
+      type: number
+      optional: true
+      description: "Timeout in milliseconds (default: 30000, max: 300000)"
+  outputs:
+    - name: result
+      type: ShellExecResult
+      description: "stdout, stderr, exitCode, duration"
+      measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+sandbox.readFile:
+  type: utility
+  description: "Read a file from the sandbox workspace"
+  path: "sandbox-shell"
+  inputs:
+    - name: path
+      type: string
+      description: "File path relative to workspace root"
+  outputs:
+    - name: result
+      type: ReadFileResult
+      description: "content, path, size"
+      measures: [working_implementation, valid_output_structure, proper_error_handling]
+
+sandbox.writeFile:
+  type: utility
+  description: "Write or create a file in the sandbox workspace"
+  path: "sandbox-shell"
+  inputs:
+    - name: path
+      type: string
+      description: "File path relative to workspace root"
+    - name: content
+      type: string
+      description: "Content to write"
+    - name: createDirs
+      type: boolean
+      optional: true
+      description: "Create parent directories if needed (default: true)"
+  outputs:
+    - name: result
+      type: WriteFileResult
+      description: "success, path, bytesWritten"
+      measures: [working_implementation, valid_output_structure, proper_error_handling]
+
+sandbox.listFiles:
+  type: utility
+  description: "List files and directories in the sandbox workspace"
+  path: "sandbox-shell"
+  inputs:
+    - name: path
+      type: string
+      optional: true
+      description: "Directory path relative to workspace root (default: root)"
+    - name: recursive
+      type: boolean
+      optional: true
+      description: "List recursively (default: false)"
+    - name: maxDepth
+      type: number
+      optional: true
+      description: "Max depth for recursive listing (default: 3)"
+  outputs:
+    - name: result
+      type: ListFilesResult
+      description: "entries array with name, type, size"
+      measures: [working_implementation, valid_output_structure, proper_error_handling]
+```
+
+---
+
+## Step 2: Create package at `packages/tools/official/sandbox-shell/`
+
+### Directory structure
+
+```
+packages/tools/official/sandbox-shell/
+├── package.json
+├── tsconfig.json
+├── tsup.config.ts
+├── block.ts              # Multi-tool block definition
+├── index.ts              # Root re-export
+├── README.md
+└── src/
+    ├── index.ts          # All 4 tool implementations
+    └── deno.d.ts         # Ambient Deno type declarations
+```
+
+### `package.json`
+
+```json
+{
+  "name": "@tpmjs/official-sandbox-shell",
+  "version": "0.1.0",
+  "description": "Shell execution, file I/O, and directory listing tools for the TPMJS Agent Sandbox",
+  "type": "module",
+  "keywords": ["tpmjs", "sandbox", "shell", "git", "filesystem", "ai", "agent"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": { "access": "public" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/sandbox-shell"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": ["vercel-ai"],
+    "tools": [
+      { "name": "shellExec", "description": "Execute a shell command in the sandbox workspace. Supports git, npm, and any CLI tools." },
+      { "name": "readFile", "description": "Read a file from the sandbox workspace." },
+      { "name": "writeFile", "description": "Write or create a file in the sandbox workspace." },
+      { "name": "listFiles", "description": "List files and directories in the sandbox workspace." }
+    ]
+  }
+}
+```
+
+### `tsconfig.json`
+
+```json
+{
+  "extends": "@tpmjs/tsconfig/react-library.json",
+  "compilerOptions": { "outDir": "dist", "rootDir": "src" },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+### `tsup.config.ts`
+
+```typescript
+import { defineConfig } from 'tsup';
+
+export default defineConfig({
+  entry: ['src/index.ts'],
+  format: ['esm'],
+  dts: true,
+  clean: true,
+  sourcemap: true,
+  target: 'es2022',
+});
+```
+
+### `block.ts` (multi-tool block definition)
+
+```typescript
+import { shellExec, readFile, writeFile, listFiles } from './src/index.js';
+export const block = { name: 'sandbox-shell', tools: { shellExec, readFile, writeFile, listFiles } };
+export default block;
+```
+
+### `index.ts` (root re-export)
+
+```typescript
+export * from './src/index.js';
+export { default } from './src/index.js';
+```
+
+### `src/deno.d.ts` — Ambient Deno type declarations
+
+Declares only the APIs used: `Deno.Command`, `Deno.readTextFile`, `Deno.writeTextFile`, `Deno.readDir`, `Deno.stat`, `Deno.mkdir`. Avoids `@types/deno` conflicts with Node.js types in the monorepo.
+
+### `src/index.ts` — 4 tools
+
+All follow the skill pattern: `tool()` + `jsonSchema()` from `'ai'`, `additionalProperties: false`, exported result interfaces, named + default exports.
+
+**`shellExec`** — Execute any shell command
+- `new Deno.Command('sh', { args: ['-c', command], cwd: _sandboxWorkDir, stdout: 'piped', stderr: 'piped' })`
+- Timeout via `spawn()` + kill timer (default 30s, max 300s)
+- Truncate stdout/stderr at 100KB
+
+**`readFile`** — Read a file
+- Resolve path relative to `_sandboxWorkDir`, validate no `../` escape
+- `Deno.readTextFile()`, truncate at 500KB
+
+**`writeFile`** — Write/create a file
+- Resolve + validate path, `Deno.mkdir()` + `Deno.writeTextFile()`
+
+**`listFiles`** — List directory
+- `Deno.readDir()`, optional recursion to depth 3, cap at 1000 entries
+
+**Path security**: All path tools normalize and verify `resolvedPath.startsWith(workDir)`. Missing `_sandboxWorkDir` returns clear error.
+
+**Default export**: `export default { shellExec, readFile, writeFile, listFiles };`
+
+---
+
+## Step 3: Update Dockerfile — install git
+
+### `templates/agent-sandbox/Dockerfile` line 6
+
+Change:
+```
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+```
+To:
+```
+RUN apt-get update && apt-get install -y --no-install-recommends curl git openssh-client && rm -rf /var/lib/apt/lists/*
+```
+
+### Add git credential helper
+
+New file `templates/agent-sandbox/git-credential-env`:
+```bash
+#!/bin/sh
+if [ "$1" = "get" ]; then
+  if [ -n "$GITHUB_TOKEN" ]; then
+    echo "protocol=https"
+    echo "host=github.com"
+    echo "username=x-access-token"
+    echo "password=$GITHUB_TOKEN"
+  fi
+fi
+```
+
+Add to Dockerfile before `USER deno`:
+```dockerfile
+COPY git-credential-env /usr/local/bin/git-credential-env
+RUN chmod +x /usr/local/bin/git-credential-env && \
+    git config --system credential.helper '/usr/local/bin/git-credential-env'
+```
+
+---
+
+## Step 4: Testing script
+
+### `templates/agent-sandbox/test-sandbox.sh`
+
+```
+Usage: ./test-sandbox.sh [SANDBOX_URL] [API_KEY]
+  Default: http://localhost:3002
+```
+
+Test sequence via curl:
+1. Health check
+2. Create session
+3. `shellExec`: `echo "hello" > test.txt`
+4. `readFile`: verify content
+5. `writeFile`: create `src/index.js`
+6. `listFiles`: verify files
+7. `shellExec`: `git clone https://github.com/octocat/Hello-World.git --depth 1`
+8. `listFiles` on cloned repo
+9. `shellExec`: `cd Hello-World && git log --oneline -3`
+10. Destroy session
+
+---
+
+## Step 5: Update README
+
+Update `templates/agent-sandbox/README.md` with deployment + testing instructions.
+
+---
+
+## Implementation Order
+
+| Step | What | Files |
+|------|------|-------|
+| 1 | blocks.yml entries | `packages/tools/official/blocks.yml` |
+| 2 | Package structure | `package.json`, `tsconfig.json`, `tsup.config.ts`, `block.ts`, root `index.ts` |
+| 3 | Deno types + tool implementations | `src/deno.d.ts`, `src/index.ts` |
+| 4 | Dockerfile + git credential | `Dockerfile`, `git-credential-env` |
+| 5 | Testing script | `test-sandbox.sh` |
+| 6 | README | `README.md` |
+| 7 | Build & validate | `pnpm install && pnpm type-check && pnpm build && pnpm blocks run sandbox-shell` |
+
+## Key Reference Files
+
+- `packages/tools/official/blocks.yml` — blocks definition
+- `packages/tools/hello/src/index.ts` — tool pattern
+- `templates/agent-sandbox/server.ts:391` — `_sandboxWorkDir` injection
+- `templates/agent-sandbox/Dockerfile` — needs git
+- `.claude/skills/tpmjs-tool-creator` — canonical tool creation guide
+
+## Verification
+
+1. `pnpm type-check` passes
+2. `pnpm build` succeeds
+3. `pnpm blocks run sandbox-shell` validates all 4 tools
+4. Docker build: `docker build -t tpmjs-sandbox templates/agent-sandbox/`
+5. Test script: `./test-sandbox.sh http://localhost:3002`
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+<task-notification>
+<task-id>b897a4d</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b897a4d.output</output-file>
+<status>completed</status>
+<summary>Background command "Docker build of agent sandbox" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b897a4d.output
+
+---
+
+write full documentaion for the sandbox feature
+
+---
+
+i want pubgli facing documentation on the website
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. **First user message**: "Implement the following plan:" - A detailed plan for creating Sandbox Shell Tools including blocks.yml definitions, package structure, tool implementations, Dockerfile updates, testing script, and README updates.
+
+2. **My exploration**: I created task items and then explored the codebase. I discovered that ALL files from the plan already existed - the implementation was complete. Every step was already done.
+
+3. **Verification phase**: I ran:
+   - `pnpm install` (had to fix a lefthook conflict by removing `.git/hooks/pre-push.old`)
+   - `pnpm --filter=@tpmjs/official-sandbox-shell type-check` - passed
+   - `pnpm --filter=@tpmjs/official-sandbox-shell build` - passed (9.95 KB ESM + 1.98 KB types)
+   - `blocks run sandbox.shellExec/readFile/writeFile/listFiles` - all passed schema + shape.ts (domain warning due to missing OpenAI key)
+   - `docker build -t tpmjs-sandbox templates/agent-sandbox/` - succeeded
+
+4. **Second user message**: "write full documentation for the sandbox feature" - User wanted comprehensive documentation.
+
+5. **My action**: I thoroughly explored the codebase (server.ts, executors/index.ts, conversation route, build-tools.ts, Prisma schema, etc.) and wrote comprehensive README.md at `templates/agent-sandbox/README.md` covering architecture, how it works, session lifecycle, shell tools, executor configuration, environment variables, API reference, security model, deployment, local development, testing, and troubleshooting.
+
+6. **Third user message**: "i want pubgli facing documentation on the website" (typo for "publicly")
+
+7. **My action**: I explored the website's docs structure, found the existing basic sandbox page at `apps/web/src/app/docs/executors/sandbox/page.tsx` (386 lines), studied the agents docs page pattern with sidebar navigation, and rewrote the sandbox page as a comprehensive 1256-line documentation page with:
+   - Sidebar navigation (6 sections, 18 items)
+   - Full tool documentation with parameter tables and examples
+   - Session lifecycle documentation
+   - Session API reference
+   - Executor configuration with cascade explanation
+   - Environment variables tables
+   - Git integration guide
+   - Deployment instructions (Railway, Docker)
+   - Security model
+   - Limits & quotas table
+   - Execute Tool API reference
+   - Health & metrics endpoints
+
+The page was not yet built/verified after writing.
+
+Summary:
+1. Primary Request and Intent:
+   The user had three sequential requests:
+   - **Request 1**: Implement a detailed plan for creating Sandbox Shell Tools (blocks.yml entries, package structure, 4 tool implementations, Dockerfile updates, test script, README). Upon investigation, ALL implementation was already complete.
+   - **Request 2**: "write full documentation for the sandbox feature" - Write comprehensive documentation for the sandbox feature in a README.
+   - **Request 3**: "i want pubgli facing documentation on the website" - Rewrite the existing basic sandbox docs page at `/docs/executors/sandbox/` as a full public-facing documentation page on the TPMJS website, matching the site's existing doc page patterns (sidebar navigation, interactive scroll tracking, styled components).
+
+2. Key Technical Concepts:
+   - TPMJS Agent Sandbox: Deno-based stateful execution server with persistent filesystem sessions per conversation
+   - Session management: TTL-based expiration, idempotent creation, disk quotas, concurrent session limits
+   - Executor cascade: Agent Config → Collection Config → System Default
+   - `_sandboxWorkDir` injection: Server injects workspace path into tool params at execution time
+   - Shell tools: `shellExec`, `readFile`, `writeFile`, `listFiles` using Deno APIs
+   - Path sandboxing: Normalization, boundary checks, symlink escape detection
+   - AI SDK v6 tool pattern: `tool()` + `jsonSchema()` from `'ai'` package
+   - Next.js App Router doc pages: 'use client', sidebar nav, IntersectionObserver for scroll tracking, DocSection/DocSubSection/ParamTable/InfoCard components
+   - SSE streaming for agent conversations
+   - Environment variable merging: Collection (base) + Agent (override)
+   - Git credential helper for private repo cloning via GITHUB_TOKEN
+
+3. Files and Code Sections:
+   - **`packages/tools/official/sandbox-shell/src/index.ts`** (489 lines)
+     - Already fully implemented with 4 tools: shellExec, readFile, writeFile, listFiles
+     - Uses Deno.Command for shell exec, Deno.readTextFile/writeTextFile/readDir for file ops
+     - Path security via `resolveSandboxPath()`, output truncation, symlink escape detection
+     - Read to verify implementation was complete
+   
+   - **`packages/tools/official/sandbox-shell/package.json`**
+     - Package `@tpmjs/official-sandbox-shell@0.1.0`, dependency on `ai: 6.0.49`
+     - Already complete
+   
+   - **`packages/tools/official/sandbox-shell/src/deno.d.ts`** (76 lines)
+     - Ambient Deno type declarations for Command, file I/O, readDir, stat, mkdir, realPath
+     - Already complete
+   
+   - **`packages/tools/official/sandbox-shell/block.ts`**, **`index.ts`**, **`tsconfig.json`**, **`tsup.config.ts`**
+     - All already complete, verified by reading
+   
+   - **`templates/agent-sandbox/server.ts`** (624 lines)
+     - Full Deno HTTP server: session CRUD, tool execution with module caching, disk quota enforcement, _sandboxWorkDir injection at line 420, metrics, health, graceful shutdown
+     - Read to understand architecture for documentation
+   
+   - **`templates/agent-sandbox/Dockerfile`** (34 lines)
+     - Already had git, openssh-client, credential helper setup
+     - Read to verify
+   
+   - **`templates/agent-sandbox/git-credential-env`** (11 lines)
+     - Shell script credential helper reading GITHUB_TOKEN from env
+     - Already complete
+   
+   - **`templates/agent-sandbox/test-sandbox.sh`** (135 lines)
+     - 10-step integration test: health, create session, shellExec, readFile, writeFile, listFiles, git clone, listFiles on repo, git log, destroy session
+     - Already complete
+   
+   - **`apps/web/src/lib/executors/index.ts`** (634 lines)
+     - Executor cascade resolution, sandbox session create/destroy with retry logic, tool execution routing
+     - Read for documentation purposes
+   
+   - **`apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts`** (906 lines)
+     - SSE streaming endpoint, sandbox session creation at line 322-356, message persistence, tool call tracking
+     - Read for documentation purposes
+   
+   - **`apps/web/src/lib/agents/build-tools.ts`** (342 lines)
+     - Builds AI SDK tools from agent's collections/tools, executor config cascade, env var merging
+     - Read for documentation purposes
+   
+   - **`templates/agent-sandbox/README.md`**
+     - **REWRITTEN** with comprehensive developer documentation (~900 lines)
+     - Covers: Architecture overview (ASCII diagram), how it works, session lifecycle, shell tools reference, executor configuration, environment variables, full API reference (6 endpoints), security model, deployment (Railway/Docker), local development, testing, troubleshooting
+   
+   - **`apps/web/src/app/docs/executors/sandbox/page.tsx`**
+     - **REWRITTEN** from 386-line basic page to 1256-line comprehensive public-facing documentation page
+     - Follows existing pattern from `docs/agents/page.tsx`: 'use client', sidebar navigation with IntersectionObserver scroll tracking, mobile hamburger menu
+     - 6 nav sections (Overview, Shell Tools, Sessions, Configuration, Deployment, Reference) with 18 total items
+     - Reusable components: SidebarNav, DocSection, DocSubSection, ParamTable, InfoCard, EnvVarTable
+     - Full tool documentation with parameter tables and JSON request/response examples
+     - Architecture diagram, multi-step workflow example, session lifecycle steps
+     - Executor config cascade, env var merging, git integration (public/private repos)
+     - Deployment guides (Railway, Docker, local dev)
+     - Security model (4 InfoCards), limits & quotas table
+     - Execute Tool API with ParamTable, health & metrics endpoints
+   
+   - **`apps/web/src/app/docs/agents/page.tsx`** (read ~250 lines)
+     - Reference for documentation page pattern: NAV_SECTIONS, SidebarNav, DocSection, DocSubSection, ParamTable, InfoCard components, IntersectionObserver-based active section tracking
+
+4. Errors and fixes:
+   - **Lefthook pre-push.old conflict**: `pnpm install` failed because lefthook couldn't rename pre-push hook (file already exists). Fixed by `rm -f .git/hooks/pre-push.old` then re-running install.
+   - **blocks CLI not finding config**: Running `blocks run sandbox-shell` from repo root failed. Had to `cd packages/tools/official` first. Then `blocks run sandbox-shell` still failed because block names use dot notation (`sandbox.shellExec`), not the path name (`sandbox-shell`).
+   - **blocks CLI only running first block**: `blocks run sandbox.shellExec sandbox.readFile sandbox.writeFile sandbox.listFiles` only ran the first one. Fixed by running each individually with `&&` chaining.
+   - **Domain validator warning**: All 4 blocks showed `⚠ [domain] AI validation failed: OpenAI API key is missing` - this is expected (no OpenAI key for AI-based domain rule validation), schema + shape.ts validators both passed.
+
+5. Problem Solving:
+   - Discovered all plan implementation was already complete, shifted to verification-only
+   - Successfully verified: pnpm install, type-check, build, blocks validation (4 tools), Docker build
+   - Wrote comprehensive README documentation after thorough codebase exploration
+   - Rewrote public-facing docs page matching existing site patterns after the user clarified they wanted website documentation, not just a README
+
+6. All user messages:
+   - "Implement the following plan: [detailed Sandbox Shell Tools implementation plan with 7 steps]"
+   - "write full documentaion for the sandbox feature"
+   - "i want pubgli facing documentation on the website"
+
+7. Pending Tasks:
+   - The public-facing docs page was written but has NOT been built or type-checked yet. Should verify it compiles without errors.
+
+8. Current Work:
+   The most recent work was writing the public-facing documentation page at `apps/web/src/app/docs/executors/sandbox/page.tsx`. The file was fully rewritten from a basic 386-line page to a comprehensive 1256-line interactive documentation page with sidebar navigation, matching the pattern from `docs/agents/page.tsx`. The file was written but NOT yet verified with a build or type-check.
+
+9. Optional Next Step:
+   Run `pnpm --filter=@tpmjs/web build` or at minimum type-check the web app to verify the new docs page compiles without errors. The user's last request was "i want pubgli facing documentation on the website" and the page was written but not yet verified to build correctly.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+<task-notification>
+<task-id>bde4ec3</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bde4ec3.output</output-file>
+<status>completed</status>
+<summary>Background command "Build the web app to verify the docs page compiles fully" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bde4ec3.output
+
+---
+
+make integrationt sts that run in ci and cd to test the sandbox
+
+---
+
+[Request interrupted by user for tool use]
