@@ -6647,6 +6647,22 @@
       "t": "feat",
       "s": "",
       "u": "add per-conversation sandbox logs panel and copy JSON button"
+    },
+    {
+      "h": "42c2dc38fc05b3fca921db0606a58a03d93c01e4",
+      "d": "2026-02-16",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "c9cd95595a623445494c8b7c129a4db5c84955b8",
+      "d": "2026-02-17",
+      "m": "feat: replace card-based sandbox logs with terminal-style rendering",
+      "t": "feat",
+      "s": "",
+      "u": "replace card-based sandbox logs with terminal-style rendering"
     }
   ],
   "m": [
