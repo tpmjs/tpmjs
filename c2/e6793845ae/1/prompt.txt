@@ -1,0 +1,379 @@
+Implement the following plan:
+
+# Sandbox Integration Tests — CI/CD Plan
+
+## Context
+
+The Agent Sandbox server and shell tools are fully implemented. We need integration tests that:
+1. **Layer 1**: Test the sandbox server directly via its HTTP API (Docker container in CI)
+2. **Layer 2**: Run the existing E2E test through the TPMJS web app (already written, just needs CI wiring)
+
+## Files to Create
+
+### Helper files
+
+| File | Purpose |
+|------|---------|
+| `apps/web/src/test/integration/sandbox/_helpers/sandbox-client.ts` | HTTP client for sandbox server API (health, metrics, sessions, execute-tool, raw requests) |
+| `apps/web/src/test/integration/sandbox/_helpers/sandbox-context.ts` | Test context: configures client from env vars, tracks sessions for cleanup, `isSandboxAvailable()` gate |
+
+### Test files (Layer 1 — direct sandbox API)
+
+| File | Tests |
+|------|-------|
+| `sandbox-health.integration.test.ts` | `GET /health` shape, `GET /metrics` shape, response time |
+| `sandbox-sessions.integration.test.ts` | Create, get, resume (idempotent), destroy, 404 on missing, missing sessionId → 400, custom TTL |
+| `sandbox-tools.integration.test.ts` | shellExec (echo, exit code, timeout), writeFile+readFile round-trip, createDirs, listFiles root + recursive |
+| `sandbox-security.integration.test.ts` | Path traversal `../` blocked for readFile/writeFile, symlink escape blocked, auth 401 when key required, health/metrics allow unauthenticated |
+| `sandbox-isolation.integration.test.ts` | Two sessions have separate workspaces, git clone public repo, git init + commit |
+| `sandbox-quota.integration.test.ts` | Fill workspace beyond quota → next tool call rejected |
+
+### CI workflow
+
+| File | Purpose |
+|------|---------|
+| `.github/workflows/sandbox-tests.yml` | Two-job workflow: `sandbox-direct` (Docker) + `sandbox-e2e` (live web app) |
+
+## Architecture
+
+### Sandbox Client (`sandbox-client.ts`)
+
+Lightweight fetch wrapper purpose-built for the sandbox server's API. Separate from the web app's `api-client.ts` because the sandbox uses its own Bearer token auth (not session cookies/API keys).
+
+Methods: `health()`, `metrics()`, `createSession()`, `getSession()`, `destroySession()`, `executeTool()`, `rawRequest()` (for auth testing without auto-injecting token).
+
+Typed response interfaces: `SandboxHealthResponse`, `SandboxMetricsResponse`, `SandboxSessionResponse`, `SandboxExecuteResponse`.
+
+### Sandbox Context (`sandbox-context.ts`)
+
+- `isSandboxAvailable()` — checks `SANDBOX_TEST_URL` env var; all Layer 1 tests use `describe.skipIf(!isSandboxAvailable())`
+- `getSandboxTestContext()` — returns client, `uniqueSessionId()` generator, session tracker, cleanup function
+- Reads `SANDBOX_TEST_URL` and `SANDBOX_TEST_API_KEY` from env
+
+### CI Workflow (`sandbox-tests.yml`)
+
+**Job 1: `sandbox-direct`** (runs on push to main + PRs, path-filtered)
+1. Checkout
+2. `docker build -t tpmjs-sandbox:test templates/agent-sandbox/`
+3. `docker run` with `EXECUTOR_API_KEY=test-ci-key`, `SESSION_DISK_QUOTA_MB=5`, `MAX_CONCURRENT_SESSIONS=10`
+4. Wait for `/health` (30 attempts, 2s interval)
+5. pnpm install + build
+6. Run sandbox-direct test files with `SANDBOX_TEST_URL=http://localhost:3002` and `SANDBOX_TEST_API_KEY=test-ci-key`
+7. Show Docker logs on failure
+8. Cleanup container
+
+**Job 2: `sandbox-e2e`** (only on push to main, depends on job 1)
+1. Checkout + install + build
+2. Wait for live web app health
+3. Run `sandbox-shell-e2e.integration.test.ts` with all existing secrets + `AGENT_SANDBOX_URL`
+
+Path filters trigger on changes to: `templates/agent-sandbox/**`, `packages/tools/official/sandbox-shell/**`, `apps/web/src/lib/executors/**`, `apps/web/src/test/integration/sandbox/**`.
+
+### setup-integration.ts compatibility
+
+The existing setup file validates `TEST_BASE_URL`, `INTEGRATION_TEST_SESSION_TOKEN`, `INTEGRATION_TEST_API_KEY`. For sandbox-direct tests, we provide dummy values in the CI workflow since those tests never use them.
+
+## Test Details
+
+### Shell exec timeout test
+- Command: `sleep 60` with `timeout: 2000`
+- Expects exit code 137 (killed) and stderr containing "TIMEOUT"
+- Vitest timeout: 15s
+
+### Disk quota test
+- CI starts sandbox with `SESSION_DISK_QUOTA_MB=5`
+- Test fills workspace with `dd if=/dev/zero of=bigfile.bin bs=1M count=7`
+- Next tool call should return `success: false` with error containing "disk quota exceeded"
+
+### Session isolation test
+- Creates two sessions, writes file in session 1
+- Lists files in session 2 — should NOT contain session 1's file
+
+### Git operations
+- Clone `octocat/Hello-World` (small, always available) with `--depth 1`
+- Init repo, configure user, create file, commit, verify via `git log`
+- 90s vitest timeout for clone
+
+### Security tests
+- `readFile` with `../../../etc/passwd` → error "escapes sandbox"
+- `writeFile` with `../../tmp/evil.txt` → error "escapes sandbox"
+- Create symlink to `/etc/hostname`, readFile via symlink → error "escapes sandbox"
+- POST `/sessions` without auth header → 401 (when `EXECUTOR_API_KEY` is set)
+- GET `/health` and `/metrics` without auth → 200 (always public)
+
+## Implementation Order
+
+1. `_helpers/sandbox-client.ts`
+2. `_helpers/sandbox-context.ts`
+3. `sandbox-health.integration.test.ts`
+4. `sandbox-sessions.integration.test.ts`
+5. `sandbox-tools.integration.test.ts`
+6. `sandbox-security.integration.test.ts`
+7. `sandbox-isolation.integration.test.ts`
+8. `sandbox-quota.integration.test.ts`
+9. `.github/workflows/sandbox-tests.yml`
+
+## Verification
+
+1. Build sandbox Docker image: `docker build -t tpmjs-sandbox:test templates/agent-sandbox/`
+2. Run sandbox locally: `docker run -d --name sb -p 3002:3002 -e EXECUTOR_API_KEY=dev -e SESSION_DISK_QUOTA_MB=5 tpmjs-sandbox:test`
+3. Run tests locally:
+   ```bash
+   INTEGRATION_TESTS=true \
+   SANDBOX_TEST_URL=http://localhost:3002 \
+   SANDBOX_TEST_API_KEY=dev \
+   SANDBOX_TEST_DISK_QUOTA_MB=5 \
+   TEST_BASE_URL=http://localhost:3000 \
+   INTEGRATION_TEST_SESSION_TOKEN=dummy \
+   INTEGRATION_TEST_API_KEY=dummy \
+   pnpm --filter=@tpmjs/web vitest run --config vitest.integration.config.mjs \
+     src/test/integration/sandbox/sandbox-health.integration.test.ts \
+     src/test/integration/sandbox/sandbox-sessions.integration.test.ts \
+     src/test/integration/sandbox/sandbox-tools.integration.test.ts \
+     src/test/integration/sandbox/sandbox-security.integration.test.ts \
+     src/test/integration/sandbox/sandbox-isolation.integration.test.ts \
+     src/test/integration/sandbox/sandbox-quota.integration.test.ts
+   ```
+4. Type-check: `pnpm --filter=@tpmjs/web type-check`
+5. Cleanup: `docker rm -f sb`
+
+## Key Reference Files
+
+- `templates/agent-sandbox/server.ts` — Sandbox server API (all endpoints + response shapes)
+- `packages/tools/official/sandbox-shell/src/index.ts` — Tool implementations
+- `apps/web/src/test/integration/_helpers/api-client.ts` — Pattern reference
+- `apps/web/src/test/integration/_helpers/test-context.ts` — Pattern reference
+- `apps/web/src/test/integration/sandbox/sandbox-shell-e2e.integration.test.ts` — Existing E2E test (keep intact)
+- `.github/workflows/integration-tests.yml` — CI conventions reference
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+can you test everything manually, use one of my thomasalwyndavis@gmail.com agents edit the db where required and test it by clong this repo https://github.com/thomasdavis/delaunay-component
+
+---
+
+post step by step what i have to do to discord
+
+---
+
+i wanted this to all be available through the ui the user agent chats
+
+---
+
+<task-notification>
+<task-id>beb5455</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/beb5455.output</output-file>
+<status>completed</status>
+<summary>Background command "Start dev server" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/beb5455.output
+
+---
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me go through the conversation chronologically:
+
+1. **Initial Request**: User asked to implement a detailed plan for sandbox integration tests with CI/CD. The plan included:
+   - Helper files (sandbox-client.ts, sandbox-context.ts)
+   - 6 test files (health, sessions, tools, security, isolation, quota)
+   - CI workflow (sandbox-tests.yml)
+
+2. **Reading Reference Files**: I read multiple reference files to understand patterns:
+   - templates/agent-sandbox/server.ts (Deno sandbox server)
+   - apps/web/src/test/integration/_helpers/api-client.ts (pattern reference)
+   - apps/web/src/test/integration/_helpers/test-context.ts (pattern reference)
+   - apps/web/src/test/integration/sandbox/sandbox-shell-e2e.integration.test.ts (existing E2E)
+   - .github/workflows/integration-tests.yml (CI conventions)
+   - apps/web/vitest.integration.config.mjs
+   - apps/web/src/test/integration/setup-integration.ts
+   - packages/tools/official/sandbox-shell/src/index.ts (tool implementations)
+
+3. **File Creation**: Created all files as specified in the plan. Fixed issues:
+   - Missing `beforeAll` import in health test
+   - Wrong package name `@anthropic-ai/tpmjs-official-sandbox-shell` → `@tpmjs/official-sandbox-shell`
+   - Unused import `SandboxExecuteResponse`
+
+4. **User Request**: "can you test everything manually, use one of my thomasalwyndavis@gmail.com agents edit the db where required and test it by cloning this repo https://github.com/thomasdavis/delaunay-component"
+
+5. **Manual Testing**: 
+   - Found Dev Sandbox agent (uid: dev-sandbox, id: cmlmtx3fc00012uf9hcwgwpjx) with executor_type=sandbox
+   - Found sandbox-shell-tools collection (id: cmlmtzx3e000a2uyure9s7uyf) already linked
+   - Built Docker image and started container
+   - Discovered package wasn't published to npm - esm.sh couldn't find it
+   - User provided npm token, published @tpmjs/official-sandbox-shell@0.1.0
+   - Fixed Dockerfile: added ca-certificates (git HTTPS was broken)
+   - Fixed tool version: changed 'latest' to '0.1.0' 
+   - Fixed timeout test: `sleep 60` → `exec sleep 60` (orphan process issue)
+   - Fixed CI MAX_CONCURRENT_SESSIONS: 10 → 50
+   - All 28 tests passed
+
+6. **Delaunay-component test**: Verified manually via curl:
+   - Clone private repo (needed GITHUB_TOKEN)
+   - List files, read package.json
+   - Write file, git commit, verify git log
+   - All worked
+
+7. **User Request**: "post step by step what i have to do to discord"
+   - Posted 2 messages to Discord #tpmjs channel with setup guide
+
+8. **User Request**: "i wanted this to all be available through the ui the user agent chats"
+   - User wants to test via the web UI, not just API tests
+   - Explored how the conversation route handles sandbox execution
+   - Found AGENT_SANDBOX_URL env var is needed
+   - Started sandbox Docker container with GITHUB_TOKEN
+   - Updated agent DB record: executor_config → `{"type": "sandbox", "apiKey": "dev"}`
+   - Added AGENT_SANDBOX_URL=http://localhost:3002 to apps/web/.env.local
+   - Started dev server
+   - Told user to go to http://localhost:3000/ajax/agents/dev-sandbox
+
+9. **Dev server issue**: The background task completed/exited, restarted dev server in background.
+
+10. **Current state**: Dev server starting in background, sandbox container running, everything configured for UI testing.
+
+Summary:
+1. Primary Request and Intent:
+   - **Original task**: Implement a comprehensive sandbox integration test suite with CI/CD, following a detailed plan that specified helper files, 6 test files, and a CI workflow.
+   - **Manual testing**: User asked to manually test everything using the `thomasalwyndavis@gmail.com` Dev Sandbox agent, editing the DB as needed, and specifically cloning `https://github.com/thomasdavis/delaunay-component` (a private repo).
+   - **Discord post**: User asked to post step-by-step instructions to Discord.
+   - **Web UI testing**: User clarified they wanted the sandbox to be testable through the web UI agent chat interface, not just direct API tests. This meant wiring up the Dev Sandbox agent to work through the Next.js conversation endpoint.
+
+2. Key Technical Concepts:
+   - **Turborepo monorepo** with pnpm workspaces, Next.js App Router
+   - **Agent Sandbox**: Deno-based stateful execution server in Docker (`templates/agent-sandbox/server.ts`)
+   - **Session management**: Idempotent session creation, TTL extension, disk quotas
+   - **Tool loading**: Dynamic imports from esm.sh (npm CDN), with module caching
+   - **Executor cascade**: Agent config URL → `AGENT_SANDBOX_URL` env var → null (error)
+   - **Conversation route** creates sandbox session with ID format `{agentId}:{conversationId}`
+   - **`@tpmjs/official-sandbox-shell`** package: 4 tools (shellExec, readFile, writeFile, listFiles) running in Deno
+   - **Security**: Path traversal prevention, symlink escape detection, Bearer token auth
+   - **Vitest** integration test framework with `describe.skipIf(!isSandboxAvailable())` gating
+
+3. Files and Code Sections:
+
+   - **`apps/web/src/test/integration/sandbox/_helpers/sandbox-client.ts`** (CREATED)
+     - HTTP client for sandbox server API with typed response interfaces
+     - Methods: health(), metrics(), createSession(), getSession(), destroySession(), executeTool(), rawRequest()
+     - Separate from web app's api-client.ts because sandbox uses Bearer token auth
+
+   - **`apps/web/src/test/integration/sandbox/_helpers/sandbox-context.ts`** (CREATED)
+     - Test context with `isSandboxAvailable()` gate checking `SANDBOX_TEST_URL` env var
+     - `getSandboxTestContext()` returns client, uniqueSessionId generator, session tracker, cleanup function
+     - `getSandboxDiskQuotaMB()` reads `SANDBOX_TEST_DISK_QUOTA_MB` env var
+
+   - **`apps/web/src/test/integration/sandbox/sandbox-health.integration.test.ts`** (CREATED)
+     - 3 tests: health shape, response time <2s, metrics shape
+
+   - **`apps/web/src/test/integration/sandbox/sandbox-sessions.integration.test.ts`** (CREATED)
+     - 8 tests: create, get, 404 missing, resume idempotent, custom TTL, destroy, destroyed=false for ghost, missing sessionId → 400
+
+   - **`apps/web/src/test/integration/sandbox/sandbox-tools.integration.test.ts`** (CREATED)
+     - 7 tests: shellExec echo/exit code/timeout, writeFile+readFile round-trip, createDirs, listFiles root/recursive
+     - Uses `TOOL_PKG = '@tpmjs/official-sandbox-shell'` and `TOOL_VERSION = '0.1.0'`
+     - Timeout test uses `exec sleep 60` with 3s timeout, expects exit code 137 and stderr matching /TIMEOUT/
+
+   - **`apps/web/src/test/integration/sandbox/sandbox-security.integration.test.ts`** (CREATED)
+     - 6 tests: readFile path traversal, writeFile path traversal, symlink escape, 401 without auth, health public, metrics public
+
+   - **`apps/web/src/test/integration/sandbox/sandbox-isolation.integration.test.ts`** (CREATED)
+     - 3 tests: separate workspaces between sessions, git clone public repo (octocat/Hello-World), git init+commit+log
+
+   - **`apps/web/src/test/integration/sandbox/sandbox-quota.integration.test.ts`** (CREATED)
+     - 1 test: fills workspace with `dd if=/dev/zero of=bigfile.bin bs=1M count={quotaMB+2}`, expects next tool call returns 413 with "disk quota exceeded"
+
+   - **`.github/workflows/sandbox-tests.yml`** (CREATED)
+     - Two-job workflow: `sandbox-direct` (Docker + 28 tests on push/PRs) and `sandbox-e2e` (live web app, main only)
+     - Path-filtered on `templates/agent-sandbox/**`, `packages/tools/official/sandbox-shell/**`, `apps/web/src/lib/executors/**`, `apps/web/src/test/integration/sandbox/**`
+     - Uses `MAX_CONCURRENT_SESSIONS=50`, `SESSION_DISK_QUOTA_MB=5`
+     - Provides dummy values for `TEST_BASE_URL`, `INTEGRATION_TEST_SESSION_TOKEN`, `INTEGRATION_TEST_API_KEY` (setup-integration.ts requires them)
+
+   - **`templates/agent-sandbox/Dockerfile`** (MODIFIED)
+     - Added `ca-certificates` to apt-get install line:
+     ```dockerfile
+     RUN apt-get update && apt-get install -y --no-install-recommends curl git openssh-client ca-certificates && rm -rf /var/lib/apt/lists/*
+     ```
+
+   - **`apps/web/.env.local`** (MODIFIED)
+     - Added at bottom:
+     ```
+     # Agent Sandbox (local Docker container)
+     AGENT_SANDBOX_URL="http://localhost:3002"
+     ```
+
+   - **Database changes**:
+     - Updated agents table: `UPDATE agents SET executor_config = '{"type": "sandbox", "apiKey": "dev"}'::jsonb WHERE uid = 'dev-sandbox'`
+
+   - **npm publish**: Published `@tpmjs/official-sandbox-shell@0.1.0` to npm registry
+
+4. Errors and Fixes:
+   - **Missing `beforeAll` import**: Health test file imported `afterAll, describe, expect, it` but used `beforeAll` without importing. Fixed by adding `beforeAll` to the import.
+   - **Wrong package name**: Used `@anthropic-ai/tpmjs-official-sandbox-shell` instead of `@tpmjs/official-sandbox-shell`. Fixed in all 4 test files.
+   - **Unused import**: `SandboxExecuteResponse` imported but never used in tools test. Removed the import.
+   - **Package not published**: `@tpmjs/official-sandbox-shell` wasn't on npm, so esm.sh returned "Module not found". User provided npm token `REDACTED`, set via `npm config set`, then published successfully.
+   - **Missing ca-certificates in Docker**: Git HTTPS clone failed with "Problem with the SSL CA cert". Fixed by adding `ca-certificates` to Dockerfile apt-get install.
+   - **Tool version 'latest' not resolving**: esm.sh CDN needed time to propagate newly published package. Fixed by changing `TOOL_VERSION = 'latest'` to `TOOL_VERSION = '0.1.0'` in all test files.
+   - **Timeout test hanging 60s**: `sh -c sleep 60` — when sh gets SIGTERM, sleep continues as orphan holding stdout pipe open. `collectStream()` blocks until pipe closes. Fixed by using `exec sleep 60` so sleep replaces sh directly.
+   - **Session destroy test failing**: `MAX_CONCURRENT_SESSIONS=10` was too low since vitest runs test files in parallel. Increased to 50 in both Docker run and CI workflow.
+   - **delaunay-component is private**: Git clone returned 404/auth error. Fixed by passing `GITHUB_TOKEN` via `gh auth token` to Docker container.
+   - **AGENT_SANDBOX_URL not set**: Web app returned 502 "Sandbox executor URL not configured". Fixed by adding to `apps/web/.env.local`.
+   - **Agent missing apiKey**: Docker container has `EXECUTOR_API_KEY=dev` but agent config was `{"type": "sandbox"}`. Updated DB to `{"type": "sandbox", "apiKey": "dev"}`.
+
+5. Problem Solving:
+   - Resolved the full chain from "package not published" → "esm.sh can't import" → "publish to npm" → "tests pass"
+   - Debugged Docker networking: tried local HTTP server with host.docker.internal, discovered Deno `--allow-import` restriction, ultimately solved by publishing to npm
+   - Identified and fixed process lifecycle bug in timeout test (orphan child processes)
+   - Wired up the complete web UI flow: sandbox container → env var → DB agent config → conversation route
+
+6. All User Messages:
+   - "Implement the following plan: [detailed sandbox integration tests CI/CD plan with 9 files to create]"
+   - "can you test everything manually, use one of my thomasalwyndavis@gmail.com agents edit the db where required and test it by clong this repo https://github.com/thomasdavis/delaunay-component"
+   - (In response to npm auth question) "there is an npm token in my .env.local"
+   - (In response to npm login request) "REDACTED this is my npm_token"
+   - "post step by step what i have to do to discord"
+   - "i wanted this to all be available through the ui the user agent chats"
+
+7. Pending Tasks:
+   - Verify the dev server is running and stable (it was just restarted in background)
+   - User needs to actually test the UI flow at http://localhost:3000/ajax/agents/dev-sandbox by chatting with the agent
+   - No code changes are pending — all files are created, tests pass, Docker is running, env vars set, DB updated
+
+8. Current Work:
+   The most recent work was wiring up the web UI for the Dev Sandbox agent. Specifically:
+   - Started sandbox Docker container on port 3002 with `GITHUB_TOKEN` and `EXECUTOR_API_KEY=dev`
+   - Added `AGENT_SANDBOX_URL="http://localhost:3002"` to `apps/web/.env.local`
+   - Updated agent DB record: `executor_config = '{"type": "sandbox", "apiKey": "dev"}'`
+   - Started the Next.js dev server (`pnpm dev --filter=@tpmjs/web`) in background
+   - The dev server task (ID: b33f776) was started but its status needs to be confirmed
+   - Told user they can test at `http://localhost:3000/ajax/agents/dev-sandbox`
+
+9. Optional Next Step:
+   Confirm the dev server is running successfully by checking `curl http://localhost:3000/api/health`, then let the user know they can test the UI. The user said "i wanted this to all be available through the ui the user agent chats" — the infrastructure is wired up and awaiting the user to test it in their browser.
+
+If you need specific details from before compaction (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+Please continue the conversation from where we left off without asking the user any further questions. Continue with the last task that you were asked to work on.
+
+---
+
+<task-notification>
+<task-id>b33f776</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b33f776.output</output-file>
+<status>completed</status>
+<summary>Background command "Start dev server in background" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/b33f776.output
+
+---
+
+https://tpmjs.com/dashboard/agents use our existing agent chats please
+
+---
+
+i wanted custom executors and sandboxes to be two diferent things
+
+---
+
+[Request interrupted by user for tool use]

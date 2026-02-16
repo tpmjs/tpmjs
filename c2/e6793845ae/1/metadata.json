@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "c2e6793845ae",
+  "session_id": "6ba74968-a042-4a77-b13d-60cbabfef3f3",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-16T02:48:50.625125Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".github/workflows/sandbox-tests.yml",
+    "apps/web/src/test/integration/sandbox/_helpers/sandbox-client.ts",
+    "apps/web/src/test/integration/sandbox/_helpers/sandbox-context.ts",
+    "apps/web/src/test/integration/sandbox/sandbox-health.integration.test.ts",
+    "apps/web/src/test/integration/sandbox/sandbox-isolation.integration.test.ts",
+    "apps/web/src/test/integration/sandbox/sandbox-quota.integration.test.ts",
+    "apps/web/src/test/integration/sandbox/sandbox-security.integration.test.ts",
+    "apps/web/src/test/integration/sandbox/sandbox-sessions.integration.test.ts",
+    "apps/web/src/test/integration/sandbox/sandbox-tools.integration.test.ts",
+    "templates/agent-sandbox/Dockerfile"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 8222,
+    "cache_creation_tokens": 314979,
+    "cache_read_tokens": 22744750,
+    "output_tokens": 28864,
+    "api_call_count": 204
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-16T02:48:49.951369Z",
+    "agent_lines": 1166,
+    "human_added": 3823,
+    "human_modified": 7,
+    "human_removed": 0,
+    "total_committed": 4996,
+    "agent_percentage": 23.338670936749402
+  }
+}
