@@ -5,7 +5,7 @@ export interface LogActivityParams {
   userId: string;
   type: ActivityType;
   targetName: string;
-  targetType: 'agent' | 'collection' | 'tool' | 'api_key' | 'bridge';
+  targetType: 'agent' | 'collection' | 'tool' | 'api_key' | 'bridge' | 'workflow';
   agentId?: string;
   collectionId?: string;
   toolId?: string;
@@ -102,6 +102,10 @@ export const ACTIVITY_MESSAGES: Record<
   TOOL_EXECUTED: (name, meta) =>
     meta?.source ? `Executed "${name}" via ${meta.source}` : `Executed "${name}"`,
   AGENT_CONVERSATION_STARTED: (name) => `Started conversation with "${name}"`,
+  WORKFLOW_CREATED: (name) => `Created workflow "${name}"`,
+  WORKFLOW_UPDATED: (name) => `Updated workflow "${name}"`,
+  WORKFLOW_DELETED: (name) => `Deleted workflow "${name}"`,
+  WORKFLOW_EXECUTED: (name) => `Executed workflow "${name}"`,
 };
 
 /**
@@ -139,4 +143,8 @@ export const ACTIVITY_ICONS: Record<ActivityType, string> = {
   BRIDGE_DISCONNECTED: 'link',
   TOOL_EXECUTED: 'terminal',
   AGENT_CONVERSATION_STARTED: 'message',
+  WORKFLOW_CREATED: 'plus',
+  WORKFLOW_UPDATED: 'pencil',
+  WORKFLOW_DELETED: 'trash',
+  WORKFLOW_EXECUTED: 'terminal',
 };

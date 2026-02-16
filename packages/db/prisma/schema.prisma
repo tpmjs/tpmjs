@@ -116,6 +116,7 @@ model Tool {
   reviews         ToolReview[]
   skillsCache     ToolSkillsCache?
   skillQuestions  SkillQuestionTool[]
+  workflowNodes   WorkflowNode[]
 
   @@unique([packageId, name])
   @@index([qualityScore])
@@ -419,6 +420,7 @@ model User {
   usageSummaries   ApiUsageSummary[] @relation("UserUsageSummaries")
   memories         Memory[]
   customMcpServers CustomMcpServer[]
+  workflows        Workflow[]
 
   @@index([username])
   @@map("users")
@@ -664,6 +666,7 @@ model Agent {
   tools                AgentTool[]
   conversations        Conversation[]
   likes                AgentLike[]
+  workflowNodes        WorkflowNode[]
 
   @@unique([userId, name])
   @@index([userId])
@@ -964,6 +967,10 @@ enum ActivityType {
   BRIDGE_DISCONNECTED
   TOOL_EXECUTED
   AGENT_CONVERSATION_STARTED
+  WORKFLOW_CREATED
+  WORKFLOW_UPDATED
+  WORKFLOW_DELETED
+  WORKFLOW_EXECUTED
 }
 
 /// UserActivity - tracks user actions for activity stream
@@ -2027,4 +2034,255 @@ model SearchLog {
   @@index([createdAt])
   @@index([query])
   @@map("search_logs")
+}
+
+// ============================================================================
+// Workflow Builder Models
+// ============================================================================
+
+/// Workflow status enum
+enum WorkflowStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+/// Workflow trigger type enum
+enum WorkflowTriggerType {
+  MANUAL
+  WEBHOOK
+  SCHEDULE
+}
+
+/// Workflow node type enum
+enum WorkflowNodeType {
+  TRIGGER
+  TOOL
+  AGENT
+  CONDITION
+  LOOP
+  TRANSFORM
+  OUTPUT
+  NOTE
+}
+
+/// Workflow execution status enum
+enum WorkflowExecutionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+/// Workflow node execution status enum
+enum WorkflowNodeExecutionStatus {
+  NODE_PENDING
+  NODE_RUNNING
+  NODE_COMPLETED
+  NODE_FAILED
+  NODE_SKIPPED
+}
+
+/// Workflow - top-level workflow definition owned by a user
+model Workflow {
+  id          String   @id @default(cuid())
+
+  // Owner relationship
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identity
+  uid         String   @unique @db.VarChar(100)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+
+  // Status & trigger
+  status      WorkflowStatus      @default(DRAFT)
+  triggerType WorkflowTriggerType  @default(MANUAL)
+  triggerConfig Json?              @map("trigger_config") @db.JsonB
+
+  // Canvas state (persists React Flow zoom/pan)
+  canvasViewport Json?             @map("canvas_viewport") @db.JsonB
+
+  // Versioning (incremented on each save)
+  version     Int                  @default(1)
+
+  // Executor configuration (optional, same pattern as agents/collections)
+  executorType   String?           @map("executor_type") @db.VarChar(20)
+  executorConfig Json?             @map("executor_config") @db.JsonB
+  envVars        Json?             @map("env_vars") @db.JsonB
+
+  // Denormalized counters
+  executionCount  Int              @default(0) @map("execution_count")
+  lastExecutedAt  DateTime?        @map("last_executed_at")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  nodes      WorkflowNode[]
+  edges      WorkflowEdge[]
+  executions WorkflowExecution[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([uid])
+  @@index([status])
+  @@map("workflows")
+}
+
+/// WorkflowNode - individual nodes in the workflow graph
+model WorkflowNode {
+  id          String   @id @default(cuid())
+
+  // Workflow relationship
+  workflowId  String           @map("workflow_id")
+  workflow    Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // React Flow node identity
+  nodeId      String           @map("node_id") @db.VarChar(100)
+  type        WorkflowNodeType
+
+  // Display
+  label       String           @db.VarChar(200)
+  positionX   Float            @map("position_x")
+  positionY   Float            @map("position_y")
+
+  // Configuration (varies by node type)
+  config      Json?            @db.JsonB
+
+  // Optional references to existing entities
+  toolId      String?          @map("tool_id")
+  tool        Tool?            @relation(fields: [toolId], references: [id], onDelete: SetNull)
+  agentId     String?          @map("agent_id")
+  agent       Agent?           @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  // Timestamps
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  sourceEdges WorkflowEdge[]   @relation("SourceNode")
+  targetEdges WorkflowEdge[]   @relation("TargetNode")
+  nodeExecutions WorkflowNodeExecution[]
+
+  @@unique([workflowId, nodeId])
+  @@index([workflowId])
+  @@index([toolId])
+  @@index([agentId])
+  @@map("workflow_nodes")
+}
+
+/// WorkflowEdge - connections between nodes in the workflow graph
+model WorkflowEdge {
+  id          String   @id @default(cuid())
+
+  // Workflow relationship
+  workflowId  String           @map("workflow_id")
+  workflow    Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // React Flow edge identity
+  edgeId      String           @map("edge_id") @db.VarChar(100)
+
+  // Source and target nodes
+  sourceNodeId String          @map("source_node_id")
+  sourceNode  WorkflowNode     @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNodeId String          @map("target_node_id")
+  targetNode  WorkflowNode     @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+
+  // Handle identifiers (for branching: "true", "false", etc.)
+  sourceHandle String?         @map("source_handle") @db.VarChar(50)
+  targetHandle String?         @map("target_handle") @db.VarChar(50)
+
+  // Data mapping (template expressions like {{source.output.field}})
+  dataMapping  Json?           @map("data_mapping") @db.JsonB
+
+  // Timestamps
+  createdAt   DateTime         @default(now()) @map("created_at")
+
+  @@unique([workflowId, edgeId])
+  @@index([workflowId])
+  @@index([sourceNodeId])
+  @@index([targetNodeId])
+  @@map("workflow_edges")
+}
+
+/// WorkflowExecution - a single run of a workflow
+model WorkflowExecution {
+  id          String   @id @default(cuid())
+
+  // Workflow relationship
+  workflowId  String                  @map("workflow_id")
+  workflow    Workflow                 @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  // Execution state
+  status      WorkflowExecutionStatus @default(PENDING)
+  triggeredBy String                  @map("triggered_by") @db.VarChar(50) // 'manual' | 'webhook' | 'schedule'
+
+  // Input/output
+  triggerInput Json?                  @map("trigger_input") @db.JsonB
+  output       Json?                  @db.JsonB
+  error        String?                @db.Text
+
+  // Timing
+  startedAt    DateTime?              @map("started_at")
+  completedAt  DateTime?              @map("completed_at")
+  durationMs   Int?                   @map("duration_ms")
+
+  // Token usage (aggregated from node executions)
+  totalTokensIn  Int?                 @map("total_tokens_in")
+  totalTokensOut Int?                 @map("total_tokens_out")
+
+  // Snapshot of workflow version at execution time
+  workflowVersion Int                 @map("workflow_version")
+
+  // Timestamps
+  createdAt   DateTime                @default(now()) @map("created_at")
+
+  // Relations
+  nodeExecutions WorkflowNodeExecution[]
+
+  @@index([workflowId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("workflow_executions")
+}
+
+/// WorkflowNodeExecution - per-node result within a workflow execution
+model WorkflowNodeExecution {
+  id          String   @id @default(cuid())
+
+  // Execution relationship
+  executionId String                    @map("execution_id")
+  execution   WorkflowExecution         @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  // Node relationship
+  nodeId      String                    @map("node_id")
+  node        WorkflowNode              @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  // Execution state
+  status      WorkflowNodeExecutionStatus @default(NODE_PENDING)
+
+  // Input/output
+  input       Json?                     @db.JsonB
+  output      Json?                     @db.JsonB
+  error       String?                   @db.Text
+
+  // Timing
+  startedAt   DateTime?                 @map("started_at")
+  completedAt DateTime?                 @map("completed_at")
+  durationMs  Int?                      @map("duration_ms")
+
+  // Retry tracking
+  attempt     Int                       @default(1)
+  maxRetries  Int                       @default(0) @map("max_retries")
+
+  // Timestamps
+  createdAt   DateTime                  @default(now()) @map("created_at")
+
+  @@index([executionId])
+  @@index([nodeId])
+  @@map("workflow_node_executions")
 }
