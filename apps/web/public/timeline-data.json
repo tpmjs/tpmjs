@@ -6535,6 +6535,22 @@
       "t": "fix",
       "s": "",
       "u": "format timeline-data.json with 2-space indent to pass biome check"
+    },
+    {
+      "h": "7c28c2c30179c28ed568c5a6f2ae47e86f594d63",
+      "d": "2026-02-15",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "c49c9a7b7545524e199fd1b122c7364f68c94de1",
+      "d": "2026-02-16",
+      "m": "refactor: separate sandbox from executor types into independent toggle",
+      "t": "refactor",
+      "s": "",
+      "u": "separate sandbox from executor types into independent toggle"
     }
   ],
   "m": [
