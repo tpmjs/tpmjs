@@ -3,6 +3,7 @@
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useResizableWidth } from '~/hooks/useResizableWidth';
 import { logsToJson, type SandboxLogEntry, SandboxTerminal } from './SandboxLogEntries';
 
 const PAGE_SIZE = 50;
@@ -22,9 +23,10 @@ export function ConversationSandboxLogs({
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [autoRefresh, setAutoRefresh] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
   const [copied, setCopied] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { width, handleProps } = useResizableWidth('sandbox-logs-width', 320);
 
   const fetchLogs = useCallback(
     async (offset = 0, append = false) => {
@@ -82,7 +84,13 @@ export function ConversationSandboxLogs({
   if (!isOpen) return null;
 
   return (
-    <div className="w-80 border-l border-dashed border-border flex flex-col bg-surface hidden lg:flex">
+    <div
+      className="relative border-l border-dashed border-border flex flex-col bg-surface hidden lg:flex shrink-0"
+      style={{ width }}
+    >
+      {/* Resize handle */}
+      <div {...handleProps} />
+
       {/* Header */}
       <div className="p-3 border-b border-dashed border-border flex items-center justify-between">
         <span className="font-mono text-xs text-foreground-tertiary lowercase">sandbox logs</span>

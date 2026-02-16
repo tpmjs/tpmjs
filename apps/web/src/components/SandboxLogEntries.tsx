@@ -77,9 +77,7 @@ function TerminalReadFile({ entry }: { entry: SandboxLogEntry }) {
         )}
       </div>
       {content && (
-        <pre className="text-[#8b949e] whitespace-pre-wrap break-all ml-4 max-h-48 overflow-y-auto">
-          {content}
-        </pre>
+        <pre className="text-[#8b949e] whitespace-pre-wrap break-all ml-4">{content}</pre>
       )}
     </>
   );
@@ -108,9 +106,7 @@ function TerminalWriteFile({ entry }: { entry: SandboxLogEntry }) {
         </span>
       </div>
       {content && (
-        <pre className="text-[#8b949e] whitespace-pre-wrap break-all ml-4 max-h-32 overflow-y-auto">
-          {content}
-        </pre>
+        <pre className="text-[#8b949e] whitespace-pre-wrap break-all ml-4">{content}</pre>
       )}
     </>
   );
@@ -202,7 +198,7 @@ export function SandboxTerminal({
       </div>
 
       {/* Log content */}
-      <div className="p-3 overflow-y-auto max-h-[600px]">
+      <div className="p-3">
         {chronological.map((entry) => (
           <TerminalLogLine key={entry.id} entry={entry} showConversation={showConversation} />
         ))}

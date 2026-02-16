@@ -3,6 +3,7 @@
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useCallback, useState } from 'react';
+import { useResizableWidth } from '~/hooks/useResizableWidth';
 
 export interface ToolParameter {
   name: string;
@@ -60,6 +61,7 @@ export function ChatToolsPanel({
 }: ChatToolsPanelProps) {
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
   const [collectionTools, setCollectionTools] = useState<Record<string, CollectionToolData>>({});
+  const { width, handleProps } = useResizableWidth('tools-panel-width', 288);
 
   const fetchCollectionTools = useCallback(
     async (collectionId: string) => {
@@ -123,7 +125,13 @@ export function ChatToolsPanel({
   const totalToolsFromCollections = collections.reduce((acc, c) => acc + c.collection.toolCount, 0);
 
   return (
-    <div className="w-72 border-l border-dashed border-border flex flex-col bg-surface">
+    <div
+      className="relative border-l border-dashed border-border flex flex-col bg-surface shrink-0"
+      style={{ width }}
+    >
+      {/* Resize handle */}
+      <div {...handleProps} />
+
       {/* header */}
       <div className="flex items-center justify-between p-4 border-b border-dashed border-border">
         <span className="font-mono text-sm text-foreground-secondary lowercase">
