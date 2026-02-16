@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "acaf0d3a6448",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/components/ConversationSandboxLogs.tsx",
+    "apps/web/src/components/SandboxLogEntries.tsx",
+    "apps/web/src/components/SandboxLogsPanel.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ac/af0d3a6448/0/metadata.json",
+      "transcript": "/ac/af0d3a6448/0/full.jsonl",
+      "context": "/ac/af0d3a6448/0/context.md",
+      "content_hash": "/ac/af0d3a6448/0/content_hash.txt",
+      "prompt": "/ac/af0d3a6448/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 15,
+    "cache_creation_tokens": 50643,
+    "cache_read_tokens": 947859,
+    "output_tokens": 4180,
+    "api_call_count": 11
+  }
+}
