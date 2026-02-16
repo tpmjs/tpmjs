@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "25ba6e8452df",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "CLAUDE.md",
+    "apps/web/src/app/api/agents/[id]/logs/route.ts",
+    "apps/web/src/app/api/workflows/[id]/executions/[executionId]/route.ts",
+    "apps/web/src/app/api/workflows/[id]/executions/route.ts",
+    "apps/web/src/app/dashboard/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/app/dashboard/agents/[id]/page.tsx",
+    "apps/web/src/app/dashboard/workflows/new/page.tsx",
+    "apps/web/src/app/dashboard/workflows/page.tsx",
+    "apps/web/src/components/ConversationSandboxLogs.tsx",
+    "apps/web/src/components/SandboxLogEntries.tsx",
+    "apps/web/src/components/SandboxLogsPanel.tsx",
+    "apps/web/src/components/agents/ChatToolsPanel.tsx",
+    "apps/web/src/components/workflows/NodePalette.tsx",
+    "apps/web/src/components/workflows/SchemaFormGenerator.tsx",
+    "apps/web/src/components/workflows/WorkflowToolbar.tsx",
+    "apps/web/src/components/workflows/edges/DataEdge.tsx",
+    "apps/web/src/components/workflows/inspectors/AgentNodeInspector.tsx",
+    "apps/web/src/components/workflows/inspectors/ConditionNodeInspector.tsx",
+    "apps/web/src/components/workflows/inspectors/LoopNodeInspector.tsx",
+    "apps/web/src/components/workflows/inspectors/OutputNodeInspector.tsx",
+    "apps/web/src/components/workflows/inspectors/TransformNodeInspector.tsx",
+    "apps/web/src/components/workflows/nodes/NoteNode.tsx",
+    "apps/web/src/hooks/useResizableWidth.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/25/ba6e8452df/0/metadata.json",
+      "transcript": "/25/ba6e8452df/0/full.jsonl",
+      "context": "/25/ba6e8452df/0/context.md",
+      "content_hash": "/25/ba6e8452df/0/content_hash.txt",
+      "prompt": "/25/ba6e8452df/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 581,
+    "cache_creation_tokens": 241431,
+    "cache_read_tokens": 11959524,
+    "output_tokens": 23834,
+    "api_call_count": 115
+  }
+}
