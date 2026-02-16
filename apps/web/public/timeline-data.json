@@ -6567,6 +6567,22 @@
       "t": "chore",
       "s": "",
       "u": "increase sandbox session TTL to 24 hours, document expiry behavior"
+    },
+    {
+      "h": "97c5b89f647117c661d28fbd5ce089f5744e4246",
+      "d": "2026-02-16",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "701528431b9d60c41263cd1281b69c0ed320efa4",
+      "d": "2026-02-17",
+      "m": "docs: add Vercel project mapping, Railway services, and sandbox architecture to CLAUDE.md",
+      "t": "docs",
+      "s": "",
+      "u": "add Vercel project mapping, Railway services, and sandbox architecture to CLAUDE.md"
     }
   ],
   "m": [
