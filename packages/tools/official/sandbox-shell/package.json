@@ -1,0 +1,72 @@
+{
+  "name": "@tpmjs/official-sandbox-shell",
+  "version": "0.1.0",
+  "description": "Shell execution, file I/O, and directory listing tools for the TPMJS Agent Sandbox",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "sandbox",
+    "shell",
+    "git",
+    "filesystem",
+    "ai",
+    "agent"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/sandbox-shell"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "sandbox",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "shellExec",
+        "description": "Execute a shell command in the sandbox workspace. Supports git, npm, and any CLI tools."
+      },
+      {
+        "name": "readFile",
+        "description": "Read a file from the sandbox workspace."
+      },
+      {
+        "name": "writeFile",
+        "description": "Write or create a file in the sandbox workspace."
+      },
+      {
+        "name": "listFiles",
+        "description": "List files and directories in the sandbox workspace."
+      }
+    ]
+  }
+}

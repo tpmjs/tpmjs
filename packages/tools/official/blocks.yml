@@ -13763,6 +13763,92 @@ blocks:
         description: "Array of matching memories with similarity scores"
         measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
 
+  # ---------------------------------------------------------------------------
+  # Sandbox Shell Tools — execute commands, read/write files in agent sandbox
+  # ---------------------------------------------------------------------------
+  sandbox.shellExec:
+    type: utility
+    description: "Execute a shell command in the sandbox workspace. Supports git, npm, and any CLI tools."
+    path: "sandbox-shell"
+    domain_rules:
+      - id: sandbox_execution
+        description: "Must execute commands via Deno.Command in the _sandboxWorkDir"
+      - id: timeout_enforcement
+        description: "Must enforce configurable timeout with process kill"
+      - id: output_truncation
+        description: "Must truncate stdout/stderr at 100KB"
+    inputs:
+      - name: command
+        type: string
+        description: "Shell command to execute"
+      - name: timeout
+        type: number
+        optional: true
+        description: "Timeout in milliseconds (default: 30000, max: 300000)"
+    outputs:
+      - name: result
+        type: ShellExecResult
+        description: "stdout, stderr, exitCode, duration"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  sandbox.readFile:
+    type: utility
+    description: "Read a file from the sandbox workspace"
+    path: "sandbox-shell"
+    inputs:
+      - name: path
+        type: string
+        description: "File path relative to workspace root"
+    outputs:
+      - name: result
+        type: ReadFileResult
+        description: "content, path, size"
+        measures: [working_implementation, valid_output_structure, proper_error_handling]
+
+  sandbox.writeFile:
+    type: utility
+    description: "Write or create a file in the sandbox workspace"
+    path: "sandbox-shell"
+    inputs:
+      - name: path
+        type: string
+        description: "File path relative to workspace root"
+      - name: content
+        type: string
+        description: "Content to write"
+      - name: createDirs
+        type: boolean
+        optional: true
+        description: "Create parent directories if needed (default: true)"
+    outputs:
+      - name: result
+        type: WriteFileResult
+        description: "success, path, bytesWritten"
+        measures: [working_implementation, valid_output_structure, proper_error_handling]
+
+  sandbox.listFiles:
+    type: utility
+    description: "List files and directories in the sandbox workspace"
+    path: "sandbox-shell"
+    inputs:
+      - name: path
+        type: string
+        optional: true
+        description: "Directory path relative to workspace root (default: root)"
+      - name: recursive
+        type: boolean
+        optional: true
+        description: "List recursively (default: false)"
+      - name: maxDepth
+        type: number
+        optional: true
+        description: "Max depth for recursive listing (default: 3)"
+    outputs:
+      - name: result
+        type: ListFilesResult
+        description: "entries array with name, type, size"
+        measures: [working_implementation, valid_output_structure, proper_error_handling]
+
 # =============================================================================
 # VALIDATORS - Which validators to run against each block
 # =============================================================================

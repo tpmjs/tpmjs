@@ -1152,7 +1152,7 @@ const myTool = {
                     name: 'TPMJS_EXECUTOR_URL',
                     type: 'string',
                     required: false,
-                    description: 'URL for sandbox executor (default: https://executor.tpmjs.com)',
+                    description: 'URL for the tool executor (default: https://executor.tpmjs.com)',
                   },
                 ]}
               />

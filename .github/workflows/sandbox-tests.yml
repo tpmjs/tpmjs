@@ -1,0 +1,166 @@
+name: Sandbox Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'templates/agent-sandbox/**'
+      - 'packages/tools/official/sandbox-shell/**'
+      - 'apps/web/src/lib/executors/**'
+      - 'apps/web/src/test/integration/sandbox/**'
+      - '.github/workflows/sandbox-tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'templates/agent-sandbox/**'
+      - 'packages/tools/official/sandbox-shell/**'
+      - 'apps/web/src/lib/executors/**'
+      - 'apps/web/src/test/integration/sandbox/**'
+      - '.github/workflows/sandbox-tests.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: sandbox-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Job 1: Test sandbox server directly via Docker ───────────────────────
+  sandbox-direct:
+    if: github.repository_owner == 'tpmjs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build sandbox Docker image
+        run: docker build -t tpmjs-sandbox:test templates/agent-sandbox/
+
+      - name: Start sandbox container
+        run: |
+          docker run -d \
+            --name tpmjs-sandbox-test \
+            -p 3002:3002 \
+            -e EXECUTOR_API_KEY=test-ci-key \
+            -e SESSION_DISK_QUOTA_MB=5 \
+            -e MAX_CONCURRENT_SESSIONS=50 \
+            tpmjs-sandbox:test
+
+      - name: Wait for sandbox health
+        run: |
+          echo "Waiting for sandbox server to be ready..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3002/health > /dev/null 2>&1; then
+              echo "✅ Sandbox is healthy"
+              exit 0
+            fi
+            echo "Attempt $i/30: not ready, waiting 2s..."
+            sleep 2
+          done
+          echo "❌ Sandbox did not become healthy in 60s"
+          docker logs tpmjs-sandbox-test
+          exit 1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Run sandbox-direct tests
+        env:
+          INTEGRATION_TESTS: 'true'
+          SANDBOX_TEST_URL: http://localhost:3002
+          SANDBOX_TEST_API_KEY: test-ci-key
+          SANDBOX_TEST_DISK_QUOTA_MB: '5'
+          # Dummy values — setup-integration.ts requires these but sandbox-direct tests don't use them
+          TEST_BASE_URL: http://localhost:3000
+          INTEGRATION_TEST_SESSION_TOKEN: dummy-not-used
+          INTEGRATION_TEST_API_KEY: dummy-not-used
+        run: |
+          pnpm --filter=@tpmjs/web vitest run --config vitest.integration.config.mjs \
+            src/test/integration/sandbox/sandbox-health.integration.test.ts \
+            src/test/integration/sandbox/sandbox-sessions.integration.test.ts \
+            src/test/integration/sandbox/sandbox-tools.integration.test.ts \
+            src/test/integration/sandbox/sandbox-security.integration.test.ts \
+            src/test/integration/sandbox/sandbox-isolation.integration.test.ts \
+            src/test/integration/sandbox/sandbox-quota.integration.test.ts
+
+      - name: Show sandbox logs on failure
+        if: failure()
+        run: docker logs tpmjs-sandbox-test
+
+      - name: Cleanup sandbox container
+        if: always()
+        run: docker rm -f tpmjs-sandbox-test || true
+
+  # ─── Job 2: E2E test through the live web app ────────────────────────────
+  sandbox-e2e:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'tpmjs'
+    needs: sandbox-direct
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Wait for web app health
+        run: |
+          echo "Checking if web app is available at $TEST_BASE_URL..."
+          for i in $(seq 1 30); do
+            if curl -sf "$TEST_BASE_URL/api/health" > /dev/null 2>&1; then
+              echo "✅ Web app is available"
+              exit 0
+            fi
+            echo "Attempt $i/30: not ready, waiting 2s..."
+            sleep 2
+          done
+          echo "❌ Web app is not available after 60s"
+          exit 1
+        env:
+          TEST_BASE_URL: ${{ secrets.TEST_BASE_URL }}
+
+      - name: Run sandbox E2E test
+        env:
+          INTEGRATION_TESTS: 'true'
+          TEST_BASE_URL: ${{ secrets.TEST_BASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          INTEGRATION_TEST_USER_ID: ${{ secrets.INTEGRATION_TEST_USER_ID }}
+          INTEGRATION_TEST_USERNAME: ${{ secrets.INTEGRATION_TEST_USERNAME }}
+          INTEGRATION_TEST_SESSION_TOKEN: ${{ secrets.INTEGRATION_TEST_SESSION_TOKEN }}
+          INTEGRATION_TEST_API_KEY: ${{ secrets.INTEGRATION_TEST_API_KEY }}
+          AGENT_SANDBOX_URL: ${{ secrets.AGENT_SANDBOX_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          pnpm --filter=@tpmjs/web vitest run --config vitest.integration.config.mjs \
+            src/test/integration/sandbox/sandbox-shell-e2e.integration.test.ts

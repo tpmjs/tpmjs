@@ -3,7 +3,7 @@ FROM denoland/deno:2.1.9
 
 # Install curl for health checks
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl git openssh-client ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Create sessions directory with correct permissions
 RUN mkdir -p /tmp/tpmjs-sandbox/sessions && chown -R deno:deno /tmp/tpmjs-sandbox
@@ -13,6 +13,11 @@ WORKDIR /app
 
 # Set Deno cache directory
 ENV DENO_DIR=/tmp/deno-cache
+
+# Git credential helper (reads GITHUB_TOKEN from env for private repo clones)
+COPY git-credential-env /usr/local/bin/git-credential-env
+RUN chmod +x /usr/local/bin/git-credential-env && \
+    git config --system credential.helper '/usr/local/bin/git-credential-env'
 
 # Copy server file
 COPY server.ts .

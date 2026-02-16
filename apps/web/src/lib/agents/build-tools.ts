@@ -5,8 +5,10 @@
 import type { Agent, AgentCollection, AgentTool, Collection, Package, Tool } from '@tpmjs/db';
 import { prisma } from '@tpmjs/db';
 
+import { jsonSchema } from 'ai';
+
 import { createToolDefinition } from '../ai-agent/tool-executor-agent';
-import { parseExecutorConfig, resolveExecutorConfig } from '../executors';
+import { executeWithSandbox, parseExecutorConfig, resolveExecutorConfig } from '../executors';
 
 // Agent type includes executor config fields from Prisma schema
 type AgentWithRelations = Agent & {
@@ -225,6 +227,106 @@ function mergeEnvVars(
 }
 
 /**
+ * Inject sandbox tools (shellExec, readFile, writeFile, listFiles)
+ * These are hard-coded tool definitions that route directly to the sandbox server.
+ */
+function injectSandboxTools(
+  sandboxUrl: string,
+  sandboxApiKey: string | undefined,
+  sessionId: string
+): Record<string, ReturnType<typeof createToolDefinition>> {
+  const makeSandboxTool = (
+    name: string,
+    description: string,
+    schema: Record<string, unknown>,
+    paramMapper: (params: Record<string, unknown>) => Record<string, unknown>
+  ) => ({
+    description,
+    inputSchema: jsonSchema(schema as Parameters<typeof jsonSchema>[0]),
+    execute: async (args: Record<string, unknown>) => {
+      const result = await executeWithSandbox(
+        sandboxUrl,
+        sandboxApiKey,
+        {
+          packageName: '@tpmjs/sandbox-shell',
+          name,
+          params: paramMapper(args),
+        },
+        sessionId
+      );
+      return result.success ? result.output : { error: result.error };
+    },
+  });
+
+  return {
+    shellExec: makeSandboxTool(
+      'shellExec',
+      'Execute a shell command in the sandbox workspace. Commands run in a persistent bash session with the workspace as the working directory.',
+      {
+        type: 'object',
+        properties: {
+          command: { type: 'string', description: 'Shell command to execute' },
+          timeout: {
+            type: 'number',
+            description: 'Timeout in milliseconds (default: 30000, max: 300000)',
+          },
+        },
+        required: ['command'],
+      },
+      (p) => p
+    ),
+    readFile: makeSandboxTool(
+      'readFile',
+      'Read the contents of a file in the sandbox workspace.',
+      {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: 'File path relative to workspace root' },
+        },
+        required: ['path'],
+      },
+      (p) => p
+    ),
+    writeFile: makeSandboxTool(
+      'writeFile',
+      'Write content to a file in the sandbox workspace. Creates parent directories if needed.',
+      {
+        type: 'object',
+        properties: {
+          path: { type: 'string', description: 'File path relative to workspace root' },
+          content: { type: 'string', description: 'File content to write' },
+          createDirs: {
+            type: 'boolean',
+            description: 'Create parent directories if they do not exist (default: true)',
+          },
+        },
+        required: ['path', 'content'],
+      },
+      (p) => p
+    ),
+    listFiles: makeSandboxTool(
+      'listFiles',
+      'List files and directories in the sandbox workspace.',
+      {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description: 'Directory path relative to workspace root (default: ".")',
+          },
+          recursive: { type: 'boolean', description: 'List files recursively (default: false)' },
+          maxDepth: {
+            type: 'number',
+            description: 'Maximum directory depth for recursive listing (default: 3)',
+          },
+        },
+      },
+      (p) => p
+    ),
+  };
+}
+
+/**
  * Build all tools from an agent's collections and individual tools
  * Returns a map of tool name -> AI SDK tool definition
  *
@@ -242,14 +344,29 @@ function mergeEnvVars(
  * @param callerEnvVars - Optional env vars provided by the caller (for non-owners accessing public agents).
  *                        When provided, these are used INSTEAD of the agent's stored env vars.
  * @param sessionId - Optional session ID for sandbox executors
+ * @param sandboxUrl - Optional sandbox URL for injecting sandbox tools
+ * @param sandboxApiKey - Optional sandbox API key
  */
 export function buildAgentTools(
   agent: AgentWithRelations,
   callerEnvVars?: Record<string, string>,
-  sessionId?: string
+  sessionId?: string,
+  sandboxUrl?: string,
+  sandboxApiKey?: string
 ): Record<string, ReturnType<typeof createToolDefinition>> {
   const tools: Record<string, ReturnType<typeof createToolDefinition>> = {};
   const seenTools = new Set<string>();
+
+  // Inject sandbox tools first if sandbox is enabled and session is active
+  if (sandboxUrl && sessionId) {
+    const sandboxTools = injectSandboxTools(sandboxUrl, sandboxApiKey, sessionId);
+    for (const [name, toolDef] of Object.entries(sandboxTools)) {
+      tools[name] = toolDef;
+      // Mark sandbox tool package keys as seen to prevent duplicates
+      // if the sandbox-shell collection is also attached
+      seenTools.add(`@tpmjs/sandbox-shell::${name}`);
+    }
+  }
 
   // Parse agent-level executor config
   const agentExecutorConfig = parseExecutorConfig(agent.executorType, agent.executorConfig);
@@ -286,7 +403,7 @@ export function buildAgentTools(
       seenTools.add(toolKey);
 
       const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
-      tools[toolName] = createToolDefinition(tool, resolvedConfig, mergedEnvVars, sessionId);
+      tools[toolName] = createToolDefinition(tool, resolvedConfig, mergedEnvVars);
     }
   }
 
@@ -304,7 +421,7 @@ export function buildAgentTools(
     seenTools.add(toolKey);
 
     const toolName = sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`);
-    tools[toolName] = createToolDefinition(tool, individualToolConfig, agentEnvVars, sessionId);
+    tools[toolName] = createToolDefinition(tool, individualToolConfig, agentEnvVars);
   }
 
   return tools;

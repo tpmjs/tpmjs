@@ -406,7 +406,7 @@ console.log('Result:', result.output);`}
                     https://executor.tpmjs.com
                   </td>
                   <td className="py-3 px-4 text-foreground-secondary">
-                    URL for the sandbox executor service
+                    URL for the tool executor service
                   </td>
                 </tr>
               </tbody>

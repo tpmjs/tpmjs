@@ -642,6 +642,9 @@ model Agent {
   executorType         String?    @map("executor_type") @db.VarChar(50)
   executorConfig       Json?      @map("executor_config") @db.JsonB
 
+  // Sandbox toggle: gives agent persistent workspace with shell, file, and git tools
+  sandboxEnabled       Boolean    @default(false) @map("sandbox_enabled")
+
   // Tool environment variables (encrypted JSON: { "KEY": "value" })
   // Agent env vars override collection env vars, otherwise merged
   envVars              Json?      @map("env_vars") @db.JsonB

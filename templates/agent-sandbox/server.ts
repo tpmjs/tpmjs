@@ -28,6 +28,17 @@ const DEFAULT_SESSION_TTL_SECONDS = Number(Deno.env.get('DEFAULT_SESSION_TTL_SEC
 const SESSION_DISK_QUOTA_MB = Number(Deno.env.get('SESSION_DISK_QUOTA_MB') || '100');
 const SESSIONS_BASE_DIR = '/tmp/tpmjs-sandbox/sessions';
 
+// ─── Metrics ─────────────────────────────────────────────────────────────────
+
+const metrics = {
+  totalExecutions: 0,
+  successfulExecutions: 0,
+  failedExecutions: 0,
+  totalSessionsCreated: 0,
+  totalSessionsDestroyed: 0,
+  startTime: Date.now(),
+};
+
 // Module cache
 const CACHE_TTL_MS = 2 * 60 * 1000;
 const MAX_CACHE_SIZE = 200;
@@ -94,6 +105,7 @@ async function createSession(
   };
 
   sessions.set(sessionId, session);
+  metrics.totalSessionsCreated++;
   console.log(`✅ Session created: ${sessionId} (TTL: ${ttl}s, workDir: ${workDir})`);
 
   return { ...session, resumed: false };
@@ -117,6 +129,7 @@ async function destroySession(sessionId: string): Promise<boolean> {
     // Directory may already be cleaned up
   }
 
+  metrics.totalSessionsDestroyed++;
   console.log(`🗑️  Session destroyed: ${sessionId}`);
   return true;
 }
@@ -378,6 +391,22 @@ async function handleExecuteTool(req: Request): Promise<Response> {
       }
     }
 
+    // Enforce disk quota before execution
+    if (cwd) {
+      const usageKB = await getDirectorySizeKB(cwd);
+      const quotaKB = SESSION_DISK_QUOTA_MB * 1024;
+      if (usageKB > quotaKB) {
+        return Response.json(
+          {
+            success: false,
+            error: `Session disk quota exceeded: ${Math.round(usageKB / 1024)}MB / ${SESSION_DISK_QUOTA_MB}MB`,
+            executionTimeMs: Date.now() - startTime,
+          },
+          { status: 413, headers: corsHeaders() }
+        );
+      }
+    }
+
     // Set environment variables if provided
     if (env && typeof env === 'object') {
       for (const [key, value] of Object.entries(env)) {
@@ -403,6 +432,8 @@ async function handleExecuteTool(req: Request): Promise<Response> {
     }
 
     const executionTimeMs = Date.now() - startTime;
+    metrics.totalExecutions++;
+    metrics.successfulExecutions++;
 
     return Response.json(
       { success: true, output, executionTimeMs },
@@ -412,12 +443,58 @@ async function handleExecuteTool(req: Request): Promise<Response> {
     const executionTimeMs = Date.now() - startTime;
     const message = error instanceof Error ? error.message : String(error);
     console.error('❌ Execute tool error:', message);
+    metrics.totalExecutions++;
+    metrics.failedExecutions++;
 
     return Response.json(
       { success: false, error: message, executionTimeMs },
       { status: 200, headers: corsHeaders() }
     );
   }
+}
+
+// ─── Disk Quota Helper ──────────────────────────────────────────────────────
+
+async function getDirectorySizeKB(dir: string): Promise<number> {
+  try {
+    const cmd = new Deno.Command('du', { args: ['-sk', dir], stdout: 'piped', stderr: 'piped' });
+    const { stdout } = await cmd.output();
+    const output = new TextDecoder().decode(stdout);
+    const sizeKB = parseInt(output.split('\t')[0], 10);
+    return isNaN(sizeKB) ? 0 : sizeKB;
+  } catch {
+    return 0;
+  }
+}
+
+function handleMetrics(): Response {
+  const memInfo = Deno.memoryUsage();
+  return Response.json(
+    {
+      uptime: Date.now() - metrics.startTime,
+      sessions: {
+        active: sessions.size,
+        max: MAX_CONCURRENT_SESSIONS,
+        totalCreated: metrics.totalSessionsCreated,
+        totalDestroyed: metrics.totalSessionsDestroyed,
+      },
+      executions: {
+        total: metrics.totalExecutions,
+        successful: metrics.successfulExecutions,
+        failed: metrics.failedExecutions,
+      },
+      memory: {
+        rss: memInfo.rss,
+        heapUsed: memInfo.heapUsed,
+        heapTotal: memInfo.heapTotal,
+      },
+      cache: {
+        modules: moduleCache.size,
+        maxSize: MAX_CACHE_SIZE,
+      },
+    },
+    { status: 200, headers: corsHeaders() }
+  );
 }
 
 function handleHealth(): Response {
@@ -458,6 +535,11 @@ async function handler(req: Request): Promise<Response> {
     return handleHealth();
   }
 
+  // Metrics (no auth required, for monitoring)
+  if (pathname === '/metrics' && method === 'GET') {
+    return handleMetrics();
+  }
+
   // Auth check for all other routes
   if (!checkAuth(req)) {
     return Response.json({ error: 'Unauthorized' }, { status: 401, headers: corsHeaders() });
@@ -495,6 +577,26 @@ try {
 } catch {
   // May already exist
 }
+
+// Clean up orphaned session directories from previous server runs
+async function cleanupOrphanedSessions(): Promise<void> {
+  try {
+    let cleaned = 0;
+    for await (const entry of Deno.readDir(SESSIONS_BASE_DIR)) {
+      if (entry.isDirectory && !sessions.has(entry.name)) {
+        const dir = `${SESSIONS_BASE_DIR}/${entry.name}`;
+        await Deno.remove(dir, { recursive: true }).catch(() => {});
+        cleaned++;
+      }
+    }
+    if (cleaned > 0) {
+      console.log(`🗑️  Cleaned ${cleaned} orphaned session directories from previous run`);
+    }
+  } catch {
+    // Directory may be empty or inaccessible
+  }
+}
+await cleanupOrphanedSessions();
 
 console.log(`🚀 TPMJS Agent Sandbox Server starting on port ${PORT}`);
 console.log(`📁 Sessions base dir: ${SESSIONS_BASE_DIR}`);

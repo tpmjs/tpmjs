@@ -185,9 +185,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     // Build update data, transforming JSON fields for Prisma (null -> Prisma.JsonNull)
-    const { executorConfig, envVars, ...restData } = parsed.data;
+    const { executorConfig, envVars, sandboxEnabled, ...restData } = parsed.data;
     const updateData: Prisma.AgentUpdateInput = {
       ...restData,
+      ...(sandboxEnabled !== undefined && { sandboxEnabled }),
       ...(executorConfig !== undefined && {
         executorConfig: executorConfig === null ? Prisma.JsonNull : executorConfig,
       }),

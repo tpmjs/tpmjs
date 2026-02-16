@@ -62,7 +62,7 @@ export interface ExecutorHealthResponse {
 /**
  * Executor type enum
  */
-export const ExecutorTypeSchema = z.enum(['default', 'custom_url', 'sandbox']);
+export const ExecutorTypeSchema = z.enum(['default', 'custom_url']);
 export type ExecutorType = z.infer<typeof ExecutorTypeSchema>;
 
 /**
@@ -84,29 +84,16 @@ export const CustomUrlExecutorConfigSchema = z.object({
 });
 
 /**
- * Sandbox executor config (stateful sessions with persistent filesystem)
- */
-export const SandboxExecutorConfigSchema = z.object({
-  type: z.literal('sandbox'),
-  /** Optional URL of the sandbox executor (falls back to AGENT_SANDBOX_URL env var) */
-  url: z.string().url().optional(),
-  /** Optional API key for Bearer token authentication */
-  apiKey: z.string().optional(),
-});
-
-/**
  * Union of all executor config types
  */
 export const ExecutorConfigSchema = z.discriminatedUnion('type', [
   DefaultExecutorConfigSchema,
   CustomUrlExecutorConfigSchema,
-  SandboxExecutorConfigSchema,
 ]);
 
 export type ExecutorConfig = z.infer<typeof ExecutorConfigSchema>;
 export type DefaultExecutorConfig = z.infer<typeof DefaultExecutorConfigSchema>;
 export type CustomUrlExecutorConfig = z.infer<typeof CustomUrlExecutorConfigSchema>;
-export type SandboxExecutorConfig = z.infer<typeof SandboxExecutorConfigSchema>;
 
 // =============================================================================
 // Zod Schemas for Request/Response Validation

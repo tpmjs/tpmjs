@@ -29,6 +29,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { EnvVarsEditor } from '~/components/EnvVarsEditor';
 import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
+import { SandboxToggle } from '~/components/SandboxToggle';
 
 type PageTabId = 'tools' | 'collections' | 'api' | 'env-vars' | 'settings';
 
@@ -46,6 +47,7 @@ interface Agent {
   maxToolCallsPerTurn: number;
   maxMessagesInContext: number;
   isPublic: boolean;
+  sandboxEnabled: boolean;
   executorType: string | null;
   executorConfig: { url: string; apiKey?: string } | null;
   envVars: Record<string, string> | null;
@@ -666,6 +668,7 @@ export default function AgentDetailPage(): React.ReactElement {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [executorConfig, setExecutorConfig] = useState<ExecutorConfig | null>(null);
+  const [sandboxEnabled, setSandboxEnabled] = useState(false);
   const [activeTab, setActiveTab] = useState<PageTabId>(initialTab);
 
   // Update URL when tab changes
@@ -736,18 +739,14 @@ export default function AgentDetailPage(): React.ReactElement {
           maxMessagesInContext: data.data.maxMessagesInContext,
           isPublic: data.data.isPublic,
         });
+        // Initialize sandbox toggle from agent data
+        setSandboxEnabled(data.data.sandboxEnabled ?? false);
         // Initialize executor config state from agent data
         if (data.data.executorType === 'custom_url' && data.data.executorConfig) {
           setExecutorConfig({
             type: 'custom_url',
             url: data.data.executorConfig.url,
             apiKey: data.data.executorConfig.apiKey,
-          });
-        } else if (data.data.executorType === 'sandbox') {
-          setExecutorConfig({
-            type: 'sandbox',
-            url: data.data.executorConfig?.url,
-            apiKey: data.data.executorConfig?.apiKey,
           });
         } else {
           setExecutorConfig(data.data.executorType ? { type: 'default' } : null);
@@ -1031,15 +1030,13 @@ export default function AgentDetailPage(): React.ReactElement {
       isPublic: formData.isPublic,
     };
 
+    // Add sandbox toggle
+    updatePayload.sandboxEnabled = sandboxEnabled;
+
     // Add executor config
     if (executorConfig) {
       updatePayload.executorType = executorConfig.type;
       if (executorConfig.type === 'custom_url') {
-        updatePayload.executorConfig = {
-          url: executorConfig.url,
-          apiKey: executorConfig.apiKey,
-        };
-      } else if (executorConfig.type === 'sandbox') {
         updatePayload.executorConfig = {
           url: executorConfig.url,
           apiKey: executorConfig.apiKey,
@@ -1162,10 +1159,10 @@ export default function AgentDetailPage(): React.ReactElement {
         <Badge variant={agent.isPublic ? 'success' : 'secondary'}>
           {agent.isPublic ? 'Public' : 'Private'}
         </Badge>
+        {sandboxEnabled && <Badge variant="secondary">Sandbox</Badge>}
         {executorConfig?.type === 'custom_url' && (
           <Badge variant="secondary">Custom Executor</Badge>
         )}
-        {executorConfig?.type === 'sandbox' && <Badge variant="secondary">Agent Sandbox</Badge>}
       </div>
 
       {/* Tabs */}
@@ -1571,6 +1568,15 @@ export default function AgentDetailPage(): React.ReactElement {
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Sandbox Toggle */}
+          <div className="bg-surface border border-border rounded-lg p-6">
+            <SandboxToggle
+              enabled={sandboxEnabled}
+              onChange={setSandboxEnabled}
+              disabled={isSaving}
+            />
           </div>
 
           {/* Executor Configuration */}

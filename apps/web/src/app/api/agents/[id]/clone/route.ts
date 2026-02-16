@@ -168,6 +168,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           maxToolCallsPerTurn: sourceAgent.maxToolCallsPerTurn,
           maxMessagesInContext: sourceAgent.maxMessagesInContext,
           isPublic: false, // Forked agents start as private
+          sandboxEnabled: sourceAgent.sandboxEnabled, // Copy sandbox toggle (safe boolean)
           likeCount: 1, // Start with 1 like (from owner)
           forkedFromId: sourceAgent.id, // Track fork origin
           // NOTE: envVars is intentionally NOT copied - user adds their own API keys

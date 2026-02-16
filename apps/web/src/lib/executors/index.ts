@@ -13,10 +13,41 @@ import type {
   ExecuteToolResponse,
   ExecutorConfig,
   ExecutorHealthResponse,
-  SandboxExecutorConfig,
 } from '@tpmjs/types/executor';
 
 const DEFAULT_TIMEOUT = 300000; // 5 minutes for custom executors
+const MAX_RETRIES = 2;
+const RETRY_BASE_DELAY_MS = 1000;
+
+/**
+ * Retry helper with exponential backoff
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  opts: { maxRetries?: number; shouldRetry?: (error: unknown) => boolean } = {}
+): Promise<T> {
+  const maxRetries = opts.maxRetries ?? MAX_RETRIES;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error;
+      if (attempt >= maxRetries) break;
+      if (opts.shouldRetry && !opts.shouldRetry(error)) break;
+
+      const delay = RETRY_BASE_DELAY_MS * 2 ** attempt;
+      console.warn(
+        `[Executor] Retry ${attempt + 1}/${maxRetries} after ${delay}ms:`,
+        error instanceof Error ? error.message : String(error)
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
 
 /**
  * Resolve executor configuration using cascade:
@@ -69,18 +100,6 @@ export function parseExecutorConfig(
         apiKey: typeof config.apiKey === 'string' ? config.apiKey : undefined,
       };
     }
-  }
-
-  if (executorType === 'sandbox') {
-    const config =
-      executorConfig && typeof executorConfig === 'object'
-        ? (executorConfig as { url?: string; apiKey?: string })
-        : {};
-    return {
-      type: 'sandbox',
-      url: typeof config.url === 'string' ? config.url : undefined,
-      apiKey: typeof config.apiKey === 'string' ? config.apiKey : undefined,
-    };
   }
 
   return null;
@@ -163,10 +182,13 @@ async function executeWithCustomUrl(
 // =============================================================================
 
 /**
- * Resolve sandbox URL from config or environment variable
+ * Get sandbox configuration from environment variables
  */
-export function resolveSandboxUrl(config: SandboxExecutorConfig): string | null {
-  return config.url || process.env.AGENT_SANDBOX_URL || null;
+export function getSandboxConfig(): { url: string | null; apiKey: string | undefined } {
+  return {
+    url: process.env.AGENT_SANDBOX_URL || null,
+    apiKey: process.env.AGENT_SANDBOX_API_KEY || undefined,
+  };
 }
 
 /**
@@ -179,39 +201,61 @@ export async function createSandboxSession(
   sessionId: string,
   timeoutSeconds?: number
 ): Promise<CreateSessionResponse> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  if (apiKey) {
-    headers.Authorization = `Bearer ${apiKey}`;
-  }
+  return withRetry(
+    async () => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (apiKey) {
+        headers.Authorization = `Bearer ${apiKey}`;
+      }
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-  try {
-    const response = await fetch(`${url}/sessions`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ sessionId, timeoutSeconds }),
-      signal: controller.signal,
-    });
+      try {
+        const response = await fetch(`${url}/sessions`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ sessionId, timeoutSeconds }),
+          signal: controller.signal,
+        });
 
-    clearTimeout(timeoutId);
+        clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({ error: 'Unknown error' }))) as {
-        error?: string;
-      };
-      throw new Error(errorData.error || `Failed to create sandbox session: ${response.status}`);
+        if (response.status === 429) {
+          throw new Error('Sandbox at capacity (429). Retrying...');
+        }
+
+        if (!response.ok) {
+          const errorData = (await response.json().catch(() => ({ error: 'Unknown error' }))) as {
+            error?: string;
+          };
+          throw new Error(
+            errorData.error || `Failed to create sandbox session: ${response.status}`
+          );
+        }
+
+        return (await response.json()) as CreateSessionResponse;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === 'AbortError') {
+          throw new Error('Sandbox session creation timed out');
+        }
+        throw error;
+      }
+    },
+    {
+      shouldRetry: (error) => {
+        const msg = error instanceof Error ? error.message : String(error);
+        // Retry on network errors, timeouts, and capacity issues
+        return (
+          msg.includes('timed out') ||
+          msg.includes('429') ||
+          msg.includes('ECONNREFUSED') ||
+          msg.includes('fetch failed')
+        );
+      },
     }
-
-    return (await response.json()) as CreateSessionResponse;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Sandbox session creation timed out');
-    }
-    throw error;
-  }
+  );
 }
 
 /**
@@ -256,7 +300,7 @@ export async function destroySandboxSession(
 /**
  * Execute a tool using a sandbox executor (includes sessionId in request)
  */
-async function executeWithSandbox(
+export async function executeWithSandbox(
   url: string,
   apiKey: string | undefined,
   request: ExecuteToolRequest,
@@ -273,57 +317,98 @@ async function executeWithSandbox(
     headers.Authorization = `Bearer ${apiKey}`;
   }
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+  // Retry on transient failures (network errors, 429, 502, 503)
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    const response = await fetch(`${url}/execute-tool`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ ...request, sessionId }),
-      signal: controller.signal,
-    });
+      const response = await fetch(`${url}/execute-tool`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ ...request, sessionId }),
+        signal: controller.signal,
+      });
 
-    clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-    const executionTimeMs = Date.now() - startTime;
+      const executionTimeMs = Date.now() - startTime;
 
-    if (!response.ok) {
-      const errorData = (await response.json().catch(() => ({ error: 'Unknown error' }))) as {
-        error?: string;
+      // Retry on 429 (capacity) or 502/503 (transient server issues)
+      if (
+        (response.status === 429 || response.status === 502 || response.status === 503) &&
+        attempt < MAX_RETRIES
+      ) {
+        const delay = RETRY_BASE_DELAY_MS * 2 ** attempt;
+        console.warn(
+          `[Sandbox] Got ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1})`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      if (!response.ok) {
+        const errorData = (await response.json().catch(() => ({ error: 'Unknown error' }))) as {
+          error?: string;
+        };
+        return {
+          success: false,
+          error: errorData.error || `Sandbox executor error: ${response.status}`,
+          executionTimeMs,
+        };
+      }
+
+      const result = (await response.json()) as ExecuteToolResponse;
+
+      return {
+        success: result.success,
+        output: result.output,
+        error: result.error,
+        executionTimeMs: result.executionTimeMs || executionTimeMs,
       };
+    } catch (error) {
+      lastError = error;
+
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'Execution timeout',
+          executionTimeMs: Date.now() - startTime,
+        };
+      }
+
+      // Retry on network errors
+      if (attempt < MAX_RETRIES) {
+        const msg = error instanceof Error ? error.message : String(error);
+        if (
+          msg.includes('ECONNREFUSED') ||
+          msg.includes('fetch failed') ||
+          msg.includes('ECONNRESET')
+        ) {
+          const delay = RETRY_BASE_DELAY_MS * 2 ** attempt;
+          console.warn(
+            `[Sandbox] Network error, retrying in ${delay}ms (attempt ${attempt + 1}):`,
+            msg
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+      }
+
       return {
         success: false,
-        error: errorData.error || `Sandbox executor error: ${response.status}`,
-        executionTimeMs,
+        error: error instanceof Error ? error.message : String(error),
+        executionTimeMs: Date.now() - startTime,
       };
     }
-
-    const result = (await response.json()) as ExecuteToolResponse;
-
-    return {
-      success: result.success,
-      output: result.output,
-      error: result.error,
-      executionTimeMs: result.executionTimeMs || executionTimeMs,
-    };
-  } catch (error) {
-    const executionTimeMs = Date.now() - startTime;
-
-    if (error instanceof Error && error.name === 'AbortError') {
-      return {
-        success: false,
-        error: 'Execution timeout',
-        executionTimeMs,
-      };
-    }
-
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-      executionTimeMs,
-    };
   }
+
+  return {
+    success: false,
+    error: lastError instanceof Error ? lastError.message : String(lastError),
+    executionTimeMs: Date.now() - startTime,
+  };
 }
 
 /**
@@ -331,33 +416,17 @@ async function executeWithSandbox(
  *
  * @param config - Resolved executor config (or null for default)
  * @param request - Tool execution request
- * @param sessionId - Optional session ID for sandbox executors
  * @returns Execution result
  */
 export async function executeWithExecutor(
   config: ExecutorConfig | null,
-  request: ExecuteToolRequest,
-  sessionId?: string
+  request: ExecuteToolRequest
 ): Promise<ExecuteToolResponse> {
   const resolvedConfig = config ?? { type: 'default' };
 
   // Use custom URL executor
   if (resolvedConfig.type === 'custom_url' && resolvedConfig.url) {
     return executeWithCustomUrl(resolvedConfig.url, resolvedConfig.apiKey, request);
-  }
-
-  // Use sandbox executor
-  if (resolvedConfig.type === 'sandbox' && sessionId) {
-    const sandboxUrl = resolveSandboxUrl(resolvedConfig);
-    if (!sandboxUrl) {
-      return {
-        success: false,
-        error:
-          'Sandbox executor URL not configured. Set AGENT_SANDBOX_URL or provide a custom URL.',
-        executionTimeMs: 0,
-      };
-    }
-    return executeWithSandbox(sandboxUrl, resolvedConfig.apiKey, request, sessionId);
   }
 
   // Default: use existing package-executor (which uses SANDBOX_EXECUTOR_URL)
@@ -532,18 +601,6 @@ export function getExecutorDescription(config: ExecutorConfig | null): string {
     } catch {
       return 'Custom Executor';
     }
-  }
-
-  if (config.type === 'sandbox') {
-    if (config.url) {
-      try {
-        const url = new URL(config.url);
-        return `Sandbox: ${url.hostname}`;
-      } catch {
-        return 'Agent Sandbox';
-      }
-    }
-    return 'TPMJS Agent Sandbox';
   }
 
   return 'Unknown Executor';

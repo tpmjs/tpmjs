@@ -45,6 +45,7 @@ export const CreateAgentSchema = z.object({
   maxToolCallsPerTurn: z.number().int().min(1).max(100).default(20),
   maxMessagesInContext: z.number().int().min(1).max(100).default(10),
   isPublic: z.boolean().default(true),
+  sandboxEnabled: z.boolean().default(false).optional(),
   collectionIds: z.array(z.string()).optional(),
   toolIds: z.array(z.string()).optional(),
 });
@@ -60,6 +61,8 @@ export const UpdateAgentSchema = z.object({
   maxToolCallsPerTurn: z.number().int().min(1).max(100).optional(),
   maxMessagesInContext: z.number().int().min(1).max(100).optional(),
   isPublic: z.boolean().optional(),
+  // Sandbox toggle
+  sandboxEnabled: z.boolean().optional(),
   // Executor configuration
   executorType: ExecutorTypeSchema.nullable().optional(),
   executorConfig: ExecutorConfigUpdateSchema,
