@@ -3,9 +3,6 @@ FROM node:20-slim
 # Install npm for tool installation during execution
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
-    pandoc \
-    jq \
-    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

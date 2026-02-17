@@ -3,7 +3,7 @@ FROM denoland/deno:2.1.9
 
 # Install OpenSSH client for tools that need SSH access (e.g., exe-dev)
 USER root
-RUN apt-get update && apt-get install -y --no-install-recommends openssh-client curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends openssh-client curl pandoc jq postgresql-client && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
