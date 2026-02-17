@@ -157,7 +157,7 @@ export const listAgents = tool({
   }),
   async execute(_input: ListAgentsInput): Promise<AgntAgent[]> {
     try {
-      return await agntRequest<AgntAgent[]>('GET', '/api/agents/');
+      return await agntRequest<AgntAgent[]>('GET', '/agents/');
     } catch (error) {
       throw new Error(`Failed to list agents: ${(error as Error).message}`);
     }
@@ -186,7 +186,7 @@ export const getAgent = tool({
       if (!input.agentId) {
         throw new Error('agentId is required and must be non-empty');
       }
-      return await agntRequest<AgntAgent>('GET', `/api/agents/${input.agentId}`);
+      return await agntRequest<AgntAgent>('GET', `/agents/${input.agentId}`);
     } catch (error) {
       throw new Error(`Failed to get agent: ${(error as Error).message}`);
     }
@@ -251,7 +251,7 @@ export const createAgent = tool({
         }
       }
 
-      return await agntRequest<AgntAgent>('POST', '/api/agents/save', body);
+      return await agntRequest<AgntAgent>('POST', '/agents/save', body);
     } catch (error) {
       throw new Error(`Failed to create agent: ${(error as Error).message}`);
     }
@@ -312,7 +312,7 @@ export const updateAgent = tool({
         }
       }
 
-      return await agntRequest<AgntAgent>('PUT', `/api/agents/${input.agentId}`, body);
+      return await agntRequest<AgntAgent>('PUT', `/agents/${input.agentId}`, body);
     } catch (error) {
       throw new Error(`Failed to update agent: ${(error as Error).message}`);
     }
@@ -340,7 +340,7 @@ export const deleteAgent = tool({
       if (!input.agentId) {
         throw new Error('agentId is required and must be non-empty');
       }
-      return await agntRequest<AgntDeleteResult>('DELETE', `/api/agents/${input.agentId}`);
+      return await agntRequest<AgntDeleteResult>('DELETE', `/agents/${input.agentId}`);
     } catch (error) {
       throw new Error(`Failed to delete agent: ${(error as Error).message}`);
     }
@@ -384,7 +384,7 @@ export const chatWithAgent = tool({
       const body: Record<string, unknown> = { message: input.message };
       if (input.conversationId !== undefined) body.conversationId = input.conversationId;
 
-      return await agntRequest<AgntChatResponse>('POST', `/api/agents/${input.agentId}/chat`, body);
+      return await agntRequest<AgntChatResponse>('POST', `/agents/${input.agentId}/chat`, body);
     } catch (error) {
       throw new Error(`Failed to chat with agent: ${(error as Error).message}`);
     }
@@ -408,7 +408,7 @@ export const listWorkflows = tool({
   }),
   async execute(_input: ListWorkflowsInput): Promise<AgntWorkflow[]> {
     try {
-      return await agntRequest<AgntWorkflow[]>('GET', '/api/workflows/');
+      return await agntRequest<AgntWorkflow[]>('GET', '/workflows/');
     } catch (error) {
       throw new Error(`Failed to list workflows: ${(error as Error).message}`);
     }
@@ -437,7 +437,7 @@ export const getWorkflow = tool({
       if (!input.workflowId) {
         throw new Error('workflowId is required and must be non-empty');
       }
-      return await agntRequest<AgntWorkflow>('GET', `/api/workflows/${input.workflowId}`);
+      return await agntRequest<AgntWorkflow>('GET', `/workflows/${input.workflowId}`);
     } catch (error) {
       throw new Error(`Failed to get workflow: ${(error as Error).message}`);
     }
@@ -501,7 +501,7 @@ export const createWorkflow = tool({
         }
       }
 
-      return await agntRequest<AgntWorkflow>('POST', '/api/workflows/save', body);
+      return await agntRequest<AgntWorkflow>('POST', '/workflows/save', body);
     } catch (error) {
       throw new Error(`Failed to create workflow: ${(error as Error).message}`);
     }
@@ -532,7 +532,7 @@ export const deleteWorkflow = tool({
       if (!input.workflowId) {
         throw new Error('workflowId is required and must be non-empty');
       }
-      return await agntRequest<AgntDeleteResult>('DELETE', `/api/workflows/${input.workflowId}`);
+      return await agntRequest<AgntDeleteResult>('DELETE', `/workflows/${input.workflowId}`);
     } catch (error) {
       throw new Error(`Failed to delete workflow: ${(error as Error).message}`);
     }
@@ -579,11 +579,7 @@ export const startWorkflow = tool({
         }
       }
 
-      return await agntRequest<AgntExecution>(
-        'POST',
-        `/api/workflows/${input.workflowId}/start`,
-        body
-      );
+      return await agntRequest<AgntExecution>('POST', `/workflows/${input.workflowId}/start`, body);
     } catch (error) {
       throw new Error(`Failed to start workflow: ${(error as Error).message}`);
     }
@@ -614,10 +610,7 @@ export const stopWorkflow = tool({
       if (!input.workflowId) {
         throw new Error('workflowId is required and must be non-empty');
       }
-      return await agntRequest<AgntWorkflowStatus>(
-        'POST',
-        `/api/workflows/${input.workflowId}/stop`
-      );
+      return await agntRequest<AgntWorkflowStatus>('POST', `/workflows/${input.workflowId}/stop`);
     } catch (error) {
       throw new Error(`Failed to stop workflow: ${(error as Error).message}`);
     }
@@ -649,10 +642,7 @@ export const getWorkflowStatus = tool({
       if (!input.workflowId) {
         throw new Error('workflowId is required and must be non-empty');
       }
-      return await agntRequest<AgntWorkflowStatus>(
-        'GET',
-        `/api/workflows/${input.workflowId}/status`
-      );
+      return await agntRequest<AgntWorkflowStatus>('GET', `/workflows/${input.workflowId}/status`);
     } catch (error) {
       throw new Error(`Failed to get workflow status: ${(error as Error).message}`);
     }
@@ -701,7 +691,7 @@ export const generateWorkflow = tool({
       if (input.provider !== undefined) body.provider = input.provider;
       if (input.model !== undefined) body.model = input.model;
 
-      return await agntRequest<AgntGenerateResult>('POST', '/api/streams/generate-workflow', body);
+      return await agntRequest<AgntGenerateResult>('POST', '/streams/generate-workflow', body);
     } catch (error) {
       throw new Error(`Failed to generate workflow: ${(error as Error).message}`);
     }
@@ -748,7 +738,7 @@ export const generateAgent = tool({
       if (input.provider !== undefined) body.provider = input.provider;
       if (input.model !== undefined) body.model = input.model;
 
-      return await agntRequest<AgntGenerateResult>('POST', '/api/streams/generate-agent', body);
+      return await agntRequest<AgntGenerateResult>('POST', '/streams/generate-agent', body);
     } catch (error) {
       throw new Error(`Failed to generate agent: ${(error as Error).message}`);
     }
@@ -772,7 +762,7 @@ export const listGoals = tool({
   }),
   async execute(_input: ListGoalsInput): Promise<AgntGoal[]> {
     try {
-      return await agntRequest<AgntGoal[]>('GET', '/api/goals/');
+      return await agntRequest<AgntGoal[]>('GET', '/goals/');
     } catch (error) {
       throw new Error(`Failed to list goals: ${(error as Error).message}`);
     }
@@ -832,7 +822,7 @@ export const createGoal = tool({
         }
       }
 
-      return await agntRequest<AgntGoal>('POST', '/api/goals/create', body);
+      return await agntRequest<AgntGoal>('POST', '/goals/create', body);
     } catch (error) {
       throw new Error(`Failed to create goal: ${(error as Error).message}`);
     }
@@ -864,7 +854,7 @@ export const executeGoal = tool({
       if (!input.goalId) {
         throw new Error('goalId is required and must be non-empty');
       }
-      return await agntRequest<AgntExecution>('POST', `/api/goals/${input.goalId}/execute`);
+      return await agntRequest<AgntExecution>('POST', `/goals/${input.goalId}/execute`);
     } catch (error) {
       throw new Error(`Failed to execute goal: ${(error as Error).message}`);
     }
@@ -895,7 +885,7 @@ export const getGoalStatus = tool({
       if (!input.goalId) {
         throw new Error('goalId is required and must be non-empty');
       }
-      return await agntRequest<AgntGoalStatus>('GET', `/api/goals/${input.goalId}/status`);
+      return await agntRequest<AgntGoalStatus>('GET', `/goals/${input.goalId}/status`);
     } catch (error) {
       throw new Error(`Failed to get goal status: ${(error as Error).message}`);
     }
@@ -926,7 +916,7 @@ export const deleteGoal = tool({
       if (!input.goalId) {
         throw new Error('goalId is required and must be non-empty');
       }
-      return await agntRequest<AgntDeleteResult>('DELETE', `/api/goals/${input.goalId}`);
+      return await agntRequest<AgntDeleteResult>('DELETE', `/goals/${input.goalId}`);
     } catch (error) {
       throw new Error(`Failed to delete goal: ${(error as Error).message}`);
     }
@@ -975,7 +965,7 @@ export const orchestratorChat = tool({
         }
       }
 
-      return await agntRequest<AgntOrchestratorResponse>('POST', '/api/orchestrator/chat', body);
+      return await agntRequest<AgntOrchestratorResponse>('POST', '/orchestrator/chat', body);
     } catch (error) {
       throw new Error(`Failed to chat with orchestrator: ${(error as Error).message}`);
     }
@@ -999,7 +989,7 @@ export const listExecutions = tool({
   }),
   async execute(_input: ListExecutionsInput): Promise<AgntExecution[]> {
     try {
-      return await agntRequest<AgntExecution[]>('GET', '/api/executions/');
+      return await agntRequest<AgntExecution[]>('GET', '/executions/');
     } catch (error) {
       throw new Error(`Failed to list executions: ${(error as Error).message}`);
     }
@@ -1031,7 +1021,7 @@ export const getExecution = tool({
       if (!input.executionId) {
         throw new Error('executionId is required and must be non-empty');
       }
-      return await agntRequest<AgntExecution>('GET', `/api/executions/${input.executionId}`);
+      return await agntRequest<AgntExecution>('GET', `/executions/${input.executionId}`);
     } catch (error) {
       throw new Error(`Failed to get execution: ${(error as Error).message}`);
     }
@@ -1055,7 +1045,7 @@ export const listCustomTools = tool({
   }),
   async execute(_input: ListCustomToolsInput): Promise<AgntCustomTool[]> {
     try {
-      return await agntRequest<AgntCustomTool[]>('GET', '/api/custom-tools/');
+      return await agntRequest<AgntCustomTool[]>('GET', '/custom-tools/');
     } catch (error) {
       throw new Error(`Failed to list custom tools: ${(error as Error).message}`);
     }
@@ -1120,7 +1110,7 @@ export const createCustomTool = tool({
         }
       }
 
-      return await agntRequest<AgntCustomTool>('POST', '/api/custom-tools/save', body);
+      return await agntRequest<AgntCustomTool>('POST', '/custom-tools/save', body);
     } catch (error) {
       throw new Error(`Failed to create custom tool: ${(error as Error).message}`);
     }
@@ -1151,7 +1141,7 @@ export const deleteCustomTool = tool({
       if (!input.toolId) {
         throw new Error('toolId is required and must be non-empty');
       }
-      return await agntRequest<AgntDeleteResult>('DELETE', `/api/custom-tools/${input.toolId}`);
+      return await agntRequest<AgntDeleteResult>('DELETE', `/custom-tools/${input.toolId}`);
     } catch (error) {
       throw new Error(`Failed to delete custom tool: ${(error as Error).message}`);
     }
