@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "3667dff97ac7",
+  "session_id": "d97f8efb-cd61-4886-8b15-80025211a722",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-17T22:04:33.215477Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "fc8787da-7373-4f73-9788-e48e7dcc7756",
+  "checkpoint_transcript_start": 763,
+  "transcript_lines_at_start": 763,
+  "token_usage": {
+    "input_tokens": 9,
+    "cache_creation_tokens": 7970,
+    "cache_read_tokens": 977853,
+    "output_tokens": 1676,
+    "api_call_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-17T22:04:32.65597Z",
+    "agent_lines": 60,
+    "human_added": 461,
+    "human_modified": 2,
+    "human_removed": 0,
+    "total_committed": 523,
+    "agent_percentage": 11.47227533460803
+  }
+}
