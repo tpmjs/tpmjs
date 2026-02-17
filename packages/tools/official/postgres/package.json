@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-postgres",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "PostgreSQL tools for AI agents. Schema introspection, query execution, data operations, and database monitoring via direct pg connection.",
   "type": "module",
   "keywords": [
