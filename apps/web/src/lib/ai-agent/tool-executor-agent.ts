@@ -152,7 +152,13 @@ export function createToolDefinition(
           executionTimeMs: result.executionTimeMs,
           params: JSON.stringify(params).slice(0, 200),
         });
-        throw new Error(result.error || 'Package execution failed');
+        // Return error as structured result instead of throwing so the full error
+        // is preserved in the tool result (persisted to DB and visible in Copy JSON)
+        return {
+          error: result.error || 'Package execution failed',
+          success: false,
+          executionTimeMs: result.executionTimeMs,
+        };
       }
 
       console.log('[Tool execute] Success:', sanitizedName, {

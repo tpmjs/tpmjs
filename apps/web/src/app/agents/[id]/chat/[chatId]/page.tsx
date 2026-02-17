@@ -154,6 +154,22 @@ function ToolCallCard({
         />
       </Button>
 
+      {/* Error output always visible (no need to expand) */}
+      {toolCall.status === 'error' && toolCall.output !== undefined && toolCall.output !== null && (
+        <div className="border-t border-error/30 bg-error/5 p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Icon icon="alertCircle" size="xs" className="text-error" />
+            <span className="text-[10px] uppercase tracking-wider text-error font-medium">
+              Error
+            </span>
+            <div className="flex-1 h-px bg-error/20" />
+          </div>
+          <pre className="text-[11px] text-error overflow-x-auto whitespace-pre-wrap break-all max-h-64 overflow-y-auto">
+            {formatJson(toolCall.output)}
+          </pre>
+        </div>
+      )}
+
       {/* Expanded Content */}
       {isExpanded && (
         <div className="border-t border-border">
@@ -172,8 +188,10 @@ function ToolCallCard({
             </div>
           ) : null}
 
-          {/* Output Section */}
-          {toolCall.output !== undefined && toolCall.output !== null ? (
+          {/* Output Section (only for non-error, since errors are shown above) */}
+          {toolCall.status !== 'error' &&
+          toolCall.output !== undefined &&
+          toolCall.output !== null ? (
             <div className="p-3">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[10px] uppercase tracking-wider text-foreground-tertiary">
@@ -430,11 +448,15 @@ export default function PublicAgentChatPage(): React.ReactElement {
                 setExpandedToolCalls((prev) => new Set([...prev, data.toolCallId]));
                 break;
               case 'tool_result':
-                // Update tool call with result
+                // Update tool call with result (use error status when isError flag is set)
                 setToolCalls((prev) =>
                   prev.map((tc) =>
                     tc.toolCallId === data.toolCallId
-                      ? { ...tc, output: data.output, status: 'success' as const }
+                      ? {
+                          ...tc,
+                          output: data.output,
+                          status: data.isError ? ('error' as const) : ('success' as const),
+                        }
                       : tc
                   )
                 );
@@ -854,6 +876,12 @@ export default function PublicAgentChatPage(): React.ReactElement {
                         );
                       };
 
+                      // Detect if a tool result is an error
+                      const isToolError = (output: unknown): boolean => {
+                        if (output && typeof output === 'object' && 'error' in output) return true;
+                        return false;
+                      };
+
                       return (
                         <div className="px-4 py-2">
                           {/* TOOL message - shows the result of a tool call */}
@@ -866,7 +894,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
                                     toolName: message.toolName || 'Unknown Tool',
                                     input: getToolCallInput(message.toolCallId || ''),
                                     output: getToolOutput(),
-                                    status: 'success',
+                                    status: isToolError(getToolOutput()) ? 'error' : 'success',
                                   }}
                                   isExpanded={expandedToolCalls.has(
                                     message.toolCallId || message.id
