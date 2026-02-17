@@ -6663,6 +6663,78 @@
       "t": "feat",
       "s": "",
       "u": "replace card-based sandbox logs with terminal-style rendering"
+    },
+    {
+      "h": "c047f692ce84d84020dc0a6b5771109468ff748c",
+      "d": "2026-02-16",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "a61c8e51764628a7b98178a3893f06b25827b8ca",
+      "d": "2026-02-17",
+      "m": "fix: prevent timeline updates from triggering unnecessary Vercel builds",
+      "t": "fix",
+      "s": "",
+      "u": "prevent timeline updates from triggering unnecessary Vercel builds"
+    },
+    {
+      "h": "d1957a4f16897e0b21b7f97ef386433ac21e0ec9",
+      "d": "2026-02-17",
+      "m": "feat: remove terminal scroll constraints, auto-refresh logs, resizable panels",
+      "t": "feat",
+      "s": "",
+      "u": "remove terminal scroll constraints, auto-refresh logs, resizable panels"
+    },
+    {
+      "h": "1e2c7a477cb7253c1047e686dd99d1df6442de83",
+      "d": "2026-02-17",
+      "m": "feat: add visual workflow builder with drag-and-drop canvas",
+      "t": "feat",
+      "s": "",
+      "u": "add visual workflow builder with drag-and-drop canvas"
+    },
+    {
+      "h": "188bdbd947eb1b632ce8e498a5c5aa37c11d0130",
+      "d": "2026-02-17",
+      "m": "fix: show collections and tools in workflow node palette",
+      "t": "fix",
+      "s": "",
+      "u": "show collections and tools in workflow node palette"
+    },
+    {
+      "h": "6bea848bb697d28ac1d28fe5f95e6ac0258c99d0",
+      "d": "2026-02-17",
+      "m": "feat: add @tpmjs/official-agnt package with 74 agnt.gg tools",
+      "t": "feat",
+      "s": "",
+      "u": "add @tpmjs/official-agnt package with 74 agnt.gg tools"
+    },
+    {
+      "h": "ed6679655e8cf712e9dce14d12480f767ef79895",
+      "d": "2026-02-17",
+      "m": "fix: remove /api/ prefix from agnt.gg platform tool paths",
+      "t": "fix",
+      "s": "",
+      "u": "remove /api/ prefix from agnt.gg platform tool paths"
+    },
+    {
+      "h": "236c9d0acb93b1b16541933d7b432d4d85461f6b",
+      "d": "2026-02-17",
+      "m": "fix: wrap agnt API request bodies to match expected format",
+      "t": "fix",
+      "s": "",
+      "u": "wrap agnt API request bodies to match expected format"
+    },
+    {
+      "h": "34cbc5109c6b5ac4eea4cec63d09c577ced0ee95",
+      "d": "2026-02-17",
+      "m": "fix: use Deno.env.get() for env vars in agnt platform tools",
+      "t": "fix",
+      "s": "",
+      "u": "use Deno.env.get() for env vars in agnt platform tools"
     }
   ],
   "m": [
