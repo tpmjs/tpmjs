@@ -1,0 +1,441 @@
+git pull latest
+
+---
+
+when i write hi to my agent openrouter which uses the openrouter collection (thomasalwyndavis@gmail.com) i just get {
+  "_meta": {
+    "exportedAt": "2026-02-17T20:09:30.747Z",
+    "format": "tpmjs-conversation-log",
+    "version": "1.0"
+  },
+  "agent": {
+    "id": "cmlqycq89001zcstzbpkyt7t8",
+    "uid": "openrouter-agent",
+    "name": "OpenRouter Agent",
+    "provider": "OPENAI",
+    "modelId": "gpt-4.1-mini",
+    "executorType": null,
+    "executorConfig": null
+  },
+  "conversation": {
+    "id": "cmlr1e7mj0001le04z2mpq7xm",
+    "slug": "conv-1771358965191-von20gj82",
+    "title": "hi",
+    "createdAt": "2026-02-17T20:09:28.603Z",
+    "updatedAt": "2026-02-17T20:09:28.603Z",
+    "messageCount": 1
+  },
+  "messages": [
+    {
+      "id": "cmlr1e7nw0005le04hzqg9bme",
+      "role": "USER",
+      "content": "hi",
+      "toolCalls": null,
+      "toolCallId": null,
+      "toolName": null,
+      "toolResult": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "createdAt": "2026-02-17T20:09:28.652Z"
+    }
+  ],
+  "stats": {
+    "totalMessages": 1,
+    "userMessages": 1,
+    "assistantMessages": 0,
+    "toolResults": 0,
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0
+  }
+} No output generated. Check the stream for errors. and no real good debug information. fully dbeug it, and make sure in the future i can full debug information
+
+---
+
+<task-notification>
+<task-id>bbbdfd1</task-id>
+<output-file>/private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bbbdfd1.output</output-file>
+<status>completed</status>
+<summary>Background command "Run biome lint" completed (exit code 0)</summary>
+</task-notification>
+Read the output file to retrieve the result: /private/tmp/claude-501/-Users-ajaxdavis-repos-tpmjs-tpmjs/tasks/bbbdfd1.output
+
+---
+
+is it deployed
+
+---
+
+push my god
+
+---
+
+{
+  "_meta": {
+    "exportedAt": "2026-02-17T21:58:24.556Z",
+    "format": "tpmjs-conversation-log",
+    "version": "1.0"
+  },
+  "agent": {
+    "id": "cmlqycq89001zcstzbpkyt7t8",
+    "uid": "openrouter-agent",
+    "name": "OpenRouter Agent",
+    "provider": "OPENAI",
+    "modelId": "gpt-4.1-mini",
+    "executorType": null,
+    "executorConfig": null
+  },
+  "conversation": {
+    "id": "cmlr31e2h0003l204fe6wlyur",
+    "slug": "conv-1771361719758-3yzghquin",
+    "title": "hi",
+    "createdAt": "2026-02-17T20:55:29.658Z",
+    "updatedAt": "2026-02-17T20:55:29.658Z",
+    "messageCount": 2
+  },
+  "messages": [
+    {
+      "id": "cmlr31e2v0005l20443s49o4t",
+      "role": "USER",
+      "content": "hi",
+      "toolCalls": null,
+      "toolCallId": null,
+      "toolName": null,
+      "toolResult": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "createdAt": "2026-02-17T20:55:29.671Z"
+    },
+    {
+      "id": "cmlr5a2320001l504z20orpyo",
+      "role": "USER",
+      "content": "hi",
+      "toolCalls": null,
+      "toolCallId": null,
+      "toolName": null,
+      "toolResult": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "createdAt": "2026-02-17T21:58:13.263Z"
+    }
+  ],
+  "stats": {
+    "totalMessages": 2,
+    "userMessages": 2,
+    "assistantMessages": 0,
+    "toolResults": 0,
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0
+  }
+} No output generated. Check the stream for errors.
+
+debug details
+{
+  "name": "aB",
+  "agentId": "cmlqycq89001zcstzbpkyt7t8",
+  "provider": "OPENAI",
+  "model": "gpt-4.1-mini",
+  "toolCount": 33
+}
+stream config
+{
+  "provider": "OPENAI",
+  "model": "gpt-4.1-mini",
+  "toolCount": 33,
+  "toolNames": [
+    "tpmjs-tools-openrouter-assignGuardrailKeys",
+    "tpmjs-tools-openrouter-assignGuardrailMembers",
+    "tpmjs-tools-openrouter-chatCompletion",
+    "tpmjs-tools-openrouter-countModels",
+    "tpmjs-tools-openrouter-createApiKey",
+    "tpmjs-tools-openrouter-createCoinbaseCharge",
+    "tpmjs-tools-openrouter-createEmbedding",
+    "tpmjs-tools-openrouter-createGuardrail",
+    "tpmjs-tools-openrouter-createResponse",
+    "tpmjs-tools-openrouter-deleteApiKey",
+    "tpmjs-tools-openrouter-deleteGuardrail",
+    "tpmjs-tools-openrouter-getApiKey",
+    "tpmjs-tools-openrouter-getCredits",
+    "tpmjs-tools-openrouter-getCurrentApiKey",
+    "tpmjs-tools-openrouter-getGeneration",
+    "tpmjs-tools-openrouter-getGuardrail",
+    "tpmjs-tools-openrouter-getGuardrailKeys",
+    "tpmjs-tools-openrouter-getGuardrailMembers",
+    "tpmjs-tools-openrouter-getUserActivity",
+    "tpmjs-tools-openrouter-listApiKeys",
+    "tpmjs-tools-openrouter-listEmbeddingModels",
+    "tpmjs-tools-openrouter-listEndpoints",
+    "tpmjs-tools-openrouter-listGuardrailKeyAssignments",
+    "tpmjs-tools-openrouter-listGuardrailMemberAssignments",
+    "tpmjs-tools-openrouter-listGuardrails",
+    "tpmjs-tools-openrouter-listModels",
+    "tpmjs-tools-openrouter-listProviders",
+    "tpmjs-tools-openrouter-listUserModels",
+    "tpmjs-tools-openrouter-previewZdr",
+    "tpmjs-tools-openrouter-unassignGuardrailKeys",
+    "tpmjs-tools-openrouter-unassignGuardrailMembers",
+    "tpmjs-tools-openrouter-updateApiKey",
+    "tpmjs-tools-openrouter-updateGuardrail"
+  ],
+  "messageCount": 3,
+  "sandboxEnabled": false
+} the errors should be in the copy json outpout too
+
+---
+
+TPMJS
+Tools
+Collections
+Agents
+|
+Developers
+Resources
+|
+
+|
+Dashboard
+Agents
+Publish
+Menu
+
+Explore
+Tools
+Browse all tools
+Collections
+Discover curated tool sets
+Agents
+AI agents with tools
+Developers
+Documentation
+Guides and tutorials
+API Reference
+REST & MCP endpoints
+Custom Executors
+Deploy your own
+SDK
+Build with our SDK
+Specification
+TPMJS tool format
+Integrations
+Connect your tools
+Resources
+How It Works
+Learn the basics
+Compare
+TPMJS vs alternatives
+FAQ
+Common questions
+Changelog
+Latest updates
+Stats
+Platform metrics
+Style Guide
+UI components
+Theme
+
+Account
+Dashboard
+Your overview
+My Agents
+Manage your agents
+Collections
+Organize your tools
+API Keys
+Manage credentials
+Publish Tool
+Overview
+Activity
+Agents
+Collections
+Workflows
+Memories
+Settings
+Profile
+AI Provider Keys
+Platform API Keys
+Bridge
+Usage
+
+Likes
+Tools
+Collections
+Agents
+Admin
+Overview
+Users
+Ajax
+
+thomasalwyndavis@gmail.com
+
+OpenRouter Agent
+OpenAI / gpt-4.1-mini
+
+
+Tools
+
+Settings
+
+New Chat
+conversations
+
+hi
+
+2 messages
+
+
+hi
+
+1 messages
+
+
+hi
+
+1 messages
+
+
+hi
+
+1 messages
+
+
+do a chat completition to gpt-4o
+
+1 messages
+
+new conversation
+start chatting
+Send a message to start a conversation with OpenRouter Agent.
+
+No output generated. Check the stream for errors.
+
+debug details
+{
+  "type": "aB",
+  "message": "No output generated. Check the stream for errors.",
+  "agentId": "cmlqycq89001zcstzbpkyt7t8",
+  "provider": "OPENAI",
+  "model": "gpt-4.1-mini",
+  "toolCount": 33
+}
+stream config
+{
+  "provider": "OPENAI",
+  "model": "gpt-4.1-mini",
+  "toolCount": 33,
+  "toolNames": [
+    "tpmjs-tools-openrouter-assignGuardrailKeys",
+    "tpmjs-tools-openrouter-assignGuardrailMembers",
+    "tpmjs-tools-openrouter-chatCompletion",
+    "tpmjs-tools-openrouter-countModels",
+    "tpmjs-tools-openrouter-createApiKey",
+    "tpmjs-tools-openrouter-createCoinbaseCharge",
+    "tpmjs-tools-openrouter-createEmbedding",
+    "tpmjs-tools-openrouter-createGuardrail",
+    "tpmjs-tools-openrouter-createResponse",
+    "tpmjs-tools-openrouter-deleteApiKey",
+    "tpmjs-tools-openrouter-deleteGuardrail",
+    "tpmjs-tools-openrouter-getApiKey",
+    "tpmjs-tools-openrouter-getCredits",
+    "tpmjs-tools-openrouter-getCurrentApiKey",
+    "tpmjs-tools-openrouter-getGeneration",
+    "tpmjs-tools-openrouter-getGuardrail",
+    "tpmjs-tools-openrouter-getGuardrailKeys",
+    "tpmjs-tools-openrouter-getGuardrailMembers",
+    "tpmjs-tools-openrouter-getUserActivity",
+    "tpmjs-tools-openrouter-listApiKeys",
+    "tpmjs-tools-openrouter-listEmbeddingModels",
+    "tpmjs-tools-openrouter-listEndpoints",
+    "tpmjs-tools-openrouter-listGuardrailKeyAssignments",
+    "tpmjs-tools-openrouter-listGuardrailMemberAssignments",
+    "tpmjs-tools-openrouter-listGuardrails",
+    "tpmjs-tools-openrouter-listModels",
+    "tpmjs-tools-openrouter-listProviders",
+    "tpmjs-tools-openrouter-listUserModels",
+    "tpmjs-tools-openrouter-previewZdr",
+    "tpmjs-tools-openrouter-unassignGuardrailKeys",
+    "tpmjs-tools-openrouter-unassignGuardrailMembers",
+    "tpmjs-tools-openrouter-updateApiKey",
+    "tpmjs-tools-openrouter-updateGuardrail"
+  ],
+  "messageCount": 2,
+  "sandboxEnabled": false
+}
+Type a message...
+
+enter to send, shift+enter for new line
+
+available tools
+
+from collections (33)
+
+OpenRouter API
+33
+0 direct + 33 from collections
+© 2025 TPMJS. All rights reserved.
+
+Contact
+·
+Privacy
+·
+Terms
+·
+GitHub
+·
+Twitter
+ {
+  "_meta": {
+    "exportedAt": "2026-02-17T22:08:56.845Z",
+    "format": "tpmjs-conversation-log",
+    "version": "1.0"
+  },
+  "agent": {
+    "id": "cmlqycq89001zcstzbpkyt7t8",
+    "uid": "openrouter-agent",
+    "name": "OpenRouter Agent",
+    "provider": "OPENAI",
+    "modelId": "gpt-4.1-mini",
+    "executorType": null,
+    "executorConfig": null
+  },
+  "conversation": {
+    "id": "cmlr5mfr80001kw04uxzezdni",
+    "slug": "conv-1771366061836-jum1k1po3",
+    "title": "hi",
+    "createdAt": "2026-02-17T22:07:50.852Z",
+    "updatedAt": "2026-02-17T22:07:50.852Z",
+    "messageCount": 2
+  },
+  "messages": [
+    {
+      "id": "cmlr5mfrx0003kw049v898svt",
+      "role": "USER",
+      "content": "hi",
+      "toolCalls": null,
+      "toolCallId": null,
+      "toolName": null,
+      "toolResult": null,
+      "inputTokens": null,
+      "outputTokens": null,
+      "createdAt": "2026-02-17T22:07:50.877Z"
+    },
+    {
+      "id": "cmlr5mfy80007kw04rikzlfjx",
+      "role": "ASSISTANT",
+      "content": "[Error] No output generated. Check the stream for errors.",
+      "toolCalls": null,
+      "toolCallId": null,
+      "toolName": null,
+      "toolResult": null,
+      "inputTokens": 0,
+      "outputTokens": 0,
+      "createdAt": "2026-02-17T22:07:51.104Z"
+    }
+  ],
+  "stats": {
+    "totalMessages": 2,
+    "userMessages": 1,
+    "assistantMessages": 1,
+    "toolResults": 0,
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0
+  }
+} https://tpmjs.REDACTED?format=json what is going on, you can test this endpoint yourself too
