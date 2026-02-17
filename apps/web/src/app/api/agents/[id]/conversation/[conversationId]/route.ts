@@ -397,6 +397,10 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     // Build tools from agent configuration
     // Build tools - pass callerEnvVars if non-owner accessing public agent
     const tools = buildAgentTools(agent, callerEnvVars, sessionId, _sandboxUrl, _sandboxApiKey);
+    const toolCount = Object.keys(tools).length;
+    const toolNames = Object.keys(tools);
+
+    console.log('[Agent] Built tools:', { toolCount, toolNames, agentId: agent.id });
 
     // Get the provider model
     const model = await getProviderModel(agent.provider, agent.modelId, apiKey);
@@ -426,6 +430,16 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           }> = [];
           let inputTokens = 0;
           let outputTokens = 0;
+
+          // Send debug info so the client knows the stream configuration
+          sendEvent('debug', {
+            provider: agent.provider,
+            model: agent.modelId,
+            toolCount,
+            toolNames,
+            messageCount: messages.length,
+            sandboxEnabled: agent.sandboxEnabled,
+          });
 
           // Stream the response with agentic loop control
           const result = await streamText({
@@ -595,11 +609,37 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             totalTokens: inputTokens + outputTokens,
           });
 
+          // Warn if the response was completely empty (no text, no tool calls)
+          if (!fullContent && allToolCalls.length === 0) {
+            console.warn('[Agent] Empty response from model:', {
+              agentId: agent.id,
+              provider: agent.provider,
+              model: agent.modelId,
+              toolCount,
+              messageCount: messages.length,
+              inputTokens,
+              outputTokens,
+            });
+            sendEvent('warning', {
+              type: 'empty_response',
+              message: `Model returned no text and made no tool calls. This usually means the provider API returned an error that was silently handled, or the model had nothing to say. Provider: ${agent.provider}, Model: ${agent.modelId}, Tools: ${toolCount}`,
+              debug: {
+                inputTokens,
+                outputTokens,
+                toolCount,
+                provider: agent.provider,
+                model: agent.modelId,
+              },
+            });
+          }
+
           // Send completion event
           sendEvent('complete', {
             messageId: assistantMessage.id,
             conversationId: conversation.id,
             executionTimeMs,
+            hasContent: !!fullContent,
+            toolCallCount: allToolCalls.length,
           });
 
           // Track agent run execution event
@@ -632,15 +672,50 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             });
           }
         } catch (error) {
-          // Log detailed error for debugging
-          console.error('[Agent] Conversation stream error:', {
-            error: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
+          // Extract rich error details from provider SDK errors
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorName = error instanceof Error ? error.constructor.name : 'UnknownError';
+          const errorStack = error instanceof Error ? error.stack : undefined;
+
+          // AI SDK and provider errors often have additional properties
+          const errorDetails: Record<string, unknown> = {
+            name: errorName,
             agentId: agent.id,
-            conversationId: conversation.id,
+            provider: agent.provider,
+            model: agent.modelId,
+            toolCount,
+          };
+
+          // Extract HTTP status and response body from provider errors
+          // @ai-sdk/openai errors have statusCode, responseBody, etc.
+          const err = error as Record<string, unknown>;
+          if (err.statusCode) errorDetails.statusCode = err.statusCode;
+          if (err.status) errorDetails.status = err.status;
+          if (err.responseBody) errorDetails.responseBody = String(err.responseBody).slice(0, 1000);
+          if (err.url) errorDetails.url = err.url;
+          if (err.requestBodyValues)
+            errorDetails.requestBodyValues = JSON.stringify(err.requestBodyValues).slice(0, 500);
+          if (err.cause) {
+            const cause = err.cause as Record<string, unknown>;
+            errorDetails.cause = cause.message || String(err.cause);
+            if (cause.code) errorDetails.causeCode = cause.code;
+          }
+          if (err.data) errorDetails.data = err.data;
+          if (err.responseHeaders)
+            errorDetails.responseHeaders = JSON.stringify(err.responseHeaders).slice(0, 500);
+
+          // Log full error for server debugging
+          console.error('[Agent] Conversation stream error:', {
+            error: errorMessage,
+            stack: errorStack,
+            ...errorDetails,
           });
+
+          // Send rich error event to client
           sendEvent('error', {
-            message: error instanceof Error ? error.message : 'Unknown error',
+            message: errorMessage,
+            type: errorName,
+            details: errorDetails,
           });
 
           // Track agent run error

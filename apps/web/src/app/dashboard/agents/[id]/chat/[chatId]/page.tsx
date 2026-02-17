@@ -260,6 +260,9 @@ export default function AgentChatPage(): React.ReactElement {
   const [isSending, setIsSending] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<Record<string, unknown> | null>(null);
+  const [debugInfo, setDebugInfo] = useState<Record<string, unknown> | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
   const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
 
@@ -377,6 +380,9 @@ export default function AgentChatPage(): React.ReactElement {
     setIsSending(true);
     setStreamingContent('');
     setError(null);
+    setErrorDetails(null);
+    setDebugInfo(null);
+    setWarnings([]);
     setToolCalls([]);
 
     const conversationId = activeConversationId || chatId;
@@ -427,6 +433,14 @@ export default function AgentChatPage(): React.ReactElement {
             const data = JSON.parse(line.slice(6));
 
             switch (eventType) {
+              case 'debug':
+                setDebugInfo(data);
+                console.log('[Agent Chat] Stream debug:', data);
+                break;
+              case 'warning':
+                setWarnings((prev) => [...prev, data.message]);
+                console.warn('[Agent Chat] Stream warning:', data);
+                break;
               case 'chunk':
                 setStreamingContent((prev) => prev + data.text);
                 break;
@@ -457,8 +471,16 @@ export default function AgentChatPage(): React.ReactElement {
                 setStreamingContent('');
                 setToolCalls([]);
                 break;
-              case 'error':
+              case 'tokens':
+                console.log('[Agent Chat] Token usage:', data);
+                break;
+              case 'error': {
+                // Store structured error details for display
+                const details = data.details || {};
+                setErrorDetails(details);
+                console.error('[Agent Chat] Stream error:', data);
                 throw new Error(data.message);
+              }
             }
           }
         }
@@ -788,10 +810,42 @@ export default function AgentChatPage(): React.ReactElement {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Error Message */}
+          {/* Warnings */}
+          {warnings.length > 0 && (
+            <div className="px-4 py-2 bg-warning/10 border-t border-dashed border-warning/20">
+              {warnings.map((w, i) => (
+                <p key={i} className="text-xs text-warning font-mono">{w}</p>
+              ))}
+            </div>
+          )}
+
+          {/* Error Message with Debug Details */}
           {error && (
-            <div className="px-4 py-2 bg-error/10 border-t border-dashed border-error/20">
-              <p className="text-sm text-error font-mono">{error}</p>
+            <div className="px-4 py-3 bg-error/10 border-t border-dashed border-error/20 space-y-2">
+              <div className="flex items-center gap-2">
+                <Icon icon="alertCircle" size="xs" className="text-error flex-shrink-0" />
+                <p className="text-sm text-error font-mono font-semibold">{error}</p>
+              </div>
+              {errorDetails && Object.keys(errorDetails).length > 0 && (
+                <details className="text-xs font-mono">
+                  <summary className="text-error/70 cursor-pointer hover:text-error">
+                    debug details
+                  </summary>
+                  <pre className="mt-2 p-2 bg-error/5 rounded text-error/80 overflow-x-auto whitespace-pre-wrap break-all max-h-48 overflow-y-auto">
+                    {JSON.stringify(errorDetails, null, 2)}
+                  </pre>
+                </details>
+              )}
+              {debugInfo && (
+                <details className="text-xs font-mono">
+                  <summary className="text-error/70 cursor-pointer hover:text-error">
+                    stream config
+                  </summary>
+                  <pre className="mt-2 p-2 bg-error/5 rounded text-error/80 overflow-x-auto whitespace-pre-wrap break-all max-h-32 overflow-y-auto">
+                    {JSON.stringify(debugInfo, null, 2)}
+                  </pre>
+                </details>
+              )}
             </div>
           )}
 
