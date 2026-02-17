@@ -1,5 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
+import { checkApiKeyRateLimit, getRateLimitHeaders } from '~/lib/api-keys/rate-limit';
 import { checkRateLimit, STRICT_RATE_LIMIT } from '~/lib/rate-limit';
 import { trackSearch } from '~/lib/tracking/search';
 
@@ -83,10 +85,26 @@ function calculateBM25(
 export async function GET(request: NextRequest) {
   console.log('🔎 [SEARCH API] Request received');
 
-  // Check rate limit (stricter limit for expensive search operations)
-  const rateLimitResponse = checkRateLimit(request, STRICT_RATE_LIMIT);
-  if (rateLimitResponse) {
-    return rateLimitResponse;
+  // --- Auth (optional) ---
+  const authResult = await authenticateRequest();
+  const isAuthenticated = authResult.authenticated && !!authResult.userId;
+
+  // --- Rate Limiting ---
+  if (isAuthenticated && authResult.userId) {
+    const identifier = authResult.apiKeyId || authResult.userId;
+    const rateResult = await checkApiKeyRateLimit(identifier, authResult.tier || 'FREE');
+    if (!rateResult.allowed) {
+      return NextResponse.json(
+        { success: false, error: { code: 'RATE_LIMIT_EXCEEDED', message: 'Rate limit exceeded' } },
+        {
+          status: 429,
+          headers: getRateLimitHeaders(rateResult),
+        }
+      );
+    }
+  } else {
+    const rateLimitResponse = checkRateLimit(request, STRICT_RATE_LIMIT);
+    if (rateLimitResponse) return rateLimitResponse;
   }
 
   const searchStart = performance.now();
@@ -236,49 +254,65 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Build rate limit headers for authenticated users
+    const responseHeaders: Record<string, string> = {};
+    if (isAuthenticated && authResult.userId) {
+      const identifier = authResult.apiKeyId || authResult.userId;
+      const rateStatus = await checkApiKeyRateLimit(identifier, authResult.tier || 'FREE');
+      Object.assign(responseHeaders, getRateLimitHeaders(rateStatus));
+    }
+
     // Format response to match existing /api/tools structure
-    return NextResponse.json({
-      success: true,
-      query,
-      filters: { category },
-      results: {
-        total: scoredResults.filter(({ score }) => score > 0).length,
-        returned: results.length,
-        tools: results.map(({ tool }) => ({
-          id: tool.id,
-          name: tool.name,
-          description: tool.description,
-          inputSchema: tool.inputSchema,
-          qualityScore: tool.qualityScore,
-          importHealth: tool.importHealth,
-          executionHealth: tool.executionHealth,
-          healthCheckError: tool.healthCheckError,
-          lastHealthCheck: tool.lastHealthCheck,
-          package: {
-            npmPackageName: tool.package.npmPackageName,
-            npmVersion: tool.package.npmVersion,
-            category: tool.package.category,
-            frameworks: tool.package.frameworks,
-            env: tool.package.env,
-            npmRepository: tool.package.npmRepository,
-            isOfficial: tool.package.isOfficial,
-            npmDownloadsLastMonth: tool.package.npmDownloadsLastMonth,
-          },
-          importUrl: `https://esm.sh/${tool.package.npmPackageName}@${tool.package.npmVersion}`,
-          cdnUrl: `https://cdn.jsdelivr.net/npm/${tool.package.npmPackageName}@${tool.package.npmVersion}/+esm`,
-        })),
+    return NextResponse.json(
+      {
+        success: true,
+        query,
+        filters: { category },
+        results: {
+          total: scoredResults.filter(({ score }) => score > 0).length,
+          returned: results.length,
+          tools: results.map(({ tool }) => ({
+            id: tool.id,
+            toolId: `${tool.package.npmPackageName}::${tool.name}`,
+            name: tool.name,
+            description: tool.description,
+            inputSchema: tool.inputSchema,
+            qualityScore: tool.qualityScore,
+            importHealth: tool.importHealth,
+            executionHealth: tool.executionHealth,
+            healthCheckError: tool.healthCheckError,
+            lastHealthCheck: tool.lastHealthCheck,
+            package: {
+              npmPackageName: tool.package.npmPackageName,
+              npmVersion: tool.package.npmVersion,
+              category: tool.package.category,
+              frameworks: tool.package.frameworks,
+              env: tool.package.env,
+              npmRepository: tool.package.npmRepository,
+              isOfficial: tool.package.isOfficial,
+              npmDownloadsLastMonth: tool.package.npmDownloadsLastMonth,
+              npmKeywords: tool.package.npmKeywords,
+            },
+            importUrl: `https://esm.sh/${tool.package.npmPackageName}@${tool.package.npmVersion}`,
+            cdnUrl: `https://cdn.jsdelivr.net/npm/${tool.package.npmPackageName}@${tool.package.npmVersion}/+esm`,
+          })),
+        },
+        pagination: {
+          limit,
+          hasMore,
+        },
       },
-      pagination: {
-        limit,
-        hasMore,
-      },
-    });
+      { headers: responseHeaders }
+    );
   } catch (error) {
     console.error('❌ [SEARCH API] Error:', error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Search failed',
+        error: {
+          code: 'SEARCH_ERROR',
+          message: error instanceof Error ? error.message : 'Search failed',
+        },
       },
       { status: 500 }
     );

@@ -141,7 +141,10 @@ const SendMessageSchema = z.object({
 });
 
 // Executor service URL
-const EXECUTOR_URL = process.env.TPMJS_EXECUTOR_URL || 'https://executor.tpmjs.com';
+const EXECUTOR_URL =
+  process.env.TPMJS_EXECUTOR_URL ||
+  process.env.RAILWAY_EXECUTOR_URL ||
+  'https://executor.tpmjs.com';
 
 // In-memory conversation state for dynamically loaded tools
 // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
