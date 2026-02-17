@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "d262821bc9ab",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/lib/ai-agent/tool-executor-agent.ts",
+    "packages/tools/official/agnt-dropbox/src/index.ts",
+    "packages/tools/official/agnt-openai-tts/src/index.ts",
+    "packages/tools/official/agnt-stripe-invoice/src/index.ts",
+    "packages/tools/official/agnt-twitter/src/index.ts",
+    "packages/tools/official/agnt-youtube/src/index.ts",
+    "packages/tools/official/agnt/README.md",
+    "packages/tools/official/agnt/package.json",
+    "packages/tools/official/agnt/src/index.ts",
+    "packages/tools/official/agnt/src/platform.ts",
+    "packages/tools/official/agnt/src/youtube.ts",
+    "packages/tools/official/agnt/tsconfig.json",
+    "packages/tools/official/agnt/tsup.config.ts",
+    "packages/tools/official/blocks.yml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d2/62821bc9ab/0/metadata.json",
+      "transcript": "/d2/62821bc9ab/0/full.jsonl",
+      "context": "/d2/62821bc9ab/0/context.md",
+      "content_hash": "/d2/62821bc9ab/0/content_hash.txt",
+      "prompt": "/d2/62821bc9ab/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1140,
+    "cache_creation_tokens": 102666,
+    "cache_read_tokens": 7257287,
+    "output_tokens": 12318,
+    "api_call_count": 71
+  }
+}

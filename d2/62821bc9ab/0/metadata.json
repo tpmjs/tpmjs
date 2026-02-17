@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "d262821bc9ab",
+  "session_id": "5dfd6189-dead-49c2-bf77-84247314695e",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-17T07:13:45.688403Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/lib/ai-agent/tool-executor-agent.ts",
+    "packages/tools/official/agnt-dropbox/src/index.ts",
+    "packages/tools/official/agnt-openai-tts/src/index.ts",
+    "packages/tools/official/agnt-stripe-invoice/src/index.ts",
+    "packages/tools/official/agnt-twitter/src/index.ts",
+    "packages/tools/official/agnt-youtube/src/index.ts",
+    "packages/tools/official/agnt/README.md",
+    "packages/tools/official/agnt/package.json",
+    "packages/tools/official/agnt/src/index.ts",
+    "packages/tools/official/agnt/src/platform.ts",
+    "packages/tools/official/agnt/src/youtube.ts",
+    "packages/tools/official/agnt/tsconfig.json",
+    "packages/tools/official/agnt/tsup.config.ts",
+    "packages/tools/official/blocks.yml"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "6c852f58-7e2b-4a61-a05f-58ef47c94225",
+  "checkpoint_transcript_start": 3594,
+  "transcript_lines_at_start": 3594,
+  "token_usage": {
+    "input_tokens": 1140,
+    "cache_creation_tokens": 102666,
+    "cache_read_tokens": 7257287,
+    "output_tokens": 12318,
+    "api_call_count": 71
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-17T07:13:41.963069Z",
+    "agent_lines": 39,
+    "human_added": 459,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 499,
+    "agent_percentage": 7.8156312625250495
+  }
+}
