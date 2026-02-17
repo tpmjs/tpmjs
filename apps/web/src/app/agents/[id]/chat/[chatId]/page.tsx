@@ -445,6 +445,12 @@ export default function PublicAgentChatPage(): React.ReactElement {
                 setWarnings((prev) => [...prev, data.message]);
                 console.warn('[Agent Chat] Stream warning:', data);
                 break;
+              case 'stream_error':
+                // Actual provider error surfaced from the AI SDK fullStream
+                console.error('[Agent Chat] Provider stream error:', data);
+                setErrorDetails((prev) => ({ ...prev, streamError: data }));
+                setWarnings((prev) => [...prev, `Provider error: ${data.message}`]);
+                break;
               case 'chunk':
                 setStreamingContent((prev) => prev + data.text);
                 break;

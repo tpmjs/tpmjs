@@ -386,6 +386,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           }> = [];
           let inputTokens = 0;
           let outputTokens = 0;
+          const streamErrors: string[] = [];
 
           // Send debug info so the client knows the stream configuration
           sendEvent('debug', {
@@ -502,14 +503,41 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             },
           });
 
-          // Stream text chunks
-          for await (const chunk of result.textStream) {
-            fullContent += chunk;
-            sendEvent('chunk', { type: 'text', text: chunk });
+          // Consume the full stream to catch errors that textStream silently swallows.
+          // The AI SDK's textStream only yields text chunks and hides provider errors,
+          // causing a generic "No output generated" when the actual error is e.g. a 401.
+          for await (const part of result.fullStream) {
+            if (part.type === 'text-delta') {
+              fullContent += part.text;
+              sendEvent('chunk', { type: 'text', text: part.text });
+            } else if (part.type === 'error') {
+              // This is the actual provider error (e.g. 401, 429, invalid model)
+              const streamError = part.error;
+              const errMsg = streamError instanceof Error ? streamError.message : String(streamError);
+              streamErrors.push(errMsg);
+              console.error('[Agent] Stream error part:', streamError);
+              sendEvent('stream_error', {
+                message: errMsg,
+                raw: JSON.stringify(streamError, Object.getOwnPropertyNames(streamError || {})).slice(0, 2000),
+              });
+            }
           }
 
-          // Get final response data
-          const finalUsage = await result.usage;
+          // Get final response data (may throw NoOutputGeneratedError if stream had 0 steps)
+          let finalUsage: { inputTokens?: number; outputTokens?: number } | undefined;
+          try {
+            finalUsage = await result.usage;
+          } catch (usageError) {
+            // If usage rejects with NoOutputGeneratedError, the real error was already
+            // captured via the fullStream 'error' part above. Log but don't re-throw.
+            const cause = usageError instanceof Error ? (usageError as { cause?: unknown }).cause : undefined;
+            const causeMsg = cause instanceof Error ? cause.message : cause ? String(cause) : undefined;
+            if (causeMsg) streamErrors.push(causeMsg);
+            console.warn('[Agent] Usage rejected (stream produced 0 steps):', {
+              error: usageError instanceof Error ? usageError.message : String(usageError),
+              cause: causeMsg,
+            });
+          }
 
           // Convert tool calls map to array for storage
           const allToolCalls = Array.from(toolCallsMap.values());
@@ -520,12 +548,17 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             outputTokens = finalUsage.outputTokens ?? outputTokens;
           }
 
+          // If there were stream errors and no content, save errors as the content
+          const savedContent = fullContent || (streamErrors.length > 0
+            ? `[Stream Error] ${streamErrors.join('\n')}`
+            : '');
+
           // Save assistant message FIRST (so it has earlier createdAt than tool results)
           const assistantMessage = await prisma.message.create({
             data: {
               conversationId: conversation.id,
               role: 'ASSISTANT',
-              content: fullContent,
+              content: savedContent,
               // Cast to Prisma-compatible JSON type
               toolCalls:
                 allToolCalls.length > 0
@@ -567,6 +600,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
           // Warn if the response was completely empty (no text, no tool calls)
           if (!fullContent && allToolCalls.length === 0) {
+            const streamErrorSummary = streamErrors.length > 0
+              ? `\nStream errors: ${streamErrors.join('; ')}`
+              : '';
             console.warn('[Agent] Empty response from model:', {
               agentId: agent.id,
               provider: agent.provider,
@@ -575,16 +611,18 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
               messageCount: messages.length,
               inputTokens,
               outputTokens,
+              streamErrors,
             });
             sendEvent('warning', {
               type: 'empty_response',
-              message: `Model returned no text and made no tool calls. This usually means the provider API returned an error that was silently handled, or the model had nothing to say. Provider: ${agent.provider}, Model: ${agent.modelId}, Tools: ${toolCount}`,
+              message: `Model returned no text and made no tool calls.${streamErrorSummary} Provider: ${agent.provider}, Model: ${agent.modelId}, Tools: ${toolCount}`,
               debug: {
                 inputTokens,
                 outputTokens,
                 toolCount,
                 provider: agent.provider,
                 model: agent.modelId,
+                streamErrors,
               },
             });
           }

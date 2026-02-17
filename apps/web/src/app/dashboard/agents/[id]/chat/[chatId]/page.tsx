@@ -441,6 +441,12 @@ export default function AgentChatPage(): React.ReactElement {
                 setWarnings((prev) => [...prev, data.message]);
                 console.warn('[Agent Chat] Stream warning:', data);
                 break;
+              case 'stream_error':
+                // Actual provider error surfaced from the AI SDK fullStream
+                console.error('[Agent Chat] Provider stream error:', data);
+                setErrorDetails((prev) => ({ ...prev, streamError: data }));
+                setWarnings((prev) => [...prev, `Provider error: ${data.message}`]);
+                break;
               case 'chunk':
                 setStreamingContent((prev) => prev + data.text);
                 break;
@@ -814,7 +820,9 @@ export default function AgentChatPage(): React.ReactElement {
           {warnings.length > 0 && (
             <div className="px-4 py-2 bg-warning/10 border-t border-dashed border-warning/20">
               {warnings.map((w, i) => (
-                <p key={i} className="text-xs text-warning font-mono">{w}</p>
+                <p key={i} className="text-xs text-warning font-mono">
+                  {w}
+                </p>
               ))}
             </div>
           )}
