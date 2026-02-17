@@ -1,0 +1,149 @@
+{
+  "name": "@tpmjs/tools-postgres",
+  "version": "0.1.0",
+  "description": "PostgreSQL tools for AI agents. Schema introspection, query execution, data operations, and database monitoring via direct pg connection.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "postgres",
+    "postgresql",
+    "database",
+    "sql",
+    "agent"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@tpmjs/tool-test-utils": "workspace:*",
+    "@types/pg": "^8.11.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "ai": "6.0.49",
+    "pg": "^8.13.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/postgres"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ops",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "testConnection",
+        "description": "Test connectivity. Returns server version, current database, user, and latency."
+      },
+      {
+        "name": "getDatabaseInfo",
+        "description": "Database metadata: size, encoding, collation, active connections."
+      },
+      {
+        "name": "listSchemas",
+        "description": "List schemas, filtering pg_* and information_schema by default."
+      },
+      {
+        "name": "listTables",
+        "description": "Tables in a schema with row count estimates, size, and description."
+      },
+      {
+        "name": "describeTable",
+        "description": "Full table structure: columns, PK, FKs, indexes, constraints, checks."
+      },
+      {
+        "name": "listColumns",
+        "description": "Columns with types, nullability, defaults, and descriptions."
+      },
+      {
+        "name": "listIndexes",
+        "description": "Indexes: name, columns, unique, type, size, usage stats."
+      },
+      {
+        "name": "listConstraints",
+        "description": "PKs, FKs, unique, check, exclusion constraints."
+      },
+      {
+        "name": "listViews",
+        "description": "Views and materialized views with definitions."
+      },
+      {
+        "name": "listFunctions",
+        "description": "User-defined functions with signatures and return types."
+      },
+      {
+        "name": "listEnums",
+        "description": "Enum types with their values."
+      },
+      {
+        "name": "executeQuery",
+        "description": "Execute SQL with parameterized queries. Row limit (default 100), 30s timeout."
+      },
+      {
+        "name": "explainQuery",
+        "description": "EXPLAIN ANALYZE with costs, actual times, buffers."
+      },
+      {
+        "name": "insertRows",
+        "description": "Insert rows into a table. Parameterized values."
+      },
+      {
+        "name": "updateRows",
+        "description": "Update rows with WHERE clause (required). Returns affected count."
+      },
+      {
+        "name": "deleteRows",
+        "description": "Delete rows with WHERE clause (required). Returns affected count."
+      },
+      {
+        "name": "getTableStats",
+        "description": "Live/dead tuples, seq/index scans, last vacuum/analyze."
+      },
+      {
+        "name": "getTableSize",
+        "description": "Size breakdown: table, index, toast, total."
+      },
+      {
+        "name": "listActiveQueries",
+        "description": "Running queries: PID, duration, state, query text."
+      },
+      {
+        "name": "listLocks",
+        "description": "Current locks: relation, mode, granted, blocking info."
+      },
+      {
+        "name": "listExtensions",
+        "description": "Installed and available extensions."
+      },
+      {
+        "name": "getVersion",
+        "description": "Postgres server version details."
+      }
+    ]
+  }
+}

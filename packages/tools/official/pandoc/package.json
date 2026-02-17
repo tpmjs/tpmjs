@@ -1,0 +1,71 @@
+{
+  "name": "@tpmjs/tools-pandoc",
+  "version": "0.1.0",
+  "description": "Pandoc document conversion tools for AI agents. Convert between Markdown, HTML, LaTeX, DOCX, PDF, and dozens more formats.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "pandoc",
+    "document",
+    "conversion",
+    "markdown",
+    "agent"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "@tpmjs/tool-test-utils": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/pandoc"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "utilities",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "convert",
+        "description": "Convert content between document formats (Markdown, HTML, LaTeX, DOCX, etc.) using Pandoc."
+      },
+      {
+        "name": "listInputFormats",
+        "description": "List all supported Pandoc input formats."
+      },
+      {
+        "name": "listOutputFormats",
+        "description": "List all supported Pandoc output formats."
+      }
+    ]
+  }
+}
