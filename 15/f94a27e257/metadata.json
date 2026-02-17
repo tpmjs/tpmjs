@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "15f94a27e257",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "packages/tools/official/agnt-dropbox/src/index.ts",
+    "packages/tools/official/agnt-openai-tts/src/index.ts",
+    "packages/tools/official/agnt-stripe-invoice/src/index.ts",
+    "packages/tools/official/agnt-twitter/src/index.ts",
+    "packages/tools/official/agnt-youtube/src/index.ts",
+    "packages/tools/official/agnt/README.md",
+    "packages/tools/official/agnt/package.json",
+    "packages/tools/official/agnt/src/dropbox.ts",
+    "packages/tools/official/agnt/src/firecrawl.ts",
+    "packages/tools/official/agnt/src/github.ts",
+    "packages/tools/official/agnt/src/gmail.ts",
+    "packages/tools/official/agnt/src/google-drive.ts",
+    "packages/tools/official/agnt/src/google-search.ts",
+    "packages/tools/official/agnt/src/google-sheets.ts",
+    "packages/tools/official/agnt/src/google-slides.ts",
+    "packages/tools/official/agnt/src/http-request.ts",
+    "packages/tools/official/agnt/src/index.ts",
+    "packages/tools/official/agnt/src/notion.ts",
+    "packages/tools/official/agnt/src/openai-tts.ts",
+    "packages/tools/official/agnt/src/platform.ts",
+    "packages/tools/official/agnt/src/stripe-invoice.ts",
+    "packages/tools/official/agnt/src/twitter.ts",
+    "packages/tools/official/agnt/src/unsplash.ts",
+    "packages/tools/official/agnt/src/youtube.ts",
+    "packages/tools/official/agnt/src/zapier-webhook.ts",
+    "packages/tools/official/agnt/tsconfig.json",
+    "packages/tools/official/agnt/tsup.config.ts",
+    "packages/tools/official/blocks.yml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/15/f94a27e257/0/metadata.json",
+      "transcript": "/15/f94a27e257/0/full.jsonl",
+      "context": "/15/f94a27e257/0/context.md",
+      "content_hash": "/15/f94a27e257/0/content_hash.txt",
+      "prompt": "/15/f94a27e257/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 290,
+    "cache_creation_tokens": 120787,
+    "cache_read_tokens": 12573764,
+    "output_tokens": 27120,
+    "api_call_count": 114
+  }
+}
