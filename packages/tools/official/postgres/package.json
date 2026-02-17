@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@tpmjs/tool-test-utils": "workspace:*",
     "@types/pg": "^8.11.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",

@@ -1,6 +1,15 @@
-import { assertValidTool } from '@tpmjs/tool-test-utils';
 import { describe, expect, it } from 'vitest';
 import { convert, listInputFormats, listOutputFormats } from './index.js';
+
+function assertValidTool(tool: any, name: string): void {
+  if (!tool) throw new Error(`Tool "${name}" is undefined`);
+  if (typeof tool.execute !== 'function')
+    throw new Error(`Tool "${name}" missing execute function`);
+  if (!tool.description || typeof tool.description !== 'string')
+    throw new Error(`Tool "${name}" missing or invalid description`);
+  if (!tool.inputSchema && !tool.parameters)
+    throw new Error(`Tool "${name}" missing inputSchema/parameters`);
+}
 
 describe('pandoc tools', () => {
   it('convert has valid tool structure', () => {
