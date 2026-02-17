@@ -236,14 +236,18 @@ export const createAgent = tool({
         throw new Error('name is required and must be non-empty');
       }
 
-      const body: Record<string, unknown> = { name: input.name };
-      if (input.description !== undefined) body.description = input.description;
-      if (input.model !== undefined) body.model = input.model;
-      if (input.provider !== undefined) body.provider = input.provider;
-      if (input.systemPrompt !== undefined) body.systemPrompt = input.systemPrompt;
+      const agent: Record<string, unknown> = {
+        name: input.name,
+        status: 'ACTIVE',
+        assignedTools: [],
+      };
+      if (input.description !== undefined) agent.description = input.description;
+      if (input.model !== undefined) agent.model = input.model;
+      if (input.provider !== undefined) agent.provider = input.provider;
+      if (input.systemPrompt !== undefined) agent.systemPrompt = input.systemPrompt;
       if (input.tools !== undefined) {
         try {
-          body.tools = JSON.parse(input.tools);
+          agent.assignedTools = JSON.parse(input.tools);
         } catch {
           throw new Error(
             'tools must be a valid JSON string representing an array of tool configurations'
@@ -251,7 +255,7 @@ export const createAgent = tool({
         }
       }
 
-      return await agntRequest<AgntAgent>('POST', '/agents/save', body);
+      return await agntRequest<AgntAgent>('POST', '/agents/save', { agent });
     } catch (error) {
       throw new Error(`Failed to create agent: ${(error as Error).message}`);
     }
@@ -296,15 +300,15 @@ export const updateAgent = tool({
         throw new Error('agentId is required and must be non-empty');
       }
 
-      const body: Record<string, unknown> = {};
-      if (input.name !== undefined) body.name = input.name;
-      if (input.description !== undefined) body.description = input.description;
-      if (input.model !== undefined) body.model = input.model;
-      if (input.provider !== undefined) body.provider = input.provider;
-      if (input.systemPrompt !== undefined) body.systemPrompt = input.systemPrompt;
+      const agent: Record<string, unknown> = {};
+      if (input.name !== undefined) agent.name = input.name;
+      if (input.description !== undefined) agent.description = input.description;
+      if (input.model !== undefined) agent.model = input.model;
+      if (input.provider !== undefined) agent.provider = input.provider;
+      if (input.systemPrompt !== undefined) agent.systemPrompt = input.systemPrompt;
       if (input.tools !== undefined) {
         try {
-          body.tools = JSON.parse(input.tools);
+          agent.assignedTools = JSON.parse(input.tools);
         } catch {
           throw new Error(
             'tools must be a valid JSON string representing an array of tool configurations'
@@ -312,7 +316,7 @@ export const updateAgent = tool({
         }
       }
 
-      return await agntRequest<AgntAgent>('PUT', `/agents/${input.agentId}`, body);
+      return await agntRequest<AgntAgent>('PUT', `/agents/${input.agentId}`, { agent });
     } catch (error) {
       throw new Error(`Failed to update agent: ${(error as Error).message}`);
     }
@@ -480,11 +484,11 @@ export const createWorkflow = tool({
         throw new Error('name is required and must be non-empty');
       }
 
-      const body: Record<string, unknown> = { name: input.name };
-      if (input.description !== undefined) body.description = input.description;
+      const workflow: Record<string, unknown> = { name: input.name };
+      if (input.description !== undefined) workflow.description = input.description;
       if (input.nodes !== undefined) {
         try {
-          body.nodes = JSON.parse(input.nodes);
+          workflow.nodes = JSON.parse(input.nodes);
         } catch {
           throw new Error(
             'nodes must be a valid JSON string representing an array of node objects'
@@ -493,7 +497,7 @@ export const createWorkflow = tool({
       }
       if (input.edges !== undefined) {
         try {
-          body.edges = JSON.parse(input.edges);
+          workflow.edges = JSON.parse(input.edges);
         } catch {
           throw new Error(
             'edges must be a valid JSON string representing an array of edge objects'
@@ -501,7 +505,7 @@ export const createWorkflow = tool({
         }
       }
 
-      return await agntRequest<AgntWorkflow>('POST', '/workflows/save', body);
+      return await agntRequest<AgntWorkflow>('POST', '/workflows/save', { workflow });
     } catch (error) {
       throw new Error(`Failed to create workflow: ${(error as Error).message}`);
     }
@@ -1090,27 +1094,26 @@ export const createCustomTool = tool({
         throw new Error('description is required and must be non-empty');
       }
 
-      const body: Record<string, unknown> = {
+      const customTool: Record<string, unknown> = {
         name: input.name,
         description: input.description,
       };
       if (input.schema !== undefined) {
         try {
-          body.schema = JSON.parse(input.schema);
+          customTool.schema = JSON.parse(input.schema);
         } catch {
           throw new Error('schema must be a valid JSON string');
         }
       }
       if (input.code !== undefined) {
         try {
-          body.code = JSON.parse(input.code);
+          customTool.code = JSON.parse(input.code);
         } catch {
-          // code may be a raw string, not JSON
-          body.code = input.code;
+          customTool.code = input.code;
         }
       }
 
-      return await agntRequest<AgntCustomTool>('POST', '/custom-tools/save', body);
+      return await agntRequest<AgntCustomTool>('POST', '/custom-tools/save', { tool: customTool });
     } catch (error) {
       throw new Error(`Failed to create custom tool: ${(error as Error).message}`);
     }
