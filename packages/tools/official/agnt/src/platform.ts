@@ -12,10 +12,21 @@ import { jsonSchema, tool } from 'ai';
 
 // ─── Client Infrastructure ──────────────────────────────────────────────────
 
+function getEnv(key: string): string | undefined {
+  // Support both Deno and Node.js environments
+  try {
+    // @ts-expect-error Deno global
+    if (typeof Deno !== 'undefined') return Deno.env.get(key);
+  } catch {
+    // fall through
+  }
+  return process.env[key];
+}
+
 function getConfig(): { apiUrl: string; apiKey: string } {
-  const apiUrl = process.env.AGNT_API_URL;
+  const apiUrl = getEnv('AGNT_API_URL');
   if (!apiUrl) throw new Error('AGNT_API_URL env var is required');
-  const apiKey = process.env.AGNT_API_KEY;
+  const apiKey = getEnv('AGNT_API_KEY');
   if (!apiKey) throw new Error('AGNT_API_KEY env var is required');
   return { apiUrl: apiUrl.replace(/\/$/, ''), apiKey };
 }
