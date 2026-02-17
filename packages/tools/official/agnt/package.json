@@ -1,0 +1,350 @@
+{
+  "name": "@tpmjs/official-agnt",
+  "version": "0.1.1",
+  "description": "Agnt.gg platform tools for AI agents. Manage agents, workflows, goals, and integrations with Google, GitHub, Stripe, Notion, Twitter, YouTube, Dropbox, and more.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "agnt",
+    "agent",
+    "workflow",
+    "ai"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/agnt"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "googleSearch",
+        "description": "Search the web using Google Custom Search API."
+      },
+      {
+        "name": "httpRequest",
+        "description": "Make HTTP requests to any API endpoint."
+      },
+      {
+        "name": "textToSpeech",
+        "description": "Convert text to speech using OpenAI TTS API."
+      },
+      {
+        "name": "createStripeInvoice",
+        "description": "Create and send a Stripe invoice."
+      },
+      {
+        "name": "searchPhotos",
+        "description": "Search for photos on Unsplash."
+      },
+      {
+        "name": "getRandomPhoto",
+        "description": "Get a random photo from Unsplash."
+      },
+      {
+        "name": "getPhoto",
+        "description": "Get details of a specific Unsplash photo."
+      },
+      {
+        "name": "firecrawlScrape",
+        "description": "Scrape a URL using Firecrawl."
+      },
+      {
+        "name": "triggerZapierWebhook",
+        "description": "Trigger a Zapier webhook."
+      },
+      {
+        "name": "createIssue",
+        "description": "Create a GitHub issue."
+      },
+      {
+        "name": "createPullRequest",
+        "description": "Create a GitHub pull request."
+      },
+      {
+        "name": "getRepoInfo",
+        "description": "Get GitHub repository information."
+      },
+      {
+        "name": "listPullRequests",
+        "description": "List GitHub pull requests."
+      },
+      {
+        "name": "getFileContent",
+        "description": "Get file content from GitHub."
+      },
+      {
+        "name": "listCommits",
+        "description": "List GitHub commits."
+      },
+      {
+        "name": "readSheet",
+        "description": "Read data from Google Sheets."
+      },
+      {
+        "name": "writeSheet",
+        "description": "Write data to Google Sheets."
+      },
+      {
+        "name": "appendSheet",
+        "description": "Append rows to Google Sheets."
+      },
+      {
+        "name": "clearSheet",
+        "description": "Clear a Google Sheets range."
+      },
+      {
+        "name": "notionSearch",
+        "description": "Search pages and databases in Notion."
+      },
+      {
+        "name": "notionQueryDatabase",
+        "description": "Query a Notion database."
+      },
+      {
+        "name": "notionGetPage",
+        "description": "Get a Notion page with content."
+      },
+      {
+        "name": "notionCreatePage",
+        "description": "Create a page in Notion."
+      },
+      {
+        "name": "postTweet",
+        "description": "Post a tweet to Twitter/X."
+      },
+      {
+        "name": "searchTweets",
+        "description": "Search tweets on Twitter/X."
+      },
+      {
+        "name": "getUserProfile",
+        "description": "Get a Twitter/X user profile."
+      },
+      {
+        "name": "getUserTweets",
+        "description": "Get tweets from a Twitter/X user."
+      },
+      {
+        "name": "searchVideos",
+        "description": "Search for YouTube videos."
+      },
+      {
+        "name": "getVideoDetails",
+        "description": "Get YouTube video details."
+      },
+      {
+        "name": "listChannelVideos",
+        "description": "List videos from a YouTube channel."
+      },
+      {
+        "name": "getTranscript",
+        "description": "Get a YouTube video transcript."
+      },
+      {
+        "name": "searchEmails",
+        "description": "Search Gmail emails."
+      },
+      {
+        "name": "readEmail",
+        "description": "Read the full content of a Gmail email by ID."
+      },
+      {
+        "name": "sendGmail",
+        "description": "Send an email via Gmail."
+      },
+      {
+        "name": "listFolder",
+        "description": "List files in a Dropbox folder."
+      },
+      {
+        "name": "uploadFile",
+        "description": "Upload a file to Dropbox."
+      },
+      {
+        "name": "downloadFile",
+        "description": "Download a file from Dropbox."
+      },
+      {
+        "name": "deleteFile",
+        "description": "Delete a file from Dropbox."
+      },
+      {
+        "name": "createFolder",
+        "description": "Create a Dropbox folder."
+      },
+      {
+        "name": "createSharedLink",
+        "description": "Create a Dropbox shared link."
+      },
+      {
+        "name": "listDriveFiles",
+        "description": "List Google Drive files."
+      },
+      {
+        "name": "uploadDriveFile",
+        "description": "Upload a file to Google Drive."
+      },
+      {
+        "name": "downloadDriveFile",
+        "description": "Download a file from Google Drive."
+      },
+      {
+        "name": "createDriveFolder",
+        "description": "Create a Google Drive folder."
+      },
+      {
+        "name": "shareDriveFile",
+        "description": "Share a Google Drive file."
+      },
+      {
+        "name": "createPresentation",
+        "description": "Create a Google Slides presentation."
+      },
+      {
+        "name": "getPresentation",
+        "description": "Get Google Slides presentation info."
+      },
+      {
+        "name": "addSlide",
+        "description": "Add a slide to Google Slides."
+      },
+      {
+        "name": "listAgents",
+        "description": "List all agnt agents."
+      },
+      {
+        "name": "getAgent",
+        "description": "Get agnt agent details."
+      },
+      {
+        "name": "createAgent",
+        "description": "Create an agnt agent."
+      },
+      {
+        "name": "updateAgent",
+        "description": "Update an agnt agent."
+      },
+      {
+        "name": "deleteAgent",
+        "description": "Delete an agnt agent."
+      },
+      {
+        "name": "chatWithAgent",
+        "description": "Chat with an agnt agent."
+      },
+      {
+        "name": "listWorkflows",
+        "description": "List agnt workflows."
+      },
+      {
+        "name": "getWorkflow",
+        "description": "Get agnt workflow details."
+      },
+      {
+        "name": "createWorkflow",
+        "description": "Create an agnt workflow."
+      },
+      {
+        "name": "deleteWorkflow",
+        "description": "Delete an agnt workflow."
+      },
+      {
+        "name": "startWorkflow",
+        "description": "Start an agnt workflow."
+      },
+      {
+        "name": "stopWorkflow",
+        "description": "Stop an agnt workflow."
+      },
+      {
+        "name": "getWorkflowStatus",
+        "description": "Get agnt workflow status."
+      },
+      {
+        "name": "generateWorkflow",
+        "description": "Generate an agnt workflow from description."
+      },
+      {
+        "name": "generateAgent",
+        "description": "Generate an agnt agent from description."
+      },
+      {
+        "name": "listGoals",
+        "description": "List all goals on the agnt platform."
+      },
+      {
+        "name": "createGoal",
+        "description": "Create an agnt goal."
+      },
+      {
+        "name": "executeGoal",
+        "description": "Execute an agnt goal."
+      },
+      {
+        "name": "getGoalStatus",
+        "description": "Get agnt goal status."
+      },
+      {
+        "name": "deleteGoal",
+        "description": "Delete an agnt goal."
+      },
+      {
+        "name": "orchestratorChat",
+        "description": "Chat with the agnt orchestrator."
+      },
+      {
+        "name": "listExecutions",
+        "description": "List agnt executions."
+      },
+      {
+        "name": "getExecution",
+        "description": "Get agnt execution details."
+      },
+      {
+        "name": "listCustomTools",
+        "description": "List agnt custom tools."
+      },
+      {
+        "name": "createCustomTool",
+        "description": "Create an agnt custom tool."
+      },
+      {
+        "name": "deleteCustomTool",
+        "description": "Delete an agnt custom tool."
+      }
+    ]
+  }
+}

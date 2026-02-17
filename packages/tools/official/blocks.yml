@@ -13849,6 +13849,1508 @@ blocks:
         description: "entries array with name, type, size"
         measures: [working_implementation, valid_output_structure, proper_error_handling]
 
+  # ---------------------------------------------------------------------------
+  # AGNT-GG Tools (ported from agnt.gg platform)
+  # ---------------------------------------------------------------------------
+
+  # --- Google Search ---
+  research.googleSearch:
+    type: utility
+    description: "Search the web using Google Custom Search API and return top results."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Google Custom Search API"
+    inputs:
+      - name: query
+        type: string
+        description: "Search query"
+      - name: numResults
+        type: number
+        optional: true
+        description: "Number of results (1-10)"
+      - name: sort
+        type: string
+        optional: true
+        description: "Sort order: date or relevance"
+    outputs:
+      - name: results
+        type: array
+        description: "Search results with title, link, snippet"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- HTTP Request ---
+  utilities.httpRequest:
+    type: utility
+    description: "Make an HTTP request to any API endpoint with configurable method, headers, and authentication."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must make configurable HTTP requests"
+    inputs:
+      - name: url
+        type: string
+        description: "API endpoint URL"
+      - name: method
+        type: string
+        description: "HTTP method: GET, POST, PUT, DELETE, PATCH"
+      - name: headers
+        type: string
+        optional: true
+        description: "HTTP headers as JSON string"
+      - name: body
+        type: string
+        optional: true
+        description: "Request body as JSON string"
+      - name: authType
+        type: string
+        optional: true
+        description: "Auth type: none, basic, bearer"
+      - name: authToken
+        type: string
+        optional: true
+        description: "Bearer token"
+      - name: username
+        type: string
+        optional: true
+        description: "Basic auth username"
+      - name: password
+        type: string
+        optional: true
+        description: "Basic auth password"
+      - name: query
+        type: string
+        optional: true
+        description: "Query parameters"
+    outputs:
+      - name: result
+        type: object
+        description: "Response with status, data, headers"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- OpenAI TTS ---
+  utilities.textToSpeech:
+    type: utility
+    description: "Convert text to speech audio using OpenAI's TTS API."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call OpenAI TTS API"
+    inputs:
+      - name: text
+        type: string
+        description: "Text to convert (max 4096 chars)"
+      - name: voice
+        type: string
+        optional: true
+        description: "Voice: alloy, echo, fable, onyx, nova, shimmer"
+      - name: speed
+        type: number
+        optional: true
+        description: "Speed 0.25-4.0"
+      - name: model
+        type: string
+        optional: true
+        description: "Model: tts-1 or tts-1-hd"
+    outputs:
+      - name: result
+        type: object
+        description: "Audio content as base64 with metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Stripe Invoice ---
+  finance.createStripeInvoice:
+    type: utility
+    description: "Create and send a Stripe invoice with support for single or multiple line items."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Stripe API to create and send invoices"
+    inputs:
+      - name: customerEmail
+        type: string
+        description: "Customer email"
+      - name: dueDate
+        type: string
+        description: "Due date YYYY-MM-DD"
+      - name: currency
+        type: string
+        optional: true
+        description: "Currency code: USD, EUR, GBP, JPY"
+      - name: description
+        type: string
+        optional: true
+        description: "Single item description"
+      - name: amount
+        type: number
+        optional: true
+        description: "Amount in cents"
+      - name: lineItems
+        type: string
+        optional: true
+        description: "JSON array of line items"
+    outputs:
+      - name: result
+        type: object
+        description: "Invoice details with URL and PDF link"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Unsplash ---
+  research.searchPhotos:
+    type: utility
+    description: "Search for photos on Unsplash by keyword query."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Unsplash API search/photos endpoint"
+    inputs:
+      - name: query
+        type: string
+        description: "Search query"
+      - name: page
+        type: number
+        optional: true
+        description: "Page number"
+      - name: perPage
+        type: number
+        optional: true
+        description: "Results per page (1-30)"
+      - name: orientation
+        type: string
+        optional: true
+        description: "landscape, portrait, squarish"
+      - name: orderBy
+        type: string
+        optional: true
+        description: "latest or relevant"
+    outputs:
+      - name: result
+        type: object
+        description: "Search results with photo URLs and metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  research.getRandomPhoto:
+    type: utility
+    description: "Get a random photo from Unsplash, optionally filtered by query."
+    path: "agnt"
+    inputs:
+      - name: query
+        type: string
+        optional: true
+        description: "Topic/keyword filter"
+      - name: orientation
+        type: string
+        optional: true
+        description: "landscape, portrait, squarish"
+      - name: count
+        type: number
+        optional: true
+        description: "Number of photos (1-30)"
+    outputs:
+      - name: result
+        type: object
+        description: "Random photo(s) with URLs and metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  research.getPhoto:
+    type: utility
+    description: "Get detailed information about a specific Unsplash photo by ID."
+    path: "agnt"
+    inputs:
+      - name: photoId
+        type: string
+        description: "Photo ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Photo details with URLs, EXIF, user info"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Firecrawl ---
+  web.firecrawlScrape:
+    type: utility
+    description: "Scrape a URL and extract content as markdown or HTML using Firecrawl."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Firecrawl API v1/scrape endpoint"
+    inputs:
+      - name: url
+        type: string
+        description: "URL to scrape"
+      - name: format
+        type: string
+        optional: true
+        description: "Output format: markdown or html"
+    outputs:
+      - name: result
+        type: object
+        description: "Scraped content with title and metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Zapier Webhook ---
+  ops.triggerZapierWebhook:
+    type: utility
+    description: "Send JSON data to a Zapier webhook URL to trigger Zap automations."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must POST JSON to Zapier webhook URL"
+    inputs:
+      - name: webhookUrl
+        type: string
+        description: "Zapier Catch Hook webhook URL"
+      - name: payload
+        type: string
+        description: "JSON data to send"
+    outputs:
+      - name: result
+        type: object
+        description: "Webhook trigger response"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- GitHub ---
+  engineering.createIssue:
+    type: utility
+    description: "Create a new issue in a GitHub repository."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call GitHub API POST /repos/{owner}/{repo}/issues"
+    inputs:
+      - name: owner
+        type: string
+        description: "Repository owner"
+      - name: repo
+        type: string
+        description: "Repository name"
+      - name: title
+        type: string
+        description: "Issue title"
+      - name: body
+        type: string
+        optional: true
+        description: "Issue body markdown"
+      - name: labels
+        type: string
+        optional: true
+        description: "Comma-separated labels"
+    outputs:
+      - name: result
+        type: object
+        description: "Created issue with number, URL, state"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  engineering.createPullRequest:
+    type: utility
+    description: "Create a new pull request in a GitHub repository."
+    path: "agnt"
+    inputs:
+      - name: owner
+        type: string
+        description: "Repository owner"
+      - name: repo
+        type: string
+        description: "Repository name"
+      - name: title
+        type: string
+        description: "PR title"
+      - name: head
+        type: string
+        description: "Source branch"
+      - name: base
+        type: string
+        optional: true
+        description: "Target branch (default: main)"
+      - name: body
+        type: string
+        optional: true
+        description: "PR description"
+    outputs:
+      - name: result
+        type: object
+        description: "Created PR with number, URL, state"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  engineering.getRepoInfo:
+    type: utility
+    description: "Get information about a GitHub repository."
+    path: "agnt"
+    inputs:
+      - name: owner
+        type: string
+        description: "Repository owner"
+      - name: repo
+        type: string
+        description: "Repository name"
+    outputs:
+      - name: result
+        type: object
+        description: "Repo info with stars, forks, language"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  engineering.listPullRequests:
+    type: utility
+    description: "List pull requests in a GitHub repository."
+    path: "agnt"
+    inputs:
+      - name: owner
+        type: string
+        description: "Repository owner"
+      - name: repo
+        type: string
+        description: "Repository name"
+      - name: state
+        type: string
+        optional: true
+        description: "Filter: open, closed, all"
+      - name: perPage
+        type: number
+        optional: true
+        description: "Results per page (1-100)"
+    outputs:
+      - name: result
+        type: array
+        description: "Pull request list"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  engineering.getFileContent:
+    type: utility
+    description: "Get the content of a file from a GitHub repository."
+    path: "agnt"
+    inputs:
+      - name: owner
+        type: string
+        description: "Repository owner"
+      - name: repo
+        type: string
+        description: "Repository name"
+      - name: path
+        type: string
+        description: "File path in repo"
+      - name: ref
+        type: string
+        optional: true
+        description: "Branch, tag, or commit SHA"
+    outputs:
+      - name: result
+        type: object
+        description: "File content with metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  engineering.listCommits:
+    type: utility
+    description: "List recent commits in a GitHub repository."
+    path: "agnt"
+    inputs:
+      - name: owner
+        type: string
+        description: "Repository owner"
+      - name: repo
+        type: string
+        description: "Repository name"
+      - name: perPage
+        type: number
+        optional: true
+        description: "Number of commits (1-100)"
+      - name: sha
+        type: string
+        optional: true
+        description: "Branch name or SHA"
+    outputs:
+      - name: result
+        type: array
+        description: "Commit list with SHA, message, author"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Google Sheets ---
+  data.readSheet:
+    type: utility
+    description: "Read data from a Google Sheets range."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Google Sheets API GET values endpoint"
+    inputs:
+      - name: spreadsheetId
+        type: string
+        description: "Google Sheet ID"
+      - name: range
+        type: string
+        description: "Cell range e.g. Sheet1!A1:B5"
+    outputs:
+      - name: result
+        type: object
+        description: "Sheet data with values array"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.writeSheet:
+    type: utility
+    description: "Write data to a Google Sheets range."
+    path: "agnt"
+    inputs:
+      - name: spreadsheetId
+        type: string
+        description: "Google Sheet ID"
+      - name: range
+        type: string
+        description: "Cell range"
+      - name: values
+        type: string
+        description: "JSON array of arrays"
+    outputs:
+      - name: result
+        type: object
+        description: "Update stats"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.appendSheet:
+    type: utility
+    description: "Append rows to a Google Sheet."
+    path: "agnt"
+    inputs:
+      - name: spreadsheetId
+        type: string
+        description: "Google Sheet ID"
+      - name: range
+        type: string
+        description: "Cell range"
+      - name: values
+        type: string
+        description: "JSON array of arrays"
+    outputs:
+      - name: result
+        type: object
+        description: "Append stats"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.clearSheet:
+    type: utility
+    description: "Clear data from a Google Sheets range."
+    path: "agnt"
+    inputs:
+      - name: spreadsheetId
+        type: string
+        description: "Google Sheet ID"
+      - name: range
+        type: string
+        description: "Cell range"
+    outputs:
+      - name: result
+        type: object
+        description: "Cleared range"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Notion ---
+  data.notionSearch:
+    type: utility
+    description: "Search for pages and databases in Notion."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Notion API search endpoint"
+    inputs:
+      - name: query
+        type: string
+        description: "Search query"
+      - name: filter
+        type: string
+        optional: true
+        description: "Filter: page or database"
+      - name: pageSize
+        type: number
+        optional: true
+        description: "Results per page"
+    outputs:
+      - name: result
+        type: object
+        description: "Search results"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.notionQueryDatabase:
+    type: utility
+    description: "Query a Notion database with optional filters and sorts."
+    path: "agnt"
+    inputs:
+      - name: databaseId
+        type: string
+        description: "Database ID"
+      - name: filter
+        type: string
+        optional: true
+        description: "JSON filter object"
+      - name: sorts
+        type: string
+        optional: true
+        description: "JSON sorts array"
+      - name: pageSize
+        type: number
+        optional: true
+        description: "Results per page"
+    outputs:
+      - name: result
+        type: object
+        description: "Query results"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.notionGetPage:
+    type: utility
+    description: "Get the content of a Notion page."
+    path: "agnt"
+    inputs:
+      - name: pageId
+        type: string
+        description: "Page ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Page with properties and content blocks"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.notionCreatePage:
+    type: utility
+    description: "Create a new page in a Notion database or as a child of another page."
+    path: "agnt"
+    inputs:
+      - name: parentId
+        type: string
+        description: "Parent database or page ID"
+      - name: title
+        type: string
+        description: "Page title"
+      - name: parentType
+        type: string
+        optional: true
+        description: "database or page"
+      - name: properties
+        type: string
+        optional: true
+        description: "JSON properties object"
+      - name: content
+        type: string
+        optional: true
+        description: "JSON content blocks"
+    outputs:
+      - name: result
+        type: object
+        description: "Created page with ID and URL"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Twitter ---
+  marketing.postTweet:
+    type: utility
+    description: "Post a new tweet to Twitter/X."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Twitter API v2 with OAuth 1.0a"
+    inputs:
+      - name: text
+        type: string
+        description: "Tweet text (max 280 chars)"
+      - name: replyToId
+        type: string
+        optional: true
+        description: "Tweet ID to reply to"
+    outputs:
+      - name: result
+        type: object
+        description: "Posted tweet with ID and URL"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  marketing.searchTweets:
+    type: utility
+    description: "Search for tweets on Twitter/X."
+    path: "agnt"
+    inputs:
+      - name: query
+        type: string
+        description: "Search query"
+      - name: maxResults
+        type: number
+        optional: true
+        description: "Max results (10-100)"
+      - name: sortOrder
+        type: string
+        optional: true
+        description: "recency or relevancy"
+    outputs:
+      - name: result
+        type: object
+        description: "Tweet search results"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  marketing.getUserProfile:
+    type: utility
+    description: "Get a Twitter/X user's profile information."
+    path: "agnt"
+    inputs:
+      - name: username
+        type: string
+        description: "Twitter username"
+    outputs:
+      - name: result
+        type: object
+        description: "User profile with metrics"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  marketing.getUserTweets:
+    type: utility
+    description: "Get recent tweets from a Twitter/X user."
+    path: "agnt"
+    inputs:
+      - name: userId
+        type: string
+        description: "Twitter user ID"
+      - name: maxResults
+        type: number
+        optional: true
+        description: "Max results (5-100)"
+    outputs:
+      - name: result
+        type: object
+        description: "User's tweets with metrics"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- YouTube ---
+  research.searchVideos:
+    type: utility
+    description: "Search for videos on YouTube."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call YouTube Data API v3 search endpoint"
+    inputs:
+      - name: query
+        type: string
+        description: "Search query"
+      - name: maxResults
+        type: number
+        optional: true
+        description: "Max results (1-50)"
+    outputs:
+      - name: result
+        type: object
+        description: "Video search results"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  research.getVideoDetails:
+    type: utility
+    description: "Get detailed information about a YouTube video."
+    path: "agnt"
+    inputs:
+      - name: videoId
+        type: string
+        description: "Video ID or URL"
+    outputs:
+      - name: result
+        type: object
+        description: "Video details with stats"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  research.listChannelVideos:
+    type: utility
+    description: "List recent videos from a YouTube channel."
+    path: "agnt"
+    inputs:
+      - name: channelId
+        type: string
+        description: "YouTube channel ID"
+      - name: maxResults
+        type: number
+        optional: true
+        description: "Max results (1-50)"
+    outputs:
+      - name: result
+        type: object
+        description: "Channel video list"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  research.getTranscript:
+    type: utility
+    description: "Get the transcript/captions of a YouTube video."
+    path: "agnt"
+    inputs:
+      - name: videoId
+        type: string
+        description: "Video ID or URL"
+    outputs:
+      - name: result
+        type: object
+        description: "Transcript text and segments"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Gmail ---
+  ops.searchEmails:
+    type: utility
+    description: "Search Gmail emails using Gmail search syntax."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Gmail API messages list endpoint"
+    inputs:
+      - name: query
+        type: string
+        description: "Gmail search query"
+      - name: maxResults
+        type: number
+        optional: true
+        description: "Max results"
+    outputs:
+      - name: result
+        type: object
+        description: "Email list with metadata"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  ops.readEmail:
+    type: utility
+    description: "Read the full content of a specific Gmail email."
+    path: "agnt"
+    inputs:
+      - name: messageId
+        type: string
+        description: "Gmail message ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Full email content"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  ops.sendGmail:
+    type: utility
+    description: "Send an email via Gmail."
+    path: "agnt"
+    inputs:
+      - name: to
+        type: string
+        description: "Recipient email"
+      - name: subject
+        type: string
+        description: "Email subject"
+      - name: body
+        type: string
+        description: "Email body"
+      - name: isHtml
+        type: boolean
+        optional: true
+        description: "Send as HTML"
+    outputs:
+      - name: result
+        type: object
+        description: "Sent message ID"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Dropbox ---
+  data.listFolder:
+    type: utility
+    description: "List files and folders in a Dropbox directory."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Dropbox API files/list_folder endpoint"
+    inputs:
+      - name: path
+        type: string
+        description: "Dropbox folder path"
+    outputs:
+      - name: result
+        type: object
+        description: "Folder entries"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.uploadDropboxFile:
+    type: utility
+    description: "Upload a file to Dropbox."
+    path: "agnt"
+    inputs:
+      - name: path
+        type: string
+        description: "Destination path"
+      - name: content
+        type: string
+        description: "File content"
+    outputs:
+      - name: result
+        type: object
+        description: "Upload result"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.downloadDropboxFile:
+    type: utility
+    description: "Download a file from Dropbox."
+    path: "agnt"
+    inputs:
+      - name: path
+        type: string
+        description: "File path"
+    outputs:
+      - name: result
+        type: object
+        description: "File content"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.deleteDropboxFile:
+    type: utility
+    description: "Delete a file or folder from Dropbox."
+    path: "agnt"
+    inputs:
+      - name: path
+        type: string
+        description: "Path to delete"
+    outputs:
+      - name: result
+        type: object
+        description: "Deletion result"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.createDropboxFolder:
+    type: utility
+    description: "Create a new folder in Dropbox."
+    path: "agnt"
+    inputs:
+      - name: path
+        type: string
+        description: "Folder path"
+    outputs:
+      - name: result
+        type: object
+        description: "Created folder"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.createDropboxSharedLink:
+    type: utility
+    description: "Create a shared link for a Dropbox file."
+    path: "agnt"
+    inputs:
+      - name: path
+        type: string
+        description: "File path"
+    outputs:
+      - name: result
+        type: object
+        description: "Shared link URL"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Google Drive ---
+  data.listDriveFiles:
+    type: utility
+    description: "List files in a Google Drive folder."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Google Drive API files list endpoint"
+    inputs:
+      - name: folderId
+        type: string
+        optional: true
+        description: "Folder ID (default: root)"
+      - name: pageSize
+        type: number
+        optional: true
+        description: "Results per page"
+      - name: query
+        type: string
+        optional: true
+        description: "Drive search query"
+    outputs:
+      - name: result
+        type: object
+        description: "File list"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.uploadDriveFile:
+    type: utility
+    description: "Upload a file to Google Drive."
+    path: "agnt"
+    inputs:
+      - name: name
+        type: string
+        description: "File name"
+      - name: content
+        type: string
+        description: "File content"
+      - name: folderId
+        type: string
+        optional: true
+        description: "Parent folder ID"
+      - name: mimeType
+        type: string
+        optional: true
+        description: "MIME type"
+    outputs:
+      - name: result
+        type: object
+        description: "Uploaded file info"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.downloadDriveFile:
+    type: utility
+    description: "Download a file from Google Drive."
+    path: "agnt"
+    inputs:
+      - name: fileId
+        type: string
+        description: "File ID"
+    outputs:
+      - name: result
+        type: object
+        description: "File content"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.createDriveFolder:
+    type: utility
+    description: "Create a new folder in Google Drive."
+    path: "agnt"
+    inputs:
+      - name: name
+        type: string
+        description: "Folder name"
+      - name: parentId
+        type: string
+        optional: true
+        description: "Parent folder ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Created folder"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.shareDriveFile:
+    type: utility
+    description: "Share a Google Drive file with another user."
+    path: "agnt"
+    inputs:
+      - name: fileId
+        type: string
+        description: "File ID"
+      - name: email
+        type: string
+        description: "Recipient email"
+      - name: role
+        type: string
+        optional: true
+        description: "reader, writer, commenter"
+    outputs:
+      - name: result
+        type: object
+        description: "Permission result"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Google Slides ---
+  data.createPresentation:
+    type: utility
+    description: "Create a new Google Slides presentation."
+    path: "agnt"
+    domain_rules:
+      - id: api_integration
+        description: "Must call Google Slides API"
+    inputs:
+      - name: title
+        type: string
+        description: "Presentation title"
+    outputs:
+      - name: result
+        type: object
+        description: "Created presentation with ID and URL"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.getPresentation:
+    type: utility
+    description: "Get information about a Google Slides presentation."
+    path: "agnt"
+    inputs:
+      - name: presentationId
+        type: string
+        description: "Presentation ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Presentation info with slides"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  data.addSlide:
+    type: utility
+    description: "Add a new slide to a Google Slides presentation."
+    path: "agnt"
+    inputs:
+      - name: presentationId
+        type: string
+        description: "Presentation ID"
+      - name: layoutType
+        type: string
+        optional: true
+        description: "BLANK, TITLE, TITLE_AND_BODY"
+      - name: title
+        type: string
+        optional: true
+        description: "Slide title text"
+      - name: body
+        type: string
+        optional: true
+        description: "Slide body text"
+    outputs:
+      - name: result
+        type: object
+        description: "Added slide info"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Agnt Platform: Agents ---
+  agent.listAgents:
+    type: utility
+    description: "List all agents on the agnt platform."
+    path: "agnt"
+    inputs: []
+    outputs:
+      - name: result
+        type: AgntAgent[]
+        description: "List of agents"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.getAgent:
+    type: utility
+    description: "Get detailed information about a specific agnt agent."
+    path: "agnt"
+    inputs:
+      - name: agentId
+        type: string
+        description: "Agent ID"
+    outputs:
+      - name: result
+        type: AgntAgent
+        description: "Agent details"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.createAgent:
+    type: utility
+    description: "Create a new agent on the agnt platform."
+    path: "agnt"
+    inputs:
+      - name: name
+        type: string
+        description: "Agent name"
+      - name: description
+        type: string
+        optional: true
+        description: "Agent description"
+      - name: model
+        type: string
+        optional: true
+        description: "Model to use"
+      - name: provider
+        type: string
+        optional: true
+        description: "Model provider"
+      - name: systemPrompt
+        type: string
+        optional: true
+        description: "System prompt"
+      - name: tools
+        type: string
+        optional: true
+        description: "JSON array of tool configs"
+    outputs:
+      - name: result
+        type: AgntAgent
+        description: "Created agent"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.updateAgent:
+    type: utility
+    description: "Update an existing agnt agent."
+    path: "agnt"
+    inputs:
+      - name: agentId
+        type: string
+        description: "Agent ID"
+      - name: name
+        type: string
+        optional: true
+        description: "New name"
+      - name: description
+        type: string
+        optional: true
+        description: "New description"
+      - name: model
+        type: string
+        optional: true
+        description: "New model"
+      - name: systemPrompt
+        type: string
+        optional: true
+        description: "New system prompt"
+    outputs:
+      - name: result
+        type: AgntAgent
+        description: "Updated agent"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.deleteAgent:
+    type: utility
+    description: "Delete an agent from the agnt platform."
+    path: "agnt"
+    inputs:
+      - name: agentId
+        type: string
+        description: "Agent ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Deletion confirmation"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.chatWithAgent:
+    type: utility
+    description: "Send a chat message to an agnt agent and get a response."
+    path: "agnt"
+    inputs:
+      - name: agentId
+        type: string
+        description: "Agent ID"
+      - name: message
+        type: string
+        description: "Chat message"
+      - name: conversationId
+        type: string
+        optional: true
+        description: "Conversation ID for context"
+    outputs:
+      - name: result
+        type: AgntChatResponse
+        description: "Agent response"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Agnt Platform: Workflows ---
+  agent.listWorkflows:
+    type: utility
+    description: "List all workflows on the agnt platform."
+    path: "agnt"
+    inputs: []
+    outputs:
+      - name: result
+        type: AgntWorkflow[]
+        description: "List of workflows"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.getWorkflow:
+    type: utility
+    description: "Get detailed information about a specific agnt workflow."
+    path: "agnt"
+    inputs:
+      - name: workflowId
+        type: string
+        description: "Workflow ID"
+    outputs:
+      - name: result
+        type: AgntWorkflow
+        description: "Workflow details"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.createWorkflow:
+    type: utility
+    description: "Create a new workflow on the agnt platform."
+    path: "agnt"
+    inputs:
+      - name: name
+        type: string
+        description: "Workflow name"
+      - name: description
+        type: string
+        optional: true
+        description: "Workflow description"
+      - name: nodes
+        type: string
+        optional: true
+        description: "JSON array of workflow nodes"
+      - name: edges
+        type: string
+        optional: true
+        description: "JSON array of workflow edges"
+    outputs:
+      - name: result
+        type: AgntWorkflow
+        description: "Created workflow"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.deleteWorkflow:
+    type: utility
+    description: "Delete a workflow from the agnt platform."
+    path: "agnt"
+    inputs:
+      - name: workflowId
+        type: string
+        description: "Workflow ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Deletion confirmation"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.startWorkflow:
+    type: utility
+    description: "Start executing an agnt workflow."
+    path: "agnt"
+    inputs:
+      - name: workflowId
+        type: string
+        description: "Workflow ID"
+      - name: inputData
+        type: string
+        optional: true
+        description: "JSON input data for the workflow"
+    outputs:
+      - name: result
+        type: object
+        description: "Workflow start confirmation"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.stopWorkflow:
+    type: utility
+    description: "Stop a running agnt workflow."
+    path: "agnt"
+    inputs:
+      - name: workflowId
+        type: string
+        description: "Workflow ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Workflow stop confirmation"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.getWorkflowStatus:
+    type: utility
+    description: "Get the current status of an agnt workflow."
+    path: "agnt"
+    inputs:
+      - name: workflowId
+        type: string
+        description: "Workflow ID"
+    outputs:
+      - name: result
+        type: AgntWorkflowStatus
+        description: "Workflow status"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Agnt Platform: Generate ---
+  agent.generateWorkflow:
+    type: utility
+    description: "Generate an agnt workflow from a natural language description."
+    path: "agnt"
+    inputs:
+      - name: description
+        type: string
+        description: "Natural language description of the workflow"
+      - name: provider
+        type: string
+        optional: true
+        description: "AI provider to use"
+      - name: model
+        type: string
+        optional: true
+        description: "AI model to use"
+    outputs:
+      - name: result
+        type: AgntGenerateResult
+        description: "Generated workflow"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.generateAgent:
+    type: utility
+    description: "Generate an agnt agent from a natural language description."
+    path: "agnt"
+    inputs:
+      - name: description
+        type: string
+        description: "Natural language description of the agent"
+      - name: provider
+        type: string
+        optional: true
+        description: "AI provider to use"
+      - name: model
+        type: string
+        optional: true
+        description: "AI model to use"
+    outputs:
+      - name: result
+        type: AgntGenerateResult
+        description: "Generated agent"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Agnt Platform: Goals ---
+  agent.listGoals:
+    type: utility
+    description: "List all goals on the agnt platform."
+    path: "agnt"
+    inputs: []
+    outputs:
+      - name: result
+        type: AgntGoal[]
+        description: "List of goals"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.createGoal:
+    type: utility
+    description: "Create a new goal on the agnt platform."
+    path: "agnt"
+    inputs:
+      - name: name
+        type: string
+        description: "Goal name"
+      - name: description
+        type: string
+        description: "Goal description"
+      - name: agentId
+        type: string
+        optional: true
+        description: "Agent to assign"
+      - name: steps
+        type: string
+        optional: true
+        description: "JSON array of steps"
+    outputs:
+      - name: result
+        type: AgntGoal
+        description: "Created goal"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.executeGoal:
+    type: utility
+    description: "Execute an agnt goal."
+    path: "agnt"
+    inputs:
+      - name: goalId
+        type: string
+        description: "Goal ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Execution result"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.getGoalStatus:
+    type: utility
+    description: "Get the current status of an agnt goal."
+    path: "agnt"
+    inputs:
+      - name: goalId
+        type: string
+        description: "Goal ID"
+    outputs:
+      - name: result
+        type: AgntGoalStatus
+        description: "Goal status"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.deleteGoal:
+    type: utility
+    description: "Delete a goal from the agnt platform."
+    path: "agnt"
+    inputs:
+      - name: goalId
+        type: string
+        description: "Goal ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Deletion confirmation"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Agnt Platform: Orchestrator ---
+  agent.orchestratorChat:
+    type: utility
+    description: "Chat with the agnt orchestrator for multi-agent coordination."
+    path: "agnt"
+    inputs:
+      - name: message
+        type: string
+        description: "Chat message"
+      - name: context
+        type: string
+        optional: true
+        description: "JSON context object"
+    outputs:
+      - name: result
+        type: AgntOrchestratorResponse
+        description: "Orchestrator response"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Agnt Platform: Executions ---
+  agent.listExecutions:
+    type: utility
+    description: "List executions from the agnt platform."
+    path: "agnt"
+    inputs: []
+    outputs:
+      - name: result
+        type: AgntExecution[]
+        description: "List of executions"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.getExecution:
+    type: utility
+    description: "Get details of a specific agnt execution."
+    path: "agnt"
+    inputs:
+      - name: executionId
+        type: string
+        description: "Execution ID"
+    outputs:
+      - name: result
+        type: AgntExecution
+        description: "Execution details"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  # --- Agnt Platform: Custom Tools ---
+  agent.listCustomTools:
+    type: utility
+    description: "List custom tools on the agnt platform."
+    path: "agnt"
+    inputs: []
+    outputs:
+      - name: result
+        type: AgntCustomTool[]
+        description: "List of custom tools"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.createCustomTool:
+    type: utility
+    description: "Create a custom tool on the agnt platform."
+    path: "agnt"
+    inputs:
+      - name: name
+        type: string
+        description: "Tool name"
+      - name: description
+        type: string
+        description: "Tool description"
+      - name: schema
+        type: string
+        optional: true
+        description: "JSON schema definition"
+      - name: code
+        type: string
+        optional: true
+        description: "Tool implementation code"
+    outputs:
+      - name: result
+        type: AgntCustomTool
+        description: "Created tool"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
+  agent.deleteCustomTool:
+    type: utility
+    description: "Delete a custom tool from the agnt platform."
+    path: "agnt"
+    inputs:
+      - name: toolId
+        type: string
+        description: "Tool ID"
+    outputs:
+      - name: result
+        type: object
+        description: "Deletion confirmation"
+        measures: [working_implementation, valid_output_structure, proper_error_handling, ai_sdk_compliance]
+
 # =============================================================================
 # VALIDATORS - Which validators to run against each block
 # =============================================================================
