@@ -1,0 +1,29 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "70737382e625",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/web/src/app/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/dashboard/agents/[id]/chat/[chatId]/page.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/70/737382e625/0/metadata.json",
+      "transcript": "/70/737382e625/0/full.jsonl",
+      "context": "/70/737382e625/0/context.md",
+      "content_hash": "/70/737382e625/0/content_hash.txt",
+      "prompt": "/70/737382e625/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 150,
+    "cache_creation_tokens": 124084,
+    "cache_read_tokens": 7566420,
+    "output_tokens": 8372,
+    "api_call_count": 74
+  }
+}
