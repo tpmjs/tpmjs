@@ -630,12 +630,24 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
         } catch (error) {
           // Extract rich error details from provider SDK errors
           const errorMessage = error instanceof Error ? error.message : String(error);
-          const errorName = error instanceof Error ? error.constructor.name : 'UnknownError';
           const errorStack = error instanceof Error ? error.stack : undefined;
+
+          // In production, class names get minified (e.g. "aB" instead of "APICallError").
+          // Try to infer the real error type from its properties.
+          const err = error as Record<string, unknown>;
+          const inferredType =
+            err.statusCode || err.responseBody
+              ? 'APICallError'
+              : err.url && err.requestBodyValues
+                ? 'APIRequestError'
+                : error instanceof Error
+                  ? error.constructor.name
+                  : 'UnknownError';
 
           // AI SDK and provider errors often have additional properties
           const errorDetails: Record<string, unknown> = {
-            name: errorName,
+            type: inferredType,
+            message: errorMessage,
             agentId: agent.id,
             provider: agent.provider,
             model: agent.modelId,
@@ -643,7 +655,6 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           };
 
           // Extract HTTP status and response body from provider errors
-          const err = error as Record<string, unknown>;
           if (err.statusCode) errorDetails.statusCode = err.statusCode;
           if (err.status) errorDetails.status = err.status;
           if (err.responseBody) errorDetails.responseBody = String(err.responseBody).slice(0, 1000);
@@ -674,10 +685,26 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             });
           }
 
+          // Save error as an ASSISTANT message so it appears in conversation history and JSON export
+          try {
+            await prisma.message.create({
+              data: {
+                conversationId: conversation.id,
+                role: 'ASSISTANT',
+                content: `[Error] ${errorMessage}`,
+                toolCalls: Prisma.JsonNull,
+                inputTokens: 0,
+                outputTokens: 0,
+              },
+            });
+          } catch (saveErr) {
+            console.error('[Agent] Failed to save error message:', saveErr);
+          }
+
           // Send rich error event to client
           sendEvent('error', {
             message: errorMessage,
-            type: errorName,
+            type: inferredType,
             details: errorDetails,
           });
 
