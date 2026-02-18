@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "29a482a2d3e9",
+  "session_id": "d97f8efb-cd61-4886-8b15-80025211a722",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-18T03:46:09.107123Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/stats/route.ts",
+    "apps/web/src/app/api/registry/execute/route.ts",
+    "apps/web/src/app/api/stats/executions/route.ts",
+    "apps/web/src/app/api/sync/stats-snapshot/route.ts",
+    "apps/web/src/app/api/user/activity-dashboard/route.ts",
+    "apps/web/src/app/dashboard/activity/page.tsx",
+    "apps/web/src/app/dashboard/admin/page.tsx",
+    "apps/web/src/app/dashboard/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/lib/mcp/handlers.ts",
+    "apps/web/src/lib/tracking/error-categories.ts",
+    "apps/web/src/lib/tracking/executions.ts",
+    "packages/db/prisma/schema.prisma"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "26410ee0-25cb-4634-92ed-798a6d0acdcd",
+  "checkpoint_transcript_start": 2020,
+  "transcript_lines_at_start": 2020,
+  "token_usage": {
+    "input_tokens": 70,
+    "cache_creation_tokens": 90828,
+    "cache_read_tokens": 6119426,
+    "output_tokens": 17802,
+    "api_call_count": 60
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-18T03:45:41.203198Z",
+    "agent_lines": 0,
+    "human_added": 893,
+    "human_modified": 40,
+    "human_removed": 0,
+    "total_committed": 893,
+    "agent_percentage": 0
+  }
+}
