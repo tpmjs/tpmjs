@@ -43,9 +43,23 @@ interface DashboardData {
   recentErrors: Array<{
     toolName: string;
     errorMessage: string;
+    errorCategory: string | null;
     count: number;
     lastOccurred: string;
   }>;
+  errorCategories: Array<{
+    category: string;
+    count: number;
+  }>;
+  conversationStatuses: Array<{
+    status: string;
+    count: number;
+  }>;
+  contextMetrics: {
+    avgMessagesInContext: number | null;
+    avgTokensInContext: number | null;
+    avgAvailableTools: number | null;
+  };
 }
 
 interface ActivityItem {
@@ -189,7 +203,7 @@ export default function ActivityPage(): React.ReactElement {
       ) : data ? (
         <div className="space-y-6">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div className="bg-surface border border-border rounded-lg p-4">
               <div className="flex items-center gap-2 text-foreground-secondary text-sm mb-1">
                 <Icon icon="terminal" size="xs" />
@@ -211,11 +225,30 @@ export default function ActivityPage(): React.ReactElement {
             <div className="bg-surface border border-border rounded-lg p-4">
               <div className="flex items-center gap-2 text-foreground-secondary text-sm mb-1">
                 <Icon icon="message" size="xs" />
-                Agent Conversations
+                Conversations
               </div>
               <div className="text-2xl font-semibold text-foreground">
                 {formatNumber(data.summary.totalAgentConversations)}
               </div>
+              {data.conversationStatuses.length > 0 && (
+                <div className="mt-1 flex gap-1 flex-wrap">
+                  {data.conversationStatuses.map((cs) => (
+                    <Badge
+                      key={cs.status}
+                      variant={
+                        cs.status === 'completed'
+                          ? 'success'
+                          : cs.status === 'error'
+                            ? 'error'
+                            : 'secondary'
+                      }
+                      className="text-xs"
+                    >
+                      {cs.count} {cs.status}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="bg-surface border border-border rounded-lg p-4">
@@ -236,6 +269,22 @@ export default function ActivityPage(): React.ReactElement {
               <div className="text-2xl font-semibold text-foreground">
                 {formatNumber(data.summary.totalTokensUsed)}
               </div>
+            </div>
+
+            <div className="bg-surface border border-border rounded-lg p-4">
+              <div className="flex items-center gap-2 text-foreground-secondary text-sm mb-1">
+                <Icon icon="puzzle" size="xs" />
+                Avg Tools Available
+              </div>
+              <div className="text-2xl font-semibold text-foreground">
+                {data.contextMetrics.avgAvailableTools ?? '—'}
+              </div>
+              {data.contextMetrics.avgMessagesInContext != null && (
+                <div className="mt-1 text-xs text-foreground-tertiary">
+                  ~{data.contextMetrics.avgMessagesInContext} msgs / ~
+                  {formatNumber(data.contextMetrics.avgTokensInContext ?? 0)} tokens per turn
+                </div>
+              )}
             </div>
           </div>
 
@@ -358,43 +407,78 @@ export default function ActivityPage(): React.ReactElement {
             </div>
           </div>
 
-          {/* Recent Errors */}
-          {data.recentErrors.length > 0 && (
-            <div className="bg-surface border border-border rounded-lg p-6">
-              <h3 className="text-sm font-medium text-foreground mb-4">Recent Errors</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-foreground-tertiary border-b border-border">
-                      <th className="pb-2 font-medium">Tool</th>
-                      <th className="pb-2 font-medium">Error</th>
-                      <th className="pb-2 font-medium text-right">Count</th>
-                      <th className="pb-2 font-medium text-right">Last Occurred</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.recentErrors.map((err) => (
-                      <tr
-                        key={`${err.toolName}-${err.errorMessage}`}
-                        className="border-b border-border/50"
+          {/* Error Categories + Recent Errors */}
+          {(data.errorCategories.length > 0 || data.recentErrors.length > 0) && (
+            <div className="space-y-6">
+              {/* Error Category Breakdown */}
+              {data.errorCategories.length > 0 && (
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h3 className="text-sm font-medium text-foreground mb-4">Error Categories</h3>
+                  <div className="flex flex-wrap gap-3">
+                    {data.errorCategories.map((ec) => (
+                      <div
+                        key={ec.category}
+                        className="flex items-center gap-2 bg-surface-secondary rounded-lg px-3 py-2"
                       >
-                        <td className="py-2 text-foreground">{err.toolName}</td>
-                        <td className="py-2 text-foreground-secondary truncate max-w-[300px]">
-                          {err.errorMessage}
-                        </td>
-                        <td className="py-2 text-right">
-                          <Badge variant="error" className="text-xs">
-                            {err.count}
-                          </Badge>
-                        </td>
-                        <td className="py-2 text-right text-foreground-tertiary">
-                          {new Date(err.lastOccurred).toLocaleDateString()}
-                        </td>
-                      </tr>
+                        <Badge variant="error" className="text-xs">
+                          {ec.count}
+                        </Badge>
+                        <span className="text-sm text-foreground">
+                          {ec.category.replace(/_/g, ' ')}
+                        </span>
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Errors */}
+              {data.recentErrors.length > 0 && (
+                <div className="bg-surface border border-border rounded-lg p-6">
+                  <h3 className="text-sm font-medium text-foreground mb-4">Recent Errors</h3>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-foreground-tertiary border-b border-border">
+                          <th className="pb-2 font-medium">Tool</th>
+                          <th className="pb-2 font-medium">Category</th>
+                          <th className="pb-2 font-medium">Error</th>
+                          <th className="pb-2 font-medium text-right">Count</th>
+                          <th className="pb-2 font-medium text-right">Last Occurred</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {data.recentErrors.map((err) => (
+                          <tr
+                            key={`${err.toolName}-${err.errorMessage}`}
+                            className="border-b border-border/50"
+                          >
+                            <td className="py-2 text-foreground">{err.toolName}</td>
+                            <td className="py-2">
+                              {err.errorCategory && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {err.errorCategory.replace(/_/g, ' ')}
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="py-2 text-foreground-secondary truncate max-w-[250px]">
+                              {err.errorMessage}
+                            </td>
+                            <td className="py-2 text-right">
+                              <Badge variant="error" className="text-xs">
+                                {err.count}
+                              </Badge>
+                            </td>
+                            <td className="py-2 text-right text-foreground-tertiary">
+                              {new Date(err.lastOccurred).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

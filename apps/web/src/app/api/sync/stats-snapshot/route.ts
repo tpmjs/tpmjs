@@ -99,6 +99,12 @@ export async function POST(request: NextRequest) {
       // MCP unique clients
       mcpUniqueClientsResult,
 
+      // ML tracking metrics
+      errorCategoryResults,
+      conversationStatusResults,
+      contextMetricsResult,
+      dailyConversationCount,
+
       // Quality distribution
       qualityDistribution,
     ] = await Promise.all([
@@ -228,6 +234,42 @@ export async function POST(request: NextRequest) {
           AND created_at >= ${new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)}
       `,
 
+      // Error category distribution (daily)
+      prisma.executionEvent.groupBy({
+        by: ['errorCategory'],
+        where: {
+          createdAt: { gte: yesterday, lt: today },
+          status: { in: ['error', 'timeout'] },
+          errorCategory: { not: null },
+        },
+        _count: { id: true },
+      }),
+
+      // Conversation status breakdown (daily)
+      prisma.conversation.groupBy({
+        by: ['status'],
+        where: { createdAt: { gte: yesterday, lt: today } },
+        _count: { id: true },
+      }),
+
+      // Context metrics (daily agent runs)
+      prisma.executionEvent.aggregate({
+        where: {
+          createdAt: { gte: yesterday, lt: today },
+          eventType: 'agent_run',
+        },
+        _avg: {
+          contextMessageCount: true,
+          contextTokenCount: true,
+          availableToolCount: true,
+        },
+      }),
+
+      // Total conversations (daily)
+      prisma.conversation.count({
+        where: { createdAt: { gte: yesterday, lt: today } },
+      }),
+
       // Quality score distribution
       prisma.$queryRaw<{ bucket: string; count: bigint }[]>`
         SELECT
@@ -355,6 +397,22 @@ export async function POST(request: NextRequest) {
 
         // MCP unique clients
         mcpUniqueClients: Number(mcpUniqueClientsResult[0]?.count ?? 0),
+
+        // ML tracking metrics
+        errorCategories: Object.fromEntries(
+          errorCategoryResults.map((e) => [e.errorCategory, e._count.id])
+        ),
+        conversationStatuses: Object.fromEntries(
+          conversationStatusResults.map((c) => [c.status, c._count.id])
+        ),
+        avgContextMessages: contextMetricsResult._avg.contextMessageCount
+          ? Math.round(contextMetricsResult._avg.contextMessageCount)
+          : null,
+        avgContextTokens: contextMetricsResult._avg.contextTokenCount
+          ? Math.round(contextMetricsResult._avg.contextTokenCount)
+          : null,
+        avgAvailableTools: contextMetricsResult._avg.availableToolCount ?? null,
+        totalConversationsDay: dailyConversationCount,
       },
     });
 

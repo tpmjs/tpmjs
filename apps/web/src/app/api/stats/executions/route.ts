@@ -75,6 +75,16 @@ export async function GET(request: NextRequest) {
 
       // Model usage breakdown
       modelUsage,
+
+      // --- ExecutionEvent-based ML tracking stats ---
+      // Error category distribution
+      errorCategoryBreakdown,
+
+      // Context metrics
+      executionContextMetrics,
+
+      // Conversation status breakdown
+      conversationStatusBreakdown,
     ] = await Promise.all([
       // Total counts
       prisma.simulation.count(),
@@ -225,6 +235,40 @@ export async function GET(request: NextRequest) {
         where: { model: { not: null } },
         _count: { id: true },
         orderBy: { _count: { id: 'desc' } },
+      }),
+
+      // Error category distribution (from ExecutionEvent)
+      prisma.executionEvent.groupBy({
+        by: ['errorCategory'],
+        where: {
+          status: { in: ['error', 'timeout'] },
+          errorCategory: { not: null },
+          createdAt: { gte: last30d },
+        },
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+
+      // Context metrics (from ExecutionEvent agent runs)
+      prisma.executionEvent.aggregate({
+        where: {
+          eventType: 'agent_run',
+          createdAt: { gte: last30d },
+        },
+        _avg: {
+          contextMessageCount: true,
+          contextTokenCount: true,
+          availableToolCount: true,
+          durationMs: true,
+        },
+        _count: { id: true },
+      }),
+
+      // Conversation status breakdown
+      prisma.conversation.groupBy({
+        by: ['status'],
+        where: { createdAt: { gte: last30d } },
+        _count: { id: true },
       }),
     ]);
 
@@ -410,6 +454,30 @@ export async function GET(request: NextRequest) {
           errors: {
             totalErrors: errorCount + timeoutCount,
             topErrors: formattedErrors,
+            byCategory: errorCategoryBreakdown.map((e) => ({
+              category: e.errorCategory,
+              count: e._count.id,
+            })),
+          },
+
+          // ML tracking insights (from ExecutionEvent)
+          mlInsights: {
+            agentRuns: executionContextMetrics._count,
+            avgContextMessages: executionContextMetrics._avg.contextMessageCount
+              ? Math.round(executionContextMetrics._avg.contextMessageCount)
+              : null,
+            avgContextTokens: executionContextMetrics._avg.contextTokenCount
+              ? Math.round(executionContextMetrics._avg.contextTokenCount)
+              : null,
+            avgAvailableTools: executionContextMetrics._avg.availableToolCount
+              ? Math.round(executionContextMetrics._avg.availableToolCount * 10) / 10
+              : null,
+            avgDurationMs: executionContextMetrics._avg.durationMs
+              ? Math.round(executionContextMetrics._avg.durationMs)
+              : null,
+            conversationStatuses: Object.fromEntries(
+              conversationStatusBreakdown.map((c) => [c.status, c._count.id])
+            ),
           },
         },
       },

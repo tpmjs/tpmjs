@@ -37,6 +37,9 @@ export async function GET(request: NextRequest) {
       topTools,
       topAgents,
       recentErrors,
+      errorCategories,
+      conversationStatuses,
+      contextMetrics,
     ] = await Promise.all([
       // 1. Execution summary
       prisma.executionEvent.groupBy({
@@ -117,9 +120,9 @@ export async function GET(request: NextRequest) {
         take: 10,
       }),
 
-      // 7. Recent errors
+      // 7. Recent errors (now includes errorCategory)
       prisma.executionEvent.groupBy({
-        by: ['toolName', 'errorMessage'],
+        by: ['toolName', 'errorMessage', 'errorCategory'],
         where: {
           userId,
           status: 'error',
@@ -130,6 +133,43 @@ export async function GET(request: NextRequest) {
         _max: { createdAt: true },
         orderBy: { _count: { id: 'desc' } },
         take: 10,
+      }),
+
+      // 8. Error category breakdown
+      prisma.executionEvent.groupBy({
+        by: ['errorCategory'],
+        where: {
+          userId,
+          status: { in: ['error', 'timeout'] },
+          createdAt: { gte: since },
+          errorCategory: { not: null },
+        },
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+      }),
+
+      // 9. Conversation status breakdown
+      prisma.conversation.groupBy({
+        by: ['status'],
+        where: {
+          agent: { userId },
+          createdAt: { gte: since },
+        },
+        _count: { id: true },
+      }),
+
+      // 10. Context metrics (avg context window size, avg available tools)
+      prisma.executionEvent.aggregate({
+        where: {
+          userId,
+          createdAt: { gte: since },
+          eventType: 'agent_run',
+        },
+        _avg: {
+          contextMessageCount: true,
+          contextTokenCount: true,
+          availableToolCount: true,
+        },
       }),
     ]);
 
@@ -175,9 +215,29 @@ export async function GET(request: NextRequest) {
         recentErrors: recentErrors.map((e) => ({
           toolName: e.toolName,
           errorMessage: e.errorMessage,
+          errorCategory: e.errorCategory,
           count: e._count.id,
           lastOccurred: e._max.createdAt,
         })),
+        errorCategories: errorCategories.map((e) => ({
+          category: e.errorCategory,
+          count: e._count.id,
+        })),
+        conversationStatuses: conversationStatuses.map((c) => ({
+          status: c.status,
+          count: c._count.id,
+        })),
+        contextMetrics: {
+          avgMessagesInContext: contextMetrics._avg.contextMessageCount
+            ? Math.round(contextMetrics._avg.contextMessageCount)
+            : null,
+          avgTokensInContext: contextMetrics._avg.contextTokenCount
+            ? Math.round(contextMetrics._avg.contextTokenCount)
+            : null,
+          avgAvailableTools: contextMetrics._avg.availableToolCount
+            ? Math.round(contextMetrics._avg.availableToolCount * 10) / 10
+            : null,
+        },
       },
     });
   } catch (error) {

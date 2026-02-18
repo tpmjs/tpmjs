@@ -29,6 +29,7 @@ interface AgentStats {
     last24h: number;
     last7d: number;
     last30d: number;
+    byStatus: Record<string, number>;
   };
   messages: {
     total: number;
@@ -63,6 +64,15 @@ interface AgentStats {
       count: number;
     }>;
     last24h: number;
+    avgAvailablePerTurn: number | null;
+  };
+  errorCategories: Array<{
+    category: string;
+    count: number;
+  }>;
+  contextMetrics: {
+    avgMessagesInContext: number | null;
+    avgTokensInContext: number | null;
   };
   activity: {
     firstConversation: string | null;
@@ -174,6 +184,47 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
 
+    // ML tracking stats
+    const [conversationStatuses, errorCategories, contextMetrics] = await Promise.all([
+      // Conversation status breakdown
+      prisma.conversation.groupBy({
+        by: ['status'],
+        where: { agentId: agent.id },
+        _count: { id: true },
+      }),
+
+      // Error categories for this agent
+      prisma.executionEvent.groupBy({
+        by: ['errorCategory'],
+        where: {
+          agentId: agent.id,
+          status: { in: ['error', 'timeout'] },
+          errorCategory: { not: null },
+        },
+        _count: { id: true },
+        orderBy: { _count: { id: 'desc' } },
+        take: 10,
+      }),
+
+      // Context window + tool selection metrics
+      prisma.executionEvent.aggregate({
+        where: {
+          agentId: agent.id,
+          eventType: 'agent_run',
+        },
+        _avg: {
+          contextMessageCount: true,
+          contextTokenCount: true,
+          availableToolCount: true,
+        },
+      }),
+    ]);
+
+    const convStatusMap: Record<string, number> = {};
+    for (const cs of conversationStatuses) {
+      convStatusMap[cs.status] = cs._count.id;
+    }
+
     // Activity stats
     const [firstConv, lastConv, longestConv] = await Promise.all([
       prisma.conversation.findFirst({
@@ -211,6 +262,7 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
         last24h: convLast24h,
         last7d: convLast7d,
         last30d: convLast30d,
+        byStatus: convStatusMap,
       },
       messages: {
         total: totalMessages,
@@ -243,6 +295,21 @@ export async function GET(_request: NextRequest, context: RouteContext): Promise
         uniqueToolsUsed: Object.keys(toolCounts).length,
         topTools,
         last24h: toolLast24h,
+        avgAvailablePerTurn: contextMetrics._avg.availableToolCount
+          ? Math.round(contextMetrics._avg.availableToolCount * 10) / 10
+          : null,
+      },
+      errorCategories: errorCategories.map((e) => ({
+        category: e.errorCategory!,
+        count: e._count.id,
+      })),
+      contextMetrics: {
+        avgMessagesInContext: contextMetrics._avg.contextMessageCount
+          ? Math.round(contextMetrics._avg.contextMessageCount)
+          : null,
+        avgTokensInContext: contextMetrics._avg.contextTokenCount
+          ? Math.round(contextMetrics._avg.contextTokenCount)
+          : null,
       },
       activity: {
         firstConversation: firstConv?.createdAt.toISOString() || null,

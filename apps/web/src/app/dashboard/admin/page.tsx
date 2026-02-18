@@ -34,6 +34,12 @@ interface StatsSnapshot {
   importBroken: number;
   executionHealthy: number;
   executionBroken: number;
+  errorCategories: Record<string, number> | null;
+  conversationStatuses: Record<string, number> | null;
+  avgContextMessages: number | null;
+  avgContextTokens: number | null;
+  avgAvailableTools: number | null;
+  totalConversationsDay: number;
 }
 
 interface AdminStatsData {
@@ -165,6 +171,89 @@ export default function AdminDashboardPage() {
             <StatCard label="Exec Broken" value={latest?.executionBroken ?? 0} icon="alertCircle" />
           </div>
         </section>
+
+        {/* ML Tracking Metrics */}
+        <section>
+          <h2 className="text-lg font-semibold text-foreground mb-4">ML Tracking (Daily)</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <StatCard
+              label="Conversations"
+              value={latest?.totalConversationsDay ?? 0}
+              icon="message"
+            />
+            <StatCard
+              label="Avg Context Msgs"
+              value={latest?.avgContextMessages ?? '—'}
+              icon="terminal"
+            />
+            <StatCard
+              label="Avg Context Tokens"
+              value={latest?.avgContextTokens ?? '—'}
+              icon="barChart"
+            />
+            <StatCard
+              label="Avg Tools Available"
+              value={latest?.avgAvailableTools != null ? latest.avgAvailableTools.toFixed(1) : '—'}
+              icon="puzzle"
+            />
+          </div>
+        </section>
+
+        {/* Error Categories + Conversation Status */}
+        {(latest?.errorCategories || latest?.conversationStatuses) && (
+          <section>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {latest?.errorCategories && Object.keys(latest.errorCategories).length > 0 && (
+                <div className="bg-surface border border-border rounded-xl p-5">
+                  <h3 className="text-sm font-medium text-foreground mb-3">Error Categories</h3>
+                  <div className="space-y-2">
+                    {Object.entries(latest.errorCategories)
+                      .sort(([, a], [, b]) => b - a)
+                      .map(([category, count]) => (
+                        <div key={category} className="flex justify-between items-center">
+                          <span className="text-sm text-foreground-secondary">
+                            {category.replace(/_/g, ' ')}
+                          </span>
+                          <Badge variant="error" className="text-xs">
+                            {count}
+                          </Badge>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+              {latest?.conversationStatuses &&
+                Object.keys(latest.conversationStatuses).length > 0 && (
+                  <div className="bg-surface border border-border rounded-xl p-5">
+                    <h3 className="text-sm font-medium text-foreground mb-3">
+                      Conversation Outcomes
+                    </h3>
+                    <div className="space-y-2">
+                      {Object.entries(latest.conversationStatuses)
+                        .sort(([, a], [, b]) => b - a)
+                        .map(([status, count]) => (
+                          <div key={status} className="flex justify-between items-center">
+                            <span className="text-sm text-foreground-secondary">{status}</span>
+                            <Badge
+                              variant={
+                                status === 'completed'
+                                  ? 'success'
+                                  : status === 'error'
+                                    ? 'error'
+                                    : 'secondary'
+                              }
+                              className="text-xs"
+                            >
+                              {count}
+                            </Badge>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+            </div>
+          </section>
+        )}
 
         {/* Trend Charts */}
         {data?.trend && data.trend.length > 1 && (

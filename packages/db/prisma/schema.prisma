@@ -358,6 +358,14 @@ model StatsSnapshot {
   // MCP unique clients (from ExecutionEvent where source = 'mcp_*')
   mcpUniqueClients   Int @default(0) @map("mcp_unique_clients")
 
+  // ML Tracking Metrics (from ExecutionEvent)
+  errorCategories        Json? @map("error_categories") @db.JsonB
+  conversationStatuses   Json? @map("conversation_statuses") @db.JsonB
+  avgContextMessages     Int?  @map("avg_context_messages")
+  avgContextTokens       Int?  @map("avg_context_tokens")
+  avgAvailableTools      Float? @map("avg_available_tools") @db.DoublePrecision
+  totalConversationsDay  Int @default(0) @map("total_conversations_day")
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
 
