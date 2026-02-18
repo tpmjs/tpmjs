@@ -6735,6 +6735,102 @@
       "t": "fix",
       "s": "",
       "u": "use Deno.env.get() for env vars in agnt platform tools"
+    },
+    {
+      "h": "83d645294bd1ae43dd7413bb3cefc466219178cc",
+      "d": "2026-02-17",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "4724636a8e659e37670fc34b57e1211e7b980b0f",
+      "d": "2026-02-17",
+      "m": "fix: show full tool errors in agent chat UI and copy JSON",
+      "t": "fix",
+      "s": "",
+      "u": "show full tool errors in agent chat UI and copy JSON"
+    },
+    {
+      "h": "24c4975564290bced55e5c0ec5600471c6052ea3",
+      "d": "2026-02-17",
+      "m": "feat: add /api/registry/execute endpoint and enhance search API",
+      "t": "feat",
+      "s": "",
+      "u": "add /api/registry/execute endpoint and enhance search API"
+    },
+    {
+      "h": "9d53c6d90f07dc18da2f7aeafeb4a454bb277009",
+      "d": "2026-02-18",
+      "m": "feat: implement postgres (22 tools), pandoc (3 tools), jq (2 tools) and add binaries to executor",
+      "t": "feat",
+      "s": "",
+      "u": "implement postgres (22 tools), pandoc (3 tools), jq (2 tools) and add binaries to executor"
+    },
+    {
+      "h": "08fbd8542a9859fae4baccfb6cff4f2e203fb647",
+      "d": "2026-02-18",
+      "m": "chore: bump @tpmjs/tools-postgres to 0.2.0 for npm publish",
+      "t": "chore",
+      "s": "",
+      "u": "bump @tpmjs/tools-postgres to 0.2.0 for npm publish"
+    },
+    {
+      "h": "4c65d38f944feaa7a05fced11cbe3767823841a6",
+      "d": "2026-02-18",
+      "m": "fix: add pandoc, jq, postgresql-client to actual Deno executor Dockerfile",
+      "t": "fix",
+      "s": "",
+      "u": "add pandoc, jq, postgresql-client to actual Deno executor Dockerfile"
+    },
+    {
+      "h": "20048dc4a44adbbc99b8ce74d581b02736c8d0c8",
+      "d": "2026-02-18",
+      "m": "fix: remove @tpmjs/tool-test-utils dep that breaks Vercel build",
+      "t": "fix",
+      "s": "",
+      "u": "remove @tpmjs/tool-test-utils dep that breaks Vercel build"
+    },
+    {
+      "h": "bbf2ecca27663b78b8734f4d018a4c1626688f33",
+      "d": "2026-02-18",
+      "m": "fix: add rich error debugging to agent chat streams",
+      "t": "fix",
+      "s": "",
+      "u": "add rich error debugging to agent chat streams"
+    },
+    {
+      "h": "430d66d3f6d20f0b31e9c51b0f24cc0daa72c3a7",
+      "d": "2026-02-18",
+      "m": "fix: save stream errors to DB and fix minified error names",
+      "t": "fix",
+      "s": "",
+      "u": "save stream errors to DB and fix minified error names"
+    },
+    {
+      "h": "ba627ae8b431cf3761261a3aae5b671f68398b7a",
+      "d": "2026-02-18",
+      "m": "fix: use fullStream to capture real provider errors behind NoOutputGeneratedError",
+      "t": "fix",
+      "s": "",
+      "u": "use fullStream to capture real provider errors behind NoOutputGeneratedError"
+    },
+    {
+      "h": "727b60f309fbfd6913521ea0d36c436b994368b9",
+      "d": "2026-02-18",
+      "m": "feat: add ML training data tracking for tool usage prediction",
+      "t": "feat",
+      "s": "",
+      "u": "add ML training data tracking for tool usage prediction"
+    },
+    {
+      "h": "6676464796dd25cf9649f90f2b9eedda37201238",
+      "d": "2026-02-18",
+      "m": "feat: surface ML tracking data across all stats pages",
+      "t": "feat",
+      "s": "",
+      "u": "surface ML tracking data across all stats pages"
     }
   ],
   "m": [
