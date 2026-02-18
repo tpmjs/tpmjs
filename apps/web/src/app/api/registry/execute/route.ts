@@ -257,6 +257,8 @@ export async function POST(request: NextRequest) {
           ? 'TIMEOUT'
           : 'EXECUTOR_UNREACHABLE',
       errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      // ML training data
+      inputArgs: params,
     });
 
     const isTimeout = error instanceof Error && error.name === 'TimeoutError';
@@ -311,6 +313,9 @@ export async function POST(request: NextRequest) {
     durationMs,
     errorCode: errorPayload?.code,
     errorMessage: errorPayload?.message,
+    // ML training data
+    inputArgs: params,
+    outputSummary: isSuccess ? output : errorPayload,
   });
 
   // --- Build response ---

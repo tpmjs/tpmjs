@@ -321,6 +321,9 @@ export async function handleToolsCall(
         status: result.success ? 'success' : 'error',
         durationMs: execDurationMs,
         errorMessage: result.success ? undefined : String(result.error),
+        // ML training data
+        inputArgs: params.arguments,
+        outputSummary: result.success ? result.output : { error: result.error },
       });
 
       // Log user-facing activity (fire-and-forget)

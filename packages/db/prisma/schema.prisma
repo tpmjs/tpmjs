@@ -765,6 +765,9 @@ model Conversation {
   // Metadata
   title       String?   @db.VarChar(200)
 
+  // Conversation lifecycle status (tracked programmatically)
+  status      String    @default("active") @db.VarChar(20) // 'active' | 'completed' | 'error'
+
   // Timestamps
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
@@ -801,6 +804,19 @@ model Message {
   // Token tracking
   inputTokens    Int?         @map("input_tokens")
   outputTokens   Int?         @map("output_tokens")
+
+  // --- ML Training Data Fields (for ASSISTANT messages) ---
+
+  // Available tools at decision time (negative signal: what was NOT chosen)
+  availableToolCount Int?  @map("available_tool_count")  // Number of tools available
+  availableToolNames Json? @map("available_tool_names") @db.JsonB // JSON array of tool name strings
+
+  // Sequence identifier (groups all tool calls in this response)
+  sequenceId String? @map("sequence_id") @db.VarChar(36) // Same UUID used in ExecutionEvent
+
+  // Context window state when this message was generated
+  contextMessageCount Int? @map("context_message_count") // Messages sent to LLM
+  contextTokenCount   Int? @map("context_token_count")   // Estimated tokens in context
 
   // Timestamps
   createdAt      DateTime     @default(now()) @map("created_at")
@@ -2000,6 +2016,32 @@ model ExecutionEvent {
   errorCode    String? @map("error_code") @db.VarChar(50)
   errorMessage String? @map("error_message") @db.Text
 
+  // --- ML Training Data Fields ---
+
+  // Sequence tracking (groups tool calls within a single agent turn)
+  sequenceId String? @map("sequence_id") @db.VarChar(36) // UUID grouping all tool calls in one turn
+  turnIndex  Int?    @map("turn_index") // 0-based position within the sequence
+
+  // Conversation context
+  conversationId String? @map("conversation_id") // Links to conversation (no FK for resilience)
+
+  // Tool call I/O (truncated for storage efficiency)
+  inputArgs     Json? @map("input_args") @db.JsonB     // Tool call arguments (truncated to 2KB)
+  outputSummary Json? @map("output_summary") @db.JsonB  // Tool result summary (truncated to 2KB)
+
+  // Structured error classification
+  errorCategory String? @map("error_category") @db.VarChar(30) // 'schema_validation' | 'auth_failure' | 'rate_limit' | 'timeout' | 'invalid_input' | 'tool_bug' | 'network_error' | 'provider_error' | 'not_found' | 'unknown'
+
+  // MCP server reference
+  mcpServerId String? @map("mcp_server_id") // CustomMcpServer or bridge server ID
+
+  // Context window state at time of execution
+  contextMessageCount Int? @map("context_message_count") // Messages in LLM context window
+  contextTokenCount   Int? @map("context_token_count")   // Estimated tokens in context window
+
+  // Available tools (what the model could choose from)
+  availableToolCount Int? @map("available_tool_count") // Number of tools available to the model
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -2008,6 +2050,8 @@ model ExecutionEvent {
   @@index([toolId, createdAt])
   @@index([eventType, createdAt])
   @@index([createdAt])
+  @@index([sequenceId])
+  @@index([conversationId, createdAt])
   @@map("execution_events")
 }
 

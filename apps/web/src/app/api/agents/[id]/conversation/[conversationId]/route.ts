@@ -11,6 +11,7 @@
  * Requires 'agent:chat' scope for API key access.
  */
 
+import { randomUUID } from 'node:crypto';
 import { Prisma, prisma } from '@tpmjs/db';
 import type { AIProvider } from '@tpmjs/types/agent';
 import { SendMessageSchema } from '@tpmjs/types/agent';
@@ -21,6 +22,7 @@ import { logActivity } from '~/lib/activity';
 import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
 import { trackUsage } from '~/lib/api-keys/usage';
 import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
+import { inferErrorCategory } from '~/lib/tracking/error-categories';
 import { trackExecution } from '~/lib/tracking/executions';
 
 /**
@@ -416,6 +418,16 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           controller.enqueue(encoder.encode(message));
         };
 
+        // ML tracking: declared outside try so they're accessible in catch
+        const sequenceId = randomUUID();
+        const contextMessageCount = messages.length;
+        const contextTokenCount = Math.round(
+          messages.reduce((sum, m) => {
+            const content = typeof m.content === 'string' ? m.content : JSON.stringify(m.content);
+            return sum + content.length;
+          }, 0) / 4
+        );
+
         try {
           const startTime = Date.now();
           let fullContent = '';
@@ -431,6 +443,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           let inputTokens = 0;
           let outputTokens = 0;
           const streamErrors: string[] = [];
+          let turnIndex = 0;
 
           // Send debug info so the client knows the stream configuration
           sendEvent('debug', {
@@ -526,7 +539,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                     output: tr.output,
                   });
 
-                  // Track each tool call execution event
+                  // Track each tool call execution event with ML training fields
+                  const toolCallArgs = toolCallsMap.get(tr.toolCallId)?.args;
                   trackExecution({
                     eventType: 'tool_call',
                     source: 'agent_chat',
@@ -535,6 +549,19 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                     agentId: agent.id,
                     toolName: tr.toolName,
                     status: isError ? 'error' : 'success',
+                    errorMessage:
+                      isError && tr.output && typeof tr.output === 'object' && 'error' in tr.output
+                        ? String((tr.output as { error: unknown }).error)
+                        : undefined,
+                    // ML training data
+                    sequenceId,
+                    turnIndex: turnIndex++,
+                    conversationId: conversation.id,
+                    inputArgs: toolCallArgs,
+                    outputSummary: tr.output,
+                    availableToolCount: toolCount,
+                    contextMessageCount,
+                    contextTokenCount,
                   });
                 }
               }
@@ -557,12 +584,16 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             } else if (part.type === 'error') {
               // This is the actual provider error (e.g. 401, 429, invalid model)
               const streamError = part.error;
-              const errMsg = streamError instanceof Error ? streamError.message : String(streamError);
+              const errMsg =
+                streamError instanceof Error ? streamError.message : String(streamError);
               streamErrors.push(errMsg);
               console.error('[Agent] Stream error part:', streamError);
               sendEvent('stream_error', {
                 message: errMsg,
-                raw: JSON.stringify(streamError, Object.getOwnPropertyNames(streamError || {})).slice(0, 2000),
+                raw: JSON.stringify(
+                  streamError,
+                  Object.getOwnPropertyNames(streamError || {})
+                ).slice(0, 2000),
               });
             }
           }
@@ -574,8 +605,10 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           } catch (usageError) {
             // If usage rejects with NoOutputGeneratedError, the real error was already
             // captured via the fullStream 'error' part above. Log but don't re-throw.
-            const cause = usageError instanceof Error ? (usageError as { cause?: unknown }).cause : undefined;
-            const causeMsg = cause instanceof Error ? cause.message : cause ? String(cause) : undefined;
+            const cause =
+              usageError instanceof Error ? (usageError as { cause?: unknown }).cause : undefined;
+            const causeMsg =
+              cause instanceof Error ? cause.message : cause ? String(cause) : undefined;
             if (causeMsg) streamErrors.push(causeMsg);
             console.warn('[Agent] Usage rejected (stream produced 0 steps):', {
               error: usageError instanceof Error ? usageError.message : String(usageError),
@@ -593,9 +626,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           }
 
           // If there were stream errors and no content, save errors as the content
-          const savedContent = fullContent || (streamErrors.length > 0
-            ? `[Stream Error] ${streamErrors.join('\n')}`
-            : '');
+          const savedContent =
+            fullContent ||
+            (streamErrors.length > 0 ? `[Stream Error] ${streamErrors.join('\n')}` : '');
 
           // Save assistant message FIRST (so it has earlier createdAt than tool results)
           const assistantMessage = await prisma.message.create({
@@ -610,6 +643,12 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                   : Prisma.JsonNull,
               inputTokens,
               outputTokens,
+              // ML training data
+              availableToolCount: toolCount,
+              availableToolNames: toolNames as unknown as Prisma.InputJsonValue,
+              sequenceId,
+              contextMessageCount,
+              contextTokenCount,
             },
           });
 
@@ -644,9 +683,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
           // Warn if the response was completely empty (no text, no tool calls)
           if (!fullContent && allToolCalls.length === 0) {
-            const streamErrorSummary = streamErrors.length > 0
-              ? `\nStream errors: ${streamErrors.join('; ')}`
-              : '';
+            const streamErrorSummary =
+              streamErrors.length > 0 ? `\nStream errors: ${streamErrors.join('; ')}` : '';
             console.warn('[Agent] Empty response from model:', {
               agentId: agent.id,
               provider: agent.provider,
@@ -691,6 +729,12 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             durationMs: executionTimeMs,
             tokensIn: inputTokens,
             tokensOut: outputTokens,
+            // ML training data
+            sequenceId,
+            conversationId: conversation.id,
+            availableToolCount: toolCount,
+            contextMessageCount,
+            contextTokenCount,
           });
 
           // Track usage
@@ -783,7 +827,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             details: errorDetails,
           });
 
-          // Track agent run error
+          // Track agent run error with ML training data
+          const errMsg = error instanceof Error ? error.message : 'Unknown error';
+          const errStatusCode = typeof err.statusCode === 'number' ? err.statusCode : undefined;
           trackExecution({
             eventType: 'agent_run',
             source: 'agent_chat',
@@ -792,8 +838,26 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
             agentId: agent.id,
             status: 'error',
             durationMs: Date.now() - startTime,
-            errorMessage: error instanceof Error ? error.message : 'Unknown error',
+            errorMessage: errMsg,
+            errorCategory: inferErrorCategory({
+              errorMessage: errMsg,
+              statusCode: errStatusCode,
+            }),
+            // ML training data
+            sequenceId,
+            conversationId: conversation.id,
+            availableToolCount: toolCount,
+            contextMessageCount,
+            contextTokenCount,
           });
+
+          // Update conversation status to error
+          prisma.conversation
+            .update({
+              where: { id: conversation.id },
+              data: { status: 'error' },
+            })
+            .catch(() => {});
 
           // Track error
           if (authResult.userId) {
@@ -921,6 +985,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
           id: conversation.id,
           slug: conversation.slug,
           title: conversation.title,
+          status: conversation.status,
           createdAt: conversation.createdAt,
           updatedAt: conversation.updatedAt,
           messageCount: allMessages.length,
@@ -935,6 +1000,12 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
           toolResult: m.toolResult,
           inputTokens: m.inputTokens,
           outputTokens: m.outputTokens,
+          // ML training fields
+          availableToolCount: m.availableToolCount,
+          availableToolNames: m.availableToolNames,
+          sequenceId: m.sequenceId,
+          contextMessageCount: m.contextMessageCount,
+          contextTokenCount: m.contextTokenCount,
           createdAt: m.createdAt,
         })),
         stats: {
@@ -998,6 +1069,11 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       toolResult: m.toolResult,
       inputTokens: m.inputTokens,
       outputTokens: m.outputTokens,
+      availableToolCount: m.availableToolCount,
+      availableToolNames: m.availableToolNames,
+      sequenceId: m.sequenceId,
+      contextMessageCount: m.contextMessageCount,
+      contextTokenCount: m.contextTokenCount,
       createdAt: m.createdAt,
     }));
 
