@@ -1,0 +1,106 @@
+{
+  "name": "@tpmjs/tools-railway",
+  "version": "0.2.0",
+  "description": "Railway API tools for AI agents. Manage projects, services, deployments, variables, and logs via Railway's GraphQL API.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "railway",
+    "deployment",
+    "hosting",
+    "agent"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/railway"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ops",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "listProjects",
+        "description": "List all projects in your Railway account or workspace."
+      },
+      {
+        "name": "getProject",
+        "description": "Get details of a specific Railway project by ID."
+      },
+      {
+        "name": "getService",
+        "description": "Get details of a specific Railway service by ID."
+      },
+      {
+        "name": "getServiceInstance",
+        "description": "Get configuration and deployment info for a service in a specific environment."
+      },
+      {
+        "name": "listDeployments",
+        "description": "List deployments for a Railway service in a specific environment."
+      },
+      {
+        "name": "getDeployment",
+        "description": "Get details of a specific Railway deployment by ID."
+      },
+      {
+        "name": "getBuildLogs",
+        "description": "Get build logs for a Railway deployment."
+      },
+      {
+        "name": "getDeploymentLogs",
+        "description": "Get runtime logs for a Railway deployment."
+      },
+      {
+        "name": "redeployService",
+        "description": "Trigger a redeploy of a Railway service in an environment."
+      },
+      {
+        "name": "restartDeployment",
+        "description": "Restart a running Railway deployment."
+      },
+      {
+        "name": "getVariables",
+        "description": "Get environment variables for a Railway service in an environment."
+      },
+      {
+        "name": "upsertVariable",
+        "description": "Create or update an environment variable on a Railway service."
+      },
+      {
+        "name": "deleteVariable",
+        "description": "Delete an environment variable from a Railway service."
+      }
+    ]
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "version": "1.0",
+  "id": "2026-02-09T10-13-08-614Z",
+  "timestamp": "2026-02-09T10:13:08.620Z",
+  "configPath": "packages/tools/official/blocks.yml",
+  "projectName": "tpmjs-official-tools",
+  "duration": 512,
+  "summary": {
+    "totalBlocks": 1,
+    "passed": 0,
+    "failed": 1,
+    "warnings": 0,
+    "cached": {
+      "validatorsSkipped": 0,
+      "validatorsRun": 3,
+      "timeSavedMs": 0
+    }
+  },
+  "blocks": [
+    {
+      "blockName": "ops.slackSendMessage",
+      "blockPath": "/home/ajax/repos/tpmjs/tpmjs/slack",
+      "hasErrors": true,
+      "hasWarnings": false,
+      "validators": [
+        {
+          "id": "schema.io",
+          "label": "schema",
+          "passed": true,
+          "duration": 0,
+          "issues": [],
+          "context": {
+            "filesAnalyzed": ["blocks.yml"],
+            "rulesApplied": [
+              "input_schema_complete",
+              "output_schema_complete",
+              "block_has_description"
+            ],
+            "summary": "Schema validation passed. Validated 4 input(s) and 1 output(s). All schemas are complete with name and type fields.",
+            "input": {
+              "blockName": "ops.slackSendMessage",
+              "inputs": [
+                {
+                  "name": "channel",
+                  "type": "string"
+                },
+                {
+                  "name": "text",
+                  "type": "string"
+                },
+                {
+                  "name": "thread_ts",
+                  "type": "string",
+                  "optional": true
+                },
+                {
+                  "name": "unfurl_links",
+                  "type": "boolean",
+                  "optional": true
+                }
+              ],
+              "outputs": [
+                {
+                  "name": "message",
+                  "type": "object"
+                }
+              ],
+              "description": "Send a message to a Slack channel or thread.",
+              "path": "slack"
+            },
+            "output": {
+              "checksPerformed": [
+                "Validating 4 input definition(s)",
+                "  ✓ Input \"channel\" has valid schema (type: string)",
+                "  ✓ Input \"text\" has valid schema (type: string)",
+                "  ✓ Input \"thread_ts\" has valid schema (type: string)",
+                "  ✓ Input \"unfurl_links\" has valid schema (type: boolean)",
+                "Validating 1 output definition(s)",
+                "  ✓ Output \"message\" has valid schema (type: object)",
+                "✓ Block has description: \"Send a message to a Slack channel or thread.\""
+              ],
+              "inputCount": 4,
+              "outputCount": 1,
+              "hasDescription": true
+            }
+          }
+        },
+        {
+          "id": "shape.exports.ts",
+          "label": "shape.ts",
+          "passed": false,
+          "duration": 0,
+          "issues": [
+            {
+              "type": "error",
+              "code": "INVALID_PATH",
+              "message": "Block path does not exist: /home/ajax/repos/tpmjs/tpmjs/slack",
+              "suggestion": "Create the block folder at /home/ajax/repos/tpmjs/tpmjs/slack"
+            }
+          ],
+          "context": {
+            "filesAnalyzed": [],
+            "rulesApplied": ["path_exists"],
+            "summary": "Block path does not exist: /home/ajax/repos/tpmjs/tpmjs/slack",
+            "input": {
+              "blockPath": "/home/ajax/repos/tpmjs/tpmjs/slack"
+            },
+            "output": {
+              "error": "Path not found"
+            }
+          }
+        },
+        {
+          "id": "domain.validation",
+          "label": "domain",
+          "passed": false,
+          "duration": 1,
+          "issues": [
+            {
+              "type": "error",
+              "code": "MISSING_IMPLEMENTATION",
+              "message": "No implementation files found in block directory"
+            }
+          ],
+          "context": {
+            "filesAnalyzed": [],
+            "rulesApplied": [],
+            "philosophy": []
+          }
+        }
+      ],
+      "cache": {
+        "decision": "Block \"ops.slackSendMessage\" not in cache",
+        "skippedValidators": 0,
+        "revalidationReason": "always_run"
+      }
+    }
+  ]
+}

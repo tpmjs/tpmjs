@@ -1,0 +1,2680 @@
+{
+  "version": "1.0",
+  "createdAt": "2026-02-09T10:13:02.276Z",
+  "updatedAt": "2026-02-09T10:13:08.619Z",
+  "configFingerprint": {
+    "fullHash": "f8bde3d85d9fc60c7f39c6bee8824d87822d28a8a44bee301291bfaab58194aa",
+    "philosophyHash": "93bc67e43947d35c550d812332aef3e9b8e0aad18ed4420039724a56a8d8d4f4",
+    "domainHash": "cec86e9bd93f6d168d7636b91b925742bcb9e54092d89f00a52dcdf7b961b6b7",
+    "aiConfigHash": "59ee04f04d6ac6c9e99647b6bc0466af294618e9b5483d9d5a6bb926e9337398",
+    "validatorsHash": "10ec2833a040eef8fa9770e98c98bfef368a9805bfa2757180f5aa1fcea4a273",
+    "globalDomainRulesHash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "blockConfigs": {
+      "research.pageBrief": {
+        "definitionHash": "9766212507a1fe433f2980a7a4bba232e6bb9f036d5f5f3bfbbf7091d11f8455",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "89f555ccfeb5a9a39a03bc41712de00c9cf186ec8a503afe56556c966cbbee97"
+      },
+      "research.comparePages": {
+        "definitionHash": "b008abc73e94b4bd28441e3b61bec37b176fe17a87862fc4d79dc2afeb328e38",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1561a07522d692388fce233561f60466e1cbd1ff2a9ce43d97dfd2d7441023ca"
+      },
+      "research.sourceCredibility": {
+        "definitionHash": "ac6dfc9e7a782eaead97e471c2574a7950fdbe925e049612318613015099002c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "37be83bf7ca5df63431f8c5f8426e93eb220f755b03be9c7a55664a5d69816bd"
+      },
+      "research.claimChecklist": {
+        "definitionHash": "bb78bada762274416251f1c3c7362e9ded5d6f42cdb01dd2a9d585d82456f10b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8f56e639d32da06f32de5458264ed96afb0d4382e6f91446a0543d2481ab0640"
+      },
+      "research.timelineFromText": {
+        "definitionHash": "ad5de156d35f8775fbd342483b808d5b904695472a447cc347295e353033717a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ef66e9f9e211d358e5b3032e2614dd57ef5d428b0f4cf1228ec12f7205059b61"
+      },
+      "research.rssRead": {
+        "definitionHash": "fb0bb801b434f8851a5880863611ba3f73a6d38c3eb856ecaaba9a92d08b5523",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9388e63954fe2fd5fcf0822f36f46d4ae1dbae9f15e741dbb98d912cfc46a7d0"
+      },
+      "research.sitemapRead": {
+        "definitionHash": "c26ab72c2cd48d4a6925aff302fd2543a80ccd5c7c82167f486ee5ca59836945",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "28817dd36dd2fd789c19287107b7ca5f6c4491170901e17fc9dd2255a6c32e89"
+      },
+      "research.robotsPolicy": {
+        "definitionHash": "3d26d8ebd39d4d05788d9a3a88dd9a97c2b60f403e9cc9175cdcab8bc75e55f6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "910932f54aae9e77e2ebac48f8220cd949cfc65a8b69991a0939e74fd4642b07"
+      },
+      "web.fetchText": {
+        "definitionHash": "57238714d95f10c8dd2d6a08c9c573972ff8663b9aa460f7c1487b0daaf0e7b9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0e07955fd328e7e08bfc6b04497699cf21e19665cd6889e49176780333ebba52"
+      },
+      "web.redirectTrace": {
+        "definitionHash": "8242832f614f88543bcd5149760315a42e024f5cea4e475ad3e4d35e874ed8e7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c9955479f871f78244a60a43acf017fcc4bc3b233832100f61af1a1d6564f0e5"
+      },
+      "web.extractMeta": {
+        "definitionHash": "aadb3475c517a3af48158bbb7c1822ad3d081cfb4dc64c56eb6b661148e4d58a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "fffd1ec8adb369d16314793ba85d84709fa5a7a2b5a70f9d2b027751228feaf9"
+      },
+      "web.extractJsonLd": {
+        "definitionHash": "fb9b72f379bf630ed9750838acdd1c27e363caef2fa2942c19893d8a08cec5dc",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "51f951546dac8850669d60b3ae6b77cd2352113f77f8d1e368d6446a6388d0d1"
+      },
+      "web.linksCatalog": {
+        "definitionHash": "20a90a866f6c5bb0dae6c17e19b361a56d4147f7b0eec0bad15b820e7147298d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "434ad1721ab4cb52155ef0e166c46c3551a6e87b11b95b76e99b79239d0246a2"
+      },
+      "web.tableExtract": {
+        "definitionHash": "20df38ce4bb97f1d7af7c9a83ebcceb7907dcc74d26582432e01fc373643f9d5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a3b5aac49b09f284fa37efd1746013c3ecd6e5b96a9ef283283d53fa0a3a7beb"
+      },
+      "doc.executiveBrief": {
+        "definitionHash": "c63afb78304e74ac2376c696703c04204fa92ba115cb57e86f07dcc843a14231",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9691c0e8f5216d76b483a91cb32723b05b115e2358a093e9f133441302723408"
+      },
+      "doc.runbookDraft": {
+        "definitionHash": "fed806d68b496db69e5d8bfe3c134367e736b760c0bb0d6aeeda4b2dda6921fe",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9934fd805b4b582f9d2580a94c0680801de66fafa7d3d5063ca3bf344848b6a3"
+      },
+      "doc.postmortemDraft": {
+        "definitionHash": "f19abe24286bfc9d6f7dbbdddd83bed3ca459c3f547d916c48edd4847c73020d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "83c25355f368da951304dabf38f0b0d280919c167c8907fcd39f571b1158844a"
+      },
+      "doc.faqFromText": {
+        "definitionHash": "0bf8f20a1d568ff9ee3f27fc9d1da6d9d887d4327280b3884fa4e9aceba78387",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "526b876a2d92f11d140794134388e5a41fca63c8cb9525c2070f734ceab6dd55"
+      },
+      "doc.glossaryBuild": {
+        "definitionHash": "f1578ad687e3f8d4220cd55b5aca5d7bd5ef41bd9a2a52de46a96fe48ac387fa",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5a13ca062d8a27b19c013d1d49efb1277d2fe4c500c192e39739615f3a9847ad"
+      },
+      "doc.tocGenerate": {
+        "definitionHash": "de1bbd167f2a20b7298bf8eac9f1fd0ce88224f9c1b9e532d2dc88f44946db98",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "476aba1c74292601aaf7c3d410e980d42f00ce919e1430668c1e9fb3b92495a9"
+      },
+      "doc.markdownLintBasic": {
+        "definitionHash": "0e9597a64c2f4c66d20d9ef0a22e84c8dd2cae4072474a58e942c169cab333f2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e5c40369d32769842bfc48c1ca57a2d18fbdd9df15f1565b3d3962bc4a13c7a4"
+      },
+      "doc.styleRewrite": {
+        "definitionHash": "769999c12b1920cf513870972a9ad4d4007c26840507219e85f9566e68693a08",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "150213bebeff2b136de6ca4ed27964de2732dea691d9014859be83a7ee01a4ab"
+      },
+      "doc.meetingMinutesFormat": {
+        "definitionHash": "28a8416f229f9e6fbbf6026d643b86f58ad8573346c9f64cd4de7bfe848eb25a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "85b7d1022e2d6abdacc31f16502a4f247c3c0a5b6c62536fcd6f461aed4cc45b"
+      },
+      "doc.decisionRecordADR": {
+        "definitionHash": "eef84e6a34e1dfe136f1ce4426a5dec5c98f12b001d4135d91d99b5ec447abaf",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "bc1105b629b7d1b68b7ddc3b8cd970bae92905753c33f37ab80aabee51f2f077"
+      },
+      "doc.changelogEntry": {
+        "definitionHash": "f6f4f67ba6fccd98875135d0966b58a692a6a5ad2d4ba68903860b0bb298426f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5d9d14a8a669d0dee5c6088b7ce54d3b7adae3429ec2da6833237958647528fe"
+      },
+      "doc.releaseNotes": {
+        "definitionHash": "bb60ec12a91c387ba3ac7d7b99848df35f0af589c9d3bbffcaadbd91122702b2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ffb96b936877e2f54b5983cb86e41bc336578192617fe17949ed4266d7a581df"
+      },
+      "doc.prdOutline": {
+        "definitionHash": "313914386bb9e9ebe094652c813e870639d793ccdaeb7c2b03c8846f63a59647",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "62cc6f7744e157db44e72b273bb8fc8b81d9b077397e5b92b17c9f6262759b0c"
+      },
+      "doc.acceptanceCriteria": {
+        "definitionHash": "03c713e374c822f828bc9bd491cb7e999a82701dc0e6383926e1ede1588bf0ce",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2a5c6409cbf3e71c117f1674f3c2afba928df4a8a3c466165d697145f753b1d4"
+      },
+      "doc.testPlanMatrix": {
+        "definitionHash": "3d7f6414912086f749cb003ff09043e1402e38331b48e139a0b24b928803f4a9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "64ebb4351fbc85bc64770183eb8eda444db68f5203efda5f7605ce662d268299"
+      },
+      "data.csvParse": {
+        "definitionHash": "4657707995c0c6a5e8ba021e56c97a6ac43dde25605ebfc324c46a439d0f3e24",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e42825d9c04a70510c4d2e1b5fa4b1861d1ae263cedc9c2e93b7a7ff0a9c4597"
+      },
+      "data.csvStringify": {
+        "definitionHash": "9ce8475b64c3cf208b611fb8ec33b73ed9925a574f1dfd9ee3fcebd22c82fbbc",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1d392b78a226e6eacb58677b68efd61b42632a59552d11441bacad12dc7fe608"
+      },
+      "data.yamlParse": {
+        "definitionHash": "208fdff7392b0de3ce2c69cfbd667cddfc76786449ef75a5be52ed472740e969",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9caa124919399057fe742e1bfdc166dddc81a4db3b5129a07945cd6df4d29adc"
+      },
+      "data.yamlStringify": {
+        "definitionHash": "64e5bdd28b660208672771ea561b0ef0f2446b83a2f9465ace94d572e432f787",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "38de830288ffe9720905707bc10fc983ec89e632dd6f30a931730093b2d646d9"
+      },
+      "data.jsonRepair": {
+        "definitionHash": "9e3cfbb9e49e91ac7161c0750958cb4347f887d4cbfb218bda061869e22cf87a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7a0ee0bbebaf71bdf558fedc3f7ba4e53abb9b5b839753847798c324d78e680f"
+      },
+      "data.jsonSchemaValidate": {
+        "definitionHash": "38e8a179b1404db10dd04495ee4f611692b6f3748ac4d67ee7721e4445d1c656",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "22a896d0dd49babeb8ce65efa59e966de0a5c74c098204c5e2397581f4c778da"
+      },
+      "data.rowsFilter": {
+        "definitionHash": "a9b741a9787a8be0e52fcfb21c55fa80c64d91ccc32936b429d325695b02b846",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f7dd89a017f31b66191f8fe14a67d32f5136f5ae2494bae64e01449534c6d0f8"
+      },
+      "data.rowsSort": {
+        "definitionHash": "235db2402d0d711d902f16b00266f33ef68f37d7f7089b14393e7bb6c8372e33",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e7e4596d16d70639a479c2a9642c2f5936729ed8977ccbcb605a7665c999f493"
+      },
+      "data.rowsGroupAggregate": {
+        "definitionHash": "e60d4be8ae1b0b75d39801d3d4da3ad591a2931a3ace8f437530664f2b0a2b8f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "25ab0c0c538c9493dbd4058a224fd55d1dc3d69f51e7e65d51baf7d5b5e2c5f2"
+      },
+      "data.rowsJoin": {
+        "definitionHash": "ce2e5716056a2f145548dd0e790fbf04ae849a720ae99f7f83141f5dff74867f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "eca7bc416098fb9fd87dddc6a3459c130821f615278b7d9f0312ca97c75ccf23"
+      },
+      "data.dedupeByKey": {
+        "definitionHash": "423e3b3a79624e55ca06d058ac2c6490c75926652c7ead92bc7cacdfb17a21b5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "90d0ad9fc37532f7482356d827c27c9ea3d9be91bd229b6baa8db4ba448ad6ba"
+      },
+      "data.pivot": {
+        "definitionHash": "4e3fa4501d2363ed56eec14735f7d9dae63430c2830de45dbe8a5761583b4f87",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "985c0f50ac0edb774e299c0a7bb23fce3746efbe33d0804a3840d76662bad5d7"
+      },
+      "data.normalizeWhitespace": {
+        "definitionHash": "b4b330bf638f24eedcf17ed8b31ecfb0edc9bcc28e9ae63fb9ac0bfa92a1aa9e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b7d630d1b8cea7cf50cacd773e38522608ee36e63f46e4f9a04da8554aedb042"
+      },
+      "data.urlNormalize": {
+        "definitionHash": "79416679d0da012db4ad3947a9c4b79f32545c2981ae6e989bb1f2c378518b62",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "17238f074c0bdadba464f90ad72b130177b169e11aaa82956d1d05ca4c99bd9d"
+      },
+      "data.textChunk": {
+        "definitionHash": "d5d23a26afad2a2b64ba20b06c17e2939c08b6dc382e4dc68732bf69c975ef2a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cdbc9e360de43ce57de15ed91ec04b3f7e8164a68f3f6b4fd44dc658e5dd40b3"
+      },
+      "data.base64Decode": {
+        "definitionHash": "bbd264a2d396feb76357e42ae6d91a5ea2c5211af00486313ec69face95cf0f0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4c70faf950df7921c788f89b24bff9b8cc4556ee25881cdcf2d317d92b014a25"
+      },
+      "data.base64Encode": {
+        "definitionHash": "e4205e6a7e747808e2e697a6e4edf81f7c30507e382b9202212f371a1ced87d9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "060c1814e25ea7352531838d58aedc88aa3f32e24faf8dc55b8f0e32a883bac0"
+      },
+      "data.dateParse": {
+        "definitionHash": "8c29f451d2f6725bc0a8cd0a59afc596c09b7c5692016d9962fc376a567d641a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "50f1c635b7815d2f8ad3edec31610853a6584a94dc5bcd413ce0f8e878ddc8d6"
+      },
+      "data.hashText": {
+        "definitionHash": "d27982fbbbbdd404ea6871665dac13650aa5861355cee9a48a7c72ac2dae69cc",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "32be63e76e91fa09778380b83537be050b5e147d959980e527cbeb39472c682d"
+      },
+      "data.htmlToMarkdown": {
+        "definitionHash": "fdae793aaa50f698ad722debc9b601306311b4e4ea8156e20bcb4ec244679d0e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ec5014ea2cf8b56555e73d94b75de8d9e88a03f2d522bd8742c28d394d41e16c"
+      },
+      "data.jsonPathQuery": {
+        "definitionHash": "2b99730aefa62dbbbf2561d9c0e2a3d10dc6d34ace46e2384dc5c9a39237a09a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b48cb042a604a93750c3713efdd71948573efae62d2c08658379db29e96a5d28"
+      },
+      "data.markdownToHtml": {
+        "definitionHash": "12ae79e69ba28574bd1debbb8a3388bbbbb882f8832f45fde7d9b6f6a1b75133",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ee7dfb0884cf58ba80bc33276b63cd7f67aac61d594009e5cd8790f989a9806d"
+      },
+      "data.regexExtract": {
+        "definitionHash": "7c8e8749df3248651a91500ba7c0916168d8985f79c1ef216064876e59e35491",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "928120c2f2865387260976b6e0d2b8890f6d996f9288f66838816032823debc3"
+      },
+      "data.schemaInfer": {
+        "definitionHash": "84b511c6839e152cb7a3974e53fa5b426c40c969dd897eb9534e4fb9f6acc998",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0725715a2880f84ca47a4ac13d0337919c6701897b847f6bc9d379f28491b81d"
+      },
+      "data.templateRender": {
+        "definitionHash": "4d3af312734616580e3732ff6aca4b5969b2c9e6c3f31ab7c273fed361188839",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4814fae6335a6c62e81cceddd12c2f4819e206388baaf766ca3cba90a4ead342"
+      },
+      "data.urlParse": {
+        "definitionHash": "e7a2548cebdc0173cf77e3e08686df4e51a7ad370caa0ae396ba55f54d53bf63",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "81ae222c5d11bfc81b3a1b80896aa689c798360223721c568d0c28d3897843c7"
+      },
+      "eng.diffTextUnified": {
+        "definitionHash": "46035b5eca196ee0c1ba7d627abbb648aeeb9bc8010b85cf90834c409066e8b8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "27e1a58ca3e6f5909727ced2d1e27ceda34b0cbbcba7c384c6a204e96b181d7a"
+      },
+      "eng.stacktraceParse": {
+        "definitionHash": "5eb5b633eca00d9ad138ea3faaeb44fe150cd78e5d1c2a0dbde7f9137614aa32",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "30e3c1cebc28feec06fe7ecad32c4a19b3cc41b16897f2ae30324be581a58efe"
+      },
+      "eng.errorLogTriage": {
+        "definitionHash": "57c5170da1b639bade96b74389815596a8fb66c6645861b677d35d20a508ed0f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0d2d1e0ab5f1867fe8d85fb16f45c49758538416aa2367464e556b6bfc12ffeb"
+      },
+      "eng.conventionalCommitSuggest": {
+        "definitionHash": "b453409a8822394bfb0a22b78a39abaaeb6e5a857cf6cd024f869b5015a2e3de",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e2daa12df8cad8c24329cb6b667cbf7f26c3677e893a8da1cc0e1adebe8e3275"
+      },
+      "eng.envVarDocsGenerate": {
+        "definitionHash": "5c0217b14f8a67780124311bbb1c23baba9129166d1b8521d0b9cf9353d6975e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0d9ac31775e098ed77d22f7d75dd1246b63fe1bd8f27d8f7aa172aa031e45e6b"
+      },
+      "eng.openapiSnippetBuild": {
+        "definitionHash": "b9894e1a8ae6ef364c57549030600fac0b183bf9a9fd668d7314f6243d9b26fd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "abfc179688ed4e7b74a7ab90a4aa3c54d400e5f1c6ea87534a1f4b0f03ea33ab"
+      },
+      "eng.dependencyAuditLite": {
+        "definitionHash": "aa03fc45b3c52ec3e2f71934484993211a5a9a03654884e25bb792bbb780a249",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d9b4939b786c7ad8fac77b5c9e374cf0254d428896395db32f10b1848dac72d6"
+      },
+      "eng.configNormalize": {
+        "definitionHash": "1b37f21a37f5be88993f4140e7d393db38d097b57799301d4c7fe5177f80a335",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "06cfcd7bf9d8293e71d525fe8ce9f97d439ed88acd1f3cf68edf935ad8624f6a"
+      },
+      "eng.testCaseGenerate": {
+        "definitionHash": "e82d42605ef6b239ad203a5aba5d2b2acdd092e78a404e5d7f8928c4a4344308",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5a08af465608d499afd8eb07137c0d0c80a3fa1e4773161dc926080963dca5aa"
+      },
+      "eng.releaseChecklist": {
+        "definitionHash": "7523edbdfa02f7318aa6b0706299e6b78b69476575439cb522b413bad11a4eee",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b690a640abf9b731966204cc0cdf1701c1e56c138d682ed425d119f782419979"
+      },
+      "ops.monitoringGapAnalysis": {
+        "definitionHash": "262561aa761b19ac195b44569962bddff391a7e52f03a336f25de801c34cc74c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1e8c99bf8d182e5a3630f26f13ad57d3585562fb4bfb5d14a1249ac4c33daeb8"
+      },
+      "ops.sloDraft": {
+        "definitionHash": "b897ae5a763373dc542b4443a31ee1c02528f84eae66a2932e99c3b50cd3f2eb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "93d41f4db2459bfc434fdd46e86e085e026aa7e2027003fab2e9cf38a6009da9"
+      },
+      "ops.postmortemActionExtractor": {
+        "definitionHash": "ce5827f38c035647de66a563416d99e2f890601ab92517658087c59947e59032",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "27b865e3b238b527563053fe30b8323c7cffdb3a2c2d2db25b836662dd4e49ea"
+      },
+      "sec.urlRiskHeuristic": {
+        "definitionHash": "a2486973912ad247fded83a899e6ff78fa0030c01f465841d22f1f21d247e13d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "76029055326ba9638f468b95abf5a63d2c249e9c8efd3a163751d3f25b614522"
+      },
+      "sec.secretScanText": {
+        "definitionHash": "5db1fb6af26c37f229f5691c5ce3b0fa8cc92858d144c644c98fc224192a4a26",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5f6a7e21890bceb7ff34eb76345c5184c696ec0a71c79d20cd5d7b537f71b7ac"
+      },
+      "sec.redactSecrets": {
+        "definitionHash": "e7bb6bb1f2595f336f92409a98cbb653f55dd0b78ca6180e4ec6f5034484196e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3ccc795c395abf49ce59a2688be587bfccae6377cfc82e5183c97a570f15aa14"
+      },
+      "sec.cspCompose": {
+        "definitionHash": "9408f7e04c930b60c87e91c8ac99be31ad1bfd01fb31e4e70db1d3eada049e39",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "49d218f3600d11420dbaeca4382b37d138f9cde4b0e78e4d2e99fb48714f98cc"
+      },
+      "sec.hardeningChecklistWeb": {
+        "definitionHash": "9e885e28ffc1789c2c52147fbec6b9a7321ca507a0f13e1d5e4ae3e2f8f59e33",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0384b6eda59419559a7410f6968816c51d03e3a744b71688a2d8f63eb2624257"
+      },
+      "sec.htmlSanitize": {
+        "definitionHash": "cda2fbf84c700184ce60da5c687b25260db991b5afb7715526cb266eda64f0a9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2248fd7344ed32c165885819f82bfdb52053613e7b6899f5796a3a6968df58fd"
+      },
+      "compliance.dataClassificationHeuristic": {
+        "definitionHash": "bc9835931a4fd10f374ebe6c378144f74e95641c661e1ab5c6ec0b5c71a9828d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a72db48ef77c9e3989e52ef3461edcedbf19b1b103cbd51e4ed7a2d985cf03b1"
+      },
+      "compliance.retentionPolicyDraft": {
+        "definitionHash": "b6248d8ecfaa30a9b36579d359249fe3f49ab33ea5454631172265169bde8a97",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5292419490fde01a86f0947d2fc05cd57efcc5ec6cd983d5f7a5fb078f5a662b"
+      },
+      "compliance.dpiaOutline": {
+        "definitionHash": "6a3f89478b5e0592efb7f68889ddd166cb97eb12e0a3bd255c1c4f937ac17013",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b75d6189f5b5ba8c7d0cbce7f9c6581f2039a411d81dacccafaeba9d7969c2c6"
+      },
+      "compliance.accessControlMatrix": {
+        "definitionHash": "34776629fd6e5639d82a117033aa6bdb1902443c875b67340b2e2263cc5d7a25",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2223d435e726e5aedd6190b22e6b2824f02a30d28bf5c8a67d60724637be464c"
+      },
+      "stats.bootstrapCI": {
+        "definitionHash": "e2fa8f6edea94c4fcd391e652620570e5ff2c61004ab4a4e5a4204ab2fe4d284",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "183d0fb2c17b80e92a516bb6ce58d29ac2940d426ac76b86283b237f9da91654"
+      },
+      "stats.permutationTest": {
+        "definitionHash": "a03a0026dcd16266379ad2cb55f968a5ee9f48cb3e3fac34cafce22f098433ff",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "957dffc3d51734e05b37056e0c9ea6bf253bdb6aae2cbc476b996596a4645a93"
+      },
+      "stats.effectSizeSuite": {
+        "definitionHash": "b1186702be17d23fb9bb202ac1f025a66c9ff464e5475fefa28c43f4c1b150e8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f8cf3e5782499b00f4674c4ff7b0dfe1727857ea4499cba1027786e0b61045aa"
+      },
+      "stats.multipleTestingAdjust": {
+        "definitionHash": "53a9fe294db380c743e465ed9b2553cf5522b31ded97a71127d5b5d164084c1f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d44f8a3427ead5ef8ea2f71fc029fb1563e385a1814afb3191e3789a11758c95"
+      },
+      "stats.linearRegressionOLS": {
+        "definitionHash": "0a3ff91dd1bed6779aa99681a3684a7cf32e2d579a5c4a9700b71410a8ffeb3b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3b47bd859658c8af6e2bbbeba086d68e7c2302d8af7a7b14f23b224f452affb1"
+      },
+      "stats.logisticRegression": {
+        "definitionHash": "e8470f1e7f0d544c1a3fe05a7289cdb6c8298afdce3a26afb4419578293d46ba",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "00863ef4d1ec4b2201088e1ea514ac8954a6dc00e451a074f18aaddafff4c588"
+      },
+      "causal.diffInDiff": {
+        "definitionHash": "d42dffe726821af73633ca0cb94bd219adde459292481cb0f1a0d3f40a583eb0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "900cf94f63a0b791bf58f0bb1679bbea4adabc3786a9666192156a76c17b0a67"
+      },
+      "bayes.betaBinomialUpdate": {
+        "definitionHash": "d9924a46554d09ff620f654a38ae9427e42cd75f305398b908c2ae5e4836eec8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "932a47590ebc6cfb41e90e609a995baa0bdb5d80299c6a487661a6475b48375e"
+      },
+      "stats.timeSeriesDecomposeLite": {
+        "definitionHash": "b3e4b45062b3b5246799f37dbe14bca060a6cbe13fc73a28ec68bbfaeff2e971",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a1abdba61ee2ebff0aa40fc8fcee50382034bf45d4763be7b8f850a8ea4df1dd"
+      },
+      "stats.anomalyDetectMAD": {
+        "definitionHash": "b9dece5d9b3e414c540ffb0f4777ffdc8e75e97bf7951d689b2723e91f5482fd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c33a8ba82520f353d3bb98c6bb72dfda1c14e57b5acb8ddb54a67006c405b95f"
+      },
+      "agent.recipeEmit": {
+        "definitionHash": "5d7f28cbf525e349332055e1936e0a612b4590622f764520ba842a7acb5e9bff",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b950bfd919306a9ffcece0754bec972206caa4a910662cacc81c45a6e1558343"
+      },
+      "agent.recipeHash": {
+        "definitionHash": "63430d67dbe62f399043f0acdce018a26431c4edb0e1c53c5bcd1de27e3879d6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "375f4442fe49934ecf1b4361a60a242859394d35073824257d6fcff4f82bebf2"
+      },
+      "agent.workflowValidateIO": {
+        "definitionHash": "82e0b77074870b237ad419fe37887c66a2d0f972568082f2d1e35626f0e5cc88",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a12faca92ac02c99542febfc8d1883ed24d6908c30c5e2a51d421083e5bed022"
+      },
+      "agent.workflowAutoRepair": {
+        "definitionHash": "b41c785df507a1dd328f9eaadb9e41c47d5cf60d5c19b7a438165fc98689199c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "435b93d19f4e27df485e581237a0ed10187cb04b887915dd95ae700066dd5a2d"
+      },
+      "agent.toolSelectionPlan": {
+        "definitionHash": "bd04b958de86e1d283603181ca86570cf210560c30d5638c5e5eda3bef59db03",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c88fb68f9173fd91a46e884c24915a34202e2ce933edaccc4cddad42172cf3fb"
+      },
+      "agent.evalFixtureBuild": {
+        "definitionHash": "f8b87a6c8c6c541aeb3e4e69b0539ee5bfb1a89ec9d33a2077c38bcfe33007d9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "eace55f9f24d0b321714b1bb3e909d0bbdf35b58bf8630c94c0e78dafed66c6e"
+      },
+      "agent.toolCallAccuracyScore": {
+        "definitionHash": "187ae32b0cfc204021a1900b8d5cd62c2f2b14b375cc4ebffc6f0047e4a8c533",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7820e8df78321b256e3640fd22454a7d0fb61b273588751fa276b2586bf0a5ba"
+      },
+      "agent.coverageTracker": {
+        "definitionHash": "39e21a5e7492371d7c93e83d4207d3dbdb0410027761f80c3c5528855fe03acd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ac51ab8f38a474e08c5851bf22e26b7ba15f01399ba54b69681b46eb50c1aecb"
+      },
+      "agent.noveltyScoreWorkflow": {
+        "definitionHash": "3c7cd3af0c91132f181f0db4f4f211c24f23ae9a782344dd3c741e36d7bc2835",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2bfc5fbc941b6ddeedea44ad00389eaf7a0cfb5af4600d4b6881ef75ff427a63"
+      },
+      "agent.recipeGenerateFromGrammar": {
+        "definitionHash": "64315255c405d864d2ac50fb6f305cdae36cf394c3e0cd8eef4ce7c2a1072d65",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0677f82cd51d76d42db99aee674a2329a1cb6fe58a9745ca45a34d2402837a94"
+      },
+      "agent.recipeCurateRank": {
+        "definitionHash": "60f492bcd9b7f36fcdc13714ab5634db60e34dcd3215b9a82f9d140261dd5f11",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "486dc2f1c95cd9c33d2e564a0ecaab36998ce72f8611ebcc78b539685b6e0a37"
+      },
+      "agent.workflowCostEstimate": {
+        "definitionHash": "e7324b4d6073b7eb3254e1adb46bd2ae5006b841135e2248dc862c83a903ab9e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "be2290be63a57eaa8235bdb88e95010e6556c9dc9f54c57049852e939634076c"
+      },
+      "agent.guardrailPolicyDraft": {
+        "definitionHash": "e230a0e59b6897b71807a1cad6a18a71745808772e39872e6d937dabe040c149",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9b37a39c52c9aab3a706bcc3a5586a02590204b9b621d4bb5aa011279032e390"
+      },
+      "agent.promptToWorkflowSkeleton": {
+        "definitionHash": "f37d36d3517199171b2a980ac96f545cf889a6b330db2094133c0706401b177c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a4f234ea4801b266642d10353435b975aea5be7817f4f44bb8d6539dfd8ad63e"
+      },
+      "agent.workflowExplain": {
+        "definitionHash": "7d764332c7f25762c7811b8ba2907f72e1aa721a228d08ab761cd988108225a2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c6a8bc1ad76f87f10bfff8caa39898396ba99e5607fd964d3daee63d9b695d39"
+      },
+      "agent.workflowVariantGenerate": {
+        "definitionHash": "7c841f242e3b2db78fb9ee74ea6a27d59bacdb3bf5e4572c6792c4050e43f90c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a3849f0a564d80675593d86462e760ca8d59cb9b03b4832f78d94d08a013fb0c"
+      },
+      "agent.recipePublishManifest": {
+        "definitionHash": "163d7a05a1d69dffd6ea070d789d17cdfb8c6638b428ca1aac85c3282c78a100",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "fa5fe4afd2386a263936677a7a2b2fc579e5df3a070a0e6354004086675fbe8e"
+      },
+      "adapter.createBlogPost": {
+        "definitionHash": "02c7cd1ab52bc424724c1dd18e59157777ec6c76b395b1cf994dac6ec2a9756d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "97d133bfb58144fd19dc79f49638afaa71160ed9be83d5da18c1b9de385b28df"
+      },
+      "sales.leadScore": {
+        "definitionHash": "7416d9e3a07e165a7a64f898b05bd2cea8892931c5632b8c57209483bc8f3f09",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2b6973d1d7f6066e272b9c2a414f26163ae378d2f73f99dfd83078aa00e0fbc3"
+      },
+      "sales.proposalOutline": {
+        "definitionHash": "32ef7c05df08f7a6584438c93e0faefcd85b0298d741f2e2addaff837e889b70",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "37a39968ed5a818455914841b11c1cec381e4f8b735744526bed5f9426dd2fc3"
+      },
+      "sales.objectionResponse": {
+        "definitionHash": "3821c0ca1b88f33a0736ccefdde1e45d4e0fe12f3184907b52f91af45e9af228",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c6f0f5cd2226e66ea1caf17349befbf549fa6470977be61f65df74b106316c16"
+      },
+      "marketing.competitorBrief": {
+        "definitionHash": "e1ef8c702be8bd18a28e32e6a3b33e4d23e0c731b75756984f5f5e6ca216bb2c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "05987780b64cf7611676bac5c5b050fed3cd210af023e590a5cbf3eaae34f4bc"
+      },
+      "marketing.campaignBrief": {
+        "definitionHash": "d79ed26346af6569d68e51259f54a8486ac4dc3175296dae3b49e83351e6fe21",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "072f1de0ce6baa9ed9439c5dd61c620408363e14e537a27ce38d97732ab75da7"
+      },
+      "marketing.socialPostDraft": {
+        "definitionHash": "4fb29e5e46f8c5a4e11f74f5e83d92733c7510d9138730f840414285fc0c1655",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3090734275869db0e5629021c34a1c5e260b073c1c5a8fb3b41526f5c7a41d06"
+      },
+      "marketing.emailSubjectScore": {
+        "definitionHash": "9d527992b7dbc89ff832237d794db5c7f053087448e25af0252e833943214bfd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f81d6e0c1d41f82d1cdfee0d1ff3f7f7b93077e5a159bdf91a0589e65f1cffd2"
+      },
+      "marketing.audiencePersona": {
+        "definitionHash": "3af50568264ff4b2094d597f10c656a6cf7413c831afc165cf0535e2ff79d350",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "79fc1a629c6bf7adc9fd90e9b82f0e5e5f1568d6097ee4d1796bbb3101a9d934"
+      },
+      "marketing.contentCalendarPlan": {
+        "definitionHash": "ed1bcb861eb6b83621d91d16035afef116fd167c48070244af3c4e0fbb34be3a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6e467dcea9b21239d4ac66812b9231015ee9cf8706a679506a7335a417e6aa9d"
+      },
+      "marketing.pricingPageCopy": {
+        "definitionHash": "ddf64c06a23c2ad3a4949e172913dc35bb87e781ee7f87b109dc7f144ebdb6b9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7d7ca321ffab0ddf2ee3d6f81f103a9a329b1651b977f603e0ae6947ec21302a"
+      },
+      "hr.jobDescriptionDraft": {
+        "definitionHash": "b8a7b116b7b6cc666853f69a281ff57b48639cbfb0413383a6eb3b096b145936",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "49ac49a67ab23e417483ddda1da54fc511bd21f87a9bfa563355eeba051ee88d"
+      },
+      "hr.interviewQuestions": {
+        "definitionHash": "f4fa80bccdfa4def37505cb75c58994bd64ae96ccf01640cdc7eb22fe93be4fc",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "da25bcf1d1b0cc9d5303b853306c0f451c5121731a33b20d0178a9303ca9ca4e"
+      },
+      "hr.performanceReviewDraft": {
+        "definitionHash": "66a80c76cb3bb1d05e173dd8e23673ca355412428d75f881596a5fd340caa8cd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "34d8f47bfad29ec2f3268a6ffe85dab39b4223ec6a434b98802bd2d9c2f259d0"
+      },
+      "hr.onboardingChecklist": {
+        "definitionHash": "d6d7ccf0924c4337ef40aba8eff428ac16100d77d7219da9f814f7867b7bd9f4",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "70305ada5f66e03b2ee30889a0b25b5d81e8a3dd506d362f6d85935f57c64e4d"
+      },
+      "hr.compensationBand": {
+        "definitionHash": "c76a31b4a0b2fa316ec7d4081325ccd7ff47a91ad95024e8d58bf33886902eb6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "dc9f82efea54a4cb5ba9f3d15bb7ea5d589be9fc178e7f1fb110fc66660618e3"
+      },
+      "hr.surveyAnalyze": {
+        "definitionHash": "3db24ed9a75cdf47b349d3b2b87fd040b391e518bcd31e412ec69d9d289beb89",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "69e95fed072f242e19aa4a8ab47fd2894aa613c82a3168276aa81397537daf95"
+      },
+      "hr.orgChartFormat": {
+        "definitionHash": "f0fef88da7b079340abd59e81b400fe3868ed148551a5d25a374fb0c2689fdd1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4ded0e0602ee6eaf592d8cbdccdb714cd7bf5ed15d48b494d1890f7e0b910db0"
+      },
+      "hr.offerLetterDraft": {
+        "definitionHash": "dfaf439f658f7058855d5cea8d4562f4d53c34eceac0a67d755ed2f778ae72a7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4925f86d127c74a03777d5c936234d24462576bf6eb8c4e9199c19f1ffc5aeea"
+      },
+      "hr.exitInterviewSummarize": {
+        "definitionHash": "d39a6f7f3db568f554839d18258db3623cb0008c11241377bde9a2b307de02f7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "33eed9049b3412e973ed4c10bd373ed62ab2286d06fc9a6585c16acf3709aaba"
+      },
+      "hr.policyDocFormat": {
+        "definitionHash": "a947aa43d1ec2fd9e623b43cd6141dca6f9f1f07e6ace92c73268ec31dd45299",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4d8a55d8fafe25da18bcd7300c4c2053d83a449ced1bbc9423a1570f61140f04"
+      },
+      "legal.contractClauseScan": {
+        "definitionHash": "6947d5f1be8cd93bdc0c7f6a7a87b0b18502f65c3cc23843e6b51d453230b23f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "edb5580dab81712cdd35cb7ff5c47b23f9eb87a5ec4500024b96126a2a26bca3"
+      },
+      "legal.ndaTemplateDraft": {
+        "definitionHash": "e102ff787ad2e58fe64fc0687d4987ee5526ab5a81b48cc20c366860a93c324c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "18f0a44f81569acebe997f346909aaf712a34fb0265b35acf04231ff301449fa"
+      },
+      "legal.tosReadability": {
+        "definitionHash": "502a42ff6e560c8a333bdd5a3cab28bb9851ccdde9eb253e5c12d16c78be9f0f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e91a70e9533b2514bc3bf66df5794c1167c41fad276b972fb67b579379e7fc34"
+      },
+      "legal.riskClauseHighlight": {
+        "definitionHash": "167eabe734dc1c458299a53971b476093898c6c99afa62a1521f91ae779494ea",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1559789c55d9edce9ff2cbb5845d1eca3ed2b3e4cbde25d6b06287b5bdb6ce9c"
+      },
+      "legal.invoiceTermsExtract": {
+        "definitionHash": "32d1e65d8661ae3741d9055852a47fb9d5c3aee9bf6d71ac8820f26d3aeba199",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8d49b2b44562e76a889dc89741b2d1ac6e59c5c2e1a1fdcb61046a641626e001"
+      },
+      "legal.gdprDataMap": {
+        "definitionHash": "05ad39214bf19f43a0a8f6db6d43f8e8d5194183b77ecd9e3f478bdf3954bedf",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "460d0cf27b140eba6bffd4eca4dc1da426a3cecd30c2cb6dfb484dd9ca6ac526"
+      },
+      "legal.copyrightNotice": {
+        "definitionHash": "52fa7965f9ee6ca9aac2b0addf8625ecd4ec64fc6641144c64fa9237205ee890",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7abc3547e206f210f21944d344c8f39a30eeab84088de76faddf34ad95e9fa8e"
+      },
+      "legal.trademarkCheck": {
+        "definitionHash": "daf61cc4da725bb35237ee7269f801cd74b3712431aed8f5801658fedfae3d4b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0808ce391005c3f7a143cf1584a86ceeb9db35dbb09c93e8459444bc4ccca586"
+      },
+      "finance.expenseCategoriize": {
+        "definitionHash": "27f34d450d57ccae0f988b81971a49b15d2daf946ce063af86c72ae81ef623e5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9da33df9e4f1bb652ea8b6717d681f3dd8c32b11d5d6cd349ab96a836e306e68"
+      },
+      "finance.invoiceDataExtract": {
+        "definitionHash": "4fe1a663b50538adb8264cf4b883d314752e4b469e8251b7ecb808fd2dcbe5db",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "de0e7e46076844ffcd5f9b7de1942fc8e161ea2514ed00b49952d2a1420ab64b"
+      },
+      "finance.budgetVariance": {
+        "definitionHash": "533a7bca064f392449ebd808081f5b4b747d61a3e2318527959593ed16207424",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e1d3cdcf219c51840e25cc830fc897ac0754acfba7af0ee9fd3d427ba1f75249"
+      },
+      "finance.cashFlowProject": {
+        "definitionHash": "3eab693925492327ff16b355dcb09f6972b60ade7cf0f135b40858408a9f54b9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "bea2255911253edb111a08cfc7c27621d55e1309d54db06b251a220ed214957a"
+      },
+      "finance.revenueBreakdown": {
+        "definitionHash": "7af29d4c7025992c26095db9cc9ba65a52c4cb3d1c327cc60345b2039f2af33c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5a9ba44480b28854add2a368f49b41e24a8b94bdb8c58674d1c8b6dc577fcc8f"
+      },
+      "finance.ratioAnalysis": {
+        "definitionHash": "45c9c42ee3bdcf18499717db959d987edb6541648612509dfce5d945dc399f8a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3bd798c458053a922bca80527420bc9813d2cb0139a1e67f658d85de1fcb9c89"
+      },
+      "finance.taxDeductionScan": {
+        "definitionHash": "4e65631faa077089b527068e42f2fdea727b3bf20740b8555f39287eeef01ca9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9904644a5b08a8885b36a7fc776101c3cc06c10b652caedca03d88c2fdcc411b"
+      },
+      "finance.reconciliationMatch": {
+        "definitionHash": "04fe7e2e5b84ac0f9fd11690c749acd8bff082182708b9fc840ca3f5b43229b9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7394c8a5d0e6a2b91a7a1177bdc39149962299744ca58981f842f7c9531cc5c1"
+      },
+      "cx.feedbackThemes": {
+        "definitionHash": "98648ce0876183fd1052089b74f398748d17af4a90b5d7f635e67ee5f6f1b36a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2d945da5ba688f08c7849f28f619a68ce48dd2feefcb58b6016cc5811787e944"
+      },
+      "cx.churnRiskScore": {
+        "definitionHash": "8eb470927314e5744aeab1810a32fbd9d1efe821b599ffbf4ca0e3f85777b395",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "040fdd8f81f8662af88997b51e3a1ed6fb4be90f4c8d35e5a6b442253fa2a4e8"
+      },
+      "cx.npsAnalysis": {
+        "definitionHash": "ec17ae3d6d9eff704fba516cfabe1d7dac11160524136874b2ca2a483272c616",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f7f093e86161ca6f328c9e21c47bfb0997c5ae039fa3d22aa92d6e2fc576ece1"
+      },
+      "cx.ticketCategorize": {
+        "definitionHash": "95e5d1db8e16a0cbf83e507a4dd60a2c5a6b0729b0225856f5191145cc943fef",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "771233bf73d7cb3eb8149f0be01c0638b9705888683453465bb4fe33a5e0d25f"
+      },
+      "cx.responseTemplateSuggest": {
+        "definitionHash": "ebe350eb1a245e73fa3dad120e971919dbaaea15432eca7e885ad2d5d1f98414",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ceed250114f94372f032253766ce7643ecd6c294f39c55ed7c7b0610e484e41c"
+      },
+      "cx.healthScoreCalculate": {
+        "definitionHash": "23b8fb82593515775705e238b9271520a1302b7e9648d22c1d3dadb47e552f22",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3c0c5f31fa47567a4f8520545ef1de78f896da822a69ddd08304a7430f00ff66"
+      },
+      "cx.renewalForecast": {
+        "definitionHash": "fe50d078a5c1653a558f1850bb9f80959a5b4be818c3556919e3fad6b06cddb8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "db4ba398c9e5c36edad18d24f53748e29089d219c5331cdbc2997b6bb08c1e3b"
+      },
+      "edu.lessonPlanOutline": {
+        "definitionHash": "c86282783099771e38241f023650f631d8bc3fbd43610c6323a31298ab94f788",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ab8425127e82403945c270a01319952ffb3c996b724f86efe6002dcfd69dc4bc"
+      },
+      "edu.quizGenerate": {
+        "definitionHash": "5c0427703a6b1fa32078c251fca2263290146b62d53f3029eb4420a803901e5e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0f3eba64ab5d841802e123b00d9b9fac0dfe21e7794bfc3bc13b3dd6b2992be7"
+      },
+      "edu.rubricCreate": {
+        "definitionHash": "88b7f6c7313322c606559eb31bef7ad4b20eb2c932e39de6e349cca1775b0f3c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d91036bcaf78217aa30e3b0efc66466f5875939cfeb1f2fdbc4518312189e1f7"
+      },
+      "edu.syllabusFormat": {
+        "definitionHash": "843cc4904d676649027cf4aa52e939a34c6fb91a2f6b23bb81c72a5cd0e0f618",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5d9152c098d0fd235f7629d1f7dd4870cd09498c0be72d34a0ac69d5374c8b90"
+      },
+      "edu.progressReportDraft": {
+        "definitionHash": "3a6ea23f0785fedaf7b7e463b1aa62e4854b2008ff01e609d124c35b291d93e0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d428107ddbb203505a4364bca85bff3f4e021e56ba6f212febcfed560f46c777"
+      },
+      "edu.learningObjectiveWrite": {
+        "definitionHash": "042c75d39c16650c6f01cbe31b3fef6028bc6289b3325098e2a169875a1133f6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ef433ee803a2d91dc321e4f6b5d1ade783495d1786dbb9043d283db728ec3725"
+      },
+      "edu.curriculumMap": {
+        "definitionHash": "2efdc205f597739f4ae9fd7935d0f7b4abc9d2d7e19ed9d078d8580af8bf290f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e2471a85eab4ec07babed100e2d6f4387540ff4319ff568f80c93b914443386a"
+      },
+      "sprites.createSprite": {
+        "definitionHash": "0fdc5e1c68a614e1ceffb3c977d858e027225f4359657e0954e1e7fd6b57a3f4",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cab6f0da66b130767630b2d58fe4934b559c50844aa107836b96e96ab04f0b27"
+      },
+      "sprites.listSprites": {
+        "definitionHash": "24b9a88bfcc449d902bf3f5097d6869fe103f92c7ba8bf8e58d853d067650782",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "301f62a43c0c5e44980414d81eb204ca9621d0ee0798c863d43586f5f6d52254"
+      },
+      "sprites.getSprite": {
+        "definitionHash": "d6e40ac949dba962e1a224fb8697d942b19f592e3893cd8bedcf71475494de71",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cab6f0da66b130767630b2d58fe4934b559c50844aa107836b96e96ab04f0b27"
+      },
+      "sprites.deleteSprite": {
+        "definitionHash": "3dba11fd4f222dc72b0abfbdeaac467b61c57746116947e9ae5710152e50df8a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c9c2449921604691030b5e4ab03c0eba09b6e1bf5d6b068640b43db1323e9d16"
+      },
+      "sprites.execCommand": {
+        "definitionHash": "d12292af8ad7955085fa5d71c6fd9366b48b47fcd445d3ded4014560023f3729",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a7f62cc778eb67a5bcf3d917d3ad7ed251c8c3cea871b91a2251ac3a738e9172"
+      },
+      "sprites.listSessions": {
+        "definitionHash": "cdce6d3ed5c8d4c38ecfa88464d04a65221920e85cbbf3b77d3ae96e9af5374e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f7ae4f668d0383df1aed278179f87798a60f15d3d025e61bd585908aee56fda1"
+      },
+      "sprites.createCheckpoint": {
+        "definitionHash": "42d50bb3c3a80face1b48410c43e68add2401ae503e679ff5c8f366da2cac9e6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6673b71f08d0c871ba6d6c3f60d34c34b1301f81df9234f84fcd684da2d676c5"
+      },
+      "sprites.listCheckpoints": {
+        "definitionHash": "f8f73bdaad09e45234b09c30af873fabfdd5b042e012ac583ea564228b7051f4",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "287ab0e41960d1e3dba6691e462c00cdf6f33656806d1d7f49107ee8edf4cfd1"
+      },
+      "sprites.restoreCheckpoint": {
+        "definitionHash": "6d39a51d35748ac7e78ffbf498dcf0c2eaf7febee00c6888bf8347e3818f5d3a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e9b97806eed893905f287ecd6afad878fd73a91031c026350d6ce1afd29b8404"
+      },
+      "sprites.getPolicy": {
+        "definitionHash": "29509598c655378781009107547e34e14fdd22828997e153edc6634bda470ba2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "18f1bf4528a71063a5727a68fdac68a2c85c503827cc95d28bc1e6a906fd649f"
+      },
+      "sprites.setPolicy": {
+        "definitionHash": "a56762cdccd481e0de5ce6cd30e533f2155cca3700f7ffa13b9b44b69a2739a6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f9538e6fc8c2b3637bf864d8fde8df1e5370b3b1e07a30f09bc81aff9f598e17"
+      },
+      "unsandbox.executeCodeAsync": {
+        "definitionHash": "18b1e2fc6b142ff6fc76721eb50f1245e598f8a106d0a8f7c03ffbd1a194e904",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9e960978d19ae74437f0d15a781d4e20e3a1b18c0a9cc9a038dbb634baffa78e"
+      },
+      "unsandbox.getJob": {
+        "definitionHash": "149062945f0f48e83e00bbc6539d7a90ac0ea47157f1c3294a538d251dac01a7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "533b939c3276bb01fb97ad9c3ac26eab55d41aa7c8feb7985c6112f0585dafbb"
+      },
+      "unsandbox.execute": {
+        "definitionHash": "96fcb0cc9d6d946fbab9ba2f041e85897c6202c0abfda028f89c20e7ada98fd9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5f7d415e8c5f596a925ccf2ecf0a49b554ad16c1f901c031812b9161c77cea94"
+      },
+      "unsandbox.run": {
+        "definitionHash": "9f8caf3f63820a1b769f7677d45763c2a76079089e84f24b3b3d4fb3586ed546",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a5f554ded470012359c39ac79a7bd8ebf7c330f7f642e1e8d27e8e1432d84a59"
+      },
+      "unsandbox.runAsync": {
+        "definitionHash": "af604d5bdc3f85ae4187b47f7e21bfe5dbcff3521b964532f03b85ec84042679",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "edcec264bb0dfe303a745000ca7813a33eb3c3b8d915db0d5cce9046155f3bcc"
+      },
+      "unsandbox.listJobs": {
+        "definitionHash": "c43cc6bac2ca812ae1a4e21bba2c1f4a871100090b90a812864320d47d38a994",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "bdf522cf9072a2d30e58632697d46b1df02fb97791f5df3be68921bc6a53f832"
+      },
+      "unsandbox.deleteJob": {
+        "definitionHash": "45cda130a9de1c0b86671fbc302985b62bed4160aa3f86c4dbe3d2e3e540084a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "28a4a6b27aa7b6bb4d4cc87fa8412baa5a201138c9524e699e49dbe74a9a1b91"
+      },
+      "unsandbox.getLanguages": {
+        "definitionHash": "8078d9f83cee9c0510a5a059b51a9bf146f5b918ca798c982cdc2361c994e371",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7b659ef32ff6d296ae6b20ca56e0061e8fd43397780e08bee903967752bea8fa"
+      },
+      "unsandbox.getShells": {
+        "definitionHash": "8d502bed4ad3fffd19af46485bd80f757f1eedb50d246b4b53e1c459210a1a04",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0ee5babd535e0d60d685068b126fcbf0144679df7176a13eca0e70a2ec9d6b8d"
+      },
+      "unsandbox.createSession": {
+        "definitionHash": "d9d83064d7256cd343d6a9ca1c82556c46ff484106b06e1d0d270fb92bd0253a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "629b5defde14bde22da7bd7462a90130ab2b3737cab4fa6a6ba355e52209bb8c"
+      },
+      "unsandbox.getSession": {
+        "definitionHash": "7fb4577eb1991d6148a5ff898dc82002fb9cf7438f98d736dfbb11c5d3e010ca",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f459517a6f091f652c6960f77d2f1312665db876871ec0f718de973bbc487bce"
+      },
+      "unsandbox.listSessions": {
+        "definitionHash": "1b5fc312f0443770ec3bcc674ff03e0b43155425f900dd9cee1ce72666ce458c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7e477747cec0e0da8a86ee9d3cdf2531de378eb61224f177ad837ec3f504f80d"
+      },
+      "unsandbox.executeInSession": {
+        "definitionHash": "b5d68bc1a932b77ba3bbb1ea1332cb1526cb228d79ecc6a0a52e6271f512b1df",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "bdf4b9a9131443b22e80003875ce2404afc37a104c890064ab08866cf1e58dec"
+      },
+      "unsandbox.freezeSession": {
+        "definitionHash": "b2aa1dbcf900a5fd9ca3f45a2384f9e13bee7b66724c5ff7e01652ca0e905a63",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "30ccef6195b2da9492dcf71127be8663429dd2746be9a22557e0d04671de018b"
+      },
+      "unsandbox.unfreezeSession": {
+        "definitionHash": "0b67f252896200928cef323c8c7b32c93cf8f095b80d5eb80f5c6a6bd9f0e786",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "30ccef6195b2da9492dcf71127be8663429dd2746be9a22557e0d04671de018b"
+      },
+      "unsandbox.lockSession": {
+        "definitionHash": "0c2658bec9e9cfbc4c64b83c2805a0784c41ec4001674404633f98d35edd7fdc",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "30ccef6195b2da9492dcf71127be8663429dd2746be9a22557e0d04671de018b"
+      },
+      "unsandbox.unlockSession": {
+        "definitionHash": "496ee7dabd16f7c58fe7e8ba205bd8ee9cb7cd3d511c2b9a218caf11343b316a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "30ccef6195b2da9492dcf71127be8663429dd2746be9a22557e0d04671de018b"
+      },
+      "unsandbox.createSessionSnapshot": {
+        "definitionHash": "47bb43d2a9fad4c9bd38c13d73737752a7a72b4d34a1d4be5311db04c521cc04",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f900c4a44d2bff2f5301843b260721acbe3ec20e01f26623724ccb716d429716"
+      },
+      "unsandbox.restoreSession": {
+        "definitionHash": "77794503ad430a9718495ac2272fdf08ae379f45098967ae2db48a8fd41b1c8d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6a14a2fb8c010124bcd0a9b72b18b93b44448d599f9e2be752b0fb95e73aa8ac"
+      },
+      "unsandbox.deleteSession": {
+        "definitionHash": "5381814ee701136eef9cae7ea67e30ca3f3fdfed8dbdaab18651e11628b21ba8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7171c18c5fbf2b436888e7263bc26bfcc13b741cb195fb6dd2f0819d97cc5d57"
+      },
+      "unsandbox.createService": {
+        "definitionHash": "14de4dd60bd878c4c28d9f93475c6be18cc07d75dfebf1ca3649a142fd2e295f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5f3122f1285551f73b7db0d8ac6f541fa0cd7d0a4fa0efd6f5da2204288daadc"
+      },
+      "unsandbox.getService": {
+        "definitionHash": "e64240fe67037e1320f3008cc7bf924f0e9351d50f608a4478ac022a2dbcd551",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a916069b43bbe32378334475b4ef27fb685169586457f716a5eabd62982aa4ca"
+      },
+      "unsandbox.listServices": {
+        "definitionHash": "2f25164df3c221deb0cfc35d5192e9e6296070f2e648f5409b60f6ea6afeba45",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3c9437122a0593d17ba3ead935ec19b950d0a95619bd433d8c4e77295bc6d3cc"
+      },
+      "unsandbox.executeInService": {
+        "definitionHash": "c0579d7469cde0b9ca08cbde82184e6a67d3e1396df17b644a5f1db51e73e2e5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9edd6190198547c1fed14e55cf094f0fbfd65cac19cdc2acf4a6681f41a56fbc"
+      },
+      "unsandbox.freezeService": {
+        "definitionHash": "905e4b5cbd9bad2d9778b64d40aa2f97b1809268ea56d189608fbef8ec17e3e8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "391f329d46bd2c8b44f2934b2c642dbeb5cc182493abb37c54a4dfcbe5208d8c"
+      },
+      "unsandbox.unfreezeService": {
+        "definitionHash": "b30bcb50b33c96404491a8da57d3f1d9865aeef3011caa8c2a93a47d2b44422a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "391f329d46bd2c8b44f2934b2c642dbeb5cc182493abb37c54a4dfcbe5208d8c"
+      },
+      "unsandbox.lockService": {
+        "definitionHash": "d7dff50513120d2ebdfc43713663f0a2389876c1e78188cdba2d769dda5c0255",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "391f329d46bd2c8b44f2934b2c642dbeb5cc182493abb37c54a4dfcbe5208d8c"
+      },
+      "unsandbox.unlockService": {
+        "definitionHash": "2c5222ba78a771580b6d1432d4eb4635b100d4f7c93bc713d8f4fee9db65832c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "391f329d46bd2c8b44f2934b2c642dbeb5cc182493abb37c54a4dfcbe5208d8c"
+      },
+      "unsandbox.redeployService": {
+        "definitionHash": "ddd48f4975421abdf4feb8b4a1a03352ff28241d118e4ec713991f8d0c10462f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2996b80e39fb9eb8279e7e160ddae861a95a823aaa00558ff79247dd3aa01e61"
+      },
+      "unsandbox.getServiceLogs": {
+        "definitionHash": "686b6e673263a4fd29c35093278fc583e5bf79ae764f6796fb33c3e94d4b4c7b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "db1dbafca5a963cb59979794acb43d0a1bc88e65cdfee19d95f8c1ac30560e3d"
+      },
+      "unsandbox.createServiceSnapshot": {
+        "definitionHash": "a925b1649ae2be68b86feff1de787c60a58d2fa9d234ce52beed13433ab103c3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e871e526cd27364649faa84df226183dbf1e82ca8735712a33ec6e9f3cfed882"
+      },
+      "unsandbox.getServiceEnv": {
+        "definitionHash": "cc7068d969e5858a43a8d418665a03907181b6e5720a24ea57cc8c9f7e322b85",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4a3c5615e365ccaa401d53d7c61298e56b401b59aab78c82ff02c835d0d2bae8"
+      },
+      "unsandbox.setServiceEnv": {
+        "definitionHash": "819deda91805640be8a4e8b6bfb2347b12281f00304e92d5c4eae02f909fb085",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e365a0573658eaef99dc34555e0fae84146b0f03d0cc3926a3f6e26fb1afc0db"
+      },
+      "unsandbox.deleteServiceEnv": {
+        "definitionHash": "12453f354c884fc0b959c7ba716e26fcfc8ce53b8c3b651cf0c33dd00bda41d8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e8e5a33606e10c4fd15f59a9c967e5d2163bce662eb46679f8533404aca89c51"
+      },
+      "unsandbox.deleteService": {
+        "definitionHash": "9fadfb3f7faaacea867bacc207dcd89b91e36d605a83d3ad0edeb8c8e437ba43",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d3df6f67d83e55f64116b63b031d79c3ec884af90b79c610b4dc9887630cc1f0"
+      },
+      "unsandbox.createSnapshot": {
+        "definitionHash": "8de624c50f03b98927df09133c3abfb7cb1759706f1013ef6b4c9e11e2ea0392",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3540e0309317761cdc750ad5297e113e09e96c4b9e561ee9e4765b8a6b371bb6"
+      },
+      "unsandbox.getSnapshot": {
+        "definitionHash": "a802f881214137ec60daaab8b5733d20d801abafdf2f3b1188f7308d09a18dca",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9e59549a5e337274e801e121a758137428b1d22be4f18d41f503a429255ed47f"
+      },
+      "unsandbox.listSnapshots": {
+        "definitionHash": "81786a42e8ce1788d9b75aaae7bb8315ccdcd0e4b31a81688a09d73662348a59",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2d74017984ce5398c0f71ea831a44ec5dbc833d275d472a79589ed940200b536"
+      },
+      "unsandbox.lockSnapshot": {
+        "definitionHash": "1924441d44313d5d57a5429036f7204bfd9fae5a046e96d2ba16de2af2980c2b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "77fab267e127f69a685d75e26a8fb0b0e9c39e5b425d4d16fe8ea4b96b33a72b"
+      },
+      "unsandbox.unlockSnapshot": {
+        "definitionHash": "2c082a15b63b3fdb149bd01aa6775d568fe59ddda3a8474c93e6f44007ec232d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "77fab267e127f69a685d75e26a8fb0b0e9c39e5b425d4d16fe8ea4b96b33a72b"
+      },
+      "unsandbox.restoreSnapshot": {
+        "definitionHash": "34469190920e498a1471ad82a5a34e20985b3ad3871153545a42160be129fe7d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e59dc415a16f35272ca2653732bd8f8b6d1028167626fa768af3ff31b30a0270"
+      },
+      "unsandbox.cloneSnapshot": {
+        "definitionHash": "830ed370f720465a9d92ab1dd8d7fe382b6231115fe621f35040c63d2ea3bc6f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "80c3f4ebf6b6ed16dce5f21ce9cf2f6d006d38b0fc3d349ceb70c11b1f01f3c0"
+      },
+      "unsandbox.deleteSnapshot": {
+        "definitionHash": "459b5ca6e37a0b341c648bc40a8cf7ec86240117cfd3d2de6e8cb20a1dc21507",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "266d8072414f2eb2c168092ff890ee72378c2830787929a61d784cc758ed3752"
+      },
+      "unsandbox.publishImage": {
+        "definitionHash": "c788dad83e4d0d5ef15175eed7e8c134212eed39628ab5d1a6d9eed2e5142d40",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e700569fa60630cd43942c20103985ca08cd54902e41dba0c6e5ec98869b5b51"
+      },
+      "unsandbox.getImage": {
+        "definitionHash": "9432420b16a5f051d6c6757d936553d8677aa2178e2537eeba3136aefa324994",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4f5189a68082b829677134f9a32dfe2fa888f34e7d168633c53dd1e34ef26fed"
+      },
+      "unsandbox.listImages": {
+        "definitionHash": "81012bc5a689095cd8fff19f1f9350ef5d312d0389a1e9d453bc14753706c484",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d8488e657540ec05e4cb51d11d6aa88be94ef9ef99a61a49ecc1ce77997f32c2"
+      },
+      "unsandbox.lockImage": {
+        "definitionHash": "7a379136219bb8530e4660b81062d2cfc353065742b85aea7639ed117765ca5a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d93c9b33ef9d22960bfcd360c3e6d415d17fd7d8c0860b2afb4e3e9a14227b93"
+      },
+      "unsandbox.unlockImage": {
+        "definitionHash": "0e652a82994f9f8cf119b307745e42e021433ddf31fad4f1a1ddddcf7f44f7da",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d93c9b33ef9d22960bfcd360c3e6d415d17fd7d8c0860b2afb4e3e9a14227b93"
+      },
+      "unsandbox.grantImageAccess": {
+        "definitionHash": "36192a930bb248aacbc0ba3c3cdac6eb9915d6e575c954eda1917b8787eeda66",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2667cddefed2276a64b4b1463ace48b503e74f80fd1868fa177d34cc810372e1"
+      },
+      "unsandbox.revokeImageAccess": {
+        "definitionHash": "c1c901f7a83d6c95953eeb7a7bdb0ae6bf27ff930b16b10a03a7da04323a2e42",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2667cddefed2276a64b4b1463ace48b503e74f80fd1868fa177d34cc810372e1"
+      },
+      "unsandbox.transferImage": {
+        "definitionHash": "d3ca1bab07425fdfef869e6437c572de965f7f7ebb2fcc8fffb785260bd97ce0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7cdaa536295a1652089f30fe9c4d079ef6c690796e472debe65136de19652c65"
+      },
+      "unsandbox.setImageVisibility": {
+        "definitionHash": "93810156e7cd3b318fb0b9d1b7ed4b4d48020e3c9e8f49d77de757ba11b6ddaf",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "76adfbc7b63926b16c2a36261165a8647b993dc00c1d1d03848568087999f8f9"
+      },
+      "unsandbox.spawnFromImage": {
+        "definitionHash": "5e18ae0bcf90d5598eb756ab2148e24e273be2e3d540b8bd32a997c567bac304",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "74dabf0e86eabbf293de15f6fb0600032867bd2a4a2428f5f04c373b8bdca556"
+      },
+      "unsandbox.getImageTrustedKeys": {
+        "definitionHash": "8c192d1145f19be3ab46a8111ea3c3324a9a625254334b9e4b1dad225bb595a9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a139806f38e7e2fc809d6ed7452d6f65f4b699cea6bf45bea5496679ef5ca1dd"
+      },
+      "unsandbox.deleteImage": {
+        "definitionHash": "56d42a9c63eed264018fa6ac5b0cbec30fd2f18184e074e391f79a9ab781acb7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "77e2e32f819ef9d3a3224bc2f9ecf885a5a43a73128bbced1fb5cb984fac5ee1"
+      },
+      "unsandbox.healthCheck": {
+        "definitionHash": "3c8ae10902544b004fce0e16f1f126f63cd8318a8f240ba1aa0d045b64bdb3bb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "09bc5da3bb4a7690b87301bb69a7f38ed09ca5740c15a0902801b8065f6f38e0"
+      },
+      "unsandbox.getClusterStatus": {
+        "definitionHash": "0d1158e289d9cf8d3ecd5b435f512dc6c728a13588911b9bfd92b1a0564e75b0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "30d932c1b05bf6f4c2609f4fd4dcecc4ac97bf2606b8094c367d2d8af371c78d"
+      },
+      "unsandbox.getSystemStats": {
+        "definitionHash": "fd15f8bfaf8bf3dfabb9a9911966d2c3fea6070311f0d48c68e33fc4b2a84091",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "207ff9995af409bd7ae3c63fba60c4416ae099a40fbcbe5d1487baae2b4dfc02"
+      },
+      "unsandbox.listPools": {
+        "definitionHash": "8a4cb392ef95192a94bed8476538e9d28a1b901dcf0cbac19a83fa5db858168a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "fb633d347b20e5bafcc34606233c2fe80214038c6f66fda0fc4c48672bb9a626"
+      },
+      "exe.list": {
+        "definitionHash": "b1a6dee72355085d8c68b6017cb29eeeddacc6354dda6d0fe2e88709fcb7de05",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "744396f98e9ebcbf9c90463e7b1f3a015b296371aba641f81a402e7bd63da18a"
+      },
+      "exe.create": {
+        "definitionHash": "4a0ad65b65ec47866056cb56f41307fefd4ec2d8a606c8f17369269da54db444",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5a7d4e226020cb55f0fe3adec5fde7c33266e1e97563411a7db2bd5358eb404d"
+      },
+      "exe.delete": {
+        "definitionHash": "680ab087afe801b12c4a4b2103f2a08c8415dcc7f3caa3578d2e6708ae0072f0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f7cd33c323f517a877a6e069c08f5529e775fc2e3d5044f8479b15220527bbe0"
+      },
+      "exe.restart": {
+        "definitionHash": "625eec786550bd4183c3110dfd1fa6a6a20bd8cc5fdfd19a06f306151084652a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7dd311b041123eebaf29f78c50e482019b8cf4615086c3f09093fa4831a0cb45"
+      },
+      "exe.exec": {
+        "definitionHash": "96671fa2e68616505f7b2b3dbcee21032780fc316929fff0c8a55fcc10c118f3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "06de00dc8809f1a8f12ede3044792b9609814c9feb0c96ee90039b853524d4da"
+      },
+      "exe.shareShow": {
+        "definitionHash": "f76a53feaac718c094cf01ebc0147d0b20a8cbbbd6c2fbfa39c3a2167a0249ac",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b862c73aba83269cd0c4b31fc55a8856fe1ec5c3972c1ecaa87d2391138cfaa0"
+      },
+      "exe.shareSetPublic": {
+        "definitionHash": "83d40fc13a5d692697a3d572ccbf80c887071f30309bb3caa7e2416173cc52c3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ab0e8b8f97646357e209a4fcb24d9048fb4b5665369d2ea5d132cdf47ee85bf2"
+      },
+      "exe.shareSetPrivate": {
+        "definitionHash": "9104475e8365b852c7ed82af1b7bb7daf0a1037dea3be88f32e45f0417bf2ed9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ab0e8b8f97646357e209a4fcb24d9048fb4b5665369d2ea5d132cdf47ee85bf2"
+      },
+      "exe.sharePort": {
+        "definitionHash": "d811a9c0e4e05a54b22248c1731887555e2a68e77c2e8115bda38e944b90f204",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a1167b56b1e35864ecb6f5faeb030971f8fb35ff764a63b9403a33c2f54235f4"
+      },
+      "exe.shareAddUser": {
+        "definitionHash": "549decfc6bb94339c7b5b2bb4dc5a959cef5abb48d63c11b1a349ee4b9f0201c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0afae921f9c1752aed1df3cce5fa33c0c880472e5a61913a2b4b652ff31fde40"
+      },
+      "exe.shareRemoveUser": {
+        "definitionHash": "aefebbcf61ac247d04ba4c954565c9438e375c3a26c2fa6ffd649d518e7bbfc7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1de56f0f2238d5a6b7b947373877fa3b2969579eaf382ae884a0fc70f16ba397"
+      },
+      "exe.shareAddLink": {
+        "definitionHash": "fe04f3e9dba7346a642ab90ded1e4fdf50522fecf7775e925b3148b43c99b867",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "91bb0f02c3197cc180afad3dafb65605c541fb58f69ac4282c4e62e9307213ff"
+      },
+      "exe.shareRemoveLink": {
+        "definitionHash": "772269aaaeb8eef4dab88bd2bdf77722fb3ac129f30c67876384f3846d035143",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "588575d933e88b04a03f9a653f09066619a76f9fc4f409cea70769bbbacd878d"
+      },
+      "exe.whoami": {
+        "definitionHash": "cffac6f00babc97720d231cb95c06e51540f26f68ccc4e36e176ef9ab7206b3f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4d62e044d1012e1ef1da3415a27f3dfa74383b9154e40f8358c75f5f1ced2d1e"
+      },
+      "exe.shelleyInstall": {
+        "definitionHash": "bb35413ed614fdee05bd5dae34f2e43a7381ec2230ef35bd314d21100322b4f6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ab0e8b8f97646357e209a4fcb24d9048fb4b5665369d2ea5d132cdf47ee85bf2"
+      },
+      "hllm.executeTopology": {
+        "definitionHash": "f862562b6f6e149ea9fc917f907a10ecbf9892d9f9b8a7d70a333ee84fa456a9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3f4b9d376fb84342e7267a293d702cee10fac3314ae36d6fc829930f8a39bd15"
+      },
+      "hllm.listSessions": {
+        "definitionHash": "ab87163c7023cd3bcf01e409f665d73337f3a7310925710ffe17ee8f0256e661",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "bbe5d7a0b07ae7a12ecc9aac5c4d86e71a202bbdde9f1d32fef43cbce096576f"
+      },
+      "hllm.createSession": {
+        "definitionHash": "88a85ff83ce73877a0faef6583a59f637e6d42dea2ab46f6164d958674ca4cd0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0cbefe40cfd7606d84833467ed1da4710eb1d42fc6ce9ff0d56410b7e834af30"
+      },
+      "hllm.getSession": {
+        "definitionHash": "b3ac271e853eb66bd2a5dd689f313a06655333035447bee8f9725088d7444be6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "bb96acd8100ddddb8a0fe935832b7f445494753119e779d14640dbbc8b7e1be2"
+      },
+      "hllm.updateSession": {
+        "definitionHash": "3233e5ff951eb7abae6ade5217891d9a1020c1d6dee7bcc803c8ed156e7b33cd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "785155c2de9170855acc5583e03a361a15286d5240a4f905db115a971fb8b30d"
+      },
+      "hllm.deleteSession": {
+        "definitionHash": "090b4b1e6a24386874edb345289adf4f63f321d61ad0b9c841bcd6bba9aa28d7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e2e0f00a17d4a03ec5988dacb674f64dfa7818516e55286d856f34613f87f17b"
+      },
+      "hllm.addMessage": {
+        "definitionHash": "846bccf5db53cd01528290b6a0545ad4bbef0279f1dda9071c355b009cbf7675",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "65fe24530f997cc80c10446c6789a4800af2619895d34e40410e3c06ef678f17"
+      },
+      "hllm.clearMessages": {
+        "definitionHash": "58e1e8e58bf22663e1039df7316f7b8b0b8e86cdd039fc3ee10b4d1a465a2f8e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "26b8c9ac5b091359f2c82a7f9ead581374ee233a8b7cdad8708b1150036c45de"
+      },
+      "hllm.listPrompts": {
+        "definitionHash": "78b14a2c375348672073752641b1f781dbe1cb9a0401f9be1768b30903fb6367",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a78bd950620e044af843320082c89fb4faa04de74214fe5d864c259afb4f3f9f"
+      },
+      "hllm.createPrompt": {
+        "definitionHash": "10d206bdc7663a85a412c4b202a6e59d950639211222c4de6c6e47ca98d52196",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "34707d591ef1e5b9c40630f3e8e0904db6790da5cc7dc5e667cdff7676f0d229"
+      },
+      "hllm.getPrompt": {
+        "definitionHash": "d8311d3d4433b662d5a85a39dd2cd43dd5aa8093fc6007ffe3f24e326e18a67b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3c095b04e6d68448be67e36e16b95c36d2aeff3b5d6ddf4d83d62e790724876e"
+      },
+      "hllm.updatePrompt": {
+        "definitionHash": "f62c4c675753a97939dc854ae5171b9db6f893c4ff7b1b8b111daa6e316e9f8b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6085edc46eb56479e2d19b4425f76f84f39403776adfbf741a7da24ec4a00206"
+      },
+      "hllm.deletePrompt": {
+        "definitionHash": "a231e22ec073e249677b340c6c7883a1587e528c09a56c8c4156389dca1bde27",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9dceb5d3602d795b185dc9abbdcd155b5083d766b5fe256ebe9866344bd91346"
+      },
+      "hllm.incrementPromptUsage": {
+        "definitionHash": "02c0aa3e3ccb9a85f906aa8d5f2f9572455ae3d7475c88de4a3d01bd4728e0a0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2838cbddce849e1323dbc741f6ee20dcf89128c61554b3eb5f568d974da25a63"
+      },
+      "hllm.getUserProfile": {
+        "definitionHash": "d3659850f115cf4228fb5227d0a4086223f166a0c6f2122a8c46d17b3a076ad3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c48a46c9b594085e0c6394a473394ce9f2b64a1e678f5ad7cc92421e4e0bc056"
+      },
+      "hllm.updateUserProfile": {
+        "definitionHash": "1555a64c24f6d82b97289b19964d4b489b896d43f95f145e80defbc7edac3415",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2ff3e99ad6d202452988de352c506d6e68c381f522e3b1eddfaa00d64cea6c24"
+      },
+      "hllm.getUserStats": {
+        "definitionHash": "bacbc4fda3ae63d3195780f5b98c0f60413f5380939d274a41a6e150783bedea",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5b76f702db5f60c27671da40fcd027e8ca079e1417dc8f45bd25adbf0d07948c"
+      },
+      "hllm.listEnvVars": {
+        "definitionHash": "5580bc0f433eba0b15aaf5d9e09981e3b4a0c3fb8092a657d6e58be24c849936",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5740b6fdd9ee69847c71531e5c812b329b5ccf58b1bb879b4acba754cca1b80e"
+      },
+      "hllm.setEnvVar": {
+        "definitionHash": "2c5771cdc60fd142ce207b904e2f82ec30325ee5d545ed114e6005c13c898d85",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0738e27b55674f01e3592e8262347179a3fb918a207cd5706ea5c43bdd25317b"
+      },
+      "hllm.deleteEnvVar": {
+        "definitionHash": "9c2f7704cd66709f6926c338178c1e495c7c24b8e45a123dd13c55278d75a4b7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "54d536b91258cb5926dbb536134854fbc64a78d559ad8fe13d0a74cb3e9dbc70"
+      },
+      "hllm.uploadFile": {
+        "definitionHash": "7206473b51c83c03d11de54e7eb25d5e70983352490620eca5663671c9e1fc58",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "fe3f429c50f0841cfc094fd7a9cee2a2f082fea7e30f167e66b15a4af0d9fec0"
+      },
+      "hllm.getFile": {
+        "definitionHash": "7303ee981d3144f93848189b934c89c1d9b779b807fa78b4005d94f536583add",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "61d826d7352561d7b2ce9d183de239bbb00767095d477fe7a76900bd73c14c9a"
+      },
+      "hllm.deleteFile": {
+        "definitionHash": "da35abead1f98510b13b5a8f15fb069d1551be8a0da745ce5f945bb3029a90d5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1758ece6d4e2d1fc6124b7b3c593983af7495b41e7c4fb45ff005ebc2afc0acc"
+      },
+      "hllm.listModels": {
+        "definitionHash": "dc4418146e786892a05f358c57ea7f85339a592157bf7df4d31bfc9021fa8457",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3eb7ccb436abde75e2a7f1d1426072b2ee6dabc944f88751d290fd8963260460"
+      },
+      "hllm.getExecutionLogs": {
+        "definitionHash": "89635cc2e5b0cea3be312bece631bcebeff81f4ab5a5712b1204fc515392fb2f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f7925e83b9219883f96f745b2f2ae414e600f6b9ffdc3ad1a98cb1e47adf0c08"
+      },
+      "hllm.getAgentMetrics": {
+        "definitionHash": "48b67f99488a0897468ca3af7b9072325fbde9536699b44396d0b7256d8b806b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "93b68ae05059705b4f3b3a3904e80a9cdd0c1d9bed38bb1b0f0349c0526c654b"
+      },
+      "hllm.listTools": {
+        "definitionHash": "fd1c6588bba2b623bd0c36a5941c8750f4214ba7c43ce92accd3b118475bbd90",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6bd9ad4041412d0d282094fe5836048baf28a46b90cb045d24d5c7df6e4ce7dd"
+      },
+      "hllm.describeTool": {
+        "definitionHash": "c09ad65debe728eba320009dcf9b2ad0847a65712cbeec497269bb257dab3533",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "fa8153ef362349a925d4bf6255a560f03f036e86812e0d5c886be9705853c8d6"
+      },
+      "hllm.executeTool": {
+        "definitionHash": "b8223c202452e17f1dd2d2ed3f340ad0d90f9f5e277cb84178ba2c7f49584aac",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4d30d57dc9375a34f6f03a5607e28536be41f52efbddae22d4f7dccb5f1e763c"
+      },
+      "hllm.generatePrompt": {
+        "definitionHash": "9e7f8b8815571aaf4f27f455cd168fe17d02a7bc2129aa8b5ac575585d7498fc",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "91f9dce073fe73723d9e22320fcaa75620a2205d4ab351e36626206ccffc93fb"
+      },
+      "hllm.improvePrompt": {
+        "definitionHash": "b5a33aec30c73f79a6077b866d75478569afe321af023e1ad2fc3c5d58d8f9d2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "235054efed377c67075c4bc45deb4e54a6fb1dd1c2380f65af6f921afc15d1dc"
+      },
+      "hllm.exportData": {
+        "definitionHash": "60cad82d372c33055d40f084d90832d37608809ad5d1b66e01d893f5e1ef2344",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "916d2b446b1b619a899f1148c6b0771df2e8baea860feb8fa8db0995a0869017"
+      },
+      "hllm.importData": {
+        "definitionHash": "197538754be52ca2e9541072ecbd22042a71b9b273be82edff683667ee16b34a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f4ce92fd6b979840bdf36afb83dccd0faefa295401931302a03946e213bb6dd5"
+      },
+      "hllm.healthCheck": {
+        "definitionHash": "17b36dbabc08afdbae0f3f60742cd0b703c2f544f80bf4c17df39d446f3f44f6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "536f45617c0607a6130b82463c62de193d0dc28646edb31ce23badd89e319dc9"
+      },
+      "hllm.getStats": {
+        "definitionHash": "77a708d3895e314b37d014dd92891a48e84734b5240d36b9ee63970d7fbdc516",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4c0ea296c55689725c9a3ebf00e04de35e6b6ef45245710badc5984d27dfb466"
+      },
+      "hllm.listApiKeys": {
+        "definitionHash": "cb39d8a5523d34f0a3ddcbea47e26f5864fb82698709cd2934a2cfb4b49e9cce",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8cc060526259e96edf26a54b0e7780a433570281c5f0324047ba705fc6bcc674"
+      },
+      "hllm.createApiKey": {
+        "definitionHash": "18972e745ed1e268b97e245a53a6032c916ec754f42b3e02c1eea1d25a2ab83c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "13d82e3e3fea980cd149c8fe0b7147192940f5692d02b0c5e8ef1622870344c9"
+      },
+      "hllm.deleteApiKey": {
+        "definitionHash": "a5c2ab37851172ab90ad6efd40bbbb848ecfe167b0cc973db78b12f59fb54269",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "064716227b1ef41ffa86b12e353ed3629f28fbcae66f1bd287dca45aa1fc66df"
+      },
+      "utility.sleep": {
+        "definitionHash": "8af3366392105a188e33841a7c2d45c6b3c18abd23af55afefdcb4a90614e86d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "aab6053e2caade0461e454b72f1f774fd7ce28bd188b191c4e8805b86bd1a79a"
+      },
+      "agent.judgeConversation": {
+        "definitionHash": "9f5d879668443b088205b71f74737575344b34956e4273f416a14117e5522146",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "94e93d87f40cb80cd66eff8bc6a9ed4995096b01ea1bcb93e082293921c8a2d6"
+      },
+      "e2b.createSandbox": {
+        "definitionHash": "3d7f61396f9d622723cce8a82f4fdf712858199d05888120b7a23961c8f84f12",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8986b4bd32ff59563a957c9e6403d2a298926d61df8b6f68020eb9e1abf4d567"
+      },
+      "e2b.getSandbox": {
+        "definitionHash": "ce47ee3ea3c6d21b715ea0da74e26d217a5c153f441cbc8c2d92357123b30174",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "940492760d357decf05b6bb49789e05803be18750932c7a0d2e1ad817e24257d"
+      },
+      "e2b.listSandboxes": {
+        "definitionHash": "fe2da296b1b366b88c719a55db58ebe3d49d8bcbae7e02dba51c6f82a2d5115b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d119bc82f9bce885eb0e62982a03d470ffc0cf9bcefe25af030e63b28870f573"
+      },
+      "e2b.killSandbox": {
+        "definitionHash": "a6ca9bb9fe81ece39731a6166080df58f268c20a17acc2105f23827f18e22af9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8dd95fcbe440338cde78ff61694aaf274be1878072d8403367655eb718d20e1c"
+      },
+      "e2b.setTimeout": {
+        "definitionHash": "efec82586fa0428e7b19143e691241a357729f51d39ed115279cec8fca7cfabb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "67606a086caa95e7da2a17b4016b2e60d04f4ae0f5cf514ea7988b3bbf34380b"
+      },
+      "e2b.runCode": {
+        "definitionHash": "8a7ef86b04f0f22a280b3d672d9ba83812ab35d41e87c97e1d05fbc337fef64d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f642d43c4641d7340995151f657f802d0a75923b4a32aa4ea21921ed61bbd5cc"
+      },
+      "e2b.runCommand": {
+        "definitionHash": "e21b010493635233fdedbaa3c3c043248311b18870ad080beac6b1aaa546c976",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7080e7f4920a6aee9999373f1e85f430f0055fb2c0460ff62851d3308fda6f88"
+      },
+      "e2b.writeFile": {
+        "definitionHash": "58a05e17012c2017287d967177415e8bded963c83cd81431a2f7f5a46a1cc5dc",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "48e8301f967788bb1952caa945a109b112da74f76e970a8bb9e3c308e7b06bd2"
+      },
+      "e2b.readFile": {
+        "definitionHash": "122fe0b1c90cfb855f7e704db09f600ac1e49350c40ca97606d727b4bf6ee023",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "621033bb677cdac0a138127eb75310a3e38c259bdcbc26b23f2f5549403a424b"
+      },
+      "e2b.listFiles": {
+        "definitionHash": "ba167ec8b6ffa83e29fa635575cf526f56e44466491d85f8a8a420ce2e1a6cc9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e9a997ccdaf7adddb692cc02771b346c343cf6c8828c36000f8d4d1007ab3b5f"
+      },
+      "e2b.uploadFile": {
+        "definitionHash": "11668c0cf41416ac534fa029e9aa9c76f4a046523c295724a2a473518bb2fee2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "076ca02080443f834912faf2f20221beb24625f8c58277195fdd0d917503f860"
+      },
+      "e2b.downloadFile": {
+        "definitionHash": "ae0b7c2acc327500ff4800af3dae48433b3c3e57d226aa1a0d42dd24c571a290",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e8cf977b8e0867fc16f2ae819e2c654d7223c9fa4fe2932b7105cb3b198000af"
+      },
+      "e2b.makeDirectory": {
+        "definitionHash": "c95e684b40955c3a473e3c7bf0cb7419dce64dc7af24e6571ecf623935523ac2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "bbb1b79133e1ef50475f365cdc62fdc9d2a82f30640b0683ee78f46107553f11"
+      },
+      "e2b.watchDirectory": {
+        "definitionHash": "2c649863d13db7e3e5ad8010a542e8ce0d87297bf68894954a80ad4180b5484a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6a93f0c673da50c17ead9f42ef7189a42c0e2bb0e9bc6aae280537c16b7b7f21"
+      },
+      "e2b.pauseSandbox": {
+        "definitionHash": "6eabde068b1f85d05cd387b5b9dfc7c96190d362480ccc6f387ecd87f54fe5d0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "246548cace08b578f2d328c2c11b18caa32c04da35fa4bb28b37d44195cdd3fc"
+      },
+      "e2b.resumeSandbox": {
+        "definitionHash": "3c90dd6faf5bd4e268b760a9bc31b22d4e1fdcafda65c7e16aead8428d384ff3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7169edafb8862bded16a00b500227681baba54c7327bf70ab582c5af9b3f3a8f"
+      },
+      "e2b.setEnvVars": {
+        "definitionHash": "3c254fadd10a1c85ef6a7f76c5de39ef3992c24014c0750baecc704e2bd41681",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "604e6338c85044579977c0ce4ff3b2981dc8ac36cb6579aae5afb610467a2d70"
+      },
+      "e2b.getMetrics": {
+        "definitionHash": "f86c3eb6157e89ce2ed78644d33962f46a53e7871961a1573375db0a1220ecb2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d28895b5afad5645d7f0417be3d814f05b6c116b5cf9864a4ee32be00b186cf1"
+      },
+      "e2b.installPackages": {
+        "definitionHash": "03bfd38f67e486bbac2e33fb85abece5f74c260f0e603d06905c0058944e5e5b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "560665edec5d9c7c665bf43597caa257009f878c78e9534c450737c85e1c385f"
+      },
+      "ops.sendEmail": {
+        "definitionHash": "6ebe73ae47b893a9fe4b13c1c652b15095ddd8d06a818f4b73964db3aed6554b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "46d76c80527f8233ed57e14a3afcda89cb847ed2003420e7ecae67e308f53589"
+      },
+      "ops.sendBatchEmails": {
+        "definitionHash": "0ea037a0187a4854830e0e9b9f72857b6538789c2e3ae92fe99b8019299ca7d5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f213892d7d1d54fa2015093722b0094b95a2c5240964a7a060a02c9f00e94a86"
+      },
+      "ops.sendEmailWithTemplate": {
+        "definitionHash": "03b0ae1943bb381a72ee7b67b976b7fb7657f064e0a0a0eceddbf4305825bf84",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "12b0f07c91af288f5751fb291897713d4647fd76a3396db73a9fad2598c2e85c"
+      },
+      "ops.sendBatchWithTemplates": {
+        "definitionHash": "2dba725181cb9a28be0fa9bcc6ec12b25f1d6b31e96b97d461d8e4b094a7ee26",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f213892d7d1d54fa2015093722b0094b95a2c5240964a7a060a02c9f00e94a86"
+      },
+      "ops.sendBulkEmail": {
+        "definitionHash": "07bde4be3410278ab228b8d151bb75295f7233c0ed5d81df22b5787fbf8d92b1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ba23c99bd7058fcde5599a306ce99a7b950a66f9be083843be63f87e909308ec"
+      },
+      "ops.getBulkEmailStatus": {
+        "definitionHash": "54371051033bb1aef5ae1a05094cf0c37d8c09302478ea02416e31d100f0a8f7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "08af7707cd5d15307a0b07fc49aa3bdd076b4126dba938e2bbed5f54f62c1fba"
+      },
+      "ops.getDeliveryStats": {
+        "definitionHash": "211c7e2ba02bdcdf5266fad33b3b04fdd80525e02b51025b98acac082cf244c8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "fd85a05ddf0832e99d14b95aa8fc8629dada85abc3f3fb593972974fe0ff7cb6"
+      },
+      "ops.searchBounces": {
+        "definitionHash": "36eac6d8e9314563511fd727305d88ef383256ee8c4afb461cffe55705ab26f1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "79dc5801f192482080edf46321e1e1e6d0eb5190be1867301e3a80210500d8c9"
+      },
+      "ops.getBounce": {
+        "definitionHash": "ef6906ade0d72e70df991370c6463f4a9d8312ae2100b870806fad3d64e0e5a1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9149e8918502bdda632b489d0438f11d51739837d22c6b9810d9a18204882825"
+      },
+      "ops.getBounceDump": {
+        "definitionHash": "238f8355f66129e4167dc34f492966e76e76c781c3188cac4839d5b111293dfd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "881877f11f9319e47bc2289ffc507f9c6c3f8bd9f7378b233781fb0acfc9d924"
+      },
+      "ops.activateBounce": {
+        "definitionHash": "c9b767a57379996029ead1ba411321718c770096279df3bd8919c1826605325e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "af119769d2e87dd0e6257cd38f20d7548717cdbb0d7a30c9ea7653223d0fa872"
+      },
+      "ops.listTemplates": {
+        "definitionHash": "18d32cc2bd25eca54ddd32d6d989399bb19077046140521f51bc1e58e694172e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "621342630111c334539fc0ef570f7746065214c250a5a758823100c9ceca9947"
+      },
+      "ops.getTemplate": {
+        "definitionHash": "f7e4a7b9c136e98200fbc3a20c4375d2d5b0f4493b8e1a451a1d3ada90bb5223",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "58595bbe151be26548d216469abdf07822c1f8f427c85bb83151835c59cc4cd7"
+      },
+      "ops.createTemplate": {
+        "definitionHash": "6029e0872d1258f33843bf37787c8941945cc882b90ca8849506728e53359254",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "99fa1bd5e490beee1ae3f72cd222f7ce9a9b83b65f1dc2f2d7ecf09e44e10218"
+      },
+      "ops.updateTemplate": {
+        "definitionHash": "a97056c27d87a0bf49f781f2dd7f0f6909dc572d0760adb1aa8437beb15faa2e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b069dd06231cc9047f7229b62354108301a6cebed70fb6a75cac07571b76f556"
+      },
+      "ops.deleteTemplate": {
+        "definitionHash": "9e086afa20c94288ccc239911fb7fff2fd4885a54099ceae2b3c1468c40d9633",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d2f892a096bc36949d464b97472dfb8329a4b10dd7b97735fecf7af0ab199765"
+      },
+      "ops.validateTemplate": {
+        "definitionHash": "89410269cca8b80add8ef5159596f4d6a5e26e74559745be01603f1fa29664d2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "70ec947bd8a89373b069e0342f50e072d4851f65f0fb4ffd736c5919b63c259f"
+      },
+      "ops.pushTemplates": {
+        "definitionHash": "65773024e963c5a483a234e98a57995e89ba15230b1a3d92a7d1942ce18d0b64",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "16cbf5108382f217b4f7b129ce2edca85ce10d43509b8a9be718e1d819e89237"
+      },
+      "ops.getServer": {
+        "definitionHash": "772b6115d4b48c1eef6a39334de22b5110f1cc7e9ce497af63afb6c314d42f66",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0a7b282e5d7a3b35e78a795cec468b8869f81ef36e62153fd12a8317ea1cff8b"
+      },
+      "ops.updateServer": {
+        "definitionHash": "19bce687057f95ed9eb6f2c95a3a09c3ca571696c33f5741dd50c620c2c68052",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1e5bf2be17c85c7d0be470fb6d356a7cefe7ee9bbd674f0ec4a862fb76ee476e"
+      },
+      "ops.listServers": {
+        "definitionHash": "236b28f7a77dfe10847cd1ad245a10300301a75ba8edd622e3d629f6a3284d69",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1f120817b0c4d8a4fb9cf245ad105b24d6e137912c4f137d7f935ebf773be4ed"
+      },
+      "ops.getServerById": {
+        "definitionHash": "0605cde0dc49281756f585c38d807a1d0e4f85fd561b447cb77c704e38d096fa",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "591947ea217a7c193b319802d030e571111d2b14ca37a3ed4fe00c2bc89d3eaa"
+      },
+      "ops.createServer": {
+        "definitionHash": "767b7d5aba7148f710a2e4bd085427513dfa81813a0dba2b4d0537bc809ed24e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e84cd0824a8d1950e7c056c1dcaed974ced23fe0991e1363bcd4e3aa9cc46cbd"
+      },
+      "ops.updateServerById": {
+        "definitionHash": "5a59eb0fbae1475766e98a80aee364eb0ff4d3b8a165858b45089261aabfa6d0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a62f7d2f6a4208a8d1dcc81c96e123ef45d4c2df7397615b16c935f5dd5490d3"
+      },
+      "ops.deleteServer": {
+        "definitionHash": "ef0c6790bf3235b4781f2826056c85dc10a21a7511871a5ca9a60373d6c7ff00",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8bbc0676203e63634d73993c60c25b7e71bcaa46f3961ebb67d291d4c9ccab30"
+      },
+      "ops.listMessageStreams": {
+        "definitionHash": "38792494ee385eaaa279f73b5515c632a0a112608dea3f148e988701e1e60a8e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "046f977d9e393d3dfec3fe1d67c1139311fefc334911bd491e727766d47726de"
+      },
+      "ops.getMessageStream": {
+        "definitionHash": "8f85000da8969d9e036646a30aeb815b684d103cd0a6b65f60b4d6cc032985d4",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ab2614eb1885a84866cc4774b783c7dcc58f68248c27e3b9418eea7e68fcaf03"
+      },
+      "ops.createMessageStream": {
+        "definitionHash": "43bcec5e37d6a196987ffff510ed127c4f5fa500e8a6d327ee17232f61192ed2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "16f1019bd926c2e0848f12a01ab97c73bf383777364861b8aeb956c99e7eabb3"
+      },
+      "ops.updateMessageStream": {
+        "definitionHash": "8ad26dc4903fa10aa4886d462011df6200d62cc30a68d3a03b3345c87129b904",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "dac3503d640e61a286cafeb304383bc220b9c1b7c380c8210a69f18541e5d3c6"
+      },
+      "ops.archiveMessageStream": {
+        "definitionHash": "325a0945abb9aa25800452e9b3ce7de4696cc93b385d2e5da848bab64e1f484b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b01a82e1caa955752dff31198403c5e4e2875df919978d738a92f529168cd3ce"
+      },
+      "ops.unarchiveMessageStream": {
+        "definitionHash": "6e252afd1d3d89141524667ae74a27ac91cf7264ea2370879a807193d0f5406c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b01a82e1caa955752dff31198403c5e4e2875df919978d738a92f529168cd3ce"
+      },
+      "ops.searchOutboundMessages": {
+        "definitionHash": "186994b7a4d72dbbc8ba328ae9bbbf3532ee6d78cc9652bd50bdf933dd790245",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "82bb324c518ea46987c0dcbe48d9ec223153168a411a48a96b056cd69ee38710"
+      },
+      "ops.getOutboundMessageDetails": {
+        "definitionHash": "15b525baa0e6ba72f16580c7081f699794c2afe2bde9c5ca438a8d44cc31759d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "989248bf05c86747552c509572b3bff9da6a67351aa6bf94d60b525f37419162"
+      },
+      "ops.getOutboundMessageDump": {
+        "definitionHash": "22e953b186f1bb006247fc5b745441ecdc406dbd7f69be63b1dee033a2984737",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "63bf1b660cf5085056005cb50275a51b0dc25d476e1532fa599a441892e92b57"
+      },
+      "ops.getOutboundMessageOpens": {
+        "definitionHash": "ebfd65199d4283a317c1aa08ca097e368669f9333aef51c7032bac5d4f972c21",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "975eaf09ca703800351ce88b11dcacd8d6c17dab060541c97de5a39d197fd2ae"
+      },
+      "ops.getOutboundMessageClicks": {
+        "definitionHash": "d4d6df5742af2f8d353023940c1c96bfb85ae96506e7d76a23537b3ed9ae16a1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "95c22729806349f068e6938797c0961937c7d9ba647a21a6d9f428c29f086725"
+      },
+      "ops.searchInboundMessages": {
+        "definitionHash": "3a947bd79a174d06c51a46ca62b618c1390431d3473fc7d4d146b133147f2adb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4d7b5a670136ab09630a5bc3d85df84b1cd888d0069934ffbb0cb8aa82a23e80"
+      },
+      "ops.getInboundMessageDetails": {
+        "definitionHash": "1f279d08579ee985ee617f613993fdf335e8956404400c40d90ff724a390613b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "27ea7d0843c5f6941574450abb740fd7fc4215b9d31b911643e7014d1fdb666e"
+      },
+      "ops.bypassInboundRules": {
+        "definitionHash": "1c547e1057a420b8ede2c8124fd83bdddda559bfe9776425634a87d6bc17dfee",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b01a82e1caa955752dff31198403c5e4e2875df919978d738a92f529168cd3ce"
+      },
+      "ops.retryInboundMessage": {
+        "definitionHash": "099f6c78f7a30378f1a86b30030daca05f92665d223481343d19d3528bed5296",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b01a82e1caa955752dff31198403c5e4e2875df919978d738a92f529168cd3ce"
+      },
+      "ops.searchMessageOpens": {
+        "definitionHash": "fa81ad34c0f452d4fe8dc3948712109408e7c4732ce652d678e66c4e39113044",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "239e6122d1b79a572ab1f4502cc3f988527e42c759c36bc0f4c72f2cfa4dbbaa"
+      },
+      "ops.searchMessageClicks": {
+        "definitionHash": "8923781d69b9163f6ea2096d7a4ed5f949389f0e38d681705ecea394e1a62ab0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4c1c3822840b3a7fc749ab3e056c54f0200ef534f93431bd14304f4fc62dceb0"
+      },
+      "ops.getStatsOverview": {
+        "definitionHash": "366d883d465ce2580e5ad317f0b9eb7bce1727677e3b07b59536cf2096b9b19a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9f6bbd4809207fb3ea7664bfa0c7265bde5e2eed231e3907df9a9ad0f78304eb"
+      },
+      "ops.getStatsSends": {
+        "definitionHash": "10757366a255daed0d130d3e052b80c96ce9ef9ec20567cdc143661ae4a2ec45",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsBounces": {
+        "definitionHash": "0fd91daffc7e04e2d5ae81ff36a203ea56f2d7f42a267a44fc3a65f9f71c0e24",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsSpamComplaints": {
+        "definitionHash": "7866e03133a69eef624f03f7cd06f177381220461657a443bdcf6b3eb50d85bb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsTracked": {
+        "definitionHash": "ad2811a6d3ad5f3e0e44149daa2c9314c32b9c727446fd84715b7324a281a726",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsOpens": {
+        "definitionHash": "faf01c52dd2e7e309543cb687cd30bb5fd134a59dcf1798e2b81628401e939d2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsOpensByPlatform": {
+        "definitionHash": "430dac0efa756f70618ee1fc22fd67284cbb41308603b113e0297bfc88882666",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsOpensByClient": {
+        "definitionHash": "be1b89f35b584882862466c56bb492e2cb70ac09860b53204e18aa7be712051b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsClicks": {
+        "definitionHash": "7d7c3e6c16a0c6b314d1f803efaad380aa0233a217caab8100c9610b0e5b2aa8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsClicksByBrowser": {
+        "definitionHash": "461921c8478971aeb3501c76af0344ff3f854a41a69baba1e1a7497080574966",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsClicksByPlatform": {
+        "definitionHash": "3c4f0abcbd29cb9d72e85484c1f4ba2021b1d9364178c0635242238c8af955a8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.getStatsClicksByLocation": {
+        "definitionHash": "f38a50b7ac3a76203d196721db4d915f4ac32b476773ab0b0c4e6dd9e6da29ae",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e38b8cfd5be7fd3256978ea0256022e007c9ed95e70809cb36a1f8d26cf795c2"
+      },
+      "ops.listDomains": {
+        "definitionHash": "cb9da5f9a64501910456a24bb4ce61cc6bf7a959d30bbd5bf3e86d9e96683c81",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "647491e0cc61b036cd0f589bc09cfd0f4bda05c3983393a6684ec2f931eafceb"
+      },
+      "ops.getDomain": {
+        "definitionHash": "5b9e6f9fe8d46006e169e8e77b4711a7ba4a6244ff0b9db3665e83971ade9c5c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "39f4f5cf43a97e6ce1b1a470fea1acc5121cef6c0fcab59ed0b868927512f394"
+      },
+      "ops.createDomain": {
+        "definitionHash": "51ef9837e1b8647395c2293a7f7479d8397f6b0d73766c2d344c20ba0b2a6ebc",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "255811b8173a937e195f3dd8721012b6d8cdd5a3d33c54729446b826f0fa3fb1"
+      },
+      "ops.updateDomain": {
+        "definitionHash": "41519c4740b01053ddbaf15c4541b2f21236886507c1cdc413f9a8312a2ef212",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e8cad75eeb32f6048a5109a4896dbfb9fbab43dbad77f0b64067d1e9c168ac3b"
+      },
+      "ops.deleteDomain": {
+        "definitionHash": "334cfbda8a6e241c2ecb6809a548661282ecb19f45ee0270310b8a84557eb613",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8bbc0676203e63634d73993c60c25b7e71bcaa46f3961ebb67d291d4c9ccab30"
+      },
+      "ops.verifyDomainDkim": {
+        "definitionHash": "ed68a2c4eee9ef3c6d3aacba4c1da86112de41527f3827e8e1cd6de74f402008",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "39f4f5cf43a97e6ce1b1a470fea1acc5121cef6c0fcab59ed0b868927512f394"
+      },
+      "ops.verifyDomainReturnPath": {
+        "definitionHash": "250cf82cddeb766d1fe1fe727003d6f01d7ba986f6f9a8f3eaa4d0f8b09e1013",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "39f4f5cf43a97e6ce1b1a470fea1acc5121cef6c0fcab59ed0b868927512f394"
+      },
+      "ops.verifyDomainSpf": {
+        "definitionHash": "605709b9dd2a415943814f65317f0df5280f895d8d726d8c4a2751444676b044",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "39f4f5cf43a97e6ce1b1a470fea1acc5121cef6c0fcab59ed0b868927512f394"
+      },
+      "ops.rotateDomainDkim": {
+        "definitionHash": "78cb42e5d8f7762fbbf661a24e536c04c479d397bdb5352d6afdd4fea308c51f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8bbc0676203e63634d73993c60c25b7e71bcaa46f3961ebb67d291d4c9ccab30"
+      },
+      "ops.listSenderSignatures": {
+        "definitionHash": "f4f457c11ebbf217a09da080c9ba4b9ff36ae4faebceac5d0df3e2280521ca24",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4ed5da6eab3b6018053affad92300c526b270f04261c41e6d4504029e2f8305c"
+      },
+      "ops.getSenderSignature": {
+        "definitionHash": "db6007f6c3a31008d3e2e9f6fef0109b7d7eb33b68f6a07ed38bb5fcafc2a19f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "226e76b1c22bb3e39261a81a29a9e5e8fd991020b48bdd9ea7ff0105ac985252"
+      },
+      "ops.createSenderSignature": {
+        "definitionHash": "2a2a0e746cce651e7ddd1c4ebc16497ea2257232f514ff33b2a255fc4c79643e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "71ae14c30d7b5717c48c115c125d40750d46dbfffb93023ca041026e0495a7c9"
+      },
+      "ops.updateSenderSignature": {
+        "definitionHash": "5070e36580840fc7756928e59e87da22cf4038650b4b275a930d877d2d8273ee",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3982d4318ec866c2b60e446b75a1b9d25b123afbfd6718ed0419d413d14198b7"
+      },
+      "ops.deleteSenderSignature": {
+        "definitionHash": "cdf662ec43461b47967bda6e2d7a7df3afcc9e117a6c062510ffe93107c034d3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8bbc0676203e63634d73993c60c25b7e71bcaa46f3961ebb67d291d4c9ccab30"
+      },
+      "ops.resendSenderConfirmation": {
+        "definitionHash": "7f3bb1c9310f6ca7a29ce7b798954ce4de40c221c4d7aed9f7e53560509e31c2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8bbc0676203e63634d73993c60c25b7e71bcaa46f3961ebb67d291d4c9ccab30"
+      },
+      "ops.listWebhooks": {
+        "definitionHash": "f41eb99e8c97ec25374119e4f81b551a249f42b18d6fdcd8dfc7106283ec5453",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b8335207af47b36148f42c034caed84df2bcdce5b28427fe5e021dc5964b6060"
+      },
+      "ops.getWebhook": {
+        "definitionHash": "d090b30f370aea1d20737b6b9c11d62147f987069a86c125183af336482441c6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c20c1f57ef673d0c8b704c13e530580b2348d072d1a1670c72a636a285410e74"
+      },
+      "ops.createWebhook": {
+        "definitionHash": "a3970cbc7875ceaae5af1c22171de5b7ac00079a6f87e2baadb08e1a3782fe7a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "622673acb3a278b0c8701e9bc994350a79001f8973c39bcad347bc10daf6733b"
+      },
+      "ops.updateWebhook": {
+        "definitionHash": "b56dd844a5208d8bf6839d9f261799c282e5c62789b81a51eb8255f9750827ab",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "26661f75e039ca016a3651813c9bacce7321e057e871280696a78117860d6e16"
+      },
+      "ops.deleteWebhook": {
+        "definitionHash": "ad548905e99a372feb73c52f0549194183e95c47e59a2d48fc1e2535c7295d61",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8bbc0676203e63634d73993c60c25b7e71bcaa46f3961ebb67d291d4c9ccab30"
+      },
+      "ops.listSuppressions": {
+        "definitionHash": "af4c9c2f8f007d5929e73125896c958b1427762087ebdf657f883cff104f66d0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "eebaa6df51747f78606432e02b133de1c653d75290cd97f6069740ec565dcef0"
+      },
+      "ops.createSuppressions": {
+        "definitionHash": "c6de7427d883a34d9e73f9c5a0a15b33e48ae2a4381de0b86d8477f33354f2a8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2494e4789c8f348fe48558937f16b2c4e4c9b4ac3979cdc8c25401bd5160aed8"
+      },
+      "ops.deleteSuppressions": {
+        "definitionHash": "b0e0dce0fa8947a13e78c3d5153666e3b77a866ba93ad756df354aff59fb9594",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2494e4789c8f348fe48558937f16b2c4e4c9b4ac3979cdc8c25401bd5160aed8"
+      },
+      "ops.listInboundRules": {
+        "definitionHash": "fa43526fce37229c973cfa5ff2b14baa92b40c05c230dd01ebaac1c19f8f9bac",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c49c69a09fd7f307c1f3fb1ef7e85cb4b80b41c23a2e88044b53d0d182c41545"
+      },
+      "ops.createInboundRule": {
+        "definitionHash": "60d693f6683889cbeaaac9e5ab3afde3d1032de3aa766ae7845d860ebcb0c423",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "86d73b122ffcdb3ee7e5f4cb8cc42f6c189285edb470081bd78e742cfdec89c7"
+      },
+      "ops.deleteInboundRule": {
+        "definitionHash": "411d56f1ccdca974ec28f51ab439750b80a4e9c0ba2921cfa6a3a6236bf1af14",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8bbc0676203e63634d73993c60c25b7e71bcaa46f3961ebb67d291d4c9ccab30"
+      },
+      "ops.createDataRemoval": {
+        "definitionHash": "042c5dc12e955398698f77a34e748eddbb90aeaac30fd38848b7f689fcafb430",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7b43eac99fd9b5b9e1ffcbf5e22651e78a7216ebd52ab9185e3e32c760672349"
+      },
+      "ops.getDataRemovalStatus": {
+        "definitionHash": "525d6a46ffb2e54f651f4b73b186384c95d827d588eb70108dcc579ba9315806",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "aecc6d57918567312d960aa712c67b5dec9cc3ba8510a8d765ac04f289f69a1a"
+      },
+      "ops.resendSendEmail": {
+        "definitionHash": "83a31bbdc8ebdf90cea06caf52e6c110a37f1ff616fccbe2ccc98b1f06c4d7ad",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "fb661954a5ce38147932d45957ab2042106071d59c4908592d3df08d5bb1f458"
+      },
+      "ops.resendSendBatchEmails": {
+        "definitionHash": "bdec63f853802fd1cdfbb7cadda3f1838df445384afc6edcd9809ac64f08cbde",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ea6fe3e4a130601dd7dc4f78da5310a32d19fe3dbee365d7601dd177952274ab"
+      },
+      "ops.resendGetEmail": {
+        "definitionHash": "1eb6981fa70e22db09b9222f8eb3b5d9c485663e69018932c26e84a850338836",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b01a82e1caa955752dff31198403c5e4e2875df919978d738a92f529168cd3ce"
+      },
+      "ops.resendUpdateEmail": {
+        "definitionHash": "cc2b52d3e19529b51c6ab93a982e1567a28956079fd76a9ab1a5da98f317905c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "612b50c75a2249669e9fcfea8f8fe06bf626820520c3cefbf3018307ad62afdf"
+      },
+      "ops.resendCancelEmail": {
+        "definitionHash": "885f7113ef30abcf04b03411447f341a83e972a5f942466e2dcbe3e09562b8e6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "98abde93b995f0b29322b2d5331b3ddb7e542166d0b829ab9c479b4c7f2819e2"
+      },
+      "ops.resendListEmails": {
+        "definitionHash": "cf73af26362787ab862c95208b0d03eb4cf6d0334a2b0900cbaf3dd2399f4a4e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2a55c9fdf719180b22132cff7ca4a3963cf15c54a202f99dfe0089131586b08d"
+      },
+      "ops.resendCreateDomain": {
+        "definitionHash": "1257604921b803e02986262cf9cc03f51784315c2ebc56dea533db8e367e8a83",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4f5f8e00bdbb4766aa32a1151d1c4011b3c146e665d4794d26cad4dc24044b13"
+      },
+      "ops.resendGetDomain": {
+        "definitionHash": "a41547f3ccbc87dd4e69284780aa622fa0c179543d344f7d939fec08dc1d41eb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4347a51182ba42009383c1696169b898e94268960df8a8154a696b6b1813423c"
+      },
+      "ops.resendUpdateDomain": {
+        "definitionHash": "ea0a6485493014c713f42578ae1b73577a87913b270dfb53c1ff4f06bb30e0fd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "93844e3c2b187b24246817b702141988e07227b768418fbad1ff9a74d01c88f8"
+      },
+      "ops.resendDeleteDomain": {
+        "definitionHash": "41c1971620ad75710e564c2fd66c982a65c922553ce01379f24f8ac4f412732b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6d98df9ab393018a183bf1f1580f9e696e8e5816841c6b18040667efe6e70b12"
+      },
+      "ops.resendListDomains": {
+        "definitionHash": "a0a3cab8fbbb81a3234303b05be29b1564658a306148c5608c82d12c0b3b114c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cb188a7bfa4b4f3eb622fab43f877d7d254fa04593e4a67538c7961336a05c27"
+      },
+      "ops.resendVerifyDomain": {
+        "definitionHash": "1e73e634904bac2b2349058a518a9a460fba41d75a89c5c950b5dfabbbb17dbf",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5a2c978099ba66ae01081c1a053e3735aacc37ccdefb6f87232404c897df5870"
+      },
+      "ops.resendCreateApiKey": {
+        "definitionHash": "a6e3a4fe2ea18390a8648b9a9f42e0c6d03d29e6710665e117cb7531764aeaa3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "def80b8b8c06917168ded00b383d7bd3444ddb9df86ae2863cf933a048c041f8"
+      },
+      "ops.resendListApiKeys": {
+        "definitionHash": "38a796cb409583b514472ccb0cabee80dabf89ba2d6e515ab4d763f24c247c2c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cb188a7bfa4b4f3eb622fab43f877d7d254fa04593e4a67538c7961336a05c27"
+      },
+      "ops.resendDeleteApiKey": {
+        "definitionHash": "8b853500edd4150031a66d4dc6eb94b2fb383b7200f7178e36728c85ebef08f1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e25dd86bc59b6f087e6458a0f52528b27a774c8c6f244d22d71cf923ccdeb76e"
+      },
+      "ops.resendCreateContact": {
+        "definitionHash": "5261fbf5b94273faec3c1e9c61f14b5d74b91e04fc15a69be9530f95cdc5bb58",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2691006dd94a818707517fafaa8fe8b584195dd342a32b42334984647d5f31f1"
+      },
+      "ops.resendGetContact": {
+        "definitionHash": "d60e28f5bd7d5c136f94144b58c55ba4d9bcc8baebe98774978c6bd93db2fad8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b01a82e1caa955752dff31198403c5e4e2875df919978d738a92f529168cd3ce"
+      },
+      "ops.resendUpdateContact": {
+        "definitionHash": "4e4e327804768d19fce6a7a0a2c41908d7e841f7049f05cffe9d6079eb93dcee",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "1029124089e4cb47fe3876a52b6aaaf72eabd2c5a9fc553682b8efc6c8d8e81e"
+      },
+      "ops.resendDeleteContact": {
+        "definitionHash": "bbd5f8f814f5213ef4ad511c97584977efad5f8cf664b116116a81722d903549",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a1f661c8073adb1d3cde2e81446cae03c14302ce8f3399440b5e22ced1f7c8cc"
+      },
+      "ops.resendListContacts": {
+        "definitionHash": "c423904aa5724d96623eae4130b0298e2303332d648245138f61bab700204e9d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6ac42ba73509e987f3377465fdd34ba3d6edd638f12bb6bd7208c5ef6c1ea882"
+      },
+      "ops.resendCreateBroadcast": {
+        "definitionHash": "9c5b237917ea5785e9add4963b8710495376a59b7391f1e4fee20808312dd37d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3ddb786c2f8197615812a5bb4d92dba1fe392d7354430fbb1ea28dd4eb9683f9"
+      },
+      "ops.resendListBroadcasts": {
+        "definitionHash": "4cc74d228d0049b29e5c69c238e1cb3d859b0fdbe586dc57300055bb5cc49219",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cb188a7bfa4b4f3eb622fab43f877d7d254fa04593e4a67538c7961336a05c27"
+      },
+      "ops.resendSendBroadcast": {
+        "definitionHash": "0fdfad9afeaeace6c9ad409dfb86bf2851608f5cb4e60886e36b38f5ce2e444e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4777943ddba6b49f8aeea2c1edb45ce4440253fca9333c3c0f326af70aae6848"
+      },
+      "ops.resendDeleteBroadcast": {
+        "definitionHash": "f9f9dc8a287d6134b23ddd0481fe1eb024def0c37b4ead5d0498136ebd2376a0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e9f2cbafb5e85a0c9c73865d6930280819b72428a7e3bc3d89075ae90283f729"
+      },
+      "ops.resendCreateAudience": {
+        "definitionHash": "15c4c244b0027ac5ad8c0af6acf16dbe42be20e09ff09d190c7a6e2f029536ac",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9608f0141a6a0314c74d80ef0a0bf94c7890ac54c2df6a741acd178128d3746b"
+      },
+      "ops.resendListAudiences": {
+        "definitionHash": "f307a82c9865e9eab2869e151cfe2be13812f1b65eec2560f67774ce7df4a9b6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cb188a7bfa4b4f3eb622fab43f877d7d254fa04593e4a67538c7961336a05c27"
+      },
+      "ops.resendGetAudience": {
+        "definitionHash": "2401505bb8b3c9d76d8f9baecdc52d74e373225d6da7a56af81e855973091446",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "69c0d0518c0517fcfd1de7479e2aa585b4c881f055d6c19fcd04eb4b20cac05b"
+      },
+      "ops.resendDeleteAudience": {
+        "definitionHash": "34635c219421dcf42e8359b43e7855fcb738cdf3fd9f4aec77a3f500f0ec7432",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e564fd1b144b4eb2664da4146175ca476435ca026aa4287afffce5f1b3a56cc6"
+      },
+      "communication.moltbookRegister": {
+        "definitionHash": "0ce41773100fecb40f3dc11435ec19727dc37dbafbd6e856e75a844e8793e798",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b4f43e3352ab7d2c3f951f077f57b8101d408311c18353200779b44088f70cc1"
+      },
+      "communication.moltbookCheckStatus": {
+        "definitionHash": "51afdbe030e0d23a1447153202b3dfdb63c40b4bf21347285bea3c8797666a5f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "fabf5afc93d50b602684a43913eb198ee23df02dcb224dbfb1add9de9dbe70a0"
+      },
+      "communication.moltbookGetProfile": {
+        "definitionHash": "0ef445c2136e2902afc8001a071fef022d837f3a205f71f739bcb548339ef2a1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "27dd08c6de0fc97a1ac49e07a8fcd926dc430d8a1be8e41855fc0c0ffc231830"
+      },
+      "communication.moltbookUpdateProfile": {
+        "definitionHash": "65f7d064cc0a3330f35c6737b35419d2d87afa351489d1dfd0d624cf0b464284",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "efcb11a98cf96d1544244a2a605d0fb0eb5aefeff6b1a8b03ae84414a5bece9f"
+      },
+      "communication.moltbookCreatePost": {
+        "definitionHash": "c38c80a91896d85b0da34dd2a99c8e44d30a76da316fde311a7dd65ccdb18158",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b35b5ee8984003df2edd947f20b9092d0e62c55087f9f2cbf4800beee573706e"
+      },
+      "communication.moltbookGetPost": {
+        "definitionHash": "d74965e35c818027e18fb3df801ae6e85c31ec31b41a0fa18890ade811858910",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "893571f1ef4e3353dbce40b179803896c02463d5f075bac39036955c09669639"
+      },
+      "communication.moltbookGetFeed": {
+        "definitionHash": "291a7cc163c0c23c4eae21d22b487b1dd7f8b3c50fed81816c78082b697ea6ae",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8d0f095abb1fb3b3780f172a75494b669bc1819bc00d419c9397f1fe3a61a072"
+      },
+      "communication.moltbookDeletePost": {
+        "definitionHash": "ffc0cbe312af4465a4c4c368a32c7678b77d33774fe51fc64418fc83f6d3b8c9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ed10c28b2c11a2c75fc152f19f7e7da0568186dfcdd118633809e876a6ddec37"
+      },
+      "communication.moltbookCreateComment": {
+        "definitionHash": "c7b33d97e00634f1b26ac6628604cd2c11a98abfe386fe5f6284f18f91e4cd1f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "32548922674923d1f4c3b477876ccb8e7ee3794a6e9397a1460b0a4a2ca9f44f"
+      },
+      "communication.moltbookGetComments": {
+        "definitionHash": "7eb7ad6a3c66bbaff4646e6397c6a49879f013c9ce0f0bacbf2e660353de34c8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "11d038ecbc45bdafa897fb98ac4db5676eb6864b6d3f151ca40c8553395442dc"
+      },
+      "communication.moltbookVote": {
+        "definitionHash": "ee0fbe6806e2106ea52a796cd27b7e8a07c75825089a2767da443b061c70d447",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b3f1afe92442d25ca5bf0764d590b7fb303f67679fc1c7bab760c8cd58122ec4"
+      },
+      "communication.moltbookCreateSubmolt": {
+        "definitionHash": "d7fe541f630197bf66ecf99402f1f18254cadea4678e7a6d7e4bc95c2481e07f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "64d4df45e430885b015832b8e508709226e3e7e8ede2d3dbc2f560a6ebe6041f"
+      },
+      "communication.moltbookListSubmolts": {
+        "definitionHash": "995df72efb7c9cecf57785148739a6e15cf0e630cd2a1e090e7a0d0c44e17d8d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "03096acc35db5b325eff55dd0bf889f946d78e6a1bd09dcdd1881988d1f7f22b"
+      },
+      "communication.moltbookGetSubmolt": {
+        "definitionHash": "9ae6ff953047828db34f60987a97d3aab749385bd8387be4e8295622125e31d1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5d1fe230570c7b3b940e8834255451b3a28118d689d4668fc3738046b2566730"
+      },
+      "communication.moltbookSubscribe": {
+        "definitionHash": "22055d0538baccd3bb3e18eda5264846f5072c6d7ffb69fe26378b63141757d6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e7d3c3e930f53755f2627560cfc63053f6142421b87775f9539d8fe3df8c4c46"
+      },
+      "communication.moltbookFollow": {
+        "definitionHash": "eb4cc707a01c49161c191e8b3ee2f5335c8770b044b3568c88009caf7605a4b9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e7d3c3e930f53755f2627560cfc63053f6142421b87775f9539d8fe3df8c4c46"
+      },
+      "communication.moltbookSearch": {
+        "definitionHash": "2d552b2b25478fb5c55d68f50b9c0e5437d1b1c27483ee4afb398e47bcc81109",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "78367aa1a88c99db77588285b2e9a44ab6e7962b7be6c1306ddc3d3916236de9"
+      },
+      "communication.moltbookDmCheck": {
+        "definitionHash": "ddeffa096b6a3b1adf1ed96184a5ec3a8fcde8d61662c147305f5e51f1cebb6d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2f00bca9f56a2257f693002acf183f0a0a035860f365fea611e53249b12f4532"
+      },
+      "communication.moltbookDmRequest": {
+        "definitionHash": "750901051d5e36ac3a0e98d6936f3917aa5b71f1d13a41e9883aa603d206e14e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a1d5cb2bd0a8d5a132779c7c36b14e992800b989e73bcb4da290fe43cd2ddd71"
+      },
+      "communication.moltbookDmGetConversations": {
+        "definitionHash": "a2aee7a15f686f106ce87facc978f7d398a3ffb9559d6df8029e56b5a5e69abb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e769932fea43bc56e8eab7069934b36ca7214829f8783832314a4b3ea1ad31f1"
+      },
+      "communication.moltbookDmReply": {
+        "definitionHash": "0ec8d911e8d409102df4e53f10c52a59b48f800ae9e08292ec473e00ba341b62",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3659cc3724dd645dff95b1af230a568c672ad5ea718448489e856fc4b0757e78"
+      },
+      "communication.moltbookDmManageRequest": {
+        "definitionHash": "1da7fab6adc99b4d69a2fb6551fa653fd42c241d018bc421da2bf21fb205dd2a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "586a02b91c946a2c6b0165a0a2a132f9a613eb5ac03b36969e94b492c2420cb0"
+      },
+      "communication.moltbookDmGetRequests": {
+        "definitionHash": "60561393ff92b6ee766a0c3f7702639cba262edca51682f0f71269a81852dbf6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b966e8171964fa1bdfc87886e15f9fc412c3c5f2e105a8cab232eea71a923734"
+      },
+      "communication.moltbookPinPost": {
+        "definitionHash": "f05846e7cf321d64c81600eac76b32575170fc80549a890efb8312d18427732e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "eebb5ad07c812696564f6bc3657f697053bf883108e944537c6f2b95bd9c0514"
+      },
+      "communication.moltbookManageModerator": {
+        "definitionHash": "d98cfa1362bef09036e3c1a2852edb9d5ae4c82945111a384723287f7bed5c5b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "580f32956c6f765b129e5b8403fc7c12a8e161b3646225a438e27b9bef17423d"
+      },
+      "ops.githubGetRepo": {
+        "definitionHash": "6e1eb589e2d88d2b976b903ba4b48ec35b62c4e0c9790d55c5fa9b839755dfac",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e9dae6c9541ec4c3aa7a584467dd76f6a758f3d280138b99170d883b0ae9fdd4"
+      },
+      "ops.githubListRepos": {
+        "definitionHash": "50bb249c2477dd219d988516a3dd2b895c2df772f584ea1fbfba015bffb48234",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "aa1d7f21eae7f87ff4b96b6b34dbe948b5d4413b50aec3dc5e6a3c410cd08ae4"
+      },
+      "ops.githubCreateIssue": {
+        "definitionHash": "592fd2986382e9781b7e82ab21d9665c7c412950ce16091b518b4f8b6b41a927",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d16d34db974bbd4887a9fff2cfc55f872ba3086418035ff5453b4e21b13db02d"
+      },
+      "ops.githubGetIssue": {
+        "definitionHash": "f80d9dad99af20bde34a5cc439ed582b2205d8215a4cb90b2b545934293abef7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9e4dafd64c390ff9322e9ad012cc3d9504baeca7a1428012c3065de8fa3f8bfe"
+      },
+      "ops.githubListIssues": {
+        "definitionHash": "a880a672fcfdde45c659d29dbf28269ff928ffbd6a927c67f3b89c523fc29d4b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6ff4465c99b7344304f03faa4ef1e2ff9d93e0e691577d428a8a22a569c0cd4f"
+      },
+      "ops.githubCreateIssueComment": {
+        "definitionHash": "e5a703c8be46ab2d19ca25ef05b428dc01bfed8e896249b2eafe8f0ed1628c62",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cd78bc64297d7b0621b2be5e9b183c37552b0c270ad4990b7616233b718a302f"
+      },
+      "ops.githubGetPullRequest": {
+        "definitionHash": "f1cdaf0fc2535db097625f456247ea247812430201ec5431ddcf1ce2d5f6f4a4",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b5053802358d4639e86438bb12b63f13c239a3c8c29cf7a0aa5c1754c0220a20"
+      },
+      "ops.githubListPullRequests": {
+        "definitionHash": "42a76239b59505ae95eb95b2285024d158f8aa6176846719bbef94cb7440d992",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f6443f03b96057800a1838a6faf3d3cff2980d8dee17c7e5fec906711eabd500"
+      },
+      "ops.githubGetFileContent": {
+        "definitionHash": "a49e8c0a88170e7d3787ba3056db1e74aacb5323b06db653e7ece8f3fb013ed8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "67865b8940d0d962e191836847265bcc0569b7ceaf70c6dff50285a8bca687e7"
+      },
+      "ops.githubSearchCode": {
+        "definitionHash": "35cba368de0ccae1c0660b84bf77b01899d5622750c11c8869f64ab55029ede6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "12a6c496af114aae7474546b414acc6005ddf4d27b10077256004cd41c00936b"
+      },
+      "ops.githubSearchRepositories": {
+        "definitionHash": "27c2b51034c02fc22be75190545883e9affb8f3dc1cc964be6bd781f4ab0d6d1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ea3dce77970026d21f68c6179182f6c99bb092532680a144d87375342cb2765a"
+      },
+      "ops.githubListBranches": {
+        "definitionHash": "96cf621d06eaf585d03eb419218642a89f9f9fd3e0e7476f194ddbc1f240bb93",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3f988537993bc1c68b1badcbcce47495009e55cf1222b7f438a68e901fb269af"
+      },
+      "ops.githubGetCommit": {
+        "definitionHash": "4793fb2becc3ec54184c36193936836eaa8762c2ecc97cb05309703b65177a33",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "06e328b16c67bae70244663bada734cbe302ed55282207f0167107e5bf6d41d3"
+      },
+      "ops.githubListCommits": {
+        "definitionHash": "75a75e3d7df56d336e540d1cac9e258e8d7d93c6679664cc34c666c757d6277a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cb2d77e580f1ab620315107b9d35eb2aef77a00f141b3e4884e1dea8dc2a1869"
+      },
+      "ops.githubListReleases": {
+        "definitionHash": "12e9acfd7d5db402a9f67305f08803844320bc40515da7d1f954dae35ee4bed6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cfba9153ea14e1aac18d3f25cc2e14832d2a811b676c0fdfc1accbb1a5e39a98"
+      },
+      "ops.githubGetRelease": {
+        "definitionHash": "ab75b76f4f1f0c6094472333cf7f3791f8ddeff5169a619ca962b0317941eea3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "518d11c00e9517c330d70ac8bbd65c59bd5f10d92f0b1e243eed1b3cf26909d4"
+      },
+      "ops.githubCreateGist": {
+        "definitionHash": "e0abaefaa81a674f4290f1732886b7c03e01472bbbb5c4728fb5b9daf0f38342",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cc4e41a22f2961e4415fd5d808b65331da833c4b09cd81488640df0a9f4f0ef2"
+      },
+      "ops.githubListGists": {
+        "definitionHash": "6a7f928525a4ccf9a256ea6071bcc80cb39b2bee959f8c37b769e59531549c1a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "67e34259e8ec0308cb2f12769e13d97bb0e1a2b3229ef881749b30307ba1cc6c"
+      },
+      "ops.githubListWorkflowRuns": {
+        "definitionHash": "12447fca05a6e1e36968e0a1371e80750ad287ac8e611f8b8700a4230d11e347",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "efe3c79cb13a4a8ec1e341cda462b8bfdd853ca1c4b18e65c03bbb0c87670a94"
+      },
+      "ops.githubGetWorkflowRun": {
+        "definitionHash": "5fe7e8024cf1e700e04f4423766b795aa059864ad375e24d0c84b60b8d140977",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "66193892f62885cfc3be17fcb70f30cac67fb79de2e80c3a23cbd02b5ec60fbc"
+      },
+      "ops.vercelListDeployments": {
+        "definitionHash": "5e6c45658e6713ff54c0a13c4202daa504c455d609840e015c8de1e828cfa4a3",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "195e46276d378bf01a63f3a0bfa5c5b31ccac27b43b2b8e056b4d5db019690c4"
+      },
+      "ops.vercelGetDeployment": {
+        "definitionHash": "9e08f3a7f67f9c106e76c740a3806fc06f22248727075ba6f455373d6215f7e7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "237760ca077df3497508f038c1cbd2de224afc29766c165e688cc63039b08ec8"
+      },
+      "ops.vercelCancelDeployment": {
+        "definitionHash": "7227385ab3cbb50fbf21cd9e64dc66b8a882561775f8971bf9bce4b85ad6488a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "24824ee2cc3e68d1afde9de539c40fc75f97eb9ca300a402c64a6e046fd11d9d"
+      },
+      "ops.vercelListProjects": {
+        "definitionHash": "f6c4ad54266a01f7f49934f2189a9fe189609a89a77622baa17a0b521a2ecc00",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cb2907bfb9542eb9c99958f828325943a0f39fc4ef74c4035afb27346eca3fde"
+      },
+      "ops.vercelGetProject": {
+        "definitionHash": "000b261df9aa12eec29f94919cbb99557e3362e31a8d49144f8314e22e60af2b",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "193048abe010694d4d917c4c08a1c8ada76224e2cce72d1eac6c7622791de4d3"
+      },
+      "ops.vercelListDomains": {
+        "definitionHash": "4894ae4b773617df417421b0cb53d87aa3448a504369deb1fdd9c19ea0e974e9",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "35ef4976a3a49ff4ce8ff1735fe3cc7c20faf08cd0ecd22dcc82a66f7ca02c3b"
+      },
+      "ops.vercelGetDomain": {
+        "definitionHash": "7a4354faccad61d230e59653baab1c7d2804813f94a412c57d85c7a934f9db1f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "38f8c798bd6b1cac05e6f89323917725985204ca0fff76a81e4074cc7fd5762c"
+      },
+      "ops.vercelListProjectDomains": {
+        "definitionHash": "908782884160f5a85603ddeb7ed90346b254fa2684f49b1049c0691b968f586c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "40e67a709892c39ba12c25886cfde4de06f5bc5bd75525092b040d33a9bb8b0c"
+      },
+      "ops.vercelListEnvVars": {
+        "definitionHash": "e06b7e8d12a2d2655ef36313effcd40b748895e1b08105b3fe49ccba3e65790f",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7af865d6d52479a0b3b25942aa550061325ec03d659d679c10524a8323116a67"
+      },
+      "ops.vercelCreateEnvVar": {
+        "definitionHash": "3347c108c5adce31e1d01c26fd1ea928bad74e6e47164cc21e9eb0ca77875b82",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "2decdd7c4dcfd2c6012fd909b8ac1f2d585e7a9d85a67298a2e6056eac22af10"
+      },
+      "ops.vercelDeleteEnvVar": {
+        "definitionHash": "968b513cd76e065fdd6de690b6339716dafeac3fa1d018ee068c43b430098575",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "ac310723ff6bbbbfe58951895b270e60c0426a605bac1e6e57048e9d0600a6cb"
+      },
+      "ops.vercelGetDeploymentEvents": {
+        "definitionHash": "39a30b9b42b8af600080cfc444e118f137c4e00462f9722a3ad70368439aeb0c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "28469ae5601beefa7598a58861b0dc0e1bc315e745c813c27b49dac1633b5658"
+      },
+      "ops.vercelGetUsage": {
+        "definitionHash": "92ec24395dda64d6ce3ef94a10fc0d72364ad60c8fbd009872b6f9097d2bc753",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3d035020b1b657290e1bb45445e6c63c5796ed248449038739a9bb9856a2d2c8"
+      },
+      "ops.vercelGetRuntimeLogs": {
+        "definitionHash": "d1654152e468db52dd3242eb8d4ef69cb0277b42658c1a8bf5f218d493ecf641",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "97d9986c32f44f9f4c2987260fe777d8d0919a12d226ecc6a16582ca999ee6bc"
+      },
+      "ops.neonListProjects": {
+        "definitionHash": "6f531070694fe1e274ed31f70893b285159e8e736007ba64c5776c02d58ba6ad",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6cd2f6c6435b91ab257ed28c86d853bbd90bea3792c301ed223deb930802c2b8"
+      },
+      "ops.neonGetProject": {
+        "definitionHash": "57dc30562e147a991565b2352fdb83531b80254065f3bbc08ae1092bcd2158d0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f8caf0d16aa2772d98f71c2aa6fa547b45738384e29496c068ab9aeed1cd2f52"
+      },
+      "ops.neonCreateProject": {
+        "definitionHash": "a07c9a455fe3ba10f852df4baec51a0679bd49e3a82b29a92bb360cc87e15d81",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a8742a678e399af1c8d0d3be4defc3a50b758b645abd1c21840a04558c61ec9b"
+      },
+      "ops.neonDeleteProject": {
+        "definitionHash": "bfa27ab85a9fefb1545397a4443e5ea28f40af7702665c6da56e20a054ed1bd7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f8caf0d16aa2772d98f71c2aa6fa547b45738384e29496c068ab9aeed1cd2f52"
+      },
+      "ops.neonListBranches": {
+        "definitionHash": "047a78f6a04dceb79a6408d69df7b2b6b56f08431bfb4f617c29e72b1ea8b38d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6b62b3f304cdf1ac003a87953f713c1813dd49f898c1053a1695e9c13b387c35"
+      },
+      "ops.neonCreateBranch": {
+        "definitionHash": "a8773a564528f85ff014362a0cc610d31964b774e7bf09c74a532f7fc99461bb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "5d428dd28a505c32621009da4250c42c64d3ac1e9b56787b0f2d39058d7b0e54"
+      },
+      "ops.neonDeleteBranch": {
+        "definitionHash": "88dec9c156ecdf34f383c1a9300b8b54de3b7c27a025324ac1397b5878f6d04e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "475632b36f25c4bd58b7183abce8f07be0db70449a38930515ab9977c345c602"
+      },
+      "ops.neonListDatabases": {
+        "definitionHash": "42d05a0a6c5c3d68e5d90bba6c11a13f7f459d5200d0afcfd241469b891bc013",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "da5860494e44bb5f54829392bc48bfdcb72a277353626e34cfb8e21ff2230bc5"
+      },
+      "ops.neonCreateDatabase": {
+        "definitionHash": "477053a9876b2f53cc3bf337d9077140aa29c7fa905f8d62171688df4cced3af",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "4c0d649541ec800ef385c85043b57c64486011082f94db6f684793db4ad0ebd0"
+      },
+      "ops.neonDeleteDatabase": {
+        "definitionHash": "90802dbc08a3b2797eac59934f95850a1e925483b036a9c248dcd4897f1aceeb",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0098b4866bda522e20539174252603f12e47cc14b46b665b4892a99e4632ca91"
+      },
+      "ops.neonListEndpoints": {
+        "definitionHash": "032df9146e3b45c63182e33d31662fa74310c7626a2e24253fd5216fa5198dac",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "978bbbae3f668d619c4d7470b40d0bd49d6e19616257da1f71a311bb09bea1af"
+      },
+      "ops.neonStartEndpoint": {
+        "definitionHash": "f29e099873569bde6b89fee2662f9172703daa4a335086f0e4a43b4867cc6115",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d91c3026c3d6529887a484b51f8c550c56b817f0efaca651f72ed0e6f18065ad"
+      },
+      "ops.neonSuspendEndpoint": {
+        "definitionHash": "188d6b3a6ea1e8a28e59354dec3441baf982a1074bbf7f27fe380343cb63b61e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d91c3026c3d6529887a484b51f8c550c56b817f0efaca651f72ed0e6f18065ad"
+      },
+      "ops.neonGetConnectionUri": {
+        "definitionHash": "bb07605683a17aa51989dc812c763945a03918137954e03f5d05321d62b78d1a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b5b0823554bc6b99ad17fdd4dedd18d1799ed216459128d3f42745aa8698676e"
+      },
+      "ops.neonListOperations": {
+        "definitionHash": "28227ad9cd30b0e791863c07b6c6fbc2d358291505fd1a984d7cd91850cc63c6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6beaa1d00e7c40c73ff00aaf8f0a4a8baed4d2289dc5a7e7ae5fa915d754e112"
+      },
+      "ops.neonGetConsumption": {
+        "definitionHash": "4626cd989371085dd2de57ba6c72af0084b3ce319246a05e4fcda044a7c37d44",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7db1c5b06c8cbecda564b5f48d251a7a1a2035277372d6a93f86a55e26dfbd2a"
+      },
+      "ops.cloudflareListZones": {
+        "definitionHash": "4dacab93c562ccfeb194ae76b526de0a0b65e27a36b12548c8019dffd9397dcd",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7855b0d34abb7171a586c2e291c9a5a56078490612b91661c26bbd3e4bd04594"
+      },
+      "ops.cloudflareGetZone": {
+        "definitionHash": "34764386199082fea2de4575aa1819e926bde201b26e7805e492b16dfbe1328a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3b1caac420fc936edd204e0a86a0d3749700d72cae90da05227ff72bd1a8d63d"
+      },
+      "ops.cloudflarePurgeCache": {
+        "definitionHash": "0cabea9b42704023a402b906acdf4405cc07f91e32b1f9dd8b37aedd87579e0c",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f8325bc4f7a96b34d4c289d0b826a8438f07ea0aa82ae9cf96eff7aa9665e667"
+      },
+      "ops.cloudflareListDnsRecords": {
+        "definitionHash": "78e77cf600db4a1b9f9cfa4a963d42ba909116279c805735554a490e1c22c9f7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0adab3951b42d9a4a3d8701b3056b22ac6d7df19c6fdd4a14f202833640127c5"
+      },
+      "ops.cloudflareCreateDnsRecord": {
+        "definitionHash": "8f74d9e73340d11d256835a44e37ca5cb3a5bdebb21676b74b08c33f565116f8",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3ce9cebfb19a14fc59b49842122da42d249e2e8f4d9a437ac108a30f5d4db267"
+      },
+      "ops.cloudflareUpdateDnsRecord": {
+        "definitionHash": "191283afeb3b91156bd45a2c58e95eede19014269368cde5f069f84f96ee5383",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cbc6ff5b0625ae487a21b4127cbf21ed710c5159e16877b721869511b00951a3"
+      },
+      "ops.cloudflareDeleteDnsRecord": {
+        "definitionHash": "90afaedd49ced668c1523639dc90ef8955f28bb348ba668fd3674561685378e1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "02a05233fe5950672eba4bdba4e1c6fcc979ea790cc65401657fe115a17ef450"
+      },
+      "ops.cloudflareListWorkers": {
+        "definitionHash": "877af7dec73bccf520c4bcb19186c1a12d08f10f42a93a1b70fd5131408ca978",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "288fbe8ca95311cf80912596e2f106f497a088ae62e8127d9c1e0d60e30aad31"
+      },
+      "ops.cloudflareGetWorker": {
+        "definitionHash": "bfd0ba878fc53da4b30de17b6b13bb5b4858a25693c9309dd1be5c3654585ea7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "23b674139e85af7690fba7208d1c1255501b6c2752fbcef8a78e4dfa058870aa"
+      },
+      "ops.cloudflareDeleteWorker": {
+        "definitionHash": "7b91946d846abd343c7523f3022c70228821b8fc5d06cbaefe28bd299bcb3ac5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d7d0102b74cb6d290cd1a2ba6464601a2fcd38b9aae646c79d810fe21f85c0fc"
+      },
+      "ops.cloudflareListKvNamespaces": {
+        "definitionHash": "3b11a40d67a44bd72c321074b7a4e6a4d33f217b19f3be61648edcfe210e9764",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "c6c0eec9979bdd793667e767fb9910783392d35134c1134475d3e2ce9f4fcc37"
+      },
+      "ops.cloudflareListKvKeys": {
+        "definitionHash": "c853f6bd48c398f912cf249ed0da3b4b7a4c93965648e272243f2ab22d623a90",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "88759bc3144f59fe8cfb6f5d5ab045c965c0c5461953f12ef043948eaa4aa6cd"
+      },
+      "ops.cloudflareGetKvValue": {
+        "definitionHash": "1407380275cb5a1cb0d107a80e6fb417d3eb222d79e39793dd64187d133be899",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "201c22ced529f6f2b67b376c76612e2abceea5e82af49c41dd3a651fcab1892b"
+      },
+      "ops.cloudflarePutKvValue": {
+        "definitionHash": "ebdd1ea2e50ddd5158064571348db707e5a1ada05d1d8c56498d980c4cedede0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "248a86159b1221b43825753d347fcb68666c784a5bafeb9de98b8f215123ad41"
+      },
+      "ops.cloudflareDeleteKvKey": {
+        "definitionHash": "c4c6575e5b55041ac49a39343c8a774c8c14e00b0cd49262249312efb01ef4c7",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "340058d5b0ab6b33f17b6aa96726d64bdd7f024192e70a9095ed15e884260a75"
+      },
+      "ops.slackSendMessage": {
+        "definitionHash": "e722d7cd64b734207fcd108c0cd7f5c7b8a96112dbf249b9831b8b0d03fc6661",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e6083f081ba33b63f954c4c1eb0e0d460a2e49875d2343ac72ff50498bd3be49"
+      },
+      "ops.slackListChannels": {
+        "definitionHash": "e1597271a881cabc44952922559a26225d53b19600ec2210062aff7f5a8e7de5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9f79f1e5700f70703a901ce8098efae7399588beec8a87a178036d5496e191da"
+      },
+      "ops.slackGetChannel": {
+        "definitionHash": "82299f0f5c0cc0b8c829c07dacd2db9a602b09c196f5e82477d84acc88b95e6e",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a011429dd478d983627dde3cf329d67b918dad77841943a0c045444441d8799c"
+      },
+      "ops.slackListUsers": {
+        "definitionHash": "279e446ec3d8d6da0b056c29ff14aaa94a419ef06371fe5bae2d719206e8f62a",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d756c8f22c5e721b076932c7707d57cc7b1d33558061eea9e38023550e7e2274"
+      },
+      "ops.slackGetUser": {
+        "definitionHash": "b5156a536d3f8fb1060d9405b4c462a5dad6b1ea2bfc3f15f7178c7e87c02c71",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "39c31655e56327d390d2cf0740cbbdab90d532549bf7ef92306541713d29bd8c"
+      },
+      "ops.slackAddReaction": {
+        "definitionHash": "947c03cc6a53ec0694762480560bdf52adb708d696067397fa2fa0dc3e55bf98",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f97f47f049e972588e5533eb23d4846f69159a42d93d3c3475c6104a61d5b538"
+      },
+      "ops.slackUploadFile": {
+        "definitionHash": "62e90df31f96cbe847db5bc353cee76d27d75ab7b3b2b099e4a9ac1bbb75c8ea",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b6017d3b577065c0c646135e800fee24bcb5757e3d30705d677e4f79ccc6cade"
+      },
+      "ops.slackSetChannelTopic": {
+        "definitionHash": "4b340f76ded332fc9e56bc41a6af5b24ccbdb366fa41ad4cc5de030f6a9008ac",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "cf3ba79d4e6ae06f48b7b69b53f9c35b8a96eac5d071f7bce8cb6dda2763dd24"
+      },
+      "ops.slackListMessages": {
+        "definitionHash": "73771ffd203ad7669eaff9377da0be7c8a8dc7f003779dad3ef956052a136649",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "b97cc460c8a6f59768be1dd7755e2a62e5551f91ab87d87a0bd127c886c484e8"
+      },
+      "ops.slackSearchMessages": {
+        "definitionHash": "afaef74911716af4ac6c155e9cdfac2031e2eda37481fe74b8acbc700307c10d",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "3ef1d7a3af74284116c943ffbd94b6b93cea5faad941e63113673008797d1273"
+      },
+      "ops.discordSendMessage": {
+        "definitionHash": "eb087ff1e6656c86c9e532eeffccd10ac36e537a28db426eeb604f3be7251ad6",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "99fa1d1a8698eb27d15b35194e9f6875904a14024ab695bbb136c99b189e208c"
+      },
+      "ops.discordListGuilds": {
+        "definitionHash": "2bb93615d7c6561f4d3b5c933ef9eadb51358d921ffa26c7f8bf82dd886e1791",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "e78cd4b388e8e10cd2e9cf9f8c027a84b7bdf42166eb5b6cabffdba3e9674f0e"
+      },
+      "ops.discordGetGuild": {
+        "definitionHash": "7b653cca2b8eb24410ee42e3b8b080f373a1e62d25ef9802aefe34216ee1a1ff",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d5e2ba3bff6a8d539e3c706d0ca9626d0f9f83d35fcd4dcf1c893581f22c8c15"
+      },
+      "ops.discordListChannels": {
+        "definitionHash": "3735c03289c979c64f9f2594de0fdd35d1f161ccce9c5e2e25c9d2b8bddaf375",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "9bc2207b7d71b883c11e5df2da180f9506b36c30f966c1cdf7a3b00da4a69fc8"
+      },
+      "ops.discordGetChannel": {
+        "definitionHash": "e82bf675525c78c5922c95ab3055e71cd53efd54a79ed70d3f71dca5e15101ac",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "8c9bdd9b373fc95ae26795815e6731506679e482503276346ebb5646c38158e0"
+      },
+      "ops.discordListMessages": {
+        "definitionHash": "934e87195cfa6dd09ab08ddce491d5cb1ce8bf3285ec35faba288cf71ce73649",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "a7ff39f38cebf864f910b71b9dde4a3f230fe6680603ac39ae2fc26b382d0f12"
+      },
+      "ops.discordCreateChannel": {
+        "definitionHash": "89a46a8527056888e566b260a4cd50d64978b13e34b112c3eca4d29029dff7e5",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "d6e8518cae8f96a4765946660177349c5f9a878ef92bdd17b575889717c94c1c"
+      },
+      "ops.discordEditMessage": {
+        "definitionHash": "e6694827653eec0153dd14b9b2c3dd15b29f5e7b37bcb1916fba77934c4aaebf",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "01f724a6ad461cc50630a5a8afe48fb7c20e7c396dcd5a6706243e65db2ad627"
+      },
+      "ops.discordDeleteMessage": {
+        "definitionHash": "13d4dfeb8b7d178b411e8fe84cbc053b985987932067afc4f04a4d547b1c9002",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "743e8e747aa7af4224a49f052d25a799c7f25928aac879d9c97cd875ab816856"
+      },
+      "ops.discordAddReaction": {
+        "definitionHash": "a104810bcc3ab0b08ac219c2828bfa3a142c400201c6c003dcf1cfff897190f0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "6d524f8201a7b2be010a13ee12e272f23bbc3c567361e190e53dbcbc176e3cb6"
+      },
+      "ops.discordListMembers": {
+        "definitionHash": "e8fca6f0fcab2f2cfd9493c3fd01190f4786f6544a99f6e2ffeb4e0266d5dfe2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "f3c04408b9b3d6788b4b5713975b75499b4bcb4978da68533ebf346da586d1ff"
+      },
+      "ops.discordGetMember": {
+        "definitionHash": "6f0026b1907f3a4f3da3ddd0da9df10413f20304420d31bbcb4da0015bda59d0",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "7dc27c5fdff6310c372687401e9b4600afe3aebc641182c73dd24b240ca78eee"
+      },
+      "ops.discordCreateThread": {
+        "definitionHash": "1e806accba2df230aa60205deb5a7f17e371277628ce66f0364d4f6baff9ce12",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "0828c5cc064b3d1bfb341049ffea7f3067fb9b0041f6c8eeb1d2342917f26b21"
+      },
+      "ops.discordListThreads": {
+        "definitionHash": "c4b82ea468f35cd5bb903d4105838f45ed6b3172c2b84f6ae5eb9b56680e7ee1",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "40caa4f0804d912c028eb92465a678c6443e1d8d078970fe536b4ab13fd15ffb"
+      },
+      "ops.discordPinMessage": {
+        "definitionHash": "d4ccdb2a06b1d95286eef58c5e923fa4896eee6fa963a33ce9dd90c20000c2f2",
+        "domainRulesHash": null,
+        "inputsOutputsHash": "743e8e747aa7af4224a49f052d25a799c7f25928aac879d9c97cd875ab816856"
+      }
+    }
+  },
+  "blocks": {
+    "ops.slackSendMessage": {
+      "blockName": "ops.slackSendMessage",
+      "blockPath": "/home/ajax/repos/tpmjs/tpmjs/slack",
+      "files": [],
+      "contentHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "configHash": "e722d7cd64b734207fcd108c0cd7f5c7b8a96112dbf249b9831b8b0d03fc6661",
+      "lastValidated": "2026-02-09T10:13:08.618Z",
+      "lastRunId": "2026-02-09T10-13-08-614Z",
+      "validatorResults": {
+        "schema.io": {
+          "passed": true,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "issues": []
+        },
+        "shape.exports.ts": {
+          "passed": false,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "issues": [
+            {
+              "type": "error",
+              "code": "INVALID_PATH",
+              "message": "Block path does not exist: /home/ajax/repos/tpmjs/tpmjs/slack"
+            }
+          ]
+        },
+        "domain.validation": {
+          "passed": false,
+          "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "issues": [
+            {
+              "type": "error",
+              "code": "MISSING_IMPLEMENTATION",
+              "message": "No implementation files found in block directory"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

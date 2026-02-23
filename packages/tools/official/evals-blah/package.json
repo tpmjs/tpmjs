@@ -1,0 +1,64 @@
+{
+  "name": "@tpmjs/tools-evals-blah",
+  "version": "0.1.0",
+  "description": "evals.blah.dev API tools — list models, evals, runs, results, leaderboard, and create models/evals/runs on the open LLM evaluation platform",
+  "type": "module",
+  "keywords": ["tpmjs", "research", "ai", "evals", "llm", "leaderboard", "benchmarks"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/evals-blah"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "research",
+    "frameworks": ["vercel-ai"],
+    "env": [
+      {
+        "name": "EVALS_BLAH_API_KEY",
+        "description": "API key from https://evals.blah.dev/settings/api-keys (starts with blah_). Required only for write operations (create model/eval, trigger run).",
+        "required": false
+      }
+    ],
+    "tools": [
+      { "name": "listModels", "description": "List all registered LLM models on evals.blah.dev with their name, inference URI, and metadata." },
+      { "name": "getModel", "description": "Get details of a specific model by ID on evals.blah.dev." },
+      { "name": "createModel", "description": "Register a new LLM model on evals.blah.dev. Requires API key." },
+      { "name": "getModelResults", "description": "Get all eval results for a specific model on evals.blah.dev." },
+      { "name": "listEvals", "description": "List all evaluation definitions on evals.blah.dev." },
+      { "name": "getEval", "description": "Get details of a specific evaluation by ID on evals.blah.dev." },
+      { "name": "createEval", "description": "Create a new evaluation definition on evals.blah.dev. Requires API key." },
+      { "name": "listRuns", "description": "List all eval runs on evals.blah.dev, newest first." },
+      { "name": "getRun", "description": "Get details of a specific eval run by ID on evals.blah.dev." },
+      { "name": "getRunResults", "description": "Get all results for a specific eval run on evals.blah.dev." },
+      { "name": "triggerRun", "description": "Trigger a new eval run across all models and evals on evals.blah.dev. Requires API key." },
+      { "name": "getResult", "description": "Get a single eval result by ID on evals.blah.dev, including score, reasoning, and latency." },
+      { "name": "getLeaderboard", "description": "Get the model leaderboard ranked by average eval score on evals.blah.dev." }
+    ]
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "name": "@tpmjs/tools-cloudflare",
+  "version": "0.2.0",
+  "description": "Cloudflare API tools for AI agents. Manage DNS records, zones, Workers, KV namespaces, and purge cache.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "cloudflare",
+    "dns",
+    "workers",
+    "agent"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/cloudflare"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ops",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "listZones",
+        "description": "List Cloudflare zones with optional name and status filtering."
+      },
+      {
+        "name": "getZone",
+        "description": "Get details of a specific Cloudflare zone by ID."
+      },
+      {
+        "name": "purgeCache",
+        "description": "Purge cached content from a Cloudflare zone by URLs or purge everything."
+      },
+      {
+        "name": "listDnsRecords",
+        "description": "List DNS records for a Cloudflare zone with type and name filters."
+      },
+      {
+        "name": "createDnsRecord",
+        "description": "Create a new DNS record in a Cloudflare zone."
+      },
+      {
+        "name": "updateDnsRecord",
+        "description": "Update an existing DNS record in a Cloudflare zone."
+      },
+      {
+        "name": "deleteDnsRecord",
+        "description": "Delete a DNS record from a Cloudflare zone."
+      },
+      {
+        "name": "listWorkers",
+        "description": "List all Workers scripts in your Cloudflare account."
+      },
+      {
+        "name": "getWorker",
+        "description": "Get metadata and bindings for a specific Worker script."
+      },
+      {
+        "name": "deleteWorker",
+        "description": "Delete a Worker script from your Cloudflare account."
+      },
+      {
+        "name": "listKvNamespaces",
+        "description": "List KV namespaces in your Cloudflare account."
+      },
+      {
+        "name": "listKvKeys",
+        "description": "List keys in a Cloudflare KV namespace with optional prefix filter."
+      },
+      {
+        "name": "getKvValue",
+        "description": "Get the value of a key from a Cloudflare KV namespace."
+      },
+      {
+        "name": "putKvValue",
+        "description": "Write a key-value pair to a Cloudflare KV namespace."
+      },
+      {
+        "name": "deleteKvKey",
+        "description": "Delete a key from a Cloudflare KV namespace."
+      }
+    ]
+  }
+}

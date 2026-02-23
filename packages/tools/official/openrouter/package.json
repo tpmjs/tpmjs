@@ -1,0 +1,88 @@
+{
+  "name": "@tpmjs/tools-openrouter",
+  "version": "0.1.0",
+  "description": "OpenRouter API tools for AI agents. Chat completions, embeddings, model discovery, API key management, credits, guardrails, and more.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "openrouter",
+    "llm",
+    "ai",
+    "agent",
+    "api"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/openrouter"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      { "name": "chatCompletion", "description": "Send a chat completion request to any model via OpenRouter." },
+      { "name": "createResponse", "description": "Create a response using the OpenRouter Responses API (beta)." },
+      { "name": "createEmbedding", "description": "Generate embeddings for text input via OpenRouter." },
+      { "name": "listModels", "description": "List all available models on OpenRouter with pricing and metadata." },
+      { "name": "countModels", "description": "Get the total count of available models on OpenRouter." },
+      { "name": "listUserModels", "description": "List models filtered by user preferences and settings." },
+      { "name": "listEmbeddingModels", "description": "List all available embedding models on OpenRouter." },
+      { "name": "listProviders", "description": "List all providers available on OpenRouter." },
+      { "name": "listEndpoints", "description": "List all available endpoints for a specific model." },
+      { "name": "previewZdr", "description": "Preview the impact of Zero Data Retention on available endpoints." },
+      { "name": "getCredits", "description": "Get remaining credits and usage for the current account." },
+      { "name": "createCoinbaseCharge", "description": "Create a Coinbase Commerce charge for crypto payment." },
+      { "name": "getUserActivity", "description": "Get user activity grouped by endpoint." },
+      { "name": "getGeneration", "description": "Get request and usage metadata for a specific generation." },
+      { "name": "listApiKeys", "description": "List all API keys for the current account." },
+      { "name": "createApiKey", "description": "Create a new OpenRouter API key." },
+      { "name": "getApiKey", "description": "Get details of a specific API key by hash." },
+      { "name": "getCurrentApiKey", "description": "Get details of the currently authenticated API key." },
+      { "name": "updateApiKey", "description": "Update an existing API key's name, limit, or status." },
+      { "name": "deleteApiKey", "description": "Delete an API key by hash." },
+      { "name": "listGuardrails", "description": "List all guardrails in the account." },
+      { "name": "createGuardrail", "description": "Create a new guardrail policy." },
+      { "name": "getGuardrail", "description": "Get details of a specific guardrail." },
+      { "name": "updateGuardrail", "description": "Update an existing guardrail." },
+      { "name": "deleteGuardrail", "description": "Delete a guardrail by ID." },
+      { "name": "listGuardrailKeyAssignments", "description": "List all API key assignments across all guardrails." },
+      { "name": "listGuardrailMemberAssignments", "description": "List all member assignments across all guardrails." },
+      { "name": "getGuardrailKeys", "description": "List API key assignments for a specific guardrail." },
+      { "name": "assignGuardrailKeys", "description": "Bulk assign API keys to a guardrail." },
+      { "name": "getGuardrailMembers", "description": "List member assignments for a specific guardrail." },
+      { "name": "assignGuardrailMembers", "description": "Bulk assign members to a guardrail." },
+      { "name": "unassignGuardrailKeys", "description": "Bulk unassign API keys from a guardrail." },
+      { "name": "unassignGuardrailMembers", "description": "Bulk unassign members from a guardrail." }
+    ]
+  }
+}

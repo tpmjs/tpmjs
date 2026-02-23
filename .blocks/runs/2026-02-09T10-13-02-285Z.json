@@ -1,0 +1,42 @@
+{
+  "version": "1.0",
+  "id": "2026-02-09T10-13-02-285Z",
+  "timestamp": "2026-02-09T10:13:02.287Z",
+  "configPath": "packages/tools/official/blocks.yml",
+  "projectName": "tpmjs-official-tools",
+  "duration": 419,
+  "summary": {
+    "totalBlocks": 1,
+    "passed": 0,
+    "failed": 1,
+    "warnings": 0,
+    "cached": {
+      "validatorsSkipped": 0,
+      "validatorsRun": 0,
+      "timeSavedMs": 0
+    }
+  },
+  "blocks": [
+    {
+      "blockName": "slack",
+      "blockPath": "",
+      "hasErrors": true,
+      "hasWarnings": false,
+      "validators": [
+        {
+          "id": "config",
+          "label": "config",
+          "passed": false,
+          "duration": 0,
+          "issues": [
+            {
+              "type": "error",
+              "code": "BLOCK_NOT_FOUND",
+              "message": "Block \"slack\" not found in config"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

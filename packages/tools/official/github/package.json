@@ -1,0 +1,134 @@
+{
+  "name": "@tpmjs/tools-github",
+  "version": "0.2.0",
+  "description": "GitHub API tools for AI agents. Manage repos, issues, pull requests, commits, branches, releases, and gists.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "github",
+    "git",
+    "devops",
+    "agent"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/github"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ops",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "getRepo",
+        "description": "Get details of a GitHub repository including stars, forks, and language."
+      },
+      {
+        "name": "listRepos",
+        "description": "List repositories for a user or organization with optional filtering."
+      },
+      {
+        "name": "createIssue",
+        "description": "Create a new issue on a GitHub repository."
+      },
+      {
+        "name": "getIssue",
+        "description": "Get details of a specific issue by number."
+      },
+      {
+        "name": "listIssues",
+        "description": "List issues on a repository with state and label filters."
+      },
+      {
+        "name": "createIssueComment",
+        "description": "Add a comment to an existing GitHub issue or pull request."
+      },
+      {
+        "name": "getPullRequest",
+        "description": "Get details of a specific pull request by number."
+      },
+      {
+        "name": "listPullRequests",
+        "description": "List pull requests on a repository with state and head/base filters."
+      },
+      {
+        "name": "getFileContent",
+        "description": "Get the contents of a file or directory from a GitHub repository."
+      },
+      {
+        "name": "searchCode",
+        "description": "Search for code across GitHub repositories."
+      },
+      {
+        "name": "searchRepositories",
+        "description": "Search GitHub repositories by query with sort and order options."
+      },
+      {
+        "name": "listBranches",
+        "description": "List branches on a GitHub repository."
+      },
+      {
+        "name": "getCommit",
+        "description": "Get details of a specific commit by SHA."
+      },
+      {
+        "name": "listCommits",
+        "description": "List commits on a repository with optional path and author filters."
+      },
+      {
+        "name": "listReleases",
+        "description": "List releases on a GitHub repository."
+      },
+      {
+        "name": "getRelease",
+        "description": "Get details of a specific release by tag name."
+      },
+      {
+        "name": "createGist",
+        "description": "Create a new GitHub Gist with one or more files."
+      },
+      {
+        "name": "listGists",
+        "description": "List gists for the authenticated user or a specific user."
+      },
+      {
+        "name": "listWorkflowRuns",
+        "description": "List recent GitHub Actions workflow runs for a repository."
+      },
+      {
+        "name": "getWorkflowRun",
+        "description": "Get details of a specific GitHub Actions workflow run."
+      }
+    ]
+  }
+}

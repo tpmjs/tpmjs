@@ -1,0 +1,119 @@
+{
+  "name": "@tpmjs/tools-neon",
+  "version": "0.1.0",
+  "description": "Neon serverless Postgres tools for AI agents. Manage projects, branches, databases, endpoints, and usage metrics.",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "neon",
+    "postgres",
+    "database",
+    "serverless",
+    "agent"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/neon"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ops",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "tools": [
+      {
+        "name": "listProjects",
+        "description": "List all Neon projects with optional search filtering."
+      },
+      {
+        "name": "getProject",
+        "description": "Get details of a specific Neon project by ID."
+      },
+      {
+        "name": "createProject",
+        "description": "Create a new Neon project with a default branch and database."
+      },
+      {
+        "name": "deleteProject",
+        "description": "Permanently delete a Neon project and all its resources."
+      },
+      {
+        "name": "listBranches",
+        "description": "List all branches in a Neon project."
+      },
+      {
+        "name": "createBranch",
+        "description": "Create a new branch from a parent branch in a Neon project."
+      },
+      {
+        "name": "deleteBranch",
+        "description": "Delete a branch from a Neon project."
+      },
+      {
+        "name": "listDatabases",
+        "description": "List all databases on a specific branch."
+      },
+      {
+        "name": "createDatabase",
+        "description": "Create a new database on a branch."
+      },
+      {
+        "name": "deleteDatabase",
+        "description": "Delete a database from a branch."
+      },
+      {
+        "name": "listEndpoints",
+        "description": "List compute endpoints for a Neon project."
+      },
+      {
+        "name": "startEndpoint",
+        "description": "Start a suspended compute endpoint."
+      },
+      {
+        "name": "suspendEndpoint",
+        "description": "Suspend a running compute endpoint to save costs."
+      },
+      {
+        "name": "getConnectionUri",
+        "description": "Get a PostgreSQL connection string for a database."
+      },
+      {
+        "name": "listOperations",
+        "description": "List recent operations for a Neon project."
+      },
+      {
+        "name": "getConsumption",
+        "description": "Get usage metrics (compute time, storage, data written) for a date range."
+      }
+    ]
+  }
+}
