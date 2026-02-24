@@ -6,7 +6,7 @@ import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { AppHeader } from '~/components/AppHeader';
 
@@ -58,6 +58,27 @@ interface Mapping {
 type Step = 'collections' | 'editors' | 'command';
 
 export default function SetupPage(): React.ReactElement {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <AppHeader />
+          <main className="min-h-screen bg-background">
+            <Container size="md" padding="lg" className="py-24">
+              <div className="text-center font-mono text-sm text-foreground-tertiary">
+                Loading setup...
+              </div>
+            </Container>
+          </main>
+        </>
+      }
+    >
+      <SetupPageContent />
+    </Suspense>
+  );
+}
+
+function SetupPageContent(): React.ReactElement {
   const { data: session, isPending } = useSession();
   const searchParams = useSearchParams();
   const claimCode = searchParams.get('claim');
