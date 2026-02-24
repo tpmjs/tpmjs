@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "9abbad52c5b4",
+  "session_id": "d6e9f817-4050-46b6-b27b-5d8dea60eb38",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T13:32:55.679668Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/next.config.ts",
+    "apps/web/src/app/(auth)/sign-in/page.tsx",
+    "apps/web/src/app/api/setup/claim/route.ts",
+    "apps/web/src/app/api/setup/create-token/route.ts",
+    "apps/web/src/app/api/setup/install.sh/route.ts",
+    "apps/web/src/app/api/setup/poll/[code]/route.ts",
+    "apps/web/src/app/api/setup/redeem/[token]/route.ts",
+    "apps/web/src/app/page.tsx",
+    "apps/web/src/app/setup/page.tsx",
+    "apps/web/src/components/home/GetStartedSection.tsx",
+    "packages/db/prisma/schema.prisma"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "96bc67ea-44a5-4973-a720-92df84d7ff87",
+  "checkpoint_transcript_start": 2295,
+  "transcript_lines_at_start": 2295,
+  "token_usage": {
+    "input_tokens": 552,
+    "cache_creation_tokens": 18217,
+    "cache_read_tokens": 1728994,
+    "output_tokens": 3529,
+    "api_call_count": 12
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T13:32:53.576565Z",
+    "agent_lines": 0,
+    "human_added": 5,
+    "human_modified": 2,
+    "human_removed": 0,
+    "total_committed": 5,
+    "agent_percentage": 0
+  }
+}

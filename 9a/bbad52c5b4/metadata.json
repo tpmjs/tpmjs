@@ -3,10 +3,21 @@
   "checkpoint_id": "9abbad52c5b4",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
+    "apps/web/next.config.ts",
+    "apps/web/src/app/(auth)/sign-in/page.tsx",
+    "apps/web/src/app/api/setup/claim/route.ts",
+    "apps/web/src/app/api/setup/create-token/route.ts",
+    "apps/web/src/app/api/setup/install.sh/route.ts",
+    "apps/web/src/app/api/setup/poll/[code]/route.ts",
+    "apps/web/src/app/api/setup/redeem/[token]/route.ts",
+    "apps/web/src/app/page.tsx",
+    "apps/web/src/app/setup/page.tsx",
+    "apps/web/src/components/home/GetStartedSection.tsx",
     "apps/web/src/env.ts",
-    "apps/web/src/lib/auth.ts"
+    "apps/web/src/lib/auth.ts",
+    "packages/db/prisma/schema.prisma"
   ],
   "sessions": [
     {
@@ -15,13 +26,20 @@
       "context": "/9a/bbad52c5b4/0/context.md",
       "content_hash": "/9a/bbad52c5b4/0/content_hash.txt",
       "prompt": "/9a/bbad52c5b4/0/prompt.txt"
+    },
+    {
+      "metadata": "/9a/bbad52c5b4/1/metadata.json",
+      "transcript": "/9a/bbad52c5b4/1/full.jsonl",
+      "context": "/9a/bbad52c5b4/1/context.md",
+      "content_hash": "/9a/bbad52c5b4/1/content_hash.txt",
+      "prompt": "/9a/bbad52c5b4/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 10,
-    "cache_creation_tokens": 16788,
-    "cache_read_tokens": 153593,
-    "output_tokens": 45,
-    "api_call_count": 8
+    "input_tokens": 562,
+    "cache_creation_tokens": 35005,
+    "cache_read_tokens": 1882587,
+    "output_tokens": 3574,
+    "api_call_count": 20
   }
 }
