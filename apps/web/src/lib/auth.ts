@@ -66,6 +66,22 @@ export const auth = betterAuth({
           } catch (error) {
             console.error('[auth] Failed to set signup source:', error);
           }
+
+          // Post new signup notification to Discord
+          const webhookUrl = process.env.DISCORD_SIGNUP_WEBHOOK_URL;
+          if (webhookUrl) {
+            try {
+              await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  content: `New user signed up: **${user.email}**`,
+                }),
+              });
+            } catch (error) {
+              console.error('[auth] Failed to send Discord signup notification:', error);
+            }
+          }
         },
       },
     },

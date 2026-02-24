@@ -17,10 +17,11 @@ export const env = createEnv({
   // Resend (Email)
   RESEND_API_KEY: z.string().startsWith('re_').optional(), // Resend API key for sending emails
 
-  // Discord Summary Agent
+  // Discord
   DISCORD_SUMMARY_AGENT_ID: z.string().optional(), // Agent ID for Discord summary cron
   DISCORD_GUILD_ID: z.string().optional(), // Discord server ID to summarize
   DISCORD_SUMMARY_CHANNEL_ID: z.string().optional(), // Channel to post summaries to
+  DISCORD_SIGNUP_WEBHOOK_URL: z.string().url().optional(), // Webhook URL for new user signup notifications
 
   // Sentry
   SENTRY_DSN: z.string().url().optional(), // Sentry DSN for server-side error reporting
