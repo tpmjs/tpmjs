@@ -21,7 +21,7 @@ export const env = createEnv({
   DISCORD_SUMMARY_AGENT_ID: z.string().optional(), // Agent ID for Discord summary cron
   DISCORD_GUILD_ID: z.string().optional(), // Discord server ID to summarize
   DISCORD_SUMMARY_CHANNEL_ID: z.string().optional(), // Channel to post summaries to
-  DISCORD_SIGNUP_WEBHOOK_URL: z.string().url().optional(), // Webhook URL for new user signup notifications
+  DISCORD_SIGNUP_WEBHOOK_URL: z.string().optional(), // Webhook URL for new user signup notifications
 
   // Sentry
   SENTRY_DSN: z.string().url().optional(), // Sentry DSN for server-side error reporting
