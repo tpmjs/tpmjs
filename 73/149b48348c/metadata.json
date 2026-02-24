@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "73149b48348c",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/setup/install.sh/route.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/73/149b48348c/0/metadata.json",
+      "transcript": "/73/149b48348c/0/full.jsonl",
+      "context": "/73/149b48348c/0/context.md",
+      "content_hash": "/73/149b48348c/0/content_hash.txt",
+      "prompt": "/73/149b48348c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 7,
+    "cache_creation_tokens": 5390,
+    "cache_read_tokens": 460328,
+    "output_tokens": 34,
+    "api_call_count": 5
+  }
+}
