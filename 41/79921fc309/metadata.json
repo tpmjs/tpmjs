@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "4179921fc309",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/next.config.ts",
+    "apps/web/src/app/(auth)/sign-in/page.tsx",
+    "apps/web/src/app/api/setup/claim/route.ts",
+    "apps/web/src/app/api/setup/create-token/route.ts",
+    "apps/web/src/app/api/setup/install.sh/route.ts",
+    "apps/web/src/app/api/setup/poll/[code]/route.ts",
+    "apps/web/src/app/page.tsx",
+    "apps/web/src/app/setup/page.tsx",
+    "apps/web/src/components/home/GetStartedSection.tsx",
+    "packages/db/prisma/schema.prisma"
+  ],
+  "sessions": [
+    {
+      "metadata": "/41/79921fc309/0/metadata.json",
+      "transcript": "/41/79921fc309/0/full.jsonl",
+      "context": "/41/79921fc309/0/context.md",
+      "content_hash": "/41/79921fc309/0/content_hash.txt",
+      "prompt": "/41/79921fc309/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 9264,
+    "cache_read_tokens": 679536,
+    "output_tokens": 1368,
+    "api_call_count": 8
+  }
+}
