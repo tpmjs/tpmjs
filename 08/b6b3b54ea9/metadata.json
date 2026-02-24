@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "08b6b3b54ea9",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/api/setup/claim/route.ts",
+    "apps/web/src/app/api/setup/create-token/route.ts",
+    "apps/web/src/app/api/setup/install.sh/route.ts",
+    "apps/web/src/app/api/setup/poll/[code]/route.ts",
+    "apps/web/src/app/setup/page.tsx",
+    "packages/db/prisma/schema.prisma"
+  ],
+  "sessions": [
+    {
+      "metadata": "/08/b6b3b54ea9/0/metadata.json",
+      "transcript": "/08/b6b3b54ea9/0/full.jsonl",
+      "context": "/08/b6b3b54ea9/0/context.md",
+      "content_hash": "/08/b6b3b54ea9/0/content_hash.txt",
+      "prompt": "/08/b6b3b54ea9/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 40,
+    "cache_creation_tokens": 158229,
+    "cache_read_tokens": 5137305,
+    "output_tokens": 15440,
+    "api_call_count": 36
+  }
+}
