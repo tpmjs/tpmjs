@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { AppHeader } from '../components/AppHeader';
 import { EcosystemStats } from '../components/home/EcosystemStats';
 import { FeaturesSection } from '../components/home/FeaturesSection';
+import { GetStartedSection } from '../components/home/GetStartedSection';
 import { HeroSection } from '../components/home/HeroSection';
 import { McpSection } from '../components/home/McpSection';
 
@@ -226,6 +227,9 @@ export default async function HomePage(): Promise<React.ReactElement> {
       <main>
         {/* Hero Section - Dithered Design */}
         <HeroSection stats={data.stats} />
+
+        {/* Get Started - Install Script Section */}
+        <GetStartedSection />
 
         {/* Ecosystem Stats */}
         <EcosystemStats stats={data.ecosystemStats} />
