@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "805c07452bed",
+  "session_id": "0e7eba17-7bd1-4ac6-8793-4c53ca71cf2e",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T13:43:04.751268Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/omega-infinite-registry-agent-gap-analysis.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "c56395de-926f-49e8-a4ac-d6ce54100c4a",
+  "checkpoint_transcript_start": 103,
+  "transcript_lines_at_start": 103,
+  "token_usage": {
+    "input_tokens": 11,
+    "cache_creation_tokens": 10126,
+    "cache_read_tokens": 172414,
+    "output_tokens": 664,
+    "api_call_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T13:43:04.626632Z",
+    "agent_lines": 0,
+    "human_added": 384,
+    "human_modified": 380,
+    "human_removed": 0,
+    "total_committed": 684,
+    "agent_percentage": 0
+  }
+}
