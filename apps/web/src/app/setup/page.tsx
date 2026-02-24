@@ -222,7 +222,7 @@ function SetupPageContent(): React.ReactElement {
                 Sign in to select your collections and generate a personalized install command that
                 configures your editors automatically.
               </p>
-              <Link href="/auth/signin?callbackUrl=/setup">
+              <Link href="/sign-in?callbackUrl=/setup">
                 <Button size="lg" variant="default">
                   Sign In to Get Started
                 </Button>
