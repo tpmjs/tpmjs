@@ -5,7 +5,16 @@ export function createEnv<T extends Record<string, z.ZodTypeAny>>(
 ): z.infer<z.ZodObject<T>> {
   const envSchema = z.object(schema);
 
-  const parsed = envSchema.safeParse(process.env);
+  // Preprocess: convert empty strings to undefined so optional() works correctly.
+  // Environment variables are always strings in Node.js, so an empty string
+  // should be treated as "not set" for optional fields.
+  const processedEnv: Record<string, string | undefined> = {};
+  for (const key of Object.keys(schema)) {
+    const val = process.env[key];
+    processedEnv[key] = val === '' ? undefined : val;
+  }
+
+  const parsed = envSchema.safeParse(processedEnv);
 
   if (!parsed.success) {
     console.error('Invalid environment variables:', parsed.error.flatten().fieldErrors);
