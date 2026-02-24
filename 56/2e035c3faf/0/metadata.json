@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "562e035c3faf",
+  "session_id": "d6e9f817-4050-46b6-b27b-5d8dea60eb38",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-24T05:02:50.059719Z",
+  "branch": "feat/install-setup-wizard",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/next.config.ts",
+    "apps/web/src/app/api/setup/create-token/route.ts",
+    "apps/web/src/app/api/setup/install.sh/route.ts",
+    "apps/web/src/app/api/setup/redeem/[token]/route.ts",
+    "apps/web/src/app/page.tsx",
+    "apps/web/src/app/setup/page.tsx",
+    "apps/web/src/components/home/GetStartedSection.tsx",
+    "packages/db/prisma/schema.prisma"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "f31e8bf5-1921-4563-8bf2-64bceb7d7657",
+  "token_usage": {
+    "input_tokens": 492,
+    "cache_creation_tokens": 148978,
+    "cache_read_tokens": 5996334,
+    "output_tokens": 6000,
+    "api_call_count": 68
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-24T05:02:49.657735Z",
+    "agent_lines": 567,
+    "human_added": 13500,
+    "human_modified": 25,
+    "human_removed": 0,
+    "total_committed": 14092,
+    "agent_percentage": 4.023559466363894
+  }
+}
