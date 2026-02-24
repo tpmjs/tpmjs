@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-const VALID_EDITORS = ['claude-code', 'cursor', 'windsurf', 'claude-desktop'] as const;
+const VALID_EDITORS = ['claude-code', 'cursor', 'windsurf', 'claude-desktop', 'codex'] as const;
 type Editor = (typeof VALID_EDITORS)[number];
 
 interface MappingInput {

@@ -35,6 +35,12 @@ const EDITORS = [
     description: 'Desktop app',
     icon: 'C',
   },
+  {
+    id: 'codex' as const,
+    name: 'Codex',
+    description: 'Terminal CLI by OpenAI',
+    icon: 'ox',
+  },
 ] as const;
 
 type EditorId = (typeof EDITORS)[number]['id'];
