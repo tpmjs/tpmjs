@@ -82,7 +82,7 @@ export async function GET(_request: Request, context: RouteContext) {
       collectionSlug: m.collectionSlug,
       collectionName: m.collectionName,
       editor: m.editor,
-      mcpUrl: `https://tpmjs.com/@${username}/collections/${m.collectionSlug}/mcp`,
+      mcpUrl: `https://tpmjs.com/api/mcp/${username}/${m.collectionSlug}/http`,
     }));
 
     return NextResponse.json({
