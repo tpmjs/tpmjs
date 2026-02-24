@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
   ],
   reactStrictMode: true,
   serverExternalPackages: ['@tpmjs/package-executor'],
+  async rewrites() {
+    return [
+      {
+        source: '/install.sh',
+        destination: '/api/setup/install.sh',
+      },
+    ];
+  },
   async redirects() {
     return [
       {

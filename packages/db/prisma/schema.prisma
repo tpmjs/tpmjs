@@ -429,6 +429,7 @@ model User {
   memories         Memory[]
   customMcpServers CustomMcpServer[]
   workflows        Workflow[]
+  setupTokens      SetupToken[]
 
   @@index([username])
   @@map("users")
@@ -2337,4 +2338,34 @@ model WorkflowNodeExecution {
   @@index([executionId])
   @@index([nodeId])
   @@map("workflow_node_executions")
+}
+
+/// SetupToken - one-time tokens for the install.sh setup flow
+/// Created from the web UI, redeemed by the install script to configure editors
+model SetupToken {
+  id        String   @id @default(cuid())
+
+  // Owner
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Token (unique, short-lived)
+  token     String   @unique @db.VarChar(64)
+
+  // Configuration payload (collections + editors mapping)
+  config    Json     @db.JsonB
+  // config shape: { mappings: [{ collectionId, collectionSlug, collectionName, editor }], apiKey?: string }
+
+  // Status
+  redeemed    Boolean   @default(false)
+  redeemedAt  DateTime? @map("redeemed_at")
+  expiresAt   DateTime  @map("expires_at")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("setup_tokens")
 }
