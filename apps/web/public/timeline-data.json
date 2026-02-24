@@ -6879,6 +6879,38 @@
       "t": "feat",
       "s": "",
       "u": "add new tool packages (cloudflare, evals-blah, github, neon, openrouter, railway, redis), logger, tool-test-utils, integration tests, scripts, and docs"
+    },
+    {
+      "h": "add72256398c8ad63e515e9eb4f130ffb8e44093",
+      "d": "2026-02-23",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "21b971c62849d156e888d75b5edd402646b4a92c",
+      "d": "2026-02-24",
+      "m": "feat: add web-initiated install.sh setup flow for MCP editor configuration",
+      "t": "feat",
+      "s": "",
+      "u": "add web-initiated install.sh setup flow for MCP editor configuration"
+    },
+    {
+      "h": "1b9e8b8a1a41d1f3eda54f58fe2a77c45d484816",
+      "d": "2026-02-24",
+      "m": "Merge pull request #42 from tpmjs/feat/install-setup-wizard",
+      "t": "other",
+      "s": "",
+      "u": "Merge pull request #42 from tpmjs/feat/install-setup-wizard"
+    },
+    {
+      "h": "45ca5702280348e692ca01c0a4b81e76ab307fc3",
+      "d": "2026-02-24",
+      "m": "fix: install.sh opens browser automatically, polls for setup completion",
+      "t": "fix",
+      "s": "",
+      "u": "install.sh opens browser automatically, polls for setup completion"
     }
   ],
   "m": [
