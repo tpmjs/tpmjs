@@ -22,6 +22,7 @@ interface MappingInput {
 interface CreateTokenBody {
   mappings: MappingInput[];
   createApiKey?: boolean;
+  claimCode?: string; // From install.sh polling flow
 }
 
 /**
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     const body: CreateTokenBody = await request.json();
-    const { mappings, createApiKey } = body;
+    const { mappings, createApiKey, claimCode } = body;
 
     // Validate mappings
     if (!Array.isArray(mappings) || mappings.length === 0) {
@@ -119,6 +120,7 @@ export async function POST(request: Request) {
       data: {
         userId: session.user.id,
         token,
+        ...(claimCode && { claimCode }),
         config: {
           mappings: mappings.map((m) => ({
             collectionId: m.collectionId,

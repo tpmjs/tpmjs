@@ -5,6 +5,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useSession } from '@/lib/auth-client';
 import { AppHeader } from '~/components/AppHeader';
@@ -58,6 +59,8 @@ type Step = 'collections' | 'editors' | 'command';
 
 export default function SetupPage(): React.ReactElement {
   const { data: session, isPending } = useSession();
+  const searchParams = useSearchParams();
+  const claimCode = searchParams.get('claim');
 
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isLoadingCollections, setIsLoadingCollections] = useState(true);
@@ -69,6 +72,7 @@ export default function SetupPage(): React.ReactElement {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [claimCompleted, setClaimCompleted] = useState(false);
 
   const fetchCollections = useCallback(async () => {
     try {
@@ -144,6 +148,7 @@ export default function SetupPage(): React.ReactElement {
         body: JSON.stringify({
           mappings: mappingPayload,
           createApiKey: true,
+          ...(claimCode && { claimCode }),
         }),
       });
 
@@ -157,6 +162,13 @@ export default function SetupPage(): React.ReactElement {
       if (data.apiKey) {
         setApiKeyCreated(data.apiKey);
       }
+
+      // If this was triggered from install.sh (claim code present),
+      // show a completion message instead of a command to copy
+      if (claimCode) {
+        setClaimCompleted(true);
+      }
+
       setStep('command');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate install command');
@@ -206,6 +218,16 @@ export default function SetupPage(): React.ReactElement {
       <AppHeader />
       <main className="min-h-screen bg-background">
         <Container size="lg" padding="lg" className="py-12 md:py-20">
+          {/* CLI-initiated banner */}
+          {claimCode && !claimCompleted && (
+            <div className="mb-8 p-4 border-2 border-primary bg-primary/5 text-center">
+              <p className="font-mono text-sm text-foreground">
+                Your terminal is waiting. Select your collections and editors below, then click
+                generate — your terminal will pick up the configuration automatically.
+              </p>
+            </div>
+          )}
+
           {/* Header */}
           <div className="text-center mb-12">
             <p className="font-mono text-xs text-primary uppercase tracking-widest mb-3">
@@ -413,31 +435,48 @@ export default function SetupPage(): React.ReactElement {
             </div>
           )}
 
-          {/* Step 3: Copy Command */}
+          {/* Step 3: Copy Command or Claim Completed */}
           {step === 'command' && (
             <div>
               <fieldset className="border border-dashed border-border p-6 md:p-8">
                 <legend className="font-mono text-sm text-foreground-secondary px-3 lowercase">
-                  your install command
+                  {claimCompleted ? 'setup complete' : 'your install command'}
                 </legend>
 
-                <p className="text-sm text-foreground-secondary mb-6">
-                  Run this in your terminal to configure all selected editors. The token expires in
-                  1 hour and can only be used once.
-                </p>
-
-                <div className="relative">
-                  <div className="p-4 bg-background border border-border font-mono text-sm overflow-x-auto">
-                    <code className="text-foreground break-all">{installCommand}</code>
+                {claimCompleted ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 border-2 border-primary bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                      <Icon icon="check" className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="font-mono text-xl font-bold text-foreground mb-2 lowercase">
+                      configuration sent to your terminal
+                    </h3>
+                    <p className="text-sm text-foreground-secondary max-w-md mx-auto">
+                      Switch back to your terminal — the install script is picking up your
+                      configuration and setting up your editors now.
+                    </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={copyCommand}
-                    className="absolute top-3 right-3 p-2 text-foreground-tertiary hover:text-foreground transition-colors border border-border bg-surface"
-                  >
-                    <Icon icon={copied ? 'check' : 'copy'} size="xs" />
-                  </button>
-                </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-foreground-secondary mb-6">
+                      Run this in your terminal to configure all selected editors. The token expires
+                      in 1 hour and can only be used once.
+                    </p>
+
+                    <div className="relative">
+                      <div className="p-4 bg-background border border-border font-mono text-sm overflow-x-auto">
+                        <code className="text-foreground break-all">{installCommand}</code>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={copyCommand}
+                        className="absolute top-3 right-3 p-2 text-foreground-tertiary hover:text-foreground transition-colors border border-border bg-surface"
+                      >
+                        <Icon icon={copied ? 'check' : 'copy'} size="xs" />
+                      </button>
+                    </div>
+                  </>
+                )}
 
                 {apiKeyCreated && (
                   <div className="mt-4 p-4 border border-dashed border-primary/30 bg-primary/5">
@@ -485,20 +524,26 @@ export default function SetupPage(): React.ReactElement {
               </fieldset>
 
               <div className="flex justify-between mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setStep('editors');
-                    setInstallCommand('');
-                    setApiKeyCreated(null);
-                  }}
-                >
-                  Back
-                </Button>
-                <Button variant="outline" onClick={() => copyCommand()}>
-                  <Icon icon={copied ? 'check' : 'copy'} size="xs" className="mr-2" />
-                  {copied ? 'Copied!' : 'Copy Command'}
-                </Button>
+                {claimCompleted ? (
+                  <div />
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setStep('editors');
+                      setInstallCommand('');
+                      setApiKeyCreated(null);
+                    }}
+                  >
+                    Back
+                  </Button>
+                )}
+                {!claimCompleted && (
+                  <Button variant="outline" onClick={() => copyCommand()}>
+                    <Icon icon={copied ? 'check' : 'copy'} size="xs" className="mr-2" />
+                    {copied ? 'Copied!' : 'Copy Command'}
+                  </Button>
+                )}
               </div>
             </div>
           )}

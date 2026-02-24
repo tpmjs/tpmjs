@@ -2352,6 +2352,11 @@ model SetupToken {
   // Token (unique, short-lived)
   token     String   @unique @db.VarChar(64)
 
+  // Claim code - used by install.sh to poll for token completion
+  // When install.sh runs without a token, it generates a claim code,
+  // opens the browser to /setup?claim=<code>, and polls until the user completes setup
+  claimCode String?  @unique @map("claim_code") @db.VarChar(32)
+
   // Configuration payload (collections + editors mapping)
   config    Json     @db.JsonB
   // config shape: { mappings: [{ collectionId, collectionSlug, collectionName, editor }], apiKey?: string }
@@ -2365,6 +2370,7 @@ model SetupToken {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@index([token])
+  @@index([claimCode])
   @@index([userId])
   @@index([expiresAt])
   @@map("setup_tokens")
