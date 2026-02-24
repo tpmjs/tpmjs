@@ -176,6 +176,13 @@ async function handleHttpTransport(
     );
   }
 
+  // Notifications have no id — respond with 202 Accepted per MCP streamable HTTP spec
+  const isNotification = body.id === undefined || body.id === null;
+  if (isNotification && body.method !== 'initialize') {
+    // Still process it (e.g. notifications/initialized) but don't return a body
+    return new NextResponse(null, { status: 202 });
+  }
+
   const headerEnvVars = extractEnvVarsFromHeaders(request);
   const response = await processJsonRpcRequest(
     collectionId,
@@ -185,7 +192,17 @@ async function handleHttpTransport(
     trackingCtx,
     Object.keys(headerEnvVars).length > 0 ? headerEnvVars : undefined
   );
-  return NextResponse.json(response);
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  // Include session ID on initialize response per MCP streamable HTTP spec
+  if (body.method === 'initialize') {
+    headers['Mcp-Session-Id'] = crypto.randomUUID();
+  }
+
+  return NextResponse.json(response, { headers });
 }
 
 /**
