@@ -17,8 +17,19 @@ export function createEnv<T extends Record<string, z.ZodTypeAny>>(
   const parsed = envSchema.safeParse(processedEnv);
 
   if (!parsed.success) {
-    console.error('Invalid environment variables:', parsed.error.flatten().fieldErrors);
-    throw new Error('Invalid environment variables');
+    const fieldErrors = parsed.error.flatten().fieldErrors;
+    const failedKeys = Object.keys(fieldErrors);
+    console.error(
+      `[createEnv] Invalid environment variables: ${failedKeys.join(', ')}`,
+      JSON.stringify(fieldErrors)
+    );
+    // Log which values failed (redact to first 4 chars for security)
+    for (const key of failedKeys) {
+      const raw = process.env[key];
+      const preview = raw ? `${raw.slice(0, 4)}...` : '(undefined)';
+      console.error(`[createEnv]   ${key} = ${preview}`);
+    }
+    throw new Error(`Invalid environment variables: ${failedKeys.join(', ')}`);
   }
 
   return parsed.data;
