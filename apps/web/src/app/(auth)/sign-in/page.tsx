@@ -15,6 +15,11 @@ export default function SignInPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  function getRedirectUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('callbackUrl') || params.get('redirect') || '/dashboard';
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
@@ -28,8 +33,7 @@ export default function SignInPage() {
         },
         {
           onSuccess: () => {
-            // Redirect on successful sign-in
-            window.location.href = '/dashboard';
+            window.location.href = getRedirectUrl();
           },
           onError: (ctx) => {
             console.error('Sign in error:', ctx.error);
@@ -49,7 +53,7 @@ export default function SignInPage() {
 
       // If we have data but onSuccess didn't fire, redirect manually
       if (result.data) {
-        window.location.href = '/dashboard';
+        window.location.href = getRedirectUrl();
       } else {
         // Neither data nor error - something unexpected happened
         console.error('Sign in returned no data or error:', result);
