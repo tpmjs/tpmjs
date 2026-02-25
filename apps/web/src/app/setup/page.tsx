@@ -11,36 +11,47 @@ import { useSession } from '@/lib/auth-client';
 import { AppHeader } from '~/components/AppHeader';
 
 const EDITORS = [
+  // Major IDEs & Desktop Apps
   {
     id: 'claude-code' as const,
     name: 'Claude Code',
     description: 'Terminal CLI by Anthropic',
     icon: '>_',
   },
-  {
-    id: 'cursor' as const,
-    name: 'Cursor',
-    description: 'AI code editor',
-    icon: '{;}',
-  },
-  {
-    id: 'windsurf' as const,
-    name: 'Windsurf',
-    description: 'Agentic IDE',
-    icon: 'W',
-  },
+  { id: 'vscode' as const, name: 'VS Code', description: 'GitHub Copilot agent mode', icon: 'VS' },
+  { id: 'cursor' as const, name: 'Cursor', description: 'AI code editor', icon: '{;}' },
+  { id: 'windsurf' as const, name: 'Windsurf', description: 'Agentic IDE by Codeium', icon: 'W' },
   {
     id: 'claude-desktop' as const,
     name: 'Claude Desktop',
-    description: 'Desktop app',
+    description: 'Desktop app by Anthropic',
     icon: 'C',
   },
+  // Terminal CLIs
+  { id: 'codex' as const, name: 'Codex', description: 'Terminal CLI by OpenAI', icon: 'ox' },
   {
-    id: 'codex' as const,
-    name: 'Codex',
-    description: 'Terminal CLI by OpenAI',
-    icon: 'ox',
+    id: 'gemini-cli' as const,
+    name: 'Gemini CLI',
+    description: 'Terminal CLI by Google',
+    icon: 'G',
   },
+  {
+    id: 'copilot-cli' as const,
+    name: 'Copilot CLI',
+    description: 'Terminal CLI by GitHub',
+    icon: 'GH',
+  },
+  { id: 'amazon-q' as const, name: 'Amazon Q', description: 'AI assistant by AWS', icon: 'Q' },
+  // Extensions & Others
+  { id: 'cline' as const, name: 'Cline', description: 'Autonomous coding agent', icon: 'CL' },
+  {
+    id: 'continue' as const,
+    name: 'Continue',
+    description: 'Open-source AI assistant',
+    icon: '>>',
+  },
+  { id: 'tabnine' as const, name: 'Tabnine', description: 'AI code assistant', icon: 'T9' },
+  { id: 'augment' as const, name: 'Augment', description: 'AI coding assistant', icon: 'Au' },
 ] as const;
 
 type EditorId = (typeof EDITORS)[number]['id'];
@@ -423,7 +434,7 @@ function SetupPageContent(): React.ReactElement {
                           </div>
                           <Icon icon="arrowRight" className="w-4 h-4 text-foreground-tertiary" />
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                           {EDITORS.map((editor) => (
                             <button
                               key={editor.id}
