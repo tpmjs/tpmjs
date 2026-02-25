@@ -1,0 +1,237 @@
+# Session Context
+
+## User Prompts
+
+### Prompt 1
+
+i want to have a simple install.sh to get started with tpmjs, come up with a few plans of how this could work. the main use i'd want is to get the cli on my computer and also maybe suggest which of my collections i could sync to which of my code editors like claude code and cursor for example, antigravity and claude code would be enough for now. but research a lot, and help me understand where we could get this feature, i want to get people working with tpmjs immediately. ic urrently use tpmjs a...
+
+### Prompt 2
+
+lets do it on a branch. number 3. make sure its on homepage. make it the second section after the search on homepage. do it fully. no shortcuts. make a pr
+
+### Prompt 3
+
+just commit and push it
+
+### Prompt 4
+
+ajaxdavis@Ajaxs-MBP tpmjs % curl -fsSL https://tpmjs.com/install.sh | bash
+
+
+  _____ ____  __  __     _ ____
+ |_   _|  _ \|  \/  |   | / ___|
+   | | | |_) | |\/| |_  | \___ \
+   | | |  __/| |  | | |_| |___) |
+   |_| |_|   |_|  |_|\___/|____/
+
+  MCP Server Setup
+
+
+[warn]  No setup token provided.
+
+  To get started:
+    1. Visit \033[1mhttps://tpmjs.com/setup\033[0m
+    2. Select your collections and editors
+    3. Copy the install command with your token
+
+  Usage:
+    curl -fsSL https://tpmjs.com...
+
+### Prompt 5
+
+16:27:34.635 Running build in Washington, D.C., USA (East) – iad1
+16:27:34.635 Build machine configuration: 4 cores, 8 GB
+16:27:34.752 Cloning github.com/tpmjs/tpmjs (Branch: main, Commit: 45ca570)
+16:27:39.504 Cloning completed: 4.752s
+16:27:39.872 Found .vercelignore (repository root)
+16:27:39.889 Removed 1 ignored files defined in .vercelignore
+16:27:39.889   /apps/playground/.env.local.example
+16:27:40.123 Restored build cache from previous deployment (8Bb4LwZdt3zrCfoDVzVTztZ7jgng)
+16:27:4...
+
+### Prompt 6
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me go through the conversation chronologically:
+
+1. User asked for an install.sh plan for TPMJS - wanting to get the CLI on their computer and sync collections to editors like Claude Code and Cursor.
+
+2. I researched the codebase extensively using multiple explore agents to understand:
+   - The CLI package (@tpmjs/cli) installed as...
+
+### Prompt 7
+
+https://tpmjs.com/auth/signin?callbackUrl=%2Fsetup TPMJS
+Tools
+Collections
+Agents
+|
+Developers
+Resources
+|
+
+|
+Sign In
+Publish
+Menu
+
+Explore
+Tools
+Browse all tools
+Collections
+Discover curated tool sets
+Agents
+AI agents with tools
+Developers
+Documentation
+Guides and tutorials
+API Reference
+REST & MCP endpoints
+Custom Executors
+Deploy your own
+SDK
+Build with our SDK
+Specification
+TPMJS tool format
+Integrations
+Connect your tools
+Resources
+How It Works
+Learn the basics
+Compare
+TPMJS vs alternatives...
+
+### Prompt 8
+
+i logged in successful and saw the redirect url to go to /setup but i just ended up on https://tpmjs.com/dashboard instead
+
+### Prompt 9
+
+ajaxdavis@Ajaxs-MBP tpmjs % curl -fsSL https://tpmjs.com/install.sh | bash
+
+  _____ ____  __  __     _ ____
+ |_   _|  _ \|  \/  |   | / ___|
+   | | | |_) | |\/| |_  | \___ \
+   | | |  __/| |  | | |_| |___) |
+   |_| |_|   |_|  |_|\___/|____/
+
+  MCP Server Setup
+
+[info]  Opening your browser to configure TPMJS...
+
+  -> Sign in and select your collections + editors
+  -> Click Generate Install Command when ready
+
+[info]  Waiting for you to complete setup in the browser...
+  ...still waiting (10s)
+  ...
+
+### Prompt 10
+
+could you add codex to the setup flow
+
+### Prompt 11
+
+¡ajaxdavis@Ajaxs-MBP tpmjs % curl -fsSL https://tpmjs.com/install.sh | bash
+
+  _____ ____  __  __     _ ____
+ |_   _|  _ \|  \/  |   | / ___|
+   | | | |_) | |\/| |_  | \___ \
+   | | |  __/| |  | | |_| |___) |
+   |_| |_|   |_|  |_|\___/|____/
+
+  MCP Server Setup
+
+[info]  Opening your browser to configure TPMJS...
+
+  -> Sign in and select your collections + editors
+  -> Click Generate Install Command when ready
+
+[info]  Waiting for you to complete setup in the browser...
+  ...still waiting (10s)
+...
+
+### Prompt 12
+
+can you make sure the install script is super intelligent in case users run the same install again etc when trying to fix things, and make sure the ux is super easy to understandin that way
+
+### Prompt 13
+
+ajaxdavis@Ajaxs-MBP alpha2 % curl -fsSL https://tpmjs.com/install.sh | bash
+
+  _____ ____  __  __     _ ____
+ |_   _|  _ \|  \/  |   | / ___|
+   | | | |_) | |\/| |_  | \___ \
+   | | |  __/| |  | | |_| |___) |
+   |_| |_|   |_|  |_|\___/|____/
+
+  MCP Server Setup
+
+[info]  Opening your browser to configure TPMJS...
+
+[info]  Browser opened. Complete setup there and come back here.
+
+  1. Sign in (or create an account)
+  2. Select which collections to connect
+  3. Pick an editor for each collection
+  ...
+
+### Prompt 14
+
+can't i just install it again, i thought we added stuff that will update it
+
+### Prompt 15
+
+i just ran install again and got ajaxdavis@Ajaxs-MBP tpmjs % curl -fsSL https://tpmjs.com/install.sh | bash
+
+  _____ ____  __  __     _ ____
+ |_   _|  _ \|  \/  |   | / ___|
+   | | | |_) | |\/| |_  | \___ \
+   | | |  __/| |  | | |_| |___) |
+   |_| |_|   |_|  |_|\___/|____/
+
+  MCP Server Setup
+
+[info]  Opening your browser to configure TPMJS...
+
+[info]  Browser opened. Complete setup there and come back here.
+
+  1. Sign in (or create an account)
+  2. Select which collections to connect
+  3. Pick ...
+
+### Prompt 16
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. **Context from previous session**: The user had been building an install.sh setup flow for TPMJS. Key files were already created: SetupToken model, API endpoints (create-token, redeem, claim, poll), install.sh route, setup page, GetStartedSection. The previous session ended with a Ve...
+
+### Prompt 17
+
+make a comphrensive list of editors we could support use perplexity fore firecrawl to search etc
+
+### Prompt 18
+
+add them all into the install setup and put the major ones at the top kind of thign
+
+### Prompt 19
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Analysis:
+Let me chronologically analyze the conversation:
+
+1. **Context from previous session**: The user had been building an install.sh setup flow for TPMJS. Key work included SetupToken model, API endpoints, install.sh route, setup page, and various fixes for Codex MCP support including streamable HTTP spec compliance.
+
+2. **Production 500 e...
+
+### Prompt 20
+
+push
+
