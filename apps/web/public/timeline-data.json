@@ -6911,6 +6911,126 @@
       "t": "fix",
       "s": "",
       "u": "install.sh opens browser automatically, polls for setup completion"
+    },
+    {
+      "h": "3c973f3cd150daafe1932632b236673c107a09f0",
+      "d": "2026-02-24",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "7ce9ee1ef33bc3293729ddf57445764d9db13a3e",
+      "d": "2026-02-24",
+      "m": "fix: wrap useSearchParams in Suspense boundary on setup page",
+      "t": "fix",
+      "s": "",
+      "u": "wrap useSearchParams in Suspense boundary on setup page"
+    },
+    {
+      "h": "6d05e73c61dd72a7fad5bc80121104487f01a948",
+      "d": "2026-02-24",
+      "m": "fix: correct sign-in link on setup page",
+      "t": "fix",
+      "s": "",
+      "u": "correct sign-in link on setup page"
+    },
+    {
+      "h": "2e498a1d0a2789b0a248caafc8ae818e8dfa4bea",
+      "d": "2026-02-24",
+      "m": "fix: respect callbackUrl param on sign-in page",
+      "t": "fix",
+      "s": "",
+      "u": "respect callbackUrl param on sign-in page"
+    },
+    {
+      "h": "62bdaf28f7efb383b4be31c13d886ddbd34b881d",
+      "d": "2026-02-24",
+      "m": "fix: preserve claim code through sign-in redirect on setup page",
+      "t": "fix",
+      "s": "",
+      "u": "preserve claim code through sign-in redirect on setup page"
+    },
+    {
+      "h": "7a8ad2bfb23484e136efd1667c5a2355dfe81c10",
+      "d": "2026-02-24",
+      "m": "feat: add Codex editor to setup flow",
+      "t": "feat",
+      "s": "",
+      "u": "add Codex editor to setup flow"
+    },
+    {
+      "h": "b9e0c6ada2842bf3877a2de8ac0d0bce8bf2d391",
+      "d": "2026-02-24",
+      "m": "fix: write Codex TOML config directly with auth headers",
+      "t": "fix",
+      "s": "",
+      "u": "write Codex TOML config directly with auth headers"
+    },
+    {
+      "h": "f5bdc9c1fe250a156e842bbfccc9436ad0a6d284",
+      "d": "2026-02-24",
+      "m": "feat: make install script idempotent with smart re-run detection",
+      "t": "feat",
+      "s": "",
+      "u": "make install script idempotent with smart re-run detection"
+    },
+    {
+      "h": "ae2e63e277d7cc05f443d22a4acfd01236089873",
+      "d": "2026-02-24",
+      "m": "fix: use streamable HTTP MCP endpoint for setup URLs",
+      "t": "fix",
+      "s": "",
+      "u": "use streamable HTTP MCP endpoint for setup URLs"
+    },
+    {
+      "h": "bbfb52d659bbf2f143a9c1e8292fc0bdd0205f3f",
+      "d": "2026-02-24",
+      "m": "feat: notify Discord #tpmjs channel on new user signup",
+      "t": "feat",
+      "s": "",
+      "u": "notify Discord #tpmjs channel on new user signup"
+    },
+    {
+      "h": "9eef847721d9eefffaf12fdd9bdbfe5989810a8e",
+      "d": "2026-02-24",
+      "m": "fix: add MCP streamable HTTP spec compliance for Codex",
+      "t": "fix",
+      "s": "",
+      "u": "add MCP streamable HTTP spec compliance for Codex"
+    },
+    {
+      "h": "8467f2fe78132f2e07113c21ae69306fd1d30267",
+      "d": "2026-02-24",
+      "m": "fix: treat empty env var strings as undefined in createEnv",
+      "t": "fix",
+      "s": "",
+      "u": "treat empty env var strings as undefined in createEnv"
+    },
+    {
+      "h": "12acad281360c38415558927240f924e87cae3e1",
+      "d": "2026-02-25",
+      "m": "fix: improve createEnv error messages with specific field names",
+      "t": "fix",
+      "s": "",
+      "u": "improve createEnv error messages with specific field names"
+    },
+    {
+      "h": "df6583c37401691be6743b020aa962556d1e05d0",
+      "d": "2026-02-25",
+      "m": "fix: remove strict URL validation from DISCORD_SIGNUP_WEBHOOK_URL",
+      "t": "fix",
+      "s": "",
+      "u": "remove strict URL validation from DISCORD_SIGNUP_WEBHOOK_URL"
+    },
+    {
+      "h": "1d33319bc32ccb25df45bc5a85294ad1bba2b1d6",
+      "d": "2026-02-25",
+      "m": "feat: add 8 new editors to install.sh setup flow",
+      "t": "feat",
+      "s": "",
+      "u": "add 8 new editors to install.sh setup flow"
     }
   ],
   "m": [
