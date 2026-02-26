@@ -32,7 +32,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'query is required and must be a string' }, { status: 400 });
   }
 
-  const queryEmbedding = await embedMemoryContent(query);
+  let queryEmbedding: number[];
+  try {
+    queryEmbedding = await embedMemoryContent(query);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Embedding service unavailable';
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
 
   const results = await findSimilarMemories(queryEmbedding, auth!.userId!, {
     threshold: threshold ?? 0.4,
