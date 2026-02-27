@@ -509,70 +509,59 @@ export default function OmegaChatPage(): React.ReactElement {
 
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="border-b-2 border-foreground bg-surface/50 px-4 py-3">
+        <div className="border-b border-border px-4 md:px-6 py-2">
           <div className="flex items-center justify-between max-w-6xl mx-auto">
             <div className="flex items-center gap-3">
               <Link
                 href="/omega"
-                className="w-10 h-10 border border-border flex items-center justify-center hover:border-foreground transition-colors"
+                className="p-1.5 text-foreground-tertiary hover:text-foreground transition-colors"
               >
-                <Icon icon="arrowLeft" size="sm" className="text-foreground-secondary" />
+                <Icon icon="arrowLeft" size="sm" />
               </Link>
-              <div>
-                <h1 className="font-mono uppercase tracking-tight font-bold text-foreground">
+              <div className="flex items-center gap-3">
+                <h1 className="text-sm font-medium text-foreground truncate max-w-[300px]">
                   {conversation?.title || 'New Conversation'}
                 </h1>
-                <div className="flex items-center gap-2 text-sm text-foreground-tertiary">
-                  <Badge variant="secondary" size="sm">
-                    Omega
-                  </Badge>
-                  <span className="font-mono text-xs">GPT-4.1 Mini</span>
-                  {conversation && (
-                    <span className="font-mono text-xs">
-                      {conversation.inputTokensTotal + conversation.outputTokensTotal} tokens
-                    </span>
-                  )}
-                </div>
+                <span className="font-mono text-[10px] text-foreground-tertiary hidden sm:inline">
+                  GPT-4.1 Mini
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              {/* Segmented Tab Switcher */}
+              <div className="flex border border-border mr-2">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('chat')}
+                  className={`px-3 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                    viewMode === 'chat'
+                      ? 'bg-foreground text-background'
+                      : 'text-foreground-tertiary hover:text-foreground'
+                  }`}
+                >
+                  Chat
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('debug')}
+                  className={`px-3 py-1 font-mono text-[10px] uppercase tracking-wider transition-colors ${
+                    viewMode === 'debug'
+                      ? 'bg-foreground text-background'
+                      : 'text-foreground-tertiary hover:text-foreground'
+                  }`}
+                >
+                  Debug
+                </button>
+              </div>
               <Link href="/omega/settings">
                 <Button variant="ghost" size="sm">
-                  <Icon icon="key" size="xs" className="mr-2" />
-                  Settings
+                  <Icon icon="key" size="xs" />
                 </Button>
               </Link>
               <Button variant="ghost" size="sm" onClick={startNewConversation}>
-                <Icon icon="plus" size="xs" className="mr-2" />
-                New Chat
+                <Icon icon="plus" size="xs" />
               </Button>
             </div>
-          </div>
-
-          {/* Segmented Tab Switcher */}
-          <div className="flex mt-3 max-w-6xl mx-auto border border-border w-fit">
-            <button
-              type="button"
-              onClick={() => setViewMode('chat')}
-              className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
-                viewMode === 'chat'
-                  ? 'bg-foreground text-background'
-                  : 'bg-transparent text-foreground-secondary hover:text-foreground'
-              }`}
-            >
-              Chat
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode('debug')}
-              className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
-                viewMode === 'debug'
-                  ? 'bg-foreground text-background'
-                  : 'bg-transparent text-foreground-secondary hover:text-foreground'
-              }`}
-            >
-              Debug JSON
-            </button>
           </div>
         </div>
 
@@ -794,11 +783,11 @@ export default function OmegaChatPage(): React.ReactElement {
                 >
                   <div className="max-w-6xl mx-auto">
                     {messages.map((message) => (
-                      <div key={message.id} className="px-4 py-2">
+                      <div key={message.id} className="px-4 md:px-6 py-3">
                         {/* USER message */}
                         {message.role === 'USER' && (
                           <div className="flex justify-end">
-                            <div className="max-w-[80%] border-l-4 border-primary p-4 bg-primary/5">
+                            <div className="max-w-[75%] px-4 py-3 bg-foreground text-background">
                               <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                             </div>
                           </div>
@@ -806,41 +795,37 @@ export default function OmegaChatPage(): React.ReactElement {
 
                         {/* ASSISTANT message */}
                         {message.role === 'ASSISTANT' && message.content && (
-                          <div className="flex justify-start">
-                            <div className="max-w-[80%] border-l-4 border-foreground/20 p-4 bg-surface-secondary">
-                              <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
-                                <Streamdown>{message.content}</Streamdown>
-                              </div>
-                              {(message.inputTokens || message.outputTokens) && (
-                                <div className="mt-2 pt-2 border-t border-border/50 font-mono uppercase tracking-wider text-[10px] text-foreground-tertiary">
-                                  {message.inputTokens && <span>In: {message.inputTokens}</span>}
-                                  {message.inputTokens && message.outputTokens && <span> | </span>}
-                                  {message.outputTokens && <span>Out: {message.outputTokens}</span>}
-                                </div>
-                              )}
+                          <div>
+                            <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                              <Streamdown>{message.content}</Streamdown>
                             </div>
+                            {(message.inputTokens || message.outputTokens) && (
+                              <div className="mt-2 font-mono text-[10px] text-foreground-tertiary">
+                                {message.inputTokens && <span>In: {message.inputTokens}</span>}
+                                {message.inputTokens && message.outputTokens && <span> | </span>}
+                                {message.outputTokens && <span>Out: {message.outputTokens}</span>}
+                              </div>
+                            )}
                           </div>
                         )}
 
                         {/* TOOL message */}
                         {message.role === 'TOOL' && message.toolCalls && (
-                          <div className="flex justify-start">
-                            <div className="max-w-[80%] space-y-2">
-                              {message.toolCalls.map((tc) => (
-                                <ToolRenderer
-                                  key={tc.toolCallId}
-                                  part={{
-                                    type: 'tool-result',
-                                    toolCallId: tc.toolCallId,
-                                    toolName: tc.toolName,
-                                    args: tc.args,
-                                    result: tc.output,
-                                    state: 'result',
-                                  }}
-                                  isStreaming={false}
-                                />
-                              ))}
-                            </div>
+                          <div className="space-y-2">
+                            {message.toolCalls.map((tc) => (
+                              <ToolRenderer
+                                key={tc.toolCallId}
+                                part={{
+                                  type: 'tool-result',
+                                  toolCallId: tc.toolCallId,
+                                  toolName: tc.toolName,
+                                  args: tc.args,
+                                  result: tc.output,
+                                  state: 'result',
+                                }}
+                                isStreaming={false}
+                              />
+                            ))}
                           </div>
                         )}
                       </div>
@@ -848,7 +833,7 @@ export default function OmegaChatPage(): React.ReactElement {
 
                     {/* Tool Execution Pipeline */}
                     {toolCalls.length > 0 && (
-                      <div className="px-4 pb-4">
+                      <div className="px-4 md:px-6 py-3">
                         {/* Pipeline header */}
                         <div className="flex items-center gap-2 mb-3">
                           <div className="w-1.5 h-1.5 bg-primary animate-pulse" />
@@ -874,30 +859,22 @@ export default function OmegaChatPage(): React.ReactElement {
 
                     {/* Streaming content */}
                     {streamingContent && (
-                      <div className="px-4 pb-4">
-                        <div className="flex justify-start">
-                          <div className="max-w-[80%] border-l-4 border-foreground/20 p-4 bg-surface-secondary">
-                            <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
-                              <Streamdown>{streamingContent}</Streamdown>
-                            </div>
-                            <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
-                          </div>
+                      <div className="px-4 md:px-6 py-3">
+                        <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                          <Streamdown>{streamingContent}</Streamdown>
                         </div>
+                        <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1" />
                       </div>
                     )}
 
                     {/* Thinking indicator */}
                     {isSending && !streamingContent && toolCalls.length === 0 && (
-                      <div className="px-4 pb-4">
-                        <div className="flex justify-start">
-                          <div className="border-l-4 border-primary p-4 bg-surface-secondary">
-                            <div className="flex items-center gap-2 text-foreground-secondary">
-                              <div className="w-2 h-2 bg-primary animate-pulse" />
-                              <span className="font-mono text-sm">
-                                {statusMessage || 'discovering tools...'}
-                              </span>
-                            </div>
-                          </div>
+                      <div className="px-4 md:px-6 py-3">
+                        <div className="flex items-center gap-2 text-foreground-secondary">
+                          <div className="w-2 h-2 bg-primary animate-pulse" />
+                          <span className="font-mono text-sm">
+                            {statusMessage || 'discovering tools...'}
+                          </span>
                         </div>
                       </div>
                     )}
@@ -919,9 +896,9 @@ export default function OmegaChatPage(): React.ReactElement {
             )}
 
             {/* Input Area */}
-            <div className="border-t-2 border-foreground p-4">
-              <div className="max-w-6xl mx-auto">
-                <div className="border border-border focus-within:border-foreground transition-colors">
+            <div className="border-t border-border px-4 md:px-6 py-3">
+              <div className="max-w-6xl mx-auto flex items-end gap-3">
+                <div className="flex-1 border border-border focus-within:border-foreground transition-colors">
                   <Textarea
                     ref={inputRef}
                     value={input}
@@ -930,10 +907,10 @@ export default function OmegaChatPage(): React.ReactElement {
                     placeholder="Ask Omega anything..."
                     rows={1}
                     resize="none"
-                    className="border-none bg-transparent flex-1 min-h-[48px] max-h-[200px]"
+                    className="border-none bg-transparent min-h-[44px] max-h-[200px]"
                     style={{
                       height: 'auto',
-                      minHeight: '48px',
+                      minHeight: '44px',
                     }}
                     onInput={(e) => {
                       const target = e.target as HTMLTextAreaElement;
@@ -941,28 +918,37 @@ export default function OmegaChatPage(): React.ReactElement {
                       target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
                     }}
                   />
-                  <div className="flex items-center justify-between px-3 pb-2">
-                    <span className="font-mono text-xs text-foreground-tertiary uppercase tracking-wider">
-                      Enter to send / Shift+Enter for new line
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {conversation && (
-                        <span className="font-mono text-xs text-foreground-tertiary">
-                          {conversation.inputTokensTotal + conversation.outputTokensTotal} tokens
-                        </span>
-                      )}
-                      {isSending ? (
-                        <Button onClick={handleStop} variant="destructive" size="sm">
-                          <Icon icon="x" size="xs" />
-                        </Button>
-                      ) : (
-                        <Button onClick={handleSend} disabled={!input.trim()} size="sm">
-                          <Icon icon="send" size="xs" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
                 </div>
+                {isSending ? (
+                  <Button
+                    onClick={handleStop}
+                    variant="destructive"
+                    className="h-[44px] w-[44px] p-0"
+                  >
+                    <Icon icon="x" size="sm" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSend}
+                    disabled={!input.trim()}
+                    className="h-[44px] w-[44px] p-0"
+                  >
+                    <Icon icon="send" size="sm" />
+                  </Button>
+                )}
+              </div>
+              <div className="max-w-6xl mx-auto flex items-center justify-between mt-1.5">
+                <span className="font-mono text-[10px] text-foreground-tertiary">
+                  Enter to send / Shift+Enter for new line
+                </span>
+                {conversation && (
+                  <span className="font-mono text-[10px] text-foreground-tertiary">
+                    {(
+                      conversation.inputTokensTotal + conversation.outputTokensTotal
+                    ).toLocaleString()}{' '}
+                    tokens
+                  </span>
+                )}
               </div>
             </div>
           </>
