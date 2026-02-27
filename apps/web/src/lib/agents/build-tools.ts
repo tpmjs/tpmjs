@@ -9,6 +9,7 @@ import { jsonSchema } from 'ai';
 
 import { createToolDefinition } from '../ai-agent/tool-executor-agent';
 import { executeWithSandbox, parseExecutorConfig, resolveExecutorConfig } from '../executors';
+import { type ApprovalHandler, applyToolPermissions, parseToolPermissions } from './permissions';
 
 // Agent type includes executor config fields from Prisma schema
 type AgentWithRelations = Agent & {
@@ -348,13 +349,15 @@ function injectSandboxTools(
  * @param sessionId - Optional session ID for sandbox executors
  * @param sandboxUrl - Optional sandbox URL for injecting sandbox tools
  * @param sandboxApiKey - Optional sandbox API key
+ * @param approvalHandler - Optional handler for tools with "ask" permission
  */
 export function buildAgentTools(
   agent: AgentWithRelations,
   callerEnvVars?: Record<string, string>,
   sessionId?: string,
   sandboxUrl?: string,
-  sandboxApiKey?: string
+  sandboxApiKey?: string,
+  approvalHandler?: ApprovalHandler
 ): Record<string, ReturnType<typeof createToolDefinition>> {
   const tools: Record<string, ReturnType<typeof createToolDefinition>> = {};
   const seenTools = new Set<string>();
@@ -426,7 +429,9 @@ export function buildAgentTools(
     tools[toolName] = createToolDefinition(tool, individualToolConfig, agentEnvVars);
   }
 
-  return tools;
+  // Apply tool permissions: deny removes tools, ask wraps with approval handler
+  const permissions = parseToolPermissions(agent.toolPermissions);
+  return applyToolPermissions(tools, permissions, approvalHandler);
 }
 
 /**
@@ -457,4 +462,159 @@ export function getAgentToolNames(agent: AgentWithRelations): string[] {
   }
 
   return names;
+}
+
+/**
+ * Represents a tool in the agent's available pool for dynamic discovery
+ */
+export interface ToolPoolEntry {
+  name: string; // sanitized tool name (used as key in tools map)
+  description: string;
+  packageName: string;
+  toolKey: string; // e.g. "@tpmjs/weather::getWeather"
+  tool: Tool & { package: Package };
+}
+
+/**
+ * Collect all tools from an agent's collections and individual tools into a flat pool.
+ * Used by dynamic discovery to build the searchable tool pool.
+ */
+function collectAllAgentTools(agent: AgentWithRelations): ToolPoolEntry[] {
+  const pool: ToolPoolEntry[] = [];
+  const seenTools = new Set<string>();
+
+  for (const agentCollection of agent.collections) {
+    for (const collectionTool of agentCollection.collection.tools) {
+      const tool = collectionTool.tool;
+      const toolKey = `${tool.package.npmPackageName}::${tool.name}`;
+      if (seenTools.has(toolKey)) continue;
+      seenTools.add(toolKey);
+      pool.push({
+        name: sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`),
+        description: tool.description,
+        packageName: tool.package.npmPackageName,
+        toolKey,
+        tool,
+      });
+    }
+  }
+
+  for (const agentTool of agent.tools) {
+    const tool = agentTool.tool;
+    const toolKey = `${tool.package.npmPackageName}::${tool.name}`;
+    if (seenTools.has(toolKey)) continue;
+    seenTools.add(toolKey);
+    pool.push({
+      name: sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`),
+      description: tool.description,
+      packageName: tool.package.npmPackageName,
+      toolKey,
+      tool,
+    });
+  }
+
+  return pool;
+}
+
+export interface DynamicToolsResult {
+  tools: Record<string, ReturnType<typeof createToolDefinition>>;
+  allToolPool: ToolPoolEntry[];
+  isDynamic: boolean;
+}
+
+/**
+ * Build tools with optional dynamic discovery mode.
+ * When dynamicToolDiscovery is enabled, only sandbox tools + searchTools meta-tool are built initially.
+ * Other tools are discovered on-demand via the searchTools meta-tool.
+ */
+export function buildAgentToolsWithDiscovery(
+  agent: AgentWithRelations,
+  callerEnvVars?: Record<string, string>,
+  sessionId?: string,
+  sandboxUrl?: string,
+  sandboxApiKey?: string,
+  approvalHandler?: ApprovalHandler
+): DynamicToolsResult {
+  if (!agent.dynamicToolDiscovery) {
+    return {
+      tools: buildAgentTools(
+        agent,
+        callerEnvVars,
+        sessionId,
+        sandboxUrl,
+        sandboxApiKey,
+        approvalHandler
+      ),
+      allToolPool: [],
+      isDynamic: false,
+    };
+  }
+
+  const allToolPool = collectAllAgentTools(agent);
+  const tools: Record<string, ReturnType<typeof createToolDefinition>> = {};
+
+  // Inject sandbox tools if enabled
+  const useCallerEnvVars = callerEnvVars !== undefined;
+  const agentEnvVars = useCallerEnvVars ? callerEnvVars : parseEnvVars(agent.envVars);
+
+  if (sandboxUrl && sessionId) {
+    const sandboxTools = injectSandboxTools(sandboxUrl, sandboxApiKey, sessionId, agentEnvVars);
+    for (const [name, toolDef] of Object.entries(sandboxTools)) {
+      tools[name] = toolDef;
+    }
+  }
+
+  // Add the searchTools meta-tool
+  tools.searchTools = createSearchToolsDefinition(allToolPool);
+
+  // Apply permissions
+  const permissions = parseToolPermissions(agent.toolPermissions);
+  return {
+    tools: applyToolPermissions(tools, permissions, approvalHandler),
+    allToolPool,
+    isDynamic: true,
+  };
+}
+
+/**
+ * Create the searchTools meta-tool definition that searches the agent's tool pool
+ */
+function createSearchToolsDefinition(
+  toolPool: ToolPoolEntry[]
+): ReturnType<typeof createToolDefinition> {
+  return {
+    description:
+      'Search the available tool pool by keyword. Use this to find tools relevant to the current task. Returns top 5 matching tools with name, description, and package.',
+    inputSchema: jsonSchema({
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query to find relevant tools',
+        },
+      },
+      required: ['query'],
+    }),
+    execute: async (args: Record<string, unknown>) => {
+      const { scoreBM25 } = await import('../search/bm25');
+      const query = String(args.query || '');
+      if (!query) return { results: [] };
+
+      const documents = toolPool.map((entry) => ({
+        item: entry,
+        text: `${entry.name} ${entry.description} ${entry.packageName}`,
+      }));
+
+      const results = scoreBM25(query, documents);
+
+      return {
+        results: results.slice(0, 5).map(({ item, score }) => ({
+          name: item.name,
+          description: item.description,
+          packageName: item.packageName,
+          score: Math.round(score * 100) / 100,
+        })),
+      };
+    },
+  };
 }

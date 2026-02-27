@@ -1,6 +1,8 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '~/env';
+import { extractSignature } from '~/lib/enrichment/signature-extractor';
+import { extractTags } from '~/lib/enrichment/tag-extractor';
 import { performHealthCheck } from '~/lib/health-check/health-check-service';
 import {
   convertJsonSchemaToParameters,
@@ -151,6 +153,22 @@ export async function POST(request: NextRequest) {
         );
 
         if (schemaResult.success) {
+          // Extract enriched metadata
+          const effectiveDescription =
+            tool.description === 'No description provided' && schemaResult.description
+              ? schemaResult.description
+              : tool.description;
+          const tags = extractTags({
+            name: tool.name,
+            description: effectiveDescription,
+            package: {
+              npmKeywords: tool.package.npmKeywords,
+              category: tool.package.category,
+              npmPackageName: tool.package.npmPackageName,
+            },
+          });
+          const signature = extractSignature(schemaResult.inputSchema);
+
           await prisma.tool.update({
             where: { id: tool.id },
             data: {
@@ -161,6 +179,8 @@ export async function POST(request: NextRequest) {
               schemaSource: 'extracted',
               schemaExtractedAt: new Date(),
               schemaExtractionError: null,
+              tags,
+              ...(signature && { signature }),
               // Update description if not already set meaningfully
               ...(tool.description === 'No description provided' && schemaResult.description
                 ? { description: schemaResult.description }
@@ -200,6 +220,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Log sync operation
+    // Phase: Backfill tags for tools with extracted schema but no tags
+    let tagsBackfilled = 0;
+    if (Date.now() - startTime < TIME_BUDGET_MS) {
+      const toolsNeedingTags = await prisma.tool.findMany({
+        where: {
+          schemaSource: 'extracted',
+          tags: { isEmpty: true },
+        },
+        include: { package: true },
+        take: 20,
+      });
+
+      for (const tool of toolsNeedingTags) {
+        if (Date.now() - startTime >= TIME_BUDGET_MS) break;
+        const tags = extractTags({
+          name: tool.name,
+          description: tool.description,
+          package: {
+            npmKeywords: tool.package.npmKeywords,
+            category: tool.package.category,
+            npmPackageName: tool.package.npmPackageName,
+          },
+        });
+        const signature = tool.signature || extractSignature(tool.inputSchema) || undefined;
+        await prisma.tool.update({
+          where: { id: tool.id },
+          data: { tags, ...(signature && { signature }) },
+        });
+        tagsBackfilled++;
+      }
+    }
+
     await prisma.syncLog.create({
       data: {
         source: 'enrichment',
@@ -230,6 +282,7 @@ export async function POST(request: NextRequest) {
         errors,
         durationMs: Date.now() - startTime,
         errorMessages: errorMessages.slice(0, 5),
+        tagsBackfilled,
       },
     });
   } catch (error) {

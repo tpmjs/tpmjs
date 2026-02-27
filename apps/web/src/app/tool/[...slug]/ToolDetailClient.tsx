@@ -65,6 +65,8 @@ export interface Tool {
     limitations?: string;
     examples?: string[];
   } | null;
+  tags: string[];
+  signature: string | null;
   qualityScore: string | null;
   importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
@@ -453,6 +455,32 @@ console.log(result.text);`}
                           </li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Signature & Tags */}
+            {(tool.signature || (tool.tags && tool.tags.length > 0)) && (
+              <Card>
+                <CardContent className="pt-6 space-y-4">
+                  {tool.signature && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Signature</h4>
+                      <CodeBlock code={tool.signature} language="typescript" showCopy={true} />
+                    </div>
+                  )}
+                  {tool.tags && tool.tags.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-foreground mb-2">Tags</h4>
+                      <div className="flex flex-wrap gap-1.5">
+                        {tool.tags.map((tag) => (
+                          <Badge key={tag} variant="outline" size="sm">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </CardContent>

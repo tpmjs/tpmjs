@@ -44,12 +44,32 @@ interface CollectionToolData {
   error: string | null;
 }
 
+export type ToolPermissionLevel = 'allow' | 'ask' | 'deny';
+
 interface ChatToolsPanelProps {
   tools: ToolInfo[];
   collections: CollectionInfo[];
   isOpen: boolean;
   onClose: () => void;
   onToolClick: (tool: ToolInfo) => void;
+  /** Optional permission map: tool name -> permission level */
+  toolPermissions?: Record<string, ToolPermissionLevel>;
+}
+
+function PermissionDot({ permission }: { permission: ToolPermissionLevel | undefined }) {
+  if (!permission || permission === 'allow') {
+    return <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />;
+  }
+  if (permission === 'ask') {
+    return (
+      <div
+        className="w-1.5 h-1.5 rounded-full bg-warning mt-1.5 flex-shrink-0"
+        title="Requires approval"
+      />
+    );
+  }
+  // deny — shouldn't normally appear since denied tools are filtered out
+  return <div className="w-1.5 h-1.5 rounded-full bg-error mt-1.5 flex-shrink-0" title="Denied" />;
 }
 
 export function ChatToolsPanel({
@@ -58,6 +78,7 @@ export function ChatToolsPanel({
   isOpen,
   onClose,
   onToolClick,
+  toolPermissions,
 }: ChatToolsPanelProps) {
   const [expandedCollections, setExpandedCollections] = useState<Set<string>>(new Set());
   const [collectionTools, setCollectionTools] = useState<Record<string, CollectionToolData>>({});
@@ -159,7 +180,16 @@ export function ChatToolsPanel({
                   className="w-full text-left p-2 rounded hover:bg-primary/5 hover:border-primary/20 border border-transparent transition-colors group"
                 >
                   <div className="flex items-start gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 flex-shrink-0" />
+                    <PermissionDot
+                      permission={
+                        toolPermissions?.[
+                          `${t.tool.package.npmPackageName}-${t.tool.name}`
+                            .replace(/[@/]/g, '-')
+                            .replace(/^-+/, '')
+                            .slice(0, 64)
+                        ]
+                      }
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="font-mono text-sm text-foreground truncate group-hover:text-primary transition-colors">
                         {t.tool.name}

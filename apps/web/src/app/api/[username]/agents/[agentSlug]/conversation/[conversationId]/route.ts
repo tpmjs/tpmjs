@@ -353,8 +353,65 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       }
     }
 
+    // Set up approval handler for tools with "ask" permission
+    const { parseToolPermissions } = await import('@/lib/agents/permissions');
+    const permissions = parseToolPermissions(agent.toolPermissions);
+    const hasPendingApprovals = permissions !== null;
+    let approvalSendEvent: ((event: string, data: unknown) => void) | null = null;
+
+    async function handleToolApproval(toolName: string, input: unknown): Promise<boolean> {
+      const toolCallId = randomUUID();
+      const approval = await prisma.toolApproval.create({
+        data: {
+          conversationId: conversation!.id,
+          agentId: agent!.id,
+          toolCallId,
+          toolName,
+          inputArgs: input as object,
+        },
+      });
+      if (approvalSendEvent) {
+        approvalSendEvent('approval_request', { approvalId: approval.id, toolName, input });
+      }
+      const POLL_INTERVAL = 2000;
+      const TIMEOUT = 120000;
+      const start = Date.now();
+      while (Date.now() - start < TIMEOUT) {
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+        const updated = await prisma.toolApproval.findUnique({
+          where: { id: approval.id },
+          select: { decision: true },
+        });
+        if (updated?.decision) {
+          if (approvalSendEvent) {
+            approvalSendEvent('approval_resolved', {
+              approvalId: approval.id,
+              decision: updated.decision,
+            });
+          }
+          return updated.decision === 'approve';
+        }
+      }
+      await prisma.toolApproval.update({
+        where: { id: approval.id },
+        data: { decision: 'deny', resolvedAt: new Date() },
+      });
+      if (approvalSendEvent) {
+        approvalSendEvent('approval_timeout', { approvalId: approval.id, toolName });
+      }
+      return false;
+    }
+    const approvalHandler = hasPendingApprovals ? handleToolApproval : undefined;
+
     // Build tools from agent configuration
-    const tools = buildAgentTools(agent, undefined, sessionId, _sandboxUrl, _sandboxApiKey);
+    const tools = buildAgentTools(
+      agent,
+      undefined,
+      sessionId,
+      _sandboxUrl,
+      _sandboxApiKey,
+      approvalHandler
+    );
     const toolCount = Object.keys(tools).length;
     const toolNames = Object.keys(tools);
 
@@ -373,6 +430,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
           controller.enqueue(encoder.encode(message));
         };
+
+        // Bind approval SSE sender
+        approvalSendEvent = sendEvent;
 
         // ML tracking: declared outside try so they're accessible in catch
         const sequenceId = randomUUID();

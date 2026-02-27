@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso';
 import { Streamdown } from 'streamdown';
 import { AppHeader } from '~/components/AppHeader';
+import { type PendingApproval, ToolApprovalCard } from '~/components/agents/ToolApprovalCard';
 import { LikeButton } from '~/components/LikeButton';
 
 interface AgentTool {
@@ -248,6 +249,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
   const [debugInfo, setDebugInfo] = useState<Record<string, unknown> | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
   const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -471,22 +473,57 @@ export default function PublicAgentChatPage(): React.ReactElement {
               case 'tool_result':
                 // Update tool call with result (use error status when isError flag is set)
                 setToolCalls((prev) =>
-                  prev.map((tc) =>
-                    tc.toolCallId === data.toolCallId
-                      ? {
-                          ...tc,
-                          output: data.output,
-                          status: data.isError ? ('error' as const) : ('success' as const),
-                        }
-                      : tc
+                  prev.map(
+                    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Nested SSE event handler callback
+                    (tc) =>
+                      tc.toolCallId === data.toolCallId
+                        ? {
+                            ...tc,
+                            output: data.output,
+                            status: data.isError ? ('error' as const) : ('success' as const),
+                          }
+                        : tc
                   )
                 );
+                break;
+              case 'approval_request':
+                setPendingApprovals((prev) => [
+                  ...prev,
+                  {
+                    approvalId: data.approvalId,
+                    toolName: data.toolName,
+                    input: data.input,
+                    status: 'pending',
+                  },
+                ]);
+                break;
+              case 'approval_resolved':
+                setPendingApprovals((prev) =>
+                  prev.map(
+                    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Nested SSE event handler callback
+                    (a) =>
+                      a.approvalId === data.approvalId
+                        ? { ...a, status: data.decision === 'approve' ? 'approved' : 'denied' }
+                        : a
+                  )
+                );
+                break;
+              case 'approval_timeout':
+                setPendingApprovals((prev) =>
+                  prev.map((a) =>
+                    a.approvalId === data.approvalId ? { ...a, status: 'timeout' } : a
+                  )
+                );
+                break;
+              case 'tools_loaded':
+                console.log('[Agent Chat] Dynamic tools loaded:', data.tools);
                 break;
               case 'complete':
                 // Refresh messages
                 await fetchMessages();
                 setStreamingContent('');
                 setToolCalls([]);
+                setPendingApprovals([]);
                 break;
               case 'tokens':
                 console.log('[Agent Chat] Token usage:', data);
@@ -850,6 +887,33 @@ export default function PublicAgentChatPage(): React.ReactElement {
                             </div>
                           )}
 
+                          {/* Pending approval cards */}
+                          {pendingApprovals.length > 0 &&
+                            pendingApprovals.map((approval) => (
+                              <div key={approval.approvalId} className="flex justify-start">
+                                <div className="max-w-[80%]">
+                                  <ToolApprovalCard
+                                    approval={approval}
+                                    agentId={agent?.id || ''}
+                                    conversationId={conversationId}
+                                    onResolved={(approvalId, decision) => {
+                                      setPendingApprovals((prev) =>
+                                        prev.map((a) =>
+                                          a.approvalId === approvalId
+                                            ? {
+                                                ...a,
+                                                status:
+                                                  decision === 'approve' ? 'approved' : 'denied',
+                                              }
+                                            : a
+                                        )
+                                      );
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+
                           {streamingContent && (
                             <div className="flex justify-start">
                               <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
@@ -1003,6 +1067,7 @@ export default function PublicAgentChatPage(): React.ReactElement {
               {warnings.length > 0 && (
                 <div className="px-4 py-2 bg-warning/10 border-t border-dashed border-warning/20">
                   {warnings.map((w, i) => (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: Simple string list, no reordering
                     <p key={i} className="text-xs text-warning font-mono">
                       {w}
                     </p>

@@ -15,6 +15,24 @@ const ExecutorConfigUpdateSchema = z
   .optional();
 
 // ============================================================================
+// Tool Permission Types
+// ============================================================================
+
+export const ToolPermissionSchema = z.enum(['allow', 'ask', 'deny']);
+export const ToolPermissionRuleSchema = z.object({
+  pattern: z.string().min(1).max(200),
+  permission: ToolPermissionSchema,
+});
+export const ToolPermissionsSchema = z.object({
+  default: ToolPermissionSchema.default('allow'),
+  rules: z.array(ToolPermissionRuleSchema).max(100).default([]),
+});
+
+export type ToolPermission = z.infer<typeof ToolPermissionSchema>;
+export type ToolPermissionRule = z.infer<typeof ToolPermissionRuleSchema>;
+export type ToolPermissions = z.infer<typeof ToolPermissionsSchema>;
+
+// ============================================================================
 // Enums
 // ============================================================================
 
@@ -46,6 +64,8 @@ export const CreateAgentSchema = z.object({
   maxMessagesInContext: z.number().int().min(1).max(100).default(10),
   isPublic: z.boolean().default(true),
   sandboxEnabled: z.boolean().default(false).optional(),
+  toolPermissions: ToolPermissionsSchema.nullable().optional(),
+  dynamicToolDiscovery: z.boolean().optional(),
   collectionIds: z.array(z.string()).optional(),
   toolIds: z.array(z.string()).optional(),
 });
@@ -63,6 +83,10 @@ export const UpdateAgentSchema = z.object({
   isPublic: z.boolean().optional(),
   // Sandbox toggle
   sandboxEnabled: z.boolean().optional(),
+  // Tool permission policies
+  toolPermissions: ToolPermissionsSchema.nullable().optional(),
+  // Dynamic tool discovery toggle
+  dynamicToolDiscovery: z.boolean().optional(),
   // Executor configuration
   executorType: ExecutorTypeSchema.nullable().optional(),
   executorConfig: ExecutorConfigUpdateSchema,

@@ -26,19 +26,28 @@ import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ToolPermissionsEditor } from '~/components/agents/ToolPermissionsEditor';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { EnvVarsEditor } from '~/components/EnvVarsEditor';
 import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
 import { SandboxLogsPanel } from '~/components/SandboxLogsPanel';
 import { SandboxToggle } from '~/components/SandboxToggle';
 
-type PageTabId = 'tools' | 'collections' | 'api' | 'env-vars' | 'sandbox-logs' | 'settings';
+type PageTabId =
+  | 'tools'
+  | 'collections'
+  | 'api'
+  | 'env-vars'
+  | 'permissions'
+  | 'sandbox-logs'
+  | 'settings';
 
 const VALID_TABS: PageTabId[] = [
   'tools',
   'collections',
   'api',
   'env-vars',
+  'permissions',
   'sandbox-logs',
   'settings',
 ];
@@ -56,6 +65,11 @@ interface Agent {
   maxMessagesInContext: number;
   isPublic: boolean;
   sandboxEnabled: boolean;
+  toolPermissions: {
+    default: string;
+    rules: Array<{ pattern: string; permission: string }>;
+  } | null;
+  dynamicToolDiscovery: boolean;
   executorType: string | null;
   executorConfig: { url: string; apiKey?: string } | null;
   envVars: Record<string, string> | null;
@@ -1144,6 +1158,7 @@ export default function AgentDetailPage(): React.ReactElement {
       label: 'Env Vars',
       count: envVarsCount > 0 ? envVarsCount : undefined,
     },
+    { id: 'permissions' as const, label: 'Permissions' },
     ...(sandboxEnabled ? [{ id: 'sandbox-logs' as const, label: 'Sandbox Logs' }] : []),
     { id: 'settings' as const, label: 'Settings' },
   ];
@@ -1434,6 +1449,89 @@ export default function AgentDetailPage(): React.ReactElement {
             description="Passed to tools at runtime. Agent vars override collection vars. Changes are saved automatically."
             disabled={isSaving}
           />
+        </div>
+      )}
+
+      {/* Permissions Tab */}
+      {activeTab === 'permissions' && (
+        <div className="space-y-6">
+          {/* Tool Permissions */}
+          <div className="bg-surface border border-border rounded-lg p-6">
+            <h3 className="text-lg font-medium text-foreground mb-1">Tool Permissions</h3>
+            <p className="text-sm text-foreground-secondary mb-4">
+              Control which tools the agent can use. Denied tools are hidden from the model. Tools
+              set to &quot;ask&quot; require user approval before execution.
+            </p>
+            <ToolPermissionsEditor
+              permissions={
+                agent.toolPermissions as import('@tpmjs/types/agent').ToolPermissions | null
+              }
+              onChange={async (newPermissions) => {
+                try {
+                  const response = await fetch(`/api/agents/${agentId}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ toolPermissions: newPermissions }),
+                  });
+                  const result = await response.json();
+                  if (result.success) {
+                    setAgent((prev) =>
+                      prev ? { ...prev, toolPermissions: newPermissions } : prev
+                    );
+                  } else {
+                    alert(`Failed to save permissions: ${result.error || 'Unknown error'}`);
+                  }
+                } catch {
+                  alert('Failed to save permissions. Please try again.');
+                }
+              }}
+              toolNames={agentTools.map((t) =>
+                `${t.tool.npmPackageName}-${t.tool.name}`
+                  .replace(/[@/]/g, '-')
+                  .replace(/^-+/, '')
+                  .slice(0, 64)
+              )}
+            />
+          </div>
+
+          {/* Dynamic Tool Discovery */}
+          <div className="bg-surface border border-border rounded-lg p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-medium text-foreground mb-1">Dynamic Tool Discovery</h3>
+                <p className="text-sm text-foreground-secondary">
+                  Start with a{' '}
+                  <code className="font-mono text-xs bg-surface-secondary px-1 py-0.5 rounded">
+                    searchTools
+                  </code>{' '}
+                  meta-tool instead of loading all tools upfront. Reduces context usage for agents
+                  with many tools.
+                </p>
+              </div>
+              <Switch
+                checked={agent.dynamicToolDiscovery}
+                onChange={async (checked: boolean) => {
+                  try {
+                    const response = await fetch(`/api/agents/${agentId}`, {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ dynamicToolDiscovery: checked }),
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                      setAgent((prev) =>
+                        prev ? { ...prev, dynamicToolDiscovery: checked } : prev
+                      );
+                    } else {
+                      alert(`Failed to save: ${result.error || 'Unknown error'}`);
+                    }
+                  } catch {
+                    alert('Failed to save. Please try again.');
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
       )}
 

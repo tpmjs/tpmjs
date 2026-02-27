@@ -185,15 +185,26 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     // Build update data, transforming JSON fields for Prisma (null -> Prisma.JsonNull)
-    const { executorConfig, envVars, sandboxEnabled, ...restData } = parsed.data;
+    const {
+      executorConfig,
+      envVars,
+      sandboxEnabled,
+      toolPermissions,
+      dynamicToolDiscovery,
+      ...restData
+    } = parsed.data;
     const updateData: Prisma.AgentUpdateInput = {
       ...restData,
       ...(sandboxEnabled !== undefined && { sandboxEnabled }),
+      ...(dynamicToolDiscovery !== undefined && { dynamicToolDiscovery }),
       ...(executorConfig !== undefined && {
         executorConfig: executorConfig === null ? Prisma.JsonNull : executorConfig,
       }),
       ...(envVars !== undefined && {
         envVars: envVars === null ? Prisma.JsonNull : envVars,
+      }),
+      ...(toolPermissions !== undefined && {
+        toolPermissions: toolPermissions === null ? Prisma.JsonNull : toolPermissions,
       }),
     };
 

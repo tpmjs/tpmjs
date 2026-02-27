@@ -13,6 +13,7 @@ import type { AgentSettings } from '~/components/agents/ChatSettingsDrawer';
 import { ChatSettingsDrawer } from '~/components/agents/ChatSettingsDrawer';
 import type { CollectionInfo, ToolInfo } from '~/components/agents/ChatToolsPanel';
 import { ChatToolsPanel } from '~/components/agents/ChatToolsPanel';
+import { type PendingApproval, ToolApprovalCard } from '~/components/agents/ToolApprovalCard';
 import { ToolDetailsModal } from '~/components/agents/ToolDetailsModal';
 import { ConversationSandboxLogs } from '~/components/ConversationSandboxLogs';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
@@ -264,6 +265,7 @@ export default function AgentChatPage(): React.ReactElement {
   const [debugInfo, setDebugInfo] = useState<Record<string, unknown> | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
+  const [pendingApprovals, setPendingApprovals] = useState<PendingApproval[]>([]);
   const [expandedToolCalls, setExpandedToolCalls] = useState<Set<string>>(new Set());
 
   // UI state
@@ -471,11 +473,44 @@ export default function AgentChatPage(): React.ReactElement {
                   )
                 );
                 break;
+              case 'approval_request':
+                setPendingApprovals((prev) => [
+                  ...prev,
+                  {
+                    approvalId: data.approvalId,
+                    toolName: data.toolName,
+                    input: data.input,
+                    status: 'pending',
+                  },
+                ]);
+                break;
+              case 'approval_resolved':
+                setPendingApprovals((prev) =>
+                  prev.map(
+                    // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Nested SSE event handler callback
+                    (a) =>
+                      a.approvalId === data.approvalId
+                        ? { ...a, status: data.decision === 'approve' ? 'approved' : 'denied' }
+                        : a
+                  )
+                );
+                break;
+              case 'approval_timeout':
+                setPendingApprovals((prev) =>
+                  prev.map((a) =>
+                    a.approvalId === data.approvalId ? { ...a, status: 'timeout' } : a
+                  )
+                );
+                break;
+              case 'tools_loaded':
+                console.log('[Agent Chat] Dynamic tools loaded:', data.tools);
+                break;
               case 'complete':
                 await fetchMessages();
                 await fetchConversations();
                 setStreamingContent('');
                 setToolCalls([]);
+                setPendingApprovals([]);
                 break;
               case 'tokens':
                 console.log('[Agent Chat] Token usage:', data);
@@ -791,6 +826,32 @@ export default function AgentChatPage(): React.ReactElement {
               </div>
             )}
 
+            {/* Pending approval cards */}
+            {pendingApprovals.length > 0 && (
+              <div className="space-y-2">
+                {pendingApprovals.map((approval) => (
+                  <div key={approval.approvalId} className="flex justify-start">
+                    <div className="max-w-[85%]">
+                      <ToolApprovalCard
+                        approval={approval}
+                        agentId={agent?.id || ''}
+                        conversationId={chatId as string}
+                        onResolved={(approvalId, decision) => {
+                          setPendingApprovals((prev) =>
+                            prev.map((a) =>
+                              a.approvalId === approvalId
+                                ? { ...a, status: decision === 'approve' ? 'approved' : 'denied' }
+                                : a
+                            )
+                          );
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {streamingContent && (
               <div className="flex justify-start">
                 <div className="max-w-[85%] rounded-lg p-4 bg-surface border border-dashed border-border">
@@ -820,6 +881,7 @@ export default function AgentChatPage(): React.ReactElement {
           {warnings.length > 0 && (
             <div className="px-4 py-2 bg-warning/10 border-t border-dashed border-warning/20">
               {warnings.map((w, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: Simple string list, no reordering
                 <p key={i} className="text-xs text-warning font-mono">
                   {w}
                 </p>

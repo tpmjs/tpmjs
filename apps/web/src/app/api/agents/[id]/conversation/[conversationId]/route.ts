@@ -120,7 +120,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     }
 
     // Fetch agent with all tool relations using agent ID
-    const { fetchAgentWithTools, buildAgentTools } = await import('@/lib/agents/build-tools');
+    const { fetchAgentWithTools, buildAgentToolsWithDiscovery } = await import(
+      '@/lib/agents/build-tools'
+    );
     const { getRequiredEnvVarsForAgent, getMissingEnvVars } = await import(
       '@/lib/agents/env-helpers'
     );
@@ -396,9 +398,87 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       }
     }
 
-    // Build tools from agent configuration
-    // Build tools - pass callerEnvVars if non-owner accessing public agent
-    const tools = buildAgentTools(agent, callerEnvVars, sessionId, _sandboxUrl, _sandboxApiKey);
+    // Set up approval handler for tools with "ask" permission
+    // The handler creates a ToolApproval row and polls DB until user responds
+    const { parseToolPermissions } = await import('@/lib/agents/permissions');
+    const permissions = parseToolPermissions(agent.toolPermissions);
+    const hasPendingApprovals = permissions !== null;
+
+    // approvalSendEvent will be bound once the SSE stream starts
+    let approvalSendEvent: ((event: string, data: unknown) => void) | null = null;
+
+    async function handleToolApproval(toolName: string, input: unknown): Promise<boolean> {
+      const toolCallId = randomUUID();
+      // Insert pending approval
+      const approval = await prisma.toolApproval.create({
+        data: {
+          conversationId: conversation!.id,
+          agentId: agent!.id,
+          toolCallId,
+          toolName,
+          inputArgs: input as object,
+        },
+      });
+
+      // Send approval request via SSE
+      if (approvalSendEvent) {
+        approvalSendEvent('approval_request', {
+          approvalId: approval.id,
+          toolName,
+          input,
+        });
+      }
+
+      // Poll DB for decision (2s interval, 120s timeout)
+      const POLL_INTERVAL = 2000;
+      const TIMEOUT = 120000;
+      const start = Date.now();
+
+      while (Date.now() - start < TIMEOUT) {
+        await new Promise((r) => setTimeout(r, POLL_INTERVAL));
+        const updated = await prisma.toolApproval.findUnique({
+          where: { id: approval.id },
+          select: { decision: true },
+        });
+
+        if (updated?.decision) {
+          if (approvalSendEvent) {
+            approvalSendEvent('approval_resolved', {
+              approvalId: approval.id,
+              decision: updated.decision,
+            });
+          }
+          return updated.decision === 'approve';
+        }
+      }
+
+      // Timeout: auto-deny
+      await prisma.toolApproval.update({
+        where: { id: approval.id },
+        data: { decision: 'deny', resolvedAt: new Date() },
+      });
+      if (approvalSendEvent) {
+        approvalSendEvent('approval_timeout', {
+          approvalId: approval.id,
+          toolName,
+        });
+      }
+      return false;
+    }
+    const approvalHandler = hasPendingApprovals ? handleToolApproval : undefined;
+
+    // Build tools from agent configuration (supports dynamic discovery)
+    const { createToolDefinition } = await import('@/lib/ai-agent/tool-executor-agent');
+    const { parseExecutorConfig } = await import('@/lib/executors');
+
+    const { tools, allToolPool, isDynamic } = buildAgentToolsWithDiscovery(
+      agent,
+      callerEnvVars,
+      sessionId,
+      _sandboxUrl,
+      _sandboxApiKey,
+      approvalHandler
+    );
     const toolCount = Object.keys(tools).length;
     const toolNames = Object.keys(tools);
 
@@ -417,6 +497,9 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
           const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
           controller.enqueue(encoder.encode(message));
         };
+
+        // Bind the approval SSE sender so the approval handler can send events
+        approvalSendEvent = sendEvent;
 
         // ML tracking: declared outside try so they're accessible in catch
         const sequenceId = randomUUID();
@@ -563,6 +646,44 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
                     contextMessageCount,
                     contextTokenCount,
                   });
+                }
+              }
+
+              // Dynamic tool discovery: inject tools found by searchTools
+              if (isDynamic && toolResults) {
+                for (const tr of toolResults) {
+                  if (tr.toolName === 'searchTools' && tr.output && typeof tr.output === 'object') {
+                    const output = tr.output as { results?: Array<{ name: string }> };
+                    if (output.results) {
+                      const newlyLoaded: string[] = [];
+                      const agentExecutorConfig = parseExecutorConfig(
+                        agent.executorType,
+                        agent.executorConfig
+                      );
+                      const individualConfig = agentExecutorConfig ?? { type: 'default' as const };
+                      const useCallerEnv = callerEnvVars !== undefined;
+                      const agentEnv = useCallerEnv
+                        ? callerEnvVars
+                        : (agent.envVars as Record<string, string>) || {};
+
+                      for (const match of output.results) {
+                        if (!tools[match.name]) {
+                          const poolEntry = allToolPool.find((p) => p.name === match.name);
+                          if (poolEntry) {
+                            tools[match.name] = createToolDefinition(
+                              poolEntry.tool,
+                              individualConfig,
+                              agentEnv
+                            );
+                            newlyLoaded.push(match.name);
+                          }
+                        }
+                      }
+                      if (newlyLoaded.length > 0) {
+                        sendEvent('tools_loaded', { tools: newlyLoaded });
+                      }
+                    }
+                  }
                 }
               }
 

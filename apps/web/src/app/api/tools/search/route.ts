@@ -3,85 +3,14 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '~/lib/api-keys/middleware';
 import { checkApiKeyRateLimit, getRateLimitHeaders } from '~/lib/api-keys/rate-limit';
 import { checkRateLimit, STRICT_RATE_LIMIT } from '~/lib/rate-limit';
+import { calculateBM25, hasExactNameMatch, hasPackageNameMatch, tokenize } from '~/lib/search/bm25';
 import { trackSearch } from '~/lib/tracking/search';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-// BM25 parameters
-const k1 = 1.5; // term frequency saturation parameter
-const b = 0.75; // length normalization parameter
-
-// Split camelCase and PascalCase into words
-function splitCamelCase(text: string): string {
-  return text
-    .replace(/([a-z])([A-Z])/g, '$1 $2') // camelCase -> camel Case
-    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2'); // XMLParser -> XML Parser
-}
-
-// Tokenize text into words (handles camelCase)
-function tokenize(text: string): string[] {
-  return splitCamelCase(text)
-    .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
-    .split(/\s+/)
-    .filter((t) => t.length > 0);
-}
-
-// Check for exact tool name match (case-insensitive)
-function hasExactNameMatch(query: string, toolName: string): boolean {
-  const queryLower = query.toLowerCase();
-  const nameLower = toolName.toLowerCase();
-  return queryLower.includes(nameLower) || nameLower.includes(queryLower);
-}
-
-// Check for package name match (case-insensitive)
-function hasPackageNameMatch(query: string, packageName: string): boolean {
-  const queryLower = query.toLowerCase();
-  const packageLower = packageName.toLowerCase();
-  // Check if query contains package name or package name contains query
-  // Also handle partial matches like "@tpmjs/tools-" matching "@tpmjs/tools-unsandbox"
-  return queryLower.includes(packageLower) || packageLower.includes(queryLower);
-}
-
-// Calculate term frequency
-function termFrequency(term: string, tokens: string[]): number {
-  return tokens.filter((t) => t === term).length;
-}
-
-// Calculate BM25 score
-function calculateBM25(
-  query: string,
-  document: string,
-  avgDocLength: number,
-  totalDocs: number,
-  docFrequencies: Map<string, number>
-): number {
-  const queryTokens = tokenize(query);
-  const docTokens = tokenize(document);
-  const docLength = docTokens.length;
-
-  let score = 0;
-
-  for (const term of queryTokens) {
-    const tf = termFrequency(term, docTokens);
-    if (tf === 0) continue;
-
-    // IDF calculation
-    const docFreq = docFrequencies.get(term) || 0;
-    const idf = Math.log((totalDocs - docFreq + 0.5) / (docFreq + 0.5) + 1);
-
-    // BM25 formula
-    const numerator = tf * (k1 + 1);
-    const denominator = tf + k1 * (1 - b + b * (docLength / avgDocLength));
-
-    score += idf * (numerator / denominator);
-  }
-
-  return score;
-}
-
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex search with multiple filters and scoring
 export async function GET(request: NextRequest) {
   console.log('🔎 [SEARCH API] Request received');
 
@@ -114,6 +43,7 @@ export async function GET(request: NextRequest) {
     // Accept both 'q' and 'query' parameters for flexibility
     const query = searchParams.get('q') || searchParams.get('query') || '';
     const category = searchParams.get('category');
+    const tag = searchParams.get('tag'); // Exact tag filter
     const limit = Math.min(Number.parseInt(searchParams.get('limit') || '10', 10), 100);
 
     // Parse excludeIds to filter out tools already in user's collection
@@ -149,6 +79,7 @@ export async function GET(request: NextRequest) {
       // Exclude tools already in collection (if provided)
       ...(excludeIds.length > 0 && { id: { notIn: excludeIds } }),
       ...(category && { package: { category } }),
+      ...(tag && { tags: { has: tag } }),
       ...(hasSearchQuery && {
         OR: [
           // Match tool name
@@ -184,7 +115,7 @@ export async function GET(request: NextRequest) {
     const fullQuery = [query, ...recentMessages].filter(Boolean).join(' ');
     console.log(`🔍 [SEARCH API] Full search context: "${fullQuery.slice(0, 100)}..."`);
 
-    // Build all documents first
+    // Build all documents first (include tags in document text for BM25)
     const documents = tools.map((tool) => ({
       tool,
       text: [
@@ -193,6 +124,7 @@ export async function GET(request: NextRequest) {
         tool.package.npmPackageName,
         tool.package.npmDescription || '',
         ...(tool.package.npmKeywords || []),
+        ...(tool.tags || []),
       ].join(' '),
     }));
 
@@ -227,8 +159,17 @@ export async function GET(request: NextRequest) {
       // Boost for package name match (when user searches by package name like @tpmjs/tools-unsandbox)
       const packageNameBoost = hasPackageNameMatch(query, tool.package.npmPackageName) ? 50 : 0;
 
+      // Tag-match boost: +5 when a query token matches a tag exactly
+      let tagBoost = 0;
+      if (tool.tags && tool.tags.length > 0) {
+        const qTokens = tokenize(query);
+        for (const token of qTokens) {
+          if (tool.tags.includes(token)) tagBoost += 5;
+        }
+      }
+
       const finalScore =
-        bm25Score + qualityBoost + downloadBoost + exactNameBoost + packageNameBoost;
+        bm25Score + qualityBoost + downloadBoost + exactNameBoost + packageNameBoost + tagBoost;
 
       return { tool, score: finalScore };
     });
@@ -278,6 +219,8 @@ export async function GET(request: NextRequest) {
             description: tool.description,
             inputSchema: tool.inputSchema,
             qualityScore: tool.qualityScore,
+            tags: tool.tags,
+            signature: tool.signature,
             importHealth: tool.importHealth,
             executionHealth: tool.executionHealth,
             healthCheckError: tool.healthCheckError,

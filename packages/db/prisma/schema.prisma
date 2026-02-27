@@ -81,6 +81,10 @@ model Tool {
   // Tool Discovery Fields
   toolDiscoverySource String? @map("tool_discovery_source") @db.VarChar(20) // 'auto' | 'manual' | null
 
+  // Enriched metadata for search and discoverability
+  tags      String[] @default([])
+  signature String?  @db.VarChar(500) // e.g. "(url: string) => Promise<{ content: string }>"
+
   // Tool Metrics
   qualityScore Decimal? @map("quality_score") @db.Decimal(3, 2) // 0.00 to 1.00
   likeCount    Int      @default(0) @map("like_count")
@@ -660,6 +664,12 @@ model Agent {
   // Agent env vars override collection env vars, otherwise merged
   envVars              Json?      @map("env_vars") @db.JsonB
 
+  // Tool permission policies: { default: "allow", rules: [{ pattern: "shellExec", permission: "deny" }] }
+  toolPermissions      Json?      @map("tool_permissions") @db.JsonB
+
+  // Dynamic tool discovery: start with searchTools meta-tool instead of loading all tools
+  dynamicToolDiscovery Boolean    @default(false) @map("dynamic_tool_discovery")
+
   // Fork tracking - for "fork to use" model
   forkedFromId         String?    @map("forked_from_id")
   forkedFrom           Agent?     @relation("AgentForks", fields: [forkedFromId], references: [id], onDelete: SetNull)
@@ -783,11 +793,37 @@ model Conversation {
 
   // Relations
   messages    Message[]
+  approvals   ToolApproval[]
 
   @@unique([agentId, slug])
   @@index([agentId])
   @@index([createdAt])
   @@map("conversations")
+}
+
+/// ToolApproval - tracks inline approval requests for tools with "ask" permission
+model ToolApproval {
+  id              String       @id @default(cuid())
+
+  // Conversation relationship
+  conversationId  String       @map("conversation_id")
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  // Approval metadata
+  agentId         String       @map("agent_id")
+  toolCallId      String       @map("tool_call_id") @db.VarChar(200)
+  toolName        String       @map("tool_name") @db.VarChar(200)
+  inputArgs       Json?        @map("input_args") @db.JsonB
+
+  // Decision: null=pending, 'approve', 'deny'
+  decision        String?      @db.VarChar(10)
+
+  // Timestamps
+  createdAt       DateTime     @default(now()) @map("created_at")
+  resolvedAt      DateTime?    @map("resolved_at")
+
+  @@index([conversationId, decision])
+  @@map("tool_approvals")
 }
 
 /// Message - individual message in a conversation

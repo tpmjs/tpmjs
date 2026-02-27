@@ -73,6 +73,8 @@ async function getTool(slug: string[]): Promise<Tool | null> {
     toolDiscoverySource: tool.toolDiscoverySource as Tool['toolDiscoverySource'],
     returns: tool.returns as Tool['returns'],
     aiAgent: tool.aiAgent as Tool['aiAgent'],
+    tags: tool.tags ?? [],
+    signature: tool.signature ?? null,
     qualityScore: tool.qualityScore?.toString() ?? null,
     importHealth: tool.importHealth ?? undefined,
     executionHealth: tool.executionHealth ?? undefined,

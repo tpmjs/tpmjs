@@ -1,0 +1,64 @@
+{
+  "name": "@tpmjs/compose",
+  "version": "0.1.0",
+  "description": "Typed, chainable API for assembling AI SDK tool sets",
+  "author": "TPMJS",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/compose"
+  },
+  "homepage": "https://tpmjs.com",
+  "keywords": [
+    "tpmjs",
+    "ai-sdk",
+    "tools",
+    "compose",
+    "builder"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./adapters/registry": {
+      "types": "./dist/adapters/registry.d.ts",
+      "default": "./dist/adapters/registry.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
+    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "peerDependencies": {
+    "ai": ">=6.0.0"
+  },
+  "peerDependenciesMeta": {
+    "ai": {
+      "optional": false
+    }
+  },
+  "dependencies": {
+    "zod": "^4.3.5"
+  },
+  "devDependencies": {
+    "@tpmjs/test": "workspace:*",
+    "@tpmjs/tsconfig": "workspace:*",
+    "ai": "6.0.49",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
