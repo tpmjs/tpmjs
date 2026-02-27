@@ -41,7 +41,6 @@ interface Message {
   inputTokens?: number;
   outputTokens?: number;
   createdAt: string;
-  // Tool discovery info (populated from SSE events, per message)
   toolDiscovery?: ToolDiscoveryInfo;
 }
 
@@ -104,8 +103,10 @@ function toolCallToToolPart(tc: ToolCall): ToolPart {
   };
 }
 
+const CAPABILITY_ICONS = ['search', 'terminal', 'globe', 'database', 'mail'] as const;
+
 /**
- * Omega Chat Page
+ * Omega Chat Page — Brutalist Command Center
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex chat page with multiple UI states and SSE handling
 export default function OmegaChatPage(): React.ReactElement {
@@ -122,20 +123,15 @@ export default function OmegaChatPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
   const [viewMode, setViewMode] = useState<'chat' | 'debug'>('chat');
-  // Map of message IDs to their tool discovery info (persisted in frontend state)
   const [messageToolDiscovery, setMessageToolDiscovery] = useState<Map<string, ToolDiscoveryInfo>>(
     new Map()
   );
-  // Environment variable warnings for tools that need API keys
   const [envWarnings, setEnvWarnings] = useState<EnvVarWarning[]>([]);
-  // Status message from SSE status events
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  // AbortController for stop button
   const abortControllerRef = useRef<AbortController | null>(null);
-  // Smart auto-scroll: only scroll when user is near bottom
   const isNearBottomRef = useRef(true);
 
   // Fetch conversation details
@@ -155,7 +151,6 @@ export default function OmegaChatPage(): React.ReactElement {
       }
 
       const data = await response.json();
-      // API returns conversation data directly with messages nested
       const { messages: messageList, ...conversationData } = data.data;
       setConversation(conversationData);
       setMessages(messageList || []);
@@ -171,7 +166,7 @@ export default function OmegaChatPage(): React.ReactElement {
     fetchConversation();
   }, [fetchConversation]);
 
-  // Smart auto-scroll: only scroll when user is near the bottom
+  // Smart auto-scroll
   const handleScroll = useCallback(() => {
     const el = messagesContainerRef.current;
     if (!el) return;
@@ -192,7 +187,6 @@ export default function OmegaChatPage(): React.ReactElement {
     if (initialPrompt && messages.length === 0 && !isSending) {
       sessionStorage.removeItem(`omega_prompt_${conversationId}`);
       setInput(initialPrompt);
-      // Auto-send after a brief delay
       const timer = setTimeout(() => {
         handleSendWithContent(initialPrompt);
       }, 500);
@@ -208,7 +202,6 @@ export default function OmegaChatPage(): React.ReactElement {
     }
     setIsSending(false);
     setStatusMessage(null);
-    // Keep partial streaming content as a message
     setStreamingContent((prev) => {
       if (prev) {
         const partialMessage: Message = {
@@ -236,11 +229,9 @@ export default function OmegaChatPage(): React.ReactElement {
     setToolCalls([]);
     setStatusMessage(null);
 
-    // Create AbortController for this request
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    // Optimistically add user message
     const userMessage: Message = {
       id: `temp-${Date.now()}`,
       role: 'USER',
@@ -249,7 +240,6 @@ export default function OmegaChatPage(): React.ReactElement {
     };
     setMessages((prev) => [...prev, userMessage]);
 
-    // Track accumulated data for constructing final message
     let accumulatedContent = '';
     let completedToolCalls: ToolCall[] = [];
 
@@ -262,19 +252,16 @@ export default function OmegaChatPage(): React.ReactElement {
       });
 
       if (!response.ok) {
-        // Handle non-JSON error responses gracefully
         let errorMessage = 'Failed to send message';
         try {
           const errorData = await response.json();
           errorMessage = errorData.error || errorMessage;
         } catch {
-          // Response body isn't valid JSON - use status text
           errorMessage = `Server error: ${response.status} ${response.statusText}`;
         }
         throw new Error(errorMessage);
       }
 
-      // Handle SSE stream
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No response body');
 
@@ -287,16 +274,14 @@ export default function OmegaChatPage(): React.ReactElement {
 
         buffer += decoder.decode(value, { stream: true });
 
-        // Parse SSE events
         const lines = buffer.split('\n');
-        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+        buffer = lines.pop() || '';
 
         let eventType = '';
         for (const line of lines) {
           if (line.startsWith('event: ')) {
             eventType = line.slice(7);
           } else if (line.startsWith('data: ')) {
-            // SSE parse safety: wrap JSON.parse in try/catch
             let data: unknown;
             try {
               data = JSON.parse(line.slice(6));
@@ -309,13 +294,11 @@ export default function OmegaChatPage(): React.ReactElement {
 
             switch (eventType) {
               case 'status':
-                // Display status messages from the server
                 if (d.message && typeof d.message === 'string') {
                   setStatusMessage(d.message);
                 }
                 break;
               case 'env.warning':
-                // Set environment variable warnings
                 if (d.missingEnvVars && Array.isArray(d.missingEnvVars)) {
                   setEnvWarnings(d.missingEnvVars as EnvVarWarning[]);
                 }
@@ -327,7 +310,6 @@ export default function OmegaChatPage(): React.ReactElement {
                 break;
               case 'run.step.tool.started':
                 setStatusMessage(null);
-                // Add tool call to tracking
                 setToolCalls((prev) => {
                   const updated = [
                     ...prev,
@@ -343,7 +325,6 @@ export default function OmegaChatPage(): React.ReactElement {
                 });
                 break;
               case 'run.step.tool.completed':
-                // Update tool call with result
                 setToolCalls((prev) => {
                   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Tool call update logic
                   const updated = prev.map((tc) =>
@@ -361,7 +342,6 @@ export default function OmegaChatPage(): React.ReactElement {
                 });
                 break;
               case 'run.completed': {
-                // Build the assistant message from accumulated SSE data
                 const assistantMessage: Message = {
                   id: (d.messageId as string) || `msg-${Date.now()}`,
                   role: 'ASSISTANT',
@@ -379,7 +359,6 @@ export default function OmegaChatPage(): React.ReactElement {
                   createdAt: new Date().toISOString(),
                 };
 
-                // Build tool results message if there were tool calls
                 const toolResultEntries = completedToolCalls
                   .filter((tc) => tc.output !== undefined)
                   .map((tc) => ({
@@ -402,7 +381,6 @@ export default function OmegaChatPage(): React.ReactElement {
                   return updated;
                 });
 
-                // Update conversation token totals locally
                 if (conversation) {
                   setConversation({
                     ...conversation,
@@ -414,7 +392,6 @@ export default function OmegaChatPage(): React.ReactElement {
                   });
                 }
 
-                // Associate tool discovery info
                 const toolDiscovery: ToolDiscoveryInfo = {
                   staticTools: d.staticTools as string[],
                   dynamicToolsLoaded: d.dynamicToolsLoaded as string[],
@@ -439,14 +416,11 @@ export default function OmegaChatPage(): React.ReactElement {
         }
       }
     } catch (err) {
-      // Handle AbortError gracefully (user clicked stop)
       if (err instanceof DOMException && err.name === 'AbortError') {
-        // Already handled in handleStop
         return;
       }
       console.error('Failed to send message:', err);
       setError(err instanceof Error ? err.message : 'Failed to send message');
-      // Remove optimistic message on error
       setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
     } finally {
       abortControllerRef.current = null;
@@ -489,26 +463,37 @@ export default function OmegaChatPage(): React.ReactElement {
     }
   };
 
+  // --- Loading State ---
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
         <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-          <Icon icon="loader" size="lg" className="animate-spin text-foreground-secondary" />
+          <div className="flex items-center gap-3">
+            <div className="w-2 h-2 bg-primary animate-pulse" />
+            <span className="font-mono text-sm text-foreground-secondary uppercase tracking-wider">
+              loading session...
+            </span>
+          </div>
         </div>
       </div>
     );
   }
 
+  // --- Error State (no conversation) ---
   if (error && !conversation) {
     return (
       <div className="min-h-screen bg-background">
         <AppHeader />
         <div className="flex items-center justify-center h-[calc(100vh-64px)]">
           <div className="text-center">
-            <Icon icon="alertCircle" size="lg" className="mx-auto text-error mb-4" />
-            <h2 className="text-lg font-medium text-foreground mb-2">Unable to Load Chat</h2>
-            <p className="text-foreground-secondary mb-4">{error}</p>
+            <div className="w-14 h-14 border-2 border-foreground flex items-center justify-center mx-auto mb-4">
+              <Icon icon="alertCircle" size="lg" />
+            </div>
+            <h2 className="font-mono font-bold text-foreground uppercase tracking-tight mb-2">
+              Unable to Load Chat
+            </h2>
+            <p className="text-foreground-secondary font-mono text-sm mb-6">{error}</p>
             <Link href="/omega">
               <Button>Start New Conversation</Button>
             </Link>
@@ -523,27 +508,27 @@ export default function OmegaChatPage(): React.ReactElement {
       <AppHeader />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Chat Header */}
-        <div className="border-b border-border bg-surface/50 px-4 py-3">
+        {/* Header */}
+        <div className="border-b-2 border-foreground bg-surface/50 px-4 py-3">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
             <div className="flex items-center gap-3">
               <Link
                 href="/omega"
-                className="p-2 rounded-lg hover:bg-surface-secondary transition-colors"
+                className="w-10 h-10 border border-border flex items-center justify-center hover:border-foreground transition-colors"
               >
                 <Icon icon="arrowLeft" size="sm" className="text-foreground-secondary" />
               </Link>
               <div>
-                <h1 className="text-lg font-semibold text-foreground">
+                <h1 className="font-mono uppercase tracking-tight font-bold text-foreground">
                   {conversation?.title || 'New Conversation'}
                 </h1>
                 <div className="flex items-center gap-2 text-sm text-foreground-tertiary">
                   <Badge variant="secondary" size="sm">
                     Omega
                   </Badge>
-                  <span>GPT-4.1 Mini</span>
+                  <span className="font-mono text-xs">GPT-4.1 Mini</span>
                   {conversation && (
-                    <span className="text-xs">
+                    <span className="font-mono text-xs">
                       {conversation.inputTokensTotal + conversation.outputTokensTotal} tokens
                     </span>
                   )}
@@ -563,22 +548,31 @@ export default function OmegaChatPage(): React.ReactElement {
               </Button>
             </div>
           </div>
-          {/* View Mode Tabs */}
-          <div className="flex gap-1 mt-3 max-w-4xl mx-auto">
-            <Button
-              variant={viewMode === 'chat' ? 'default' : 'ghost'}
-              size="sm"
+
+          {/* Segmented Tab Switcher */}
+          <div className="flex mt-3 max-w-4xl mx-auto border border-border w-fit">
+            <button
+              type="button"
               onClick={() => setViewMode('chat')}
+              className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
+                viewMode === 'chat'
+                  ? 'bg-foreground text-background'
+                  : 'bg-transparent text-foreground-secondary hover:text-foreground'
+              }`}
             >
               Chat
-            </Button>
-            <Button
-              variant={viewMode === 'debug' ? 'default' : 'ghost'}
-              size="sm"
+            </button>
+            <button
+              type="button"
               onClick={() => setViewMode('debug')}
+              className={`px-4 py-1.5 font-mono text-xs uppercase tracking-wider transition-colors ${
+                viewMode === 'debug'
+                  ? 'bg-foreground text-background'
+                  : 'bg-transparent text-foreground-secondary hover:text-foreground'
+              }`}
             >
               Debug JSON
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -586,13 +580,12 @@ export default function OmegaChatPage(): React.ReactElement {
         {viewMode === 'debug' && (
           <div className="flex-1 overflow-auto p-4 bg-background">
             <div className="max-w-4xl mx-auto space-y-6">
-              {/* Header with Copy Button */}
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-sm font-medium text-foreground mb-2">
+                  <h2 className="font-mono font-bold text-foreground uppercase tracking-tight text-sm mb-2">
                     Messages with Tool Discovery ({messages.length} messages)
                   </h2>
-                  <p className="text-xs text-foreground-tertiary">
+                  <p className="text-xs text-foreground-tertiary font-mono">
                     Each message shows the tools discovered and loaded during that response.
                   </p>
                 </div>
@@ -600,7 +593,6 @@ export default function OmegaChatPage(): React.ReactElement {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    // Merge tool discovery info into messages for export
                     const messagesWithTools = messages.map((m) => ({
                       ...m,
                       toolDiscovery: messageToolDiscovery.get(m.id) || null,
@@ -613,20 +605,20 @@ export default function OmegaChatPage(): React.ReactElement {
                 </Button>
               </div>
 
-              {/* Per-Message View */}
               {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Debug view with multiple conditional sections */}
               {messages.map((message, index) => {
                 const discovery = messageToolDiscovery.get(message.id);
                 return (
                   <div
                     key={message.id}
-                    className="bg-surface-secondary border border-border rounded-lg overflow-hidden"
+                    className="bg-surface-secondary border-2 border-border overflow-hidden"
                   >
-                    {/* Message Header */}
                     <div className="px-4 py-3 border-b border-border/50 bg-surface/50">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-foreground-tertiary">#{index + 1}</span>
+                          <span className="text-xs text-foreground-tertiary font-mono">
+                            #{index + 1}
+                          </span>
                           <Badge
                             variant={
                               message.role === 'USER'
@@ -643,42 +635,38 @@ export default function OmegaChatPage(): React.ReactElement {
                             {message.id.slice(0, 8)}...
                           </span>
                         </div>
-                        <span className="text-xs text-foreground-tertiary">
+                        <span className="text-xs text-foreground-tertiary font-mono">
                           {new Date(message.createdAt).toLocaleTimeString()}
                         </span>
                       </div>
                     </div>
 
-                    {/* Message Content */}
                     <div className="p-4 space-y-4">
-                      {/* Content */}
                       <div>
-                        <div className="text-[10px] uppercase tracking-wider text-foreground-tertiary mb-2">
+                        <div className="text-[10px] uppercase tracking-wider text-foreground-tertiary font-mono mb-2">
                           Content
                         </div>
-                        <pre className="text-xs font-mono bg-background/50 rounded p-3 overflow-x-auto whitespace-pre-wrap max-h-48 overflow-y-auto">
+                        <pre className="text-xs font-mono bg-background/50 p-3 overflow-x-auto whitespace-pre-wrap max-h-48 overflow-y-auto">
                           {message.content || '(empty)'}
                         </pre>
                       </div>
 
-                      {/* Tool Discovery (only for assistant messages) */}
                       {message.role === 'ASSISTANT' && discovery && (
                         <div className="space-y-3 pt-3 border-t border-border/50">
-                          <div className="text-[10px] uppercase tracking-wider text-foreground-tertiary">
+                          <div className="text-[10px] uppercase tracking-wider text-foreground-tertiary font-mono">
                             Tool Discovery for this Response
                           </div>
 
-                          {/* Static Tools */}
                           {discovery.staticTools && discovery.staticTools.length > 0 && (
                             <div>
-                              <div className="text-xs text-foreground-secondary mb-1">
+                              <div className="text-xs text-foreground-secondary mb-1 font-mono">
                                 Static Tools ({discovery.staticTools.length})
                               </div>
                               <div className="flex flex-wrap gap-1">
                                 {discovery.staticTools.map((name) => (
                                   <span
                                     key={name}
-                                    className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-[10px] font-mono rounded"
+                                    className="px-2 py-0.5 bg-blue-500/10 text-blue-500 text-[10px] font-mono"
                                   >
                                     {name}
                                   </span>
@@ -687,18 +675,17 @@ export default function OmegaChatPage(): React.ReactElement {
                             </div>
                           )}
 
-                          {/* Auto-Discovered Tools */}
                           {discovery.autoDiscoveredTools &&
                             discovery.autoDiscoveredTools.length > 0 && (
                               <div>
-                                <div className="text-xs text-foreground-secondary mb-1">
+                                <div className="text-xs text-foreground-secondary mb-1 font-mono">
                                   Auto-Discovered via BM25 ({discovery.autoDiscoveredTools.length})
                                 </div>
                                 <div className="space-y-1">
                                   {discovery.autoDiscoveredTools.map((t) => (
                                     <div
                                       key={t.toolId}
-                                      className="text-[10px] font-mono bg-background/50 rounded px-2 py-1"
+                                      className="text-[10px] font-mono bg-background/50 px-2 py-1"
                                     >
                                       <span className="text-primary">{t.packageName}</span>
                                       <span className="text-foreground-tertiary">::</span>
@@ -713,18 +700,17 @@ export default function OmegaChatPage(): React.ReactElement {
                               </div>
                             )}
 
-                          {/* Dynamically Loaded Tools */}
                           {discovery.dynamicToolsLoaded &&
                             discovery.dynamicToolsLoaded.length > 0 && (
                               <div>
-                                <div className="text-xs text-foreground-secondary mb-1">
+                                <div className="text-xs text-foreground-secondary mb-1 font-mono">
                                   Dynamic Tools Loaded ({discovery.dynamicToolsLoaded.length})
                                 </div>
                                 <div className="flex flex-wrap gap-1">
                                   {discovery.dynamicToolsLoaded.map((name) => (
                                     <span
                                       key={name}
-                                      className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-mono rounded"
+                                      className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-mono"
                                     >
                                       {name}
                                     </span>
@@ -735,19 +721,17 @@ export default function OmegaChatPage(): React.ReactElement {
                         </div>
                       )}
 
-                      {/* Tool Calls */}
                       {message.toolCalls && message.toolCalls.length > 0 && (
                         <div className="pt-3 border-t border-border/50">
-                          <div className="text-[10px] uppercase tracking-wider text-foreground-tertiary mb-2">
+                          <div className="text-[10px] uppercase tracking-wider text-foreground-tertiary font-mono mb-2">
                             Tool Calls ({message.toolCalls.length})
                           </div>
-                          <pre className="text-xs font-mono bg-background/50 rounded p-3 overflow-x-auto whitespace-pre-wrap max-h-48 overflow-y-auto">
+                          <pre className="text-xs font-mono bg-background/50 p-3 overflow-x-auto whitespace-pre-wrap max-h-48 overflow-y-auto">
                             {JSON.stringify(message.toolCalls, null, 2)}
                           </pre>
                         </div>
                       )}
 
-                      {/* Token Usage */}
                       {(message.inputTokens || message.outputTokens) && (
                         <div className="text-[10px] text-foreground-tertiary font-mono pt-2 border-t border-border/50">
                           {message.inputTokens && <span>Input: {message.inputTokens}</span>}
@@ -760,9 +744,8 @@ export default function OmegaChatPage(): React.ReactElement {
                 );
               })}
 
-              {/* Empty state */}
               {messages.length === 0 && (
-                <div className="text-center py-8 text-foreground-tertiary">
+                <div className="text-center py-8 text-foreground-tertiary font-mono text-sm">
                   No messages yet. Start a conversation to see debug data.
                 </div>
               )}
@@ -776,17 +759,30 @@ export default function OmegaChatPage(): React.ReactElement {
             {/* Messages */}
             <div className="flex-1 overflow-hidden">
               {messages.length === 0 && !streamingContent ? (
+                /* Empty State */
                 <div className="h-full flex items-center justify-center p-4">
                   <div className="text-center">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <Icon icon="star" size="lg" className="text-primary" />
+                    {/* Watermark */}
+                    <div className="text-6xl md:text-8xl font-bold text-foreground/10 font-mono uppercase tracking-tighter mb-8 select-none">
+                      OMEGA
                     </div>
-                    <h3 className="text-lg font-medium text-foreground mb-2">
-                      Start a conversation with Omega
-                    </h3>
-                    <p className="text-foreground-secondary max-w-sm">
-                      Describe what you need, and Omega will find and use the right tools from the
-                      TPMJS registry.
+
+                    {/* Capability Icons */}
+                    <div className="flex items-center justify-center gap-3 mb-6">
+                      {CAPABILITY_ICONS.map((icon, i) => (
+                        <div
+                          key={icon}
+                          className="w-10 h-10 border border-border flex items-center justify-center animate-brutalist-entrance"
+                          style={{ animationDelay: `${i * 100}ms` }}
+                        >
+                          <Icon icon={icon} size="sm" className="text-foreground-secondary" />
+                        </div>
+                      ))}
+                    </div>
+
+                    <p className="font-mono text-sm text-foreground-secondary max-w-sm mx-auto">
+                      Describe what you need. Omega will discover and execute the right tools from
+                      the TPMJS registry.
                     </p>
                   </div>
                 </div>
@@ -797,13 +793,12 @@ export default function OmegaChatPage(): React.ReactElement {
                   onScroll={handleScroll}
                 >
                   <div className="max-w-4xl mx-auto">
-                    {/* Messages */}
                     {messages.map((message) => (
                       <div key={message.id} className="px-4 py-2">
                         {/* USER message */}
                         {message.role === 'USER' && (
                           <div className="flex justify-end">
-                            <div className="max-w-[80%] rounded-lg p-4 bg-primary text-primary-foreground">
+                            <div className="max-w-[80%] border-l-4 border-primary p-4 bg-primary/5">
                               <div className="text-sm whitespace-pre-wrap">{message.content}</div>
                             </div>
                           </div>
@@ -812,13 +807,12 @@ export default function OmegaChatPage(): React.ReactElement {
                         {/* ASSISTANT message */}
                         {message.role === 'ASSISTANT' && message.content && (
                           <div className="flex justify-start">
-                            <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
+                            <div className="max-w-[80%] border-l-4 border-foreground/20 p-4 bg-surface-secondary">
                               <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
                                 <Streamdown>{message.content}</Streamdown>
                               </div>
-                              {/* Token usage for debugging */}
                               {(message.inputTokens || message.outputTokens) && (
-                                <div className="mt-2 pt-2 border-t border-border/50 text-[10px] text-foreground-tertiary font-mono">
+                                <div className="mt-2 pt-2 border-t border-border/50 font-mono uppercase tracking-wider text-[10px] text-foreground-tertiary">
                                   {message.inputTokens && <span>In: {message.inputTokens}</span>}
                                   {message.inputTokens && message.outputTokens && <span> | </span>}
                                   {message.outputTokens && <span>Out: {message.outputTokens}</span>}
@@ -828,7 +822,7 @@ export default function OmegaChatPage(): React.ReactElement {
                           </div>
                         )}
 
-                        {/* TOOL message - show tool results from toolCalls field */}
+                        {/* TOOL message */}
                         {message.role === 'TOOL' && message.toolCalls && (
                           <div className="flex justify-start">
                             <div className="max-w-[80%] space-y-2">
@@ -852,19 +846,29 @@ export default function OmegaChatPage(): React.ReactElement {
                       </div>
                     ))}
 
-                    {/* Live tool calls during streaming */}
+                    {/* Tool Execution Pipeline */}
                     {toolCalls.length > 0 && (
-                      <div className="px-4 pb-4 space-y-2">
-                        {toolCalls.map((tc) => (
-                          <div key={tc.toolCallId} className="flex justify-start">
-                            <div className="max-w-[80%]">
+                      <div className="px-4 pb-4">
+                        {/* Pipeline header */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-1.5 h-1.5 bg-primary animate-pulse" />
+                          <span className="font-mono text-xs text-foreground-secondary uppercase tracking-wider">
+                            executing {toolCalls.length} tool{toolCalls.length !== 1 ? 's' : ''}
+                          </span>
+                          <div className="h-px bg-border flex-1" />
+                        </div>
+
+                        {/* Vertical pipeline */}
+                        <div className="border-l-2 border-primary/30 pl-4 space-y-2">
+                          {toolCalls.map((tc) => (
+                            <div key={tc.toolCallId}>
                               <ToolRenderer
                                 part={toolCallToToolPart(tc)}
                                 isStreaming={tc.status === 'running'}
                               />
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     )}
 
@@ -872,7 +876,7 @@ export default function OmegaChatPage(): React.ReactElement {
                     {streamingContent && (
                       <div className="px-4 pb-4">
                         <div className="flex justify-start">
-                          <div className="max-w-[80%] rounded-lg p-4 bg-surface-secondary">
+                          <div className="max-w-[80%] border-l-4 border-foreground/20 p-4 bg-surface-secondary">
                             <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
                               <Streamdown>{streamingContent}</Streamdown>
                             </div>
@@ -882,15 +886,15 @@ export default function OmegaChatPage(): React.ReactElement {
                       </div>
                     )}
 
-                    {/* Thinking indicator with status message */}
+                    {/* Thinking indicator */}
                     {isSending && !streamingContent && toolCalls.length === 0 && (
                       <div className="px-4 pb-4">
                         <div className="flex justify-start">
-                          <div className="rounded-lg p-4 bg-surface-secondary">
+                          <div className="border-l-4 border-primary p-4 bg-surface-secondary">
                             <div className="flex items-center gap-2 text-foreground-secondary">
-                              <Icon icon="loader" size="sm" className="animate-spin" />
-                              <span className="text-sm">
-                                {statusMessage || 'Omega is thinking...'}
+                              <div className="w-2 h-2 bg-primary animate-pulse" />
+                              <span className="font-mono text-sm">
+                                {statusMessage || 'discovering tools...'}
                               </span>
                             </div>
                           </div>
@@ -912,45 +916,56 @@ export default function OmegaChatPage(): React.ReactElement {
             {/* Error Message */}
             {error && (
               <div className="px-4 py-2 bg-error/10 border-t border-error/20">
-                <p className="text-sm text-error max-w-4xl mx-auto">{error}</p>
+                <p className="text-sm text-error max-w-4xl mx-auto font-mono">{error}</p>
               </div>
             )}
 
             {/* Input Area */}
-            <div className="border-t border-border p-4">
-              <div className="flex items-end gap-2 max-w-4xl mx-auto">
-                <Textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask Omega anything..."
-                  rows={1}
-                  resize="none"
-                  className="flex-1 min-h-[48px] max-h-[200px]"
-                  style={{
-                    height: 'auto',
-                    minHeight: '48px',
-                  }}
-                  onInput={(e) => {
-                    const target = e.target as HTMLTextAreaElement;
-                    target.style.height = 'auto';
-                    target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
-                  }}
-                />
-                {isSending ? (
-                  <Button onClick={handleStop} variant="destructive">
-                    <Icon icon="x" size="sm" />
-                  </Button>
-                ) : (
-                  <Button onClick={handleSend} disabled={!input.trim()}>
-                    <Icon icon="send" size="sm" />
-                  </Button>
-                )}
+            <div className="border-t-2 border-foreground p-4">
+              <div className="max-w-4xl mx-auto">
+                <div className="border border-border focus-within:border-foreground transition-colors">
+                  <Textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask Omega anything..."
+                    rows={1}
+                    resize="none"
+                    className="border-none bg-transparent flex-1 min-h-[48px] max-h-[200px]"
+                    style={{
+                      height: 'auto',
+                      minHeight: '48px',
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      target.style.height = `${Math.min(target.scrollHeight, 200)}px`;
+                    }}
+                  />
+                  <div className="flex items-center justify-between px-3 pb-2">
+                    <span className="font-mono text-xs text-foreground-tertiary uppercase tracking-wider">
+                      Enter to send / Shift+Enter for new line
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {conversation && (
+                        <span className="font-mono text-xs text-foreground-tertiary">
+                          {conversation.inputTokensTotal + conversation.outputTokensTotal} tokens
+                        </span>
+                      )}
+                      {isSending ? (
+                        <Button onClick={handleStop} variant="destructive" size="sm">
+                          <Icon icon="x" size="xs" />
+                        </Button>
+                      ) : (
+                        <Button onClick={handleSend} disabled={!input.trim()} size="sm">
+                          <Icon icon="send" size="xs" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <p className="text-xs text-foreground-tertiary mt-2 max-w-4xl mx-auto">
-                Press Enter to send, Shift+Enter for new line
-              </p>
             </div>
           </>
         )}

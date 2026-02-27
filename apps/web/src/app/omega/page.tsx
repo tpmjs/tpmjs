@@ -1,11 +1,15 @@
 'use client';
 
+import { AnimatedCounter } from '@tpmjs/ui/AnimatedCounter/AnimatedCounter';
+import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
+import { Textarea } from '@tpmjs/ui/Textarea/Textarea';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
+import { GlitchBars } from '~/components/home/GlitchBars';
 import { useSession } from '~/lib/auth-client';
 
 interface SamplePrompt {
@@ -55,21 +59,21 @@ const SAMPLE_PROMPTS: SamplePrompt[] = [
 ];
 
 /**
- * Omega Landing Page
- * Shows sample prompts and starts new conversations
+ * Omega Landing Page — "The Infinite Arsenal"
  */
 export default function OmegaLandingPage(): React.ReactElement {
   const router = useRouter();
   const { data: session, isPending: isSessionLoading } = useSession();
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [input, setInput] = useState('');
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const isAuthenticated = !!session?.user;
 
   const createConversation = useCallback(
     async (initialPrompt?: string) => {
       if (!isAuthenticated) {
-        // Redirect to sign-in if not authenticated
         const returnUrl = initialPrompt
           ? `/omega?prompt=${encodeURIComponent(initialPrompt)}`
           : '/omega';
@@ -89,7 +93,6 @@ export default function OmegaLandingPage(): React.ReactElement {
         if (!response.ok) {
           const data = await response.json();
           if (response.status === 401) {
-            // Session expired, redirect to sign-in
             router.push(`/sign-in?returnTo=${encodeURIComponent('/omega')}`);
             return;
           }
@@ -99,7 +102,6 @@ export default function OmegaLandingPage(): React.ReactElement {
         const data = await response.json();
         const conversationId = data.data.id;
 
-        // Navigate to chat, optionally with initial prompt
         if (initialPrompt) {
           sessionStorage.setItem(`omega_prompt_${conversationId}`, initialPrompt);
         }
@@ -119,99 +121,166 @@ export default function OmegaLandingPage(): React.ReactElement {
       const params = new URLSearchParams(window.location.search);
       const prompt = params.get('prompt');
       if (prompt) {
-        // Clear the query parameter
         window.history.replaceState({}, '', '/omega');
-        // Create conversation with the prompt
         createConversation(prompt);
       }
     }
   }, [isAuthenticated, createConversation]);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (input.trim()) {
+        createConversation(input.trim());
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <AppHeader />
 
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl">
-          {/* Hero Section */}
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 mb-6">
-              <Icon icon="star" size="lg" className="text-primary" />
+      <main className="flex-1 flex flex-col">
+        {/* Zone 1 — Monumental Hero */}
+        <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
+          {/* Background layers */}
+          <div className="absolute inset-0 grid-background opacity-[0.04]" />
+          <div className="absolute inset-0 blueprint-scanline" />
+          <GlitchBars count={4} />
+
+          <div className="relative z-10 text-center px-4">
+            {/* Badge */}
+            <div className="animate-brutalist-entrance mb-8" style={{ animationDelay: '0ms' }}>
+              <Badge variant="outline" size="lg">
+                <Icon icon="terminal" size="xs" className="mr-2" />
+                omega agent
+              </Badge>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Meet Omega</h1>
-            <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
-              An AI assistant with access to over 1 million tools. Just describe what you need, and
-              Omega will find and use the right tools to help you.
+
+            {/* The Number */}
+            <div className="animate-brutalist-entrance mb-4" style={{ animationDelay: '150ms' }}>
+              <AnimatedCounter
+                value={1000000}
+                suffix="+"
+                separator=","
+                duration={2500}
+                className="brutalist-heading"
+              />
+            </div>
+
+            {/* Subheading */}
+            <h2
+              className="brutalist-subheading text-foreground mb-6 animate-brutalist-entrance"
+              style={{ animationDelay: '300ms' }}
+            >
+              TOOLS AT YOUR COMMAND
+            </h2>
+
+            {/* Description */}
+            <p
+              className="font-mono text-foreground-secondary max-w-xl mx-auto text-sm md:text-base animate-brutalist-entrance"
+              style={{ animationDelay: '450ms' }}
+            >
+              One AI agent with access to the entire TPMJS registry. Describe what you need — Omega
+              discovers and executes the right tools automatically.
             </p>
           </div>
+        </div>
 
-          {/* Start New Conversation */}
-          <div className="flex justify-center mb-12">
-            {isSessionLoading ? (
-              <Button size="lg" disabled className="px-8">
-                <Icon icon="loader" size="sm" className="mr-2 animate-spin" />
-                Loading...
-              </Button>
-            ) : isAuthenticated ? (
-              <Button
-                size="lg"
-                onClick={() => createConversation()}
+        {/* Zone 2 — Input-First Command Area */}
+        <div className="bg-surface border-y-2 border-foreground py-12 px-4">
+          <div className="max-w-2xl mx-auto">
+            <div
+              className={`border-2 transition-colors ${
+                isCreating ? 'border-primary' : 'border-foreground focus-within:border-primary'
+              }`}
+            >
+              <Textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="What do you want to build, find, or analyze?"
+                rows={3}
+                resize="none"
+                className="border-none bg-transparent text-lg"
                 disabled={isCreating}
-                className="px-8"
-              >
-                {isCreating ? (
-                  <>
-                    <Icon icon="loader" size="sm" className="mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Icon icon="plus" size="sm" className="mr-2" />
-                    Start New Conversation
-                  </>
-                )}
-              </Button>
-            ) : (
-              <div className="flex flex-col items-center gap-4">
+              />
+              <div className="flex items-center justify-between px-3 pb-3">
+                <span className="font-mono text-xs text-foreground-tertiary uppercase tracking-wider">
+                  Enter to launch
+                </span>
+                <Button
+                  onClick={() => input.trim() && createConversation(input.trim())}
+                  disabled={!input.trim() || isCreating}
+                  size="sm"
+                >
+                  {isCreating ? (
+                    <>
+                      <Icon icon="loader" size="xs" className="mr-2 animate-spin" />
+                      Launching...
+                    </>
+                  ) : (
+                    <>
+                      <Icon icon="send" size="xs" className="mr-2" />
+                      Launch
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Auth gate */}
+            {!isSessionLoading && !isAuthenticated && (
+              <div className="mt-4 text-center">
                 <Link
                   href={`/sign-in?returnTo=${encodeURIComponent('/omega')}`}
-                  className="inline-flex items-center justify-center px-8 py-3 text-base font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="inline-flex items-center gap-2 font-mono text-sm text-primary hover:text-primary-hover underline underline-offset-4"
                 >
-                  <Icon icon="user" size="sm" className="mr-2" />
-                  Sign In to Start
+                  <Icon icon="user" size="xs" />
+                  Sign in to start
                 </Link>
-                <p className="text-sm text-foreground-tertiary">Sign in to start using Omega</p>
               </div>
             )}
           </div>
+        </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="text-center mb-8">
-              <p className="text-sm text-error">{error}</p>
-            </div>
-          )}
+        {/* Error Message */}
+        {error && (
+          <div className="text-center py-4 px-4">
+            <p className="text-sm text-error font-mono">{error}</p>
+          </div>
+        )}
 
-          {/* Sample Prompts */}
-          <div className="space-y-4">
-            <h2 className="text-sm font-medium text-foreground-tertiary text-center mb-6">
-              {isAuthenticated ? 'Or try one of these examples' : 'Explore what Omega can do'}
+        {/* Zone 3 — Sample Prompts */}
+        <div className="py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="font-mono text-xs text-foreground-tertiary uppercase tracking-widest text-center mb-8">
+              {isAuthenticated ? 'Or try one of these' : 'Explore what Omega can do'}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {SAMPLE_PROMPTS.map((prompt) => (
+              {SAMPLE_PROMPTS.map((prompt, i) => (
                 <button
                   key={prompt.title}
                   type="button"
                   onClick={() => createConversation(prompt.prompt)}
                   disabled={isCreating || isSessionLoading}
-                  className="p-4 bg-surface border border-border rounded-lg hover:border-foreground/20 hover:bg-surface-secondary/50 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="group p-4 bg-background border-2 border-border hover:border-foreground transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_hsl(var(--primary))] animate-brutalist-entrance"
+                  style={{ animationDelay: `${i * 100}ms` }}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
+                    <div className="w-10 h-10 border-2 border-foreground flex items-center justify-center flex-shrink-0">
                       <Icon icon={prompt.icon} size="sm" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-foreground mb-1">{prompt.title}</h3>
+                      <div className="flex items-center justify-between mb-1">
+                        <h3 className="font-mono font-bold text-foreground uppercase text-sm tracking-tight">
+                          {prompt.title}
+                        </h3>
+                        <span className="font-mono text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                          launch &rarr;
+                        </span>
+                      </div>
                       <p className="text-sm text-foreground-secondary line-clamp-2">
                         {prompt.description}
                       </p>
@@ -221,38 +290,49 @@ export default function OmegaLandingPage(): React.ReactElement {
               ))}
             </div>
           </div>
+        </div>
 
-          {/* Features */}
-          <div className="mt-16 pt-8 border-t border-border">
+        {/* Zone 4 — Feature Highlights */}
+        <div className="border-t-2 border-foreground py-16 px-4">
+          <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <div>
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success/10 mb-4">
-                  <Icon icon="search" size="sm" className="text-success" />
+                <div className="inline-flex items-center justify-center w-14 h-14 border-2 border-foreground mb-4">
+                  <Icon icon="search" size="sm" />
                 </div>
-                <h3 className="font-medium text-foreground mb-2">Dynamic Discovery</h3>
+                <h3 className="font-mono font-bold text-foreground uppercase tracking-tight mb-2">
+                  Dynamic Discovery
+                </h3>
                 <p className="text-sm text-foreground-secondary">
                   Omega searches the entire TPMJS registry to find the perfect tools for your task
                 </p>
               </div>
               <div>
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-info/10 mb-4">
-                  <Icon icon="box" size="sm" className="text-info" />
+                <div className="inline-flex items-center justify-center w-14 h-14 border-2 border-foreground mb-4">
+                  <Icon icon="box" size="sm" />
                 </div>
-                <h3 className="font-medium text-foreground mb-2">Sandboxed Execution</h3>
+                <h3 className="font-mono font-bold text-foreground uppercase tracking-tight mb-2">
+                  Sandboxed Execution
+                </h3>
                 <p className="text-sm text-foreground-secondary">
                   All tools run in a secure sandbox environment for safe execution
                 </p>
               </div>
               <div>
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-warning/10 mb-4">
-                  <Icon icon="star" size="sm" className="text-warning" />
+                <div className="inline-flex items-center justify-center w-14 h-14 border-2 border-foreground mb-4">
+                  <Icon icon="star" size="sm" />
                 </div>
-                <h3 className="font-medium text-foreground mb-2">Intelligent Synthesis</h3>
+                <h3 className="font-mono font-bold text-foreground uppercase tracking-tight mb-2">
+                  Intelligent Synthesis
+                </h3>
                 <p className="text-sm text-foreground-secondary">
                   Results are combined and presented in a clear, helpful response
                 </p>
               </div>
             </div>
+            <p className="text-center mt-12 font-mono text-sm text-primary tracking-wide">
+              One agent. Infinite capabilities. Zero configuration.
+            </p>
           </div>
         </div>
       </main>
