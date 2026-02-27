@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "94b4a44893c7",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "apps/web/src/app/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/approval/route.ts",
+    "apps/web/src/app/api/agents/[id]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/agents/[id]/route.ts",
+    "apps/web/src/app/api/chat/[username]/[uid]/conversation/[conversationId]/route.ts",
+    "apps/web/src/app/api/sync/enrich/route.ts",
+    "apps/web/src/app/api/tools/search/route.ts",
+    "apps/web/src/app/dashboard/agents/[id]/chat/[chatId]/page.tsx",
+    "apps/web/src/app/dashboard/agents/[id]/page.tsx",
+    "apps/web/src/app/tool/[...slug]/ToolDetailClient.tsx",
+    "apps/web/src/app/tool/[...slug]/page.tsx",
+    "apps/web/src/components/agents/ChatToolsPanel.tsx",
+    "apps/web/src/components/agents/ToolApprovalCard.tsx",
+    "apps/web/src/components/agents/ToolPermissionsEditor.tsx",
+    "apps/web/src/lib/agents/build-tools.ts",
+    "apps/web/src/lib/agents/permissions.ts",
+    "apps/web/src/lib/enrichment/signature-extractor.ts",
+    "apps/web/src/lib/enrichment/tag-extractor.ts",
+    "apps/web/src/lib/search/bm25.ts",
+    "packages/compose/package.json",
+    "packages/compose/src/__tests__/builder.test.ts",
+    "packages/compose/src/adapters/registry.ts",
+    "packages/compose/src/builder.ts",
+    "packages/compose/src/index.ts",
+    "packages/compose/src/types.ts",
+    "packages/compose/tsconfig.json",
+    "packages/compose/tsup.config.ts",
+    "packages/db/prisma/schema.prisma",
+    "packages/types/src/agent.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/94/b4a44893c7/0/metadata.json",
+      "transcript": "/94/b4a44893c7/0/full.jsonl",
+      "context": "/94/b4a44893c7/0/context.md",
+      "content_hash": "/94/b4a44893c7/0/content_hash.txt",
+      "prompt": "/94/b4a44893c7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1862,
+    "cache_creation_tokens": 381080,
+    "cache_read_tokens": 37811573,
+    "output_tokens": 104478,
+    "api_call_count": 339
+  }
+}
