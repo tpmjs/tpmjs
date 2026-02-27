@@ -58,9 +58,15 @@ const SAMPLE_PROMPTS: SamplePrompt[] = [
   },
 ];
 
+interface RegistryStats {
+  totalTools: number;
+  totalPackages: number;
+}
+
 /**
- * Omega Landing Page — "The Infinite Arsenal"
+ * Omega Landing Page
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Landing page with stats fetch, auth, and conversation creation
 export default function OmegaLandingPage(): React.ReactElement {
   const router = useRouter();
   const { data: session, isPending: isSessionLoading } = useSession();
@@ -68,8 +74,24 @@ export default function OmegaLandingPage(): React.ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [stats, setStats] = useState<RegistryStats | null>(null);
 
   const isAuthenticated = !!session?.user;
+
+  // Fetch real registry stats
+  useEffect(() => {
+    fetch('/api/stats')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success) {
+          setStats({
+            totalTools: data.data.overview.totalTools,
+            totalPackages: data.data.overview.totalPackages,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const createConversation = useCallback(
     async (initialPrompt?: string) => {
@@ -141,15 +163,13 @@ export default function OmegaLandingPage(): React.ReactElement {
       <AppHeader />
 
       <main className="flex-1 flex flex-col">
-        {/* Zone 1 — Monumental Hero */}
+        {/* Hero */}
         <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-          {/* Background layers */}
           <div className="absolute inset-0 grid-background opacity-[0.04]" />
           <div className="absolute inset-0 blueprint-scanline" />
           <GlitchBars count={4} />
 
           <div className="relative z-10 text-center px-4">
-            {/* Badge */}
             <div className="animate-brutalist-entrance mb-8" style={{ animationDelay: '0ms' }}>
               <Badge variant="outline" size="lg">
                 <Icon icon="terminal" size="xs" className="mr-2" />
@@ -157,26 +177,51 @@ export default function OmegaLandingPage(): React.ReactElement {
               </Badge>
             </div>
 
-            {/* The Number */}
+            {/* Real tool count from registry */}
             <div className="animate-brutalist-entrance mb-4" style={{ animationDelay: '150ms' }}>
-              <AnimatedCounter
-                value={1000000}
-                suffix="+"
-                separator=","
-                duration={2500}
-                className="brutalist-heading"
-              />
+              {stats ? (
+                <AnimatedCounter
+                  value={stats.totalTools}
+                  separator=","
+                  duration={2500}
+                  className="brutalist-heading"
+                />
+              ) : (
+                <div className="brutalist-heading text-foreground/20">&mdash;</div>
+              )}
             </div>
 
-            {/* Subheading */}
             <h2
               className="brutalist-subheading text-foreground mb-6 animate-brutalist-entrance"
               style={{ animationDelay: '300ms' }}
             >
-              TOOLS AT YOUR COMMAND
+              TOOLS IN THE REGISTRY
             </h2>
 
-            {/* Description */}
+            {/* Secondary stats row */}
+            {stats && (
+              <div
+                className="flex items-center justify-center gap-8 mb-8 animate-brutalist-entrance"
+                style={{ animationDelay: '400ms' }}
+              >
+                <div className="text-center">
+                  <div className="font-mono text-2xl md:text-3xl font-bold text-foreground">
+                    {stats.totalPackages.toLocaleString()}
+                  </div>
+                  <div className="font-mono text-xs text-foreground-tertiary uppercase tracking-widest">
+                    Packages
+                  </div>
+                </div>
+                <div className="w-px h-10 bg-foreground/20" />
+                <div className="text-center">
+                  <div className="font-mono text-2xl md:text-3xl font-bold text-primary">1</div>
+                  <div className="font-mono text-xs text-foreground-tertiary uppercase tracking-widest">
+                    Agent
+                  </div>
+                </div>
+              </div>
+            )}
+
             <p
               className="font-mono text-foreground-secondary max-w-xl mx-auto text-sm md:text-base animate-brutalist-entrance"
               style={{ animationDelay: '450ms' }}
@@ -187,9 +232,9 @@ export default function OmegaLandingPage(): React.ReactElement {
           </div>
         </div>
 
-        {/* Zone 2 — Input-First Command Area */}
-        <div className="bg-surface border-y-2 border-foreground py-12 px-4">
-          <div className="max-w-2xl mx-auto">
+        {/* Input Command Area */}
+        <div className="bg-surface border-y-2 border-foreground py-12 px-4 md:px-8">
+          <div className="max-w-3xl mx-auto">
             <div
               className={`border-2 transition-colors ${
                 isCreating ? 'border-primary' : 'border-foreground focus-within:border-primary'
@@ -230,7 +275,6 @@ export default function OmegaLandingPage(): React.ReactElement {
               </div>
             </div>
 
-            {/* Auth gate */}
             {!isSessionLoading && !isAuthenticated && (
               <div className="mt-4 text-center">
                 <Link
@@ -245,16 +289,15 @@ export default function OmegaLandingPage(): React.ReactElement {
           </div>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div className="text-center py-4 px-4">
             <p className="text-sm text-error font-mono">{error}</p>
           </div>
         )}
 
-        {/* Zone 3 — Sample Prompts */}
-        <div className="py-16 px-4">
-          <div className="max-w-4xl mx-auto">
+        {/* Sample Prompts */}
+        <div className="py-16 px-4 md:px-8">
+          <div className="max-w-6xl mx-auto">
             <h2 className="font-mono text-xs text-foreground-tertiary uppercase tracking-widest text-center mb-8">
               {isAuthenticated ? 'Or try one of these' : 'Explore what Omega can do'}
             </h2>
@@ -292,9 +335,9 @@ export default function OmegaLandingPage(): React.ReactElement {
           </div>
         </div>
 
-        {/* Zone 4 — Feature Highlights */}
-        <div className="border-t-2 border-foreground py-16 px-4">
-          <div className="max-w-4xl mx-auto">
+        {/* Feature Highlights */}
+        <div className="border-t-2 border-foreground py-16 px-4 md:px-8">
+          <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               <div>
                 <div className="inline-flex items-center justify-center w-14 h-14 border-2 border-foreground mb-4">
@@ -331,7 +374,7 @@ export default function OmegaLandingPage(): React.ReactElement {
               </div>
             </div>
             <p className="text-center mt-12 font-mono text-sm text-primary tracking-wide">
-              One agent. Infinite capabilities. Zero configuration.
+              One agent. Every tool. Zero configuration.
             </p>
           </div>
         </div>

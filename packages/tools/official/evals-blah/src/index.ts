@@ -445,9 +445,7 @@ export const getRunResults = tool({
     if (!input.id) {
       throw new Error('Run ID is required');
     }
-    const results = await apiRequest<EvalResult[]>(
-      `/runs/${encodeURIComponent(input.id)}/results`
-    );
+    const results = await apiRequest<EvalResult[]>(`/runs/${encodeURIComponent(input.id)}/results`);
     return { results };
   },
 });

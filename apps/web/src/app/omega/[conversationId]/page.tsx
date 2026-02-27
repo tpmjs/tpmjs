@@ -510,7 +510,7 @@ export default function OmegaChatPage(): React.ReactElement {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="border-b-2 border-foreground bg-surface/50 px-4 py-3">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <div className="flex items-center justify-between max-w-6xl mx-auto">
             <div className="flex items-center gap-3">
               <Link
                 href="/omega"
@@ -550,7 +550,7 @@ export default function OmegaChatPage(): React.ReactElement {
           </div>
 
           {/* Segmented Tab Switcher */}
-          <div className="flex mt-3 max-w-4xl mx-auto border border-border w-fit">
+          <div className="flex mt-3 max-w-6xl mx-auto border border-border w-fit">
             <button
               type="button"
               onClick={() => setViewMode('chat')}
@@ -579,7 +579,7 @@ export default function OmegaChatPage(): React.ReactElement {
         {/* Debug JSON View */}
         {viewMode === 'debug' && (
           <div className="flex-1 overflow-auto p-4 bg-background">
-            <div className="max-w-4xl mx-auto space-y-6">
+            <div className="max-w-6xl mx-auto space-y-6">
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="font-mono font-bold text-foreground uppercase tracking-tight text-sm mb-2">
@@ -792,7 +792,7 @@ export default function OmegaChatPage(): React.ReactElement {
                   className="h-full overflow-y-auto"
                   onScroll={handleScroll}
                 >
-                  <div className="max-w-4xl mx-auto">
+                  <div className="max-w-6xl mx-auto">
                     {messages.map((message) => (
                       <div key={message.id} className="px-4 py-2">
                         {/* USER message */}
@@ -908,21 +908,19 @@ export default function OmegaChatPage(): React.ReactElement {
 
             {/* Environment Variable Warnings */}
             {envWarnings.length > 0 && (
-              <div className="max-w-4xl mx-auto">
-                <EnvVarWarningBanner warnings={envWarnings} onDismiss={() => setEnvWarnings([])} />
-              </div>
+              <EnvVarWarningBanner warnings={envWarnings} onDismiss={() => setEnvWarnings([])} />
             )}
 
             {/* Error Message */}
             {error && (
               <div className="px-4 py-2 bg-error/10 border-t border-error/20">
-                <p className="text-sm text-error max-w-4xl mx-auto font-mono">{error}</p>
+                <p className="text-sm text-error max-w-6xl mx-auto font-mono">{error}</p>
               </div>
             )}
 
             {/* Input Area */}
             <div className="border-t-2 border-foreground p-4">
-              <div className="max-w-4xl mx-auto">
+              <div className="max-w-6xl mx-auto">
                 <div className="border border-border focus-within:border-foreground transition-colors">
                   <Textarea
                     ref={inputRef}

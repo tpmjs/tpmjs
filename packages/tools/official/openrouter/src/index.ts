@@ -17,7 +17,10 @@ const BASE_URL = 'https://openrouter.ai/api/v1';
 
 function resolveApiKey(): string {
   const key = process.env.OPENROUTER_API_KEY;
-  if (!key) throw new Error('OPENROUTER_API_KEY environment variable is required. Get yours at https://openrouter.ai/keys');
+  if (!key)
+    throw new Error(
+      'OPENROUTER_API_KEY environment variable is required. Get yours at https://openrouter.ai/keys'
+    );
   return key;
 }
 
@@ -129,17 +132,25 @@ export interface ChatCompletionInput {
   presence_penalty?: number;
   seed?: number;
   response_format?: { type: string };
-  tools?: Array<{ type: string; function: { name: string; description?: string; parameters?: unknown } }>;
+  tools?: Array<{
+    type: string;
+    function: { name: string; description?: string; parameters?: unknown };
+  }>;
   tool_choice?: unknown;
   provider?: Record<string, unknown>;
 }
 
 export const chatCompletion = tool({
-  description: 'Send a chat completion request to any model via OpenRouter. Supports 400+ models with automatic fallbacks and cost optimization.',
+  description:
+    'Send a chat completion request to any model via OpenRouter. Supports 400+ models with automatic fallbacks and cost optimization.',
   inputSchema: jsonSchema<ChatCompletionInput>({
     type: 'object',
     properties: {
-      model: { type: 'string', description: 'Model identifier (e.g. "openai/gpt-4o", "anthropic/claude-sonnet-4-5-20250514")' },
+      model: {
+        type: 'string',
+        description:
+          'Model identifier (e.g. "openai/gpt-4o", "anthropic/claude-sonnet-4-5-20250514")',
+      },
       messages: {
         type: 'array',
         items: {
@@ -186,7 +197,9 @@ export const chatCompletion = tool({
         },
         description: 'Tool/function definitions',
       },
-      tool_choice: { description: 'Tool choice strategy: "auto", "none", "required", or specific tool' },
+      tool_choice: {
+        description: 'Tool choice strategy: "auto", "none", "required", or specific tool',
+      },
       provider: { type: 'object', description: 'Provider routing and fallback configuration' },
     },
     required: ['model', 'messages'],
@@ -194,7 +207,8 @@ export const chatCompletion = tool({
   }),
   async execute(input: ChatCompletionInput): Promise<ChatCompletionResponse> {
     if (!input.model) throw new Error('model is required');
-    if (!input.messages?.length) throw new Error('messages array is required and must not be empty');
+    if (!input.messages?.length)
+      throw new Error('messages array is required and must not be empty');
 
     const body: Record<string, unknown> = { model: input.model, messages: input.messages };
     if (input.stream !== undefined) body.stream = input.stream;
@@ -227,7 +241,8 @@ export interface CreateResponseInput {
 }
 
 export const createResponse = tool({
-  description: 'Create a response using the OpenRouter Responses API (beta). Alternative to chat completions with a simpler interface.',
+  description:
+    'Create a response using the OpenRouter Responses API (beta). Alternative to chat completions with a simpler interface.',
   inputSchema: jsonSchema<CreateResponseInput>({
     type: 'object',
     properties: {
@@ -262,11 +277,15 @@ export interface CreateEmbeddingInput {
 }
 
 export const createEmbedding = tool({
-  description: 'Generate vector embeddings for text input. Supports single strings or arrays of strings.',
+  description:
+    'Generate vector embeddings for text input. Supports single strings or arrays of strings.',
   inputSchema: jsonSchema<CreateEmbeddingInput>({
     type: 'object',
     properties: {
-      model: { type: 'string', description: 'Embedding model identifier (e.g. "openai/text-embedding-3-small")' },
+      model: {
+        type: 'string',
+        description: 'Embedding model identifier (e.g. "openai/text-embedding-3-small")',
+      },
       input: { description: 'Text to embed — a single string or array of strings' },
     },
     required: ['model', 'input'],
@@ -275,7 +294,10 @@ export const createEmbedding = tool({
   async execute(input: CreateEmbeddingInput): Promise<EmbeddingResponse> {
     if (!input.model) throw new Error('model is required');
     if (!input.input) throw new Error('input is required');
-    return api<EmbeddingResponse>('POST', '/embeddings', { model: input.model, input: input.input });
+    return api<EmbeddingResponse>('POST', '/embeddings', {
+      model: input.model,
+      input: input.input,
+    });
   },
 });
 
@@ -284,7 +306,8 @@ export const createEmbedding = tool({
 // =============================================================================
 
 export const listModels = tool({
-  description: 'List all available models on OpenRouter with pricing, context length, and supported parameters.',
+  description:
+    'List all available models on OpenRouter with pricing, context length, and supported parameters.',
   inputSchema: jsonSchema<Record<string, never>>({
     type: 'object',
     properties: {},
@@ -350,7 +373,8 @@ export interface ListEndpointsInput {
 }
 
 export const listEndpoints = tool({
-  description: 'List all available endpoints (providers) for a specific model, with pricing and context details.',
+  description:
+    'List all available endpoints (providers) for a specific model, with pricing and context details.',
   inputSchema: jsonSchema<ListEndpointsInput>({
     type: 'object',
     properties: {
@@ -372,7 +396,8 @@ export interface PreviewZdrInput {
 }
 
 export const previewZdr = tool({
-  description: 'Preview the impact of Zero Data Retention (ZDR) on the available endpoints for a model.',
+  description:
+    'Preview the impact of Zero Data Retention (ZDR) on the available endpoints for a model.',
   inputSchema: jsonSchema<PreviewZdrInput>({
     type: 'object',
     properties: {
@@ -390,7 +415,8 @@ export const previewZdr = tool({
 // =============================================================================
 
 export const getCredits = tool({
-  description: 'Get remaining credits and usage information for the authenticated OpenRouter account.',
+  description:
+    'Get remaining credits and usage information for the authenticated OpenRouter account.',
   inputSchema: jsonSchema<Record<string, never>>({
     type: 'object',
     properties: {},
@@ -479,7 +505,10 @@ export const listApiKeys = tool({
     additionalProperties: false,
   }),
   async execute(input: ListApiKeysInput): Promise<{ data: ApiKeyInfo[] }> {
-    return api<{ data: ApiKeyInfo[] }>('GET', `/keys${qs({ offset: input.offset, limit: input.limit })}`);
+    return api<{ data: ApiKeyInfo[] }>(
+      'GET',
+      `/keys${qs({ offset: input.offset, limit: input.limit })}`
+    );
   },
 });
 
@@ -500,7 +529,10 @@ export const createApiKey = tool({
       name: { type: 'string', description: 'Name/label for the API key' },
       limit: { type: 'number', description: 'Optional credit limit for this key' },
       disabled: { type: 'boolean', description: 'Create in disabled state (default false)' },
-      limit_reset: { type: 'string', description: 'Limit reset schedule: "daily", "weekly", or "monthly"' },
+      limit_reset: {
+        type: 'string',
+        description: 'Limit reset schedule: "daily", "weekly", or "monthly"',
+      },
     },
     required: ['name'],
     additionalProperties: false,
@@ -562,7 +594,8 @@ export interface UpdateApiKeyInput {
 }
 
 export const updateApiKey = tool({
-  description: "Update an existing API key's name, credit limit, disabled status, or reset schedule.",
+  description:
+    "Update an existing API key's name, credit limit, disabled status, or reset schedule.",
   inputSchema: jsonSchema<UpdateApiKeyInput>({
     type: 'object',
     properties: {
@@ -570,7 +603,10 @@ export const updateApiKey = tool({
       name: { type: 'string', description: 'New name for the key' },
       limit: { type: 'number', description: 'New credit limit' },
       disabled: { type: 'boolean', description: 'Enable or disable the key' },
-      limit_reset: { type: 'string', description: 'Limit reset schedule: "daily", "weekly", or "monthly"' },
+      limit_reset: {
+        type: 'string',
+        description: 'Limit reset schedule: "daily", "weekly", or "monthly"',
+      },
     },
     required: ['hash'],
     additionalProperties: false,
@@ -790,7 +826,11 @@ export const assignGuardrailKeys = tool({
     type: 'object',
     properties: {
       id: { type: 'string', description: 'Guardrail ID' },
-      key_hashes: { type: 'array', items: { type: 'string' }, description: 'Array of API key hashes to assign' },
+      key_hashes: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Array of API key hashes to assign',
+      },
     },
     required: ['id', 'key_hashes'],
     additionalProperties: false,
@@ -798,7 +838,9 @@ export const assignGuardrailKeys = tool({
   async execute(input: AssignGuardrailKeysInput): Promise<unknown> {
     if (!input.id) throw new Error('id is required');
     if (!input.key_hashes?.length) throw new Error('key_hashes must be a non-empty array');
-    return api('POST', `/guardrails/${encodeURIComponent(input.id)}/keys/assign`, { key_hashes: input.key_hashes });
+    return api('POST', `/guardrails/${encodeURIComponent(input.id)}/keys/assign`, {
+      key_hashes: input.key_hashes,
+    });
   },
 });
 
@@ -833,7 +875,11 @@ export const assignGuardrailMembers = tool({
     type: 'object',
     properties: {
       id: { type: 'string', description: 'Guardrail ID' },
-      user_ids: { type: 'array', items: { type: 'string' }, description: 'Array of user IDs to assign' },
+      user_ids: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Array of user IDs to assign',
+      },
     },
     required: ['id', 'user_ids'],
     additionalProperties: false,
@@ -841,7 +887,9 @@ export const assignGuardrailMembers = tool({
   async execute(input: AssignGuardrailMembersInput): Promise<unknown> {
     if (!input.id) throw new Error('id is required');
     if (!input.user_ids?.length) throw new Error('user_ids must be a non-empty array');
-    return api('POST', `/guardrails/${encodeURIComponent(input.id)}/members/assign`, { user_ids: input.user_ids });
+    return api('POST', `/guardrails/${encodeURIComponent(input.id)}/members/assign`, {
+      user_ids: input.user_ids,
+    });
   },
 });
 
@@ -858,7 +906,11 @@ export const unassignGuardrailKeys = tool({
     type: 'object',
     properties: {
       id: { type: 'string', description: 'Guardrail ID' },
-      key_hashes: { type: 'array', items: { type: 'string' }, description: 'Array of API key hashes to unassign' },
+      key_hashes: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Array of API key hashes to unassign',
+      },
     },
     required: ['id', 'key_hashes'],
     additionalProperties: false,
@@ -866,7 +918,9 @@ export const unassignGuardrailKeys = tool({
   async execute(input: UnassignGuardrailKeysInput): Promise<unknown> {
     if (!input.id) throw new Error('id is required');
     if (!input.key_hashes?.length) throw new Error('key_hashes must be a non-empty array');
-    return api('POST', `/guardrails/${encodeURIComponent(input.id)}/keys/unassign`, { key_hashes: input.key_hashes });
+    return api('POST', `/guardrails/${encodeURIComponent(input.id)}/keys/unassign`, {
+      key_hashes: input.key_hashes,
+    });
   },
 });
 
@@ -883,7 +937,11 @@ export const unassignGuardrailMembers = tool({
     type: 'object',
     properties: {
       id: { type: 'string', description: 'Guardrail ID' },
-      user_ids: { type: 'array', items: { type: 'string' }, description: 'Array of user IDs to unassign' },
+      user_ids: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Array of user IDs to unassign',
+      },
     },
     required: ['id', 'user_ids'],
     additionalProperties: false,
@@ -891,7 +949,9 @@ export const unassignGuardrailMembers = tool({
   async execute(input: UnassignGuardrailMembersInput): Promise<unknown> {
     if (!input.id) throw new Error('id is required');
     if (!input.user_ids?.length) throw new Error('user_ids must be a non-empty array');
-    return api('POST', `/guardrails/${encodeURIComponent(input.id)}/members/unassign`, { user_ids: input.user_ids });
+    return api('POST', `/guardrails/${encodeURIComponent(input.id)}/members/unassign`, {
+      user_ids: input.user_ids,
+    });
   },
 });
 

@@ -243,6 +243,19 @@ When using Discord MCP tools, default to the **blah** server (guild ID `13497279
 If sending an email via resend, send address should be admin@tpmjs.com 
 Send emails to thomasalwyndavis@gmail.com if not specified otherwise
 
+## Memory
+
+Use the `mcp__claude-code-tools__official-memory--createMemory` tool to save a memory (namespace: `tpmjs`) when any of these happen:
+
+- You solve a difficult or non-obvious bug (include the root cause, the fix, and why it wasn't obvious)
+- You complete a milestone or ship a feature (summarize what was built, key files, architectural decisions)
+- You discover a codebase gotcha or sharp edge that would bite someone again
+- You find a workaround for a library/framework limitation (e.g., Prisma JSON filters, Next.js quirks)
+- You make an architectural decision worth remembering (what was chosen, what was rejected, why)
+- You learn something about the production infrastructure (deploy behavior, env var gotchas, service interactions)
+
+Keep memory content structured with concrete details (file paths, error messages, code patterns). Tag with relevant topics like `bug`, `feature`, `prisma`, `vercel`, `architecture`, etc.
+
 ## Publishing Packages
 
 ```bash

@@ -89,3 +89,4 @@ storybook-static
 .vercel
 packages/tool-ideas/data/tools-export.json
 .env*.local
+.helm-competitor/
