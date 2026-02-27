@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "cd0029cf8cbf",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/omega/[conversationId]/page.tsx",
+    "apps/web/src/components/omega/EnvVarWarningBanner.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/cd/0029cf8cbf/0/metadata.json",
+      "transcript": "/cd/0029cf8cbf/0/full.jsonl",
+      "context": "/cd/0029cf8cbf/0/context.md",
+      "content_hash": "/cd/0029cf8cbf/0/content_hash.txt",
+      "prompt": "/cd/0029cf8cbf/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 19,
+    "cache_creation_tokens": 25356,
+    "cache_read_tokens": 2643548,
+    "output_tokens": 10132,
+    "api_call_count": 18
+  }
+}

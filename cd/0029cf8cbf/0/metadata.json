@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "cd0029cf8cbf",
+  "session_id": "e3701fa9-2683-4038-945e-a9269fb7b987",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-27T17:05:07.944149Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/omega/[conversationId]/page.tsx",
+    "apps/web/src/components/omega/EnvVarWarningBanner.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "47af3bd1-f020-414a-88d8-b6240ce6083e",
+  "checkpoint_transcript_start": 647,
+  "transcript_lines_at_start": 647,
+  "token_usage": {
+    "input_tokens": 19,
+    "cache_creation_tokens": 25356,
+    "cache_read_tokens": 2643548,
+    "output_tokens": 10132,
+    "api_call_count": 18
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-27T17:05:07.41663Z",
+    "agent_lines": 159,
+    "human_added": 5,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 164,
+    "agent_percentage": 96.95121951219512
+  }
+}
