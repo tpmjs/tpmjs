@@ -232,6 +232,7 @@ export async function POST(request: NextRequest) {
         take: 20,
       });
 
+      const tagUpdates = [];
       for (const tool of toolsNeedingTags) {
         if (Date.now() - startTime >= TIME_BUDGET_MS) break;
         const tags = extractTags({
@@ -244,11 +245,16 @@ export async function POST(request: NextRequest) {
           },
         });
         const signature = tool.signature || extractSignature(tool.inputSchema) || undefined;
-        await prisma.tool.update({
-          where: { id: tool.id },
-          data: { tags, ...(signature && { signature }) },
-        });
+        tagUpdates.push(
+          prisma.tool.update({
+            where: { id: tool.id },
+            data: { tags, ...(signature && { signature }) },
+          })
+        );
         tagsBackfilled++;
+      }
+      if (tagUpdates.length > 0) {
+        await prisma.$transaction(tagUpdates);
       }
     }
 
