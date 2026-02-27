@@ -1,0 +1,120 @@
+Implement the following plan:
+
+# Omega Pages Redesign: "The Infinite Arsenal"
+
+## Context
+
+The Omega landing page (`/omega`) and chat page (`/omega/[conversationId]`) are currently plain and functional — generic chat bubbles, basic hero section. The goal is to **sell the power of agents having infinite tools** — make it visually striking and communicate the scale of 1M+ tools.
+
+**Aesthetic direction:** Elevate the existing brutalist design system (sharp corners, copper accents, JetBrains Mono) into a **luxury command center**. The number "1,000,000+" IS the hero. Tool execution should feel like watching a pipeline fire.
+
+**0 new files. 0 new CSS. 2 files rewritten.**
+
+---
+
+## File 1: Landing Page (`apps/web/src/app/omega/page.tsx`)
+
+### New imports
+- `AnimatedCounter` from `@tpmjs/ui/AnimatedCounter/AnimatedCounter`
+- `Badge` from `@tpmjs/ui/Badge/Badge`
+- `Textarea` from `@tpmjs/ui/Textarea/Textarea`
+- `GlitchBars` from `~/components/home/GlitchBars`
+
+### New state
+- `input` string + `inputRef` for the input-first command area
+- `handleKeyDown` — Enter creates conversation with input text
+
+### Layout (4 zones, top to bottom)
+
+**Zone 1 — Monumental Hero (`min-h-[80vh]`, centered)**
+- Background layers: `grid-background` at 4% opacity + `blueprint-scanline` sweep + `<GlitchBars count={4} />`
+- Staggered `animate-brutalist-entrance` entrance:
+  1. `Badge variant="outline"` with terminal icon: "omega agent"
+  2. **`AnimatedCounter value={1000000} suffix="+" separator="," duration={2500}`** with `className` override to `brutalist-heading` scale (clamp 48-120px) — this IS the headline
+  3. `brutalist-subheading`: "TOOLS AT YOUR COMMAND"
+  4. Monospace description paragraph
+
+**Zone 2 — Input-First Command Area (`bg-surface border-y-2 border-foreground`)**
+- Heavy 2px border frame containing `Textarea` + `Button`
+- Textarea: `border-none bg-transparent text-lg` inside the frame
+- `focus-within:border-primary` transition on the outer frame
+- Auth gate below for non-authenticated users
+- Monospace uppercase keyboard hint
+
+**Zone 3 — Sample Prompts (brutalist cards)**
+- Same 6 prompts, restyled: `border-2 border-border hover:border-foreground`, no rounding
+- Hover: `-translate-y-0.5` lift + `shadow-[4px_4px_0_0_hsl(var(--primary))]` copper offset shadow
+- Hidden "launch →" appears on hover (`opacity-0 group-hover:opacity-100`)
+- Staggered `animate-brutalist-entrance`
+
+**Zone 4 — Feature Highlights**
+- Square icon containers (`w-14 h-14 border-2 border-foreground`) replacing old rounded circles
+- Monospace uppercase titles
+- Copper tagline: "One agent. Infinite capabilities. Zero configuration."
+
+### Removed
+- Old rounded star icon circle hero
+- Old "Start New Conversation" button (replaced by input area)
+- `rounded-lg` on all cards, `rounded-full` on feature icons
+
+---
+
+## File 2: Chat Page (`apps/web/src/app/omega/[conversationId]/page.tsx`)
+
+All SSE/streaming logic stays untouched. Only the render JSX changes.
+
+### Header
+- `border-b-2 border-foreground` (heavy line)
+- Back button: square `w-10 h-10 border border-border` (no rounding)
+- Title: `font-mono uppercase tracking-tight font-bold`
+- Tab switcher: segmented control — single `border border-border` container, active tab = `bg-foreground text-background` (inverted), inactive = transparent
+
+### Empty State
+- "OMEGA" as massive faded watermark: `text-6xl md:text-8xl font-bold text-foreground/10 font-mono`
+- Row of 5 capability icons (`search`, `terminal`, `globe`, `database`, `mail`) in square containers, staggered entrance
+- Monospace instruction text
+
+### Message Rendering
+- **User messages**: Sharp corners (remove `rounded-lg`), `border-l-4 border-primary-active` left accent
+- **Assistant messages**: Sharp corners, `border-l-4 border-foreground/20` left accent; token display gets `font-mono uppercase tracking-wider`
+- **Streaming content**: Same sharp border-l treatment, keep pulse cursor
+
+### Tool Execution Pipeline (the wow factor)
+When `toolCalls.length > 0` during streaming:
+- **Pipeline header**: pulsing copper dot (`w-1.5 h-1.5 bg-primary animate-pulse`) + monospace "executing N tools" + horizontal line (`h-px bg-border flex-1`)
+- **Vertical pipeline line**: `border-l-2 border-primary/30 pl-4` connecting all tool cards
+- `ToolRenderer` renders inside pipeline (unchanged internally)
+
+### Thinking State
+- Pulsing copper square (`w-2 h-2 bg-primary animate-pulse`) instead of spinning loader
+- `border-l-4 border-primary` left accent
+- Monospace status text: `{statusMessage || 'discovering tools...'}`
+
+### Input Area
+- `border-t-2 border-foreground` (heavy line matching header)
+- Input frame: `border border-border focus-within:border-foreground transition-colors`
+- Textarea: `border-none bg-transparent` inside frame
+- Footer row: keyboard hint left, token count right, both monospace
+
+### Loading / Error States
+- Loading: pulsing copper square + "loading session..." monospace
+- Error: square icon, monospace text, sharp CTA button
+
+---
+
+## Verification
+
+1. `pnpm dev --filter=@tpmjs/web` — run dev server
+2. Visit `/omega` — verify animated counter counts up, input area works, card hovers, staggered animations
+3. Sign in → create conversation via input area → verify prompt carries through to chat
+4. Visit `/omega/[id]` — verify new header, empty state watermark, segmented tabs
+5. Send a prompt that triggers tools → verify pipeline visualization wraps tool calls
+6. Toggle dark mode — all tokens support dark mode
+7. `pnpm type-check` — no TypeScript errors
+
+
+If you need specific details from before exiting plan mode (like exact code snippets, error messages, or content you generated), read the full transcript at: /Users/ajaxdavis/.REDACTED.jsonl
+
+---
+
+git push

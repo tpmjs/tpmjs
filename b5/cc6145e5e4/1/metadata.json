@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "b5cc6145e5e4",
+  "session_id": "e3701fa9-2683-4038-945e-a9269fb7b987",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-27T15:54:56.751244Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "apps/web/src/app/omega/[conversationId]/page.tsx",
+    "apps/web/src/app/omega/page.tsx"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 141,
+    "cache_creation_tokens": 137037,
+    "cache_read_tokens": 977155,
+    "output_tokens": 17465,
+    "api_call_count": 17
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-27T15:54:56.484739Z",
+    "agent_lines": 304,
+    "human_added": 0,
+    "human_modified": 10,
+    "human_removed": 14,
+    "total_committed": 314,
+    "agent_percentage": 96.81528662420382
+  }
+}

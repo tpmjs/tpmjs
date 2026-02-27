@@ -3,7 +3,7 @@
   "checkpoint_id": "b5cc6145e5e4",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "apps/web/src/app/agents/[id]/chat/[chatId]/page.tsx",
     "apps/web/src/app/api/[username]/agents/[agentSlug]/conversation/[conversationId]/route.ts",
@@ -15,6 +15,8 @@
     "apps/web/src/app/api/tools/search/route.ts",
     "apps/web/src/app/dashboard/agents/[id]/chat/[chatId]/page.tsx",
     "apps/web/src/app/dashboard/agents/[id]/page.tsx",
+    "apps/web/src/app/omega/[conversationId]/page.tsx",
+    "apps/web/src/app/omega/page.tsx",
     "apps/web/src/app/tool/[...slug]/ToolDetailClient.tsx",
     "apps/web/src/app/tool/[...slug]/page.tsx",
     "apps/web/src/components/agents/ChatToolsPanel.tsx",
@@ -43,13 +45,20 @@
       "context": "/b5/cc6145e5e4/0/context.md",
       "content_hash": "/b5/cc6145e5e4/0/content_hash.txt",
       "prompt": "/b5/cc6145e5e4/0/prompt.txt"
+    },
+    {
+      "metadata": "/b5/cc6145e5e4/1/metadata.json",
+      "transcript": "/b5/cc6145e5e4/1/full.jsonl",
+      "context": "/b5/cc6145e5e4/1/context.md",
+      "content_hash": "/b5/cc6145e5e4/1/content_hash.txt",
+      "prompt": "/b5/cc6145e5e4/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 3981,
-    "cache_creation_tokens": 608116,
-    "cache_read_tokens": 40929021,
-    "output_tokens": 113686,
-    "api_call_count": 366
+    "input_tokens": 4122,
+    "cache_creation_tokens": 745153,
+    "cache_read_tokens": 41906176,
+    "output_tokens": 131151,
+    "api_call_count": 383
   }
 }
