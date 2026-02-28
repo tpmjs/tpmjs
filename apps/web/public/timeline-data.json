@@ -7047,6 +7047,46 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "484232feda05eb27a76468d7b86b58f9e371b753",
+      "d": "2026-02-27",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "bb773a548895f0422db33a815220712088117497",
+      "d": "2026-02-27",
+      "m": "feat: add tool permissions, approval flow, dynamic discovery, metadata enrichment, and compose package",
+      "t": "feat",
+      "s": "",
+      "u": "add tool permissions, approval flow, dynamic discovery, metadata enrichment, and compose package"
+    },
+    {
+      "h": "ecc18ace70562e787961d210545d302315cf281f",
+      "d": "2026-02-28",
+      "m": "feat: redesign omega pages with brutalist command center aesthetic",
+      "t": "feat",
+      "s": "",
+      "u": "redesign omega pages with brutalist command center aesthetic"
+    },
+    {
+      "h": "2174522dd8e63167625c2a9bddc7c57e956eaad3",
+      "d": "2026-02-28",
+      "m": "feat: use real registry stats, full-width omega layout, redesigned env key banner",
+      "t": "feat",
+      "s": "",
+      "u": "use real registry stats, full-width omega layout, redesigned env key banner"
+    },
+    {
+      "h": "fba85c97cdc21a43bb2f915303fa68b42ce7d785",
+      "d": "2026-02-28",
+      "m": "fix: refine omega chat UI — cleaner messages, compact header, inline env banner",
+      "t": "fix",
+      "s": "",
+      "u": "refine omega chat UI — cleaner messages, compact header, inline env banner"
     }
   ],
   "m": [
