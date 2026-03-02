@@ -2,6 +2,25 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
+// Defensive guard: MCP SDK v1.25+ OAuth handling may attempt to monkey-patch
+// history.pushState for OAuth callback detection. In some server environments
+// (Vercel Node.js runtime), history may exist but pushState is non-writable,
+// causing a TypeError. Make pushState writable before the SDK attempts to patch it.
+if (typeof globalThis.history !== 'undefined') {
+  const descriptor = Object.getOwnPropertyDescriptor(globalThis.history, 'pushState');
+  if (descriptor && !descriptor.writable && !descriptor.set) {
+    try {
+      Object.defineProperty(globalThis.history, 'pushState', {
+        ...descriptor,
+        writable: true,
+        configurable: true,
+      });
+    } catch {
+      // Cannot make pushState writable — environment does not allow it
+    }
+  }
+}
+
 export interface RemoteMcpServerConfig {
   url: string;
   authType?: 'bearer' | 'header' | null;
