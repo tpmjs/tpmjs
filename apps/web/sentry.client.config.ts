@@ -12,7 +12,6 @@ Sentry.init({
 
   integrations: [
     Sentry.replayIntegration(),
-    Sentry.browserTracingIntegration({ enableInp: true }),
     Sentry.httpClientIntegration(),
     Sentry.captureConsoleIntegration({ levels: ['error'] }),
     Sentry.extraErrorDataIntegration(),
