@@ -167,27 +167,43 @@ export default function OmegaLandingPage(): React.ReactElement {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
           {/* Grid Background */}
-          <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+          <div
+            className="absolute inset-0 opacity-[0.02]"
+            style={{
+              backgroundImage:
+                'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)',
+              backgroundSize: '32px 32px',
+            }}
+          />
 
           <div className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center">
-            <div className="mb-8 opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <Badge variant="secondary" className="py-1.5 px-4 rounded-full border border-border/50 bg-surface/50 backdrop-blur-md">
+            <div className="mb-8 animate-slide-up">
+              <Badge
+                variant="secondary"
+                className="py-1.5 px-4 rounded-full border border-border/50 bg-surface/50 backdrop-blur-md"
+              >
                 <Icon icon="terminal" size="xs" className="mr-2 text-primary" />
-                <span className="font-medium tracking-wide text-xs uppercase">Omega: The Universal Agent</span>
+                <span className="font-medium tracking-wide text-xs uppercase">
+                  Omega: The Universal Agent
+                </span>
               </Badge>
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground mb-6 opacity-0 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground mb-6 animate-slide-up [animation-delay:150ms] [animation-fill-mode:both]">
               One Agent. <br className="hidden md:block" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">Infinite Capabilities.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">
+                Infinite Capabilities.
+              </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-foreground-secondary max-w-2xl mb-12 leading-relaxed opacity-0 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
-              Powered by the TPMJS infrastructure layer. Describe what you need, and Omega will dynamically discover, load, and execute the right tools from the registry to get it done.
+            <p className="text-lg md:text-xl text-foreground-secondary max-w-2xl mb-12 leading-relaxed animate-slide-up [animation-delay:300ms] [animation-fill-mode:both]">
+              Powered by the TPMJS infrastructure layer. Describe what you need, and Omega will
+              dynamically discover, load, and execute the right tools from the registry to get it
+              done.
             </p>
 
             {/* Input Command Area */}
-            <div className="w-full max-w-2xl relative group opacity-0 animate-in fade-in zoom-in-95 duration-700 delay-500">
+            <div className="w-full max-w-2xl relative group animate-scale-in [animation-delay:500ms] [animation-fill-mode:both]">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-primary/10 rounded-[24px] blur-lg opacity-40 group-hover:opacity-70 transition duration-500" />
               <div className="relative bg-surface border border-border/50 rounded-[20px] shadow-2xl overflow-hidden backdrop-blur-xl transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20">
                 <Textarea
@@ -203,7 +219,11 @@ export default function OmegaLandingPage(): React.ReactElement {
                 />
                 <div className="flex items-center justify-between px-6 pb-4 pt-2 border-t border-border/10">
                   <span className="text-xs text-foreground-tertiary font-medium">
-                    Press <kbd className="px-1.5 py-0.5 rounded-md bg-background border border-border/50 font-mono text-[10px] shadow-sm">Enter</kbd> to launch
+                    Press{' '}
+                    <kbd className="px-1.5 py-0.5 rounded-md bg-background border border-border/50 font-mono text-[10px] shadow-sm">
+                      Enter
+                    </kbd>{' '}
+                    to launch
                   </span>
                   <Button
                     onClick={() => input.trim() && createConversation(input.trim())}
@@ -213,7 +233,7 @@ export default function OmegaLandingPage(): React.ReactElement {
                     {isCreating ? (
                       <>
                         <Icon icon="loader" size="xs" className="mr-2 animate-spin" />
-                        Initializing...
+                        Launching...
                       </>
                     ) : (
                       <>
@@ -247,7 +267,7 @@ export default function OmegaLandingPage(): React.ReactElement {
 
         {/* Stats Row */}
         {stats && (
-          <div className="py-10 border-y border-border/30 bg-surface/20 opacity-0 animate-in fade-in duration-1000 delay-700">
+          <div className="py-10 border-y border-border/30 bg-surface/20 animate-pulse">
             <div className="max-w-6xl mx-auto px-4 flex flex-wrap justify-center gap-12 md:gap-32">
               <div className="text-center">
                 <div className="text-4xl font-bold text-foreground mb-2 font-mono">
@@ -266,9 +286,7 @@ export default function OmegaLandingPage(): React.ReactElement {
                 </div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-primary mb-2 font-mono">
-                  &infin;
-                </div>
+                <div className="text-4xl font-bold text-primary mb-2 font-mono">&infin;</div>
                 <div className="text-xs font-semibold text-foreground-tertiary uppercase tracking-widest">
                   Possibilities
                 </div>
@@ -279,22 +297,25 @@ export default function OmegaLandingPage(): React.ReactElement {
 
         {/* Sample Prompts Grid */}
         <div className="py-24 px-4 md:px-8 max-w-6xl mx-auto w-full">
-          <div className="text-center mb-16 opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-            <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Explore Capabilities</h2>
+          <div className="text-center mb-16 animate-slide-up [animation-delay:500ms] [animation-fill-mode:both]">
+            <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">
+              Explore Capabilities
+            </h2>
             <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
-              Not sure where to start? Try one of these examples to see Omega's dynamic tool discovery in action.
+              Not sure where to start? Try one of these examples to see Omega's dynamic tool
+              discovery in action.
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
             {SAMPLE_PROMPTS.map((prompt, i) => (
               <button
                 key={prompt.title}
                 type="button"
                 onClick={() => createConversation(prompt.prompt)}
                 disabled={isCreating || isSessionLoading}
-                className="group relative p-6 bg-surface rounded-2xl border border-border/50 hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 text-left disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 opacity-0 animate-in fade-in zoom-in-95"
-                style={{ animationDelay: `${700 + i * 100}ms`, animationDuration: '700ms' }}
+                className="group relative p-6 bg-surface rounded-2xl border border-border/50 hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 text-left disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 animate-scale-in [animation-fill-mode:both]"
+                style={{ animationDelay: `${700 + i * 100}ms` }}
               >
                 <div className="flex flex-col h-full">
                   <div className="w-12 h-12 rounded-xl bg-background border border-border/50 flex items-center justify-center mb-5 group-hover:border-primary/30 group-hover:text-primary transition-colors shadow-sm">
@@ -312,6 +333,50 @@ export default function OmegaLandingPage(): React.ReactElement {
                 </div>
               </button>
             ))}
+          </div>
+
+          <div className="border-t border-border/30 pt-24">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+              <div className="animate-slide-up [animation-delay:700ms] [animation-fill-mode:both]">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/5 text-primary mb-6">
+                  <Icon icon="search" size="md" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-3 tracking-tight">
+                  Dynamic Discovery
+                </h3>
+                <p className="text-[15px] text-foreground-secondary leading-relaxed">
+                  Omega searches the entire TPMJS registry to find the perfect tools for your task,
+                  loading them mid-conversation.
+                </p>
+              </div>
+              <div className="animate-slide-up [animation-delay:850ms] [animation-fill-mode:both]">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/5 text-primary mb-6">
+                  <Icon icon="box" size="md" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-3 tracking-tight">
+                  Sandboxed Execution
+                </h3>
+                <p className="text-[15px] text-foreground-secondary leading-relaxed">
+                  All tools run in an isolated Deno runtime, ensuring your environment stays secure
+                  from untrusted code.
+                </p>
+              </div>
+              <div className="animate-slide-up [animation-delay:1000ms] [animation-fill-mode:both]">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/5 text-primary mb-6">
+                  <Icon icon="star" size="md" />
+                </div>
+                <h3 className="text-lg font-bold text-foreground mb-3 tracking-tight">
+                  Intelligent Synthesis
+                </h3>
+                <p className="text-[15px] text-foreground-secondary leading-relaxed">
+                  Agentic reasoning combines tool results into clear, actionable responses that move
+                  your project forward.
+                </p>
+              </div>
+            </div>
+            <p className="text-center mt-20 text-sm font-semibold text-primary tracking-widest uppercase animate-pulse [animation-delay:1200ms] [animation-fill-mode:both]">
+              One agent. Every tool. Zero configuration.
+            </p>
           </div>
         </div>
       </main>

@@ -441,7 +441,7 @@ export default function OmegaChatPage(): React.ReactElement {
       <div className="min-h-screen bg-background">
         <AppHeader />
         <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-          <div className="flex flex-col items-center gap-4 opacity-0 animate-in fade-in duration-500">
+          <div className="flex flex-col items-center gap-4 animate-pulse">
             <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
             <span className="font-medium text-sm text-foreground-secondary tracking-wide">
               Initializing Session...
@@ -458,7 +458,7 @@ export default function OmegaChatPage(): React.ReactElement {
       <div className="min-h-screen bg-background">
         <AppHeader />
         <div className="flex items-center justify-center h-[calc(100vh-64px)] px-4">
-          <div className="text-center bg-surface p-8 rounded-3xl border border-border/50 shadow-xl max-w-md w-full opacity-0 animate-in fade-in zoom-in-95 duration-500">
+          <div className="text-center bg-surface p-8 rounded-3xl border border-border/50 shadow-xl max-w-md w-full animate-scale-in">
             <div className="w-16 h-16 bg-error/10 text-error rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Icon icon="alertCircle" size="lg" />
             </div>
@@ -750,7 +750,7 @@ export default function OmegaChatPage(): React.ReactElement {
                   {/* Subtle background glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
 
-                  <div className="text-center relative z-10 max-w-md animate-in fade-in zoom-in-95 duration-700">
+                  <div className="text-center relative z-10 max-w-md animate-scale-in">
                     <div className="w-20 h-20 bg-surface border border-border/50 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/5">
                       <Icon icon="terminal" size="lg" className="text-primary" />
                     </div>
@@ -787,7 +787,7 @@ export default function OmegaChatPage(): React.ReactElement {
                       <div key={message.id} className="px-4 md:px-6 py-3 w-full">
                         {/* USER message */}
                         {message.role === 'USER' && (
-                          <div className="flex justify-end w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
+                          <div className="flex justify-end w-full animate-slide-up">
                             <div className="max-w-[85%] md:max-w-[75%] px-5 py-3.5 bg-foreground text-background rounded-3xl rounded-tr-sm shadow-md">
                               <div className="text-[15px] whitespace-pre-wrap leading-relaxed">
                                 {message.content}
@@ -798,7 +798,7 @@ export default function OmegaChatPage(): React.ReactElement {
 
                         {/* ASSISTANT message */}
                         {message.role === 'ASSISTANT' && message.content && (
-                          <div className="flex gap-4 w-full max-w-[85%] md:max-w-[90%] animate-in fade-in duration-300">
+                          <div className="flex gap-4 w-full max-w-[85%] md:max-w-[90%] animate-slide-up">
                             <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
                               <Icon icon="terminal" size="xs" className="text-primary" />
                             </div>
