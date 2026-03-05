@@ -118,9 +118,22 @@ export function DefaultJsonRenderer({
             </div>
           )}
 
+          {/* Error Section */}
+          {error && (
+            <div className="p-3 bg-error/5">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] uppercase tracking-wider text-error">Error</span>
+                <div className="flex-1 h-px bg-error/30" />
+              </div>
+              <pre className="text-[11px] text-error overflow-x-auto whitespace-pre-wrap break-all">
+                {error}
+              </pre>
+            </div>
+          )}
+
           {/* Output Section */}
           {output !== undefined && output !== null && (
-            <div className="p-3">
+            <div className="p-3 border-t border-border/50">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[10px] uppercase tracking-wider text-foreground-tertiary">
                   Output
@@ -134,19 +147,6 @@ export function DefaultJsonRenderer({
                 )}
               >
                 {formatJson(output)}
-              </pre>
-            </div>
-          )}
-
-          {/* Error Section */}
-          {error && !output && (
-            <div className="p-3">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] uppercase tracking-wider text-error">Error</span>
-                <div className="flex-1 h-px bg-error/30" />
-              </div>
-              <pre className="text-[11px] text-error overflow-x-auto whitespace-pre-wrap break-all">
-                {error}
               </pre>
             </div>
           )}

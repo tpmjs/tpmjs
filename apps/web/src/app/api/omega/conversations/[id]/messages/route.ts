@@ -957,9 +957,9 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
       },
     });
   } catch (error) {
-    console.error('Message handler error:', error);
+    console.error('Omega chat error:', error);
 
-    // Reset conversation state
+    // Clean up execution state
     await prisma.omegaConversation.update({
       where: { id: conversationId },
       data: { executionState: 'idle' },
