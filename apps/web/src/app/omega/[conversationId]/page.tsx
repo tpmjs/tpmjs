@@ -341,46 +341,15 @@ export default function OmegaChatPage(): React.ReactElement {
                   return updated;
                 });
                 break;
+              case 'run.step.completed': {
+                const stepMessage = d.message as Message;
+                setMessages((prev) => [...prev, stepMessage]);
+                setStreamingContent('');
+                setToolCalls([]);
+                setStatusMessage(null);
+                break;
+              }
               case 'run.completed': {
-                const assistantMessage: Message = {
-                  id: (d.messageId as string) || `msg-${Date.now()}`,
-                  role: 'ASSISTANT',
-                  content: accumulatedContent,
-                  toolCalls: completedToolCalls
-                    .filter((tc) => tc.status === 'success' || tc.status === 'error')
-                    .map((tc) => ({
-                      toolCallId: tc.toolCallId,
-                      toolName: tc.toolName,
-                      args: tc.input,
-                      output: tc.output,
-                    })),
-                  inputTokens: d.inputTokens as number,
-                  outputTokens: d.outputTokens as number,
-                  createdAt: new Date().toISOString(),
-                };
-
-                const toolResultEntries = completedToolCalls
-                  .filter((tc) => tc.output !== undefined)
-                  .map((tc) => ({
-                    toolCallId: tc.toolCallId,
-                    toolName: tc.toolName,
-                    output: tc.output,
-                  }));
-
-                setMessages((prev) => {
-                  const updated = [...prev, assistantMessage];
-                  if (toolResultEntries.length > 0) {
-                    updated.push({
-                      id: `tool-${Date.now()}`,
-                      role: 'TOOL',
-                      content: 'Tool results',
-                      toolCalls: toolResultEntries,
-                      createdAt: new Date().toISOString(),
-                    });
-                  }
-                  return updated;
-                });
-
                 if (conversation) {
                   setConversation({
                     ...conversation,
@@ -398,10 +367,18 @@ export default function OmegaChatPage(): React.ReactElement {
                   autoDiscoveredTools:
                     d.autoDiscoveredTools as ToolDiscoveryInfo['autoDiscoveredTools'],
                 };
-                setMessageToolDiscovery((prev) => {
-                  const next = new Map(prev);
-                  next.set(assistantMessage.id, toolDiscovery);
-                  return next;
+
+                // Apply discovery info to the last assistant message if possible
+                setMessages((msgs) => {
+                  const lastAssistant = [...msgs].reverse().find(m => m.role === 'ASSISTANT');
+                  if (lastAssistant) {
+                    setMessageToolDiscovery((prev) => {
+                      const next = new Map(prev);
+                      next.set(lastAssistant.id, toolDiscovery);
+                      return next;
+                    });
+                  }
+                  return msgs;
                 });
 
                 setStreamingContent('');

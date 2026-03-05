@@ -707,25 +707,15 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
           // --- Status: streaming ---
           sendEvent('status', { phase: 'streaming', message: 'Generating response...' });
 
-          let fullContent = '';
-          const toolCallsMap: Map<string, { toolCallId: string; toolName: string; args: unknown }> =
-            new Map();
-          const pendingToolResults: Array<{
-            toolCallId: string;
-            toolName: string;
-            output: unknown;
-          }> = [];
-          let inputTokens = 0;
-          let outputTokens = 0;
-
-          // Track per-tool start times for accurate executionTimeMs
-          const toolStartTimes = new Map<string, number>();
+          let stepIndex = 0;
+          let totalInputTokens = 0;
+          let totalOutputTokens = 0;
 
           const result = streamText({
             model,
             messages,
             tools: Object.keys(allTools).length > 0 ? allTools : undefined,
-            stopWhen: stepCountIs(10), // Allow up to 10 tool calls for search + execute patterns
+            stopWhen: stepCountIs(10), // Allow up to 10 tool calls
             onChunk: async (chunk) => {
               // Handle tool call (complete tool call with args)
               if (chunk.chunk.type === 'tool-call') {
@@ -758,99 +748,60 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                 });
               }
             },
-            // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex tool result handling
-            onStepFinish: async ({ toolCalls, toolResults, usage }) => {
-              // Capture tool calls
-              if (toolCalls && Array.isArray(toolCalls)) {
-                for (const tc of toolCalls) {
-                  if (!toolCallsMap.has(tc.toolCallId)) {
-                    const args =
-                      'input' in tc ? tc.input : 'args' in tc ? (tc as { args: unknown }).args : {};
-                    toolCallsMap.set(tc.toolCallId, {
+            // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Chronological multi-step saving
+            onStepFinish: async ({ text, toolCalls, toolResults, usage }) => {
+              stepIndex++;
+              console.log(`🏁 Step ${stepIndex} finished. Text length: ${text?.length || 0}, Tools: ${toolCalls?.length || 0}`);
+
+              totalInputTokens += usage.inputTokens ?? 0;
+              totalOutputTokens += usage.outputTokens ?? 0;
+
+              // 1. Save Assistant Message for this step if it has text or tool calls
+              if (text || (toolCalls && toolCalls.length > 0)) {
+                const assistantMessage = await prisma.omegaMessage.create({
+                  data: {
+                    conversationId,
+                    role: 'ASSISTANT',
+                    content: text || '',
+                    toolCalls:
+                      toolCalls && toolCalls.length > 0
+                        ? (toolCalls.map((tc) => ({
+                            toolCallId: tc.toolCallId,
+                            toolName: tc.toolName,
+                            args: tc.args,
+                          })) as unknown as Prisma.InputJsonValue)
+                        : Prisma.JsonNull,
+                    inputTokens: usage.inputTokens,
+                    outputTokens: usage.outputTokens,
+                  },
+                });
+
+                sendEvent('run.step.completed', {
+                  stepIndex,
+                  message: {
+                    id: assistantMessage.id,
+                    role: 'ASSISTANT',
+                    content: text || '',
+                    toolCalls: toolCalls?.map((tc) => ({
                       toolCallId: tc.toolCallId,
                       toolName: tc.toolName,
-                      args,
-                    });
-                  }
-                }
+                      args: tc.args,
+                    })),
+                    createdAt: assistantMessage.createdAt,
+                  },
+                });
               }
 
-              // Process tool results
+              // 2. Save Tool Results for this step if present
               if (toolResults && toolResults.length > 0) {
-                for (const tr of toolResults) {
-                  const isError =
-                    tr.output && typeof tr.output === 'object' && 'error' in tr.output;
+                const toolResultEntries = toolResults.map((tr) => {
+                  const isError = tr.output && typeof tr.output === 'object' && 'error' in tr.output;
 
-                  // Check if this is a registrySearchTool result - inject found tools
-                  if (
-                    tr.toolName === 'registrySearchTool' &&
-                    tr.output &&
-                    typeof tr.output === 'object'
-                  ) {
-                    const searchOutput = tr.output as {
-                      tools?: Array<{
-                        toolId: string;
-                        package: string;
-                        name: string;
-                        description: string;
-                      }>;
-                    };
-                    if (searchOutput.tools && Array.isArray(searchOutput.tools)) {
-                      console.log(
-                        `🔍 registrySearchTool found ${searchOutput.tools.length} tools - injecting dynamically`
-                      );
-
-                      // Convert search results to tool metadata format and add to conversation
-                      const toolMetas = searchOutput.tools.map((t) => {
-                        const parts = t.toolId.split('::');
-                        const pkg = t.package || parts[0] || t.toolId;
-                        const toolName = t.name || parts[1] || 'unknown';
-                        return {
-                          toolId: t.toolId,
-                          packageName: pkg,
-                          name: toolName,
-                          description: t.description || `Tool: ${toolName}`,
-                          version: 'latest',
-                          importUrl: `https://esm.sh/${pkg}`,
-                        };
-                      });
-
-                      const newlyAdded = await addToolsToConversation(
-                        conversationId,
-                        toolMetas,
-                        userEnvVars
-                      );
-                      if (newlyAdded.length > 0) {
-                        sendEvent('tools.loaded', {
-                          newTools: newlyAdded,
-                          totalDynamicTools: Object.keys(state.loadedTools).length,
-                        });
-                      }
-                    }
-                  }
-
-                  // Compute per-tool execution time
+                  // Update tool run record
                   const toolStart = toolStartTimes.get(tr.toolCallId);
                   const executionTimeMs = toolStart ? Date.now() - toolStart : 0;
                   toolStartTimes.delete(tr.toolCallId);
 
-                  // Build update data for tool run
-                  const toolRunUpdateData: Prisma.OmegaToolRunUpdateManyMutationInput = {
-                    output: tr.output as Prisma.InputJsonValue,
-                    status: isError ? 'error' : 'success',
-                    completedAt: new Date(),
-                    executionTimeMs,
-                  };
-
-                  // Add error message if the tool execution failed
-                  if (isError) {
-                    toolRunUpdateData.error =
-                      typeof tr.output === 'object' && tr.output && 'error' in tr.output
-                        ? String((tr.output as { error: unknown }).error)
-                        : 'Unknown error';
-                  }
-
-                  // Fire-and-forget: update tool run record
                   prisma.omegaToolRun
                     .updateMany({
                       where: {
@@ -858,7 +809,13 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                         toolName: tr.toolName,
                         status: 'running',
                       },
-                      data: toolRunUpdateData,
+                      data: {
+                        output: tr.output as Prisma.InputJsonValue,
+                        status: isError ? 'error' : 'success',
+                        completedAt: new Date(),
+                        executionTimeMs,
+                        error: isError ? String((tr.output as any).error) : null,
+                      },
                     })
                     .catch(console.error);
 
@@ -869,73 +826,75 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                     isError,
                   });
 
-                  pendingToolResults.push({
+                  return {
                     toolCallId: tr.toolCallId,
                     toolName: tr.toolName,
                     output: tr.output,
-                  });
-                }
-              }
+                  };
+                });
 
-              if (usage) {
-                inputTokens += usage.inputTokens ?? 0;
-                outputTokens += usage.outputTokens ?? 0;
+                const toolMessage = await prisma.omegaMessage.create({
+                  data: {
+                    conversationId,
+                    role: 'TOOL',
+                    content: `Step ${stepIndex} results`,
+                    toolCalls: toolResultEntries as unknown as Prisma.InputJsonValue,
+                  },
+                });
+
+                sendEvent('run.step.completed', {
+                  stepIndex,
+                  message: {
+                    id: toolMessage.id,
+                    role: 'TOOL',
+                    content: toolMessage.content,
+                    toolCalls: toolResultEntries,
+                    createdAt: toolMessage.createdAt,
+                  },
+                });
+
+                // Handle dynamic tool injection from search results
+                for (const tr of toolResults) {
+                  if (tr.toolName === 'registrySearchTool' && tr.output && typeof tr.output === 'object') {
+                    const searchOutput = tr.output as { tools?: any[] };
+                    if (searchOutput.tools && Array.isArray(searchOutput.tools)) {
+                      const toolMetas = searchOutput.tools.map((t) => ({
+                        toolId: t.toolId,
+                        packageName: t.package || t.toolId.split('::')[0],
+                        name: t.name || t.toolId.split('::')[1],
+                        description: t.description || `Tool: ${t.name}`,
+                        version: 'latest',
+                        importUrl: `https://esm.sh/${t.package || t.toolId.split('::')[0]}`,
+                      }));
+
+                      const newlyAdded = await addToolsToConversation(conversationId, toolMetas, userEnvVars);
+                      if (newlyAdded.length > 0) {
+                        sendEvent('tools.loaded', {
+                          newTools: newlyAdded,
+                          totalDynamicTools: Object.keys(state.loadedTools).length,
+                        });
+                      }
+                    }
+                  }
+                }
               }
             },
           });
 
           // Stream text chunks
           for await (const chunk of result.textStream) {
-            fullContent += chunk;
             sendEvent('message.delta', { content: chunk });
           }
 
-          // Get final usage
-          const finalUsage = await result.usage;
-          if (finalUsage) {
-            inputTokens = finalUsage.inputTokens ?? inputTokens;
-            outputTokens = finalUsage.outputTokens ?? outputTokens;
-          }
-
-          const allToolCalls = Array.from(toolCallsMap.values());
-
-          // Save assistant message
-          const assistantMessage = await prisma.omegaMessage.create({
-            data: {
-              conversationId,
-              role: 'ASSISTANT',
-              content: fullContent,
-              toolCalls:
-                allToolCalls.length > 0
-                  ? (allToolCalls as unknown as Prisma.InputJsonValue)
-                  : Prisma.JsonNull,
-              inputTokens,
-              outputTokens,
-            },
-          });
-
-          // Save tool results as TOOL messages
-          if (pendingToolResults.length > 0) {
-            await prisma.omegaMessage.create({
-              data: {
-                conversationId,
-                role: 'TOOL',
-                content: 'Tool results',
-                toolCalls: pendingToolResults as unknown as Prisma.InputJsonValue,
-              },
-            });
-          }
-
-          // Update conversation: tokens, state, and title if first message pair
-          // Uses recentMessages.length to avoid count() query
-          const isFirstMessagePair = recentMessages.length <= 1;
+          // Update conversation total tokens and state
           await prisma.omegaConversation.update({
             where: { id: conversationId },
             data: {
               executionState: 'idle',
-              inputTokensTotal: { increment: inputTokens },
-              outputTokensTotal: { increment: outputTokens },
-              ...(isFirstMessagePair && !conversation.title
+              inputTokensTotal: { increment: totalInputTokens },
+              outputTokensTotal: { increment: totalOutputTokens },
+              // Set title if it was the first message pair
+              ...(recentMessages.length <= 1 && !conversation.title
                 ? {
                     title:
                       parsed.data.message.slice(0, 50) +
@@ -946,10 +905,8 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
           });
 
           sendEvent('run.completed', {
-            messageId: assistantMessage.id,
-            inputTokens,
-            outputTokens,
-            toolCallCount: allToolCalls.length,
+            inputTokens: totalInputTokens,
+            outputTokens: totalOutputTokens,
             staticTools: ['registrySearchTool', 'registryExecuteTool'],
             dynamicToolsLoaded: Object.keys(state.loadedTools),
             autoDiscoveredTools: relevantTools.map((t) => ({
