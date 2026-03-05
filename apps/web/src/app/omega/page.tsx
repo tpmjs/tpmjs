@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
-import { GlitchBars } from '~/components/home/GlitchBars';
 import { useSession } from '~/lib/auth-client';
 
 interface SamplePrompt {
@@ -64,9 +63,8 @@ interface RegistryStats {
 }
 
 /**
- * Omega Landing Page
+ * Omega Landing Page - Modern Agentic Interface
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Landing page with stats fetch, auth, and conversation creation
 export default function OmegaLandingPage(): React.ReactElement {
   const router = useRouter();
   const { data: session, isPending: isSessionLoading } = useSession();
@@ -159,223 +157,161 @@ export default function OmegaLandingPage(): React.ReactElement {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col font-sans text-foreground selection:bg-primary/30">
       <AppHeader />
 
       <main className="flex-1 flex flex-col">
-        {/* Hero */}
-        <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-          <div className="absolute inset-0 grid-background opacity-[0.04]" />
-          <div className="absolute inset-0 blueprint-scanline" />
-          <GlitchBars count={4} />
+        {/* Hero Section */}
+        <div className="relative min-h-[70vh] flex flex-col items-center justify-center overflow-hidden px-4 py-20">
+          {/* Subtle ambient glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-primary/10 rounded-full blur-[120px] pointer-events-none" />
 
-          <div className="relative z-10 text-center px-4">
-            <div className="animate-brutalist-entrance mb-8" style={{ animationDelay: '0ms' }}>
-              <Badge variant="outline" size="lg">
-                <Icon icon="terminal" size="xs" className="mr-2" />
-                omega agent
+          {/* Grid Background */}
+          <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+
+          <div className="relative z-10 text-center max-w-4xl mx-auto flex flex-col items-center">
+            <div className="mb-8 opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <Badge variant="secondary" className="py-1.5 px-4 rounded-full border border-border/50 bg-surface/50 backdrop-blur-md">
+                <Icon icon="terminal" size="xs" className="mr-2 text-primary" />
+                <span className="font-medium tracking-wide text-xs uppercase">Omega: The Universal Agent</span>
               </Badge>
             </div>
 
-            {/* Real tool count from registry */}
-            <div className="animate-brutalist-entrance mb-4" style={{ animationDelay: '150ms' }}>
-              {stats ? (
-                <AnimatedCounter
-                  value={stats.totalTools}
-                  separator=","
-                  duration={2500}
-                  className="brutalist-heading"
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-foreground mb-6 opacity-0 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
+              One Agent. <br className="hidden md:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/60">Infinite Capabilities.</span>
+            </h1>
+
+            <p className="text-lg md:text-xl text-foreground-secondary max-w-2xl mb-12 leading-relaxed opacity-0 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
+              Powered by the TPMJS infrastructure layer. Describe what you need, and Omega will dynamically discover, load, and execute the right tools from the registry to get it done.
+            </p>
+
+            {/* Input Command Area */}
+            <div className="w-full max-w-2xl relative group opacity-0 animate-in fade-in zoom-in-95 duration-700 delay-500">
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/30 to-primary/10 rounded-[24px] blur-lg opacity-40 group-hover:opacity-70 transition duration-500" />
+              <div className="relative bg-surface border border-border/50 rounded-[20px] shadow-2xl overflow-hidden backdrop-blur-xl transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20">
+                <Textarea
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="What would you like to accomplish today?"
+                  rows={3}
+                  resize="none"
+                  className="border-none bg-transparent text-lg p-6 focus:ring-0 placeholder:text-foreground-tertiary"
+                  disabled={isCreating}
                 />
-              ) : (
-                <div className="brutalist-heading text-foreground/20">&mdash;</div>
+                <div className="flex items-center justify-between px-6 pb-4 pt-2 border-t border-border/10">
+                  <span className="text-xs text-foreground-tertiary font-medium">
+                    Press <kbd className="px-1.5 py-0.5 rounded-md bg-background border border-border/50 font-mono text-[10px] shadow-sm">Enter</kbd> to launch
+                  </span>
+                  <Button
+                    onClick={() => input.trim() && createConversation(input.trim())}
+                    disabled={!input.trim() || isCreating}
+                    className="rounded-full px-6 shadow-md hover:shadow-primary/25 transition-all"
+                  >
+                    {isCreating ? (
+                      <>
+                        <Icon icon="loader" size="xs" className="mr-2 animate-spin" />
+                        Initializing...
+                      </>
+                    ) : (
+                      <>
+                        Launch Agent <Icon icon="arrowRight" size="xs" className="ml-2" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {!isSessionLoading && !isAuthenticated && (
+                <div className="mt-6 text-center">
+                  <Link
+                    href={`/sign-in?returnTo=${encodeURIComponent('/omega')}`}
+                    className="inline-flex items-center gap-2 text-sm text-foreground-secondary hover:text-primary transition-colors font-medium"
+                  >
+                    <Icon icon="user" size="xs" />
+                    Sign in to save your sessions
+                  </Link>
+                </div>
               )}
             </div>
 
-            <h2
-              className="brutalist-subheading text-foreground mb-6 animate-brutalist-entrance"
-              style={{ animationDelay: '300ms' }}
-            >
-              TOOLS IN THE REGISTRY
-            </h2>
-
-            {/* Secondary stats row */}
-            {stats && (
-              <div
-                className="flex items-center justify-center gap-8 mb-8 animate-brutalist-entrance"
-                style={{ animationDelay: '400ms' }}
-              >
-                <div className="text-center">
-                  <div className="font-mono text-2xl md:text-3xl font-bold text-foreground">
-                    {stats.totalPackages.toLocaleString()}
-                  </div>
-                  <div className="font-mono text-xs text-foreground-tertiary uppercase tracking-widest">
-                    Packages
-                  </div>
-                </div>
-                <div className="w-px h-10 bg-foreground/20" />
-                <div className="text-center">
-                  <div className="font-mono text-2xl md:text-3xl font-bold text-primary">1</div>
-                  <div className="font-mono text-xs text-foreground-tertiary uppercase tracking-widest">
-                    Agent
-                  </div>
-                </div>
+            {error && (
+              <div className="mt-6 p-4 rounded-xl bg-error/10 border border-error/20 text-error text-sm max-w-2xl w-full mx-auto">
+                {error}
               </div>
             )}
-
-            <p
-              className="font-mono text-foreground-secondary max-w-xl mx-auto text-sm md:text-base animate-brutalist-entrance"
-              style={{ animationDelay: '450ms' }}
-            >
-              One AI agent with access to the entire TPMJS registry. Describe what you need — Omega
-              discovers and executes the right tools automatically.
-            </p>
           </div>
         </div>
 
-        {/* Input Command Area */}
-        <div className="bg-surface border-y-2 border-foreground py-12 px-4 md:px-8">
-          <div className="max-w-3xl mx-auto">
-            <div
-              className={`border-2 transition-colors ${
-                isCreating ? 'border-primary' : 'border-foreground focus-within:border-primary'
-              }`}
-            >
-              <Textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="What do you want to build, find, or analyze?"
-                rows={3}
-                resize="none"
-                className="border-none bg-transparent text-lg"
-                disabled={isCreating}
-              />
-              <div className="flex items-center justify-between px-3 pb-3">
-                <span className="font-mono text-xs text-foreground-tertiary uppercase tracking-wider">
-                  Enter to launch
-                </span>
-                <Button
-                  onClick={() => input.trim() && createConversation(input.trim())}
-                  disabled={!input.trim() || isCreating}
-                  size="sm"
-                >
-                  {isCreating ? (
-                    <>
-                      <Icon icon="loader" size="xs" className="mr-2 animate-spin" />
-                      Launching...
-                    </>
-                  ) : (
-                    <>
-                      <Icon icon="send" size="xs" className="mr-2" />
-                      Launch
-                    </>
-                  )}
-                </Button>
+        {/* Stats Row */}
+        {stats && (
+          <div className="py-10 border-y border-border/30 bg-surface/20 opacity-0 animate-in fade-in duration-1000 delay-700">
+            <div className="max-w-6xl mx-auto px-4 flex flex-wrap justify-center gap-12 md:gap-32">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-foreground mb-2 font-mono">
+                  <AnimatedCounter value={stats.totalTools} separator="," duration={2000} />
+                </div>
+                <div className="text-xs font-semibold text-foreground-tertiary uppercase tracking-widest">
+                  Available Tools
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-foreground mb-2 font-mono">
+                  {stats.totalPackages.toLocaleString()}
+                </div>
+                <div className="text-xs font-semibold text-foreground-tertiary uppercase tracking-widest">
+                  NPM Packages
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-primary mb-2 font-mono">
+                  &infin;
+                </div>
+                <div className="text-xs font-semibold text-foreground-tertiary uppercase tracking-widest">
+                  Possibilities
+                </div>
               </div>
             </div>
-
-            {!isSessionLoading && !isAuthenticated && (
-              <div className="mt-4 text-center">
-                <Link
-                  href={`/sign-in?returnTo=${encodeURIComponent('/omega')}`}
-                  className="inline-flex items-center gap-2 font-mono text-sm text-primary hover:text-primary-hover underline underline-offset-4"
-                >
-                  <Icon icon="user" size="xs" />
-                  Sign in to start
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {error && (
-          <div className="text-center py-4 px-4">
-            <p className="text-sm text-error font-mono">{error}</p>
           </div>
         )}
 
-        {/* Sample Prompts */}
-        <div className="py-16 px-4 md:px-8">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="font-mono text-xs text-foreground-tertiary uppercase tracking-widest text-center mb-8">
-              {isAuthenticated ? 'Or try one of these' : 'Explore what Omega can do'}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {SAMPLE_PROMPTS.map((prompt, i) => (
-                <button
-                  key={prompt.title}
-                  type="button"
-                  onClick={() => createConversation(prompt.prompt)}
-                  disabled={isCreating || isSessionLoading}
-                  className="group p-4 bg-background border-2 border-border hover:border-foreground transition-all text-left disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_hsl(var(--primary))] animate-brutalist-entrance"
-                  style={{ animationDelay: `${i * 100}ms` }}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 border-2 border-foreground flex items-center justify-center flex-shrink-0">
-                      <Icon icon={prompt.icon} size="sm" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className="font-mono font-bold text-foreground uppercase text-sm tracking-tight">
-                          {prompt.title}
-                        </h3>
-                        <span className="font-mono text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                          launch &rarr;
-                        </span>
-                      </div>
-                      <p className="text-sm text-foreground-secondary line-clamp-2">
-                        {prompt.description}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Feature Highlights */}
-        <div className="border-t-2 border-foreground py-16 px-4 md:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-              <div>
-                <div className="inline-flex items-center justify-center w-14 h-14 border-2 border-foreground mb-4">
-                  <Icon icon="search" size="sm" />
-                </div>
-                <h3 className="font-mono font-bold text-foreground uppercase tracking-tight mb-2">
-                  Dynamic Discovery
-                </h3>
-                <p className="text-sm text-foreground-secondary">
-                  Omega searches the entire TPMJS registry to find the perfect tools for your task
-                </p>
-              </div>
-              <div>
-                <div className="inline-flex items-center justify-center w-14 h-14 border-2 border-foreground mb-4">
-                  <Icon icon="box" size="sm" />
-                </div>
-                <h3 className="font-mono font-bold text-foreground uppercase tracking-tight mb-2">
-                  Sandboxed Execution
-                </h3>
-                <p className="text-sm text-foreground-secondary">
-                  All tools run in a secure sandbox environment for safe execution
-                </p>
-              </div>
-              <div>
-                <div className="inline-flex items-center justify-center w-14 h-14 border-2 border-foreground mb-4">
-                  <Icon icon="star" size="sm" />
-                </div>
-                <h3 className="font-mono font-bold text-foreground uppercase tracking-tight mb-2">
-                  Intelligent Synthesis
-                </h3>
-                <p className="text-sm text-foreground-secondary">
-                  Results are combined and presented in a clear, helpful response
-                </p>
-              </div>
-            </div>
-            <p className="text-center mt-12 font-mono text-sm text-primary tracking-wide">
-              One agent. Every tool. Zero configuration.
+        {/* Sample Prompts Grid */}
+        <div className="py-24 px-4 md:px-8 max-w-6xl mx-auto w-full">
+          <div className="text-center mb-16 opacity-0 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+            <h2 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Explore Capabilities</h2>
+            <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
+              Not sure where to start? Try one of these examples to see Omega's dynamic tool discovery in action.
             </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {SAMPLE_PROMPTS.map((prompt, i) => (
+              <button
+                key={prompt.title}
+                type="button"
+                onClick={() => createConversation(prompt.prompt)}
+                disabled={isCreating || isSessionLoading}
+                className="group relative p-6 bg-surface rounded-2xl border border-border/50 hover:border-primary/40 hover:bg-primary/[0.02] transition-all duration-300 text-left disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-1 shadow-sm hover:shadow-xl hover:shadow-primary/5 opacity-0 animate-in fade-in zoom-in-95"
+                style={{ animationDelay: `${700 + i * 100}ms`, animationDuration: '700ms' }}
+              >
+                <div className="flex flex-col h-full">
+                  <div className="w-12 h-12 rounded-xl bg-background border border-border/50 flex items-center justify-center mb-5 group-hover:border-primary/30 group-hover:text-primary transition-colors shadow-sm">
+                    <Icon icon={prompt.icon} size="sm" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2 text-lg tracking-tight">
+                    {prompt.title}
+                  </h3>
+                  <p className="text-sm text-foreground-secondary mb-6 flex-1 leading-relaxed">
+                    {prompt.description}
+                  </p>
+                  <div className="text-xs font-semibold text-primary flex items-center opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                    Launch scenario <Icon icon="arrowRight" size="xs" className="ml-1" />
+                  </div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </main>
