@@ -56,23 +56,29 @@ interface EnvVarWarning {
 /**
  * Fetch and decrypt user's environment variables
  */
-async function getUserEnvVarsDecrypted(userId: string): Promise<Record<string, string>> {
+async function getUserEnvVarsDecrypted(userId: string): Promise<{
+  userEnvVars: Record<string, string>;
+  decryptionErrors: Array<{ keyName: string; error: string }>;
+}> {
+  const userEnvVars: Record<string, string> = {};
+  const decryptionErrors: Array<{ keyName: string; error: string }> = [];
+
   try {
     const keys = await prisma.userApiKey.findMany({ where: { userId } });
-    const result: Record<string, string> = {};
     for (const key of keys) {
       try {
-        result[key.keyName] = decryptApiKey(key.encryptedKey, key.keyIv);
+        userEnvVars[key.keyName] = decryptApiKey(key.encryptedKey, key.keyIv);
       } catch (error) {
-        console.error(`Failed to decrypt env var ${key.keyName}:`, error);
-        // Skip this key if decryption fails
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`Failed to decrypt env var ${key.keyName}:`, errorMessage);
+        decryptionErrors.push({ keyName: key.keyName, error: errorMessage });
       }
     }
-    return result;
   } catch (error) {
     console.error('Failed to fetch user env vars:', error);
-    return {};
   }
+
+  return { userEnvVars, decryptionErrors };
 }
 
 /**
@@ -445,18 +451,20 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
   try {
     // --- Tier B: All user/conversation data in parallel ---
-    const [conversation, user, userSettings, userEnvVars] = await Promise.all([
-      prisma.omegaConversation.findUnique({
-        where: { id: conversationId },
-        include: { participants: { select: { userId: true } } },
-      }),
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: { id: true, name: true, email: true },
-      }),
-      prisma.omegaUserSettings.findUnique({ where: { userId } }),
-      getUserEnvVarsDecrypted(userId),
-    ]);
+    const [conversation, user, userSettings, { userEnvVars, decryptionErrors }] = await Promise.all(
+      [
+        prisma.omegaConversation.findUnique({
+          where: { id: conversationId },
+          include: { participants: { select: { userId: true } } },
+        }),
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { id: true, name: true, email: true },
+        }),
+        prisma.omegaUserSettings.findUnique({ where: { userId } }),
+        getUserEnvVarsDecrypted(userId),
+      ]
+    );
 
     if (!conversation) {
       return NextResponse.json(
@@ -520,9 +528,24 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     // Detect missing required environment variables (sync, no await needed)
     const missingEnvVars = detectMissingEnvVars(relevantTools, userEnvVars);
+
+    // Add decryption errors to warnings
+    for (const de of decryptionErrors) {
+      missingEnvVars.push({
+        toolId: 'system',
+        toolName: 'System',
+        packageName: 'system',
+        envVar: {
+          name: de.keyName,
+          description: `Decryption failed: ${de.error}. Please re-save this key in settings.`,
+          required: true,
+        },
+      });
+    }
+
     if (missingEnvVars.length > 0) {
       console.log(
-        `⚠️ Missing ${missingEnvVars.length} required env vars:`,
+        `⚠️ Environment issues detected (${missingEnvVars.length}):`,
         missingEnvVars.map((w) => w.envVar.name)
       );
     }
