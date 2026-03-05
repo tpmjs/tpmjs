@@ -754,7 +754,9 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
             // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Chronological multi-step saving
             onStepFinish: async ({ text, toolCalls, toolResults, usage }) => {
               stepIndex++;
-              console.log(`🏁 Step ${stepIndex} finished. Text length: ${text?.length || 0}, Tools: ${toolCalls?.length || 0}`);
+              console.log(
+                `🏁 Step ${stepIndex} finished. Text length: ${text?.length || 0}, Tools: ${toolCalls?.length || 0}`
+              );
 
               totalInputTokens += usage.inputTokens ?? 0;
               totalOutputTokens += usage.outputTokens ?? 0;
@@ -771,7 +773,7 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                         ? (toolCalls.map((tc) => ({
                             toolCallId: tc.toolCallId,
                             toolName: tc.toolName,
-                            args: tc.args,
+                            args: tc.input,
                           })) as unknown as Prisma.InputJsonValue)
                         : Prisma.JsonNull,
                     inputTokens: usage.inputTokens,
@@ -788,7 +790,7 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                     toolCalls: toolCalls?.map((tc) => ({
                       toolCallId: tc.toolCallId,
                       toolName: tc.toolName,
-                      args: tc.args,
+                      args: tc.input,
                     })),
                     createdAt: assistantMessage.createdAt,
                   },
@@ -798,7 +800,8 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
               // 2. Save Tool Results for this step if present
               if (toolResults && toolResults.length > 0) {
                 const toolResultEntries = toolResults.map((tr) => {
-                  const isError = tr.output && typeof tr.output === 'object' && 'error' in tr.output;
+                  const isError =
+                    tr.output && typeof tr.output === 'object' && 'error' in tr.output;
 
                   // Update tool run record
                   const toolStart = toolStartTimes.get(tr.toolCallId);
@@ -858,7 +861,11 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
 
                 // Handle dynamic tool injection from search results
                 for (const tr of toolResults) {
-                  if (tr.toolName === 'registrySearchTool' && tr.output && typeof tr.output === 'object') {
+                  if (
+                    tr.toolName === 'registrySearchTool' &&
+                    tr.output &&
+                    typeof tr.output === 'object'
+                  ) {
                     const searchOutput = tr.output as { tools?: any[] };
                     if (searchOutput.tools && Array.isArray(searchOutput.tools)) {
                       const toolMetas = searchOutput.tools.map((t) => ({
@@ -870,7 +877,11 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                         importUrl: `https://esm.sh/${t.package || t.toolId.split('::')[0]}`,
                       }));
 
-                      const newlyAdded = await addToolsToConversation(conversationId, toolMetas, userEnvVars);
+                      const newlyAdded = await addToolsToConversation(
+                        conversationId,
+                        toolMetas,
+                        userEnvVars
+                      );
                       if (newlyAdded.length > 0) {
                         sendEvent('tools.loaded', {
                           newTools: newlyAdded,

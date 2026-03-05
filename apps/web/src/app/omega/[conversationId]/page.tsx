@@ -241,7 +241,6 @@ export default function OmegaChatPage(): React.ReactElement {
     setMessages((prev) => [...prev, userMessage]);
 
     let accumulatedContent = '';
-    let completedToolCalls: ToolCall[] = [];
 
     try {
       const response = await fetch(`/api/omega/conversations/${conversationId}/messages`, {
@@ -311,7 +310,7 @@ export default function OmegaChatPage(): React.ReactElement {
               case 'run.step.tool.started':
                 setStatusMessage(null);
                 setToolCalls((prev) => {
-                  const updated = [
+                  return [
                     ...prev,
                     {
                       toolCallId: d.toolCallId as string,
@@ -320,14 +319,12 @@ export default function OmegaChatPage(): React.ReactElement {
                       status: 'running' as const,
                     },
                   ];
-                  completedToolCalls = updated;
-                  return updated;
                 });
                 break;
               case 'run.step.tool.completed':
                 setToolCalls((prev) => {
                   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Tool call update logic
-                  const updated = prev.map((tc) =>
+                  return prev.map((tc) =>
                     tc.toolCallId === d.toolCallId
                       ? {
                           ...tc,
@@ -337,8 +334,6 @@ export default function OmegaChatPage(): React.ReactElement {
                         }
                       : tc
                   );
-                  completedToolCalls = updated;
-                  return updated;
                 });
                 break;
               case 'run.step.completed': {
@@ -370,7 +365,7 @@ export default function OmegaChatPage(): React.ReactElement {
 
                 // Apply discovery info to the last assistant message if possible
                 setMessages((msgs) => {
-                  const lastAssistant = [...msgs].reverse().find(m => m.role === 'ASSISTANT');
+                  const lastAssistant = [...msgs].reverse().find((m) => m.role === 'ASSISTANT');
                   if (lastAssistant) {
                     setMessageToolDiscovery((prev) => {
                       const next = new Map(prev);
@@ -472,7 +467,9 @@ export default function OmegaChatPage(): React.ReactElement {
             </h2>
             <p className="text-foreground-secondary text-sm mb-8 leading-relaxed">{error}</p>
             <Link href="/omega">
-              <Button className="w-full rounded-full shadow-md hover:shadow-lg transition-all">Start New Conversation</Button>
+              <Button className="w-full rounded-full shadow-md hover:shadow-lg transition-all">
+                Start New Conversation
+              </Button>
             </Link>
           </div>
         </div>
@@ -531,11 +528,20 @@ export default function OmegaChatPage(): React.ReactElement {
                 </button>
               </div>
               <Link href="/omega/settings">
-                <Button variant="outline" size="sm" className="rounded-full w-9 h-9 p-0 flex items-center justify-center border-border/50 shadow-sm hover:border-primary/50 hover:text-primary">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full w-9 h-9 p-0 flex items-center justify-center border-border/50 shadow-sm hover:border-primary/50 hover:text-primary"
+                >
                   <Icon icon="key" size="xs" />
                 </Button>
               </Link>
-              <Button variant="default" size="sm" onClick={startNewConversation} className="rounded-full w-9 h-9 p-0 flex items-center justify-center shadow-md shadow-primary/20 hover:shadow-primary/40">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={startNewConversation}
+                className="rounded-full w-9 h-9 p-0 flex items-center justify-center shadow-md shadow-primary/20 hover:shadow-primary/40"
+              >
                 <Icon icon="plus" size="xs" />
               </Button>
             </div>
@@ -552,7 +558,8 @@ export default function OmegaChatPage(): React.ReactElement {
                     Discovery Telemetry ({messages.length} messages)
                   </h2>
                   <p className="text-sm text-foreground-secondary">
-                    Each message shows the tools discovered and loaded dynamically during that response.
+                    Each message shows the tools discovered and loaded dynamically during that
+                    response.
                   </p>
                 </div>
                 <Button
@@ -581,30 +588,30 @@ export default function OmegaChatPage(): React.ReactElement {
                     className="bg-surface rounded-2xl border border-border/50 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                   >
                     <div className="px-6 py-4 border-b border-border/50 bg-background/50 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xs text-foreground-tertiary font-mono">
-                            #{index + 1}
-                          </span>
-                          <Badge
-                            variant={
-                              message.role === 'USER'
-                                ? 'secondary'
-                                : message.role === 'ASSISTANT'
-                                  ? 'default'
-                                  : 'outline'
-                            }
-                            size="sm"
-                            className="rounded-full px-3 py-0.5"
-                          >
-                            {message.role}
-                          </Badge>
-                          <span className="text-xs text-foreground-tertiary font-mono">
-                            {message.id.slice(0, 8)}...
-                          </span>
-                        </div>
-                        <span className="text-xs text-foreground-secondary font-medium">
-                          {new Date(message.createdAt).toLocaleTimeString()}
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-foreground-tertiary font-mono">
+                          #{index + 1}
                         </span>
+                        <Badge
+                          variant={
+                            message.role === 'USER'
+                              ? 'secondary'
+                              : message.role === 'ASSISTANT'
+                                ? 'default'
+                                : 'outline'
+                          }
+                          size="sm"
+                          className="rounded-full px-3 py-0.5"
+                        >
+                          {message.role}
+                        </Badge>
+                        <span className="text-xs text-foreground-tertiary font-mono">
+                          {message.id.slice(0, 8)}...
+                        </span>
+                      </div>
+                      <span className="text-xs text-foreground-secondary font-medium">
+                        {new Date(message.createdAt).toLocaleTimeString()}
+                      </span>
                     </div>
 
                     <div className="p-6 space-y-6">
@@ -654,9 +661,13 @@ export default function OmegaChatPage(): React.ReactElement {
                                       className="text-xs font-mono bg-background border border-border/50 rounded-lg p-3 flex flex-col gap-1"
                                     >
                                       <div>
-                                        <span className="text-primary font-semibold">{t.packageName}</span>
+                                        <span className="text-primary font-semibold">
+                                          {t.packageName}
+                                        </span>
                                         <span className="text-foreground-tertiary px-1">::</span>
-                                        <span className="text-foreground font-medium">{t.name}</span>
+                                        <span className="text-foreground font-medium">
+                                          {t.name}
+                                        </span>
                                       </div>
                                       <span className="text-foreground-tertiary">
                                         {t.description?.slice(0, 100)}
@@ -702,8 +713,16 @@ export default function OmegaChatPage(): React.ReactElement {
 
                       {(message.inputTokens || message.outputTokens) && (
                         <div className="text-xs font-medium text-foreground-tertiary pt-4 border-t border-border/50 flex gap-4">
-                          {message.inputTokens && <span className="flex items-center gap-1.5"><Icon icon="logIn" size="xs" /> {message.inputTokens} Input</span>}
-                          {message.outputTokens && <span className="flex items-center gap-1.5"><Icon icon="logOut" size="xs" /> {message.outputTokens} Output</span>}
+                          {message.inputTokens && (
+                            <span className="flex items-center gap-1.5">
+                              <Icon icon="download" size="xs" /> {message.inputTokens} Input
+                            </span>
+                          )}
+                          {message.outputTokens && (
+                            <span className="flex items-center gap-1.5">
+                              <Icon icon="externalLink" size="xs" /> {message.outputTokens} Output
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
@@ -730,22 +749,23 @@ export default function OmegaChatPage(): React.ReactElement {
                 <div className="h-full flex flex-col items-center justify-center p-8 relative">
                   {/* Subtle background glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
-                  
+
                   <div className="text-center relative z-10 max-w-md animate-in fade-in zoom-in-95 duration-700">
                     <div className="w-20 h-20 bg-surface border border-border/50 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/5">
                       <Icon icon="terminal" size="lg" className="text-primary" />
                     </div>
-                    
+
                     <h2 className="text-2xl font-bold text-foreground tracking-tight mb-3">
                       How can I help you today?
                     </h2>
 
                     <p className="text-[15px] text-foreground-secondary leading-relaxed mb-8">
-                      Describe your task. I will search the TPMJS registry, dynamically load the required tools, and execute them in a secure sandbox.
+                      Describe your task. I will search the TPMJS registry, dynamically load the
+                      required tools, and execute them in a secure sandbox.
                     </p>
 
                     <div className="flex flex-wrap items-center justify-center gap-3">
-                      {CAPABILITY_ICONS.map((icon, i) => (
+                      {CAPABILITY_ICONS.map((icon) => (
                         <div
                           key={icon}
                           className="w-10 h-10 rounded-xl bg-surface border border-border/50 flex items-center justify-center shadow-sm text-foreground-tertiary"
@@ -769,7 +789,9 @@ export default function OmegaChatPage(): React.ReactElement {
                         {message.role === 'USER' && (
                           <div className="flex justify-end w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
                             <div className="max-w-[85%] md:max-w-[75%] px-5 py-3.5 bg-foreground text-background rounded-3xl rounded-tr-sm shadow-md">
-                              <div className="text-[15px] whitespace-pre-wrap leading-relaxed">{message.content}</div>
+                              <div className="text-[15px] whitespace-pre-wrap leading-relaxed">
+                                {message.content}
+                              </div>
                             </div>
                           </div>
                         )}
@@ -787,7 +809,9 @@ export default function OmegaChatPage(): React.ReactElement {
                               {(message.inputTokens || message.outputTokens) && (
                                 <div className="mt-3 flex items-center gap-3 text-[11px] text-foreground-tertiary font-medium">
                                   {message.inputTokens && <span>{message.inputTokens} in</span>}
-                                  {message.inputTokens && message.outputTokens && <span className="w-1 h-1 rounded-full bg-border" />}
+                                  {message.inputTokens && message.outputTokens && (
+                                    <span className="w-1 h-1 rounded-full bg-border" />
+                                  )}
                                   {message.outputTokens && <span>{message.outputTokens} out</span>}
                                 </div>
                               )}
@@ -799,7 +823,10 @@ export default function OmegaChatPage(): React.ReactElement {
                         {message.role === 'TOOL' && message.toolCalls && (
                           <div className="pl-12 space-y-3 mt-2 w-full max-w-[95%]">
                             {message.toolCalls.map((tc) => (
-                              <div key={tc.toolCallId} className="bg-surface border border-border/50 rounded-2xl overflow-hidden shadow-sm">
+                              <div
+                                key={tc.toolCallId}
+                                className="bg-surface border border-border/50 rounded-2xl overflow-hidden shadow-sm"
+                              >
                                 <ToolRenderer
                                   part={{
                                     type: 'tool-result',
@@ -932,9 +959,11 @@ export default function OmegaChatPage(): React.ReactElement {
                         onClick={handleSend}
                         disabled={!input.trim()}
                         className={`rounded-full w-10 h-10 p-0 flex items-center justify-center transition-all ${
-                          input.trim() ? 'shadow-md shadow-primary/25 bg-primary text-primary-foreground hover:bg-primary-hover' : 'bg-surface-secondary text-foreground-tertiary border border-border/50 shadow-none'
+                          input.trim()
+                            ? 'shadow-md shadow-primary/25 bg-primary text-primary-foreground hover:bg-primary-hover'
+                            : 'bg-surface-secondary text-foreground-tertiary border border-border/50 shadow-none'
                         }`}
-                        variant="unstyled"
+                        variant="default"
                       >
                         <Icon icon="send" size="sm" className={input.trim() ? 'ml-0.5' : ''} />
                       </Button>

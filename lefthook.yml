@@ -24,3 +24,4 @@ pre-push:
   commands:
     test:
       run: pnpm test
+# Hook verification
