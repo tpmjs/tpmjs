@@ -361,17 +361,22 @@ export default function OmegaChatPage(): React.ReactElement {
                     d.autoDiscoveredTools as ToolDiscoveryInfo['autoDiscoveredTools'],
                 };
 
-                // Apply discovery info to the last assistant message if possible
-                setMessages((msgs) => {
-                  const lastAssistant = [...msgs].reverse().find((m) => m.role === 'ASSISTANT');
-                  if (lastAssistant) {
-                    setMessageToolDiscovery((prev) => {
-                      const next = new Map(prev);
+                // Apply discovery info to the specified assistant message or last fallback
+                const targetMessageId = d.messageId as string | undefined;
+                setMessageToolDiscovery((prev) => {
+                  const next = new Map(prev);
+                  if (targetMessageId) {
+                    next.set(targetMessageId, toolDiscovery);
+                  } else {
+                    // Fallback to last assistant if no ID provided
+                    const lastAssistant = [...messages]
+                      .reverse()
+                      .find((m) => m.role === 'ASSISTANT');
+                    if (lastAssistant) {
                       next.set(lastAssistant.id, toolDiscovery);
-                      return next;
-                    });
+                    }
                   }
-                  return msgs;
+                  return next;
                 });
 
                 setStreamingContent('');
@@ -794,27 +799,56 @@ export default function OmegaChatPage(): React.ReactElement {
                         )}
 
                         {/* ASSISTANT message */}
-                        {message.role === 'ASSISTANT' && message.content && (
-                          <div className="flex gap-4 w-full max-w-[85%] md:max-w-[90%] animate-slide-up">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
-                              <Icon icon="terminal" size="xs" className="text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0 pt-1.5">
-                              <div className="text-[15px] prose prose-slate dark:prose-invert max-w-none leading-relaxed prose-p:leading-relaxed prose-pre:bg-surface prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl">
-                                <Streamdown>{message.content}</Streamdown>
+                        {message.role === 'ASSISTANT' &&
+                          (message.content ||
+                            (message.toolCalls && message.toolCalls.length > 0)) && (
+                            <div className="flex gap-4 w-full max-w-[85%] md:max-w-[90%] animate-slide-up">
+                              <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <Icon icon="terminal" size="xs" className="text-primary" />
                               </div>
-                              {(message.inputTokens || message.outputTokens) && (
-                                <div className="mt-3 flex items-center gap-3 text-[11px] text-foreground-tertiary font-medium">
-                                  {message.inputTokens && <span>{message.inputTokens} in</span>}
-                                  {message.inputTokens && message.outputTokens && (
-                                    <span className="w-1 h-1 rounded-full bg-border" />
-                                  )}
-                                  {message.outputTokens && <span>{message.outputTokens} out</span>}
-                                </div>
-                              )}
+                              <div className="flex-1 min-w-0 pt-1.5">
+                                {message.content && (
+                                  <div className="text-[15px] prose prose-slate dark:prose-invert max-w-none leading-relaxed prose-p:leading-relaxed prose-pre:bg-surface prose-pre:border prose-pre:border-border/50 prose-pre:rounded-xl">
+                                    <Streamdown>{message.content}</Streamdown>
+                                  </div>
+                                )}
+
+                                {message.toolCalls && message.toolCalls.length > 0 && (
+                                  <div className="mt-3 space-y-3">
+                                    {message.toolCalls.map((tc) => (
+                                      <div
+                                        key={tc.toolCallId}
+                                        className="bg-surface border border-border/50 rounded-2xl overflow-hidden shadow-sm"
+                                      >
+                                        <ToolRenderer
+                                          part={{
+                                            type: 'tool-call',
+                                            toolCallId: tc.toolCallId,
+                                            toolName: tc.toolName,
+                                            args: tc.args,
+                                            state: 'call',
+                                          }}
+                                          isStreaming={false}
+                                        />
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {(message.inputTokens || message.outputTokens) && (
+                                  <div className="mt-3 flex items-center gap-3 text-[11px] text-foreground-tertiary font-medium">
+                                    {message.inputTokens && <span>{message.inputTokens} in</span>}
+                                    {message.inputTokens && message.outputTokens && (
+                                      <span className="w-1 h-1 rounded-full bg-border" />
+                                    )}
+                                    {message.outputTokens && (
+                                      <span>{message.outputTokens} out</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
                         {/* TOOL message */}
                         {message.role === 'TOOL' && message.toolCalls && (

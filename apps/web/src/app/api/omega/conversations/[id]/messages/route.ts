@@ -737,6 +737,8 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
           let totalInputTokens = 0;
           let totalOutputTokens = 0;
 
+          let firstAssistantMessageId: string | null = null;
+
           const result = streamText({
             model,
             messages,
@@ -784,43 +786,7 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
               totalInputTokens += usage.inputTokens ?? 0;
               totalOutputTokens += usage.outputTokens ?? 0;
 
-              // 1. Save Assistant Message for this step if it has text or tool calls
-              if (text || (toolCalls && toolCalls.length > 0)) {
-                const assistantMessage = await prisma.omegaMessage.create({
-                  data: {
-                    conversationId,
-                    role: 'ASSISTANT',
-                    content: text || '',
-                    toolCalls:
-                      toolCalls && toolCalls.length > 0
-                        ? (toolCalls.map((tc) => ({
-                            toolCallId: tc.toolCallId,
-                            toolName: tc.toolName,
-                            args: tc.input,
-                          })) as unknown as Prisma.InputJsonValue)
-                        : Prisma.JsonNull,
-                    inputTokens: usage.inputTokens,
-                    outputTokens: usage.outputTokens,
-                  },
-                });
-
-                sendEvent('run.step.completed', {
-                  stepIndex,
-                  message: {
-                    id: assistantMessage.id,
-                    role: 'ASSISTANT',
-                    content: text || '',
-                    toolCalls: toolCalls?.map((tc) => ({
-                      toolCallId: tc.toolCallId,
-                      toolName: tc.toolName,
-                      args: tc.input,
-                    })),
-                    createdAt: assistantMessage.createdAt,
-                  },
-                });
-              }
-
-              // 2. Save Tool Results for this step if present
+              // 1. Save Tool Results for this step if present (these are from the PREVIOUS step's calls)
               if (toolResults && toolResults.length > 0) {
                 const toolResultEntries = toolResults.map((tr) => {
                   const isError =
@@ -915,6 +881,46 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
                   }
                 }
               }
+
+              // 2. Save Assistant Message for this step if it has text or tool calls (current step's output)
+              if (text || (toolCalls && toolCalls.length > 0)) {
+                const assistantMessage = await prisma.omegaMessage.create({
+                  data: {
+                    conversationId,
+                    role: 'ASSISTANT',
+                    content: text || '',
+                    toolCalls:
+                      toolCalls && toolCalls.length > 0
+                        ? (toolCalls.map((tc) => ({
+                            toolCallId: tc.toolCallId,
+                            toolName: tc.toolName,
+                            args: tc.input,
+                          })) as unknown as Prisma.InputJsonValue)
+                        : Prisma.JsonNull,
+                    inputTokens: usage.inputTokens,
+                    outputTokens: usage.outputTokens,
+                  },
+                });
+
+                if (!firstAssistantMessageId) {
+                  firstAssistantMessageId = assistantMessage.id;
+                }
+
+                sendEvent('run.step.completed', {
+                  stepIndex,
+                  message: {
+                    id: assistantMessage.id,
+                    role: 'ASSISTANT',
+                    content: text || '',
+                    toolCalls: toolCalls?.map((tc) => ({
+                      toolCallId: tc.toolCallId,
+                      toolName: tc.toolName,
+                      args: tc.input,
+                    })),
+                    createdAt: assistantMessage.createdAt,
+                  },
+                });
+              }
             },
           });
 
@@ -942,6 +948,7 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
           });
 
           sendEvent('run.completed', {
+            messageId: firstAssistantMessageId,
             inputTokens: totalInputTokens,
             outputTokens: totalOutputTokens,
             staticTools: ['registrySearchTool', 'registryExecuteTool'],
