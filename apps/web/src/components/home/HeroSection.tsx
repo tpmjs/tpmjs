@@ -67,7 +67,7 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
             className="mb-8 font-bold leading-none tracking-tight text-foreground"
             style={{ fontSize: 'clamp(48px, 10vw, 96px)' }}
           >
-            INFRASTRUCTURE FOR THE AGENTIC WEB
+            THE NPM FOR AI TOOLS
           </h1>
 
           {/* Live Metrics Strip */}
