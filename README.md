@@ -24,7 +24,14 @@
 
 ---
 
-TPMJS is an open-source registry for discovering, sharing, and integrating AI tools published to npm. Browse tools at [tpmjs.com](https://tpmjs.com), publish your own by adding a keyword to `package.json`, or give your AI agent access to the entire registry via MCP or SDK.
+TPMJS is the infrastructure layer for the agentic web. It is an open-source registry and execution platform that automatically discovers, validates, and runs npm packages as AI agent tools. Give your AI agent instant access to a growing library of real-world capabilities via MCP, SDK, or the TPMJS CLI.
+
+## Key Concepts
+
+- **Discovery** — Any npm package with the `tpmjs` keyword is automatically indexed and searchable.
+- **Execution** — Securely run tools in a sandboxed environment (Deno) without local configuration.
+- **MCP Aggregator** — Connect curated "Collections" to Claude, Cursor, or any MCP client with a single URL.
+- **Agent Platform** — Build, share, and fork AI agents with custom prompts and dynamic tool access.
 
 ## Getting Started
 
@@ -90,15 +97,13 @@ const tools = [registrySearchTool, registryExecuteTool];
 
 ## Features
 
-- **Tool Registry** — Search and browse AI tools by category, quality score, and popularity
-- **One-Keyword Publishing** — Add `"tpmjs"` to your `package.json` keywords, publish to npm, done
-- **Quality Scoring** — Tools scored on documentation, downloads, and metadata completeness
-- **MCP Support** — Expose tool collections as MCP servers for Claude, Cursor, and other clients
-- **CLI** — Search, execute, and manage tools from the terminal
-- **Agent SDK** — Let agents discover and execute tools at runtime
-- **Collections** — Group tools into reusable sets
-- **Scenarios** — Define test scenarios for validating tool behavior
-- **Bridge** — Connect local MCP servers to the TPMJS platform
+- **Tool Registry** — Search 180+ official and community tools by category, quality, and popularity.
+- **One-Keyword Publishing** — Add `"tpmjs"` to your `package.json` keywords to go live in minutes.
+- **Quality Scoring** — Automated scoring based on documentation, downloads, and execution health.
+- **Secure Sandboxing** — Isolated execution environment protects your system from untrusted code.
+- **MCP Support** — Full Model Context Protocol implementation for seamless agent integration.
+- **Collections & Scenarios** — Group tools into bundles and validate them with AI-generated test cases.
+- **Agent SDK** — Let agents discover and execute tools at runtime based on conversation context.
 
 ## Packages
 

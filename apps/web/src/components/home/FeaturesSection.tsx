@@ -152,14 +152,14 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
         {/* Section Header */}
         <div className="text-center mb-16">
           <p className="font-mono text-xs text-primary uppercase tracking-widest mb-3">
-            platform capabilities
+            infrastructure layer
           </p>
           <h2 className="font-mono text-3xl md:text-4xl font-semibold mb-4 text-foreground lowercase">
-            everything you need
+            the agentic ecosystem
           </h2>
           <p className="text-base text-foreground-secondary max-w-2xl mx-auto font-sans">
-            From discovery to execution, TPMJS provides the complete infrastructure for AI tool
-            development and deployment.
+            From automated discovery to secure execution, TPMJS provides the foundational
+            infrastructure for the next generation of AI agents.
           </p>
         </div>
 

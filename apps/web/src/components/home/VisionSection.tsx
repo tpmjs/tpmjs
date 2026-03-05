@@ -63,7 +63,7 @@ export function VisionSection(): React.ReactElement {
         </div>
 
         <div className="mt-12 text-center font-mono text-sm text-brutalist-accent uppercase tracking-wider">
-          One registry. Thousands of tools. Zero configuration.
+          The infrastructure layer for a connected, agentic web.
         </div>
       </Container>
     </section>

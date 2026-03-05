@@ -64,7 +64,7 @@ export function ProblemSection(): React.ReactElement {
         </div>
 
         <div className="mt-12 text-center font-mono text-sm text-foreground-secondary uppercase tracking-wider">
-          Agents stuck with static, manually-configured toolsets
+          Agents stuck in a static web with manual tool integration
         </div>
       </Container>
     </section>

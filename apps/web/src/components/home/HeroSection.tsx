@@ -67,7 +67,7 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
             className="mb-8 font-bold leading-none tracking-tight text-foreground"
             style={{ fontSize: 'clamp(48px, 10vw, 96px)' }}
           >
-            THE NPM FOR AI TOOLS
+            INFRASTRUCTURE FOR THE AGENTIC WEB
           </h1>
 
           {/* Live Metrics Strip */}
@@ -94,8 +94,8 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
 
           {/* Subheading */}
           <p className="mb-12 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
-            Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and
-            any MCP-compatible client.
+            The universal registry and execution layer for AI tools. Give your agents instant
+            access to real-world capabilities via MCP, SDK, or the TPMJS CLI.
           </p>
 
           {/* Brutalist Search Interface */}
