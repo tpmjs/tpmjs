@@ -240,8 +240,6 @@ export default function OmegaChatPage(): React.ReactElement {
     };
     setMessages((prev) => [...prev, userMessage]);
 
-    let accumulatedContent = '';
-
     try {
       const response = await fetch(`/api/omega/conversations/${conversationId}/messages`, {
         method: 'POST',
@@ -304,9 +302,9 @@ export default function OmegaChatPage(): React.ReactElement {
                 break;
               case 'message.delta':
                 setStatusMessage(null);
-                accumulatedContent += (d as { content: string }).content;
                 setStreamingContent((prev) => prev + (d as { content: string }).content);
                 break;
+
               case 'run.step.tool.started':
                 setStatusMessage(null);
                 setToolCalls((prev) => {
@@ -579,7 +577,6 @@ export default function OmegaChatPage(): React.ReactElement {
                 </Button>
               </div>
 
-              {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Debug view with multiple conditional sections */}
               {messages.map((message, index) => {
                 const discovery = messageToolDiscovery.get(message.id);
                 return (

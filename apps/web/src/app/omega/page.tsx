@@ -91,13 +91,18 @@ export default function OmegaLandingPage(): React.ReactElement {
       .catch(() => {});
   }, []);
 
+  const handleAuthRedirect = useCallback(
+    (prompt?: string) => {
+      const returnUrl = prompt ? `/omega?prompt=${encodeURIComponent(prompt)}` : '/omega';
+      router.push(`/sign-in?returnTo=${encodeURIComponent(returnUrl)}`);
+    },
+    [router]
+  );
+
   const createConversation = useCallback(
     async (initialPrompt?: string) => {
       if (!isAuthenticated) {
-        const returnUrl = initialPrompt
-          ? `/omega?prompt=${encodeURIComponent(initialPrompt)}`
-          : '/omega';
-        router.push(`/sign-in?returnTo=${encodeURIComponent(returnUrl)}`);
+        handleAuthRedirect(initialPrompt);
         return;
       }
 
@@ -113,7 +118,7 @@ export default function OmegaLandingPage(): React.ReactElement {
         if (!response.ok) {
           const data = await response.json();
           if (response.status === 401) {
-            router.push(`/sign-in?returnTo=${encodeURIComponent('/omega')}`);
+            handleAuthRedirect();
             return;
           }
           throw new Error(data.error?.message || data.error || 'Failed to create conversation');
@@ -132,7 +137,7 @@ export default function OmegaLandingPage(): React.ReactElement {
         setIsCreating(false);
       }
     },
-    [router, isAuthenticated]
+    [router, isAuthenticated, handleAuthRedirect]
   );
 
   // Handle prompt query parameter (redirect from sign-in)
