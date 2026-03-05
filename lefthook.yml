@@ -12,6 +12,10 @@ pre-commit:
       run: pnpm biome check --write --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
       stage_fixed: true
 
+    lint:
+      glob: "*.{ts,tsx,js,jsx}"
+      run: pnpm biome lint --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+
     type-check:
       # Only type-check packages with staged changes
       run: pnpm turbo type-check --filter='...[HEAD]'

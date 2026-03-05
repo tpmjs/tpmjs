@@ -707,6 +707,9 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
           // --- Status: streaming ---
           sendEvent('status', { phase: 'streaming', message: 'Generating response...' });
 
+          // Track per-tool start times for accurate executionTimeMs
+          const toolStartTimes = new Map<string, number>();
+
           let stepIndex = 0;
           let totalInputTokens = 0;
           let totalOutputTokens = 0;
