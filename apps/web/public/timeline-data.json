@@ -7127,6 +7127,102 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "054cc184c081b9b2040f85e3c27c10f474b36740",
+      "d": "2026-03-05",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "24648c60be4929c7c4f95af69ce4229e30ca44b9",
+      "d": "2026-03-05",
+      "m": "docs: reposition TPMJS as the infrastructure layer for the agentic web",
+      "t": "docs",
+      "s": "",
+      "u": "reposition TPMJS as the infrastructure layer for the agentic web"
+    },
+    {
+      "h": "87b5146c635a82c2545c5f53981ed6ca2221ff77",
+      "d": "2026-03-06",
+      "m": "style: revert hero title to 'THE NPM FOR AI TOOLS'",
+      "t": "style",
+      "s": "",
+      "u": "revert hero title to 'THE NPM FOR AI TOOLS'"
+    },
+    {
+      "h": "000451965da7f2405e5f9518f9949a315318ee21",
+      "d": "2026-03-06",
+      "m": "feat(omega): redesign omega UI to sleek modern agentic aesthetic",
+      "t": "feat",
+      "s": "omega",
+      "u": "redesign omega UI to sleek modern agentic aesthetic"
+    },
+    {
+      "h": "95ac65c0326ef1f6412b0dce7667d0f86ddd4f5a",
+      "d": "2026-03-06",
+      "m": "fix(omega): ensure strictly chronological rendering of multi-step tool calls",
+      "t": "fix",
+      "s": "omega",
+      "u": "ensure strictly chronological rendering of multi-step tool calls"
+    },
+    {
+      "h": "90c8f8af8bbcf3cdf9494052c5612dfc7c217a4f",
+      "d": "2026-03-06",
+      "m": "fix(omega): fix build error and activate pre-commit hooks",
+      "t": "fix",
+      "s": "omega",
+      "u": "fix build error and activate pre-commit hooks"
+    },
+    {
+      "h": "fa73fbd25eb163e2097ccdcd2fb0dd8d1e336d4f",
+      "d": "2026-03-06",
+      "m": "fix(omega): final type fixes and pre-commit hook validation",
+      "t": "fix",
+      "s": "omega",
+      "u": "final type fixes and pre-commit hook validation"
+    },
+    {
+      "h": "4280fd2e95ba7772abab99f948561314cdd0fb51",
+      "d": "2026-03-06",
+      "m": "fix(omega): robust error reporting and rendering in chat",
+      "t": "fix",
+      "s": "omega",
+      "u": "robust error reporting and rendering in chat"
+    },
+    {
+      "h": "75ab20c54233feb7764d94ab09cf4f9ccfedec68",
+      "d": "2026-03-06",
+      "m": "fix(omega): surface API key decryption errors to user in chat UI",
+      "t": "fix",
+      "s": "omega",
+      "u": "surface API key decryption errors to user in chat UI"
+    },
+    {
+      "h": "7d58e5e0b26d218cc5efaf7c00bd2b96aaa138cf",
+      "d": "2026-03-06",
+      "m": "fix(omega): remove third-party animation classes causing white screen",
+      "t": "fix",
+      "s": "omega",
+      "u": "remove third-party animation classes causing white screen"
+    },
+    {
+      "h": "d138e73f09d37cbe211f605ee83d090a91a20c61",
+      "d": "2026-03-06",
+      "m": "refactor(omega): clean up code and fix linter warnings",
+      "t": "refactor",
+      "s": "omega",
+      "u": "clean up code and fix linter warnings"
+    },
+    {
+      "h": "28848730be628b849fca091cbf3fa92c902812ec",
+      "d": "2026-03-06",
+      "m": "fix(omega): correct chronological saving order and render historical tool calls",
+      "t": "fix",
+      "s": "omega",
+      "u": "correct chronological saving order and render historical tool calls"
     }
   ],
   "m": [
