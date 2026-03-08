@@ -40,22 +40,23 @@ function createPrismaClient(): PrismaClient {
   }
 }
 
-// Wrap initialization in try/catch so a missing DATABASE_URL causes a query-time
-// error (caught by API route handlers) rather than a module-load crash that
-// bypasses all error boundaries and gets reported as an unhandled exception.
-let _prisma: PrismaClient;
-try {
-  _prisma = globalForPrisma.prisma ?? createPrismaClient();
-} catch {
-  console.error(
-    '[db] PrismaClient failed to initialize at module load (DATABASE_URL may be missing). ' +
-      'DB queries will throw at runtime.'
-  );
-  _prisma = new PrismaClient();
+// Use lazy initialization so the module can load even if DATABASE_URL is absent at cold start.
+// This defers the error to the first actual database query, where route handlers can catch it
+// gracefully instead of crashing the entire serverless function on module load.
+let _prisma: PrismaClient | undefined;
+
+function getClient(): PrismaClient {
+  if (!_prisma) {
+    _prisma = globalForPrisma.prisma ?? createPrismaClient();
+    if (process.env.NODE_ENV !== 'production') {
+      globalForPrisma.prisma = _prisma;
+    }
+  }
+  return _prisma;
 }
 
-export const prisma = _prisma;
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_, prop: string | symbol) {
+    return getClient()[prop as keyof PrismaClient];
+  },
+});
