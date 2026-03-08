@@ -13,7 +13,8 @@ const MAX_HISTORY = 50;
 export function useUndoRedo() {
   const pastRef = useRef<GraphState[]>([]);
   const futureRef = useRef<GraphState[]>([]);
-  const [, setRevision] = useState(0);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
 
   const pushState = useCallback((nodes: Node[], edges: Edge[]) => {
     pastRef.current = [
@@ -21,14 +22,16 @@ export function useUndoRedo() {
       { nodes: structuredClone(nodes), edges: structuredClone(edges) },
     ];
     futureRef.current = [];
-    setRevision((r) => r + 1);
+    setCanUndo(true);
+    setCanRedo(false);
   }, []);
 
   const undo = useCallback((): GraphState | null => {
     if (pastRef.current.length === 0) return null;
     const state = pastRef.current.pop() as GraphState;
     futureRef.current.push(state);
-    setRevision((r) => r + 1);
+    setCanUndo(pastRef.current.length > 0);
+    setCanRedo(true);
     const lastPast = pastRef.current[pastRef.current.length - 1];
     return lastPast ?? state;
   }, []);
@@ -37,11 +40,10 @@ export function useUndoRedo() {
     if (futureRef.current.length === 0) return null;
     const state = futureRef.current.pop() as GraphState;
     pastRef.current.push(state);
-    setRevision((r) => r + 1);
+    setCanUndo(true);
+    setCanRedo(futureRef.current.length > 0);
     return state;
   }, []);
-
-  const [canUndo, canRedo] = [pastRef.current.length > 0, futureRef.current.length > 0];
 
   return { pushState, undo, redo, canUndo, canRedo };
 }
