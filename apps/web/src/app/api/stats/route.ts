@@ -219,16 +219,23 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Derive health status counts from groupBy results
-    const healthyImportCount = importHealthGroups.find((g) => g.importHealth === 'HEALTHY')?._count._all ?? 0;
-    const brokenImportCount = importHealthGroups.find((g) => g.importHealth === 'BROKEN')?._count._all ?? 0;
-    const unknownImportCount = importHealthGroups.find((g) => g.importHealth === 'UNKNOWN')?._count._all ?? 0;
-    const healthyExecutionCount = executionHealthGroups.find((g) => g.executionHealth === 'HEALTHY')?._count._all ?? 0;
-    const brokenExecutionCount = executionHealthGroups.find((g) => g.executionHealth === 'BROKEN')?._count._all ?? 0;
-    const unknownExecutionCount = executionHealthGroups.find((g) => g.executionHealth === 'UNKNOWN')?._count._all ?? 0;
+    const healthyImportCount =
+      importHealthGroups.find((g) => g.importHealth === 'HEALTHY')?._count._all ?? 0;
+    const brokenImportCount =
+      importHealthGroups.find((g) => g.importHealth === 'BROKEN')?._count._all ?? 0;
+    const unknownImportCount =
+      importHealthGroups.find((g) => g.importHealth === 'UNKNOWN')?._count._all ?? 0;
+    const healthyExecutionCount =
+      executionHealthGroups.find((g) => g.executionHealth === 'HEALTHY')?._count._all ?? 0;
+    const brokenExecutionCount =
+      executionHealthGroups.find((g) => g.executionHealth === 'BROKEN')?._count._all ?? 0;
+    const unknownExecutionCount =
+      executionHealthGroups.find((g) => g.executionHealth === 'UNKNOWN')?._count._all ?? 0;
 
     // Derive simulation counts from groupBy results
     const totalSimulations = simulationStatusGroups.reduce((sum, g) => sum + g._count._all, 0);
-    const successfulSimulations = simulationStatusGroups.find((g) => g.status === 'success')?._count._all ?? 0;
+    const successfulSimulations =
+      simulationStatusGroups.find((g) => g.status === 'success')?._count._all ?? 0;
     const failedSimulations = simulationStatusGroups
       .filter((g) => g.status === 'error' || g.status === 'timeout')
       .reduce((sum, g) => sum + g._count._all, 0);
