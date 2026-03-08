@@ -44,13 +44,9 @@ export async function GET(request: NextRequest) {
       officialToolCount,
       toolsWithSchema,
 
-      // Health status counts
-      healthyImportCount,
-      brokenImportCount,
-      unknownImportCount,
-      healthyExecutionCount,
-      brokenExecutionCount,
-      unknownExecutionCount,
+      // Health status counts (grouped)
+      importHealthGroups,
+      executionHealthGroups,
 
       // Package data for aggregations
       packages,
@@ -62,9 +58,7 @@ export async function GET(request: NextRequest) {
       packagesLast7d,
 
       // Simulation statistics
-      totalSimulations,
-      successfulSimulations,
-      failedSimulations,
+      simulationStatusGroups,
       simulationsLast24h,
       simulationsLast7d,
 
@@ -100,15 +94,15 @@ export async function GET(request: NextRequest) {
         where: { schemaSource: 'extracted' },
       }),
 
-      // Health status distribution - Import
-      prisma.tool.count({ where: { importHealth: 'HEALTHY' } }),
-      prisma.tool.count({ where: { importHealth: 'BROKEN' } }),
-      prisma.tool.count({ where: { importHealth: 'UNKNOWN' } }),
-
-      // Health status distribution - Execution
-      prisma.tool.count({ where: { executionHealth: 'HEALTHY' } }),
-      prisma.tool.count({ where: { executionHealth: 'BROKEN' } }),
-      prisma.tool.count({ where: { executionHealth: 'UNKNOWN' } }),
+      // Health status distribution - consolidated groupBy queries
+      prisma.tool.groupBy({
+        by: ['importHealth'],
+        _count: { _all: true },
+      }),
+      prisma.tool.groupBy({
+        by: ['executionHealth'],
+        _count: { _all: true },
+      }),
 
       // Package data for category/tier/download aggregations
       prisma.package.findMany({
@@ -128,10 +122,11 @@ export async function GET(request: NextRequest) {
       prisma.tool.count({ where: { createdAt: { gte: last30d } } }),
       prisma.package.count({ where: { createdAt: { gte: last7d } } }),
 
-      // Simulation counts
-      prisma.simulation.count(),
-      prisma.simulation.count({ where: { status: 'success' } }),
-      prisma.simulation.count({ where: { status: { in: ['error', 'timeout'] } } }),
+      // Simulation status counts - consolidated groupBy query
+      prisma.simulation.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      }),
       prisma.simulation.count({ where: { createdAt: { gte: last24h } } }),
       prisma.simulation.count({ where: { createdAt: { gte: last7d } } }),
 
@@ -222,6 +217,21 @@ export async function GET(request: NextRequest) {
           END)
       `,
     ]);
+
+    // Derive health status counts from groupBy results
+    const healthyImportCount = importHealthGroups.find((g) => g.importHealth === 'HEALTHY')?._count._all ?? 0;
+    const brokenImportCount = importHealthGroups.find((g) => g.importHealth === 'BROKEN')?._count._all ?? 0;
+    const unknownImportCount = importHealthGroups.find((g) => g.importHealth === 'UNKNOWN')?._count._all ?? 0;
+    const healthyExecutionCount = executionHealthGroups.find((g) => g.executionHealth === 'HEALTHY')?._count._all ?? 0;
+    const brokenExecutionCount = executionHealthGroups.find((g) => g.executionHealth === 'BROKEN')?._count._all ?? 0;
+    const unknownExecutionCount = executionHealthGroups.find((g) => g.executionHealth === 'UNKNOWN')?._count._all ?? 0;
+
+    // Derive simulation counts from groupBy results
+    const totalSimulations = simulationStatusGroups.reduce((sum, g) => sum + g._count._all, 0);
+    const successfulSimulations = simulationStatusGroups.find((g) => g.status === 'success')?._count._all ?? 0;
+    const failedSimulations = simulationStatusGroups
+      .filter((g) => g.status === 'error' || g.status === 'timeout')
+      .reduce((sum, g) => sum + g._count._all, 0);
 
     // Aggregate package data
     const categories: Record<string, number> = {};
