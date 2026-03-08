@@ -11,16 +11,15 @@ function createPrismaClient(): PrismaClient {
     const errorMsg =
       'DATABASE_URL is not defined in environment variables. Please configure your database connection.';
 
-    // During build phase, just warn and return a stub client
-    if (process.env.NEXT_PHASE === 'phase-production-build') {
-      console.warn(`[Prisma] ${errorMsg} This is expected during build, but will fail at runtime.`);
-      // Return a basic client that will fail if actually used at runtime
+    // During build or test, allow creating a client without DATABASE_URL
+    // (it will fail on first query, but won't crash module loading)
+    if (process.env.NEXT_PHASE === 'phase-production-build' || process.env.VITEST || process.env.NODE_ENV === 'test') {
       return new PrismaClient({
         log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
       });
     }
 
-    // At runtime, throw immediately
+    // At production runtime, throw immediately for clear error messages
     throw new Error(errorMsg);
   }
 

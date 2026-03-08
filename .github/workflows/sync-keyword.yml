@@ -14,10 +14,11 @@ jobs:
       - name: Trigger keyword search sync
         id: sync
         run: |
-          # Call the sync API and capture response
+          # Call the sync API and capture response (60s timeout for Vercel serverless)
           response=$(curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/keyword" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
+            --max-time 65 --connect-timeout 10 \
             -f -s -S)
 
           echo "Response: $response"
@@ -77,7 +78,29 @@ jobs:
 
       - name: Send Discord notification
         if: always()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: |
+          # Handle case where sync step failed entirely (e.g. 504 timeout)
+          if [ -z "${{ steps.sync.outputs.durationMs }}" ]; then
+            payload=$(jq -n \
+              --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
+              --arg run_url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+              '{
+                embeds: [{
+                  title: "❌ NPM Keyword Search Sync",
+                  color: 15548997,
+                  description: "Sync request failed (likely timeout). Check Vercel function logs.",
+                  fields: [
+                    { name: "🔗 Run", value: ("[View Logs](" + $run_url + ")"), inline: true }
+                  ],
+                  timestamp: $timestamp
+                }]
+              }')
+            curl -s -X POST "$DISCORD_WEBHOOK" -H "Content-Type: application/json" -d "$payload" || true
+            exit 0
+          fi
+
           # Format duration
           duration_sec=$(echo "scale=2; ${{ steps.sync.outputs.durationMs }} / 1000" | bc)
 
@@ -86,11 +109,14 @@ jobs:
           error_text=""
           skipped_text=""
 
-          if [ -f /tmp/error_summary.txt ] && [ ${{ steps.sync.outputs.errors }} -gt 0 ]; then
+          errors=${{ steps.sync.outputs.errors || 0 }}
+          skipped=${{ steps.sync.outputs.skipped || 0 }}
+
+          if [ -f /tmp/error_summary.txt ] && [ "$errors" -gt 0 ]; then
             error_text=$(cat /tmp/error_summary.txt | head -c 800)
           fi
 
-          if [ -f /tmp/skipped_packages.txt ] && [ ${{ steps.sync.outputs.skipped }} -gt 0 ]; then
+          if [ -f /tmp/skipped_packages.txt ] && [ "$skipped" -gt 0 ]; then
             skipped_text=$(cat /tmp/skipped_packages.txt)
           fi
 
@@ -104,10 +130,12 @@ jobs:
             { "name": "🔗 Run", "value": "[View Logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})", "inline": true }
           ]'
 
+          status_color=${{ steps.sync.outputs.status_color || 15548997 }}
+
           # Create payload with dynamic fields
           payload=$(jq -n \
-            --arg title "${{ steps.sync.outputs.status_emoji }} NPM Keyword Search Sync" \
-            --argjson color ${{ steps.sync.outputs.status_color }} \
+            --arg title "${{ steps.sync.outputs.status_emoji || '❌' }} NPM Keyword Search Sync" \
+            --argjson color "$status_color" \
             --argjson baseFields "$base_fields" \
             --arg error_text "$error_text" \
             --arg skipped_text "$skipped_text" \
@@ -127,6 +155,6 @@ jobs:
             }')
 
           # Send to Discord
-          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          curl -s -X POST "$DISCORD_WEBHOOK" \
             -H "Content-Type: application/json" \
-            -d "$payload"
+            -d "$payload" || true
