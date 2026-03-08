@@ -55,7 +55,13 @@ export async function POST(request: Request) {
 
   // Build embedding text and generate embedding
   const embeddingText = buildEmbeddingText(memorySummary, namespace, tags);
-  const embedding = await embedMemoryContent(embeddingText);
+  let embedding: number[];
+  try {
+    embedding = await embedMemoryContent(embeddingText);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Embedding service unavailable';
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
 
   const memory = await prisma.memory.create({
     data: {
