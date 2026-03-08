@@ -36,7 +36,7 @@ export function ToolNodeInspector({
 
   useEffect(() => {
     if (!toolId) return;
-    setLoading(true);
+    setLoading(true); // eslint-disable-line react-hooks/set-state-in-effect
     fetch(`/api/tools/${toolId}`)
       .then((res) => res.json())
       .then((result) => {

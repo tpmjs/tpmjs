@@ -307,7 +307,7 @@ export default function OmegaLandingPage(): React.ReactElement {
               Explore Capabilities
             </h2>
             <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
-              Not sure where to start? Try one of these examples to see Omega's dynamic tool
+              Not sure where to start? Try one of these examples to see Omega&apos;s dynamic tool
               discovery in action.
             </p>
           </div>

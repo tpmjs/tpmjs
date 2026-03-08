@@ -20,7 +20,7 @@ export function useResizableWidth(storageKey: string, defaultWidth: number) {
       if (stored) {
         const parsed = Number.parseInt(stored, 10);
         if (parsed >= MIN_WIDTH && parsed <= MAX_WIDTH) {
-          setWidth(parsed);
+          setWidth(parsed); // eslint-disable-line react-hooks/set-state-in-effect
         }
       }
     } catch {

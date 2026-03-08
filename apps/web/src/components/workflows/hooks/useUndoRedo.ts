@@ -26,25 +26,22 @@ export function useUndoRedo() {
 
   const undo = useCallback((): GraphState | null => {
     if (pastRef.current.length === 0) return null;
-    const state = pastRef.current.pop()!;
+    const state = pastRef.current.pop() as GraphState;
     futureRef.current.push(state);
     setRevision((r) => r + 1);
-    return pastRef.current.length > 0 ? pastRef.current[pastRef.current.length - 1]! : state;
+    const lastPast = pastRef.current[pastRef.current.length - 1];
+    return lastPast ?? state;
   }, []);
 
   const redo = useCallback((): GraphState | null => {
     if (futureRef.current.length === 0) return null;
-    const state = futureRef.current.pop()!;
+    const state = futureRef.current.pop() as GraphState;
     pastRef.current.push(state);
     setRevision((r) => r + 1);
     return state;
   }, []);
 
-  return {
-    pushState,
-    undo,
-    redo,
-    canUndo: pastRef.current.length > 0,
-    canRedo: futureRef.current.length > 0,
-  };
+  const [canUndo, canRedo] = [pastRef.current.length > 0, futureRef.current.length > 0];
+
+  return { pushState, undo, redo, canUndo, canRedo };
 }

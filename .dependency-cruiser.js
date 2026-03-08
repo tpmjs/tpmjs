@@ -149,6 +149,7 @@ export default {
         '^apps/railway-executor', // Deno app with HTTP imports
         '^apps/omega-mac', // Swift/macOS app with native deps
         '^packages/tools/official', // Tool packages built independently with tsup
+        '^packages/compose', // Uses ai as peerDep, dependency-cruiser can't resolve it
       ],
     },
     tsPreCompilationDeps: true,

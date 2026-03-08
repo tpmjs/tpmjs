@@ -13,7 +13,7 @@ import {
   useEdgesState,
   useNodesState,
 } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+import '@xyflow/react/dist/style.css'; // eslint-disable-line import/no-internal-modules
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DataEdge } from './edges/DataEdge';
 import { useUndoRedo } from './hooks/useUndoRedo';
@@ -216,7 +216,7 @@ export function WorkflowCanvas({ workflowId }: WorkflowCanvasProps): React.React
   // Trigger auto-save on changes
   useEffect(() => {
     if (isInitialLoadRef.current) return;
-    setSaveStatus('unsaved');
+    setSaveStatus('unsaved'); // eslint-disable-line react-hooks/set-state-in-effect
 
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);

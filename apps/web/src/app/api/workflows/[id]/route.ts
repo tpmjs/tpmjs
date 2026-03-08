@@ -1,6 +1,6 @@
 import { Prisma, prisma } from '@tpmjs/db';
 import type { NextRequest } from 'next/server';
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 import { logActivity } from '~/lib/activity';
 import { authenticateRequest } from '~/lib/api-keys/middleware';

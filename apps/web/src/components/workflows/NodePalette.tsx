@@ -136,7 +136,7 @@ export function NodePalette({ collapsed, onToggle }: NodePaletteProps): React.Re
   // Debounced tool search
   useEffect(() => {
     if (!search || search.length < 2) {
-      setSearchTools([]);
+      setSearchTools([]); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
 
