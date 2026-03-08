@@ -40,8 +40,23 @@ function createPrismaClient(): PrismaClient {
   }
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+// Use lazy initialization so the module can load even if DATABASE_URL is absent at cold start.
+// This defers the error to the first actual database query, where route handlers can catch it
+// gracefully instead of crashing the entire serverless function on module load.
+let _prisma: PrismaClient | undefined;
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
+function getClient(): PrismaClient {
+  if (!_prisma) {
+    _prisma = globalForPrisma.prisma ?? createPrismaClient();
+    if (process.env.NODE_ENV !== 'production') {
+      globalForPrisma.prisma = _prisma;
+    }
+  }
+  return _prisma;
 }
+
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_, prop: string | symbol) {
+    return getClient()[prop as keyof PrismaClient];
+  },
+});
