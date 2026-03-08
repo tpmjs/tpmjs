@@ -40,7 +40,21 @@ function createPrismaClient(): PrismaClient {
   }
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+// Wrap initialization in try/catch so a missing DATABASE_URL causes a query-time
+// error (caught by API route handlers) rather than a module-load crash that
+// bypasses all error boundaries and gets reported as an unhandled exception.
+let _prisma: PrismaClient;
+try {
+  _prisma = globalForPrisma.prisma ?? createPrismaClient();
+} catch {
+  console.error(
+    '[db] PrismaClient failed to initialize at module load (DATABASE_URL may be missing). ' +
+      'DB queries will throw at runtime.'
+  );
+  _prisma = new PrismaClient();
+}
+
+export const prisma = _prisma;
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
