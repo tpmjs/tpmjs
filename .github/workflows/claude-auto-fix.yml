@@ -100,8 +100,10 @@ jobs:
               '## Instructions',
               '1. Read the pipeline specification at `.claude/pipelines/auto-fix.md`',
               '2. Follow all steps: parse error, locate source, analyze, fix, validate, create PR',
-              '3. Update labels as you progress (remove `claude-working`, add `fix-submitted` or `needs-human-review`)',
-              '4. Post a summary comment with your findings and the PR link',
+              '3. **IMPORTANT:** Include `Fixes #' + issueNumber + '` in the PR body so the issue auto-closes on merge',
+              '4. **IMPORTANT:** After creating the PR, merge it immediately with `gh pr merge <PR_NUMBER> --squash --delete-branch`',
+              '5. Update labels as you progress (remove `claude-working`, add `fix-submitted` or `needs-human-review`)',
+              '6. Post a summary comment with your findings and the PR link',
               '',
               '## Issue Context',
               `- Issue #${issueNumber}`,
@@ -165,13 +167,22 @@ jobs:
               .find(m => m);
             const prUrl = prMatch ? prMatch[0] : null;
 
+            // Check if issue was closed (meaning PR was merged with Fixes #N)
+            const isClosed = issue.state === 'closed';
+
             let message;
-            if (fixSubmitted && prUrl) {
-              message = `**Auto-fix submitted** for production error\n\n` +
+            if (fixSubmitted && prUrl && isClosed) {
+              message = `**Auto-fix merged** for production error ✅\n\n` +
                 `**Error:** ${issue.title.replace('[Sentry] ', '')}\n` +
                 `**Issue:** https://github.com/tpmjs/tpmjs/issues/${issueNumber}\n` +
                 `**PR:** ${prUrl}\n\n` +
-                `Claude analyzed the error and created a fix PR automatically.`;
+                `Claude analyzed, fixed, and merged automatically.`;
+            } else if (fixSubmitted && prUrl) {
+              message = `**Auto-fix PR created** for production error\n\n` +
+                `**Error:** ${issue.title.replace('[Sentry] ', '')}\n` +
+                `**Issue:** https://github.com/tpmjs/tpmjs/issues/${issueNumber}\n` +
+                `**PR:** ${prUrl}\n\n` +
+                `Claude created a fix PR (merge may need manual approval).`;
             } else if (needsHuman) {
               message = `**Auto-fix needs human review** ⚠️\n\n` +
                 `**Error:** ${issue.title.replace('[Sentry] ', '')}\n` +
