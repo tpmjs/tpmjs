@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "styleguide": {
+      "source": "thomasdavis/styleguide-skill",
+      "sourceType": "github",
+      "computedHash": "b384af0bfc3b03dcc4f3bdf65cf108c3af0f8c9efddeb6e30ba611f91960d0af"
+    }
+  }
+}
