@@ -7239,6 +7239,126 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "bf70f4f69da41f85e5ea2c9a96b5f7cd92674038",
+      "d": "2026-03-08",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "0aceab4244b388bb569d3dcaa18624a9af2c0d22",
+      "d": "2026-03-08",
+      "m": "fix: remove test error trigger from trending endpoint (#31)",
+      "t": "fix",
+      "s": "",
+      "u": "remove test error trigger from trending endpoint (#31)"
+    },
+    {
+      "h": "1fd36f3a078800ce68e4fd4b4baf48daa7409d07",
+      "d": "2026-03-08",
+      "m": "fix: remove duplicate browserTracingIntegration causing pushState conflict (#51)",
+      "t": "fix",
+      "s": "",
+      "u": "remove duplicate browserTracingIntegration causing pushState conflict (#51)"
+    },
+    {
+      "h": "8c7a822cd061c8bdd15a6bec99455ccff0b75b7d",
+      "d": "2026-03-08",
+      "m": "fix(db): improve PrismaClientInitializationError handling (#36)",
+      "t": "fix",
+      "s": "db",
+      "u": "improve PrismaClientInitializationError handling (#36)"
+    },
+    {
+      "h": "b71cb67063b59e584344437f55f411ccec7faab2",
+      "d": "2026-03-08",
+      "m": "fix: handle OpenAI quota errors in memory embedding calls (#46)",
+      "t": "fix",
+      "s": "",
+      "u": "handle OpenAI quota errors in memory embedding calls (#46)"
+    },
+    {
+      "h": "c5b92977ea19a35d8b0a578e6e24f6aa014435af",
+      "d": "2026-03-08",
+      "m": "fix: batch tag backfill updates to eliminate N+1 queries in /api/sync/enrich (#48)",
+      "t": "fix",
+      "s": "",
+      "u": "batch tag backfill updates to eliminate N+1 queries in /api/sync/enrich (#48)"
+    },
+    {
+      "h": "89bd159eb71a5e6e2865e3d927caa361c8afc519",
+      "d": "2026-03-08",
+      "m": "fix: consolidate N+1 count queries in GET /api/stats (#41)",
+      "t": "fix",
+      "s": "",
+      "u": "consolidate N+1 count queries in GET /api/stats (#41)"
+    },
+    {
+      "h": "70614b0610c53a73f6dcde9b0a6d0419786a4b45",
+      "d": "2026-03-08",
+      "m": "fix(auto-fix): add auto-merge and issue closing to pipeline",
+      "t": "fix",
+      "s": "auto-fix",
+      "u": "add auto-merge and issue closing to pipeline"
+    },
+    {
+      "h": "4cab312996490a2c802bade9cbbc2ecda7ccc861",
+      "d": "2026-03-08",
+      "m": "fix(ci): resolve failing GitHub Actions workflows",
+      "t": "fix",
+      "s": "ci",
+      "u": "resolve failing GitHub Actions workflows"
+    },
+    {
+      "h": "f07bef1dd56d70ac51966625bb43b1707123a261",
+      "d": "2026-03-08",
+      "m": "fix(ci): resolve pre-existing lint and architecture errors",
+      "t": "fix",
+      "s": "ci",
+      "u": "resolve pre-existing lint and architecture errors"
+    },
+    {
+      "h": "be7d5887338e809202c0c409791a2b58b6e5cf7f",
+      "d": "2026-03-08",
+      "m": "fix(lint): track canUndo/canRedo as state instead of reading refs during render",
+      "t": "fix",
+      "s": "lint",
+      "u": "track canUndo/canRedo as state instead of reading refs during render"
+    },
+    {
+      "h": "65f27d747f5ddbbd3e5da31ab2b2810f8eb09a0c",
+      "d": "2026-03-08",
+      "m": "fix(lint): apply biome formatting fixes",
+      "t": "fix",
+      "s": "lint",
+      "u": "apply biome formatting fixes"
+    },
+    {
+      "h": "307c6fde0cd3c9184c1720a9ccd53447efb07777",
+      "d": "2026-03-08",
+      "m": "feat(ui): add comprehensive style guide and missing components",
+      "t": "feat",
+      "s": "ui",
+      "u": "add comprehensive style guide and missing components"
+    },
+    {
+      "h": "e264ed4e7b146eb4749309aab0d132456636e65c",
+      "d": "2026-03-08",
+      "m": "fix(db): lazily initialize Prisma client to avoid cold-start crash (#55)",
+      "t": "fix",
+      "s": "db",
+      "u": "lazily initialize Prisma client to avoid cold-start crash (#55)"
+    },
+    {
+      "h": "e4d22e84731bbdf9e75d81722cbc19bcfcf944bb",
+      "d": "2026-03-08",
+      "m": "fix(db): defer DATABASE_URL error to query time to prevent Lambda crash (#56)",
+      "t": "fix",
+      "s": "db",
+      "u": "defer DATABASE_URL error to query time to prevent Lambda crash (#56)"
     }
   ],
   "m": [
