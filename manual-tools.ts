@@ -927,4 +927,22 @@ export const manualTools: ManualTool[] = [
     apiKeyUrl: 'https://tako.com',
     websiteUrl: 'https://tako.com',
   },
+  {
+    npmPackageName: '@browserbasehq/ai-sdk',
+    category: 'integration',
+    frameworks: ['vercel-ai'],
+    name: 'createBrowserbaseTools',
+    description: 'Initialize and manage browser automation tools for AI agents powered by Stagehand.',
+    tags: ['browser', 'browser-automation', 'web', 'extraction'],
+    env: [
+      {
+        name: 'BROWSERBASE_API_KEY',
+        description: 'API key for authenticating with Browserbase services.',
+        required: true,
+      }
+    ],
+    docsUrl: 'https://docs.browserbase.com',
+    apiKeyUrl: 'https://www.browserbase.com/settings',
+    websiteUrl: 'https://www.browserbase.com',
+  },
 ];
