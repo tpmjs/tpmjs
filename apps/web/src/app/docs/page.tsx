@@ -18,6 +18,15 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    title: 'CLI Reference',
+    items: [
+      { id: 'cli-overview', label: 'Overview' },
+      { id: 'cli-tools', label: 'Tools & Execution' },
+      { id: 'cli-collections', label: 'Collections' },
+      { id: 'cli-mcp', label: 'MCP Integration' },
+    ],
+  },
+  {
     title: 'SDK Reference',
     items: [
       { id: 'installation', label: 'Installation' },
@@ -416,6 +425,126 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
                   </p>
                 </DocSubSection>
               </div>
+            </DocSection>
+
+            {/* ==================== CLI REFERENCE ==================== */}
+            <DocSection id="cli-overview" title="CLI Overview">
+              <p className="text-foreground-secondary mb-6">
+                The <code>tpm</code> CLI lets you search, execute, and manage AI tools from your
+                terminal. Install it globally:
+              </p>
+              <CodeBlock code="npm install -g @tpmjs/cli" language="bash" showCopy={true} />
+              <div className="mt-4">
+                <CodeBlock
+                  code={`# Authenticate
+tpm auth login
+
+# Search for tools
+tpm tool search firecrawl
+
+# Execute a tool
+tpm tool execute firecrawl-scrape --input '{"url":"https://example.com"}'
+
+# Show trending tools
+tpm tool trending`}
+                  language="bash"
+                  showCopy={true}
+                />
+              </div>
+              <p className="text-foreground-secondary mt-4">
+                All commands support <code>--json</code> for machine-readable output and{' '}
+                <code>--verbose</code> for debug info. Run <code>tpm doctor</code> to check your
+                setup.
+              </p>
+              <p className="text-foreground-secondary mt-2">
+                <Link href="/docs/cli" className="text-primary hover:underline font-medium">
+                  View full CLI reference &rarr;
+                </Link>
+              </p>
+            </DocSection>
+
+            <DocSection id="cli-tools" title="Tools & Execution">
+              <p className="text-foreground-secondary mb-4">
+                Search the registry, get tool details, and execute tools directly:
+              </p>
+              <CodeBlock
+                code={`# Search for tools
+tpm tool search [query]
+
+# Get detailed tool info
+tpm tool info <package> <tool>
+
+# Execute with JSON input
+tpm tool execute <tool> --input '{"key":"value"}'
+
+# Execute with input from file
+tpm tool execute <tool> --input-file params.json
+
+# Stream results
+tpm tool execute <tool> --stream
+
+# Initialize a new tool package
+tpm tool init my-tool --template rich
+
+# Validate your tool config
+tpm tool validate`}
+                language="bash"
+                showCopy={true}
+              />
+            </DocSection>
+
+            <DocSection id="cli-collections" title="Collections">
+              <p className="text-foreground-secondary mb-4">
+                Organize tools into collections and manage them from the CLI:
+              </p>
+              <CodeBlock
+                code={`# List your collections
+tpm collection list
+
+# Create a new collection
+tpm collection create
+
+# View collection details
+tpm collection info ajax/my-collection
+
+# Add tools
+tpm collection add my-collection tool-id-1 tool-id-2
+tpm collection add my-collection --package @org/my-tools
+
+# Import from file
+tpm collection import my-collection --file tools.txt
+
+# Update metadata
+tpm collection update my-col --name "New Name" --public
+
+# Run scenario tests
+tpm scenario generate my-collection --count 3
+tpm scenario run my-collection`}
+                language="bash"
+                showCopy={true}
+              />
+            </DocSection>
+
+            <DocSection id="cli-mcp" title="CLI MCP Integration">
+              <p className="text-foreground-secondary mb-4">
+                Generate MCP configuration for AI clients or run as a local MCP server:
+              </p>
+              <CodeBlock
+                code={`# Generate config for AI clients
+tpm mcp config ajax/my-collection               # Auto-detect
+tpm mcp config ajax/my-col --client claude       # Claude Desktop
+tpm mcp config ajax/my-col --client cursor       # Cursor
+tpm mcp config ajax/my-col --client windsurf     # Windsurf
+
+# Run as local MCP server
+tpm mcp serve                                    # HTTP on port 3333
+tpm mcp serve --stdio                            # stdio mode
+
+# Run a tool from a collection via MCP
+tpm run -c ajax/tools -t myTool --args '{"key":"value"}'`}
+                language="bash"
+                showCopy={true}
+              />
             </DocSection>
 
             {/* ==================== SDK REFERENCE ==================== */}
