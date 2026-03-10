@@ -7359,6 +7359,46 @@
       "t": "fix",
       "s": "db",
       "u": "defer DATABASE_URL error to query time to prevent Lambda crash (#56)"
+    },
+    {
+      "h": "8de166a75c0f2abb89bb6417d8f3f419b161e466",
+      "d": "2026-03-09",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "031923957c5197ff75cd49c244771a12212a3f09",
+      "d": "2026-03-09",
+      "m": "chore: sync 1 new tools from Vercel AI registry",
+      "t": "chore",
+      "s": "",
+      "u": "sync 1 new tools from Vercel AI registry"
+    },
+    {
+      "h": "2058edcbe8f36cb883eed2724ba2a488c93c3d86",
+      "d": "2026-03-10",
+      "m": "docs(cli): add comprehensive CLI documentation",
+      "t": "docs",
+      "s": "cli",
+      "u": "add comprehensive CLI documentation"
+    },
+    {
+      "h": "fe21ff27b2cb3d43f0752c854e2fcaf04b050bc2",
+      "d": "2026-03-10",
+      "m": "feat(docs): add CLI reference docs page at /docs/cli",
+      "t": "feat",
+      "s": "docs",
+      "u": "add CLI reference docs page at /docs/cli"
+    },
+    {
+      "h": "cb81b0965e50e1a1bfbd171cfc7610b38a048afe",
+      "d": "2026-03-10",
+      "m": "feat: add platform skills.md and document skills/usage endpoints",
+      "t": "feat",
+      "s": "",
+      "u": "add platform skills.md and document skills/usage endpoints"
     }
   ],
   "m": [
