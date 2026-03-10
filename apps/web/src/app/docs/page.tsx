@@ -42,6 +42,7 @@ const NAV_SECTIONS = [
       { id: 'mcp-creating-collections', label: 'Creating Collections' },
       { id: 'mcp-connecting-clients', label: 'Connecting Clients' },
       { id: 'mcp-protocol', label: 'MCP Protocol' },
+      { id: 'mcp-skills-usage', label: 'Skills & Usage Docs' },
     ],
   },
   {
@@ -1528,6 +1529,53 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
   }
 }`}
                 />
+              </DocSubSection>
+            </DocSection>
+
+            <DocSection id="mcp-skills-usage" title="Skills & Usage Docs">
+              <p className="text-foreground-secondary mb-6">
+                Every public collection has auto-generated documentation endpoints that AI agents
+                can consume directly:
+              </p>
+              <DocSubSection title="skills.md — Capability Contract">
+                <p className="text-foreground-secondary text-sm mb-3">
+                  An AI-generated skills declaration document that describes what your collection
+                  can do. Designed to be consumed by AI agents (Claude Code, MCP clients, tool
+                  routers).
+                </p>
+                <CodeBlock
+                  language="bash"
+                  code={`# Fetch skills documentation for a collection
+curl https://tpmjs.com/@username/collections/my-collection/skills.md
+
+# Force regeneration (bypass cache)
+curl https://tpmjs.com/@username/collections/my-collection/skills.md?cachebust`}
+                  showCopy={true}
+                />
+                <p className="text-foreground-secondary text-sm mt-3">
+                  The document includes: agent identity, core skills with input schemas, multi-tool
+                  workflows, integration methods (CLI, REST API, MCP), constraints, and versioning.
+                  It&apos;s cached for 1 week and regenerated on demand.
+                </p>
+              </DocSubSection>
+              <DocSubSection title="usage.md — Real-World Examples">
+                <p className="text-foreground-secondary text-sm mb-3">
+                  Auto-generated usage examples derived from your collection&apos;s tested
+                  scenarios. Shows real prompts with pass/fail status and reliability scores.
+                </p>
+                <CodeBlock
+                  language="bash"
+                  code={`# Fetch usage examples for a collection
+curl https://tpmjs.com/@username/collections/my-collection/usage.md`}
+                  showCopy={true}
+                />
+              </DocSubSection>
+              <DocSubSection title="Submit to Skill Directories">
+                <p className="text-foreground-secondary text-sm">
+                  The skills.md URL can be submitted to external skill directories like{' '}
+                  <strong>skills.sh</strong> and others. Point them to your collection&apos;s
+                  skills.md endpoint — it stays up-to-date automatically as your collection evolves.
+                </p>
               </DocSubSection>
             </DocSection>
 
