@@ -1,8 +1,8 @@
 import { prisma } from '@tpmjs/db';
 import type { MetadataRoute } from 'next';
 
-// Cache sitemap for 24 hours — avoids DB calls on every request
-export const revalidate = 86400;
+// Force dynamic rendering to avoid database calls during build
+export const dynamic = 'force-dynamic';
 
 /**
  * Dynamic sitemap that includes all pages and tools from the database
