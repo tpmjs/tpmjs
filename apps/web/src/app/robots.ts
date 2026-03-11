@@ -22,6 +22,8 @@ export default function robots(): MetadataRoute.Robots {
           '/verify-email',
           '/cli/auth',
           '/omega',
+          '/style-guide',
+          '/health',
         ],
       },
     ],

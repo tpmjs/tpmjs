@@ -11,50 +11,117 @@ export const revalidate = 86400;
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://tpmjs.com';
 
-  // Static pages with high priority
+  const now = new Date();
+
+  // Static pages — comprehensive list of all public routes
   const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/publish`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/how-it-works`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/spec`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/sdk`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
+    // Core
+    { url: baseUrl, lastModified: now, changeFrequency: 'daily', priority: 1 },
     {
       url: `${baseUrl}/tool/tool-search`,
-      lastModified: new Date(),
+      lastModified: now,
       changeFrequency: 'daily',
       priority: 0.9,
     },
+    { url: `${baseUrl}/collections`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/agents`, lastModified: now, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/scenarios`, lastModified: now, changeFrequency: 'daily', priority: 0.7 },
+
+    // Getting started & publishing
     {
-      url: `${baseUrl}/playground`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
+      url: `${baseUrl}/getting-started`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    { url: `${baseUrl}/publish`, lastModified: now, changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${baseUrl}/setup`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+
+    // Docs
+    { url: `${baseUrl}/docs`, lastModified: now, changeFrequency: 'weekly', priority: 0.8 },
+    {
+      url: `${baseUrl}/docs/quickstart`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    { url: `${baseUrl}/docs/api`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/docs/sdk`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/docs/cli`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/docs/agents`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    {
+      url: `${baseUrl}/docs/executors`,
+      lastModified: now,
+      changeFrequency: 'monthly',
       priority: 0.6,
     },
+    {
+      url: `${baseUrl}/docs/sharing`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    { url: `${baseUrl}/docs/skills`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    {
+      url: `${baseUrl}/docs/scenarios`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/docs/tutorials`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/docs/tutorials/mcp`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/docs/tutorials/agents`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/docs/architecture`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    },
+
+    // Product / reference
+    { url: `${baseUrl}/spec`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/sdk`, lastModified: now, changeFrequency: 'weekly', priority: 0.7 },
+    {
+      url: `${baseUrl}/integrations`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    { url: `${baseUrl}/playground`, lastModified: now, changeFrequency: 'weekly', priority: 0.6 },
+    { url: `${baseUrl}/use-cases`, lastModified: now, changeFrequency: 'weekly', priority: 0.6 },
+
+    // Resources
+    {
+      url: `${baseUrl}/how-it-works`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    { url: `${baseUrl}/compare`, lastModified: now, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/faq`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/about`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/changelog`, lastModified: now, changeFrequency: 'weekly', priority: 0.6 },
+    { url: `${baseUrl}/features`, lastModified: now, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/stats`, lastModified: now, changeFrequency: 'daily', priority: 0.5 },
+
+    // Legal
+    { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
+    { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
   // Fetch all tools from database

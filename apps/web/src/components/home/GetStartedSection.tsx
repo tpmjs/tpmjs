@@ -53,14 +53,14 @@ export function GetStartedSection(): React.ReactElement {
         {/* Section Header */}
         <div className="text-center mb-16">
           <p className="font-mono text-xs text-primary uppercase tracking-widest mb-3">
-            get started in 60 seconds
+            get started
           </p>
           <h2 className="font-mono text-3xl md:text-4xl font-semibold mb-4 text-foreground lowercase">
-            one command. every editor.
+            one command. all your editors.
           </h2>
           <p className="text-base text-foreground-secondary max-w-xl mx-auto font-sans">
-            Pick your tool collections, choose your editors, run the script. All your MCP servers
-            configured in one shot.
+            Pick tool collections, choose your editors, run the install script. MCP servers
+            configured across Claude Code, Cursor, Windsurf, and Claude Desktop in one shot.
           </p>
         </div>
 

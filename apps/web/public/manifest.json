@@ -1,7 +1,7 @@
 {
   "name": "TPMJS",
   "short_name": "TPMJS",
-  "description": "The NPM for AI Tools",
+  "description": "Open-source registry for AI agent tools. Auto-discovers from npm, serves via MCP.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0A0A0A",

@@ -41,7 +41,7 @@ export function AppFooter(): React.ReactElement {
               TPMJS
             </Link>
             <p className="mt-3 text-sm text-foreground-secondary leading-relaxed">
-              The universal registry and execution layer for AI tools.
+              Open-source registry for AI agent tools. Auto-discovers from npm, serves via MCP.
             </p>
             <div className="mt-4 flex items-center gap-3">
               <a

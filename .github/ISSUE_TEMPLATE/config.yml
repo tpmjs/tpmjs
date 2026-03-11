@@ -1,8 +1,11 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
 contact_links:
-  - name: Discord
-    url: https://discord.gg/tpmjs
-    about: Chat with the community on Discord
+  - name: Discord Community
+    url: https://discord.gg/KuJRBCn89c
+    about: Chat with the community and get help on Discord
   - name: Documentation
-    url: https://tpmjs.com/how-it-works
-    about: Read the documentation
+    url: https://tpmjs.com/docs
+    about: Read the documentation and guides
+  - name: Security Vulnerability
+    url: https://github.com/tpmjs/tpmjs/blob/main/SECURITY.md
+    about: Report security vulnerabilities (do not open public issues)

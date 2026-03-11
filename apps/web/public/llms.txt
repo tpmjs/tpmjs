@@ -1,6 +1,6 @@
-# TPMJS — The NPM for AI Tools
+# TPMJS — Open-Source Registry for AI Agent Tools
 
-> TPMJS is an open tool registry and platform for discovering, publishing, and executing AI agent tools from npm. Any npm package with the `tpmjs` keyword is automatically discovered and made available. Tools use the Vercel AI SDK `tool()` pattern and work with Claude, GPT, LangChain, and any MCP-compatible client. The platform provides collections for organizing tools, custom agents with multi-provider support, scenario testing, living skills documentation, and a unified MCP endpoint.
+> TPMJS is an open-source registry and execution layer for AI agent tools. It auto-discovers npm packages with the `tpmjs` keyword, extracts schemas, validates health, scores quality, and serves tools via MCP (Model Context Protocol). Tools work with Claude Code, Cursor, Windsurf, and any MCP-compatible client. The platform provides collections for organizing tools, custom agents with multi-provider support, scenario testing, living skills documentation, and universal MCP endpoints.
 
 ## Getting Started
 

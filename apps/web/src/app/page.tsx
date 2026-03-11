@@ -18,20 +18,7 @@ export const dynamic = 'force-dynamic';
 async function getHomePageData() {
   try {
     // Fetch stats in parallel
-    const [
-      packageCount,
-      toolCount,
-      featuredTools,
-      categoryStats,
-      featuredScenarios,
-      latestSnapshot,
-    ] = await Promise.all([
-      // Total package count
-      prisma.package.count(),
-
-      // Total tool count
-      prisma.tool.count(),
-
+    const [featuredTools, categoryStats, featuredScenarios, latestSnapshot] = await Promise.all([
       // Top 6 featured tools by quality score
       prisma.tool.findMany({
         orderBy: [{ qualityScore: 'desc' }, { package: { npmDownloadsLastMonth: 'desc' } }],
@@ -152,7 +139,7 @@ async function getHomePageData() {
       };
     } else {
       // No snapshot — query live data directly
-      const [activeDevsResult, totalSimulations, avgExecTime, npmDownloads] = await Promise.all([
+      const [activeDevsResult, avgExecTime, npmDownloads] = await Promise.all([
         prisma.userActivity
           .groupBy({
             by: ['userId'],
@@ -161,7 +148,6 @@ async function getHomePageData() {
             },
           })
           .then((r) => r.length),
-        prisma.simulation.count(),
         prisma.simulation.aggregate({
           where: { status: 'success', executionTimeMs: { not: null } },
           _avg: { executionTimeMs: true },
@@ -170,15 +156,20 @@ async function getHomePageData() {
       ]);
 
       ecosystemStats = {
-        publishedTools: toolCount,
+        publishedTools: 0,
         activeDevelopers: activeDevsResult,
-        totalExecutions: totalSimulations,
+        totalExecutions: 0,
         avgResponseMs: avgExecTime._avg.executionTimeMs
           ? Math.round(avgExecTime._avg.executionTimeMs)
           : null,
         totalDownloads: npmDownloads._sum.npmDownloadsLastMonth ?? 0,
       };
     }
+
+    // Use snapshot counts (pre-computed daily), falling back to category sum
+    const packageCount =
+      latestSnapshot?.totalPackages ?? categoryStats.reduce((sum, c) => sum + c._count._all, 0);
+    const toolCount = latestSnapshot?.totalTools ?? ecosystemStats.publishedTools;
 
     return {
       stats: {
@@ -242,31 +233,16 @@ export default async function HomePage(): Promise<React.ReactElement> {
         {/* Features Section */}
         <FeaturesSection toolCount={data.stats.toolCount} />
 
-        {/* Architecture Diagram Section - temporarily disabled
-        <section className="py-16 bg-background border-b border-border">
-          <Container size="xl" padding="lg">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                How It Works
-              </h2>
-              <p className="text-lg text-foreground-secondary max-w-2xl mx-auto">
-                Publish once to npm, reach every AI agent. Your tool goes live in minutes.
-              </p>
-            </div>
-            <ArchitectureDiagramWrapper />
-          </Container>
-        </section>
-        */}
-
         {/* Featured Tools Section */}
         <section className="py-16 bg-background">
           <Container size="xl" padding="lg">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                Featured Tools
+                Top-Rated Tools
               </h2>
               <p className="text-lg text-foreground-secondary max-w-2xl mx-auto mb-8">
-                Production-ready tools you can use today. Add to your AI agent in one line.
+                Highest quality-scored tools in the registry. Each one is schema-validated,
+                health-checked, and ready to use.
               </p>
             </div>
 
@@ -329,9 +305,21 @@ export default async function HomePage(): Promise<React.ReactElement> {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <p className="text-foreground-secondary">
-                  No tools available yet. Check back soon!
+              <div className="text-center py-12 border border-dashed border-border rounded-lg">
+                <div className="w-16 h-16 flex items-center justify-center border border-dashed border-border bg-surface mx-auto mb-4 rounded-lg">
+                  <Icon icon="search" className="w-8 h-8 text-foreground-tertiary" />
+                </div>
+                <p className="text-foreground-secondary mb-2">Tools are being indexed from npm.</p>
+                <p className="text-sm text-foreground-tertiary">
+                  The registry continuously scans for packages with the{' '}
+                  <code className="px-1.5 py-0.5 bg-surface border border-border text-xs font-mono">
+                    tpmjs
+                  </code>{' '}
+                  keyword.{' '}
+                  <Link href="/publish" className="text-primary hover:underline">
+                    Publish your own
+                  </Link>{' '}
+                  to get started.
                 </p>
               </div>
             )}
@@ -360,8 +348,8 @@ export default async function HomePage(): Promise<React.ReactElement> {
                   Test Scenarios
                 </h2>
                 <p className="text-lg text-foreground-secondary max-w-2xl mx-auto mb-8">
-                  See how tool collections are tested with AI-generated scenarios. Real execution,
-                  real results.
+                  Collections are validated with auto-generated test scenarios. Real tool calls,
+                  real pass/fail results.
                 </p>
               </div>
 
@@ -473,11 +461,12 @@ export default async function HomePage(): Promise<React.ReactElement> {
                 for tool authors
               </p>
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-                Publish Your AI Tool
+                Publish Your Tool
               </h2>
               <p className="text-lg text-foreground-secondary mb-12">
-                Share your tool with the AI community. Automatic discovery, quality scoring, and
-                integration with Vercel AI SDK, LangChain, and more.
+                Add one keyword to your package.json, publish to npm, and your tool is live on the
+                registry within minutes. Automatic schema extraction, quality scoring, and MCP
+                endpoints.
               </p>
 
               {/* Generator Highlight Box */}

@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: '%s | TPMJS',
   },
   description:
-    'The universal registry for AI agent tools. Publish npm packages, auto-discover schemas, and give any AI agent instant access via MCP, SDK, or API.',
+    'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools via MCP to Claude Code, Cursor, Windsurf, and any MCP client.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     siteName: 'TPMJS',
     title: 'TPMJS - The NPM for AI Tools',
     description:
-      'The universal registry for AI agent tools. Publish npm packages, auto-discover schemas, and give any AI agent instant access via MCP, SDK, or API.',
+      'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools via MCP to Claude Code, Cursor, Windsurf, and any MCP client.',
     images: [
       {
         url: '/api/og/home',
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     creator: '@tpmjs_registry',
     title: 'TPMJS - The NPM for AI Tools',
     description:
-      'The universal registry for AI agent tools. Publish npm packages, auto-discover schemas, and give any AI agent instant access via MCP, SDK, or API.',
+      'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools via MCP to Claude Code, Cursor, Windsurf, and any MCP client.',
     images: ['/api/og/home'],
   },
   manifest: '/manifest.json',
@@ -105,7 +105,7 @@ export default function RootLayout({
     url: 'https://tpmjs.com',
     logo: 'https://tpmjs.com/logo.png',
     description:
-      'The NPM for AI tools. Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
+      'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools to Claude Code, Cursor, Windsurf, and any MCP client.',
     sameAs: ['https://github.com/tpmjs/tpmjs', 'https://x.com/tpmjs_registry'],
   };
 
@@ -115,7 +115,7 @@ export default function RootLayout({
     name: 'TPMJS',
     url: 'https://tpmjs.com',
     description:
-      'The NPM for AI tools. Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
+      'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools to Claude Code, Cursor, Windsurf, and any MCP client.',
     potentialAction: {
       '@type': 'SearchAction',
       target: {

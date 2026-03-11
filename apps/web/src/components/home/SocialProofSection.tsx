@@ -11,11 +11,9 @@ export function SocialProofSection(): React.ReactElement {
       <Container size="xl" padding="lg">
         {/* Section Header */}
         <div className="text-center mb-16">
-          <p className="font-mono text-xs text-primary uppercase tracking-widest mb-3">
-            trust signals
-          </p>
+          <p className="font-mono text-xs text-primary uppercase tracking-widest mb-3">why tpmjs</p>
           <h2 className="font-mono text-3xl md:text-4xl font-semibold mb-4 text-foreground lowercase">
-            trusted by builders
+            built for real usage
           </h2>
         </div>
 
@@ -44,31 +42,31 @@ export function SocialProofSection(): React.ReactElement {
               <Icon icon="github" size="md" className="text-foreground-secondary" />
             </div>
             <h3 className="font-mono text-lg font-semibold text-foreground lowercase mb-3">
-              open source
+              fully open source
             </h3>
             <p className="font-sans text-sm text-foreground-secondary leading-relaxed mb-4">
-              The entire platform is open source. Inspect the code, contribute features, or
-              self-host.
+              MIT licensed. The registry, executor, CLI, SDK, and this website are all on GitHub.
+              Inspect the code, contribute, or self-host.
             </p>
             <a href="https://github.com/tpmjs/tpmjs" target="_blank" rel="noopener noreferrer">
               <Button size="sm" variant="outline">
                 <Icon icon="star" className="w-3.5 h-3.5 mr-1.5" />
-                Star us on GitHub
+                View on GitHub
               </Button>
             </a>
           </div>
 
-          {/* Built in Public */}
+          {/* Quality Verified */}
           <div className="p-6 border border-dashed border-border bg-background">
             <div className="w-12 h-12 flex items-center justify-center mb-4 border border-dashed border-border bg-surface">
               <Icon icon="checkCircle" size="md" className="text-foreground-secondary" />
             </div>
             <h3 className="font-mono text-lg font-semibold text-foreground lowercase mb-3">
-              built in public
+              every tool is validated
             </h3>
             <p className="font-sans text-sm text-foreground-secondary leading-relaxed">
-              Auto-synced from npm. Quality scored. Health monitored. Every tool is validated before
-              it reaches your agent.
+              Auto-synced from npm. Schemas extracted. Health checks run continuously. Quality
+              scored on docs, downloads, maintenance, and reliability. Broken tools get flagged.
             </p>
           </div>
         </div>

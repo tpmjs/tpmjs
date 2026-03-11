@@ -165,7 +165,7 @@ export default function GettingStartedPage(): React.ReactElement {
 
               <div className="bg-background border border-border p-4 font-mono text-sm text-foreground mb-6 max-w-xl mx-auto">
                 <span className="text-foreground-tertiary select-none">$ </span>
-                npx @anthropic-ai/tpmjs setup
+                curl -fsSL https://tpmjs.com/install.sh | bash
               </div>
 
               <div className="text-center">

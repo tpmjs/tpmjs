@@ -94,8 +94,8 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
 
           {/* Subheading */}
           <p className="mb-12 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
-            Discover, test, and run AI tools from npm. One registry, every MCP client. SDK, CLI, or
-            API — your agents get capabilities in seconds.
+            Auto-discovers AI tools from npm. Extracts schemas, scores quality, serves them via MCP.
+            One URL gives Claude Code, Cursor, or Windsurf instant access.
           </p>
 
           {/* Brutalist Search Interface */}

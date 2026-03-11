@@ -50,7 +50,7 @@ export function EcosystemStats({ stats }: EcosystemStatsProps): React.ReactEleme
       <div className="absolute inset-0 opacity-[0.02] grid-background" />
 
       <Container size="xl" padding="lg" className="relative z-10">
-        <DitherSectionHeader className="mb-12 text-center">LIVE ECOSYSTEM</DitherSectionHeader>
+        <DitherSectionHeader className="mb-12 text-center">LIVE STATS</DitherSectionHeader>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">

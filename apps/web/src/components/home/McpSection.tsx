@@ -70,14 +70,15 @@ function CopyButton({ text }: { text: string }) {
   };
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={copy}
       className="absolute top-3 right-3 p-1.5 text-foreground-tertiary hover:text-foreground transition-colors"
       aria-label="Copy to clipboard"
     >
       <Icon icon={copied ? 'check' : 'copy'} size="xs" />
-    </button>
+    </Button>
   );
 }
 
@@ -287,7 +288,7 @@ export function McpSection({ toolCount }: McpSectionProps) {
           </h2>
           <p className="text-base text-foreground-secondary max-w-xl mx-auto font-sans">
             MCP is the open protocol that lets AI clients call external tools. Create a collection,
-            get a URL, paste it into your editor. That's it.
+            get a URL, paste it into your editor. That&apos;s it.
           </p>
         </div>
 
@@ -342,11 +343,12 @@ export function McpSection({ toolCount }: McpSectionProps) {
           {/* Tab Bar */}
           <div className="flex border-b border-border overflow-x-auto">
             {providers.map((p) => (
-              <button
+              <Button
                 key={p.id}
-                type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setActiveProvider(p.id)}
-                className={`flex-shrink-0 px-4 md:px-6 py-3 font-mono text-xs md:text-sm transition-colors border-b-2 ${
+                className={`flex-shrink-0 px-4 md:px-6 py-3 font-mono text-xs md:text-sm transition-colors border-b-2 rounded-none ${
                   activeProvider === p.id
                     ? 'border-primary text-primary bg-primary/5'
                     : 'border-transparent text-foreground-tertiary hover:text-foreground-secondary hover:bg-surface'
@@ -354,7 +356,7 @@ export function McpSection({ toolCount }: McpSectionProps) {
               >
                 <span className="hidden md:inline">{p.label}</span>
                 <span className="md:hidden">{p.shortLabel}</span>
-              </button>
+              </Button>
             ))}
           </div>
 

@@ -1,0 +1,57 @@
+name: Bug Report
+description: Report a bug in TPMJS
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill out the sections below.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this?
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. See error
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Website (tpmjs.com)
+        - CLI (@tpmjs/cli)
+        - SDK (@tpmjs/registry-search, @tpmjs/registry-execute)
+        - MCP Integration
+        - Tool Execution
+        - API
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Node version, OS, browser, etc.
+      placeholder: "Node 22, macOS 14, Chrome 120"
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Any error messages or logs
+      render: shell

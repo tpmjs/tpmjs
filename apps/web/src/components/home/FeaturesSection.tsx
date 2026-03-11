@@ -3,6 +3,7 @@
 import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
+import type { IconName } from '@tpmjs/ui/Icon/Icon';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 
@@ -11,7 +12,7 @@ import Link from 'next/link';
 // ============================================================================
 
 interface FeatureCardProps {
-  icon: string;
+  icon: IconName;
   title: string;
   description: string;
   badge?: string;
@@ -30,7 +31,7 @@ function FeatureCard({
       {/* Icon */}
       <div className="w-12 h-12 flex items-center justify-center mb-4 border border-dashed border-border bg-background group-hover:border-primary group-hover:bg-primary/10 transition-all duration-200">
         <Icon
-          icon={icon as any}
+          icon={icon}
           size="md"
           className="text-foreground-secondary group-hover:text-primary transition-colors duration-200"
         />
@@ -73,7 +74,13 @@ interface FeaturesSectionProps {
 export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.ReactElement {
   const toolCountLabel = toolCount && toolCount > 0 ? `${toolCount.toLocaleString()}` : '100+';
 
-  const features = [
+  const features: Array<{
+    icon: IconName;
+    title: string;
+    description: string;
+    badge: string;
+    href?: string;
+  }> = [
     {
       icon: 'search',
       title: 'tool registry',
@@ -152,14 +159,14 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
         {/* Section Header */}
         <div className="text-center mb-16">
           <p className="font-mono text-xs text-primary uppercase tracking-widest mb-3">
-            infrastructure layer
+            what you get
           </p>
           <h2 className="font-mono text-3xl md:text-4xl font-semibold mb-4 text-foreground lowercase">
-            the agentic ecosystem
+            registry + runtime + tools
           </h2>
           <p className="text-base text-foreground-secondary max-w-2xl mx-auto font-sans">
-            Everything your AI agents need to find, validate, and run tools — from auto-discovery to
-            sandboxed execution.
+            Discovery, validation, quality scoring, sandboxed execution, MCP endpoints, collections,
+            agents, and an SDK. All open source.
           </p>
         </div>
 
