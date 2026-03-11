@@ -5,6 +5,7 @@ import { apiInternalError, apiNotFound, apiSuccess } from '~/lib/api-response';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 type RouteContext = {
   params: Promise<{ username: string }>;

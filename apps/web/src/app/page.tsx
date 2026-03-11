@@ -5,11 +5,13 @@ import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { AppHeader } from '../components/AppHeader';
+import { CopyButton } from '../components/CopyButton';
 import { EcosystemStats } from '../components/home/EcosystemStats';
 import { FeaturesSection } from '../components/home/FeaturesSection';
 import { GetStartedSection } from '../components/home/GetStartedSection';
 import { HeroSection } from '../components/home/HeroSection';
 import { McpSection } from '../components/home/McpSection';
+import { SocialProofSection } from '../components/home/SocialProofSection';
 
 export const dynamic = 'force-dynamic';
 
@@ -234,6 +236,9 @@ export default async function HomePage(): Promise<React.ReactElement> {
         {/* Ecosystem Stats */}
         <EcosystemStats stats={data.ecosystemStats} />
 
+        {/* Social Proof */}
+        <SocialProofSection />
+
         {/* Features Section */}
         <FeaturesSection toolCount={data.stats.toolCount} />
 
@@ -337,9 +342,9 @@ export default async function HomePage(): Promise<React.ReactElement> {
                   Browse All {data.stats.toolCount} Tools
                 </Button>
               </Link>
-              <Link href="/tool/tool-search">
+              <Link href="/getting-started">
                 <Button size="lg" variant="outline">
-                  Search by Category
+                  Get Started
                 </Button>
               </Link>
             </div>
@@ -461,71 +466,62 @@ export default async function HomePage(): Promise<React.ReactElement> {
         <McpSection toolCount={data.stats.toolCount} />
 
         {/* Publish Your Tool Section */}
-        <section className="py-16 bg-surface">
+        <section className="py-20 bg-surface border-t border-border">
           <Container size="xl" padding="lg">
             <div className="text-center max-w-3xl mx-auto">
+              <p className="font-mono text-xs text-primary uppercase tracking-widest mb-3">
+                for tool authors
+              </p>
               <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
                 Publish Your AI Tool
               </h2>
-              <p className="text-lg text-foreground-secondary mb-8">
+              <p className="text-lg text-foreground-secondary mb-12">
                 Share your tool with the AI community. Automatic discovery, quality scoring, and
                 integration with Vercel AI SDK, LangChain, and more.
               </p>
 
               {/* Generator Highlight Box */}
-              <div className="mb-12 p-6 border-2 border-primary/50 rounded-lg bg-primary/5 text-left">
-                <div className="flex flex-col sm:flex-row items-start gap-4">
-                  <div className="text-3xl sm:text-4xl" aria-hidden="true">
-                    ✨
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold mb-2 text-foreground">
-                      Start with Our Package Generator
-                    </h3>
-                    <p className="text-sm text-foreground-secondary mb-4">
-                      Create a production-ready TPMJS tool package in seconds with our CLI
-                      generator. Includes 2-3 tools, complete setup, and best practices.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3">
-                      <code className="text-sm bg-surface px-4 py-2 rounded text-foreground border border-border">
-                        npx @tpmjs/create-basic-tools
-                      </code>
-                      <a
-                        href="https://github.com/tpmjs/tpmjs/tree/main/packages/tools/create-basic-tools#readme"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <Button size="sm" variant="outline">
-                          View Docs →
-                        </Button>
-                      </a>
-                    </div>
+              <div className="mb-12 p-6 md:p-8 border-2 border-primary rounded-lg bg-primary/5">
+                <h3 className="text-xl font-bold mb-2 text-foreground">
+                  Create a Tool Package in Seconds
+                </h3>
+                <p className="text-sm text-foreground-secondary mb-6 max-w-lg mx-auto">
+                  Our CLI generator scaffolds a production-ready TPMJS tool package with 2-3 tools,
+                  complete setup, and best practices baked in.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <div className="relative flex items-center bg-surface border-2 border-border rounded px-5 py-3 font-mono text-sm">
+                    <span className="text-primary font-bold mr-3 select-none">$</span>
+                    <code className="text-foreground select-all">
+                      npx @tpmjs/create-basic-tools
+                    </code>
+                    <CopyButton text="npx @tpmjs/create-basic-tools" size="xs" className="ml-3" />
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
-                <div className="p-4">
-                  <div className="text-3xl mb-2" aria-hidden="true">
-                    🚀
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-10">
+                <div className="p-5 border border-dashed border-border bg-background">
+                  <div className="w-10 h-10 flex items-center justify-center mb-3 border border-dashed border-border bg-surface mx-auto">
+                    <span className="font-mono text-lg text-primary">1</span>
                   </div>
                   <h3 className="font-semibold mb-1 text-foreground">Quick Setup</h3>
                   <p className="text-sm text-foreground-secondary">
-                    Add one keyword to package.json and publish to NPM
+                    Add one keyword to package.json and publish to npm
                   </p>
                 </div>
-                <div className="p-4">
-                  <div className="text-3xl mb-2" aria-hidden="true">
-                    ⚡
+                <div className="p-5 border border-dashed border-border bg-background">
+                  <div className="w-10 h-10 flex items-center justify-center mb-3 border border-dashed border-border bg-surface mx-auto">
+                    <span className="font-mono text-lg text-primary">2</span>
                   </div>
                   <h3 className="font-semibold mb-1 text-foreground">Auto Discovery</h3>
                   <p className="text-sm text-foreground-secondary">
                     Your tool appears on tpmjs.com within 15 minutes
                   </p>
                 </div>
-                <div className="p-4">
-                  <div className="text-3xl mb-2" aria-hidden="true">
-                    📊
+                <div className="p-5 border border-dashed border-border bg-background">
+                  <div className="w-10 h-10 flex items-center justify-center mb-3 border border-dashed border-border bg-surface mx-auto">
+                    <span className="font-mono text-lg text-primary">3</span>
                   </div>
                   <h3 className="font-semibold mb-1 text-foreground">Quality Metrics</h3>
                   <p className="text-sm text-foreground-secondary">
@@ -533,11 +529,23 @@ export default async function HomePage(): Promise<React.ReactElement> {
                   </p>
                 </div>
               </div>
-              <Link href="/publish">
-                <Button size="lg" variant="default">
-                  Learn How to Publish
-                </Button>
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/publish">
+                  <Button size="lg" variant="default">
+                    Learn How to Publish
+                  </Button>
+                </Link>
+                <a
+                  href="https://github.com/tpmjs/tpmjs/tree/main/packages/tools/create-basic-tools#readme"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button size="lg" variant="outline">
+                    <Icon icon="github" size="sm" className="mr-2" />
+                    View Docs
+                  </Button>
+                </a>
+              </div>
             </div>
           </Container>
         </section>

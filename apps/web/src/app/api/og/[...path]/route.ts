@@ -17,6 +17,7 @@ import path from 'node:path';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 /**
  * Convert a path to the corresponding OG image filename

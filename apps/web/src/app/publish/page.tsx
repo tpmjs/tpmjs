@@ -31,8 +31,8 @@ export default function PublishPage(): React.ReactElement {
               Publish Your AI Tool
             </h1>
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
-              Share your tool with the world. Automatic discovery, quality scoring, and AI agent
-              integration.
+              Add one keyword, publish to npm. Your tool is discoverable, quality-scored, and
+              available via MCP within minutes.
             </p>
           </div>
 
@@ -42,12 +42,11 @@ export default function PublishPage(): React.ReactElement {
               <div className="text-4xl sm:text-6xl">🚀</div>
               <div className="flex-1">
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-4 text-foreground">
-                  Use Our Package Generator
+                  Scaffold a Tool Package
                 </h2>
                 <p className="text-lg text-foreground-secondary mb-6">
-                  The fastest way to create a TPMJS tool package! Our CLI generator scaffolds a
-                  production-ready package with 2-3 tools, complete setup, and best practices
-                  built-in.
+                  One command generates a production-ready package with Zod schemas, Vercel AI SDK
+                  integration, and correct tpmjs metadata.
                 </p>
                 <CodeBlock language="bash" code="npx @tpmjs/create-basic-tools" size="md" />
                 <div className="mt-6 flex flex-col sm:flex-row gap-4">
@@ -80,7 +79,7 @@ export default function PublishPage(): React.ReactElement {
               Manual Setup
             </h2>
             <p className="text-lg text-foreground-secondary mb-6">
-              Prefer to set up manually? Follow these steps:
+              If you already have a tool package, here is what TPMJS needs:
             </p>
             <div className="prose prose-invert max-w-none">
               <ol className="space-y-4 text-foreground-secondary">
@@ -112,7 +111,7 @@ export default function PublishPage(): React.ReactElement {
             </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Add the <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
-              keyword to your package.json. This is required for automatic discovery.
+              keyword to your package.json. This is how the discovery pipeline finds you.
             </p>
             <CodeBlock
               language="json"
@@ -132,8 +131,8 @@ export default function PublishPage(): React.ReactElement {
             </h2>
             <p className="text-lg text-foreground-secondary mb-6">
               Add a <code className="text-foreground bg-surface px-2 py-1 rounded">tpmjs</code>{' '}
-              field to your package.json. TPMJS automatically extracts parameter schemas from your
-              tool code, so you only need to provide basic metadata.
+              field to your package.json. Schemas are extracted from your code automatically — you
+              only need to declare a category.
             </p>
 
             {/* Auto-extraction callout */}
@@ -145,9 +144,8 @@ export default function PublishPage(): React.ReactElement {
                     Automatic Schema Extraction
                   </h3>
                   <p className="text-foreground-secondary">
-                    TPMJS automatically extracts your tool&apos;s input schema by analyzing your
-                    code. You don&apos;t need to manually document parameters, returns, or AI agent
-                    guidance in package.json - we extract it from your Zod schema automatically.
+                    TPMJS loads your package in a sandboxed executor and reads the Zod schema
+                    directly from your tool exports. No manual parameter documentation needed.
                   </p>
                 </div>
               </div>
@@ -162,11 +160,11 @@ export default function PublishPage(): React.ReactElement {
                     Auto-Discovery of Tools
                   </h3>
                   <p className="text-foreground-secondary">
-                    You can omit the <code className="text-foreground">tools</code> array entirely!
-                    TPMJS will automatically scan your package exports and register any export that
-                    has <code className="text-foreground">description</code> and{' '}
-                    <code className="text-foreground">execute</code> properties (standard AI SDK
-                    tool format).
+                    The <code className="text-foreground">tools</code> array is optional. TPMJS
+                    scans your package exports and registers anything with{' '}
+                    <code className="text-foreground">description</code> +{' '}
+                    <code className="text-foreground">execute</code> properties (Vercel AI SDK tool
+                    format).
                   </p>
                 </div>
               </div>
@@ -267,8 +265,7 @@ export default function PublishPage(): React.ReactElement {
               Step 3: Publish to NPM
             </h2>
             <p className="text-lg text-foreground-secondary mb-6">
-              Build your package and publish it to NPM. Your tool will be automatically discovered
-              within 15 minutes.
+              Publish to npm. The discovery pipeline picks up new packages within 2-15 minutes.
             </p>
             <CodeBlock
               language="bash"
@@ -288,7 +285,8 @@ npm publish --access public
               Quality Score
             </h2>
             <p className="text-lg text-foreground-secondary mb-6">
-              Your tool gets a quality score based on three factors:
+              Every tool gets a score from 0.00 to 1.00 based on three factors. Higher scores rank
+              better in search.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <div className="p-6 border border-border rounded-lg bg-surface">
@@ -362,28 +360,28 @@ npm publish --access public
               {[
                 {
                   icon: '📝',
-                  title: 'Use descriptive names',
-                  desc: 'Make your package name clear and searchable',
+                  title: 'Descriptive package names',
+                  desc: 'BM25 search indexes your package name — make it specific',
                 },
                 {
                   icon: '✨',
-                  title: 'Good Zod schemas',
-                  desc: 'Add descriptions to your Zod schema fields - they get auto-extracted',
+                  title: 'Annotate Zod fields',
+                  desc: 'Use .describe() on every field — these become the parameter docs AI agents see',
                 },
                 {
                   icon: '📚',
-                  title: 'Good documentation',
-                  desc: 'Add documentation URL to package.json homepage or repository fields',
+                  title: 'Set homepage/repository',
+                  desc: 'Links to docs and source code improve your metadata tier and quality score',
                 },
                 {
                   icon: '🔄',
-                  title: 'Active maintenance',
-                  desc: 'Regular updates boost download counts',
+                  title: 'Publish updates',
+                  desc: 'Download velocity is a quality score input — active packages rank higher',
                 },
                 {
                   icon: '🔑',
-                  title: 'Document env vars',
-                  desc: 'List required API keys in the env field so users know what they need',
+                  title: 'Declare env vars',
+                  desc: 'List required API keys in the env field so users and agents can configure credentials',
                 },
               ].map((tip) => (
                 <div
@@ -406,7 +404,7 @@ npm publish --access public
               Ready to Publish?
             </h2>
             <p className="text-xl text-foreground-secondary mb-8 max-w-2xl mx-auto">
-              Follow the steps above and your tool will be live on TPMJS within 15 minutes.
+              Your tool will be live on TPMJS within minutes of publishing to npm.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/tool/tool-search">

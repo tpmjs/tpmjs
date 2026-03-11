@@ -12,6 +12,7 @@ import { apiForbidden, apiInternalError, apiNotFound, apiSuccess } from '~/lib/a
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 type RouteContext = {
   params: Promise<{ username: string; slug: string }>;

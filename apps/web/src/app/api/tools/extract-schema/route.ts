@@ -4,6 +4,7 @@ import { convertJsonSchemaToParameters, extractToolSchema } from '~/lib/schema-e
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /**
  * POST /api/tools/extract-schema

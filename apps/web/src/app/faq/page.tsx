@@ -52,8 +52,7 @@ export default function FAQPage(): React.ReactElement {
               Frequently Asked Questions
             </h1>
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
-              Everything you need to know about publishing, using, and contributing to the TPMJS
-              registry.
+              Common questions about the registry, publishing tools, and integration.
             </p>
           </div>
 
@@ -62,52 +61,57 @@ export default function FAQPage(): React.ReactElement {
             {/* Question 1: What is TPMJS? */}
             <FAQItem question="What is TPMJS?">
               <p>
-                TPMJS (Tool Package Manager for JavaScript) is a registry and discovery platform for
-                AI agent tools. It helps developers publish, share, and discover tools that can be
-                used by AI agents to perform tasks like text analysis, code generation, data
-                processing, and more.
-              </p>
-              <p>
-                Think of it as npm for AI tools. Developers publish tools to npm with the{' '}
+                TPMJS is a registry for AI tools published to npm. It auto-discovers packages with
+                the{' '}
                 <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
                   tpmjs
                 </code>{' '}
-                keyword, and TPMJS automatically syncs them to our registry where they can be
-                discovered by AI agents and developers.
+                keyword, extracts their schemas, scores quality, and serves them via MCP, CLI, SDK,
+                and HTTP API.
+              </p>
+              <p>
+                Think of it as npm for AI tools — with discovery, quality scoring, health checks,
+                and a universal interface so any AI agent can find and run tools.
               </p>
             </FAQItem>
 
             {/* Question 2: How do I publish a tool? */}
             <FAQItem question="How do I publish a tool?">
-              <p>Publishing a tool to TPMJS is simple:</p>
               <ol className="list-decimal list-inside space-y-2 ml-4">
                 <li>
-                  Add the{' '}
+                  Add{' '}
                   <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
-                    tpmjs
+                    &quot;tpmjs&quot;
                   </code>{' '}
-                  keyword to your package.json
+                  to your package.json keywords
                 </li>
                 <li>
                   Add a{' '}
                   <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
                     tpmjs
                   </code>{' '}
-                  field with metadata (category, frameworks, tools)
+                  field with at least a category
                 </li>
-                <li>Publish your package to npm</li>
-                <li>Your tool appears on tpmjs.com within 15 minutes</li>
+                <li>
+                  <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
+                    npm publish
+                  </code>
+                </li>
+                <li>Your tool appears on tpmjs.com within 2-15 minutes</li>
               </ol>
               <p>
-                For detailed instructions, check out our{' '}
+                Or scaffold a package instantly:{' '}
+                <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
+                  npx @tpmjs/create-basic-tools
+                </code>
+              </p>
+              <p>
+                Full details in the{' '}
                 <Link href="/publish" className="text-primary hover:underline font-medium">
                   publishing guide
                 </Link>
-                . We also provide a package generator to get started quickly:
+                .
               </p>
-              <code className="block text-foreground bg-background px-4 py-2 rounded border border-border mt-2">
-                npx @tpmjs/create-basic-tools
-              </code>
             </FAQItem>
 
             {/* Question 3: How does schema extraction work? */}
@@ -145,28 +149,20 @@ export default function FAQPage(): React.ReactElement {
 
             {/* Question 4: How does tool health checking work? */}
             <FAQItem question="How does tool health checking work?">
-              <p>
-                TPMJS automatically monitors the health of all tools in the registry by periodically
-                checking:
-              </p>
+              <p>TPMJS runs two automated health checks on every tool:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>
-                  <strong className="text-foreground">Package availability:</strong> Verifies the
-                  package still exists on npm
+                  <strong className="text-foreground">Import health:</strong> Can the package be
+                  loaded? Does the export exist? Is it in AI SDK format?
                 </li>
                 <li>
-                  <strong className="text-foreground">Metadata validity:</strong> Ensures the tpmjs
-                  field meets schema requirements
-                </li>
-                <li>
-                  <strong className="text-foreground">Version freshness:</strong> Checks if the tool
-                  is being actively maintained
+                  <strong className="text-foreground">Execution health:</strong> Can test parameters
+                  be generated? Does the tool execute without errors?
                 </li>
               </ul>
               <p>
-                Tools that fail health checks are flagged on the registry and may be hidden from
-                search results until the issues are resolved. This ensures AI agents only use
-                reliable, well-maintained tools.
+                Tools that fail are flagged in the registry. Search results prioritize healthy tools
+                so agents use reliable ones.
               </p>
             </FAQItem>
 
@@ -203,80 +199,53 @@ export default function FAQPage(): React.ReactElement {
             {/* Question 6: Is TPMJS free to use? */}
             <FAQItem question="Is TPMJS free to use?">
               <p>
-                Yes, TPMJS is completely free and open source for both publishers and users. You
-                can:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Publish unlimited tools to the registry</li>
-                <li>Browse and search all tools without authentication</li>
-                <li>Use tools in your AI agents and applications</li>
-                <li>
-                  Contribute to the project on{' '}
-                  <a
-                    href="https://github.com/tpmjs/tpmjs"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    GitHub
-                  </a>
-                </li>
-              </ul>
-              <p>
-                There are no paid tiers, rate limits, or premium features. TPMJS is funded by the
-                community and maintained as a public good for the AI ecosystem.
+                Yes. Free and{' '}
+                <a
+                  href="https://github.com/tpmjs/tpmjs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  open source
+                </a>
+                . Publish unlimited tools, search without authentication, use tools in any
+                application. No paid tiers, no usage billing.
               </p>
             </FAQItem>
 
             {/* Question 7: How often are tools synced from npm? */}
             <FAQItem question="How often are tools synced from npm?">
-              <p>TPMJS uses multiple automated sync strategies to keep the registry up-to-date:</p>
+              <p>Three sync mechanisms run in parallel:</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>
-                  <strong className="text-foreground">Changes Feed Sync (every 2 minutes):</strong>{' '}
-                  Monitors npm&apos;s real-time changes feed to catch new packages and updates
-                  immediately
+                  <strong className="text-foreground">Changes feed:</strong> Monitors npm&apos;s
+                  real-time stream (every 2 minutes)
                 </li>
                 <li>
-                  <strong className="text-foreground">Keyword Search (every 15 minutes):</strong>{' '}
-                  Actively searches for packages with the{' '}
+                  <strong className="text-foreground">Keyword search:</strong> Searches for the{' '}
                   <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
                     tpmjs
                   </code>{' '}
-                  keyword
+                  keyword (every 15 minutes)
                 </li>
                 <li>
-                  <strong className="text-foreground">Metrics Sync (every hour):</strong> Updates
-                  download statistics and recalculates quality scores
+                  <strong className="text-foreground">Metrics:</strong> Updates download stats and
+                  quality scores (daily)
                 </li>
               </ul>
-              <p>
-                This means your tool will typically appear on tpmjs.com within 2-15 minutes of
-                publishing to npm, with metrics updating hourly.
-              </p>
+              <p>Your tool typically appears within 2-15 minutes of publishing.</p>
             </FAQItem>
 
             {/* Question 8: Can I use TPMJS tools with any AI agent? */}
             <FAQItem question="Can I use TPMJS tools with any AI agent?">
               <p>
-                Yes! TPMJS tools are framework-agnostic and can be used with any AI agent system.
-                Each tool package specifies which frameworks it officially supports in the{' '}
+                Yes. TPMJS tools use the Vercel AI SDK{' '}
                 <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
-                  frameworks
+                  tool()
                 </code>{' '}
-                field, such as:
-              </p>
-              <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Vercel AI SDK (vercel-ai)</li>
-                <li>LangChain (langchain)</li>
-                <li>OpenAI Function Calling</li>
-                <li>Claude Tool Use</li>
-                <li>Custom frameworks</li>
-              </ul>
-              <p>
-                Many tools provide adapter functions for multiple frameworks. Check the tool&apos;s
-                documentation for specific integration examples. Tools with Rich metadata tier
-                include detailed usage guidance for AI agents.
+                format and are served via MCP — so they work with any MCP client (Claude Desktop,
+                Cursor, Windsurf) and any framework (Vercel AI SDK, LangChain, custom). Tools
+                specify supported frameworks in their metadata.
               </p>
             </FAQItem>
 
@@ -324,34 +293,30 @@ export default function FAQPage(): React.ReactElement {
 
             {/* Question 10: Where can I get help? */}
             <FAQItem question="Where can I get help?">
-              <p>We&apos;re here to help! Here are the best ways to get support:</p>
               <ul className="space-y-3">
                 <li>
-                  <strong className="text-foreground">GitHub Issues:</strong>{' '}
                   <a
                     href="https://github.com/tpmjs/tpmjs/issues"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    File an issue
+                    GitHub Issues
                   </a>{' '}
-                  for bugs, feature requests, or technical questions
+                  — bugs, feature requests, technical questions
                 </li>
                 <li>
-                  <strong className="text-foreground">GitHub Discussions:</strong>{' '}
                   <a
                     href="https://github.com/tpmjs/tpmjs/discussions"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    Join the discussion
+                    GitHub Discussions
                   </a>{' '}
-                  for general questions and community support
+                  — general questions, community support
                 </li>
                 <li>
-                  <strong className="text-foreground">Twitter:</strong> Follow{' '}
                   <a
                     href="https://twitter.com/tpmjs_registry"
                     target="_blank"
@@ -360,26 +325,82 @@ export default function FAQPage(): React.ReactElement {
                   >
                     @tpmjs_registry
                   </a>{' '}
-                  for updates and announcements
+                  — updates and announcements
                 </li>
                 <li>
-                  <strong className="text-foreground">Email:</strong> Contact us at{' '}
                   <a href="mailto:hello@tpmjs.com" className="text-primary hover:underline">
                     hello@tpmjs.com
                   </a>{' '}
-                  for private inquiries
+                  — private inquiries
                 </li>
               </ul>
+            </FAQItem>
+
+            {/* Question: How is this different from MCP? */}
+            <FAQItem question="How is this different from MCP servers?">
               <p>
-                We also recommend checking out our{' '}
-                <Link href="/publish" className="text-primary hover:underline font-medium">
-                  publishing guide
-                </Link>{' '}
-                and{' '}
-                <Link href="/spec" className="text-primary hover:underline font-medium">
-                  specification docs
-                </Link>{' '}
-                for detailed technical documentation.
+                MCP is a protocol — TPMJS is a registry that speaks it. Building a custom MCP server
+                means implementing transport, JSON-RPC dispatch, schemas, auth, and deployment
+                yourself. TPMJS handles all of that: publish a tool to npm and it is automatically
+                served as an MCP endpoint.
+              </p>
+              <p>
+                See the{' '}
+                <Link
+                  href="/compare/custom-mcp-servers"
+                  className="text-primary hover:underline font-medium"
+                >
+                  full comparison
+                </Link>
+                .
+              </p>
+            </FAQItem>
+
+            {/* Question: What about security? */}
+            <FAQItem question="How do you handle security for tool execution?">
+              <p>
+                Tools execute in isolated Deno sandboxes on Railway with network restrictions,
+                memory limits, and execution timeouts. Credentials are encrypted at rest and
+                injected at execution time — they are never logged or stored in plaintext.
+              </p>
+              <p>
+                You can also use a custom executor endpoint to run tools entirely on your own
+                infrastructure.
+              </p>
+            </FAQItem>
+
+            {/* Question: What is the tool format? */}
+            <FAQItem question="What format do tools need to be in?">
+              <p>
+                Tools use the Vercel AI SDK{' '}
+                <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
+                  tool()
+                </code>{' '}
+                function — a Zod schema for parameters and an{' '}
+                <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
+                  execute()
+                </code>{' '}
+                function. This is a thin wrapper, not a framework dependency. Any export with{' '}
+                <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
+                  description
+                </code>{' '}
+                +{' '}
+                <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
+                  execute
+                </code>{' '}
+                properties is auto-detected.
+              </p>
+            </FAQItem>
+
+            {/* Question: Can I use this without publishing to npm? */}
+            <FAQItem question="Can I use TPMJS tools without the registry?">
+              <p>
+                Yes. TPMJS tools are standard npm packages. You can{' '}
+                <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
+                  npm install
+                </code>{' '}
+                them and import them directly — no registry API calls needed. The registry adds
+                discovery, MCP serving, and quality scoring on top.
               </p>
             </FAQItem>
           </div>
@@ -388,8 +409,7 @@ export default function FAQPage(): React.ReactElement {
           <section className="mt-16 text-center py-12 px-6 border border-border rounded-lg bg-surface">
             <h2 className="text-2xl font-bold mb-4 text-foreground">Still have questions?</h2>
             <p className="text-lg text-foreground-secondary mb-6 max-w-xl mx-auto">
-              Can&apos;t find what you&apos;re looking for? Reach out to us on GitHub or Twitter and
-              we&apos;ll be happy to help.
+              Open an issue on GitHub or reach out on Twitter.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a

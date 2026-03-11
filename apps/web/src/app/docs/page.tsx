@@ -300,7 +300,7 @@ export default function DocsPage(): React.ReactElement {
                 TPMJS Documentation
               </h1>
               <p className="text-xl text-foreground-secondary mb-6">
-                The complete guide to using TPMJS - the registry for AI tools.
+                SDK, CLI, MCP, and API reference for the AI tool registry.
               </p>
               <div className="flex flex-wrap gap-3">
                 <a
@@ -328,19 +328,19 @@ export default function DocsPage(): React.ReactElement {
             {/* ==================== GETTING STARTED ==================== */}
             <DocSection id="introduction" title="Introduction">
               <p className="text-foreground-secondary mb-6">
-                TPMJS (Tool Package Manager for JavaScript) is a registry and execution platform for
-                AI tools. It enables AI agents to dynamically discover, load, and execute tools from
-                npm packages at runtime.
+                TPMJS is a registry that auto-discovers AI tools from npm, extracts their schemas,
+                and serves them via MCP, CLI, SDK, and HTTP API. Agents can search, load, and
+                execute tools at runtime.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <InfoCard icon="🔍" title="Discover">
-                  Search thousands of AI tools from the npm ecosystem
+                  BM25-scored search across the entire AI tool ecosystem on npm
                 </InfoCard>
                 <InfoCard icon="⚡" title="Execute">
-                  Run any tool in a secure sandbox - no installation needed
+                  Run tools in sandboxed Deno executors — no local installation needed
                 </InfoCard>
                 <InfoCard icon="📦" title="Publish">
-                  Share your tools with the AI community via npm
+                  Add one keyword, publish to npm — auto-discovered in minutes
                 </InfoCard>
               </div>
               <p className="text-foreground-secondary">

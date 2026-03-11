@@ -6,6 +6,9 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 /**
  * GET /api/tools/simulations/[...slug]
  * Returns the last 10 simulations for a tool
@@ -21,7 +24,7 @@ export async function GET(
   const { slug } = await params;
 
   try {
-    let tool;
+    let tool: { id: string } | null;
 
     if (slug.length === 1) {
       // Single slug - treat as tool ID

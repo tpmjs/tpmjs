@@ -94,8 +94,8 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
 
           {/* Subheading */}
           <p className="mb-12 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
-            The universal registry and execution layer for AI tools. Give your agents instant access
-            to real-world capabilities via MCP, SDK, or the TPMJS CLI.
+            Discover, test, and run AI tools from npm. One registry, every MCP client. SDK, CLI, or
+            API — your agents get capabilities in seconds.
           </p>
 
           {/* Brutalist Search Interface */}

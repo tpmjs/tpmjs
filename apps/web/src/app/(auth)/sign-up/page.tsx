@@ -172,7 +172,9 @@ export default function SignUpPage() {
     <div className="space-y-6">
       <div className="text-center">
         <h1 className="text-2xl font-bold text-foreground">Create Account</h1>
-        <p className="text-foreground-secondary mt-2">Join TPMJS to access your dashboard</p>
+        <p className="text-foreground-secondary mt-2">
+          Create collections, publish tools, and manage API keys
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">

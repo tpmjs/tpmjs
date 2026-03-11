@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 /**
  * POST /api/tools/validate

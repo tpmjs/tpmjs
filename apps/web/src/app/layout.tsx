@@ -27,11 +27,11 @@ export const metadata: Metadata = {
     template: '%s | TPMJS',
   },
   description:
-    'Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
+    'The universal registry for AI agent tools. Publish npm packages, auto-discover schemas, and give any AI agent instant access via MCP, SDK, or API.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
     ],
     apple: '/apple-touch-icon.svg',
   },
@@ -46,6 +46,9 @@ export const metadata: Metadata = {
     'Claude',
     'OpenAI',
     'npm tools',
+    'MCP',
+    'Model Context Protocol',
+    'tool registry',
   ],
   authors: [{ name: 'TPMJS' }],
   creator: 'TPMJS',
@@ -57,7 +60,7 @@ export const metadata: Metadata = {
     siteName: 'TPMJS',
     title: 'TPMJS - The NPM for AI Tools',
     description:
-      'Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
+      'The universal registry for AI agent tools. Publish npm packages, auto-discover schemas, and give any AI agent instant access via MCP, SDK, or API.',
     images: [
       {
         url: '/api/og/home',
@@ -73,9 +76,10 @@ export const metadata: Metadata = {
     creator: '@tpmjs_registry',
     title: 'TPMJS - The NPM for AI Tools',
     description:
-      'Discover and use npm packages as AI agent tools. Works with Claude, GPT, LangChain, and any MCP-compatible client.',
+      'The universal registry for AI agent tools. Publish npm packages, auto-discover schemas, and give any AI agent instant access via MCP, SDK, or API.',
     images: ['/api/og/home'],
   },
+  manifest: '/manifest.json',
   robots: {
     index: true,
     follow: true,

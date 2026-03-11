@@ -32,7 +32,7 @@ export default function HowItWorksPage(): React.ReactElement {
               How TPMJS Works
             </h1>
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
-              The complete journey from npm package to AI-powered tool execution
+              npm package to AI-ready tool in under 15 minutes. Here is the architecture.
             </p>
           </div>
 
@@ -43,18 +43,16 @@ export default function HowItWorksPage(): React.ReactElement {
             </h2>
             <div className="prose max-w-none text-foreground-secondary text-lg space-y-4">
               <p>
-                TPMJS (Tool Package Manager for JavaScript) is a{' '}
+                TPMJS is a{' '}
                 <span className="text-foreground font-semibold">
                   registry and execution platform
                 </span>{' '}
-                that automatically discovers, catalogs, and runs AI tools from the npm ecosystem.
+                for AI tools published to npm. It auto-discovers packages, extracts their schemas,
+                scores quality, and serves them via MCP.
               </p>
               <p>
-                It acts as a bridge between{' '}
-                <span className="text-foreground font-semibold">AI agents</span> (powered by
-                frameworks like Vercel AI SDK, LangChain, and LlamaIndex) and{' '}
-                <span className="text-foreground font-semibold">reusable tool packages</span>{' '}
-                published to npm.
+                AI agents built with Vercel AI SDK, LangChain, or any MCP client can search the
+                registry and execute tools without manual integration.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
                 <div className="p-6 border border-border rounded-lg bg-surface">
@@ -89,8 +87,7 @@ export default function HowItWorksPage(): React.ReactElement {
             </h2>
             <div className="space-y-6">
               <p className="text-lg text-foreground-secondary">
-                Publishing a tool to TPMJS is as simple as publishing to npm with a standardized
-                metadata field.
+                Add one keyword and a metadata field to your package.json. Publish to npm. Done.
               </p>
 
               {/* Step 1 */}
@@ -156,7 +153,7 @@ export default function HowItWorksPage(): React.ReactElement {
             </h2>
             <div className="space-y-6">
               <p className="text-lg text-foreground-secondary">
-                AI agents can search, discover, and execute tools through the TPMJS API.
+                Search, filter, and execute tools via API, SDK, CLI, or MCP.
               </p>
 
               {/* Search Tools */}
@@ -210,7 +207,7 @@ const result = await streamText({
           {/* The Magic Behind the Scenes */}
           <section className="mb-16">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-6 text-foreground">
-              The Magic Behind the Scenes
+              The Pipeline
             </h2>
             <div className="space-y-8">
               {/* 1. Discovery */}
@@ -219,7 +216,7 @@ const result = await streamText({
                   1. Automatic Discovery
                 </h3>
                 <p className="text-lg text-foreground-secondary mb-4">
-                  TPMJS uses three parallel mechanisms to discover tools from npm:
+                  Three parallel mechanisms monitor npm for new tools:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                   <div className="p-4 border border-border rounded-lg bg-surface">
@@ -252,7 +249,7 @@ const result = await streamText({
                   2. Validation & Schema Extraction
                 </h3>
                 <p className="text-lg text-foreground-secondary mb-4">
-                  Every discovered package is validated and its schema is automatically extracted:
+                  Every package is validated and its schema extracted automatically:
                 </p>
                 <ul className="space-y-2 text-foreground-secondary">
                   <li className="flex items-start gap-2">
@@ -285,7 +282,7 @@ const result = await streamText({
               <div>
                 <h3 className="text-2xl font-semibold mb-4 text-foreground">3. Quality Scoring</h3>
                 <p className="text-lg text-foreground-secondary mb-4">
-                  Every tool receives a quality score (0.00 to 1.00) based on:
+                  Every tool gets a score from 0.00 to 1.00:
                 </p>
                 <div className="p-6 border border-border rounded-lg bg-surface">
                   <div className="space-y-3">
@@ -319,7 +316,7 @@ const result = await streamText({
               <div>
                 <h3 className="text-2xl font-semibold mb-4 text-foreground">4. Health Checks</h3>
                 <p className="text-lg text-foreground-secondary mb-4">
-                  Every tool is tested to ensure it works correctly:
+                  Every tool is tested automatically:
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="p-4 border border-border rounded-lg bg-surface">
@@ -345,7 +342,7 @@ const result = await streamText({
               <div>
                 <h3 className="text-2xl font-semibold mb-4 text-foreground">5. Indexing</h3>
                 <p className="text-lg text-foreground-secondary mb-4">
-                  Tools are stored in a PostgreSQL database with rich metadata:
+                  Tools are stored in PostgreSQL with rich metadata:
                 </p>
                 <ul className="space-y-2 text-foreground-secondary">
                   <li className="flex items-start gap-2">
@@ -486,8 +483,8 @@ const result = await streamText({
 
             <div className="space-y-6">
               <p className="text-lg text-foreground-secondary">
-                Our playground demonstrates the future of AI agents: tools that discover and load
-                themselves dynamically based on conversation context.
+                The playground demonstrates tools that discover and load themselves dynamically
+                based on conversation context.
               </p>
 
               {/* How It Works */}
@@ -650,8 +647,7 @@ const result = await streamText({
               Ready to Get Started?
             </h2>
             <p className="text-lg text-foreground-secondary mb-8 max-w-2xl mx-auto">
-              Whether you&apos;re building AI tools or integrating them into your agent, TPMJS makes
-              it simple.
+              Publish a tool, integrate a tool, or try the playground.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link href="/publish">

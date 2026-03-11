@@ -77,7 +77,7 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
     {
       icon: 'search',
       title: 'tool registry',
-      description: `Browse ${toolCountLabel} AI tools from npm. Auto-discovered within minutes of publication with quality scoring and health monitoring.`,
+      description: `${toolCountLabel} AI tools from npm, auto-discovered within minutes of publication. Quality scored and health monitored.`,
       badge: 'auto-sync',
       href: '/tool/tool-search',
     },
@@ -85,7 +85,7 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       icon: 'puzzle',
       title: 'omega agent',
       description:
-        'Chat with an AI that dynamically discovers and executes tools based on your requests. No configuration needed.',
+        'An AI agent that discovers and runs tools on the fly based on what you ask. Zero config.',
       badge: 'live',
       href: '/omega',
     },
@@ -93,7 +93,7 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       icon: 'folder',
       title: 'collections',
       description:
-        'Curate tool sets for specific use cases. Add test scenarios to validate behavior and generate living documentation.',
+        'Group tools into workflow bundles. Add test scenarios to validate behavior and auto-generate usage docs.',
       badge: 'shareable',
       href: '/collections',
     },
@@ -101,7 +101,7 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       icon: 'user',
       title: 'custom agents',
       description:
-        'Build AI agents with your choice of LLM, custom prompts, and curated tool collections. Share publicly or keep private.',
+        'Build agents with any LLM, custom prompts, and curated tool sets. Share publicly or keep private.',
       badge: 'unlimited',
       href: '/agents',
     },
@@ -109,7 +109,7 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       icon: 'link',
       title: 'mcp protocol',
       description:
-        'Works with Claude Desktop, Cursor, Windsurf, and any MCP-compatible client. One URL, instant access to all tools.',
+        'One URL gives Claude Desktop, Cursor, Windsurf, or any MCP client instant access to your tools.',
       badge: 'universal',
       href: '/integrations',
     },
@@ -117,14 +117,14 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       icon: 'key',
       title: 'secure execution',
       description:
-        'Every tool runs in an isolated sandbox with rate limiting and timeout handling. Your credentials are encrypted at rest.',
+        'Tools run in isolated sandboxes with rate limiting and timeouts. Credentials encrypted at rest.',
       badge: 'sandboxed',
     },
     {
       icon: 'checkCircle',
       title: 'test scenarios',
       description:
-        'AI-generated test scenarios validate tool behavior. Track pass rates, execution times, and quality scores.',
+        'Auto-generated test scenarios validate tool behavior. Track pass rates, latency, and quality scores.',
       badge: 'automated',
       href: '/scenarios',
     },
@@ -132,7 +132,7 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       icon: 'message',
       title: 'living skills',
       description:
-        'Documentation that evolves from real usage. Skills emerge from question patterns and proven behaviors.',
+        'Documentation that evolves from real usage. Skills surface from question patterns and proven tool combinations.',
       badge: 'new',
       href: '/docs/skills',
     },
@@ -140,7 +140,7 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       icon: 'terminal',
       title: 'developer sdk',
       description:
-        'Publish tools with one keyword. Full TypeScript support, Vercel AI SDK integration, and automatic schema extraction.',
+        'One npm keyword to publish. Zod schemas auto-extracted, Vercel AI SDK format, TypeScript-first.',
       badge: 'npm',
       href: '/publish',
     },
@@ -158,8 +158,8 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
             the agentic ecosystem
           </h2>
           <p className="text-base text-foreground-secondary max-w-2xl mx-auto font-sans">
-            From automated discovery to secure execution, TPMJS provides the foundational
-            infrastructure for the next generation of AI agents.
+            Everything your AI agents need to find, validate, and run tools — from auto-discovery to
+            sandboxed execution.
           </p>
         </div>
 

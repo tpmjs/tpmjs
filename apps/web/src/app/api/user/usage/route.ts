@@ -117,6 +117,7 @@ function aggregateSummaries(
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /**
  * GET /api/user/usage
@@ -142,7 +143,7 @@ export async function GET(request: NextRequest) {
       if (!hasScope(apiKeyAuth, API_KEY_SCOPES.USAGE_READ)) {
         return NextResponse.json({ error: 'Missing required scope: usage:read' }, { status: 403 });
       }
-      userId = apiKeyAuth.userId!;
+      userId = apiKeyAuth.userId as string;
     } else {
       // Fall back to session auth
       const session = await auth.api.getSession({ headers: await headers() });
@@ -162,8 +163,10 @@ export async function GET(request: NextRequest) {
     const defaultStart = new Date();
     defaultStart.setDate(defaultStart.getDate() - 30);
 
-    const start = searchParams.get('start') ? new Date(searchParams.get('start')!) : defaultStart;
-    const end = searchParams.get('end') ? new Date(searchParams.get('end')!) : now;
+    const startParam = searchParams.get('start');
+    const endParam = searchParams.get('end');
+    const start = startParam ? new Date(startParam) : defaultStart;
+    const end = endParam ? new Date(endParam) : now;
 
     // Validate dates
     if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {

@@ -113,7 +113,7 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
           aria-label={label}
           tabIndex={-1}
           onKeyDown={handleKeyDown}
-          className="absolute top-full left-0 mt-1 w-56 bg-background border border-border rounded-lg shadow-lg py-1 z-50"
+          className="absolute top-full left-0 mt-1 w-56 bg-background border border-border shadow-lg py-1 z-50"
         >
           {items.map((item, index) =>
             item.external ? (
@@ -158,6 +158,7 @@ function NavDropdown({ label, items }: NavDropdownProps): React.ReactElement {
 }
 
 const developerItems: DropdownItem[] = [
+  { href: '/getting-started', label: 'Getting Started', description: 'Choose your path' },
   { href: '/docs', label: 'Documentation', description: 'Guides and tutorials' },
   {
     href: '/docs/developers/guide',
@@ -172,12 +173,11 @@ const developerItems: DropdownItem[] = [
 ];
 
 const resourceItems: DropdownItem[] = [
-  { href: '/how-it-works', label: 'How It Works', description: 'Learn the basics' },
+  { href: '/how-it-works', label: 'How It Works', description: 'Architecture & data flow' },
   { href: '/compare', label: 'Compare', description: 'TPMJS vs alternatives' },
   { href: '/faq', label: 'FAQ', description: 'Common questions' },
   { href: '/changelog', label: 'Changelog', description: 'Latest updates' },
-  { href: '/stats', label: 'Stats', description: 'Platform metrics' },
-  { href: '/style-guide', label: 'Style Guide', description: 'UI components' },
+  { href: '/about', label: 'About', description: 'The project & team' },
 ];
 
 /**

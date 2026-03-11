@@ -4,6 +4,7 @@ import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 /**
  * Check if an error is due to missing environment variables (configuration issue)

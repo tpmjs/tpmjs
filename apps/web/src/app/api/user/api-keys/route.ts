@@ -8,6 +8,7 @@ import { encryptApiKey, getKeyHint } from '~/lib/crypto/api-keys';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 const AddKeySchema = z.object({
   keyName: z.string().min(1).max(100),

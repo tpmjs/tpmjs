@@ -18,14 +18,15 @@ function CopyButton({ text, className }: { text: string; className?: string }) {
   };
 
   return (
-    <button
-      type="button"
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={copy}
       className={`p-1.5 text-foreground-tertiary hover:text-foreground transition-colors ${className || ''}`}
       aria-label="Copy to clipboard"
     >
       <Icon icon={copied ? 'check' : 'copy'} size="xs" />
-    </button>
+    </Button>
   );
 }
 
@@ -58,8 +59,8 @@ export function GetStartedSection(): React.ReactElement {
             one command. every editor.
           </h2>
           <p className="text-base text-foreground-secondary max-w-xl mx-auto font-sans">
-            Configure your AI tools across Claude Code, Cursor, Windsurf, and more with a single
-            install command. Choose your collections, pick your editors, run the script.
+            Pick your tool collections, choose your editors, run the script. All your MCP servers
+            configured in one shot.
           </p>
         </div>
 
@@ -74,8 +75,7 @@ export function GetStartedSection(): React.ReactElement {
               pick your collections
             </h3>
             <p className="font-sans text-xs text-foreground-secondary leading-relaxed">
-              Select which tool collections you want in your editors. Your collections, or any
-              public collection.
+              Browse tool collections — yours, or any public one.
             </p>
           </div>
 
@@ -88,8 +88,7 @@ export function GetStartedSection(): React.ReactElement {
               choose your editors
             </h3>
             <p className="font-sans text-xs text-foreground-secondary leading-relaxed">
-              Map each collection to Claude Code, Cursor, Windsurf, or Claude Desktop. Different
-              collections for different editors.
+              Map collections to Claude Code, Cursor, Windsurf, or Claude Desktop.
             </p>
           </div>
 
@@ -102,8 +101,7 @@ export function GetStartedSection(): React.ReactElement {
               run one command
             </h3>
             <p className="font-sans text-xs text-foreground-secondary leading-relaxed">
-              Paste in your terminal. The script auto-configures MCP servers in every selected
-              editor. Done.
+              Paste in your terminal. MCP servers configured across all selected editors.
             </p>
           </div>
         </div>
@@ -127,12 +125,11 @@ export function GetStartedSection(): React.ReactElement {
           <div className="mt-4 flex items-start gap-3 p-3 bg-background border border-dashed border-border">
             <span className="font-mono text-xs text-primary mt-0.5">tip</span>
             <p className="font-mono text-xs text-foreground-secondary">
-              visit{' '}
+              go to{' '}
               <Link href="/setup" className="text-primary hover:underline">
                 tpmjs.com/setup
               </Link>{' '}
-              first to select your collections and get a personalized command with your setup token
-              included.
+              first to select collections and get a personalized command with your token baked in.
             </p>
           </div>
         </fieldset>

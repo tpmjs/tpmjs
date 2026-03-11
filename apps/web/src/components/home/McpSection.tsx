@@ -286,8 +286,8 @@ export function McpSection({ toolCount }: McpSectionProps) {
             works with every mcp client
           </h2>
           <p className="text-base text-foreground-secondary max-w-xl mx-auto font-sans">
-            Create a collection, get an MCP URL, add it to your client. Your AI gets instant access
-            to all tools in the collection.
+            MCP is the open protocol that lets AI clients call external tools. Create a collection,
+            get a URL, paste it into your editor. That's it.
           </p>
         </div>
 
@@ -316,7 +316,7 @@ export function McpSection({ toolCount }: McpSectionProps) {
                 copy your mcp url
               </h3>
               <p className="font-sans text-xs text-foreground-secondary">
-                Each collection gets a unique URL that serves as an MCP endpoint.
+                Every collection gets a unique MCP endpoint URL.
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -327,7 +327,7 @@ export function McpSection({ toolCount }: McpSectionProps) {
                 add to your ai client
               </h3>
               <p className="font-sans text-xs text-foreground-secondary">
-                Paste the URL into your client&apos;s MCP config. Tools are available immediately.
+                Paste the URL into your client&apos;s MCP config. Tools work immediately.
               </p>
             </div>
           </div>

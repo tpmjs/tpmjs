@@ -29,6 +29,7 @@ const navSections: NavSection[] = [
   {
     title: 'Developers',
     links: [
+      { href: '/getting-started', label: 'Getting Started', description: 'Choose your path' },
       { href: '/docs', label: 'Documentation', description: 'Guides and tutorials' },
       { href: '/docs/api', label: 'API Reference', description: 'REST & MCP endpoints' },
       { href: '/docs/executors', label: 'Custom Executors', description: 'Deploy your own' },
@@ -40,12 +41,11 @@ const navSections: NavSection[] = [
   {
     title: 'Resources',
     links: [
-      { href: '/how-it-works', label: 'How It Works', description: 'Learn the basics' },
+      { href: '/how-it-works', label: 'How It Works', description: 'Architecture & data flow' },
       { href: '/compare', label: 'Compare', description: 'TPMJS vs alternatives' },
       { href: '/faq', label: 'FAQ', description: 'Common questions' },
       { href: '/changelog', label: 'Changelog', description: 'Latest updates' },
-      { href: '/stats', label: 'Stats', description: 'Platform metrics' },
-      { href: '/style-guide', label: 'Style Guide', description: 'UI components' },
+      { href: '/about', label: 'About', description: 'The project & team' },
     ],
   },
 ];
@@ -90,7 +90,6 @@ export function MobileMenu({
   return (
     <>
       {/* Backdrop - clicking closes the menu */}
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: Escape key handled globally via useEffect */}
       <div
         className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'

@@ -32,7 +32,7 @@ export function EcosystemStats({ stats }: EcosystemStatsProps): React.ReactEleme
     {
       value: stats.totalExecutions,
       label: 'Total Executions',
-      subtext: 'All-time simulations',
+      subtext: 'All-time tool calls',
       suffix: '',
     },
     {

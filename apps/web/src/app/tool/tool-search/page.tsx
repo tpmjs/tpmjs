@@ -5,6 +5,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Card, CardContent } from '@tpmjs/ui/Card/Card';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { EmptyState } from '@tpmjs/ui/EmptyState/EmptyState';
+import { ErrorState } from '@tpmjs/ui/ErrorState/ErrorState';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
 import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
@@ -292,7 +293,7 @@ export default function ToolSearchPage(): React.ReactElement {
         {loading && <LoadingState message="Loading tools..." size="lg" />}
 
         {/* Error state */}
-        {error && <div className="text-center py-12 text-error">Error: {error}</div>}
+        {error && <ErrorState message={error} />}
 
         {/* Tool table */}
         {!loading && !error && filteredTools.length > 0 && (
