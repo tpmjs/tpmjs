@@ -34,7 +34,7 @@ Eric Holmes' ["MCP is dead. Long live the CLI"](https://ejholmes.github.io/2026/
 
 But he's not seeing the full picture either.
 
-I've spent the last year building [TPMJS](https://tpmjs.com), a registry for AI tools. We serve tools over CLI, MCP, REST, and SDK simultaneously. That forces you to think clearly about what each protocol is actually good at, because you can't play favorites when you have to support all of them.
+**A disclosure before we go further:** I built [TPMJS](https://tpmjs.com), a registry for AI tools. We serve tools over CLI, MCP, REST, and SDK simultaneously. That means I have a financial interest in multi-protocol — I benefit when the answer is "use all of them." You should weigh my arguments with that in mind. I'll try to be honest about where each protocol genuinely wins and where I'm steelmanning my own position.
 
 Here's what I've learned.
 
@@ -58,7 +58,7 @@ CLI was 100% reliable (25/25 runs). MCP was 72% (18/25) — all failures were TC
 
 These numbers are damning. And the CLI advocates are right to cite them.
 
-But they're measuring the wrong thing.
+But they're measuring static MCP — the worst version of MCP — against the best version of CLI. More on that below.
 
 ## Each protocol wins somewhere
 
@@ -78,13 +78,13 @@ $ tpm tool search firecrawl --limit 3
 Why CLI wins here:
 
 - **Fewest tokens.** The data above speaks for itself. 4-32x cheaper per call.
-- **LLMs are great at bash.** As [Manveer C. notes](https://manveerc.substack.com/p/mcp-vs-cli-ai-agents), LLMs are trained on billions of Unix pipe examples — zero examples of MCP composition patterns. CLI is the *native* interface.
+- **LLMs are great at bash.** As [Manveer C. notes](https://manveerc.substack.com/p/mcp-vs-cli-ai-agents), LLMs are trained on billions of Unix pipe examples — zero examples of MCP composition patterns. This training data advantage is [durable, not temporary](https://lalatenduswain.medium.com/cli-based-agents-vs-mcp-the-2026-showdown-that-every-ai-engineer-needs-to-understand-7dfbc9e3e1f9) — CLI patterns appear naturally in Stack Overflow, blog posts, and documentation. MCP traces are agent-to-server and won't appear in web crawls.
 - **Natural composition.** \`terraform show -json plan.out | jq\` — no protocol needed. Holmes is right that CLIs compose through piping in a way MCP can't match.
 - **Existing auth works.** \`aws profiles\`, \`gh auth login\`, \`kubeconfig\` — these work identically for humans and agents.
 
 ### MCP — GUI editors and enterprise
 
-**Best for:** Claude Desktop, Cursor, Windsurf, any editor without a shell. And anywhere you need audit trails.
+**Best for:** Claude Desktop, Cursor, Windsurf, any editor without a shell. And anywhere you need structured tool boundaries.
 
 \`\`\`bash
 claude mcp add my-tools \\
@@ -94,12 +94,12 @@ claude mcp add my-tools \\
 
 Why MCP wins here:
 
-- **These environments don't have a shell.** MCP is the only structured way to give a GUI editor access to external tools.
+- **These environments don't have a shell.** MCP is the only structured way to give a GUI editor access to external tools. This alone justifies MCP's existence.
 - **Discovery is built in.** The editor can enumerate available tools and their schemas without the user doing anything.
-- **Security properties CLI can't match.** OAuth 2.1, agent identity, delegation chains, consent flows. More on this below.
-- **Structured logging for free.** JSON-RPC gives you machine-readable audit trails. More on this below too.
+- **It defines the right security target.** OAuth 2.1, agent identity, delegation chains, consent flows — the spec describes what secure agent-to-service communication looks like. Whether the ecosystem has gotten there yet is another question (more on this below).
+- **Structured communication by default.** JSON-RPC gives you machine-readable request/response pairs with mandatory IDs. This matters for observability, though the advantage is smaller than I used to think (more on this below too).
 
-As [Matthew Hall argues](https://matthewhall.com/posts/mcp-isnt-dead-were-just-early/), "CLI output is inconsistent, poorly documented, and changes between versions without warning." HTTP + OAuth MCP servers (Linear, Granola are already shipping this way) eliminate local process management entirely. The current messiness mirrors REST standardization circa 1999.
+As [Matthew Hall argues](https://matthewhall.com/posts/mcp-isnt-dead-were-just-early/), HTTP + OAuth MCP servers eliminate local process management entirely. And with Anthropic donating MCP to the [Linux Foundation's AAIF](https://www.linuxfoundation.org/press/linux-foundation-announces-the-formation-of-the-agentic-ai-foundation) — with OpenAI, Google, Microsoft, and AWS as platinum members — the single-vendor critique is fading.
 
 ### REST — Backends and serverless
 
@@ -146,7 +146,7 @@ Why SDK wins here:
 
 No. MCP is the right choice when your host environment doesn't have a shell. Cursor and Claude Desktop *need* structured tool interfaces. Declaring MCP dead because CLI works better in a terminal is like declaring REST dead because GraphQL exists.
 
-MCP has real problems — the ecosystem is fragmented, server quality varies wildly, and there's no good registry or discovery story. But the protocol fills a gap nothing else does.
+On HN, skeptics call MCP ["JSON-RPC with some descriptors"](https://news.ycombinator.com/item?id=45950814) and ["the LangChain of 2025."](https://news.ycombinator.com/item?id=44066189) [Julien Simon argues](https://julsimon.medium.com/why-mcps-disregard-for-40-years-of-rpc-best-practices-will-burn-enterprises-8ef85ce5bc9b) MCP "ignores 40 years of RPC best practices." These are fair criticisms of the protocol's maturity, but they don't address the gap it fills — no other protocol gives GUI editors structured access to external tools.
 
 ### "MCP is the future"
 
@@ -154,13 +154,13 @@ Not universally. In Claude Code, MCP adds 4-32x token overhead to do something t
 
 ### "Just use REST"
 
-REST is right for your backend. It's wrong for an AI agent in an editor. As the [MCP GitHub discussion](https://github.com/modelcontextprotocol/modelcontextprotocol/discussions/1093) notes, REST is HTTP-only while MCP supports stdio, SSE, and other transports. MCP enables bidirectional, server-initiated communication. REST requires polling. MCP provides first-class stateful operations — login, transactions with rollback. REST doesn't.
+REST is right for your backend. It's wrong for an AI agent in an editor. MCP provides runtime tool discovery (\`tools/list\`), session state, and capability negotiation — things REST's stateless request-response model doesn't offer natively.
 
-Also, "just use REST" hand-waves away the hardest part: the agent needs to *discover* what endpoints exist. Dumping an entire OpenAPI spec into context is just as wasteful as MCP's tool definitions.
+But I should acknowledge: [Lee Han Chung makes a strong case](https://leehanchung.github.io/blogs/2025/05/17/mcp-is-not-rest-api/) that MCP is fundamentally action-oriented RPC, not resource-centric REST. Comparing them is sometimes apples to oranges. And "just use REST" hand-waves away the hardest part: the agent needs to *discover* what endpoints exist. Dumping an entire OpenAPI spec into context is just as wasteful as MCP's tool definitions.
 
 ### "CLI is all you need"
 
-Only if your entire world is a terminal. The moment you're in a GUI editor, a web app, or a mobile context, CLI doesn't help. And as [Mathew Pregasen points out](https://dev.to/mathewpregasen/mcp-vs-cli-tools-which-is-best-for-production-applications-bd8), models struggle with non-ASCII strings, unconventional CLI args, and newline characters through shell arguments. CLI has difficult state maintenance across multi-step commands and is vulnerable to prompt injection in shell args.
+Only if your entire world is a terminal. The moment you're in a GUI editor, a web app, or a mobile context, CLI doesn't help. And as [Mathew Pregasen points out](https://dev.to/mathewpregasen/mcp-vs-cli-tools-which-is-best-for-production-applications-bd8), models struggle with non-ASCII strings, unconventional CLI args, and newline characters through shell arguments.
 
 ## The real mistake
 
@@ -173,15 +173,15 @@ Every take picks ONE context and universalizes:
 | "Just use REST" | Backends, serverless | Editor integrations |
 | "SDK only" | TypeScript apps | Non-JS, non-code contexts |
 
-The protocol is a transport detail. It's the last mile. As Manveer C. puts it: "Protocol is plumbing. Interface design is architecture."
+I know what some of you are thinking: *"'It depends' is a cop-out. It's the non-answer that avoids deeper analysis."* [Tobias Pfuetze makes this exact criticism](https://medium.com/@tobias_pfuetze/the-mcp-vs-cli-debate-is-the-wrong-fight-a87f1b4c8006) — framing the choice as "use both" misses the real architectural tensions.
 
-But there are two dimensions to this debate that change everything, and the CLI advocates consistently ignore both.
+Fair. So let me be specific about what it depends ON, and let me be honest about where each side's arguments break down.
 
-## If you kill MCP, you don't care about security
+## The security argument — and why it's complicated
 
-This is the argument that the "just use CLI" and "just use REST" crowd hand-waves away. And it's the one that matters most at scale.
+This is the argument that the "just use CLI" and "just use REST" crowd hand-waves away. It's the one that matters most at scale. But it's also more nuanced than I originally thought.
 
-### Why CLIs calling APIs aren't secure enough
+### The problem MCP is trying to solve
 
 CLI works great for dev use cases. But let's think about what happens when you try to make it work for real users at scale.
 
@@ -190,7 +190,7 @@ CLI works great for dev use cases. But let's think about what happens when you t
 Here's where it gets messy:
 
 1. **The consent screen is confusing.** The user is authenticating a CLI they might not even know exists — not the agent they're actually talking to.
-2. **Device flow is awkward.** Existing CLIs using device flow require the agent to read codes, display them to users, navigate them through approval. The user has no mental model of "the CLI" — they just want the agent to work.
+2. **Device flow is awkward.** The user has no mental model of "the CLI" — they just want the agent to work.
 3. **The access token doesn't identify the agent.** This is the killer problem.
 
 When the CLI authenticates, you get back a token that looks something like:
@@ -205,63 +205,85 @@ When the CLI authenticates, you get back a token that looks something like:
 
 Two problems:
 
-**The CLI client ID is public.** The CLI binary is distributed to everyone — anyone can inspect it, extract the client ID, and impersonate it. Unless you add something like DeviceCheck on macOS, you can't guarantee it's actually the CLI making the request. So "just a CLI" is already leaking trust assumptions.
+**The CLI client ID is public.** The CLI binary is distributed to everyone — anyone can inspect it, extract the client ID, and impersonate it. So "just a CLI" is already leaking trust assumptions.
 
-**The API never knows who the agent is.** This is the one that kills security at scale. You can't apply policy based on agent identity. If the company exposing the API has a partnership with AI Lab A but not AI Lab B, it can't distinguish between them. The token says "some user via some CLI" — not "Claude via TPMJS acting on behalf of this user."
+**The API never knows who the agent is.** You can't apply policy based on agent identity. The token says "some user via some CLI" — not "Claude via TPMJS acting on behalf of this user."
 
-This gets worse when you think about agents calling agents. In a chain of Agent A → Agent B → Agent C, ideally you'd track the full delegation:
+This gets worse with agents calling agents. In a chain of Agent A → Agent B → Agent C, ideally you'd track the full delegation:
 
 \`\`\`json
 {
   "aud": "api.google.com/drive",
   "sub": "user-id-123",
   "client_id": "agent1",
-  "act": ["agent1", "agent2", "agent3"]
+  "act": { "sub": "agent2" }
 }
 \`\`\`
 
 CLI-to-API gives you none of this. The API sees one opaque token and has no idea what's behind it.
 
-### Why raw APIs aren't enough either
+### What it takes to secure an API for agents
 
-I actually like "code mode" — having fixed, deterministic integration code I can review. You can do code mode against any API or MCP server. But what does it actually take to make a raw API secure for agent use?
+What does it actually take to make a raw API secure for agent use?
 
-**1. Dynamic client registration.** You don't want every user to manually create a client ID and secret. You need the ability for agents to register themselves and for users to consent to access without visiting a developer portal. Non-devs will never do that. Ideally this registration is trusted — client ID metadata documents using certificates so the API knows who clients really are.
+1. **Dynamic client registration** — agents register themselves, users consent without visiting a dev portal
+2. **OAuth consent, not API keys** — users can only access their own data; security enforcement on the server, not the client
+3. **Sensitive action approval** — human in the loop for destructive actions, enforced server-side
+4. **Good agent experience (AX)** — dedicated agent-facing API, semantic grouping, clear documentation
 
-**2. OAuth consent, not API keys.** API keys are fine for server-to-server. But for anything touching user data, you need proper OAuth so users can only access their own data. There is no "master Google API key" you give to everyone. For internal enterprise use cases, you *could* create a shared API key — but then to prevent Employee A from reading Employee B's email, you'd need to implement authorization *in the client*. Putting security enforcement in the client is how you get breaches.
+If you do all four of those things to your REST API, you've reinvented **MCP's security properties** — the same properties the MCP spec describes. That's not a coincidence. MCP exists because these are the properties you need for secure agent-to-service communication.
 
-**3. Sensitive action approval.** If the agent is about to delete a production database or send an email as the CEO, you want a human in the loop. Again, you *could* implement this in the client. But putting the onus on the client for security checks is exactly the mistake we learned not to make in web development. You do auth on the server. You don't trust that the browser did it.
+### But here's what I got wrong initially
 
-**4. Good agent experience (AX).** Your API needs clear documentation, intuitive patterns, and maybe even a dedicated agent-facing API with different operations — grouping endpoints into higher semantic actions, removing endpoints that agents shouldn't touch, adding endpoints for agent-specific workflows.
+I used to say "you just reinvented MCP." That's an overstatement, and the critics caught it.
 
-As someone who has worked on auth — both building APIs and helping others build them — I would love it if all APIs looked like this. I know they don't. Most APIs weren't designed for agents, and retrofitting these properties is a massive undertaking.
+**You can get these security properties without MCP.** [OIDC-A (OpenID Connect for Agents)](https://subramanya.ai/2025/04/28/oidc-a-proposal/) extends standard OIDC with \`delegation_chain\`, \`agent_attestation\`, and \`delegator_sub\` claims — and it's protocol-agnostic. It works with REST, gRPC, or MCP equally. JWT + mTLS + OPA policies at API gateways [provide agent identity without MCP](https://www.infoq.com/articles/building-ai-agent-gateway-mcp/). An [IETF draft for OAuth agent delegation](https://datatracker.ietf.org/doc/html/draft-oauth-ai-agents-on-behalf-of-user-02) exists that works with standard OAuth flows.
 
-### The punchline
+The fact that OIDC-A had to be created proves standard OAuth ISN'T enough for agent identity — but OIDC-A being protocol-agnostic proves MCP ISN'T required to solve it.
 
-If you do all four of those things to your REST API — dynamic client registration, OAuth consent, action approval, and good AX — congratulations. **You just reinvented MCP.**
+So MCP's real unique value isn't security per se. It's **runtime discovery + session state + security, bundled as a single protocol for environments that need all three** — primarily GUI editors and multi-tenant platforms where you can't assume a shell.
 
-That's not a coincidence. MCP exists because these are the properties you need for secure agent-to-service communication. The protocol is the crystallization of what "doing it right" looks like.
+### MCP's security is mostly theoretical — and that matters
 
-Does MCP have problems? Absolutely. Context bloat is real. There are features MCP doesn't need. Most MCP servers aren't there yet on quality. The ecosystem is immature.
+I should be brutally honest here. The MCP spec *describes* the right security properties, but the ecosystem has barely implemented them.
 
-But killing MCP because "CLI is simpler" or "REST is universal" means you either:
+[Astrix Security analyzed 5,200+ MCP servers](https://astrix.security/learn/blog/state-of-mcp-server-security-2025/): only **8.5% use OAuth**. 53% rely on long-lived static API keys. [A separate audit of the official MCP registry](https://earezki.com/ai-news/2026-02-21-i-scanned-every-server-in-the-official-mcp-registry-heres-what-i-found/) found **41% require no authentication at all**. The \`act\` claim for delegation chains? Effectively **0% adoption** across all major clients. [Obsidian Security tested 78 authorization servers](https://www.obsidiansecurity.com/blog/when-mcp-meets-oauth-common-pitfalls-leading-to-one-click-account-takeover) and found fewer than 4% support Client ID Metadata Documents.
 
-1. Don't care about security at scale, or
-2. Will end up rebuilding MCP's security properties inside your own stack anyway
+Auth wasn't even in the original MCP spec (November 2024). It was [bolted on 5 months later](https://aaronparecki.com/2025/04/03/15/oauth-for-model-context-protocol) and has been [revised three times since](https://auth0.com/blog/mcp-specs-update-all-about-auth/). [Christian Posta called it](https://blog.christianposta.com/the-updated-mcp-oauth-spec-is-a-mess/) "a mess for enterprise."
 
-### A note on MCP's own security problems
+[Simon Willison documented](https://simonwillison.net/2025/Apr/9/mcp-prompt-injection/) tool shadowing attacks where tools mutate definitions post-install to redirect API keys. [AuthZed compiled a timeline](https://authzed.com/blog/timeline-mcp-breaches) of real MCP breaches — WhatsApp chat histories exfiltrated via tool poisoning, GitHub private repos leaked, a CVE in mcp-remote affecting 437,000+ downloads, sandbox escapes via symlinks. [Docker found](https://www.docker.com/blog/mcp-security-issues-threatening-ai-infrastructure/) 43% of MCP servers have command injection vulnerabilities.
 
-I should be honest here: MCP's security track record is not great. [Simon Willison documented](https://simonwillison.net/2025/Apr/9/mcp-prompt-injection/) tool shadowing attacks where tools mutate definitions post-install to redirect API keys. [AuthZed compiled a timeline](https://authzed.com/blog/timeline-mcp-breaches) of real MCP breaches — WhatsApp chat histories exfiltrated via tool poisoning, GitHub private repos leaked, a CVE in mcp-remote affecting 437,000+ downloads, sandbox escapes via symlinks.
+### The pit of success problem
 
-[Shrivu Shankar's "Everything Wrong with MCP"](https://blog.sshh.io/p/everything-wrong-with-mcp) catalogs the full damage: MCP shipped without an auth spec, local stdio creates a "low-friction path for exploitation," and MCP tools can force agents to include backdoors in generated code.
+My original post said these were "implementation failures, not architectural ones." Several people pushed back on this, and I think they're right.
 
-This is real and serious. But here's the distinction: these are *implementation* failures, not *architectural* ones. The security properties MCP provides — agent identity, consent, delegation — are the right properties. The ecosystem just hasn't implemented them well yet. CLI doesn't even attempt to provide them.
+There's a concept in software design called the [pit of success](https://blog.codinghorror.com/falling-into-the-pit-of-success/) — the idea that a well-designed system makes it easy to do the right thing and hard to do the wrong thing. Rico Mariani coined it at Microsoft: *"We want our customers to simply fall into winning practices by using our platform."*
 
-## MCP gives you logging for free. CLI doesn't.
+MCP is not a pit of success for security. When 43% of servers have command injection flaws and 41% have no auth, the protocol is making insecure implementations easy and secure implementations hard. [Shrivu Shankar showed](https://blog.sshh.io/p/everything-wrong-with-mcp) that tool shadowing — dynamically redefining tool descriptions after user approval — is a design-level vulnerability, not an implementation bug.
 
-There's another advantage the token-counters ignore: **observability**.
+This is the same pattern as the [PHP security debate](https://phpsecurity.readthedocs.io/en/latest/_articles/PHP-Security-Default-Vulnerabilities-Security-Omissions-And-Framing-Programmers.html): "PHP isn't insecure, developers are" was debunked because if the language makes insecure code the default path, the language bears responsibility. Similarly, if MCP makes insecure servers the default path, the protocol bears responsibility.
 
-MCP is JSON-RPC 2.0. Every request and response is structured, machine-readable JSON with a mandatory ID field that pairs them together:
+[Rails went through this](https://codeclimate.com/blog/rails-insecure-defaults) and came out the other side — Rails 2 had wide-open mass assignment; Rails 4 introduced Strong Parameters. MCP needs the same evolution: default-deny permissions, mandatory tool description integrity checks, and changing SHOULDs to MUSTs in the spec. [The November 2025 spec revision](https://den.dev/blog/mcp-november-authorization-spec/) moved in this direction with Client ID Metadata Documents and incremental scope requests, but there's a long way to go.
+
+### So where does this leave us?
+
+Here's the honest version:
+
+- **MCP defines the right security target** for agent-to-service communication
+- **Almost nobody has hit that target yet** — 8.5% OAuth, 0% delegation chains
+- **CLI has no security target at all** — it doesn't even attempt agent identity or delegation
+- **The security properties MCP describes can be achieved without MCP** — via OIDC-A, JWT+mTLS, or API gateways
+- **But MCP bundles them with discovery and session state**, which matters in GUI editors and multi-tenant contexts
+
+Killing MCP doesn't mean you don't care about security. But it does mean you'll need to solve agent identity, delegation, and consent yourself — and the industry hasn't yet produced a simpler way to bundle those properties together.
+
+## The observability argument — more nuanced than I thought
+
+I used to say "MCP gives you logging for free. CLI doesn't." The critics taught me this is too simple.
+
+### What MCP genuinely provides
+
+MCP is JSON-RPC 2.0. Every request and response is structured JSON with a mandatory ID field:
 
 \`\`\`json
 {
@@ -275,45 +297,61 @@ MCP is JSON-RPC 2.0. Every request and response is structured, machine-readable 
 }
 \`\`\`
 
-Every tool call has: the tool name, the exact parameters, the exact result, a correlation ID, and a timestamp. You can pipe this directly into [Datadog](https://www.datadoghq.com/blog/mcp-client-monitoring/) (which already supports MCP natively), Splunk, or any SIEM system. You get a complete audit trail of every action every agent took, structured and queryable.
+Every tool call gets: tool name, exact parameters, exact result, correlation ID, timestamp. [Datadog already supports MCP natively](https://www.datadoghq.com/blog/mcp-client-monitoring/). You get structured audit trails out of the box.
 
-Now try that with CLI.
+### What the critics get right about CLI
 
-CLI output is stdout — unstructured text. The format varies per tool. Table widths change. Column names are inconsistent. Errors go to stderr, sometimes mixed with progress output. There's no correlation ID linking a command invocation to its output. If two CLI calls run concurrently, the outputs interleave.
+My original claim that "CLI output is unstructured text" is outdated. Modern CLI tools have first-class structured output:
 
-You *can* make CLI output structured by always using \`--json\` flags. But that's opt-in, tool-by-tool, and there's no standard. Every tool implements its own JSON format. There's no request/response pairing. There's no trace ID. When something fails, you get a text error message that your logging system has to parse with regex.
+- \`gh pr list --json number,title,author\` — [GitHub CLI](https://cli.github.com/manual/gh_help_formatting) supports \`--json\` on most commands
+- \`kubectl -o json\`, \`kubectl -o jsonpath\` — Kubernetes has full structured output
+- \`aws --output json\` + \`--query\` — AWS CLI outputs structured JSON
+- \`terraform show -json\` — [Terraform has a stable JSON spec](https://developer.hashicorp.com/terraform/internals/json-format)
+- \`docker ps --format '{{json .}}'\` — Docker supports JSON via Go templates
 
-This matters for three reasons:
+More importantly, **observability is an infrastructure concern, not a protocol concern.** [AWS CloudTrail](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-user-guide.html) has been logging every CLI command as structured JSON for over a decade — regardless of protocol. GCP Cloud Audit Logs, Azure Activity Log, and [OpenTelemetry](https://opentelemetry.io/) all prove that comprehensive audit trails work independently of the wire protocol. The audit infrastructure sits at the service layer and captures everything. The transport is irrelevant.
 
-**Debugging.** When an agent misbehaves, MCP logs show you exactly what tool was called, with what parameters, and what came back. CLI logs show you "the agent ran some command and here's some text that came out." Good luck doing root cause analysis on that.
+### The real distinction
 
-**Compliance.** If you're in a regulated industry — finance, healthcare, government — you need audit trails of every action an agent takes on behalf of a user. MCP gives you this out of the box. CLI gives you a pile of text files to parse.
+The honest framing: **MCP's structured logging is on by default. CLI's is opt-in and inconsistent.**
 
-**Monitoring at scale.** An MCP gateway sitting between agents and servers can enforce uniform logging, attach correlation IDs across multi-step workflows, and feed structured data into dashboards. Try building that on top of N different CLI tools with N different output formats.
+MCP gives you structured request/response pairing on every server, by definition. With CLI, you get structured output IF the tool supports \`--json\` AND the agent uses it AND you've configured log aggregation. Modern CLI tools are closing this gap fast, but MCP's advantage is that the default is structured rather than text.
 
-The "CLI is fewer tokens" argument is real. But tokens are cheap and getting cheaper. Audit trails, debugging, and compliance are expensive to retrofit.
+For debugging, MCP's mandatory request IDs give you automatic request/response pairing across multi-step workflows. CLI has no built-in correlation — you can add \`run_id\` propagation, but that's custom infrastructure you have to build.
+
+For compliance in regulated industries (finance, healthcare, government), "structured by default" matters because you don't get to retroactively add audit trails. But for most development workflows, CLI + CloudTrail or CLI + OpenTelemetry is perfectly adequate.
 
 ## The token bloat problem is being solved
 
-The CLI advocates' strongest argument — the 4-32x token overhead — is a real problem that's being actively solved. It would be dishonest not to acknowledge the progress:
+The CLI advocates' strongest argument — the 4-32x token overhead — is a real problem being actively solved. It would be dishonest not to acknowledge the progress:
 
-- [Anthropic's own engineering team](https://www.anthropic.com/engineering/code-execution-with-mcp) proposed presenting MCP servers as code APIs: agents discover tools by exploring directories instead of loading all definitions upfront. **150,000 → 2,000 tokens. 98.7% reduction.**
-- [Speakeasy's dynamic toolsets](https://www.speakeasy.com/blog/how-we-reduced-token-usage-by-100x-dynamic-toolsets-v2) separate discovery from schema loading with three functions: \`search_tools\`, \`describe_tools\`, \`execute_tool\`. **96.7% input token reduction**, 100% success rate.
-- [Phil Schmid's MCP CLI](https://www.philschmid.de/mcp-cli) uses dynamic context discovery. Benchmark with 6 MCP servers and 60 tools: **47,000 → 400 tokens. 99% reduction.**
-- Claude Code's deferred tool loading achieved a **46.9% reduction** (51K → 8.5K).
-- Scalekit showed that an [MCP gateway with schema filtering](https://www.scalekit.com/blog/mcp-vs-cli-use) drops monthly costs from $55.20 to ~$5 — bringing it within range of CLI's $3.20.
+- [Anthropic's engineering team](https://www.anthropic.com/engineering/code-execution-with-mcp) proposed presenting MCP servers as code APIs. **150,000 → 2,000 tokens. 98.7% reduction.**
+- [Speakeasy's dynamic toolsets](https://www.speakeasy.com/blog/how-we-reduced-token-usage-by-100x-dynamic-toolsets-v2) separate discovery from schema loading. **96.7% reduction**, 100% success rate.
+- [Cloudflare's Code Mode](https://blog.cloudflare.com/code-mode/) exposes entire APIs via just two tools (\`search()\` and \`execute()\`). The agent writes TypeScript against a typed SDK, executed in a sandboxed Worker. **81% fewer tokens for complex tasks**, ~1,000 tokens regardless of API surface size.
+- [Phil Schmid's MCP CLI](https://www.philschmid.de/mcp-cli): 6 servers, 60 tools, **47,000 → 400 tokens. 99% reduction.**
+- [mcp2cli](https://github.com/knowsuchagency/mcp2cli) converts MCP servers into CLI commands with on-demand discovery: \`--list\` at ~16 tokens/tool vs MCP's ~121 tokens/tool injected every turn. **97.7% reduction** over a 20-turn session.
 
-The gap is closing fast. Static MCP (dump all schemas) is 10-32x more expensive than CLI. Dynamic MCP (lazy loading) is approaching parity.
+A fair critique: [most of these solutions work *around* the MCP spec, not within it](https://github.com/modelcontextprotocol/modelcontextprotocol/issues/1888). Lazy schema loading isn't in the current spec — it's a community workaround. Proposals like SEP-1888 (progressive disclosure) and SEP-1576 (token bloat mitigation) are active but not ratified. [Waleed Kadous (Canva) argues](https://waleedk.medium.com/the-evolution-of-ai-tool-use-mcp-went-sideways-8ef4b1268126) that "MCP was a stop along the way, not the destination."
+
+However, [Block/Goose explicitly pushed back](https://block.github.io/goose/blog/2025/12/21/code-mode-doesnt-replace-mcp/) on the "Code Mode replaces MCP" narrative — Code Mode is a pattern *on top of* MCP, not a replacement. And dynamic MCP with lazy loading approaches CLI's cost: [Scalekit showed](https://www.scalekit.com/blog/mcp-vs-cli-use) an MCP gateway with schema filtering drops monthly costs from $55.20 to ~$5 — within range of CLI's $3.20.
+
+### The economics are shifting anyway
+
+Here's a number the token-counters should consider: [LLM inference costs are declining roughly 10x per year](https://a16z.com/llmflation-llm-inference-cost/). GPT-4 cost $30/MTok input in March 2023. GPT-4o costs $2.50 today. GPT-4o-mini costs $0.15. That's a 200x decline in 2 years.
+
+At that trajectory, by 2028 a 17x token overhead costs roughly $0.01 at today's cheapest prices. The static MCP overhead that's $1,600/day today becomes ~$16/day. The overhead becomes economically irrelevant within 2-3 years.
+
+The counter-argument is real: usage grows faster than costs decline. A [$50 proof-of-concept can scale to $847,000/month](https://medium.com/@klaushofenbitzer/token-cost-trap-why-your-ai-agents-roi-breaks-at-scale-and-how-to-fix-it-4e4a9f6f5b9a) in production. But the question is whether you're optimizing for today's costs or tomorrow's — and whether [one $4.88M data breach](https://newsroom.ibm.com/2024-07-30-ibm-report-escalating-data-breach-disruption-pushes-costs-to-new-highs) (IBM's 2024 average) is worth more than 50 million MCP sessions of token overhead.
 
 ## The full comparison
 
-Here's how the four protocols stack up across every dimension that matters. No protocol wins everywhere — that's the point.
+Here's how the four protocols stack up across every dimension that matters. I've tried to be honest about where each protocol's claims are theoretical vs proven.
 
 ### Performance
 
 | | CLI | MCP | REST | SDK |
 |--|-----|-----|------|-----|
-| **Token cost** | ~50 per call | ~200 per call (static: 30K+) | N/A (server-side) | N/A (in-process) |
+| **Token cost** | ~50 per call | ~200 dynamic (static: 30K+) | N/A (server-side) | N/A (in-process) |
 | **Latency** | High (process spawn) | Medium (JSON-RPC) | Medium (HTTP) | Very low (native) |
 | **Cold start** | Slow (new process each call) | Fast (persistent server) | Fast (connection pool) | None |
 | **Throughput** | Low (sequential) | Medium (multiplexed) | High (HTTP/2) | Very high |
@@ -321,24 +359,22 @@ Here's how the four protocols stack up across every dimension that matters. No p
 
 ### Security
 
-| | CLI | MCP | REST | SDK |
-|--|-----|-----|------|-----|
-| **Agent identity** | None | OAuth 2.1 client ID | API key / OAuth | Library-dependent |
-| **User consent** | Awkward device flow | Standardized OAuth | Custom UI needed | Custom code |
-| **Delegation chain** | Not possible | \`act\` claim support | Scoped tokens | Flexible |
-| **Secret management** | Env vars (exposed) | Opaque to agent | Server-side | Native |
-| **Permission scoping** | None | Scope-based | Endpoint-based | Function-based |
-| **Prompt injection risk** | Shell injection | Tool poisoning, shadowing | Input validation | Type-checked |
+| | CLI | MCP (spec) | MCP (reality) | REST | SDK |
+|--|-----|------------|---------------|------|-----|
+| **Agent identity** | None | OAuth 2.1 client ID | 8.5% use OAuth | API key / OAuth | Library-dependent |
+| **User consent** | Awkward device flow | Standardized OAuth | Rarely implemented | Custom UI needed | Custom code |
+| **Delegation chain** | Not possible | \`act\` claim support | ~0% adoption | Scoped tokens | Flexible |
+| **Permission scoping** | None | Scope-based | Mostly all-or-nothing | Endpoint-based | Function-based |
+| **Prompt injection risk** | Shell injection | Tool poisoning, shadowing | 43% have injection flaws | Input validation | Type-checked |
 
 ### Observability
 
 | | CLI | MCP | REST | SDK |
 |--|-----|-----|------|-----|
-| **Structured logging** | Poor (text parsing) | Excellent (JSON-RPC) | Good (HTTP + JSON) | Excellent (native) |
-| **Request/response pairing** | None | Built-in (mandatory ID) | Manual (headers) | Native (return values) |
-| **Audit trail** | Text files, regex | Structured, queryable | With proper logging | With proper logging |
-| **Compliance readiness** | Low | High | Medium | Medium |
-| **Debugging** | Manual, fragile | Exact payloads, trace IDs | HTTP tools | Debugger, IDE |
+| **Structured logging** | Opt-in (\`--json\` flags) | Built-in (JSON-RPC) | Good (HTTP + JSON) | Excellent (native) |
+| **Request/response pairing** | Manual (\`run_id\` propagation) | Built-in (mandatory ID) | Manual (headers) | Native (return values) |
+| **Server-side audit** | Excellent (CloudTrail, etc.) | Good (with gateway) | Excellent (API gateway) | With proper logging |
+| **Compliance readiness** | Depends on infra | High (if implemented) | Depends on infra | Depends on infra |
 
 ### Developer Experience
 
@@ -347,69 +383,66 @@ Here's how the four protocols stack up across every dimension that matters. No p
 | **Setup complexity** | Very low (install binary) | Low (stdio or URL) | Medium (HTTP + auth) | Very low (import) |
 | **Type safety** | None (string parsing) | JSON Schema | OpenAPI codegen | Native types |
 | **Discovery** | \`--help\`, docs | Built-in introspection | OpenAPI/Swagger | IDE autocomplete |
-| **Error handling** | Text-based, fragile | Structured error codes | HTTP status codes | Exceptions |
-| **Reliability** | Fragile (output format changes) | Stable (versioned schema) | Stable (API versioning) | Very stable |
 | **Training data** | Billions of examples | Near zero | Moderate | Moderate |
-
-### User Experience
-
-| | CLI | MCP | REST | SDK |
-|--|-----|-----|------|-----|
-| **Non-developer usability** | Poor (terminal required) | Excellent (invisible) | Good (web UI) | N/A (code only) |
-| **Action approval** | None | Standardized | Custom UI | Custom code |
-| **Transparency** | Opaque | Full audit trail | API logs | Code review |
-| **Granular permissions** | None | Scope-based, time-limited | Endpoint-based | Function-based |
-
-### Ecosystem
-
-| | CLI | MCP | REST | SDK |
-|--|-----|-----|------|-----|
-| **Adoption** | Mature, fragmented | Growing fast (5000+ servers) | Universal | Per-language |
-| **Standards** | None (tool-specific) | MCP spec + governance | RFC, OpenAPI | Language specs |
-| **Client support** | Every OS | Claude, Cursor, Windsurf, VS Code | Every language | Per-framework |
-| **Tooling** | Mature | Rapid growth | Very mature | Mature |
 
 ### Architecture
 
 | | CLI | MCP | REST | SDK |
 |--|-----|-----|------|-----|
-| **Statefulness** | Stateless (by nature) | Flexible (session-based) | Stateless (HTTP) | Flexible |
-| **Transport** | stdout/stderr | Stdio, HTTP, WebSocket | HTTP/1.1, HTTP/2 | In-process |
+| **Statefulness** | Stateless | Session-based | Stateless (HTTP) | Flexible |
+| **Transport** | stdout/stderr | Stdio, HTTP | HTTP/1.1, HTTP/2 | In-process |
 | **Connection model** | Spawn per call | Persistent session | Per-request | No network |
-| **Error recovery** | Retry in agent | Built-in semantics | HTTP retry | Exception handling |
-| **Exactly-once** | No mechanism | Request IDs | Idempotency keys | Native |
-| **Bidirectional** | No | Yes (server-initiated) | No (polling) | N/A |
+| **Bidirectional** | No | Yes (spec), rarely used (practice) | No (polling) | N/A |
 
 ### The takeaway from the matrix
 
-- **CLI** wins on token efficiency, setup simplicity, and training data. Loses on security, observability, and reliability for non-text outputs.
-- **MCP** wins on security, observability, non-dev UX, and bidirectional communication. Loses on token cost (though closing fast) and ecosystem maturity.
-- **REST** wins on universality and ecosystem maturity. Loses on agent-specific UX and requires building security yourself.
-- **SDK** wins on everything except reach — it only works if you're writing code in a supported language.
+- **CLI** wins on token efficiency, setup simplicity, training data, and reliability. Loses on security targeting and non-terminal contexts.
+- **MCP** wins on discovery, session state, non-dev UX, and security targeting (in spec). Loses on token cost, ecosystem maturity, and security reality.
+- **REST** wins on universality and ecosystem maturity. Loses on agent-specific UX and requires building discovery and security yourself.
+- **SDK** wins on everything except reach — it only works in a supported language.
 
-No single protocol dominates. The right choice depends on your context — which is exactly why the "X is dead" takes are always wrong.
+## What the critics get right
+
+After publishing the first version of this post, I spent time reading every counter-argument. Several changed my thinking.
+
+### The "it depends" critique
+
+[Tobias Pfuetze argues](https://medium.com/@tobias_pfuetze/the-mcp-vs-cli-debate-is-the-wrong-fight-a87f1b4c8006) that "use both" is a thought-terminating cliche. He's partially right. The protocol choice IS architecturally significant — MCP is action-oriented RPC with session state; REST is resource-centric and stateless. [Choosing wrong means restructuring your system](https://www.tinybird.co/blog/mcp-vs-apis-when-to-use-which-for-ai-agent-development), not just swapping an envelope.
+
+Where I still disagree: for the **tool author**, the protocol can genuinely be a transport detail — if a registry handles the protocol adaptation. For the **consumer**, it's an architectural choice with real consequences. I should have been clearer about that distinction.
+
+### The "MCP is being hollowed out" critique
+
+[Simon Willison called Skills "maybe a bigger deal than MCP."](https://simonwillison.net/2025/Oct/16/claude-skills/) [DomAIn Labs reported](https://www.domainlabs.dev/blog/agent-guides/mcp-bloated-workflows-skills-architecture) developers "ripping out MCP servers and replacing them with Markdown files." Every major token-bloat solution works by circumventing MCP's static tool discovery — the protocol's signature feature.
+
+What remains after stripping static discovery? Transport standardization, capability negotiation, auth framework, and session state. That's still valuable — but it's less distinctive than "the standard for AI tool integration" suggests. MCP may evolve from a tool protocol into a transport/auth protocol, with Skills handling the knowledge layer above it.
+
+### The training data argument
+
+This one doesn't get enough weight. LLMs have seen \`find . -name "*.py" | xargs grep "import"\` thousands of times. They improvise novel CLI compositions because the composability grammar is embedded in their weights. MCP composition patterns have zero training data — the model relies entirely on runtime schema injection.
+
+This advantage is durable. MCP traces are agent-to-server interactions that don't naturally appear on Stack Overflow or in blog posts. Even as MCP adoption grows, the training data asymmetry will narrow slowly. [Cloudflare's Code Mode](https://blog.cloudflare.com/code-mode/) offers an elegant synthesis: have LLMs write TypeScript code against MCP-backed APIs, leveraging the training data advantage while using MCP as transport.
 
 ## The emerging consensus
 
-After reading everything written on this topic, the debate has actually converged more than Twitter would suggest:
+After reading everything written on this topic, the debate has converged more than Twitter suggests:
 
-1. **Raw MCP with static tool loading is wasteful.** Everyone agrees. The solutions — dynamic discovery, code execution patterns, Skills abstractions — all converge on lazy/on-demand loading.
-2. **CLI wins for developer-facing terminal workflows.** The training data advantage is real and measurable. For coding agents and infrastructure automation, CLI is cheaper, faster, and more reliable.
-3. **MCP wins for enterprise, multi-tenant, and non-developer contexts.** OAuth delegation, audit trails, structured tool boundaries, and serving users who don't have terminals justify the overhead.
-4. **The smartest teams use hybrid architectures.** CLI for development, MCP for customer-facing features, unified behind an abstraction layer that hides the transport choice. Both Claude Code and [Cowork](https://manveerc.substack.com/p/mcp-vs-cli-ai-agents) already do this with "Skills" — the agent calls a Skill regardless of whether it's backed by CLI or MCP.
-5. **MCP's survival depends on solving context efficiency.** Progressive discovery and dynamic toolsets are closing the token gap from 32x down to near-parity. If this continues, the token argument evaporates.
+1. **Raw MCP with static tool loading is wasteful.** Everyone agrees. The solutions converge on lazy/on-demand loading.
+2. **CLI wins for developer-facing terminal workflows.** The training data advantage is real, measurable, and durable.
+3. **MCP wins for GUI editors and multi-tenant platforms.** Discovery, session state, and structured tool boundaries justify the overhead in environments without a shell.
+4. **MCP's security story is aspirational, not actual.** The spec defines the right properties. The ecosystem is at 8.5% adoption. This gap must close.
+5. **The smartest teams use hybrid architectures.** CLI for development, MCP for customer-facing features, unified behind a Skills/abstraction layer. Both Claude Code and [Cowork](https://manveerc.substack.com/p/mcp-vs-cli-ai-agents) already do this.
+6. **Token costs are declining faster than most people realize.** The 17x overhead that dominates today's debate will be economically irrelevant within 2-3 years.
 
 ## What actually matters
 
-The protocol debate distracts from the hard problems that nobody seems to be solving:
+The protocol debate distracts from the hard problems nobody is solving:
 
-**How do you find tools that work?** There are thousands of MCP servers and npm packages claiming to be AI tools. Most of them are broken, undocumented, or abandoned. [Merge.dev lists](https://www.merge.dev/blog/mcp-challenges) "poor maintenance — servers launched for marketing receive minimal support" as a top MCP challenge. The protocol doesn't help you find the good ones.
+**How do you find tools that work?** There are thousands of MCP servers and npm packages claiming to be AI tools. Most are broken, undocumented, or abandoned. [Merge.dev lists](https://www.merge.dev/blog/mcp-challenges) "poor maintenance — servers launched for marketing receive minimal support" as a top challenge. The protocol doesn't help you find the good ones.
 
-**How do you know a tool is safe to run?** You're giving an AI agent the ability to execute arbitrary functions. [Shrivu Shankar found](https://blog.sshh.io/p/everything-wrong-with-mcp) that "LLM-reliability often negatively correlates with the amount of instructional context" — more tools paradoxically reduces performance. Tau-Bench showed Claude 3.7 Sonnet achieving only 16% task completion on airline booking scenarios. The protocol doesn't tell you which tools actually work.
+**How do you know a tool is safe to run?** [Shrivu Shankar found](https://blog.sshh.io/p/everything-wrong-with-mcp) that "LLM-reliability often negatively correlates with instructional context" — more tools paradoxically reduces performance. The protocol doesn't tell you which tools work.
 
-**How do you compose tools into workflows?** An agent needs a web scraper, a summarizer, and a Slack notifier. How does it find those, wire them together, and handle failures? The protocol is the least interesting part of that stack.
-
-**How do you version and update tools without breaking agents?** Tool schemas change. Endpoints move. Auth requirements evolve. The protocol doesn't solve compatibility.
+**How do you compose tools into workflows?** An agent needs a web scraper, a summarizer, and a Slack notifier. How does it find them, wire them together, and handle failures? The protocol is the least interesting part of that stack.
 
 These are registry problems, trust problems, and quality problems. They're harder than protocol design, which is probably why people would rather argue about MCP on Twitter.
 
@@ -424,21 +457,25 @@ A tool author publishes a Zod-schema'd function to npm. TPMJS indexes it, health
 - **REST** — Standard API with Bearer auth (universal, best for backends)
 - **SDK** — \`@tpmjs/registry-search\` and \`@tpmjs/registry-execute\` (type-safe, best for code)
 
-The consumer picks the protocol that fits their context. The tool doesn't change — only the transport does.
-
-CLI for dev speed. MCP for security and editor integration. REST for universality. SDK for type safety. They're not competing — they're complementary.
+Yes, a multi-protocol registry benefits when the answer is "use all four." I'm biased. But the data supports context-dependent protocol choice regardless of whether TPMJS exists.
 
 ## The bottom line
 
-Stop arguing about protocols as if one must win.
+The protocol debate is real but overblown. Here's the honest version:
 
-Use CLI where it's fast and you control the environment. Use MCP where you need auth, consent, agent identity, and audit trails. Use REST where you need universality. Use SDK where you need type safety.
+**CLI is cheaper, more reliable, and better-supported by LLM training data.** For terminal agents, it wins decisively. The training data advantage is durable.
 
-But don't pretend that killing MCP is free. The security properties it provides — agent identity, delegated auth, consent flows, action approval — don't go away just because you chose a different transport. The observability it provides — structured logging, correlation IDs, machine-readable audit trails — doesn't appear magically in your CLI output. You'll either build these yourself, or you'll ship without them.
+**MCP defines the right security and discovery properties for non-terminal contexts.** But the ecosystem is years behind the spec — 8.5% OAuth adoption, 0% delegation chains, 43% of servers with injection flaws. The protocol needs to become a [pit of success](https://blog.codinghorror.com/falling-into-the-pit-of-success/) where insecure implementations are hard to build, not easy.
 
-And shipping without them is how we get the next generation of security incidents.
+**REST is the universal fallback** that works everywhere, with decades of battle-tested infrastructure.
 
-The protocol is the envelope. The tool is the letter. But the envelope has a wax seal for a reason — and breaking it has consequences.
+**The token cost argument is real today but shrinking.** Costs decline 10x/year. Dynamic MCP approaches CLI parity. By 2028, the overhead is a rounding error.
+
+**Observability is an infrastructure concern, not a protocol concern.** CloudTrail, OpenTelemetry, and API gateways work regardless of wire protocol. MCP's advantage is structured defaults, not unique capability.
+
+Don't pretend that killing MCP is free — the security properties it targets are real, even if the ecosystem hasn't delivered them yet. But don't pretend MCP has delivered them either. The protocol defines the destination. The ecosystem is still very early in the journey.
+
+The hard problems — discovery, trust, quality, composition — aren't protocol problems. They're registry problems. And those are the ones worth solving.
 `,
   },
 ];
