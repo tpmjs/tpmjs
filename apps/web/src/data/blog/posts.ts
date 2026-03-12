@@ -227,6 +227,134 @@ But killing MCP because "CLI is simpler" or "REST is universal" means you either
 1. Don't care about security at scale, or
 2. Will end up rebuilding MCP's security properties inside your own stack anyway
 
+## MCP gives you logging for free. CLI doesn't.
+
+There's another advantage nobody talks about: **observability**.
+
+MCP is JSON-RPC 2.0. Every request and response is structured, machine-readable JSON with a mandatory ID field that pairs them together:
+
+\`\`\`json
+{
+  "jsonrpc": "2.0",
+  "id": "req-abc-123",
+  "method": "tools/call",
+  "params": {
+    "name": "firecrawl--scrape",
+    "arguments": { "url": "https://example.com" }
+  }
+}
+\`\`\`
+
+And its response:
+
+\`\`\`json
+{
+  "jsonrpc": "2.0",
+  "id": "req-abc-123",
+  "result": {
+    "content": [{ "type": "text", "text": "..." }]
+  }
+}
+\`\`\`
+
+Every tool call has: the tool name, the exact parameters, the exact result, a correlation ID, and a timestamp. You can pipe this directly into Datadog, Splunk, or any SIEM system. You get a complete audit trail of every action every agent took, with every parameter and every result, structured and queryable.
+
+Now try that with CLI.
+
+CLI output is stdout — unstructured text. The format varies per tool. Table widths change. Column names are inconsistent. Errors go to stderr, sometimes mixed with progress output. There's no correlation ID linking a command invocation to its output. If two CLI calls run concurrently, the outputs interleave.
+
+You *can* make CLI output structured by always using \`--json\` flags. But that's opt-in, tool-by-tool, and there's no standard. Every tool implements its own JSON format. There's no request/response pairing. There's no trace ID. When something fails, you get a text error message that your logging system has to parse with regex.
+
+This matters for three reasons:
+
+**Debugging.** When an agent misbehaves, MCP logs show you exactly what tool was called, with what parameters, and what came back. CLI logs show you "the agent ran some command and here's some text that came out." Good luck doing root cause analysis on that.
+
+**Compliance.** If you're in a regulated industry — finance, healthcare, government — you need audit trails of every action an agent takes on behalf of a user. MCP gives you this out of the box. CLI gives you a pile of text files to parse.
+
+**Monitoring at scale.** An MCP gateway sitting between agents and servers can enforce uniform logging, attach correlation IDs across multi-step workflows, and feed structured data into dashboards. Try building that on top of N different CLI tools with N different output formats.
+
+The "CLI is fewer tokens" argument is real. But tokens are cheap and getting cheaper. Audit trails, debugging, and compliance are expensive to retrofit.
+
+## The full comparison
+
+Here's how the four protocols actually stack up across every dimension that matters. No protocol wins everywhere — that's the point.
+
+### Performance
+
+| | CLI | MCP | REST | SDK |
+|--|-----|-----|------|-----|
+| **Token cost** | ~50 per call | ~200 per call | N/A (server-side) | N/A (in-process) |
+| **Latency** | High (process spawn) | Medium (JSON-RPC) | Medium (HTTP) | Very low (native) |
+| **Cold start** | Slow (new process each call) | Fast (persistent server) | Fast (connection pool) | None |
+| **Throughput** | Low (sequential) | Medium (multiplexed) | High (HTTP/2) | Very high |
+
+### Security
+
+| | CLI | MCP | REST | SDK |
+|--|-----|-----|------|-----|
+| **Agent identity** | None | OAuth 2.1 client ID | API key / OAuth | Library-dependent |
+| **User consent** | Awkward device flow | Standardized OAuth | Custom UI needed | Custom code |
+| **Delegation chain** | Not possible | \`act\` claim support | Scoped tokens | Flexible |
+| **Secret management** | Env vars (exposed) | Opaque to agent | Server-side | Native |
+| **Permission scoping** | None | Scope-based | Endpoint-based | Function-based |
+
+### Observability
+
+| | CLI | MCP | REST | SDK |
+|--|-----|-----|------|-----|
+| **Structured logging** | Poor (text parsing) | Excellent (JSON-RPC) | Good (HTTP + JSON) | Excellent (native) |
+| **Request/response pairing** | None | Built-in (mandatory ID) | Manual (headers) | Native (return values) |
+| **Audit trail** | Text files, regex | Structured, queryable | With proper logging | With proper logging |
+| **Compliance readiness** | Low | High | Medium | Medium |
+| **Debugging** | Manual, fragile | Exact payloads, trace IDs | HTTP tools | Debugger, IDE |
+
+### Developer Experience
+
+| | CLI | MCP | REST | SDK |
+|--|-----|-----|------|-----|
+| **Setup complexity** | Very low (install binary) | Low (stdio or URL) | Medium (HTTP + auth) | Very low (import) |
+| **Type safety** | None (string parsing) | JSON Schema | OpenAPI codegen | Native types |
+| **Discovery** | \`--help\`, docs | Built-in introspection | OpenAPI/Swagger | IDE autocomplete |
+| **Error handling** | Text-based, fragile | Structured error codes | HTTP status codes | Exceptions |
+| **Reliability** | Fragile (output changes break) | Stable (versioned schema) | Stable (API versioning) | Very stable |
+
+### User Experience
+
+| | CLI | MCP | REST | SDK |
+|--|-----|-----|------|-----|
+| **Non-developer usability** | Poor (terminal required) | Excellent (invisible) | Good (web UI) | N/A (code only) |
+| **Action approval** | None | Standardized | Custom UI | Custom code |
+| **Transparency** | Opaque | Full audit trail | API logs | Code review |
+| **Granular permissions** | None | Scope-based, time-limited | Endpoint-based | Function-based |
+
+### Ecosystem
+
+| | CLI | MCP | REST | SDK |
+|--|-----|-----|------|-----|
+| **Adoption** | Mature, fragmented | Growing fast (5000+ servers) | Universal | Per-language |
+| **Standards** | None (tool-specific) | MCP spec + governance | RFC, OpenAPI | Language specs |
+| **Client support** | Every OS | Claude, Cursor, Windsurf, VS Code | Every language | Per-framework |
+| **Tooling** | Mature | Rapid growth | Very mature | Mature |
+
+### Architecture
+
+| | CLI | MCP | REST | SDK |
+|--|-----|-----|------|-----|
+| **Statefulness** | Stateless (by nature) | Flexible (session-based) | Stateless (HTTP) | Flexible |
+| **Transport** | stdout/stderr | Stdio, HTTP, WebSocket | HTTP/1.1, HTTP/2 | In-process |
+| **Connection model** | Spawn per call | Persistent session | Per-request | No network |
+| **Error recovery** | Retry in agent | Built-in semantics | HTTP retry | Exception handling |
+| **Exactly-once** | No mechanism | Request IDs | Idempotency keys | Native |
+
+### The takeaway from the matrix
+
+- **CLI** wins on token efficiency and setup simplicity. Loses on security, observability, and reliability.
+- **MCP** wins on security, observability, and non-dev UX. Loses on token cost and adds protocol complexity.
+- **REST** wins on universality and ecosystem maturity. Loses on agent-specific UX and requires building security yourself.
+- **SDK** wins on everything except reach — it only works if you're writing code in a supported language.
+
+No single protocol dominates. The right choice depends on your context — which is exactly why the "X is dead" takes are always wrong.
+
 ## What actually matters
 
 The protocol debate distracts from the hard problems that nobody seems to be solving:
