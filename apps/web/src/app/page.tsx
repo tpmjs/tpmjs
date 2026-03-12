@@ -11,6 +11,7 @@ import { FeaturesSection } from '../components/home/FeaturesSection';
 import { GetStartedSection } from '../components/home/GetStartedSection';
 import { HeroSection } from '../components/home/HeroSection';
 import { McpSection } from '../components/home/McpSection';
+import { ProtocolSection } from '../components/home/ProtocolSection';
 import { SocialProofSection } from '../components/home/SocialProofSection';
 
 export const dynamic = 'force-dynamic';
@@ -232,6 +233,9 @@ export default async function HomePage(): Promise<React.ReactElement> {
 
         {/* Features Section */}
         <FeaturesSection toolCount={data.stats.toolCount} />
+
+        {/* Protocol Debate Section */}
+        <ProtocolSection />
 
         {/* Featured Tools Section */}
         <section className="py-16 bg-background">
