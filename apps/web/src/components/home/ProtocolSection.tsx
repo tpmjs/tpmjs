@@ -1,8 +1,47 @@
 'use client';
 
+import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useState } from 'react';
+
+function CopyBtn({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      className="flex-shrink-0 p-1.5 text-foreground-tertiary hover:text-foreground transition-colors"
+      aria-label="Copy to clipboard"
+    >
+      <Icon icon={copied ? 'check' : 'copy'} size="xs" />
+    </Button>
+  );
+}
+
+const claudeCodePrompts = [
+  {
+    label: 'discover & add',
+    text: 'Use the tpm CLI to search for firecrawl tools on the TPMJS registry and add them to my web-scraping collection. Run `tpm tool search firecrawl --json` first to see what\'s available, then `tpm collection add web-scraping --search "firecrawl"` to add them.',
+  },
+  {
+    label: 'list & explore',
+    text: 'Run `tpm collection list --json` to show all my TPMJS collections, then pick the one with the most tools and run `tpm collection info <slug>` to show me what tools are in it.',
+  },
+  {
+    label: 'build a collection from scratch',
+    text: 'Use the tpm CLI to create a new TPMJS collection called "data-tools" with `tpm collection create`, then search for data extraction and CSV tools with `tpm tool search` and add the top 5 results to it with `tpm collection add`.',
+  },
+  {
+    label: 'search & execute',
+    text: 'Use `tpm tool search "weather"` to find weather tools on TPMJS, pick the best one, then run it with `tpm tool execute <package>/<tool> --input \'{"city":"London"}\'` to get the current weather.',
+  },
+];
 
 type Protocol = 'cli' | 'mcp' | 'rest' | 'sdk';
 
@@ -182,6 +221,46 @@ export function ProtocolSection() {
             <div className="p-4 md:p-6 bg-background font-mono text-sm overflow-x-auto">
               <pre className="text-foreground whitespace-pre">{activeProtocol.example}</pre>
             </div>
+          </div>
+        </fieldset>
+
+        {/* Try it in Claude Code */}
+        <fieldset className="border border-dashed border-border p-0 mb-12 overflow-hidden max-w-3xl mx-auto">
+          <legend className="font-mono text-sm text-foreground-secondary px-3 ml-5 lowercase">
+            try it in claude code
+          </legend>
+          <div className="px-6 pt-5 pb-3">
+            <p className="font-sans text-sm text-foreground-secondary mb-1">
+              Install the CLI, then paste any of these prompts into Claude Code. It has everything
+              Claude needs to run the commands.
+            </p>
+          </div>
+          <div className="px-6 pb-2">
+            <div className="relative flex items-center bg-surface border border-border rounded px-4 py-2.5 font-mono text-sm mb-3">
+              <span className="text-primary font-bold mr-3 select-none">$</span>
+              <code className="text-foreground select-all">npm install -g @tpmjs/cli</code>
+              <CopyBtn text="npm install -g @tpmjs/cli" />
+            </div>
+          </div>
+          <div className="border-t border-border">
+            {claudeCodePrompts.map((prompt, i) => (
+              <div
+                key={prompt.label}
+                className={`px-6 py-4 ${i < claudeCodePrompts.length - 1 ? 'border-b border-border' : ''}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-mono text-xs text-foreground-tertiary mb-1.5">
+                      {prompt.label}
+                    </p>
+                    <p className="font-sans text-sm text-foreground leading-relaxed">
+                      {prompt.text}
+                    </p>
+                  </div>
+                  <CopyBtn text={prompt.text} />
+                </div>
+              </div>
+            ))}
           </div>
         </fieldset>
 
