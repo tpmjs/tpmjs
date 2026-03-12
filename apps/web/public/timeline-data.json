@@ -7407,6 +7407,62 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "73467a23fe926c6b1b5daeddb0106cb4ea1f0793",
+      "d": "2026-03-11",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "85a8db45dc82e6176514d949d1f060ae55b6b42d",
+      "d": "2026-03-11",
+      "m": "feat: production-ready launch prep for Product Hunt / Hacker News",
+      "t": "feat",
+      "s": "",
+      "u": "production-ready launch prep for Product Hunt / Hacker News"
+    },
+    {
+      "h": "46fd0cd19b59438ee6c16bcc5c8444e0d675d66b",
+      "d": "2026-03-11",
+      "m": "feat: launch readiness - repo health, SEO, copy, security, and polish",
+      "t": "feat",
+      "s": "",
+      "u": "launch readiness - repo health, SEO, copy, security, and polish"
+    },
+    {
+      "h": "81107b73ecc9e06690aff9cdb5cb2a91a0b38db9",
+      "d": "2026-03-11",
+      "m": "chore: trigger Vercel rebuild",
+      "t": "chore",
+      "s": "",
+      "u": "trigger Vercel rebuild"
+    },
+    {
+      "h": "dbaa3b4088a2d0de6412fbf61c3a4eccfc2d99fa",
+      "d": "2026-03-12",
+      "m": "fix: revert vercel.json security headers to fix deploy",
+      "t": "fix",
+      "s": "",
+      "u": "revert vercel.json security headers to fix deploy"
+    },
+    {
+      "h": "a671497b54ba4871b40614201f97667018eff518",
+      "d": "2026-03-12",
+      "m": "fix: restore force-dynamic on sitemap to fix build",
+      "t": "fix",
+      "s": "",
+      "u": "restore force-dynamic on sitemap to fix build"
+    },
+    {
+      "h": "14ea45d629b59fb9074d2661f09eabf3199917a9",
+      "d": "2026-03-12",
+      "m": "feat: add Permissions-Policy and X-Permitted-Cross-Domain-Policies headers",
+      "t": "feat",
+      "s": "",
+      "u": "add Permissions-Policy and X-Permitted-Cross-Domain-Policies headers"
     }
   ],
   "m": [
