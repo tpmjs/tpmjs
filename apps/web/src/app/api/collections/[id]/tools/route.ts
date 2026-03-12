@@ -1,9 +1,8 @@
 import { prisma } from '@tpmjs/db';
 import { AddToolToCollectionSchema, COLLECTION_LIMITS } from '@tpmjs/types/collection';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { logActivity } from '~/lib/activity';
-import { auth } from '~/lib/auth';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -61,11 +60,9 @@ export async function GET(
 
     // For private collections, check ownership
     if (!collection.isPublic) {
-      const session = await auth.api.getSession({
-        headers: await headers(),
-      });
+      const authResult = await authenticateRequest();
 
-      if (!session || collection.userId !== session.user.id) {
+      if (!authResult.authenticated || collection.userId !== authResult.userId) {
         return NextResponse.json(
           {
             success: false,
@@ -140,11 +137,9 @@ export async function POST(
 
   try {
     // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const authResult = await authenticateRequest();
 
-    if (!session) {
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -172,7 +167,7 @@ export async function POST(
       );
     }
 
-    if (collection.userId !== session.user.id) {
+    if (collection.userId !== authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -284,7 +279,7 @@ export async function POST(
 
     // Log activity (fire-and-forget)
     logActivity({
-      userId: session.user.id,
+      userId: authResult.userId,
       type: 'COLLECTION_TOOL_ADDED',
       targetName: collection.name,
       targetType: 'collection',

@@ -1,8 +1,7 @@
 import { prisma } from '@tpmjs/db';
-import { headers } from 'next/headers';
 import { type NextRequest, NextResponse } from 'next/server';
 import { logActivity } from '~/lib/activity';
-import { auth } from '~/lib/auth';
+import { authenticateRequest } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -42,11 +41,9 @@ export async function DELETE(
 
   try {
     // Check authentication
-    const session = await auth.api.getSession({
-      headers: await headers(),
-    });
+    const authResult = await authenticateRequest();
 
-    if (!session) {
+    if (!authResult.authenticated || !authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -73,7 +70,7 @@ export async function DELETE(
       );
     }
 
-    if (collection.userId !== session.user.id) {
+    if (collection.userId !== authResult.userId) {
       return NextResponse.json(
         {
           success: false,
@@ -117,7 +114,7 @@ export async function DELETE(
 
     // Log activity (fire-and-forget)
     logActivity({
-      userId: session.user.id,
+      userId: authResult.userId,
       type: 'COLLECTION_TOOL_REMOVED',
       targetName: collection.name,
       targetType: 'collection',

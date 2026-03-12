@@ -490,8 +490,9 @@ export class TpmClient {
   async addToolsToCollection(id: string, toolIds: string[]): Promise<ApiResponse<void>> {
     // Add tools one by one (API doesn't support bulk)
     for (const toolId of toolIds) {
-      await this.request(`/collections/${id}/tools/${toolId}`, {
+      await this.request(`/collections/${id}/tools`, {
         method: 'POST',
+        body: JSON.stringify({ toolId }),
       });
     }
     return { success: true };
