@@ -105,6 +105,7 @@ Collections are curated bundles of tools exposed as a single MCP server endpoint
 # CLI
 tpm collection create
 tpm collection add my-collection --package @tpmjs/official-firecrawl
+tpm collection add my-collection --search "firecrawl"  # Search + add in one step
 tpm collection info username/my-collection
 tpm collection update my-col --name "New Name" --public
 tpm collection import my-collection --file tools.txt

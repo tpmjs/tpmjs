@@ -511,6 +511,7 @@ tpm collection info ajax/my-collection
 # Add tools
 tpm collection add my-collection tool-id-1 tool-id-2
 tpm collection add my-collection --package @org/my-tools
+tpm collection add my-collection --search "firecrawl"
 
 # Import from file
 tpm collection import my-collection --file tools.txt

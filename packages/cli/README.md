@@ -122,6 +122,8 @@ tpm collection update my-col --no-public     # Make private
 ```bash
 tpm collection add <collection> [tools]              # Add tools by ID
 tpm collection add <collection> --package @org/pkg   # Add tools from an npm package
+tpm collection add <collection> --search "firecrawl" # Search and add matching tools
+tpm collection add <collection> --search "scraper" --category web --limit 3
 tpm collection remove <collection> <tool-id>         # Remove a tool
 tpm collection import <collection> --file tools.txt  # Import from file (IDs, one per line or JSON array)
 ```

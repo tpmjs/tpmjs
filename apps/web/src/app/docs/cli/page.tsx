@@ -353,6 +353,10 @@ tpm collection add my-collection tool-id-1 tool-id-2
 # Add tools from an npm package
 tpm collection add my-collection --package @org/my-tools
 
+# Search for tools and add them in one step
+tpm collection add my-collection --search "firecrawl"
+tpm collection add my-collection --search "web scraper" --category web --limit 3
+
 # Remove a tool
 tpm collection remove my-collection tool-id
 
