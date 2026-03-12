@@ -14,10 +14,10 @@ export const posts: BlogPost[] = [
     slug: 'mcp-vs-cli-vs-rest',
     title: 'MCP vs CLI vs REST Is the Wrong Argument',
     description:
-      'Everyone is debating which protocol wins for AI tools. They are all right — in their context. Here is why the protocol is a transport detail, and what actually matters.',
+      'Everyone is debating which protocol wins for AI tools. They are all right — in their context. But if you kill MCP, you might not care about security as much as you think.',
     author: 'Thomas Davis',
     date: '2026-03-13',
-    tags: ['mcp', 'cli', 'rest', 'ai-tools', 'opinion'],
+    tags: ['mcp', 'cli', 'rest', 'security', 'ai-tools', 'opinion'],
     content: `
 ## The debate
 
@@ -31,6 +31,8 @@ Open Twitter on any given day and you'll find the same fight:
 They're all right — **in their context**. The mistake is universalizing from one context to all contexts.
 
 I've spent the last year building [TPMJS](https://tpmjs.com), a registry for AI tools. We serve tools over CLI, MCP, REST, and SDK simultaneously. That forces you to think clearly about what each protocol is actually good at, because you can't play favorites when you have to support all of them.
+
+But there's one argument the "kill MCP" crowd consistently ignores, and it's the most important one: **security**.
 
 Here's what I've learned.
 
@@ -151,6 +153,80 @@ Every take picks ONE context and universalizes:
 
 The protocol is a transport detail. It's the last mile. Arguing about whether to use MCP or CLI is like arguing about whether to use HTTP/2 or HTTP/3 — it matters at the margin, but it's not the interesting question.
 
+But there's a dimension to this debate that changes everything, and almost nobody is talking about it.
+
+## If you kill MCP, you don't care about security
+
+This is the argument that the "just use CLI" and "just use REST" crowd consistently hand-waves away. And it's the one that matters most at scale.
+
+### Why CLIs calling APIs aren't secure enough
+
+CLI works great for dev use cases. But let's think about what happens when you try to make it work for real users at scale.
+
+**Not everyone will download a CLI.** Sure, you can package it invisibly inside the agent. But then you have to figure out auth. Non-developers aren't going to open the Google Cloud Console and generate API keys. So you need OAuth — you need users to authenticate the CLI.
+
+Here's where it gets messy:
+
+1. **The consent screen is confusing.** The user is authenticating a CLI they might not even know exists — not the agent they're actually talking to.
+2. **Device flow is awkward.** Existing CLIs using device flow require the agent to read codes, display them to users, navigate them through approval. The user has no mental model of "the CLI" — they just want the agent to work.
+3. **The access token doesn't identify the agent.** This is the killer problem.
+
+When the CLI authenticates, you get back a token that looks something like:
+
+\`\`\`json
+{
+  "aud": "api.google.com/drive",
+  "sub": "user-id-123",
+  "client_id": "CLI_CLIENT_ID"
+}
+\`\`\`
+
+Two problems:
+
+**The CLI client ID is public.** The CLI binary is distributed to everyone — anyone can inspect it, extract the client ID, and impersonate it. Unless you add something like DeviceCheck on macOS, you can't guarantee it's actually the CLI making the request. So "just a CLI" is already leaking trust assumptions.
+
+**The API never knows who the agent is.** This is the one that kills security at scale. You can't apply policy based on agent identity. If the company exposing the API has a partnership with AI Lab A but not AI Lab B, it can't distinguish between them. The token says "some user via some CLI" — not "Claude via TPMJS acting on behalf of this user."
+
+This gets worse when you think about agents calling agents. In a chain of Agent A → Agent B → Agent C, ideally you'd track the full delegation:
+
+\`\`\`json
+{
+  "aud": "api.google.com/drive",
+  "sub": "user-id-123",
+  "client_id": "agent1",
+  "act": ["agent1", "agent2", "agent3"]
+}
+\`\`\`
+
+CLI-to-API gives you none of this. The API sees one opaque token and has no idea what's behind it.
+
+### Why raw APIs aren't enough either
+
+I actually like "code mode" — having fixed, deterministic integration code I can review. You can do code mode against any API or MCP server. But what does it actually take to make a raw API secure for agent use?
+
+**1. Dynamic client registration.** You don't want every user to manually create a client ID and secret. You need the ability for agents to register themselves and for users to consent to access without visiting a developer portal. Non-devs will never do that. Ideally this registration is trusted — client ID metadata documents using certificates so the API knows who clients really are.
+
+**2. OAuth consent, not API keys.** API keys are fine for server-to-server. But for anything touching user data, you need proper OAuth so users can only access their own data. There is no "master Google API key" you give to everyone. For internal enterprise use cases, you *could* create a shared API key — but then to prevent Employee A from reading Employee B's email, you'd need to implement authorization *in the client*. Putting security enforcement in the client is how you get breaches.
+
+**3. Sensitive action approval.** If the agent is about to delete a production database or send an email as the CEO, you want a human in the loop. Again, you *could* implement this in the client. But putting the onus on the client for security checks is exactly the mistake we learned not to make in web development. You do auth on the server. You don't trust that the browser did it.
+
+**4. Good agent experience (AX).** Your API needs clear documentation, intuitive patterns, and maybe even a dedicated agent-facing API with different operations — grouping endpoints into higher semantic actions, removing endpoints that agents shouldn't touch, adding endpoints for agent-specific workflows.
+
+As someone who has worked on auth — both building APIs and helping others build them — I would love it if all APIs looked like this. I know they don't. Most APIs weren't designed for agents, and retrofitting these properties is a massive undertaking.
+
+### The punchline
+
+If you do all four of those things to your REST API — dynamic client registration, OAuth consent, action approval, and good AX — congratulations. **You just reinvented MCP.**
+
+That's not a coincidence. MCP exists because these are the properties you need for secure agent-to-service communication. The protocol is the crystallization of what "doing it right" looks like.
+
+Does MCP have problems? Absolutely. Context bloat is real. There are features MCP doesn't need. Most MCP servers aren't there yet on quality. The ecosystem is immature.
+
+But killing MCP because "CLI is simpler" or "REST is universal" means you either:
+
+1. Don't care about security at scale, or
+2. Will end up rebuilding MCP's security properties inside your own stack anyway
+
 ## What actually matters
 
 The protocol debate distracts from the hard problems that nobody seems to be solving:
@@ -171,29 +247,26 @@ We built TPMJS around a simple premise: **write the tool once, serve it everywhe
 
 A tool author publishes a Zod-schema'd function to npm. TPMJS indexes it, health-checks it, quality-scores it, and makes it available over every protocol:
 
-- **CLI** — \`tpm tool search\`, \`tpm tool execute\`
-- **MCP** — Every collection is an MCP server endpoint
-- **REST** — Standard API with Bearer auth
-- **SDK** — \`@tpmjs/registry-search\` and \`@tpmjs/registry-execute\`
+- **CLI** — \`tpm tool search\`, \`tpm tool execute\` (fewest tokens, best for terminal agents)
+- **MCP** — Every collection is an MCP server endpoint (structured auth, best for editors)
+- **REST** — Standard API with Bearer auth (universal, best for backends)
+- **SDK** — \`@tpmjs/registry-search\` and \`@tpmjs/registry-execute\` (type-safe, best for code)
 
 The consumer picks the protocol that fits their context. The tool doesn't change — only the transport does.
 
-This isn't a protocol opinion. It's a registry opinion. The hard work is in indexing, validating, scoring, and curating tools so that agents can find and trust what they need. The protocol is just how you deliver the result.
+CLI for dev speed. MCP for security and editor integration. REST for universality. SDK for type safety. They're not competing — they're complementary.
 
 ## The bottom line
 
-Stop arguing about protocols. MCP, CLI, REST, and SDK are all fine. They're all just ways to send JSON to a function and get JSON back.
+Stop arguing about protocols as if one must win.
 
-Pick the one that fits your context:
+Use CLI where it's fast and you control the environment. Use MCP where you need auth, consent, and agent identity. Use REST where you need universality. Use SDK where you need type safety.
 
-- **In a terminal?** Use CLI.
-- **In an editor?** Use MCP.
-- **In a backend?** Use REST.
-- **In TypeScript?** Use the SDK.
+But don't pretend that killing MCP is free. The security properties it provides — agent identity, delegated auth, consent flows, action approval — don't go away just because you chose a different transport. You'll either build them yourself, or you'll ship without them.
 
-Then spend your energy on the actual hard problems: finding tools that work, knowing they're safe, and composing them into something useful.
+And shipping without them is how we get the next generation of security incidents.
 
-The protocol is the envelope. The tool is the letter. Stop arguing about envelopes.
+The protocol is the envelope. The tool is the letter. But the envelope has a wax seal for a reason — and breaking it has consequences.
 `,
   },
 ];
