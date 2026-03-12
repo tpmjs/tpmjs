@@ -176,6 +176,7 @@ const resourceItems: DropdownItem[] = [
   { href: '/how-it-works', label: 'How It Works', description: 'Architecture & data flow' },
   { href: '/compare', label: 'Compare', description: 'TPMJS vs alternatives' },
   { href: '/faq', label: 'FAQ', description: 'Common questions' },
+  { href: '/blog', label: 'Blog', description: 'Thoughts & opinions' },
   { href: '/changelog', label: 'Changelog', description: 'Latest updates' },
   { href: '/about', label: 'About', description: 'The project & team' },
 ];

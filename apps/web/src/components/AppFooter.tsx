@@ -25,6 +25,7 @@ const resourceLinks = [
   { href: '/how-it-works', label: 'How It Works' },
   { href: '/compare', label: 'Compare' },
   { href: '/faq', label: 'FAQ' },
+  { href: '/blog', label: 'Blog' },
   { href: '/changelog', label: 'Changelog' },
   { href: '/about', label: 'About' },
 ];
