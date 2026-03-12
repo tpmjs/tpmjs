@@ -76,6 +76,7 @@ export default class ToolSearch extends Command {
 
       output.table(
         response.data.map((tool) => ({
+          id: tool.id,
           name: tool.name,
           package: tool.npmPackageName,
           category: tool.category,
@@ -84,6 +85,7 @@ export default class ToolSearch extends Command {
           score: typeof tool.qualityScore === 'number' ? tool.qualityScore.toFixed(2) : '-',
         })),
         [
+          { key: 'id', header: 'ID', width: 28 },
           { key: 'name', header: 'Name', width: 25 },
           { key: 'package', header: 'Package', width: 35 },
           { key: 'category', header: 'Category', width: 15 },
