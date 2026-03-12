@@ -463,17 +463,15 @@ export async function POST(
       );
     }
 
-    // Allow initialize, tools/list, ping, and notifications without auth
-    const isDiscovery =
-      body.method === 'initialize' ||
-      body.method === 'tools/list' ||
-      body.method === 'notifications/initialized' ||
-      body.method === 'ping';
+    // Allow discovery and search without auth; only execute_tool requires auth
+    const toolCallName =
+      body.method === 'tools/call' ? (body.params as { name?: string })?.name : null;
+    const requiresAuth = body.method === 'tools/call' && toolCallName === 'execute_tool';
 
-    // Authenticate (required for tools/call and other methods)
+    // Authenticate (always attempt, but only enforce for execute_tool)
     authResult = await authenticateRequest();
 
-    if (!isDiscovery && !authResult.authenticated) {
+    if (requiresAuth && !authResult.authenticated) {
       return NextResponse.json(
         {
           jsonrpc: '2.0',
@@ -489,7 +487,7 @@ export async function POST(
       );
     }
 
-    if (!isDiscovery && !hasScope(authResult, API_KEY_SCOPES.MCP_EXECUTE)) {
+    if (requiresAuth && !hasScope(authResult, API_KEY_SCOPES.MCP_EXECUTE)) {
       return NextResponse.json(
         {
           jsonrpc: '2.0',
