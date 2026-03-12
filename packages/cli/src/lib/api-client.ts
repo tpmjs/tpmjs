@@ -448,6 +448,43 @@ export class TpmClient {
     });
   }
 
+  /**
+   * Resolve a collection identifier (ID, slug, or username/slug) to a collection ID.
+   * Returns the collection ID if found, or throws an error.
+   */
+  async resolveCollectionId(identifier: string): Promise<string> {
+    // If it looks like a CUID (starts with 'c' and ~25 chars alphanumeric), try direct lookup first
+    if (/^c[a-z0-9]{20,30}$/.test(identifier)) {
+      return identifier;
+    }
+
+    // Strip username prefix if present (e.g., "ajax/dog-research-tools" -> "dog-research-tools")
+    const slug = identifier.includes('/') ? identifier.split('/').pop()! : identifier;
+
+    // List user's collections and find by slug or name
+    const result = await this.listCollections({ limit: 50 });
+    const collections = result.data ?? [];
+
+    // Try exact slug match first
+    const bySlug = collections.find((c) => c.slug === slug);
+    if (bySlug) return bySlug.id;
+
+    // Try case-insensitive name match
+    const byName = collections.find((c) => c.name.toLowerCase() === slug.toLowerCase());
+    if (byName) return byName.id;
+
+    // Try partial slug/name match
+    const byPartial = collections.find(
+      (c) => c.slug?.includes(slug) || c.name.toLowerCase().includes(slug.toLowerCase())
+    );
+    if (byPartial) return byPartial.id;
+
+    throw new ApiError(
+      `Collection "${identifier}" not found. Run \`tpm collection list\` to see your collections.`,
+      404
+    );
+  }
+
   // Collections
   async listCollections(options: PaginationOptions = {}): Promise<PaginatedResponse<Collection>> {
     const params = new URLSearchParams();

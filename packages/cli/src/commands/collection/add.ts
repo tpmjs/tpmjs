@@ -7,10 +7,10 @@ export default class CollectionAdd extends Command {
 
   static examples = [
     '<%= config.bin %> <%= command.id %> my-collection tool-id-1',
-    '<%= config.bin %> <%= command.id %> my-collection tool-id-1 tool-id-2 tool-id-3',
+    '<%= config.bin %> <%= command.id %> ajax/dog-research-tools tool-id-1 tool-id-2',
     '<%= config.bin %> <%= command.id %> my-collection --package @anthropic/mcp-tools',
     '<%= config.bin %> <%= command.id %> my-collection --search "firecrawl"',
-    '<%= config.bin %> <%= command.id %> my-collection --search "web scraper" --category web',
+    '<%= config.bin %> <%= command.id %> ajax/web-tools --search "web scraper" --category web',
   ];
 
   static strict = false; // Allow variable number of arguments
@@ -61,6 +61,20 @@ export default class CollectionAdd extends Command {
       return;
     }
 
+    // Resolve collection identifier (ID, slug, or username/slug) to an ID
+    let collectionId: string;
+    try {
+      const resolveSpinner = output.spinner(`Resolving collection "${args.collection}"...`);
+      collectionId = await client.resolveCollectionId(args.collection);
+      resolveSpinner.stop();
+    } catch (error) {
+      output.error(
+        error instanceof Error ? error.message : 'Unknown error',
+        flags.verbose ? String(error) : undefined
+      );
+      return;
+    }
+
     // Handle --search flag: search for tools and add them
     if (flags.search) {
       const spinner = output.spinner(`Searching for "${flags.search}"...`);
@@ -92,7 +106,7 @@ export default class CollectionAdd extends Command {
           `Adding ${toolIds.length} tool(s) to ${args.collection}...`
         );
 
-        await client.addToolsToCollection(args.collection, toolIds);
+        await client.addToolsToCollection(collectionId, toolIds);
 
         addSpinner.stop();
 
@@ -128,7 +142,7 @@ export default class CollectionAdd extends Command {
       const spinner = output.spinner(`Adding tools from ${flags.package}...`);
 
       try {
-        const result = await client.addToolsFromPackage(args.collection, flags.package);
+        const result = await client.addToolsFromPackage(collectionId, flags.package);
 
         spinner.stop();
 
@@ -172,7 +186,7 @@ export default class CollectionAdd extends Command {
     const spinner = output.spinner(`Adding ${toolIds.length} tool(s)...`);
 
     try {
-      await client.addToolsToCollection(args.collection, toolIds);
+      await client.addToolsToCollection(collectionId, toolIds);
 
       spinner.stop();
 
