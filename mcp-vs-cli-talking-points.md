@@ -38,7 +38,7 @@ Source: https://www.scalekit.com/blog/mcp-vs-cli-use
 
 | Solution | Reduction | Source |
 |----------|-----------|--------|
-| Anthropic code execution pattern | 150K → 2K (98.7%) | https://www.anthropic.com/engineering/code-execution-with-mcp |
+| Anthropic code execution (Jones & Kelly) | 150K → 2K (98.7%) | https://www.anthropic.com/engineering/code-execution-with-mcp |
 | Speakeasy dynamic toolsets | 96.7% input tokens | https://www.speakeasy.com/blog/how-we-reduced-token-usage-by-100x-dynamic-toolsets-v2 |
 | Phil Schmid MCP CLI | 47K → 400 (99%) | https://www.philschmid.de/mcp-cli |
 | Claude Code tool search | 51K → 8.5K (46.9%) | Claude Code release |
@@ -189,6 +189,40 @@ Source: https://www.merge.dev/blog/mcp-challenges
 - Agent calls a Skill regardless of underlying transport
 - Full tool catalog never loads at initialization
 - Intent detection + selective loading: ~200 tokens vs 1,500-4,500
+
+### Anthropic's Code Execution Pattern (the best synthesis so far)
+Source: https://www.anthropic.com/engineering/code-execution-with-mcp
+Authors: Adam Jones & Conor Kelly (Anthropic Engineering), November 4, 2025
+
+**The mechanism:**
+1. Present MCP servers as a filesystem: `./servers/google-drive/getDocument.ts`, `./servers/salesforce/updateRecord.ts`
+2. Agent explores directories, reads only the tool files it needs (progressive disclosure)
+3. Agent writes TypeScript code that imports and calls tools directly
+4. Code executes in sandboxed environment — intermediate data never reaches model context
+5. Only explicitly logged/returned data comes back to the agent
+
+**Five key benefits:**
+1. **Progressive disclosure** — agents navigate filesystem to discover tools on-demand (~2K tokens vs 150K upfront)
+2. **Context-efficient results** — 10,000-row spreadsheet filtered in execution env; agent sees 5 rows
+3. **Control flow** — loops, conditionals, error handling in code rather than chained tool calls
+4. **Privacy-preserving** — PII flows between tools (Google Drive → Salesforce) without model seeing it. Agent sees `[EMAIL_1]`, real data passes through untouched
+5. **State persistence & Skills** — agents save code as reusable functions, building toolbox over time
+
+**Why this matters for the debate:**
+- It's FROM Anthropic — they're acknowledging the token bloat problem is real
+- It doesn't replace MCP — it's a pattern ON TOP of MCP (Code Mode + MCP, not Code Mode vs MCP)
+- It leverages LLM training data advantage (LLMs are great at writing TypeScript) while keeping MCP as transport
+- The privacy angle is unique — no other approach provides data-never-reaches-model guarantees
+- Cloudflare independently arrived at the same pattern ("Code Mode"), validating the approach
+- Skills concept aligns with Claude Code Skills and DomAIn Labs Skills-first architecture
+
+**Key quote from the article:**
+"LLMs are adept at writing code and developers should take advantage of this strength."
+
+**Caveats they acknowledge:**
+- Requires secure sandboxed execution environments
+- Resource limits and monitoring needed
+- Operational overhead must be weighed against token savings
 
 ### SmartScope's "category error"
 Source: https://smartscope.blog/en/blog/mcp-agent-skills-analysis/
