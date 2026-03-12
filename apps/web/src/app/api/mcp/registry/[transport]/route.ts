@@ -452,10 +452,28 @@ export async function POST(
       );
     }
 
-    // Authenticate
+    // Parse body first so we can allow unauthenticated discovery (initialize, tools/list)
+    let body: JsonRpcRequest;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { jsonrpc: '2.0', error: { code: -32700, message: 'Parse error' }, id: null },
+        { status: 400 }
+      );
+    }
+
+    // Allow initialize, tools/list, ping, and notifications without auth
+    const isDiscovery =
+      body.method === 'initialize' ||
+      body.method === 'tools/list' ||
+      body.method === 'notifications/initialized' ||
+      body.method === 'ping';
+
+    // Authenticate (required for tools/call and other methods)
     authResult = await authenticateRequest();
 
-    if (!authResult.authenticated) {
+    if (!isDiscovery && !authResult.authenticated) {
       return NextResponse.json(
         {
           jsonrpc: '2.0',
@@ -471,7 +489,7 @@ export async function POST(
       );
     }
 
-    if (!hasScope(authResult, API_KEY_SCOPES.MCP_EXECUTE)) {
+    if (!isDiscovery && !hasScope(authResult, API_KEY_SCOPES.MCP_EXECUTE)) {
       return NextResponse.json(
         {
           jsonrpc: '2.0',
@@ -482,8 +500,8 @@ export async function POST(
       );
     }
 
-    // Rate limit
-    if (authResult.apiKeyId) {
+    // Rate limit (only for authenticated requests)
+    if (authResult.authenticated && authResult.apiKeyId) {
       const rateLimitResult = await checkApiKeyRateLimit(
         authResult.apiKeyId,
         authResult.tier || 'FREE'
@@ -491,17 +509,6 @@ export async function POST(
       if (!rateLimitResult.allowed) {
         return createRateLimitResponse(rateLimitResult);
       }
-    }
-
-    // Parse body
-    let body: JsonRpcRequest;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        { jsonrpc: '2.0', error: { code: -32700, message: 'Parse error' }, id: null },
-        { status: 400 }
-      );
     }
 
     // Notifications — 202 Accepted
