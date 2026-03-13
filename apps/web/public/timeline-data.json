@@ -7463,6 +7463,134 @@
       "t": "feat",
       "s": "",
       "u": "add Permissions-Policy and X-Permitted-Cross-Domain-Policies headers"
+    },
+    {
+      "h": "aff603c60486800e6f16faa2a4e28fee34cbc075",
+      "d": "2026-03-12",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "18ac53edf02aff1a3ac4641cc5c7149bfe407ee8",
+      "d": "2026-03-12",
+      "m": "feat(cli): add --search flag to collection add and show IDs in search",
+      "t": "feat",
+      "s": "cli",
+      "u": "add --search flag to collection add and show IDs in search"
+    },
+    {
+      "h": "48f516ebf7572128f232d1efeef61e28d1bc4ee8",
+      "d": "2026-03-12",
+      "m": "feat: add protocol debate section to homepage",
+      "t": "feat",
+      "s": "",
+      "u": "add protocol debate section to homepage"
+    },
+    {
+      "h": "d1817d1b4c94a6df0a8a0e10716da5f900435dd0",
+      "d": "2026-03-12",
+      "m": "docs: add --search flag to CLI collection add documentation",
+      "t": "docs",
+      "s": "",
+      "u": "add --search flag to CLI collection add documentation"
+    },
+    {
+      "h": "adc4728d9adea8d891bd973d128e077da0865130",
+      "d": "2026-03-12",
+      "m": "feat: add Claude Code example prompts to protocol section",
+      "t": "feat",
+      "s": "",
+      "u": "add Claude Code example prompts to protocol section"
+    },
+    {
+      "h": "28c643855e10b47fdcc6b055ab2e6758b98f415a",
+      "d": "2026-03-12",
+      "m": "fix: collection tools API auth and CLI endpoint mismatch",
+      "t": "fix",
+      "s": "",
+      "u": "collection tools API auth and CLI endpoint mismatch"
+    },
+    {
+      "h": "b312c0745d36f2100dbe301be7ba601dbd30cfec",
+      "d": "2026-03-12",
+      "m": "feat: resolve collection slugs in CLI collection add command",
+      "t": "feat",
+      "s": "",
+      "u": "resolve collection slugs in CLI collection add command"
+    },
+    {
+      "h": "ccca80184f5d4a82e364e3020d1efdbabf1d412d",
+      "d": "2026-03-13",
+      "m": "feat: add blog with first post on MCP vs CLI vs REST debate",
+      "t": "feat",
+      "s": "",
+      "u": "add blog with first post on MCP vs CLI vs REST debate"
+    },
+    {
+      "h": "4ca39e204dcd3a490722647646ea67919c37b4b5",
+      "d": "2026-03-13",
+      "m": "feat: add security argument to protocol debate blog post",
+      "t": "feat",
+      "s": "",
+      "u": "add security argument to protocol debate blog post"
+    },
+    {
+      "h": "eb5646fdac1439b4ea61b5242ccd9205d50f64df",
+      "d": "2026-03-13",
+      "m": "feat: add logging/observability argument and comparison matrix to blog post",
+      "t": "feat",
+      "s": "",
+      "u": "add logging/observability argument and comparison matrix to blog post"
+    },
+    {
+      "h": "23ebfa13150f7509ca5a194f3ddfea960c567abf",
+      "d": "2026-03-13",
+      "m": "feat: update blog post with research data and add talking points reference",
+      "t": "feat",
+      "s": "",
+      "u": "update blog post with research data and add talking points reference"
+    },
+    {
+      "h": "f49026c71ebf784851ba4f2686dd8ce978153865",
+      "d": "2026-03-13",
+      "m": "feat: rewrite blog post with counter-arguments and honest concessions",
+      "t": "feat",
+      "s": "",
+      "u": "rewrite blog post with counter-arguments and honest concessions"
+    },
+    {
+      "h": "353cc5c70c6c7aecbb610c70c6505f1c8888ceab",
+      "d": "2026-03-13",
+      "m": "feat: expand Anthropic code execution coverage with privacy and skills angles",
+      "t": "feat",
+      "s": "",
+      "u": "expand Anthropic code execution coverage with privacy and skills angles"
+    },
+    {
+      "h": "d011eada23f72d4a76d57d973d8f503dd92c60a1",
+      "d": "2026-03-13",
+      "m": "feat: add master TPMJS registry MCP server",
+      "t": "feat",
+      "s": "",
+      "u": "add master TPMJS registry MCP server"
+    },
+    {
+      "h": "d05fadf6f61dcd36f89c288802fb21b37b25546a",
+      "d": "2026-03-13",
+      "m": "fix: allow unauthenticated MCP discovery (initialize, tools/list)",
+      "t": "fix",
+      "s": "",
+      "u": "allow unauthenticated MCP discovery (initialize, tools/list)"
+    },
+    {
+      "h": "79d9087d2872a036a2fbad5c740161a9054a4ea4",
+      "d": "2026-03-13",
+      "m": "fix: only require auth for execute_tool, allow search without auth",
+      "t": "fix",
+      "s": "",
+      "u": "only require auth for execute_tool, allow search without auth"
     }
   ],
   "m": [
