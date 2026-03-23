@@ -480,6 +480,221 @@ Don't pretend that killing MCP is free — the security properties it targets ar
 The hard problems — discovery, trust, quality, composition — aren't protocol problems. They're registry problems. And those are the ones worth solving.
 `,
   },
+  {
+    slug: 'ai-native-execution-architecture',
+    title: 'The AI-Native Execution Layer: Tool RAG, Schema Compression, and the 10M Token Trap',
+    description:
+      'How should tool infrastructure be designed to maximize LLM performance? Tool RAG, schema compression, execution history, and why bigger context windows make the problem worse.',
+    author: 'Thomas Davis',
+    date: '2026-03-13',
+    tags: ['architecture', 'tool-rag', 'llm', 'execution', 'ai-infrastructure'],
+    content: `
+## The execution layer nobody is designing for
+
+Every AI infrastructure company is building for the LLM of today. The right move is to build for the LLM of 12 months from now — and the research is clear about where it's heading.
+
+Here's the uncomfortable truth: tool-calling accuracy drops to **13% when you put too many tools in context**. That number comes from Salesforce's ToolLLM benchmarks, and it matches what we see in production at TPMJS. The models don't degrade gracefully — they fall off a cliff. Give Claude 5 well-described tools and it picks the right one 95%+ of the time. Give it 50 and accuracy drops to ~40%. Give it 500 and it hallucinates tool names that don't exist.
+
+This isn't a context window problem. It's an attention problem. And bigger context windows will make it worse, not better.
+
+## Tool RAG: the retrieval layer LLMs need
+
+The term "Tool RAG" is starting to circulate — retrieval-augmented generation applied to tool selection instead of document retrieval. The idea: instead of injecting all available tools into context, retrieve the 5-7 most relevant tools for a given query and inject only those.
+
+Anthropic's own engineering team [demonstrated this pattern](https://www.anthropic.com/engineering/code-execution-with-mcp) by presenting MCP servers as navigable filesystem APIs. Cloudflare's Code Mode does the same thing with two meta-tools: \`search()\` and \`execute()\`. Both achieve 95%+ token reductions.
+
+But what does Tool RAG look like in practice when you're selecting from 100,000 tools?
+
+**Stage 1: Semantic search.** Embed the user's query and find the top 50 candidate tools by cosine similarity against tool description embeddings. This is fast, cheap, and eliminates 99.95% of the catalog. At TPMJS, we use BM25 for lexical matching combined with vector search — hybrid retrieval catches both exact keyword matches ("firecrawl scrape") and semantic intent ("get the text content of a webpage").
+
+**Stage 2: Re-ranking with context.** The top 50 candidates get re-ranked using the conversation history, not just the latest message. If the user has been working with GitHub tools for the last 10 messages, a query about "create an issue" should rank \`github--create-issue\` above \`jira--create-issue\` even if both are semantically similar. This is where execution history becomes a ranking signal — more on that below.
+
+**Stage 3: Schema-aware filtering.** Check that the candidate tools' required inputs can actually be satisfied. If a tool requires an \`apiKey\` parameter and the user hasn't configured one, demote it. If a tool's input schema expects a file path and the conversation has no files, demote it. This prevents the LLM from selecting tools it can't actually call.
+
+**Stage 4: Inject the top 5-7.** The sweet spot from every benchmark we've seen. Below 5, you risk missing the right tool. Above 7, accuracy starts dropping. At exactly 5-7 tools with good descriptions, models achieve their peak selection accuracy.
+
+The key insight: Tool RAG isn't optional optimization. It's a **correctness requirement**. Without it, the LLM is doing the retrieval itself — poorly, expensively, and unreliably.
+
+## Schema compression: every token counts
+
+A typical MCP tool definition runs 200-500 tokens. Multiply by 50 tools and you've burned 10,000-25,000 tokens before the conversation starts. Schema compression is about getting that per-tool cost down to 30-50 tokens without losing the information the model needs.
+
+What works:
+
+**Strip examples from schemas unless they demonstrate non-obvious behavior.** A \`url: string\` parameter doesn't need an example. A \`dateRange: string\` parameter that accepts "last-7d" or "2024-01-01..2024-03-01" does. We've found that selective examples — only on parameters with non-obvious formats — reduce schema size by 40% with zero accuracy loss.
+
+**Collapse nested object schemas.** Instead of fully expanding \`{ options: { format: string, timeout: number, retries: number } }\`, use a single-line TypeScript signature: \`options: { format: string; timeout?: number; retries?: number }\`. LLMs parse TypeScript signatures faster than JSON Schema because they've seen orders of magnitude more TypeScript.
+
+**Use JSDoc-style descriptions, not prose.** \`@param url - Target URL to scrape (must include protocol)\` beats "The url parameter should be a string containing the full URL of the page you want to scrape, including the protocol prefix such as https://". Dense, structured descriptions match how models encounter parameter documentation in training data.
+
+**Function signatures over JSON Schema.** This is Cloudflare's key insight and it's correct. LLMs have seen billions of TypeScript function signatures. They've seen almost zero JSON Schema tool definitions. Present tools as:
+
+\`\`\`typescript
+/** Scrape a webpage and return its text content */
+function scrape(url: string, options?: {
+  format?: 'markdown' | 'text' | 'html';
+  waitForSelector?: string;
+}): Promise<{ content: string; title: string }>
+\`\`\`
+
+This is ~60 tokens. The equivalent JSON Schema is ~200 tokens. Same information, 70% compression, and the model understands it better because the format matches its training distribution.
+
+## The 10M token trap
+
+Google and Anthropic are racing toward multi-million token context windows. The assumption is that bigger windows solve the "too many tools" problem — just stuff everything in. This assumption is wrong, and the research explains why.
+
+**Attention is not uniform across context.** The "lost in the middle" effect is well-documented: models attend strongly to the beginning and end of context, with significant accuracy drops for information in the middle. A 10M token window with 100,000 tool definitions means 99,990 of them are in the "dead zone" where attention is weakest. Tool 47,832 might be the perfect match, but the model will never find it.
+
+**More context means more hallucination surface.** Every tool definition in context is a potential hallucination anchor. With 500 tools, the model might blend parameters from tool A with the name of tool B. With 100,000 tools, this combinatorial confusion becomes the dominant failure mode. The model doesn't fail to find the tool — it confidently selects a chimera that doesn't exist.
+
+**Cost scales linearly, accuracy doesn't.** Even at 2028 prices, 10M tokens of context per request is not free. And you're paying that cost for worse accuracy than a 5-tool retrieval window. The economics point firmly toward retrieve-then-generate, not stuff-and-pray.
+
+The 10M token window will be transformative for many tasks — analyzing entire codebases, processing long documents, maintaining conversation history. But for tool selection, it's a trap. The right architecture is small, curated context windows with high-quality retrieval feeding them.
+
+## Planning vs. interleaving: let the model decide
+
+Should an agent plan all its tool calls upfront, then execute them sequentially? Or should it interleave — call one tool, observe the result, plan the next call?
+
+The research is clear: **interleaving wins for novel tasks, planning wins for routine ones.**
+
+When an agent has seen a similar task before (via execution history or few-shot examples), a full plan upfront reduces latency by 2-3x because you eliminate the round-trips between LLM calls. The model generates a DAG of tool calls, the execution layer parallelizes independent branches, and results flow back in one batch.
+
+When the task is novel — the agent hasn't seen this tool combination before, or the first tool's output determines which tool to call next — interleaving is the only viable strategy. Forcing a plan leads to hallucinated intermediate values and cascading errors.
+
+The execution layer should support both modes and let the model choose. At TPMJS, agents can emit either a single tool call (interleaving) or a structured plan with dependencies. The infrastructure handles both — the model shouldn't have to care about execution strategy.
+
+## Learning from execution history
+
+This is the most underexplored dimension of tool infrastructure. When an agent successfully completes a task using tools A, B, and C in sequence, that execution trace is a training signal. Not for fine-tuning the model — for improving retrieval and planning.
+
+**Execution traces as few-shot examples.** When a new query resembles a previous successful execution, inject the trace as a few-shot example. "Last time a user asked to 'monitor a website for changes,' you used \`firecrawl--scrape\` followed by \`diff--compare\`. Here are those tools." This is dramatically more effective than raw tool descriptions because it shows the model a proven composition pattern.
+
+**Co-occurrence signals for retrieval.** Tools that frequently appear together in successful executions should be retrieved together. If \`github--get-pr\` is almost always followed by \`github--list-reviews\`, retrieving one should boost the other's ranking. This is collaborative filtering applied to tool selection — the same algorithm that powers "customers who bought X also bought Y."
+
+**Failure traces as negative examples.** When an execution fails — wrong tool selected, parameters malformed, timeout — that trace should suppress similar retrievals in the future. A tool with a 10% success rate should be ranked below a tool with 90% success rate, even if their descriptions are equally relevant.
+
+## What to build for
+
+The execution layer of 2027 looks like this: a retrieval pipeline that selects 5-7 tools from a catalog of 100,000+, compresses their schemas to ~50 tokens each using TypeScript signatures, enriches the selection with execution history from similar past queries, and hands the model a tight, high-signal context window. The model writes TypeScript code against typed interfaces rather than emitting JSON tool calls. The execution environment runs that code in a sandbox, with intermediate data staying in the sandbox rather than flowing back through the model's context.
+
+The models will get better at tool selection. They'll get longer context windows. Inference will get cheaper. None of that eliminates the need for this architecture — it makes the architecture more valuable, because the retrieval layer is what lets you scale from 100 tools to 100,000 without degrading the model's performance on each individual call.
+
+Build the retrieval layer. Compress the schemas. Record the execution traces. The models will meet you there.
+`,
+  },
+  {
+    slug: 'every-collection-is-an-mcp-server',
+    title: 'Every Collection Is an MCP Server',
+    description:
+      'TPMJS turns every tool collection into a live MCP endpoint. One URL, three tool sources, zero infrastructure. Here is how it works and why it matters.',
+    author: 'Thomas Davis',
+    date: '2026-03-23',
+    tags: ['mcp', 'collections', 'infrastructure', 'ai-tools', 'architecture'],
+    content: `
+## The problem with MCP servers today
+
+Setting up an MCP server is still too hard.
+
+You need a runtime, a deployment target, auth middleware, rate limiting, schema validation, logging, and monitoring. Each server is its own little microservice. If you want to expose 10 tools from 3 different sources, you're running 3 servers and configuring 3 endpoints in your client.
+
+This is the plumbing problem. Developers don't want to manage plumbing — they want to give their agent access to tools and get back to work.
+
+## What if every collection was already an MCP server?
+
+That's what TPMJS does. When you create a collection of tools on [tpmjs.com](https://tpmjs.com), you automatically get a live MCP endpoint:
+
+\`\`\`
+https://tpmjs.com/@yourname/collections/my-tools/mcp
+\`\`\`
+
+No deployment. No Dockerfile. No server to maintain. You curate the tools, we handle the rest.
+
+Add it to Claude Desktop, Cursor, Windsurf, or any MCP client:
+
+\`\`\`json
+{
+  "mcpServers": {
+    "my-tools": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-remote",
+               "https://tpmjs.com/@yourname/collections/my-tools/mcp"]
+    }
+  }
+}
+\`\`\`
+
+That single URL serves a fully compliant MCP endpoint with JSON-RPC 2.0, tool discovery via \`tools/list\`, and execution via \`tools/call\`. It handles authentication, rate limiting, environment variable resolution, and execution tracking — all invisible to the client.
+
+## Three tool sources, one endpoint
+
+The interesting part isn't just hosting registry tools as MCP. It's that a single collection endpoint can unify three completely different tool sources:
+
+### 1. Registry tools
+
+These are npm packages from the TPMJS registry — tools that have been discovered, validated, schema-extracted, and health-checked by our pipeline. You browse the registry, add tools to your collection, and they're immediately available via MCP.
+
+\`\`\`
+tools/list → [
+  { name: "firecrawl__scrapeTool", ... },
+  { name: "openai__dall-e-generate", ... },
+  { name: "resend__send-email", ... }
+]
+\`\`\`
+
+Each tool runs in an isolated Deno executor on Railway. The collection stores encrypted environment variables (API keys etc.), so your agent can call tools without leaking credentials into the conversation.
+
+### 2. Bridge tools
+
+Bridge tools come from MCP servers running on your local machine. You run the TPMJS bridge CLI, which connects your local servers (filesystem access, database tools, IDE integrations) to the cloud. The bridge maintains a WebSocket connection and routes tool calls back to your machine.
+
+This means your cloud-hosted collection can include tools that run locally. An agent using your MCP endpoint can read your local files, query your local database, or interact with your IDE — all through the same \`tools/call\` interface.
+
+The bridge checks for staleness (2-minute timeout on last heartbeat) and degrades gracefully if the connection drops.
+
+### 3. Custom MCP servers
+
+You can register any remote MCP server (your own, a third party's) and cherry-pick individual tools from it into your collection. TPMJS syncs the tool definitions, caches them locally, and proxies \`tools/call\` requests to the remote server.
+
+This is the aggregation pattern: instead of configuring 5 MCP servers in your client, you configure 1 TPMJS collection that pulls tools from all 5. The cached definitions mean tools still appear in \`tools/list\` even if a remote server is temporarily down — the call will fail, but discovery doesn't break.
+
+## How auth works
+
+MCP auth has been a pain point across the ecosystem. TPMJS takes a layered approach:
+
+**Public collections** require no authentication for discovery. Anyone can call \`initialize\` and \`tools/list\` without a token. This is important — agents need to discover what tools are available before deciding whether to authenticate.
+
+**Tool execution** on public collections works two ways:
+- **Collection owners** have their encrypted env vars automatically resolved. Your API keys are stored server-side, so the agent never sees them.
+- **Non-owners** must pass their own env vars in the \`tools/call\` request. If required vars are missing, the server returns a structured error listing exactly which vars are needed and their descriptions.
+
+**Private collections** require a Bearer token (TPMJS API key) for all operations. Non-owners can't even discover that the collection exists — they get a 404, not a 401.
+
+Rate limiting is tier-based: 1,000 requests/hour on the free plan, 10,000/hour on pro. Headers follow the standard \`X-RateLimit-*\` convention so clients can back off gracefully.
+
+## Execution tracking
+
+Every \`tools/call\` gets tracked as an execution event — fire-and-forget, so it doesn't add latency to the response. The event captures:
+
+- Tool name, package, collection
+- User and API key (if authenticated)
+- Status (success/error) and duration
+- Input arguments and output summary
+
+This feeds the analytics dashboard, but more importantly, it builds a dataset of real tool usage patterns. Which tools get called together? What argument patterns produce errors? Which tools are slow? This data will eventually power smarter tool selection — the "Tool RAG" system described in our previous post.
+
+## Why this matters
+
+The MCP ecosystem has a fragmentation problem. Every tool author ships their own server. Every user configures a dozen endpoints. Every agent has a different setup.
+
+Collections-as-MCP-servers is our answer to that. Instead of "here's a server you need to deploy," it's "here's a URL." Instead of "pick one protocol," it's "your collection works everywhere" — the same tools are accessible via MCP, REST API, CLI, and SDK simultaneously.
+
+The endgame isn't that everyone uses TPMJS. It's that the pattern — curated, authenticated, multi-source tool bundles served over a standard protocol — becomes the default way agents discover and use tools. We're building the npm for AI tools, and every collection is a package that runs itself.
+
+---
+
+*Try it: [create a collection](https://tpmjs.com/dashboard/collections) and add your MCP endpoint to Claude Desktop in under a minute.*
+`,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
