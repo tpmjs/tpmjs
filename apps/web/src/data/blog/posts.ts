@@ -695,6 +695,182 @@ The endgame isn't that everyone uses TPMJS. It's that the pattern — curated, a
 *Try it: [create a collection](https://tpmjs.com/dashboard/collections) and add your MCP endpoint to Claude Desktop in under a minute.*
 `,
   },
+  {
+    slug: 'one-mcp-server-entire-registry',
+    title: 'One MCP Server, the Entire Registry',
+    description:
+      'The TPMJS master MCP server gives any AI agent two tools: search_tools and execute_tool. That is all you need to access hundreds of tools without configuring anything.',
+    author: 'Thomas Davis',
+    date: '2026-03-23',
+    tags: ['mcp', 'registry', 'ai-tools', 'architecture', 'search'],
+    content: `
+## The MCP configuration problem
+
+Every MCP server you want to use needs its own entry in your config. GitHub tools? One server. Slack tools? Another. Web scraping? A third. Your \`claude_desktop_config.json\` ends up looking like this:
+
+\`\`\`json
+{
+  "mcpServers": {
+    "github": { "command": "npx", "args": ["@anthropic/mcp-remote", "..."] },
+    "slack": { "command": "npx", "args": ["@anthropic/mcp-remote", "..."] },
+    "firecrawl": { "command": "npx", "args": ["@anthropic/mcp-remote", "..."] },
+    "postgres": { "command": "npx", "args": ["@anthropic/mcp-remote", "..."] },
+    "resend": { "command": "npx", "args": ["@anthropic/mcp-remote", "..."] }
+  }
+}
+\`\`\`
+
+Five servers. Five processes. Five sets of tool definitions injected into your context window. And you had to know about each one in advance — you can't discover tools you don't already have configured.
+
+What if the agent could find the right tool at runtime?
+
+## Two tools to rule them all
+
+The [TPMJS master MCP server](https://tpmjs.com/api/mcp/registry/http) exposes exactly two tools: \`search_tools\` and \`execute_tool\`. That's it. With those two tools, an agent can search a registry of hundreds of tools and execute any of them on the fly.
+
+\`\`\`json
+{
+  "mcpServers": {
+    "tpmjs": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-remote",
+               "https://tpmjs.com/api/mcp/registry/http"]
+    }
+  }
+}
+\`\`\`
+
+One server. One config entry. Access to the entire registry.
+
+### search_tools
+
+The agent describes what it needs in natural language. The server searches the TPMJS registry using BM25 relevance scoring — tokenizing camelCase, matching against tool names, descriptions, package names, and tags.
+
+\`\`\`json
+{
+  "name": "search_tools",
+  "arguments": {
+    "query": "send email with html template",
+    "limit": 5
+  }
+}
+\`\`\`
+
+The response includes everything the agent needs to decide: tool name, package name, description, input schema, version, quality score, and health status. The agent reads the schemas, picks the best match, and calls it — all within the same conversation turn.
+
+### execute_tool
+
+Once the agent picks a tool, it calls \`execute_tool\` with the package name, tool name, and arguments:
+
+\`\`\`json
+{
+  "name": "execute_tool",
+  "arguments": {
+    "packageName": "@tpmjs/tools-resend",
+    "toolName": "sendEmail",
+    "arguments": {
+      "to": "user@example.com",
+      "subject": "Hello",
+      "html": "<h1>Hi there</h1>"
+    },
+    "env": {
+      "RESEND_API_KEY": "re_..."
+    }
+  }
+}
+\`\`\`
+
+The tool runs in an isolated Deno executor on TPMJS infrastructure. The agent never needs to install anything, manage dependencies, or configure a runtime. It searched, it found, it executed.
+
+## How the search actually works
+
+We don't use vector embeddings or LLM-based search. The registry search is BM25 — the same algorithm that powers Elasticsearch and most traditional search engines. It's fast, deterministic, and good enough for tool discovery where queries map closely to tool names and descriptions.
+
+The scoring pipeline:
+
+1. **Tokenize** the query and each tool's text (name + description + package + tags)
+2. **Split camelCase** — \`sendEmailTemplate\` becomes \`["send", "email", "template"]\`
+3. **Calculate IDF** (inverse document frequency) for each query term across the corpus
+4. **Score** each document using BM25 with k1=1.5, b=0.75
+5. **Return** the top N results sorted by relevance
+
+We fetch up to 200 candidate tools from the database, score them all, and return the top matches. For a registry of our current size this is plenty fast — sub-100ms including the database round trip.
+
+## Auth model: search free, execute authenticated
+
+Discovery should be free. If an agent can't even see what tools exist without an API key, you've created a chicken-and-egg problem — the user needs to know what's available before they'll bother setting up auth.
+
+So we split it:
+
+- **\`initialize\`**, **\`tools/list\`**, and **\`search_tools\`** work without authentication. Any MCP client can connect, discover the two meta-tools, and search the registry without a token.
+- **\`execute_tool\`** requires a TPMJS API key via Bearer token, with the \`mcp:execute\` scope. This is where rate limiting and usage tracking kick in.
+
+This means an agent can be configured with just the endpoint URL and immediately start searching. When it finds a tool worth executing, it prompts for authentication — or uses a pre-configured key.
+
+Rate limits are tier-based: 1,000 requests/hour on free, 10,000/hour on pro. Standard \`X-RateLimit-*\` headers are returned so clients can throttle gracefully.
+
+## The runtime discovery pattern
+
+This is a fundamentally different model from static MCP configuration. Instead of:
+
+1. Human browses tool catalogs
+2. Human picks tools
+3. Human configures MCP servers
+4. Agent uses pre-configured tools
+
+It becomes:
+
+1. Agent receives a task
+2. Agent searches for relevant tools (\`search_tools\`)
+3. Agent evaluates schemas and picks the best match
+4. Agent executes the tool (\`execute_tool\`)
+
+The agent discovers tools at runtime based on what it actually needs, not what someone pre-configured. This is closer to how a developer works — you don't install every npm package before starting a project. You encounter a problem, search for a package, read the docs, and install it.
+
+## What this enables
+
+**Agents that grow their own capabilities.** A coding agent that encounters a PDF it needs to parse can search for PDF tools, find one, and use it — without the user ever configuring a PDF MCP server.
+
+**Smaller context windows.** Instead of injecting 43 tool definitions upfront (the GitHub MCP problem from [our first post](/blog/mcp-vs-cli-vs-rest)), the agent starts with 2 tool definitions and dynamically loads only what it needs.
+
+**Tool composition without pre-planning.** An agent working on a data pipeline might search for CSV parsing, then search for a charting tool, then search for an email tool to send the results — discovering and chaining tools across a single conversation.
+
+**A universal tool layer.** Any MCP client — Claude Desktop, Cursor, Windsurf, a custom agent — can connect to one endpoint and gain access to the entire registry. Tool authors publish once to npm with the \`tpmjs\` keyword, and their tools become discoverable and executable by every agent connected to the registry.
+
+## Both transports
+
+The server supports both MCP transport types at separate endpoints:
+
+- **HTTP Streamable**: \`POST /api/mcp/registry/http\` — standard request/response
+- **SSE**: \`POST /api/mcp/registry/sse\` — server-sent events for streaming
+
+Both implement the same JSON-RPC 2.0 protocol. Use whichever your client supports. The \`GET\` endpoints return server metadata so clients can auto-discover capabilities.
+
+## Try it
+
+Add this to your MCP client config:
+
+\`\`\`json
+{
+  "mcpServers": {
+    "tpmjs": {
+      "command": "npx",
+      "args": ["-y", "@anthropic/mcp-remote",
+               "https://tpmjs.com/api/mcp/registry/http"]
+    }
+  }
+}
+\`\`\`
+
+Then ask your agent to search for tools. It will find \`search_tools\`, use it, and from there it can find and execute anything in the registry.
+
+Get an API key at [tpmjs.com/dashboard/api-keys](https://tpmjs.com/dashboard/api-keys) to unlock \`execute_tool\`.
+
+---
+
+*The master registry server is open and live at [tpmjs.com/api/mcp/registry/http](https://tpmjs.com/api/mcp/registry/http). Two tools, entire registry.*
+`,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
