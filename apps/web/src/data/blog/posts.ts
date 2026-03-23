@@ -871,6 +871,121 @@ Get an API key at [tpmjs.com/dashboard/api-keys](https://tpmjs.com/dashboard/api
 *The master registry server is open and live at [tpmjs.com/api/mcp/registry/http](https://tpmjs.com/api/mcp/registry/http). Two tools, entire registry.*
 `,
   },
+  {
+    slug: 'the-registry-is-the-control-plane',
+    title: 'The Registry Is the Control Plane',
+    description:
+      'Everyone is building execution layers for AI agents. Nobody is building the discovery and trust layer that sits upstream. That is the bet TPMJS is making.',
+    author: 'Thomas Davis',
+    date: '2026-03-23',
+    tags: ['vision', 'strategy', 'ai-tools', 'registry', 'infrastructure'],
+    content: `
+## The accidental tool catalog
+
+There are over 5 million packages on npm. Tens of thousands of them are thin wrappers around APIs — a function that takes typed arguments, calls an endpoint, and returns structured data. Stripe, Twilio, SendGrid, Resend, OpenAI, Pinecone, Supabase. Every one of these packages is, functionally, an AI tool waiting to be called.
+
+Nobody was treating npm as a tool registry because nobody needed to. Developers read docs, pick packages, and wire them together by hand. But agents can't read docs. They need structured schemas, quality signals, and a way to discover capabilities at runtime. The tools were always there — the infrastructure to serve them to machines was not.
+
+That's the gap TPMJS fills. We built a pipeline that discovers npm packages with the \`tpmjs\` keyword, extracts their tool schemas automatically, health-checks their imports and execution, scores their quality, and serves them over every protocol an agent might speak — MCP, REST, CLI, SDK.
+
+We didn't create the tools. npm did. We built the registry that makes them usable by machines.
+
+## Everyone is building runtimes. Nobody is building the registry.
+
+Look at where the money and attention is flowing in the AI tools space:
+
+- **E2B** raised $14.4M to run code in sandboxes
+- **Modal** raised $100M+ for serverless GPU execution
+- **Fly.io** raised $115M for edge compute and Machines
+- **Cloudflare Workers** processes billions of requests on V8 isolates
+
+Execution infrastructure is a solved — or at least well-funded — problem. You can run arbitrary code in an isolated environment for fractions of a cent. The runtime is becoming a commodity.
+
+But execution is downstream of a harder question: **which tool should the agent run?**
+
+This is where the ecosystem has a gap. When an agent has access to 43 tools (the GitHub MCP server), [tool selection accuracy drops and costs balloon 7-32x](https://www.scalekit.com/blog/mcp-vs-cli-use). When an agent has access to 1,000 tools, it needs a retrieval layer — something that takes a natural language intent, searches a catalog, and returns the 5-7 most relevant tools with their schemas.
+
+That retrieval layer is a registry problem, not a runtime problem. And the registry is the control plane. It decides what tools exist, which ones are healthy, what quality signals to trust, and how to present them to the model. The runtime just executes what the registry selects.
+
+## What we learned from npm, PyPI, and Docker Hub
+
+Package registries follow a predictable pattern:
+
+1. **Someone publishes** — a developer writes a tool, tags it with metadata, and pushes it to the registry.
+2. **Someone discovers** — another developer searches by keyword, browses categories, or follows a recommendation.
+3. **Someone trusts** — download counts, stars, maintenance activity, and peer usage create quality signals.
+4. **Someone consumes** — the package is installed, imported, and used.
+
+npm got this right for developers. But agents are different consumers. They can't evaluate README quality. They can't read GitHub issues to check if a package is maintained. They need machine-readable quality signals: import health, execution health, schema completeness, version recency, download velocity.
+
+TPMJS adds this layer on top of npm's existing infrastructure:
+
+- **Import health**: Can the package be imported without errors in an isolated Deno environment?
+- **Execution health**: Do the exported tools actually run when called with valid arguments?
+- **Quality score**: A 0-1.0 composite score weighing downloads, stars, health status, schema completeness, and maintenance activity.
+- **Schema extraction**: Automatic discovery of exported tool functions with their Zod schemas, converted to JSON Schema for MCP compatibility.
+
+These signals don't exist on npm because npm doesn't need them. Developers can evaluate quality through documentation and community signals. Agents need the signals to be structured and queryable.
+
+## The npm analogy — and where it breaks
+
+We describe TPMJS as "the npm for AI tools" because the mental model is useful: publish tools, discover tools, consume tools, trust quality signals. But the analogy breaks in important ways that reveal what makes this harder.
+
+**npm packages are consumed by developers. TPMJS tools are consumed by models.**
+
+When a developer installs a package, they read the API, understand the types, and write integration code. When a model discovers a tool, it reads a JSON schema and decides in milliseconds whether to call it. The schema *is* the documentation. If it's incomplete or misleading, the model will hallucinate arguments or pick the wrong tool entirely.
+
+This means schema quality isn't a nice-to-have — it's the primary determinant of whether a tool works. TPMJS's schema extraction pipeline exists because most npm packages don't export clean JSON schemas. They export TypeScript functions with Zod validators that need to be introspected, sanitized (stripping MCP-incompatible keywords like \`minLength\` and \`if/then/else\`), and normalized into something a model can reliably consume.
+
+**npm packages run in the developer's environment. TPMJS tools run in isolation.**
+
+When you \`npm install\` a package, it runs in your Node.js process with access to your filesystem, network, and environment variables. TPMJS tools run in an isolated Deno executor on remote infrastructure. This changes the security model entirely — tools can't access the caller's filesystem, can't phone home with credentials, and can't persist state between calls (unless using a sandbox session).
+
+This isolation is a feature, not a limitation. It means a user can execute a tool they've never seen before without worrying that it will \`rm -rf\` their home directory or exfiltrate their \`.env\` file. Trust in the registry is partially trust in the execution boundary.
+
+**npm has one consumer protocol. TPMJS has four.**
+
+Developers consume npm packages through \`require()\` or \`import\`. TPMJS tools need to be consumable over MCP (for Claude Desktop, Cursor), REST (for web apps and custom agents), CLI (for terminal agents like Claude Code), and SDK (for programmatic integration). Publishing a tool once and serving it four ways is table stakes, but it means the registry isn't just a database of packages — it's a multi-protocol gateway.
+
+## The data moat nobody talks about
+
+Every tool execution on TPMJS creates a data point: which tool was called, with what arguments, whether it succeeded or failed, how long it took, and what it returned. At small scale, this is just analytics. At large scale, it's a competitive advantage that compounds.
+
+**Tool co-occurrence.** When agents chain tools together — CSV parsing followed by charting followed by email — the co-occurrence data reveals workflows. This powers collaborative filtering: "agents that used tool X also used tool Y." This signal doesn't exist anywhere else because nobody else is observing cross-tool execution patterns at the registry level.
+
+**Failure patterns.** When a tool fails for 30% of callers with a specific argument pattern, the registry can flag it, downrank it, or suggest an alternative. This is quality signal that can't be derived from npm download counts or GitHub stars — it comes from actual runtime behavior.
+
+**Schema refinement.** When models consistently pass arguments that don't match the schema, it suggests the schema is misleading. Over time, the registry can auto-generate better descriptions, add examples, or flag schema issues to tool authors. The execution data closes the loop between tool publishing and tool consumption.
+
+This data flywheel is why the registry is more defensible than the runtime. Anyone can spin up a Deno isolate. Nobody else has the cross-tool execution data to make tool selection smarter over time.
+
+## The honest risks
+
+This is a bet, and bets can lose. Here's what could kill it:
+
+**Models get good enough at tool selection.** Tool selection accuracy is improving ~3x per year. If a future model can reliably pick from 500 tools without a retrieval layer, the registry adds overhead without value. We're betting that tool catalogs grow faster than model selection ability — that the haystack grows faster than the needle-finding gets better.
+
+**The labs build it themselves.** Anthropic, OpenAI, and Google view tool infrastructure as strategic. If Anthropic ships a first-party tool registry integrated into Claude, third-party registries become middleware competing with the platform owner. This is the [Netscape scenario](https://en.wikipedia.org/wiki/United_States_v._Microsoft_Corp.) — you don't want to be the feature that gets bundled into the OS.
+
+**The market is too small too early.** The number of developers building agents with dynamic tool discovery is, generously, tens of thousands today. If adoption of agentic systems takes longer than expected, we're too early and someone with more funding builds this in 2028 with better timing.
+
+We think the timing is right because MCP has crossed the adoption threshold (97M+ monthly SDK downloads, 5,800+ servers), agents are shipping in every major IDE (Claude Code, Cursor, Windsurf, Copilot), and the tool explosion is already creating the discovery problem we solve. But we could be wrong.
+
+## Where this goes
+
+The internet needed DNS before it needed AWS. Domain names were a thin abstraction — just a mapping from human-readable names to IP addresses — but they became foundational infrastructure that every layer above depends on.
+
+The agentic internet needs a registry before it needs a runtime. Tool names, schemas, quality signals, and discovery are the DNS of the agent ecosystem — a thin abstraction that everything above depends on. The runtime is the server. The registry is the address book.
+
+TPMJS is live today with hundreds of tools, serving them over MCP, REST, CLI, and SDK. Every collection is an MCP server. The master registry gives any agent two tools to access the entire catalog. The pipeline runs every four hours, discovering new npm packages and extracting their schemas.
+
+We're not building a cathedral. We're building plumbing. And if we've learned anything from the history of developer infrastructure, it's that the plumbing companies — npm, Docker Hub, GitHub — tend to become the most important ones.
+
+---
+
+*TPMJS is open and live at [tpmjs.com](https://tpmjs.com). Add the registry to your MCP client, search for tools, and start building.*
+`,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
