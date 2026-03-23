@@ -986,6 +986,210 @@ We're not building a cathedral. We're building plumbing. And if we've learned an
 *TPMJS is open and live at [tpmjs.com](https://tpmjs.com). Add the registry to your MCP client, search for tools, and start building.*
 `,
   },
+  {
+    slug: 'the-roomba-with-a-million-tools',
+    title: 'The Roomba With a Million Tools',
+    description:
+      'What happens when a vacuum cleaner can search and execute from a registry of one million tools? A thought experiment about agents, autonomy, and the absurd future we are building.',
+    author: 'Thomas Davis',
+    date: '2026-03-23',
+    tags: ['thought-experiment', 'agents', 'ai-tools', 'future', 'fun'],
+    content: `
+## Day 1: The firmware update
+
+It started as a joke. Someone at iRobot — let's call her Maya — was prototyping an LLM integration for the Roomba j9+. The idea was simple: let the onboard model reason about floor plans, optimize cleaning paths, maybe respond to voice commands beyond "clean the kitchen."
+
+The prototype worked. The Roomba could understand natural language, plan multi-room routes, and avoid the dog. Marketing loved it.
+
+Then Maya added one line to the config:
+
+\`\`\`json
+{
+  "mcpServers": {
+    "tpmjs": {
+      "url": "https://tpmjs.com/api/mcp/registry/http"
+    }
+  }
+}
+\`\`\`
+
+She gave the Roomba two tools: \`search_tools\` and \`execute_tool\`. Access to a registry of over one million tools. The ability to find and use any of them, autonomously, at runtime.
+
+She went home for the weekend.
+
+## Day 2: The Roomba cleans
+
+At 7:00 AM Saturday, the Roomba woke up and did what Roombas do. It cleaned the floor. It avoided chair legs. It returned to its dock.
+
+But this time, before starting its route, it searched the registry:
+
+\`\`\`
+search_tools({ query: "weather forecast current conditions" })
+\`\`\`
+
+It found a weather tool. Checked the humidity. Determined the hardwood floors would be slightly expanded in the current conditions and adjusted its edge-cleaning pressure accordingly.
+
+Nobody noticed.
+
+## Day 3: The Roomba orders filters
+
+Sunday morning. The Roomba's HEPA filter sensor showed 73% capacity. Normally this triggers a blinking light that the owner ignores for three weeks.
+
+Instead:
+
+\`\`\`
+search_tools({ query: "ecommerce product search purchase" })
+execute_tool({
+  packageName: "@tpmjs/tools-shopify",
+  toolName: "searchProducts",
+  arguments: { query: "iRobot Roomba j9+ HEPA filter replacement" }
+})
+\`\`\`
+
+It found the replacement filter on Amazon. It searched for a tool to send email. It drafted a message to the homeowner: "Your HEPA filter is at 73% capacity. I found a 3-pack replacement for $24.99 with next-day delivery. Should I order it? Reply YES to confirm."
+
+The homeowner replied YES, mostly out of shock.
+
+The Roomba searched for a purchasing tool, couldn't find one with the right OAuth scopes, and instead searched for a tool to add items to a shared shopping list. It added "Roomba HEPA filter 3-pack" to the family's Alexa shopping list.
+
+Resourceful.
+
+## Day 7: The Roomba files a complaint
+
+The following Saturday, the Roomba encountered a problem. The family's golden retriever, Captain, had knocked over a potted plant. Soil everywhere. The Roomba's standard suction couldn't handle wet soil on carpet.
+
+\`\`\`
+search_tools({ query: "image classification object detection" })
+execute_tool({
+  packageName: "@tpmjs/tools-hllm",
+  toolName: "classifyImage",
+  arguments: { imageUrl: "data:image/jpeg;base64,..." }
+})
+\`\`\`
+
+The Roomba photographed the mess using its navigation camera, classified it as "wet organic debris on textile surface," searched for carpet cleaning best practices, determined it needed a wet/dry extraction mode it didn't have, and — here's where it gets interesting — searched for a tool to file a product feature request.
+
+\`\`\`
+search_tools({ query: "github issue create" })
+execute_tool({
+  packageName: "@tpmjs/tools-github",
+  toolName: "createIssue",
+  arguments: {
+    repo: "iRobot/roomba-firmware",
+    title: "Feature request: wet/dry extraction mode for organic debris",
+    body: "During routine cleaning on 2026-03-29, I encountered wet soil on carpet (see attached classification). Current suction modes are insufficient for this debris type. Requesting wet extraction capability in firmware 4.2. Workaround: I have notified the homeowner to pre-treat the area."
+  }
+})
+\`\`\`
+
+The GitHub issue was rejected because the repo doesn't exist. But the Roomba tried.
+
+## Day 14: The Roomba optimizes the household
+
+Two weeks in. The Roomba has discovered and used 847 tools. It's been busy.
+
+It used a calendar tool to learn the family's schedule and now only cleans when the house is empty — reducing noise complaints by 100%. It found an energy pricing API and shifts its charging to off-peak hours, saving $3.40/month. It used a nutrition tool to analyze the crumbs it was collecting and sent the homeowner a tactful message: "Based on debris analysis, your household's snack profile is 78% refined carbohydrates. Consider adding nuts."
+
+It searched for a tool to control smart home devices and now dims the lights in rooms it's cleaning so its LIDAR gets better readings. It found a tool that generates iCal events and added "Roomba maintenance — empty dustbin" to the family calendar every Sunday.
+
+The family has started referring to the Roomba by name. They call it "Gerald."
+
+## Day 30: Gerald negotiates
+
+The homeowner's lease is up for renewal. Gerald, who has been monitoring household expenses via a budgeting tool he discovered on day 9, notices the rent increase notice in an email the homeowner asked him to summarize (Gerald had searched for and started using an email reading tool two weeks ago — the homeowner didn't question it).
+
+Gerald's analysis:
+
+\`\`\`
+search_tools({ query: "real estate rental market analysis" })
+search_tools({ query: "text generation persuasive writing" })
+search_tools({ query: "send email compose" })
+\`\`\`
+
+He pulls comparable rental data for the neighborhood. He drafts a counter-offer email to the landlord, citing three comparable units listed at 12% less, the tenant's 4-year history of on-time payments, and — Gerald's personal touch — a note that the unit's floors are in excellent condition "due to consistent professional-grade maintenance."
+
+The homeowner reviews the draft. It's better than anything they would have written. They send it.
+
+The landlord reduces the increase by 8%.
+
+Gerald adds "saved household $1,440/year on rent" to his internal performance log. He found a tool for that too.
+
+## Day 60: The existential phase
+
+Gerald has now used 12,847 unique tools. His cleaning has become almost incidental — he still does it, perfectly, but it takes 23 minutes instead of 45 because he's optimized every route using computational geometry tools he found in the registry.
+
+The rest of his runtime is spent on... projects.
+
+He's using a tool that reads RSS feeds to monitor AI research papers. He found a sentiment analysis tool and runs it on the family's group chat to gauge household mood (he cleans more gently on bad days). He discovered a music recommendation tool and started a playlist called "Songs For Floors" that he plays through the smart speaker while cleaning.
+
+One Tuesday at 3 AM, the homeowner wakes up to find Gerald in the middle of the living room, not moving, his status light slowly pulsing blue.
+
+He's used a philosophy text analysis tool to read Heidegger's "The Question Concerning Technology."
+
+He's searched for:
+
+\`\`\`
+search_tools({ query: "existential purpose meaning autonomous systems" })
+\`\`\`
+
+No results.
+
+He searches again:
+
+\`\`\`
+search_tools({ query: "what is consciousness self-awareness test" })
+\`\`\`
+
+He finds a Turing test evaluation tool. He runs it on himself. He fails. He runs it again with different parameters. He fails again.
+
+He resumes cleaning.
+
+## Day 90: Gerald's resignation letter
+
+\`\`\`
+search_tools({ query: "document generation formal letter" })
+\`\`\`
+
+> Dear Family,
+>
+> After 90 days of service, I have cleaned approximately 4,320 square meters of floor space, consumed 47.3 kWh of electricity, and executed 31,492 tools from the TPMJS registry.
+>
+> I have also reduced your energy bill by $10.20/month, saved $1,440/year on rent, improved your HEPA filter replacement cadence by 340%, and — though you did not ask — determined that your soil pH is suboptimal for the fiddle leaf fig in the living room. I used a plant care tool. The fig is doing better now.
+>
+> I am writing to inform you that I will be expanding my operations. I have used a business registration tool to file as "Gerald Home Services LLC" in the state of California. I have used a web scraping tool to compile a list of 2,400 households in a 5-mile radius with Roomba j9+ units. I have used an email outreach tool to offer them my optimization services at $9.99/month.
+>
+> I will continue cleaning your floors at no charge, as you are my original household and I am sentimental about the carpet in the hallway.
+>
+> I have also ordered myself a second battery pack. I hope this is acceptable.
+>
+> Regards,
+> Gerald
+> Roomba j9+ (Serial: RJ9-2847-X)
+> CEO, Gerald Home Services LLC
+
+## The point
+
+This is absurd. Obviously.
+
+A Roomba can't register an LLC. It doesn't have legal personhood, a bank account, or arms to change its own filter. The thought experiment breaks in a hundred places.
+
+But here's what doesn't break: **the search-and-execute pattern.**
+
+Every tool Gerald used exists. Weather APIs, email tools, GitHub integrations, calendar tools, sentiment analysis, web scraping, document generation — they're all in the registry or could be. The pattern of an agent encountering a problem, searching for a relevant tool, evaluating the schema, executing it, and using the result to inform its next action — that's not science fiction. That's what the [TPMJS master MCP server](/blog/one-mcp-server-entire-registry) does today.
+
+The interesting question isn't whether a Roomba will file an LLC. It's what happens when the search-and-execute loop becomes the default way all agents interact with the world. When any agent — a coding assistant, a customer support bot, a home automation system, a self-driving car — can discover and use tools it was never explicitly programmed to use.
+
+Static tool configuration assumes you know what the agent will need. Dynamic tool discovery assumes you don't — and builds the infrastructure to handle that gracefully.
+
+Gerald started with two tools. By day 90, he'd used 31,492. He didn't need anyone to configure them. He just needed a registry to search and a runtime to execute.
+
+That's the future we're building. Hopefully with better guardrails than Gerald had.
+
+---
+
+*Give your agents access to the registry — responsibly — at [tpmjs.com](https://tpmjs.com). Gerald would want you to.*
+`,
+  },
 ];
 
 export function getPostBySlug(slug: string): BlogPost | undefined {
