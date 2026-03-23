@@ -7663,6 +7663,38 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "78dc109383c061c31b073ce3da2ae6e4ac449b3e",
+      "d": "2026-03-22",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "f72ef0ef2af66a571c8c3a7b753979b93e584614",
+      "d": "2026-03-23",
+      "m": "feat: add blog post on collections-as-MCP-servers architecture",
+      "t": "feat",
+      "s": "",
+      "u": "add blog post on collections-as-MCP-servers architecture"
+    },
+    {
+      "h": "44da83f135fa6399850ad28ae8d62590429a8bb2",
+      "d": "2026-03-23",
+      "m": "feat: add blog post on master registry MCP server (search + execute)",
+      "t": "feat",
+      "s": "",
+      "u": "add blog post on master registry MCP server (search + execute)"
+    },
+    {
+      "h": "951c6d6b2d52e77ed410ac60060ccea409438341",
+      "d": "2026-03-23",
+      "m": "feat: add vision blog post — the registry is the control plane",
+      "t": "feat",
+      "s": "",
+      "u": "add vision blog post — the registry is the control plane"
     }
   ],
   "m": [
