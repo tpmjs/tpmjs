@@ -946,4 +946,22 @@ export const manualTools: ManualTool[] = [
     apiKeyUrl: 'https://www.browserbase.com/settings',
     websiteUrl: 'https://www.browserbase.com',
   },
+  {
+    npmPackageName: '@youdotcom-oss/ai-sdk-plugin',
+    category: 'search',
+    frameworks: ['vercel-ai'],
+    name: 'youSearch',
+    description: 'Real-time web search powered by You.com, allowing advanced filtering such as dates, sites, and file types.',
+    tags: ['search', 'web', 'extraction', 'research'],
+    env: [
+      {
+        name: 'YDC_API_KEY',
+        description: 'API key for accessing You.com services.',
+        required: true,
+      }
+    ],
+    docsUrl: 'https://github.com/youdotcom-oss/dx-toolkit/tree/main/packages/ai-sdk-plugin#readme',
+    apiKeyUrl: 'https://you.com/platform/api-keys',
+    websiteUrl: 'https://you.com',
+  },
 ];
