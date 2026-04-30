@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "f1ff7be4baa2",
+  "strategy": "manual-commit",
+  "branch": "feat/red-homepage",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "packages/db/scripts/create-sshmail-collection-agent.ts",
+    "packages/tools/official/blocks.yml",
+    "packages/tools/official/sshmail/README.md",
+    "packages/tools/official/sshmail/block.ts",
+    "packages/tools/official/sshmail/index.ts",
+    "packages/tools/official/sshmail/package.json",
+    "packages/tools/official/sshmail/src/index.ts",
+    "packages/tools/official/sshmail/tsconfig.json",
+    "packages/tools/official/sshmail/tsup.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/f1/ff7be4baa2/0/metadata.json",
+      "transcript": "/f1/ff7be4baa2/0/full.jsonl",
+      "context": "/f1/ff7be4baa2/0/context.md",
+      "content_hash": "/f1/ff7be4baa2/0/content_hash.txt",
+      "prompt": "/f1/ff7be4baa2/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 367,
+    "cache_creation_tokens": 89080,
+    "cache_read_tokens": 4722532,
+    "output_tokens": 37374,
+    "api_call_count": 78
+  }
+}

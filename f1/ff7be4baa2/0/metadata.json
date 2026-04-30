@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "f1ff7be4baa2",
+  "session_id": "9f93c47a-6f3d-4a94-8250-59eb17557ee5",
+  "strategy": "manual-commit",
+  "created_at": "2026-04-30T15:52:12.786135Z",
+  "branch": "feat/red-homepage",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "packages/db/scripts/create-sshmail-collection-agent.ts",
+    "packages/tools/official/blocks.yml",
+    "packages/tools/official/sshmail/README.md",
+    "packages/tools/official/sshmail/block.ts",
+    "packages/tools/official/sshmail/index.ts",
+    "packages/tools/official/sshmail/package.json",
+    "packages/tools/official/sshmail/src/index.ts",
+    "packages/tools/official/sshmail/tsconfig.json",
+    "packages/tools/official/sshmail/tsup.config.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "ed18f0dd-2fba-4863-acbd-ae189043f9d0",
+  "token_usage": {
+    "input_tokens": 367,
+    "cache_creation_tokens": 89080,
+    "cache_read_tokens": 4722532,
+    "output_tokens": 37374,
+    "api_call_count": 78
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-04-30T15:52:12.351509Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 15,
+    "human_removed": 912,
+    "total_committed": 15,
+    "agent_percentage": 0
+  }
+}
