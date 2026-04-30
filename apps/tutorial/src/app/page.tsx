@@ -159,9 +159,13 @@ const tutorials = [
 
 export default function TutorialHome(): React.ReactElement {
   return (
-    <main className="min-h-screen bg-[#0a0a0f] flex flex-col items-center justify-center px-6 py-12">
+    <main className="min-h-screen bg-red-600 flex flex-col items-center justify-center px-6 py-12">
+      {/* Preview-branch banner — proves the dev server is serving this branch */}
+      <div className="fixed top-0 inset-x-0 z-50 bg-red-700 text-white text-center py-2 font-mono text-sm border-b-2 border-red-900">
+        🔴 RED PREVIEW BRANCH · feat/red-homepage
+      </div>
       {/* Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#0a0a0f] via-[#0d1117] to-[#0a0a0f]" />
+      <div className="fixed inset-0 bg-gradient-to-br from-red-700 via-red-900 to-red-700" />
       <div
         className="fixed inset-0 opacity-[0.03]"
         style={{
