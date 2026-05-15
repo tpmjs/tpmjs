@@ -244,19 +244,23 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Changes feed sync failed:', error);
 
-    await prisma.syncLog.create({
-      data: {
-        source: 'changes-feed',
-        status: 'error',
-        processed,
-        skipped,
-        errors: errors + 1,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        metadata: {
-          durationMs: Date.now() - startTime,
+    try {
+      await prisma.syncLog.create({
+        data: {
+          source: 'changes-feed',
+          status: 'error',
+          processed,
+          skipped,
+          errors: errors + 1,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          metadata: {
+            durationMs: Date.now() - startTime,
+          },
         },
-      },
-    });
+      });
+    } catch (logError) {
+      console.error('Failed to write sync log (DB may be unavailable):', logError);
+    }
 
     return NextResponse.json(
       {
