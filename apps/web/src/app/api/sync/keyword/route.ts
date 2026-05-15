@@ -269,19 +269,23 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Keyword search sync failed:', error);
 
-    await prisma.syncLog.create({
-      data: {
-        source: 'keyword-search',
-        status: 'error',
-        processed,
-        skipped,
-        errors: errors + 1,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        metadata: {
-          durationMs: Date.now() - startTime,
+    try {
+      await prisma.syncLog.create({
+        data: {
+          source: 'keyword-search',
+          status: 'error',
+          processed,
+          skipped,
+          errors: errors + 1,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          metadata: {
+            durationMs: Date.now() - startTime,
+          },
         },
-      },
-    });
+      });
+    } catch (logError) {
+      console.error('Failed to write sync error log (DB unavailable):', logError);
+    }
 
     return NextResponse.json(
       {
