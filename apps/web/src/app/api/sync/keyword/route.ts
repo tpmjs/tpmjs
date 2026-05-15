@@ -284,7 +284,7 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch (logError) {
-      console.error('Failed to write sync log (DB unavailable):', logError);
+      console.error('Failed to write sync error log (DB unavailable):', logError);
     }
 
     return NextResponse.json(
