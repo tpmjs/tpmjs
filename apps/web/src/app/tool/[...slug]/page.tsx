@@ -36,80 +36,83 @@ async function getTool(slug: string[]): Promise<Tool | null> {
     return null;
   }
 
-  // First find the package by npm name
-  const pkg = await prisma.package.findUnique({
-    where: { npmPackageName: packageName },
-  });
+  try {
+    const pkg = await prisma.package.findUnique({
+      where: { npmPackageName: packageName },
+    });
 
-  if (!pkg) {
+    if (!pkg) {
+      return null;
+    }
+
+    const tool = await prisma.tool.findFirst({
+      where: {
+        packageId: pkg.id,
+        ...(toolName && { name: toolName }),
+      },
+      include: {
+        package: true,
+      },
+      orderBy: { qualityScore: 'desc' },
+    });
+
+    if (!tool) {
+      return null;
+    }
+
+    // Transform Prisma result to Tool interface
+    return {
+      id: tool.id,
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters as Tool['parameters'],
+      inputSchema: tool.inputSchema as Tool['inputSchema'],
+      schemaSource: tool.schemaSource as Tool['schemaSource'],
+      schemaExtractedAt: tool.schemaExtractedAt?.toISOString() ?? null,
+      toolDiscoverySource: tool.toolDiscoverySource as Tool['toolDiscoverySource'],
+      returns: tool.returns as Tool['returns'],
+      aiAgent: tool.aiAgent as Tool['aiAgent'],
+      tags: tool.tags ?? [],
+      signature: tool.signature ?? null,
+      qualityScore: tool.qualityScore?.toString() ?? null,
+      importHealth: tool.importHealth ?? undefined,
+      executionHealth: tool.executionHealth ?? undefined,
+      healthCheckError: tool.healthCheckError ?? null,
+      lastHealthCheck: tool.lastHealthCheck?.toISOString() ?? null,
+      likeCount: tool.likeCount,
+      viewCount: tool.viewCount,
+      executionCount: tool.executionCount,
+      averageRating: tool.averageRating?.toString() ?? null,
+      ratingCount: tool.ratingCount,
+      reviewCount: tool.reviewCount,
+      createdAt: tool.createdAt.toISOString(),
+      updatedAt: tool.updatedAt.toISOString(),
+      package: {
+        id: tool.package.id,
+        npmPackageName: tool.package.npmPackageName,
+        npmVersion: tool.package.npmVersion,
+        npmDescription: tool.package.npmDescription,
+        npmHomepage: tool.package.npmHomepage,
+        category: tool.package.category,
+        npmRepository: tool.package.npmRepository as Tool['package']['npmRepository'],
+        isOfficial: tool.package.isOfficial,
+        npmDownloadsLastMonth: tool.package.npmDownloadsLastMonth,
+        npmKeywords: tool.package.npmKeywords,
+        npmReadme: tool.package.npmReadme,
+        npmAuthor: tool.package.npmAuthor as Tool['package']['npmAuthor'],
+        npmMaintainers: tool.package.npmMaintainers as Tool['package']['npmMaintainers'],
+        npmLicense: tool.package.npmLicense,
+        githubStars: tool.package.githubStars,
+        frameworks: tool.package.frameworks,
+        tier: tool.package.tier,
+        createdAt: tool.package.createdAt.toISOString(),
+        updatedAt: tool.package.updatedAt.toISOString(),
+      },
+    };
+  } catch (error) {
+    console.error('Failed to fetch tool from database:', error);
     return null;
   }
-
-  // Then find the tool using packageId
-  const tool = await prisma.tool.findFirst({
-    where: {
-      packageId: pkg.id,
-      ...(toolName && { name: toolName }),
-    },
-    include: {
-      package: true,
-    },
-    orderBy: { qualityScore: 'desc' },
-  });
-
-  if (!tool) {
-    return null;
-  }
-
-  // Transform Prisma result to Tool interface
-  return {
-    id: tool.id,
-    name: tool.name,
-    description: tool.description,
-    parameters: tool.parameters as Tool['parameters'],
-    inputSchema: tool.inputSchema as Tool['inputSchema'],
-    schemaSource: tool.schemaSource as Tool['schemaSource'],
-    schemaExtractedAt: tool.schemaExtractedAt?.toISOString() ?? null,
-    toolDiscoverySource: tool.toolDiscoverySource as Tool['toolDiscoverySource'],
-    returns: tool.returns as Tool['returns'],
-    aiAgent: tool.aiAgent as Tool['aiAgent'],
-    tags: tool.tags ?? [],
-    signature: tool.signature ?? null,
-    qualityScore: tool.qualityScore?.toString() ?? null,
-    importHealth: tool.importHealth ?? undefined,
-    executionHealth: tool.executionHealth ?? undefined,
-    healthCheckError: tool.healthCheckError ?? null,
-    lastHealthCheck: tool.lastHealthCheck?.toISOString() ?? null,
-    likeCount: tool.likeCount,
-    viewCount: tool.viewCount,
-    executionCount: tool.executionCount,
-    averageRating: tool.averageRating?.toString() ?? null,
-    ratingCount: tool.ratingCount,
-    reviewCount: tool.reviewCount,
-    createdAt: tool.createdAt.toISOString(),
-    updatedAt: tool.updatedAt.toISOString(),
-    package: {
-      id: tool.package.id,
-      npmPackageName: tool.package.npmPackageName,
-      npmVersion: tool.package.npmVersion,
-      npmDescription: tool.package.npmDescription,
-      npmHomepage: tool.package.npmHomepage,
-      category: tool.package.category,
-      npmRepository: tool.package.npmRepository as Tool['package']['npmRepository'],
-      isOfficial: tool.package.isOfficial,
-      npmDownloadsLastMonth: tool.package.npmDownloadsLastMonth,
-      npmKeywords: tool.package.npmKeywords,
-      npmReadme: tool.package.npmReadme,
-      npmAuthor: tool.package.npmAuthor as Tool['package']['npmAuthor'],
-      npmMaintainers: tool.package.npmMaintainers as Tool['package']['npmMaintainers'],
-      npmLicense: tool.package.npmLicense,
-      githubStars: tool.package.githubStars,
-      frameworks: tool.package.frameworks,
-      tier: tool.package.tier,
-      createdAt: tool.package.createdAt.toISOString(),
-      updatedAt: tool.package.updatedAt.toISOString(),
-    },
-  };
 }
 
 /**
