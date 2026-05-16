@@ -147,19 +147,23 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Metrics sync failed:', error);
 
-    await prisma.syncLog.create({
-      data: {
-        source: 'metrics',
-        status: 'error',
-        processed,
-        skipped,
-        errors: errors + 1,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        metadata: {
-          durationMs: Date.now() - startTime,
+    try {
+      await prisma.syncLog.create({
+        data: {
+          source: 'metrics',
+          status: 'error',
+          processed,
+          skipped,
+          errors: errors + 1,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          metadata: {
+            durationMs: Date.now() - startTime,
+          },
         },
-      },
-    });
+      });
+    } catch (logError) {
+      console.error('Failed to write error sync log:', logError);
+    }
 
     return NextResponse.json(
       {
