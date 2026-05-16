@@ -8135,6 +8135,62 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "8dd48063fc7746f1256fe5a2922fcae069ac96cb",
+      "d": "2026-05-15",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "7d5ad41db5f4ef3431eb8dcccafb01e8ab104218",
+      "d": "2026-05-15",
+      "m": "fix: guard prisma.syncLog.create in /api/sync/changes error handler (#60)",
+      "t": "fix",
+      "s": "",
+      "u": "guard prisma.syncLog.create in /api/sync/changes error handler (#60)"
+    },
+    {
+      "h": "679315eabc6d4ddc936f3d0e7ae69cf49b0fbd5b",
+      "d": "2026-05-15",
+      "m": "fix: guard against cascading PrismaClientInitializationError in changes sync (#61)",
+      "t": "fix",
+      "s": "",
+      "u": "guard against cascading PrismaClientInitializationError in changes sync (#61)"
+    },
+    {
+      "h": "3c9d4dbe29c296fe4c5cc277c94dac5f1aea8914",
+      "d": "2026-05-15",
+      "m": "fix: guard against PrismaClientInitializationError in /tool/[...slug] (#66)",
+      "t": "fix",
+      "s": "",
+      "u": "guard against PrismaClientInitializationError in /tool/[...slug] (#66)"
+    },
+    {
+      "h": "f64f8c7e2ca16e36d51ceca9609bba5de887b258",
+      "d": "2026-05-15",
+      "m": "fix: guard syncLog write in /api/sync/keyword error handler (#72)",
+      "t": "fix",
+      "s": "",
+      "u": "guard syncLog write in /api/sync/keyword error handler (#72)"
+    },
+    {
+      "h": "3ecc59bc38fafc4187ab363d6a1bb98d00b18608",
+      "d": "2026-05-15",
+      "m": "fix: guard against PrismaClientInitializationError in /api/sync/keyword (#73)",
+      "t": "fix",
+      "s": "",
+      "u": "guard against PrismaClientInitializationError in /api/sync/keyword (#73)"
+    },
+    {
+      "h": "878d0cf2814615a94626734823d9c8ba5acde8bf",
+      "d": "2026-05-16",
+      "m": "fix: guard against PrismaClientInitializationError in /sitemap.xml (#76)",
+      "t": "fix",
+      "s": "",
+      "u": "guard against PrismaClientInitializationError in /sitemap.xml (#76)"
     }
   ],
   "m": [
