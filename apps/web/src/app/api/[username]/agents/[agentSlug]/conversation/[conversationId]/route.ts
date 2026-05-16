@@ -20,7 +20,7 @@ import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { decryptApiKey } from '@/lib/crypto/api-keys';
 import { logActivity } from '~/lib/activity';
-import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
+import { authenticateRequest, hasScope, type AuthResult } from '~/lib/api-keys/middleware';
 import { trackUsage } from '~/lib/api-keys/usage';
 import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
 import { inferErrorCategory } from '~/lib/tracking/error-categories';
@@ -86,13 +86,14 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
   const startTime = Date.now();
 
   // Authenticate request (supports both session and API key)
-  const authResult = await authenticateRequest().catch((error: unknown) => {
-    console.error('[Agent] Auth middleware error (PrismaClientInitializationError or similar):', error);
-    return null;
-  });
-
-  if (!authResult) {
-    return NextResponse.json({ error: 'Authentication service unavailable' }, { status: 503 });
+  // Wrapped in try/catch because authenticateRequest() performs Prisma queries that can throw
+  // PrismaClientInitializationError if the DB connection fails at cold start.
+  let authResult: AuthResult;
+  try {
+    authResult = await authenticateRequest();
+  } catch (error) {
+    console.error('[Agent] Authentication service error:', error);
+    return NextResponse.json({ error: 'Service temporarily unavailable' }, { status: 503 });
   }
 
   if (!authResult.authenticated) {
