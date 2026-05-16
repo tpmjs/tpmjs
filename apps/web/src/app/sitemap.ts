@@ -124,38 +124,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
-  // Fetch all tools from database
-  // We only need package name and export name to build the URL, plus updatedAt for lastModified
-  const tools = await prisma.tool.findMany({
-    select: {
-      package: {
-        select: {
-          npmPackageName: true,
-          updatedAt: true,
+  let toolPages: MetadataRoute.Sitemap = [];
+
+  try {
+    const tools = await prisma.tool.findMany({
+      select: {
+        package: {
+          select: {
+            npmPackageName: true,
+            updatedAt: true,
+          },
         },
+        name: true,
+        updatedAt: true,
       },
-      name: true,
-      updatedAt: true,
-    },
-    orderBy: {
-      updatedAt: 'desc',
-    },
-  });
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
 
-  // Generate tool pages
-  // URL format: /tool/[package-name]/[export-name]
-  const toolPages: MetadataRoute.Sitemap = tools.map((tool) => {
-    // Use the more recent of package or tool update time
-    const lastModified =
-      tool.updatedAt > tool.package.updatedAt ? tool.updatedAt : tool.package.updatedAt;
+    toolPages = tools.map((tool) => {
+      const lastModified =
+        tool.updatedAt > tool.package.updatedAt ? tool.updatedAt : tool.package.updatedAt;
 
-    return {
-      url: `${baseUrl}/tool/${tool.package.npmPackageName}/${tool.name}`,
-      lastModified,
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
-    };
-  });
+      return {
+        url: `${baseUrl}/tool/${tool.package.npmPackageName}/${tool.name}`,
+        lastModified,
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      };
+    });
+  } catch (err) {
+    console.error('[sitemap] Failed to fetch tools from database, returning static pages only', err);
+  }
 
   return [...staticPages, ...toolPages];
 }
