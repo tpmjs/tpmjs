@@ -86,7 +86,14 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
   const startTime = Date.now();
 
   // Authenticate request (supports both session and API key)
-  const authResult = await authenticateRequest();
+  const authResult = await authenticateRequest().catch((error: unknown) => {
+    console.error('[Agent] Auth middleware error (PrismaClientInitializationError or similar):', error);
+    return null;
+  });
+
+  if (!authResult) {
+    return NextResponse.json({ error: 'Authentication service unavailable' }, { status: 503 });
+  }
 
   if (!authResult.authenticated) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
