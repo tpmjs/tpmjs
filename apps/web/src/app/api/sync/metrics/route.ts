@@ -95,24 +95,28 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await prisma.syncCheckpoint.upsert({
-      where: { source: 'metrics' },
-      create: {
-        source: 'metrics',
-        checkpoint: {
-          lastRun: new Date().toISOString(),
-          totalPackages: packages.length,
-          totalTools: packages.reduce((sum, pkg) => sum + pkg.tools.length, 0),
+    try {
+      await prisma.syncCheckpoint.upsert({
+        where: { source: 'metrics' },
+        create: {
+          source: 'metrics',
+          checkpoint: {
+            lastRun: new Date().toISOString(),
+            totalPackages: packages.length,
+            totalTools: packages.reduce((sum, pkg) => sum + pkg.tools.length, 0),
+          },
         },
-      },
-      update: {
-        checkpoint: {
-          lastRun: new Date().toISOString(),
-          totalPackages: packages.length,
-          totalTools: packages.reduce((sum, pkg) => sum + pkg.tools.length, 0),
+        update: {
+          checkpoint: {
+            lastRun: new Date().toISOString(),
+            totalPackages: packages.length,
+            totalTools: packages.reduce((sum, pkg) => sum + pkg.tools.length, 0),
+          },
         },
-      },
-    });
+      });
+    } catch (checkpointError) {
+      console.error('Failed to update sync checkpoint:', checkpointError);
+    }
 
     await prisma.syncLog.create({
       data: {
@@ -147,19 +151,23 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Metrics sync failed:', error);
 
-    await prisma.syncLog.create({
-      data: {
-        source: 'metrics',
-        status: 'error',
-        processed,
-        skipped,
-        errors: errors + 1,
-        message: error instanceof Error ? error.message : 'Unknown error',
-        metadata: {
-          durationMs: Date.now() - startTime,
+    try {
+      await prisma.syncLog.create({
+        data: {
+          source: 'metrics',
+          status: 'error',
+          processed,
+          skipped,
+          errors: errors + 1,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          metadata: {
+            durationMs: Date.now() - startTime,
+          },
         },
-      },
-    });
+      });
+    } catch (logError) {
+      console.error('Failed to create sync error log:', logError);
+    }
 
     return NextResponse.json(
       {
