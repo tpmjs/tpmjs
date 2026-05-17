@@ -8191,6 +8191,46 @@
       "t": "fix",
       "s": "",
       "u": "guard against PrismaClientInitializationError in /sitemap.xml (#76)"
+    },
+    {
+      "h": "a3f74c7be966863e2d6f99135a450eee15d16031",
+      "d": "2026-05-16",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "ab73c841a961d716e92baaddbfde09c9c34990a4",
+      "d": "2026-05-16",
+      "m": "fix: catch PrismaClientInitializationError in agent conversation POST handler (#80)",
+      "t": "fix",
+      "s": "",
+      "u": "catch PrismaClientInitializationError in agent conversation POST handler (#80)"
+    },
+    {
+      "h": "769a2c65e4d7af21d1bc005b11f86a7856a113d2",
+      "d": "2026-05-16",
+      "m": "fix: catch PrismaClientInitializationError from authenticateRequest in agent conversation POST (#81)",
+      "t": "fix",
+      "s": "",
+      "u": "catch PrismaClientInitializationError from authenticateRequest in agent conversation POST (#81)"
+    },
+    {
+      "h": "88dd490adad582606d631b0a8391a8a607a087fe",
+      "d": "2026-05-16",
+      "m": "fix: guard syncLog and syncCheckpoint writes in metrics cron to prevent unhandled PrismaClientKnownRequestError (#86)",
+      "t": "fix",
+      "s": "",
+      "u": "guard syncLog and syncCheckpoint writes in metrics cron to prevent unhandled PrismaClientKnownRequestError (#86)"
+    },
+    {
+      "h": "f69194980219d0c52f90955acb0fbf68df3692d3",
+      "d": "2026-05-16",
+      "m": "fix: guard syncLog.create in metrics catch block against PrismaClientKnownRequestError (#87)",
+      "t": "fix",
+      "s": "",
+      "u": "guard syncLog.create in metrics catch block against PrismaClientKnownRequestError (#87)"
     }
   ],
   "m": [
