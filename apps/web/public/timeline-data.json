@@ -8239,6 +8239,30 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "f0f7547d6fe999a7d3ee6d2cccdcb926b73d2fb5",
+      "d": "2026-05-18",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "5985789ec41447a909194d2624c11487aa6f0a4d",
+      "d": "2026-05-19",
+      "m": "fix: stabilize TableVirtuoso itemContent callback to prevent null.removeChild (#90)",
+      "t": "fix",
+      "s": "",
+      "u": "stabilize TableVirtuoso itemContent callback to prevent null.removeChild (#90)"
+    },
+    {
+      "h": "95fdbfd2775c25f0d15b8584f1dc6adcca66bbbf",
+      "d": "2026-05-19",
+      "m": "fix: guard against null npmDownloadsLastMonth in tool-search render (#91)",
+      "t": "fix",
+      "s": "",
+      "u": "guard against null npmDownloadsLastMonth in tool-search render (#91)"
     }
   ],
   "m": [
