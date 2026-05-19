@@ -179,7 +179,7 @@ export default function ToolSearchPage(): React.ReactElement {
           </Badge>
         </td>
         <td className="px-4 py-3 text-right text-sm text-foreground-secondary tabular-nums">
-          {formatDownloads(tool.package.npmDownloadsLastMonth)}
+          {formatDownloads(tool.package.npmDownloadsLastMonth ?? 0)}
         </td>
         <td className="px-4 py-3 text-right">
           <LikeButton

@@ -16,7 +16,7 @@ export interface Tool {
     category: string;
     npmRepository: { url: string; type: string } | null;
     isOfficial: boolean;
-    npmDownloadsLastMonth: number;
+    npmDownloadsLastMonth: number | null;
   };
 }
 
