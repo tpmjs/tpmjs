@@ -1,6 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { cache } from 'react';
 import { type Tool, ToolDetailClient } from './ToolDetailClient';
 
 export const dynamic = 'force-dynamic';
@@ -27,9 +28,10 @@ function parseSlug(slug: string[]): { packageName: string; toolName?: string } {
 }
 
 /**
- * Fetch tool data from database
+ * Fetch tool data from database — memoized with cache() so generateMetadata and
+ * the page component share one Prisma round-trip per request instead of two.
  */
-async function getTool(slug: string[]): Promise<Tool | null> {
+const getTool = cache(async function getTool(slug: string[]): Promise<Tool | null> {
   const { packageName, toolName } = parseSlug(slug);
 
   if (!packageName) {
@@ -114,7 +116,7 @@ async function getTool(slug: string[]): Promise<Tool | null> {
   } catch {
     return null;
   }
-}
+});
 
 /**
  * Generate metadata for the tool page
