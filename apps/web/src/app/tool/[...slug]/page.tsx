@@ -30,13 +30,13 @@ function parseSlug(slug: string[]): { packageName: string; toolName?: string } {
  * Fetch tool data from database
  */
 async function getTool(slug: string[]): Promise<Tool | null> {
-  const { packageName, toolName } = parseSlug(slug);
-
-  if (!packageName) {
-    return null;
-  }
-
   try {
+    const { packageName, toolName } = parseSlug(slug);
+
+    if (!packageName) {
+      return null;
+    }
+
     // First find the package by npm name
     const pkg = await prisma.package.findUnique({
       where: { npmPackageName: packageName },
@@ -120,57 +120,74 @@ async function getTool(slug: string[]): Promise<Tool | null> {
  * Generate metadata for the tool page
  */
 export async function generateMetadata({ params }: ToolDetailPageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const tool = await getTool(slug);
+  try {
+    const { slug } = await params;
+    const tool = await getTool(slug);
 
-  if (!tool) {
+    if (!tool) {
+      return {
+        title: 'Tool Not Found',
+        description: 'The requested tool could not be found.',
+      };
+    }
+
+    const { packageName, toolName } = parseSlug(slug);
+    const ogPath = toolName
+      ? `/api/og/tool/${encodeURIComponent(packageName)}/${encodeURIComponent(toolName)}`
+      : `/api/og/tool/${encodeURIComponent(packageName)}`;
+
+    return {
+      title: `${tool.name} | TPMJS`,
+      description: tool.description || `${tool.name} - AI tool from ${tool.package.npmPackageName}`,
+      keywords: [tool.package.category, 'AI', 'npm', 'tool', tool.name, tool.package.npmPackageName],
+      openGraph: {
+        title: tool.name,
+        description: tool.description,
+        type: 'website',
+        images: [
+          {
+            url: ogPath,
+            width: 1200,
+            height: 630,
+            alt: `${tool.name} - TPMJS Tool`,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: tool.name,
+        description: tool.description,
+        images: [ogPath],
+      },
+    };
+  } catch {
     return {
       title: 'Tool Not Found',
       description: 'The requested tool could not be found.',
     };
   }
-
-  const { packageName, toolName } = parseSlug(slug);
-  const ogPath = toolName
-    ? `/api/og/tool/${encodeURIComponent(packageName)}/${encodeURIComponent(toolName)}`
-    : `/api/og/tool/${encodeURIComponent(packageName)}`;
-
-  return {
-    title: `${tool.name} | TPMJS`,
-    description: tool.description || `${tool.name} - AI tool from ${tool.package.npmPackageName}`,
-    keywords: [tool.package.category, 'AI', 'npm', 'tool', tool.name, tool.package.npmPackageName],
-    openGraph: {
-      title: tool.name,
-      description: tool.description,
-      type: 'website',
-      images: [
-        {
-          url: ogPath,
-          width: 1200,
-          height: 630,
-          alt: `${tool.name} - TPMJS Tool`,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: tool.name,
-      description: tool.description,
-      images: [ogPath],
-    },
-  };
 }
 
 /**
  * Tool detail page - server component
  */
 export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
-  const { slug } = await params;
-  const tool = await getTool(slug);
+  try {
+    const { slug } = await params;
+    const tool = await getTool(slug);
 
-  if (!tool) {
+    if (!tool) {
+      notFound();
+    }
+
+    return <ToolDetailClient tool={tool} slug={slug.join('/')} />;
+  } catch (error) {
+    // Re-throw Next.js internal errors (notFound, redirect, etc.) so they are handled correctly
+    if (error instanceof Error && 'digest' in error) {
+      throw error;
+    }
+    // For unexpected errors (e.g. PrismaClientKnownRequestError from client init),
+    // show 404 rather than propagating an unhandled error to Sentry
     notFound();
   }
-
-  return <ToolDetailClient tool={tool} slug={slug.join('/')} />;
 }
