@@ -8271,6 +8271,30 @@
       "t": "chore",
       "s": "",
       "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "bb64b9aad424b2954498dd85b197313cc53fea06",
+      "d": "2026-05-20",
+      "m": "chore: update timeline data [skip ci]",
+      "t": "chore",
+      "s": "",
+      "u": "update timeline data [skip ci]"
+    },
+    {
+      "h": "1cc9f369fe1caa7580a033cfc50bc27d238e52f0",
+      "d": "2026-05-20",
+      "m": "fix: deduplicate Prisma queries on /tool/[...slug] with React cache() (#94)",
+      "t": "fix",
+      "s": "",
+      "u": "deduplicate Prisma queries on /tool/[...slug] with React cache() (#94)"
+    },
+    {
+      "h": "dd5e7aa490232665585129ac84a24df909d8ccac",
+      "d": "2026-05-20",
+      "m": "fix: guard /tool/[...slug] against unhandled PrismaClientKnownRequestError (#95)",
+      "t": "fix",
+      "s": "",
+      "u": "guard /tool/[...slug] against unhandled PrismaClientKnownRequestError (#95)"
     }
   ],
   "m": [
