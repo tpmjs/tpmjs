@@ -965,4 +965,38 @@ export const manualTools: ManualTool[] = [
     apiKeyUrl: 'https://you.com/platform/api-keys',
     websiteUrl: 'https://you.com',
   },
+  {
+    npmPackageName: '@nitrosend/ai-sdk',
+    category: 'integration',
+    frameworks: ['vercel-ai'],
+    name: 'withNitrosendTools',
+    description: 'Provides Nitrosend tools for sending email and SMS, managing contacts and segments, building flows, and running campaigns.',
+    tags: ['email', 'sms', 'marketing', 'mcp', 'automation', 'crm'],
+    env: [
+      {
+        name: 'NITROSEND_API_KEY',
+        description: 'API key for authenticating with the Nitrosend service.',
+        required: true,
+      }
+    ],
+    parameters: [
+      {
+        name: 'tools',
+        type: 'object',
+        description: 'The tools object provided to the function.',
+        required: true,
+      }
+    ],
+    returns: {
+      type: 'Promise<any>',
+      description: 'The result of the asynchronous operation using Nitrosend tools.',
+    },
+    aiAgent: {
+      useCase: 'Use this tool to integrate Nitrosend functionalities like sending emails and SMS in AI-driven workflows.',
+      examples: ['Send a welcome email to a new user.', 'Run a marketing campaign using SMS.'],
+    },
+    docsUrl: 'https://docs.nitrosend.com/integrations/vercel-ai-sdk',
+    apiKeyUrl: 'https://app.nitrosend.com/settings/api-keys',
+    websiteUrl: 'https://nitrosend.com',
+  },
 ];
