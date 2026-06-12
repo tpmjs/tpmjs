@@ -1,14 +1,16 @@
 name: Update Documentation
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'packages/**'
-      - 'apps/**'
-      - 'templates/**'
-      - '!**/*.md'
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'packages/**'
+  #     - 'apps/**'
+  #     - 'templates/**'
+  #     - '!**/*.md'
+  workflow_dispatch: # kept so the workflow can be run manually
 
 jobs:
   update-docs:

@@ -1,9 +1,10 @@
 name: Sync NPM Keyword Search
 
 on:
-  schedule:
-    # Run every 15 minutes
-    - cron: '*/15 * * * *'
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # schedule:
+  #   # Run every 15 minutes
+  #   - cron: '*/15 * * * *'
   workflow_dispatch:
 
 jobs:

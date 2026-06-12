@@ -1,9 +1,10 @@
 name: Auto-Close Published Issues
 
 on:
-  schedule:
-    # Run every hour to check for issues to close
-    - cron: '0 * * * *'
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # schedule:
+  #   # Run every hour to check for issues to close
+  #   - cron: '0 * * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:

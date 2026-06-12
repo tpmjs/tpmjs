@@ -1,9 +1,10 @@
 name: Sync Tool Enrichment
 
 on:
-  schedule:
-    # Run every 2 minutes
-    - cron: '*/2 * * * *'
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # schedule:
+  #   # Run every 2 minutes
+  #   - cron: '*/2 * * * *'
   workflow_dispatch:
 
 jobs:

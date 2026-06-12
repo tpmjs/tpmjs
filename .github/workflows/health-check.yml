@@ -1,9 +1,10 @@
 name: Daily Health Check
 
 on:
-  schedule:
-    # Run daily at 2am UTC
-    - cron: '0 2 * * *'
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # schedule:
+  #   # Run daily at 2am UTC
+  #   - cron: '0 2 * * *'
   workflow_dispatch:
 
 jobs:

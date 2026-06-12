@@ -1,8 +1,9 @@
 name: Tool Request Pipeline
 
 on:
-  issues:
-    types: [labeled]
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # issues:
+  #   types: [labeled]
   workflow_dispatch:
     inputs:
       issue_number:

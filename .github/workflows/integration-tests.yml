@@ -1,8 +1,9 @@
 name: Integration Tests
 
 on:
-  push:
-    branches: [main]
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # push:
+  #   branches: [main]
   workflow_dispatch:
     inputs:
       verbose:

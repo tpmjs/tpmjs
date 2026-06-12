@@ -1,22 +1,23 @@
 name: Sandbox Tests
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'templates/agent-sandbox/**'
-      - 'packages/tools/official/sandbox-shell/**'
-      - 'apps/web/src/lib/executors/**'
-      - 'apps/web/src/test/integration/sandbox/**'
-      - '.github/workflows/sandbox-tests.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'templates/agent-sandbox/**'
-      - 'packages/tools/official/sandbox-shell/**'
-      - 'apps/web/src/lib/executors/**'
-      - 'apps/web/src/test/integration/sandbox/**'
-      - '.github/workflows/sandbox-tests.yml'
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - 'templates/agent-sandbox/**'
+  #     - 'packages/tools/official/sandbox-shell/**'
+  #     - 'apps/web/src/lib/executors/**'
+  #     - 'apps/web/src/test/integration/sandbox/**'
+  #     - '.github/workflows/sandbox-tests.yml'
+  # pull_request:
+  #   branches: [main]
+  #   paths:
+  #     - 'templates/agent-sandbox/**'
+  #     - 'packages/tools/official/sandbox-shell/**'
+  #     - 'apps/web/src/lib/executors/**'
+  #     - 'apps/web/src/test/integration/sandbox/**'
+  #     - '.github/workflows/sandbox-tests.yml'
   workflow_dispatch:
 
 concurrency:

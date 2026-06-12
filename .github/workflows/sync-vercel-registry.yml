@@ -1,16 +1,17 @@
 name: Sync Vercel AI Registry
 
 on:
-  schedule:
-    # Run every hour
-    - cron: '0 * * * *'
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # schedule:
+  #   # Run every hour
+  #   - cron: '0 * * * *'
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'sync-vercel-registry.ts'
   workflow_dispatch:
   # Run on pushes to main that modify the sync script
-  push:
-    branches:
-      - main
-    paths:
-      - 'sync-vercel-registry.ts'
 
 permissions:
   contents: write

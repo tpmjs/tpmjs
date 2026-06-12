@@ -1,9 +1,11 @@
 name: Release
 
 on:
-  push:
-    branches:
-      - main
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch: # kept so the workflow can be run manually
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 

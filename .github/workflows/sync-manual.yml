@@ -1,17 +1,18 @@
 name: Sync Manual Tools
 
 on:
-  schedule:
-    # Run daily at midnight UTC
-    - cron: '0 0 * * *'
+  # NOTE: automatic triggers disabled 2026-06-13 — uncomment below to re-enable
+  # schedule:
+  #   # Run daily at midnight UTC
+  #   - cron: '0 0 * * *'
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'manual-tools.ts'
+  #     - 'sync-manual-tools.ts'
   workflow_dispatch:
   # Run on pushes to main that modify manual-tools.ts
-  push:
-    branches:
-      - main
-    paths:
-      - 'manual-tools.ts'
-      - 'sync-manual-tools.ts'
 
 jobs:
   sync-manual:
