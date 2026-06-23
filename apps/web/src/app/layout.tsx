@@ -1,4 +1,5 @@
 import { Analytics } from '@vercel/analytics/next';
+import { DontoAnalytics } from '../components/DontoAnalytics';
 import type { Metadata } from 'next';
 import { Space_Grotesk, Space_Mono } from 'next/font/google';
 import { Toaster } from 'sonner';
@@ -158,6 +159,7 @@ export default function RootLayout({
           </SWRProvider>
         </ThemeProvider>
         <Analytics />
+        <DontoAnalytics />
       </body>
     </html>
   );
