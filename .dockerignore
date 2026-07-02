@@ -1,0 +1,7 @@
+# keep host artifacts out of image builds (donto-infra/build/tpmjs.Dockerfile)
+node_modules
+**/node_modules
+**/.next
+.git
+**/dist
+**/.turbo
