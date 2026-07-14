@@ -68,6 +68,10 @@ interface ReportHealthRequest {
   name: string;
   success: boolean;
   error?: string;
+  // 'execute' = the tool imported, initialized, and ran but threw (input
+  // validation, missing credentials, a remote API error) — the tool itself is
+  // working. 'load' = failed before execute() (import/factory/schema).
+  errorStage?: 'load' | 'execute';
 }
 
 /**
@@ -88,7 +92,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   try {
     const body: ReportHealthRequest = await request.json();
-    const { packageName, name, success, error } = body;
+    const { packageName, name, success, error, errorStage } = body;
 
     if (!packageName || !name) {
       return NextResponse.json(
@@ -117,12 +121,20 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (success) {
       // Successful execution = HEALTHY
       healthStatus = 'HEALTHY';
-    } else if (error && isNonBreakingError(error)) {
-      // Failed due to config/validation = HEALTHY (tool works, just needs setup)
+    } else if (errorStage === 'execute') {
+      // The tool imported, initialized, and RAN — the throw came from inside
+      // execute() (validation, missing credentials, a remote API failure), so
+      // the tool itself works. This is the structured signal that replaces the
+      // brittle isNonBreakingError message-regex (kept below as a fallback only
+      // for legacy clients that don't send errorStage).
+      healthStatus = 'HEALTHY';
+      console.log(`ℹ️  ${packageName}/${name} ran but threw (errorStage=execute, not broken): ${error}`);
+    } else if (!errorStage && error && isNonBreakingError(error)) {
+      // Legacy path: no errorStage supplied — fall back to message matching.
       healthStatus = 'HEALTHY';
       console.log(`ℹ️  ${packageName}/${name} failed due to config issue (not broken): ${error}`);
     } else {
-      // Real failure = BROKEN
+      // Real failure (errorStage='load', or legacy unmatched) = BROKEN
       healthStatus = 'BROKEN';
       healthError = error || 'Unknown error';
     }

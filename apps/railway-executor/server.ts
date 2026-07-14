@@ -148,7 +148,8 @@ async function reportToolHealth(
   packageName: string,
   name: string,
   success: boolean,
-  error?: string
+  error?: string,
+  errorStage?: 'load' | 'execute'
 ): Promise<void> {
   try {
     const response = await fetch(`${TPMJS_API_URL}/api/tools/report-health`, {
@@ -159,6 +160,7 @@ async function reportToolHealth(
         name,
         success,
         error,
+        errorStage,
       }),
     });
 
@@ -798,7 +800,7 @@ async function executeTool(req: Request): Promise<Response> {
       const executionTimeMs = Date.now() - startTime;
       const message = executeError instanceof Error ? executeError.message : String(executeError);
       console.error('❌ Tool threw during execute():', message);
-      reportToolHealth(packageName, toolName, false, message).catch(() => {});
+      reportToolHealth(packageName, toolName, false, message, 'execute').catch(() => {});
 
       // The tool imported, initialized, and RAN — the throw came from inside
       // tool.execute() (input validation, missing credentials, a remote API
@@ -829,7 +831,7 @@ async function executeTool(req: Request): Promise<Response> {
     console.error('❌ Tool execution failed:', error);
 
     // Report failed execution to health service (non-blocking)
-    reportToolHealth(packageName, toolName, false, error.message).catch(() => {});
+    reportToolHealth(packageName, toolName, false, error.message, 'load').catch(() => {});
 
     return Response.json(
       {
