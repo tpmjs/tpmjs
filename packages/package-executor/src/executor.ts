@@ -17,6 +17,13 @@ function getSandboxUrl(): string {
   return url;
 }
 
+// The executor requires `Authorization: Bearer <EXECUTOR_API_KEY>` on all
+// endpoints except GET /health when the key is set (auth disabled otherwise).
+function getAuthHeaders(): Record<string, string> {
+  const key = process.env.EXECUTOR_API_KEY;
+  return key ? { Authorization: `Bearer ${key}` } : {};
+}
+
 /**
  * Execute a package function with parameters via remote sandbox
  */
@@ -50,6 +57,7 @@ export async function executePackage(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...getAuthHeaders(),
       },
       body: JSON.stringify(requestBody),
       signal: controller.signal,
@@ -109,6 +117,7 @@ export async function clearCache(): Promise<void> {
   try {
     const response = await fetch(`${getSandboxUrl()}/cache/clear`, {
       method: 'POST',
+      headers: getAuthHeaders(),
     });
 
     if (!response.ok) {

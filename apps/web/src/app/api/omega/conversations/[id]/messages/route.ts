@@ -24,6 +24,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { authenticateRequest } from '~/lib/api-keys/middleware';
 import { decryptApiKey } from '~/lib/crypto/api-keys';
+import { executorAuthHeaders } from '~/lib/executors/internal-auth';
 import { buildSystemPrompt } from '~/lib/omega/system-prompt';
 import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
 
@@ -233,7 +234,7 @@ async function fetchSchemaFromExecutor(toolMeta: {
     console.log(`📋 Fetching schema from executor for ${toolMeta.packageName}/${toolMeta.name}`);
     const response = await fetch(`${EXECUTOR_URL}/load-and-describe`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...executorAuthHeaders() },
       body: JSON.stringify({
         packageName: toolMeta.packageName,
         name: toolMeta.name,
@@ -299,7 +300,7 @@ async function createDynamicTool(
       try {
         const response = await fetch(`${EXECUTOR_URL}/execute-tool`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...executorAuthHeaders() },
           body: JSON.stringify({
             packageName: toolMeta.packageName,
             name: toolMeta.name,

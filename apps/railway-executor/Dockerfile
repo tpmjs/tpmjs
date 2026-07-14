@@ -1,9 +1,14 @@
-# Use latest Deno LTS image for stability
-FROM denoland/deno:2.1.9
+# Use latest Deno LTS image for stability (fully-qualified for podman builds)
+FROM docker.io/denoland/deno:2.1.9
 
 # Install OpenSSH client for tools that need SSH access (e.g., exe-dev)
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends openssh-client curl pandoc jq postgresql-client && rm -rf /var/lib/apt/lists/*
+
+# Pre-trust exe.dev's host key so exe-dev tools' ssh reaches auth instead of
+# dying on interactive host-key verification (|| true: image still builds if
+# exe.dev is unreachable at build time)
+RUN mkdir -p /etc/ssh && ssh-keyscan -T 10 exe.dev >> /etc/ssh/ssh_known_hosts 2>/dev/null || true
 
 # Set working directory
 WORKDIR /app

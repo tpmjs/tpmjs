@@ -19,6 +19,48 @@ globalThis.addEventListener('error', (event) => {
   event.preventDefault();
 });
 
+// ─── Auth ────────────────────────────────────────────────────────────────────
+// When EXECUTOR_API_KEY is set, every endpoint except GET /health requires
+// `Authorization: Bearer <key>`. When unset, auth is disabled (dev mode) —
+// same contract as the agent-sandbox server and the executor docs.
+const EXECUTOR_API_KEY = Deno.env.get('EXECUTOR_API_KEY');
+
+function checkAuth(req: Request): boolean {
+  if (!EXECUTOR_API_KEY) return true;
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) return false;
+  const token = authHeader.replace('Bearer ', '');
+  return token === EXECUTOR_API_KEY;
+}
+
+/**
+ * Import a tool package module. Primary path is esm.sh (CDN-cached); if the
+ * esm.sh build fails (packages with native/Node-only deps that its denonext
+ * transform can't handle — bindings, ssh2, node:sqlite, canvas…), fall back to
+ * Deno-native npm: resolution, which handles optional native deps correctly.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: Tool modules are dynamic
+async function importToolModule(
+  packageName: string,
+  version: string,
+  importUrl?: string
+): Promise<any> {
+  if (importUrl) {
+    console.log(`📦 Importing (explicit): ${importUrl}`);
+    return await import(importUrl);
+  }
+  const esmUrl = `https://esm.sh/${packageName}@${version}`;
+  try {
+    console.log(`📦 Importing: ${esmUrl}`);
+    return await import(esmUrl);
+  } catch (esmError) {
+    const npmSpecifier = `npm:${packageName}@${version}`;
+    const message = esmError instanceof Error ? esmError.message : String(esmError);
+    console.log(`↩️  esm.sh import failed (${message}); retrying via ${npmSpecifier}`);
+    return await import(npmSpecifier);
+  }
+}
+
 // Cache TTL: 2 minutes
 const CACHE_TTL_MS = 2 * 60 * 1000;
 
@@ -266,11 +308,8 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       console.log(`✅ Cache hit: ${cacheKey}`);
       toolModule = cachedEntry.module;
     } else {
-      // Dynamic import from esm.sh (Deno supports this natively!)
-      const url = importUrl || `https://esm.sh/${packageName}@${version}`;
-      console.log(`📦 Importing: ${url}`);
-
-      const module = await import(url);
+      // Dynamic import: esm.sh with npm: fallback (Deno supports both natively)
+      const module = await importToolModule(packageName, version, importUrl);
       let rawExport = module[name];
 
       if (!rawExport) {
@@ -564,12 +603,22 @@ async function executeTool(req: Request): Promise<Response> {
     const cacheKey = `${packageName}::${toolName}`;
 
     // Inject environment variables FIRST - before cache check and factory calls
-    // This ensures process.env is set when factory functions read from it
-    if (env && typeof env === 'object') {
-      const envKeys = Object.keys(env);
-      if (envKeys.length > 0) {
-        console.log(`🔐 Injecting ${envKeys.length} environment variables:`, envKeys);
-        for (const [key, value] of Object.entries(env)) {
+    // This ensures process.env is set when factory functions read from it.
+    // Only flat string/number/boolean maps are accepted: arrays and nested
+    // objects (e.g. a package's env-var DESCRIPTOR list [{name, required,…}]
+    // sent by mistake) would otherwise inject garbage vars like 0="[object
+    // Object]" into the process.
+    if (env && typeof env === 'object' && !Array.isArray(env)) {
+      const envEntries = Object.entries(env).filter(
+        ([, value]) =>
+          typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+      );
+      if (envEntries.length > 0) {
+        console.log(
+          `🔐 Injecting ${envEntries.length} environment variables:`,
+          envEntries.map(([k]) => k)
+        );
+        for (const [key, value] of envEntries) {
           const stringValue = String(value);
 
           // Set in Deno environment (for esm.sh imports)
@@ -607,10 +656,7 @@ async function executeTool(req: Request): Promise<Response> {
     }
 
     if (needsImport) {
-      const url = importUrl || `https://esm.sh/${packageName}@${version}`;
-      console.log(`📦 Importing for execution: ${url}`);
-
-      const module = await import(url);
+      const module = await importToolModule(packageName, version, importUrl);
       let rawExport = module[toolName];
 
       if (!rawExport) {
@@ -744,7 +790,28 @@ async function executeTool(req: Request): Promise<Response> {
     };
 
     console.log(`🚀 Executing ${cacheKey} with params:`, params);
-    const result = await toolModule.execute(params || {}, executionContext);
+    // biome-ignore lint/suspicious/noImplicitAnyLet: Tool output is dynamic
+    let result;
+    try {
+      result = await toolModule.execute(params || {}, executionContext);
+    } catch (executeError) {
+      const executionTimeMs = Date.now() - startTime;
+      const message = executeError instanceof Error ? executeError.message : String(executeError);
+      console.error('❌ Tool threw during execute():', message);
+      reportToolHealth(packageName, toolName, false, message).catch(() => {});
+
+      // The tool imported, initialized, and RAN — the throw came from inside
+      // tool.execute() (input validation, missing credentials, a remote API
+      // failure). That is not an executor/infrastructure failure, so respond
+      // 200 with a structured errorStage instead of a blanket 500: callers
+      // (health checks) can classify by stage instead of regexing messages.
+      return Response.json({
+        success: false,
+        error: message,
+        errorStage: 'execute',
+        executionTimeMs,
+      });
+    }
 
     const executionTimeMs = Date.now() - startTime;
     console.log(`✅ Execution complete in ${executionTimeMs}ms`);
@@ -768,6 +835,7 @@ async function executeTool(req: Request): Promise<Response> {
       {
         success: false,
         error: error.message,
+        errorStage: 'load', // failed before tool.execute() ran (import/factory/schema)
         executionTimeMs,
       },
       { status: 500 }
@@ -939,7 +1007,7 @@ async function handler(req: Request): Promise<Response> {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 
   if (req.method === 'OPTIONS') {
@@ -951,6 +1019,8 @@ async function handler(req: Request): Promise<Response> {
 
     if (url.pathname === '/health' && req.method === 'GET') {
       response = health();
+    } else if (!checkAuth(req)) {
+      response = Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     } else if (url.pathname === '/load-and-describe' && req.method === 'POST') {
       response = await loadAndDescribe(req);
     } else if (url.pathname === '/list-exports' && req.method === 'POST') {
@@ -1005,6 +1075,7 @@ Deno.addSignalListener('SIGINT', () => handleShutdown('SIGINT'));
 const port = Number.parseInt(Deno.env.get('PORT') || '3002', 10);
 
 console.log(`🚀 Railway Tool Executor (Deno) running on port ${port}`);
+console.log(`🔒 Auth: ${EXECUTOR_API_KEY ? 'enabled (Bearer token required)' : 'DISABLED (set EXECUTOR_API_KEY)'}`);
 console.log('📦 HTTP imports: ENABLED');
 console.log(`🔗 Health check: http://localhost:${port}/health`);
 console.log('🛠️  Endpoints:');

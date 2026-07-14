@@ -5,6 +5,7 @@
 
 import { type HealthStatus, type Package, type Prisma, prisma, type Tool } from '@tpmjs/db';
 import { env } from '~/env';
+import { executorAuthHeaders } from '~/lib/executors/internal-auth';
 
 const RAILWAY_EXECUTOR_URL = env.RAILWAY_EXECUTOR_URL;
 
@@ -32,12 +33,14 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
   try {
     const response = await fetch(`${RAILWAY_EXECUTOR_URL}/load-and-describe`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...executorAuthHeaders() },
       body: JSON.stringify({
         packageName: tool.package.npmPackageName,
         name: tool.name,
         version: tool.package.npmVersion,
-        env: tool.package.env || {},
+        // packages.env is an array of env-var DESCRIPTORS ({name, required,…}),
+        // not key→value pairs — there are no real credential values to send.
+        env: {},
       }),
       signal: AbortSignal.timeout(30000), // 30 second timeout
     });
@@ -115,13 +118,14 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
   try {
     const response = await fetch(`${RAILWAY_EXECUTOR_URL}/execute-tool`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...executorAuthHeaders() },
       body: JSON.stringify({
         packageName: tool.package.npmPackageName,
         name: tool.name,
         version: tool.package.npmVersion,
         params: testParams,
-        env: tool.package.env || {},
+        // Descriptor array, not values — see checkImportHealth.
+        env: {},
       }),
       signal: AbortSignal.timeout(30000), // 30 second timeout
     });
@@ -237,10 +241,27 @@ function generateTestParameters(tool: Tool & { package: Package }): Record<strin
     ? (tool.parameters as Array<{ name: string; type: string; required: boolean }>)
     : [];
 
+  // The full JSON schema (tools.input_schema) carries enums and defaults that
+  // the flat parameters list loses — an enum's first value exercises the
+  // tool's happy path where a literal 'test' is a guaranteed validation reject.
+  const schemaProperties =
+    (tool.inputSchema as { properties?: Record<string, Record<string, unknown>> } | null)
+      ?.properties || {};
+
   const testParams: Record<string, unknown> = {};
 
   for (const param of parameters) {
     if (param.required) {
+      const propSchema = schemaProperties[param.name];
+      if (propSchema?.default !== undefined) {
+        testParams[param.name] = propSchema.default;
+        continue;
+      }
+      if (Array.isArray(propSchema?.enum) && propSchema.enum.length > 0) {
+        testParams[param.name] = propSchema.enum[0];
+        continue;
+      }
+
       // Generate minimal test value based on type
       switch (param.type) {
         case 'string':

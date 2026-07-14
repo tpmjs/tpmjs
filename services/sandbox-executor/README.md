@@ -1,5 +1,12 @@
 # TPMJS Sandbox Executor Service
 
+> **⚠️ LEGACY — NOT DEPLOYED.** Nothing runs this service in production. Tool
+> execution goes to `apps/railway-executor/` (the Deno executor behind
+> `SANDBOX_EXECUTOR_URL`/`RAILWAY_EXECUTOR_URL`), and agent sessions go to
+> `templates/agent-sandbox/` (the sessions-capable Deno sandbox behind
+> `AGENT_SANDBOX_URL`). Kept for reference only — do not mistake it for the
+> deployed sandbox's source.
+
 Isolated microservice for securely executing TPMJS npm packages using `isolated-vm`.
 
 ## Architecture

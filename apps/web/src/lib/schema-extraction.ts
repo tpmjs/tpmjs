@@ -4,6 +4,7 @@
  */
 
 import { env } from '~/env';
+import { executorAuthHeaders } from '~/lib/executors/internal-auth';
 
 const RAILWAY_EXECUTOR_URL = env.RAILWAY_EXECUTOR_URL;
 
@@ -47,7 +48,7 @@ export async function listToolExports(
   try {
     const response = await fetch(`${RAILWAY_EXECUTOR_URL}/list-exports`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...executorAuthHeaders() },
       body: JSON.stringify({
         packageName,
         version,
@@ -121,7 +122,7 @@ export async function extractToolSchema(
   try {
     const response = await fetch(`${RAILWAY_EXECUTOR_URL}/load-and-describe`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...executorAuthHeaders() },
       body: JSON.stringify({
         packageName,
         name,

@@ -37,6 +37,7 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest, getClientMetadata } from '~/lib/api-keys/middleware';
+import { executorAuthHeaders } from '~/lib/executors/internal-auth';
 import {
   checkApiKeyRateLimit,
   createRateLimitResponse,
@@ -214,7 +215,7 @@ export async function POST(request: NextRequest) {
   try {
     const executorResponse = await fetch(`${EXECUTOR_URL}/execute-tool`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...executorAuthHeaders() },
       body: JSON.stringify({
         packageName,
         name: exportName,

@@ -140,11 +140,28 @@ async function handleSearchTools(
       where.package = { category };
     }
 
+    // Prefilter candidates in the DB: BM25 only keeps docs containing at least
+    // one query token, and every token is a contiguous substring of its source
+    // field, so an insensitive `contains` OR-filter is recall-equivalent to
+    // scoring the whole table (which a fixed take:200 was not — it silently
+    // excluded 3/4 of the registry from search).
+    if (query) {
+      const queryTokens = tokenize(query);
+      if (queryTokens.length > 0) {
+        where.OR = queryTokens.flatMap((token) => [
+          { name: { contains: token, mode: 'insensitive' } },
+          { description: { contains: token, mode: 'insensitive' } },
+          { tags: { has: token } },
+          { package: { npmPackageName: { contains: token, mode: 'insensitive' } } },
+        ]);
+      }
+    }
+
     const tools = await withTimeout(
       prisma.tool.findMany({
         where,
         include: { package: true },
-        take: query ? 200 : limit, // fetch more for BM25 scoring
+        take: query ? 2000 : limit, // candidate ceiling for BM25 scoring
       }),
       DB_TIMEOUT_MS,
       'Database query timed out'
