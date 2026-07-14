@@ -42,7 +42,7 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
         // not key→value pairs — there are no real credential values to send.
         env: {},
       }),
-      signal: AbortSignal.timeout(30000), // 30 second timeout
+      signal: AbortSignal.timeout(60000), // 60s — forgiving of executor saturation during bulk sweeps
     });
 
     const timeMs = Date.now() - startTime;
@@ -89,6 +89,15 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
       };
     }
 
+    // Transient infra (timeout/network under sweep load) — don't mark BROKEN.
+    if (isTransientInfraError(errorMessage)) {
+      return {
+        status: 'UNKNOWN',
+        error: `Transient (kept prior status): ${errorMessage}`,
+        timeMs: Date.now() - startTime,
+      };
+    }
+
     return {
       status: 'BROKEN',
       error: errorMessage,
@@ -127,7 +136,7 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
         // Descriptor array, not values — see checkImportHealth.
         env: {},
       }),
-      signal: AbortSignal.timeout(30000), // 30 second timeout
+      signal: AbortSignal.timeout(60000), // 60s — forgiving of executor saturation during bulk sweeps
     });
 
     const timeMs = Date.now() - startTime;
@@ -161,14 +170,39 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
     // Network/timeout errors are infrastructure issues
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // Timeout or network error = infrastructure issue = BROKEN
+    // Transient infra (executor timeout/network under sweep load) — mark
+    // UNKNOWN so a saturated executor doesn't permanently flag healthy tools
+    // BROKEN. The tool keeps its prior status; the next sweep re-checks it.
     return {
-      status: 'BROKEN',
-      error: errorMessage,
+      status: 'UNKNOWN',
+      error: `Transient (kept prior status): ${errorMessage}`,
       timeMs: Date.now() - startTime,
       testParams,
     };
   }
+}
+
+/**
+ * A transient infrastructure error (executor timeout under load, network blip)
+ * — NOT the tool being broken. During a bulk sweep the executor can saturate
+ * and legitimate tools time out; marking them BROKEN corrupts the registry with
+ * false negatives. These are treated as UNKNOWN (the tool keeps its prior
+ * status) instead.
+ */
+function isTransientInfraError(error: string | null): boolean {
+  if (!error) return false;
+  const patterns = [
+    /aborted/i,
+    /timeout/i,
+    /timed out/i,
+    /econnrefused/i,
+    /econnreset/i,
+    /socket hang up/i,
+    /network/i,
+    /fetch failed/i,
+    /502|503|504/,
+  ];
+  return patterns.some((p) => p.test(error));
 }
 
 /**
@@ -358,14 +392,23 @@ export async function performHealthCheck(
     },
   });
 
-  // Update Tool record with latest health status
+  // Update Tool record with latest health status. A transient/skipped UNKNOWN
+  // result must NOT clobber a good prior status — only definitive HEALTHY/BROKEN
+  // results overwrite (otherwise a saturated-executor sweep would wipe the
+  // registry's health to UNKNOWN).
+  const nextImport = importResult.status === 'UNKNOWN' ? tool.importHealth : importResult.status;
+  const nextExecution =
+    executionResult.status === 'UNKNOWN' ? tool.executionHealth : executionResult.status;
   await prisma.tool.update({
     where: { id: tool.id },
     data: {
-      importHealth: importResult.status,
-      executionHealth: executionResult.status,
+      importHealth: nextImport,
+      executionHealth: nextExecution,
       lastHealthCheck: new Date(),
-      healthCheckError: importResult.error || executionResult.error,
+      // Only replace the stored error when we have a definitive verdict.
+      ...(importResult.status !== 'UNKNOWN' || executionResult.status !== 'UNKNOWN'
+        ? { healthCheckError: importResult.error || executionResult.error }
+        : {}),
     },
   });
 
