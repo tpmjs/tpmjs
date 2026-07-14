@@ -15,7 +15,7 @@ jobs:
         id: sync
         run: |
           # Call the sync API and capture response (60s timeout for Vercel serverless)
-          response=$(curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/keyword" \
+          response=$(curl -X POST "https://tpmjs.com/api/sync/keyword" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             --max-time 65 --connect-timeout 10 \

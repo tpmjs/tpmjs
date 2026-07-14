@@ -303,7 +303,7 @@ System Default (Railway)
 - **Railway** - Default executor hosting
 
 ### Data
-- **Neon** - PostgreSQL database (serverless)
+- **PostgreSQL 17** - self-hosted container (`tpmjs-pg`) on the tpmjs.com box
 
 ### AI Providers
 - **OpenAI** - GPT-4, GPT-4 Turbo, embeddings

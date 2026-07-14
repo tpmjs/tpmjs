@@ -4,23 +4,27 @@ Database package for TPMJS NPM Registry. Provides Prisma ORM setup and database 
 
 ## Setup
 
-### 1. Create Neon Database
+### 1. Start a Local Postgres
 
-1. Go to https://neon.tech/
-2. Create a new project
-3. Copy the connection string
+Run a local PostgreSQL container for development:
+
+```bash
+docker run -d --name tpmjs-dev-pg -p 5432:5432 \
+  -e POSTGRES_USER=tpmjs -e POSTGRES_PASSWORD=tpmjs -e POSTGRES_DB=tpmjs \
+  postgres:17
+```
 
 ### 2. Configure Environment
 
 ```bash
 cp .env.example .env
-# Edit .env and add your DATABASE_URL
+# Edit .env and set DATABASE_URL=postgresql://tpmjs:tpmjs@localhost:5432/tpmjs
 ```
 
-### 3. Run Migrations
+### 3. Push the Schema
 
 ```bash
-pnpm db:migrate
+pnpm db:push
 pnpm db:seed
 ```
 

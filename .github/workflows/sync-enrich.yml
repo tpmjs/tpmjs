@@ -15,7 +15,7 @@ jobs:
         id: sync
         run: |
           # Call the sync API and capture response
-          response=$(curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/enrich" \
+          response=$(curl -X POST "https://tpmjs.com/api/sync/enrich" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -f -s -S)

@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Trigger changes feed sync
         run: |
-          curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/changes" \
+          curl -X POST "https://tpmjs.com/api/sync/changes" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -f -s -S -w "\nHTTP Status: %{http_code}\n"

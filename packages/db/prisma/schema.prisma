@@ -8,7 +8,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED") // Direct connection for migrations (bypasses pooler)
+  directUrl = env("DATABASE_URL_UNPOOLED") // Kept for Prisma CLI ops; same value as DATABASE_URL since the move to self-hosted Postgres (2026-07)
 }
 
 /// Package table - stores NPM package metadata (package-level)

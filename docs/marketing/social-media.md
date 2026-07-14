@@ -579,7 +579,7 @@ How it works:
 3. Tools are served via MCP protocol to any compatible client
 4. Installation is just `npm install <package>`
 
-Architecture: Next.js 16 + Prisma + Neon (Postgres) + Vercel. Monorepo with Turborepo. The sync system monitors npm's changes feed every 2 minutes to discover new packages.
+Architecture: Next.js 16 + Prisma + Postgres (self-hosted). Monorepo with Turborepo. The sync system monitors npm's changes feed every 2 minutes to discover new packages.
 
 What works well:
 - Schema generation from TypeScript types

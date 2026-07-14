@@ -53,9 +53,9 @@ TPMJS is a **tool registry platform** that automatically discovers, validates, a
 ├───────────────────────┬───────────────────────┬─────────────────────────────┤
 │       Database        │      Execution        │         External            │
 │  ───────────────────  │  ───────────────────  │  ─────────────────────────  │
-│  • PostgreSQL (Neon)  │  • Vercel Sandbox     │  • npm Registry             │
-│  • Prisma ORM         │  • Custom Executors   │  • esm.sh CDN               │
-│                       │                       │  • GitHub API               │
+│  • PostgreSQL 17      │  • Vercel Sandbox     │  • npm Registry             │
+│    (self-hosted)      │  • Custom Executors   │  • esm.sh CDN               │
+│  • Prisma ORM         │                       │  • GitHub API               │
 └───────────────────────┴───────────────────────┴─────────────────────────────┘
 ```
 
@@ -131,7 +131,7 @@ tpmjs/
 
 ## 3. Database Layer
 
-The database layer uses **Prisma ORM** with **PostgreSQL** (Neon) as the data store.
+The database layer uses **Prisma ORM** with **PostgreSQL 17** (self-hosted container) as the data store.
 
 ### Core Models
 

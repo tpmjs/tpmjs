@@ -1,6 +1,6 @@
 ## Project Overview
 
-Turborepo monorepo. pnpm workspaces. Next.js 16 App Router (`apps/web`). PostgreSQL via Prisma (`packages/db`). Deployed on Vercel. Database on Neon (via Railway for some services).
+Turborepo monorepo. pnpm workspaces. Next.js 16 App Router (`apps/web`). PostgreSQL via Prisma (`packages/db`). Deployed on-box via podman quadlets (tpmjs.com). Database is a self-hosted PostgreSQL 17 container (`tpmjs-pg`) on the same box.
 
 ## Agent Sandbox
 
@@ -148,12 +148,12 @@ railway deployment list                       # List recent deployments
 1. **Identify the problem**: Is it a build failure, runtime error, or timeout?
 2. **Check CI first**: `gh run list` then `gh run view <id> --log-failed`
 3. **Check Vercel**: `vercel inspect <url>` to verify lambdas deployed, `vercel logs <url>` for runtime errors
-4. **Check database**: `railway logs` or connect directly with `railway connect postgres`
+4. **Check database**: the production DB is the on-box `tpmjs-pg` container — from the box: `sudo podman exec -it tpmjs-pg psql -U tpmjs -d tpmjs`
 5. **Verify the fix**: Push, watch CI with `gh run watch`, then `curl https://tpmjs.com/api/health`
 
 ### Direct Database Access
 
-The production database is Neon PostgreSQL. Connection strings are in `.env.local` (`DATABASE_URL` for pooled, `DATABASE_URL_UNPOOLED` for direct).
+The production database is the local `tpmjs-pg` PostgreSQL 17 container (same box as the site; apps reach it as `tpmjs-pg:5432` on the podman network, host tooling uses `127.0.0.1:5435`). Connection strings are in `.env.local` — `DATABASE_URL` and `DATABASE_URL_UNPOOLED` both point at it (the pooled/unpooled split was a Neon artifact, kept only because `schema.prisma`'s `directUrl` reads the second var).
 
 **Prisma Studio** (GUI for browsing/editing data):
 ```bash
@@ -163,8 +163,8 @@ pnpm --filter=@tpmjs/db db:studio
 
 **psql** (raw SQL queries):
 ```bash
-# Connect using the unpooled URL for direct access
-psql "$DATABASE_URL_UNPOOLED"
+# Connect directly (works the same locally)
+psql "$DATABASE_URL"
 
 # Common queries
 SELECT count(*) FROM tools;

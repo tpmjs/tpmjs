@@ -32,8 +32,9 @@ pnpm install
 3. **Set up environment variables:**
 
 ```bash
-cp apps/web/.env.example apps/web/.env.local
+cp .env.example apps/web/.env.local
 # Edit .env.local with your database credentials
+# (start a local Postgres container first — see packages/db/README.md)
 ```
 
 4. **Generate Prisma client:**

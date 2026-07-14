@@ -6,7 +6,7 @@
   "framework": "nextjs",
   "git": {
     "deploymentEnabled": {
-      "main": true
+      "main": false
     }
   },
   "github": {
@@ -47,48 +47,6 @@
           "value": "none"
         }
       ]
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/sync/changes",
-      "schedule": "0 */4 * * *"
-    },
-    {
-      "path": "/api/sync/keyword",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/sync/enrich",
-      "schedule": "*/2 * * * *"
-    },
-    {
-      "path": "/api/sync/metrics",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/sync/stats-snapshot",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/sync/view-rollup",
-      "schedule": "30 0 * * *"
-    },
-    {
-      "path": "/api/sync/execution-rollup",
-      "schedule": "0 1 * * *"
-    },
-    {
-      "path": "/api/sync/cleanup-activity",
-      "schedule": "0 3 * * *"
-    },
-    {
-      "path": "/api/cron/discord-summary",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/use-cases",
-      "schedule": "0 0 * * *"
     }
   ]
 }

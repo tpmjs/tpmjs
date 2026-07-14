@@ -708,7 +708,7 @@ Where I'm at:
 - Zero funding, zero employees
 - Live at tpmjs.com
 
-Tech stack: Next.js 16, Turborepo, Prisma, Neon Postgres, Vercel
+Tech stack: Next.js 16, Turborepo, Prisma, Postgres
 
 The thesis: AI agents need the same tool infrastructure that web developers have had for a decade. npm solved package management for JavaScript. TPMJS solves it for AI tools.
 

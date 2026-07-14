@@ -1,8 +1,12 @@
 name: Integration Tests
 
+# NOTE (2026-07-14): the production database moved off Neon to a self-hosted
+# Postgres 17 container on the tpmjs.com box. GitHub runners can no longer reach
+# it, so the direct-DB steps below (orphan cleanup, key setup) cannot run from
+# hosted CI. Auto-run on push is disabled; run manually from an environment with
+# DATABASE_URL access (the box itself), or rework these steps to go through
+# authenticated API endpoints.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       verbose:

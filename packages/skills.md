@@ -7,7 +7,7 @@
 **Name:** TPMJS — The Package Manager for JavaScript AI Tools
 **URL:** https://tpmjs.com
 **Description:** A universal registry and execution platform for AI agent tools. Discover, execute, compose, and publish tools that any AI agent can use — via SDK, CLI, REST API, or MCP protocol.
-**Architecture:** Next.js 16 App Router, PostgreSQL (Neon), deployed on Vercel. Tool execution on Railway (Deno). MCP protocol support. Multi-tenant SaaS.
+**Architecture:** Next.js 16 App Router, PostgreSQL 17 (self-hosted), deployed on-box (podman). Tool execution via the on-box Deno executor. MCP protocol support. Multi-tenant SaaS.
 
 ---
 

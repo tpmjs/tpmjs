@@ -302,24 +302,15 @@ export default function PrivacyPage(): React.ReactElement {
 
               <div className="p-6 border border-border rounded-lg bg-surface">
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <h3 className="text-xl font-semibold text-foreground">Neon</h3>
+                  <h3 className="text-xl font-semibold text-foreground">PostgreSQL (self-hosted)</h3>
                   <span className="text-xs px-2 py-1 rounded bg-foreground/10 text-foreground-secondary">
                     Database
                   </span>
                 </div>
                 <p className="text-foreground-secondary mb-2">
-                  Tool metadata and sync data are stored in a PostgreSQL database hosted on Neon.
-                </p>
-                <p className="text-sm text-foreground-tertiary">
-                  Privacy Policy:{' '}
-                  <a
-                    href="https://neon.tech/privacy-policy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    neon.tech/privacy-policy
-                  </a>
+                  Tool metadata and sync data are stored in a self-hosted PostgreSQL database on
+                  TPMJS-managed infrastructure. No third-party database provider has access to this
+                  data.
                 </p>
               </div>
 

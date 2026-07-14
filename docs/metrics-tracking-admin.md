@@ -48,7 +48,7 @@ This release adds comprehensive metrics tracking, search analytics, cleanup auto
 
 ```sql
 -- Connect to the database
-psql "$DATABASE_URL_UNPOOLED"
+psql "$DATABASE_URL"
 
 -- Or via Prisma Studio
 pnpm --filter=@tpmjs/db db:studio

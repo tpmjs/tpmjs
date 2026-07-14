@@ -1,5 +1,38 @@
 # Deployment Configuration
 
+## Current deployment (since 2026-07)
+
+tpmjs.com is **self-hosted**: the apps run as podman containers on a single box,
+built on-box from this repo, fronted by Caddy. Vercel auto-deploys are disabled
+(`vercel.json` → `git.deploymentEnabled.main: false`); everything below the
+"Historical: Vercel" marker describes the old setup.
+
+| Component | Container | Port (localhost) |
+|---|---|---|
+| Web (tpmjs.com) | `tpmjs-web` | 3200 |
+| Playground | `tpmjs-playground` | 3201 |
+| Tutorial | `tpmjs-tutorial` | 3202 |
+| Executor (Deno) | `tpmjs-railway-executor` | 3210 |
+| Agent sandbox | `tpmjs-agent-sandbox` | 3211 |
+| **PostgreSQL 17** | `tpmjs-pg` | **5435** (apps use `tpmjs-pg:5432` on the shared network) |
+
+- **Database**: self-hosted PostgreSQL 17 (`tpmjs-pg` container; migrated off Neon
+  2026-07-14). Runtime env (including `DATABASE_URL`) is injected via
+  `EnvironmentFile=` from `/etc/donto/tpmjs-*.env` on the box — the image build is
+  DB-free.
+- **Deploying app changes**: rebuild the image on the box from the infra repo's
+  Dockerfile, then restart the systemd-managed container
+  (`systemctl restart tpmjs-web`).
+- **DB console**: `podman exec -it tpmjs-pg psql -U tpmjs -d tpmjs` (on the box).
+- **DB backup**: `podman exec tpmjs-pg pg_dump -U tpmjs -Fc tpmjs > backup.dump`.
+- **Scheduled jobs**: API-driven sync crons run from GitHub Actions against
+  `https://tpmjs.com`; the daily rollup/cleanup crons run from an on-box systemd
+  timer (`tpmjs-cron.timer`). The `crons` block was removed from `vercel.json`.
+
+---
+
+## Historical: Vercel
+
 This document explains how to configure Vercel to only deploy when GitHub Actions CI passes.
 
 ## Overview

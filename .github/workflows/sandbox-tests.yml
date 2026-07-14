@@ -107,8 +107,10 @@ jobs:
         run: docker rm -f tpmjs-sandbox-test || true
 
   # ─── Job 2: E2E test through the live web app ────────────────────────────
+  # NOTE (2026-07-14): dispatch-only since the DB moved to a self-hosted Postgres
+  # on the tpmjs.com box — GitHub runners cannot reach DATABASE_URL anymore.
   sandbox-e2e:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'tpmjs'
+    if: github.event_name == 'workflow_dispatch' && github.repository_owner == 'tpmjs'
     needs: sandbox-direct
     runs-on: ubuntu-latest
     timeout-minutes: 15

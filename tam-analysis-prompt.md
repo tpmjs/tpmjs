@@ -101,7 +101,7 @@ TPMJS is an npm-native registry and platform for discovering, sharing, and integ
 
 ## Context: Geography
 
-**Global** — deployed on Vercel (edge computing, global CDN), database on Neon PostgreSQL. No geographic restrictions. Effective market is anywhere with npm access and LLM API access (primarily US, EU, and APAC tech hubs).
+**Global** — deployed on Vercel (edge computing, global CDN), database on self-hosted PostgreSQL 17. No geographic restrictions. Effective market is anywhere with npm access and LLM API access (primarily US, EU, and APAC tech hubs).
 
 ---
 

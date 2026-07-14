@@ -19,7 +19,7 @@ jobs:
           echo "Syncing package: ${{ inputs.packageName }}"
 
           # Call the sync API and capture response
-          response=$(curl -X POST "${{ secrets.VERCEL_PRODUCTION_URL }}/api/sync/package" \
+          response=$(curl -X POST "https://tpmjs.com/api/sync/package" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             -d '{"packageName": "${{ inputs.packageName }}"}' \
