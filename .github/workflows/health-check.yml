@@ -1,9 +1,11 @@
 name: Daily Health Check
 
+# NOTE (2026-07-14): the daily schedule moved to the on-box tpmjs-cron.timer.
+# A full health sweep of 800+ tools takes several minutes and Cloudflare cuts
+# proxied responses at ~100s (this workflow's curl always dies with a 524), so
+# the job can only run against 127.0.0.1:3200 on the box itself. Kept for
+# manual dispatch (expect a 524 even when the sweep continues server-side).
 on:
-  schedule:
-    # Run daily at 2am UTC
-    - cron: '0 2 * * *'
   workflow_dispatch:
 
 jobs:
