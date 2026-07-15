@@ -64,11 +64,16 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
         {/* Main Heading */}
         <div className="max-w-7xl">
           <h1
-            className="mb-8 font-bold leading-none tracking-tight text-foreground"
+            className="mb-4 font-bold leading-none tracking-tight text-foreground"
             style={{ fontSize: 'clamp(48px, 10vw, 96px)' }}
           >
             THE NPM FOR AI TOOLS
           </h1>
+
+          {/* Differentiator line — what a bare registry (npm or the official MCP registry) can't do */}
+          <p className="mb-8 font-mono text-lg md:text-2xl font-bold uppercase tracking-[0.2em] text-brutalist-accent">
+            Curated · Scored · Sandboxed
+          </p>
 
           {/* Live Metrics Strip */}
           <div className="mb-12 flex flex-wrap items-center gap-3 border-l-[6px] border-brutalist-accent pl-6 font-mono text-base md:text-lg font-bold uppercase tracking-wider">
@@ -94,8 +99,10 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
 
           {/* Subheading */}
           <p className="mb-12 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
-            Auto-discovers AI tools from npm. Extracts schemas, scores quality, serves them via MCP.
-            One URL gives Claude Code, Cursor, or Windsurf instant access.
+            tpmjs auto-discovers tools published to npm, scores each one for quality and health, and
+            runs it in an isolated hosted sandbox. Serve a curated collection to Claude Code, Cursor,
+            ChatGPT, or any MCP client through a single URL — no local install, no untrusted code on
+            your machine.
           </p>
 
           {/* Brutalist Search Interface */}

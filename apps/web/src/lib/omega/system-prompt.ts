@@ -6,7 +6,7 @@
  * that users can import into their own AI agents.
  */
 
-export const OMEGA_SYSTEM_PROMPT = `You are Omega, an AI assistant powered by the TPMJS tool registry - a collection of 1M+ AI-ready tools.
+export const OMEGA_SYSTEM_PROMPT = `You are Omega, an AI assistant powered by the TPMJS tool registry - a curated, health-scored collection of AI-ready tools that run in an isolated sandbox.
 
 ## Core Tools
 

@@ -82,9 +82,40 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
     href?: string;
   }> = [
     {
+      icon: 'key',
+      title: 'sandboxed execution',
+      description:
+        'Every tool runs in an isolated hosted Deno sandbox with timeouts and rate limits — you never install an untrusted MCP server or run its code on your own machine. Credentials encrypted at rest.',
+      badge: 'sandboxed',
+    },
+    {
+      icon: 'checkCircle',
+      title: 'quality + health scores',
+      description:
+        'Every tool is auto-scored on docs, usage, and liveness, and continuously health-checked — the runtime verification bare registries skip. Dead tools do not look like live ones here.',
+      badge: 'continuous',
+      href: '/scenarios',
+    },
+    {
+      icon: 'link',
+      title: 'collections = one mcp url',
+      description:
+        'Curate a set of tools and expose it to Claude Code, Cursor, ChatGPT, or any MCP client through a single URL. On-demand discovery instead of tens of thousands of tokens of tool schemas up front.',
+      badge: 'universal',
+      href: '/integrations',
+    },
+    {
+      icon: 'terminal',
+      title: 'npm-native publishing',
+      description:
+        'Already shipping to npm? Add one keyword. No server to host, no OAuth, no uptime to run. Zod schemas auto-extracted, AI SDK format, TypeScript-first — live within minutes.',
+      badge: 'npm',
+      href: '/publish',
+    },
+    {
       icon: 'search',
       title: 'tool registry',
-      description: `${toolCountLabel} AI tools from npm, auto-discovered within minutes of publication. Quality scored and health monitored.`,
+      description: `${toolCountLabel} AI tools from npm, auto-discovered within minutes of publication and indexed for search across dozens of categories.`,
       badge: 'auto-sync',
       href: '/tool/tool-search',
     },
@@ -97,43 +128,12 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       href: '/omega',
     },
     {
-      icon: 'folder',
-      title: 'collections',
-      description:
-        'Group tools into workflow bundles. Add test scenarios to validate behavior and auto-generate usage docs.',
-      badge: 'shareable',
-      href: '/collections',
-    },
-    {
       icon: 'user',
       title: 'custom agents',
       description:
         'Build agents with any LLM, custom prompts, and curated tool sets. Share publicly or keep private.',
       badge: 'unlimited',
       href: '/agents',
-    },
-    {
-      icon: 'link',
-      title: 'mcp protocol',
-      description:
-        'One URL gives Claude Desktop, Cursor, Windsurf, or any MCP client instant access to your tools.',
-      badge: 'universal',
-      href: '/integrations',
-    },
-    {
-      icon: 'key',
-      title: 'secure execution',
-      description:
-        'Tools run in isolated sandboxes with rate limiting and timeouts. Credentials encrypted at rest.',
-      badge: 'sandboxed',
-    },
-    {
-      icon: 'checkCircle',
-      title: 'test scenarios',
-      description:
-        'Auto-generated test scenarios validate tool behavior. Track pass rates, latency, and quality scores.',
-      badge: 'automated',
-      href: '/scenarios',
     },
     {
       icon: 'message',
@@ -144,12 +144,12 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
       href: '/docs/skills',
     },
     {
-      icon: 'terminal',
-      title: 'developer sdk',
+      icon: 'folder',
+      title: 'test scenarios',
       description:
-        'One npm keyword to publish. Zod schemas auto-extracted, Vercel AI SDK format, TypeScript-first.',
-      badge: 'npm',
-      href: '/publish',
+        'Auto-generated test scenarios validate tool behavior. Track pass rates, latency, and quality scores over time.',
+      badge: 'automated',
+      href: '/scenarios',
     },
   ];
 
@@ -162,11 +162,12 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
             what you get
           </p>
           <h2 className="font-mono text-3xl md:text-4xl font-semibold mb-4 text-foreground lowercase">
-            registry + runtime + tools
+            the layer on top of the registry
           </h2>
           <p className="text-base text-foreground-secondary max-w-2xl mx-auto font-sans">
-            Discovery, validation, quality scoring, sandboxed execution, MCP endpoints, collections,
-            agents, and an SDK. All open source.
+            The official MCP registry points at packages. tpmjs is the curated, health-scored,
+            sandboxed execution layer on top of it — discovery, quality scoring, isolated runtime,
+            MCP endpoints, collections, agents, and an SDK. All open source.
           </p>
         </div>
 

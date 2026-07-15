@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>The Tool Package Manager for AI Agents</strong>
+  <strong>The npm for AI tools — curated, scored, and sandboxed.</strong>
 </p>
 
 <p align="center">
@@ -24,14 +24,17 @@
 
 ---
 
-TPMJS is the infrastructure layer for the agentic web. It is an open-source registry and execution platform that automatically discovers, validates, and runs npm packages as AI agent tools. Give your AI agent instant access to a growing library of real-world capabilities via MCP, SDK, or the TPMJS CLI.
+TPMJS is an open-source registry **and execution platform** for AI agent tools. It automatically discovers tools published to npm, scores each one for quality and health, runs it in an isolated hosted Deno sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client through a single URL.
+
+The [Model Context Protocol](https://modelcontextprotocol.io) is the standard for connecting tools to agents, and the official MCP registry indexes where to find them — but it points at packages, it doesn't run, score, or curate them. TPMJS is the layer that does: **complementary to the official registry, not competing with it.** Give your agent real-world capabilities without installing untrusted code on your own machine.
 
 ## Key Concepts
 
-- **Discovery** — Any npm package with the `tpmjs` keyword is automatically indexed and searchable.
-- **Execution** — Securely run tools in a sandboxed environment (Deno) without local configuration.
-- **MCP Aggregator** — Connect curated "Collections" to Claude, Cursor, or any MCP client with a single URL.
-- **Agent Platform** — Build, share, and fork AI agents with custom prompts and dynamic tool access.
+- **Sandboxed execution** — Every tool runs in an isolated hosted Deno sandbox with timeouts and rate limits. Your agent never installs the package or runs its code locally.
+- **Quality & health scoring** — Tools are auto-scored on schema validity, docs, downloads, and continuous health checks — the runtime verification a bare index skips.
+- **Curated collections = one MCP URL** — Group the tools an agent actually needs and connect them to Claude Code, Cursor, or any MCP client with a single URL. On-demand discovery instead of a context window full of schemas.
+- **npm-native publishing** — Any npm package with the `tpmjs` keyword is auto-indexed within minutes. No server to host, no OAuth, no uptime to run.
+- **Agent platform** — Build, share, and fork AI agents with custom prompts and dynamic tool access.
 
 ## Getting Started
 
@@ -97,7 +100,7 @@ const tools = [registrySearchTool, registryExecuteTool];
 
 ## Features
 
-- **Tool Registry** — Search 180+ official and community tools by category, quality, and popularity.
+- **Tool Registry** — Search 800+ official and community tools by category, quality, and popularity (indexed live from npm).
 - **One-Keyword Publishing** — Add `"tpmjs"` to your `package.json` keywords to go live in minutes.
 - **Quality Scoring** — Automated scoring based on documentation, downloads, and execution health.
 - **Secure Sandboxing** — Isolated execution environment protects your system from untrusted code.

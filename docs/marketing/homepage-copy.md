@@ -4,14 +4,16 @@
 
 ---
 
+> **Updated 2026-07-15** for the post-official-MCP-registry landscape. The "1M+ tools" framing is retired (false against our own ~800-tool registry, and this audience fact-checks). The tagline keeps "the npm for AI tools" as the anchor but adds the three things a bare index can't do: **curated, scored, sandboxed**. See `strategy.md` → "What changed in 2026".
+
 ## SEO Metadata
 
 ```
-Meta Title: TPMJS - The npm for AI Tools | 1M+ Tools for Claude, GPT, Cursor & MCP Agents
-Meta Description: Discover and use 1M+ npm packages as AI agent tools. Add one URL to Claude, GPT, Cursor, or Windsurf and get instant access. Publish your tool with one keyword.
+Meta Title: TPMJS - Curated, Sandboxed AI Agent Tools over MCP
+Meta Description: Open-source registry and execution platform for AI agent tools. Auto-discovers npm-published tools, scores quality and health, runs them in an isolated sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client through one URL.
 ```
 
-> **Annotation:** Title leads with brand + positioning phrase, then specificity (1M+) and named clients for search intent. Description hits both audiences (users and publishers) with concrete actions and numbers. Under 160 characters.
+> **Annotation:** Title leads with the differentiators (curated/sandboxed) rather than a raw count, because the free official MCP registry now owns the "index of npm packages" position. Description hits both audiences with the trust wedge (sandboxed, no local install) and current client names. Under 160 characters where it counts.
 
 ---
 
@@ -19,27 +21,32 @@ Meta Description: Discover and use 1M+ npm packages as AI agent tools. Add one U
 
 ### Headline Options
 
-**Option A (Recommended): "The npm for AI Tools"**
+**Option A (Recommended): "The npm for AI tools — curated, scored, and sandboxed."**
 
-Rationale: This is the simplest, most powerful positioning statement. It leverages the universal understanding of npm among the target audience and transfers that trust and mental model. Developers immediately understand what TPMJS does without explanation. Already validated as the current headline.
+Rationale: Keeps the universally-understood npm anchor (instant mental model) but no longer lets it stand alone. As of 2026 the *free* official MCP registry is literally "the index of npm packages," so the bare anchor now describes the competitor. The second clause names the exact three things a raw index (npm or the official registry) can't do — the whole reason to choose TPMJS.
 
-**Option B: "Every AI Tool. One URL."**
+**Option B: "Run agent tools you can trust — over one MCP URL."**
 
-Rationale: Leads with the outcome, not the product. Emphasizes the zero-configuration value prop. Works well for developers who are tired of configuration overhead. More action-oriented but less sticky as a positioning line.
+Rationale: Leads with the security wedge (the strongest, most timely message of 2026 given the year's MCP supply-chain incidents) plus the delivery mechanism. Best for the enterprise/security-conscious segment.
 
-**Option C: "Your AI Agent Just Got 1 Million Tools"**
+**Option C: "Curated, health-scored AI tools, sandboxed and ready for any MCP client."**
 
-Rationale: Specificity creates credibility. "1 million" is a concrete, impressive number. Frames it from the developer's perspective ("your agent"). Risk: could feel like a vanity metric if visitors question whether all 1M tools are useful. Best used once the registry genuinely reaches that scale.
+Rationale: Most literal and enterprise-legible. Every word defensible. Slightly less sticky than A.
+
+> **Retired:** "Your AI Agent Just Got 1 Million Tools" and any "1M+" framing — false against the real ~800-tool registry, and this audience fact-checks headline numbers. Don't enter a count race (the MCP census already measures ~177K tools).
 
 ### Hero Copy
 
 ```
-[Badge: {packageCount} PACKAGES / {toolCount} TOOLS]
+[Badge: {packageCount} PACKAGES / {toolCount} TOOLS — live from npm]
 
-# The npm for AI Tools
+# The npm for AI tools
+## Curated · Scored · Sandboxed
 
-Discover and use npm packages as AI agent tools.
-Works with Claude, GPT, Cursor, Windsurf, and any MCP-compatible client.
+tpmjs auto-discovers tools published to npm, scores each for quality and
+health, and runs it in an isolated hosted sandbox. Serve a curated collection
+to Claude Code, Cursor, ChatGPT, or any MCP client through a single URL —
+no local install, no untrusted code on your machine.
 
 [Search Bar: $ search tools...]
 Try: "web scraper", "discord", "code interpreter"
@@ -48,7 +55,7 @@ Try: "web scraper", "discord", "code interpreter"
 [Secondary CTA: Publish a Tool]
 ```
 
-> **Annotation:** The hero follows the "clarity over cleverness" principle. The headline is a positioning statement, not a clever tagline -- developers should understand what TPMJS is within 2 seconds. The live stats badge provides social proof through specificity ("this is real, this is active"). The search bar as the primary interaction reinforces that this is a registry you USE, not just read about. Naming specific AI clients (Claude, GPT, Cursor, Windsurf) captures search traffic and signals compatibility. The helper text under the search bar lowers the activation energy by showing what to type.
+> **Annotation:** Clarity over cleverness. The headline keeps the sticky npm anchor and immediately qualifies it with the three differentiators the official registry punts on (curate/score/run). The live stats badge shows a real, dated number (never a rounded-up "1M+"). The subhead leads with the mechanism and closes on the trust wedge ("no untrusted code on your machine") that 2026's security climate makes urgent. Client names are current: Claude Code, Cursor, ChatGPT — no stale "GPT plugins" or "works with Claude" single-vendor framing.
 
 ---
 

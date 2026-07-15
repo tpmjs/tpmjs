@@ -1,17 +1,22 @@
 # Competitor Positioning & Comparison Pages
 
+> **Repositioned 2026-07-15.** The landscape changed: an **official MCP registry** now exists (`registry.modelcontextprotocol.io`, preview) and is a thin metadata index that delegates curation/scoring/security to downstream marketplaces — so it is TPMJS's **upstream, not a competitor**. The real head-to-head is **hosted-execution platforms like Smithery**, and the wedge is **sandboxed execution + health scoring + curation**, not raw catalog size. **Do not use "curated, sandboxed tools"** — TPMJS has ~800 tools / ~240 packages; don't enter a count race against the ~177K-tool MCP census.
+
 ## Competitive Landscape
 
-TPMJS occupies a unique position: the open, npm-native registry for AI tools. Competitors fall into five categories, each with distinct weaknesses TPMJS exploits.
+TPMJS is **the curated, sandboxed execution layer on top of the registry** — not another directory. The comparison that matters is against the official index, raw npm, and hosted-execution rivals:
 
-| Dimension | TPMJS | LangChain Tools | Custom MCP Servers | Composio | Manual Function Calling |
+| Dimension | **TPMJS** | Official MCP Registry | Raw npm | Smithery | Custom MCP Servers |
 |---|---|---|---|---|---|
-| Distribution model | npm registry (1M+ packages) | Framework-bundled | Self-hosted / DIY | Closed SaaS platform | Copy-paste / hand-coded |
-| Protocol | MCP (open standard) | LangChain-specific | MCP (custom per server) | Proprietary API | Vendor-specific (OpenAI, Anthropic) |
-| Setup time | `npm install` + 1 line | Framework lock-in + config | Build from scratch | Sign up + API key + SDK | Write schemas + handlers per tool |
-| Ecosystem size | 1M+ npm packages | ~200 built-in tools | Handful of community servers | ~150 integrations | Zero (you build everything) |
-| Vendor lock-in | None (npm + open protocol) | LangChain required | Server-specific | Composio required | Vendor SDK required |
-| Works with | Claude, GPT, Cursor, Windsurf, any MCP client | LangChain agents only | MCP-compatible clients | Composio SDK consumers | Single vendor per implementation |
+| Hosts / runs the tool | **Yes — isolated Deno sandbox** | No (metadata only) | No | Yes (hosted remote) | You host it |
+| Quality / health scoring | **Yes — auto, continuous** | No (namespace verification only) | No | Partial | Your responsibility |
+| Curated collections → one MCP URL | **Yes** | No | No | Partial | Build + wire per server |
+| Isolation from your machine | **Yes — never installed locally** | n/a | None (local install runs code) | Yes | Depends |
+| Publish friction | **One npm keyword** | `server.json` + namespace verify | n/a (not tool-aware) | Server + config | Build from scratch |
+| Protocol | MCP + CLI + REST + SDK | MCP (index only) | n/a | MCP | MCP (custom per server) |
+| Works with | Claude Code, Cursor, ChatGPT, VS Code, any MCP client | Any consumer of the index | n/a | MCP clients | MCP-compatible clients |
+
+**Frame:** *"The official registry is the index. TPMJS is the curated, scored, runnable layer on top of it."* Concede the polyglot/hosted-server breadth to standalone MCP servers — TPMJS's honest lane is the **JS/TS single-function tool: lowest-friction to publish, safest to run.**
 
 ---
 
@@ -23,7 +28,7 @@ TPMJS occupies a unique position: the open, npm-native registry for AI tools. Co
 
 **Subhead:** Every MCP server you hand-build is a server you maintain forever. TPMJS gives you a registry of production-ready tools that install in seconds.
 
-**CTA:** Browse 1M+ Tools on TPMJS
+**CTA:** Browse the TPMJS registry
 
 ### The Problem With Custom MCP Servers
 
@@ -123,7 +128,7 @@ That means:
 | Works with Cursor/Windsurf | No | Native MCP support |
 | Framework required | Yes (LangChain) | No |
 | Package size | Heavy (framework included) | Minimal (tool only) |
-| Tool count | ~200 built-in | 1M+ npm packages |
+| Tool count | ~200 built-in | 4M+ npm packages (the reach — any becomes a tool with one keyword) |
 | Publishing a tool | PR to LangChain repo | `npm publish` |
 | Versioning | Tied to LangChain releases | Independent per tool |
 | TypeScript-first | Partial | Yes |
@@ -148,7 +153,7 @@ TPMJS tools are npm packages. They work with any agent framework, any LLM provid
 
 - You want tools that survive a framework migration
 - You are building for Claude, GPT, Cursor, or Windsurf
-- You want access to the npm ecosystem (1M+ packages)
+- You want access to the npm ecosystem (4M+ packages)
 - You want to publish tools without framework gatekeeping
 - You want minimal dependencies
 
@@ -190,7 +195,7 @@ When your tools live on someone else's platform, you are renting capability. Whe
 | Pricing | Paid tiers, usage-based | Free (open source tools) |
 | Self-hosting | No | Yes (npm packages, run anywhere) |
 | Offline support | No (requires API) | Yes (packages are local) |
-| Tool count | ~150 integrations | 1M+ npm packages |
+| Tool count | ~150 integrations | 4M+ npm packages (the reach — any becomes a tool with one keyword) |
 | Publishing tools | Not possible (Composio controls catalog) | `npm publish` (anyone can contribute) |
 | Vendor lock-in | Composio SDK required | None |
 | Data routing | Through Composio servers | Direct (your infrastructure) |
@@ -266,7 +271,7 @@ For one tool, this is manageable. For ten tools across three providers, you are 
 | Cross-provider | Rewrite per vendor | MCP protocol (universal) |
 | Tool discovery | None | Searchable registry |
 | Reuse across projects | Copy-paste | `npm install` |
-| Community contributions | None | 1M+ packages |
+| Community contributions | None | npm-native (4M+ packages reachable) |
 | Maintenance | Per tool, per provider | Package updates |
 | Time to add a tool | 1-4 hours | 2 minutes |
 | Error handling | You build it | Standardized |
@@ -305,7 +310,7 @@ npm install @tpmjs/tool-a @tpmjs/tool-b @tpmjs/tool-c @tpmjs/tool-d @tpmjs/tool-
 
 **1. npm-Native Distribution**
 - TPMJS tools are npm packages. Install, version, and update them the same way you manage every other dependency.
-- Proof: 1M+ packages accessible through the registry. No new package manager to learn.
+- Proof: the npm ecosystem (4M+ packages) reachable through the registry. No new package manager to learn.
 
 **2. MCP Protocol (Open Standard)**
 - Built on the Model Context Protocol, the emerging open standard for AI tool interoperability.
@@ -325,7 +330,7 @@ npm install @tpmjs/tool-a @tpmjs/tool-b @tpmjs/tool-c @tpmjs/tool-d @tpmjs/tool-
 
 ### "Only TPMJS..." Statements
 
-- Only TPMJS gives you access to 1M+ npm packages as AI tools through a single registry.
+- Only TPMJS gives you access to 4M+ npm packages (the reach — any becomes a tool with one keyword) as AI tools through a single registry.
 - Only TPMJS uses the npm ecosystem you already know -- no new platform, no new CLI, no new account.
 - Only TPMJS combines MCP protocol support with npm-native distribution for true portability.
 - Only TPMJS lets any developer publish an AI tool with zero gatekeeping -- just `npm publish`.
@@ -340,7 +345,7 @@ npm install @tpmjs/tool-a @tpmjs/tool-b @tpmjs/tool-c @tpmjs/tool-d @tpmjs/tool-
 
 #### vs LangChain Tools
 - **Their pitch:** "200+ tools included with the framework."
-- **Our counter:** "200 tools locked inside one framework. TPMJS gives you 1M+ tools that work with any framework, any LLM, any MCP client."
+- **Our counter:** "200 tools locked inside one framework. TPMJS gives you tools that work with any framework, sandboxed and health-scored,, any LLM, any MCP client."
 - **Killer question to ask:** "What happens to your tool integrations when you outgrow LangChain or need to support a non-LangChain client?"
 
 #### vs Composio

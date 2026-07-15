@@ -641,7 +641,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
 ## Static Tools (Always Available)
 
-These tools let you access the entire TPMJS registry of 1M+ tools:
+These tools let you access the curated, sandboxed TPMJS tool registry:
 
 ${staticToolsList}
 

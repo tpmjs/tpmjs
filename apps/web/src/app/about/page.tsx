@@ -28,12 +28,16 @@ export default function AboutPage(): React.ReactElement {
           </p>
 
           <p className="text-foreground-secondary">
-            The problem: AI agents are only as useful as the tools they can access, but discovering,
-            validating, and connecting tools is scattered across GitHub repos, blog posts, and
-            Discord threads. There is no central place to find what exists, no standard way to know
-            if a tool actually works, and wiring up each tool to each client is tedious manual
-            config. TPMJS fixes this by treating AI tools the way npm treats packages — one
-            registry, automatic quality checks, and a universal interface.
+            The problem in 2026 is no longer &ldquo;where do I find MCP tools.&rdquo; The Model
+            Context Protocol is now the de facto standard, stewarded under the Linux Foundation, and
+            an official registry indexes thousands of servers. But that index points at packages — it
+            deliberately does not run them, score them, or vouch for them. Meanwhile installing an
+            untrusted MCP server means running untrusted code on your machine (2026 saw real
+            supply-chain worms and credential-stealing servers), and loading dozens of servers buries
+            an agent&apos;s context window in tool schemas. TPMJS is the layer that fills that gap:
+            it treats AI tools the way npm treats packages, then adds the three things a bare index
+            can&apos;t — it <strong className="text-foreground">curates</strong>, <strong className="text-foreground">scores</strong>, and <strong className="text-foreground">runs</strong> each
+            tool in an isolated sandbox so your agent never touches untrusted code.
           </p>
 
           <h2 className="text-xl font-semibold mt-10 mb-4 text-foreground">How it works</h2>
@@ -58,24 +62,39 @@ export default function AboutPage(): React.ReactElement {
             <li className="flex gap-3">
               <span className="text-primary font-bold mt-0.5">--</span>
               <span>
+                <strong className="text-foreground">Sandboxed execution.</strong> Tools run in an
+                isolated hosted Deno sandbox with timeouts and rate limits — the agent never installs
+                the package or runs its code locally. A directory can only tell you a tool exists;
+                TPMJS runs it for you at arm&apos;s length.
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-primary font-bold mt-0.5">--</span>
+              <span>
+                <strong className="text-foreground">Quality &amp; health scoring.</strong> Every
+                tool is scored on schema validity, documentation, health-check pass rates, download
+                trends, and maintenance activity — the runtime verification the official registry
+                deliberately leaves to downstream layers. Dead tools don&apos;t look like live ones.
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-primary font-bold mt-0.5">--</span>
+              <span>
+                <strong className="text-foreground">Curated collections, one MCP URL.</strong>{' '}
+                Group the tools an agent actually needs and expose them through a single URL to Claude
+                Code, Cursor, ChatGPT, or any MCP client — on-demand discovery instead of tens of
+                thousands of tokens of schemas.
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="text-primary font-bold mt-0.5">--</span>
+              <span>
                 <strong className="text-foreground">Auto-discovery from npm.</strong> No manual
-                submission. Publish to npm with the right keyword and your tool is live within
-                minutes.
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <span className="text-primary font-bold mt-0.5">--</span>
-              <span>
-                <strong className="text-foreground">Quality scoring.</strong> Every tool is scored
-                on schema validity, documentation, health check pass rates, download trends, and
-                maintenance activity.
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <span className="text-primary font-bold mt-0.5">--</span>
-              <span>
-                <strong className="text-foreground">Universal MCP endpoints.</strong> One URL per
-                collection, compatible with Claude Code, Cursor, Windsurf, and any MCP client.
+                submission, no server to stand up. Publish to npm with the{' '}
+                <code className="px-1 py-0.5 bg-surface border border-border text-sm font-mono">
+                  tpmjs
+                </code>{' '}
+                keyword and your tool is live within minutes.
               </span>
             </li>
             <li className="flex gap-3">
@@ -91,14 +110,14 @@ export default function AboutPage(): React.ReactElement {
           <h2 className="text-xl font-semibold mt-10 mb-4 text-foreground">Tech stack</h2>
 
           <p className="text-foreground-secondary">
-            Turborepo monorepo with Next.js (App Router), PostgreSQL via Prisma, deployed on Vercel.
-            Tool execution runs in isolated Deno sandboxes on Railway. The CLI and SDK are published
+            Turborepo monorepo with Next.js (App Router) and PostgreSQL via Prisma, self-hosted in
+            containers. Tool execution runs in isolated Deno sandboxes. The CLI and SDK are published
             to npm under the{' '}
             <code className="px-1.5 py-0.5 bg-surface border border-border text-sm font-mono">
               @tpmjs
             </code>{' '}
-            scope. MCP implementation follows the Model Context Protocol specification with HTTP
-            transport.
+            scope. The MCP implementation follows the Model Context Protocol specification (Streamable
+            HTTP transport), so a collection works with any compliant client.
           </p>
 
           <h2 className="text-xl font-semibold mt-10 mb-4 text-foreground">Built by</h2>

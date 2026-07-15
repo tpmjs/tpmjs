@@ -73,8 +73,8 @@ const protocols: ProtocolInfo[] = [
   {
     id: 'mcp',
     label: 'MCP',
-    bestFor: 'Claude Desktop, Cursor, Windsurf',
-    why: 'Structured tool interface for editors without a shell. One URL, instant access. Open protocol.',
+    bestFor: 'Claude Desktop, Cursor, Windsurf, ChatGPT, VS Code',
+    why: 'Structured tool interface for clients without a shell. One URL, instant access. Open protocol, now stewarded under the Linux Foundation.',
     example: `claude mcp add my-tools \\
   https://tpmjs.com/@you/collections/my-tools/mcp \\
   -t http`,

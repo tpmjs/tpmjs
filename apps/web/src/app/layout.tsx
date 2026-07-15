@@ -24,11 +24,11 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://tpmjs.com'),
   title: {
-    default: 'TPMJS - The NPM for AI Tools',
+    default: 'TPMJS - Curated, Sandboxed AI Agent Tools over MCP',
     template: '%s | TPMJS',
   },
   description:
-    'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools via MCP to Claude Code, Cursor, Windsurf, and any MCP client.',
+    'Open-source registry and execution platform for AI agent tools. tpmjs auto-discovers tools published to npm, scores each for quality and health, runs them in an isolated hosted sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client through a single URL.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -59,9 +59,9 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://tpmjs.com',
     siteName: 'TPMJS',
-    title: 'TPMJS - The NPM for AI Tools',
+    title: 'TPMJS - Curated, Sandboxed AI Agent Tools over MCP',
     description:
-      'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools via MCP to Claude Code, Cursor, Windsurf, and any MCP client.',
+      'Open-source registry and execution platform for AI agent tools. Auto-discovers npm-published tools, scores quality and health, runs them in an isolated hosted sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client through one URL.',
     images: [
       {
         url: '/api/og/home',
@@ -75,9 +75,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@tpmjs_registry',
     creator: '@tpmjs_registry',
-    title: 'TPMJS - The NPM for AI Tools',
+    title: 'TPMJS - Curated, Sandboxed AI Agent Tools over MCP',
     description:
-      'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools via MCP to Claude Code, Cursor, Windsurf, and any MCP client.',
+      'The npm for AI tools — curated, scored, and sandboxed. Auto-discovers npm-published tools, scores quality and health, runs them in an isolated sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client.',
     images: ['/api/og/home'],
   },
   manifest: '/manifest.json',

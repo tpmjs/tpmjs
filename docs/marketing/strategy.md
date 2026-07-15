@@ -1,31 +1,39 @@
 # TPMJS 90-Day Marketing Strategy
 
 **Document owner:** Ajax Davis
-**Last updated:** 2026-02-09
+**Last updated:** 2026-07-15 (repositioned for the post-official-MCP-registry landscape; see the "What changed in 2026" note below)
 **Status:** Active plan
 
 ---
 
 ## Positioning Statement
 
-For **AI developers and teams** who need to **give their agents real-world capabilities**, TPMJS is **the package registry for AI tools** that **lets you discover, install, and execute npm packages as agent tools in one command**. Unlike **building custom integrations from scratch or wiring together fragile MCP servers**, TPMJS **turns the entire npm ecosystem into an AI-ready tool library with 180+ official tools, a CLI, SDK, and hosted execution**.
+For **AI developers and teams** who need to **give their agents real-world capabilities they can trust**, TPMJS is **the curated, sandboxed execution layer for AI tools** that **discovers tools published to npm, scores each for quality and health, runs it in an isolated sandbox, and serves curated collections over one MCP URL**. Unlike **a bare directory (npm or the official MCP registry) that only points at packages, or a stack of hand-built MCP servers you host and secure yourself**, TPMJS **curates, scores, and runs the tool — so your agent never installs untrusted code on its own machine**.
+
+> ### What changed in 2026 (read before touching copy)
+> - **MCP is now neutral infrastructure**, donated to the **Linux Foundation (Agentic AI Foundation)** in Dec 2025. Stop teaching "what MCP is" and stop tying it to one vendor — it spans Anthropic, OpenAI, Google, Microsoft, and AWS.
+> - **An official MCP registry launched** (`registry.modelcontextprotocol.io`, preview). It's a thin metadata index that *explicitly* delegates curation, scoring, and security to "downstream marketplaces." **It is our upstream, not our competitor.** But it means "the npm for AI tools" now literally describes the *free* registry — so the tagline must add what an index can't do: **curated, scored, sandboxed**.
+> - **Security got real:** 2026 saw npm supply-chain worms harvesting Claude/Cursor configs, credential-stealing MCP servers submitted to legit registries, and an RCE in the official MCP SDK. "You never run untrusted code locally" is now the strongest wedge.
+> - **Tool sprawl is a named crisis:** dozens of MCP servers bury an agent's context in schemas (58 tools ≈ 55K tokens). Curated collections = on-demand discovery = the fix.
+> - **Kill "1M+ tools" and "the entire npm ecosystem as tools."** Both are false against our own registry (~800 tools / ~240 packages) and this audience fact-checks. Use ONE live, dated number.
 
 ---
 
 ## Messaging Hierarchy
 
 ### Primary Message
-**"The npm for AI tools."** One line. Immediately understood by every developer. Positions TPMJS as infrastructure, not a feature.
+**"The npm for AI tools — curated, scored, and sandboxed."** Keeps the sticky, instantly-legible anchor, then names the three things a bare index (npm or the official MCP registry) can't do. Positions TPMJS as the execution/trust layer, not another directory.
 
 ### Secondary Messages
-1. **"Give your agent 1M+ npm packages as tools."** Communicates scale and leverage. Developers already know npm; this reframes what they already have.
-2. **"Works with Claude, GPT, Cursor, Windsurf, LangChain, and any MCP client."** Eliminates vendor lock-in objection. Shows breadth of compatibility.
-3. **"From `npm install` to agent tool in 60 seconds."** Concrete speed claim. Developer-friendly.
+1. **"You never run an untrusted MCP server on your own machine."** Leads with the security wedge — every tool runs in an isolated hosted sandbox. The most timely message of 2026.
+2. **"One MCP URL. Curated, health-scored tools. On-demand — not 55K tokens of schemas."** Solves tool sprawl.
+3. **"Works with Claude Code, Cursor, ChatGPT, VS Code, and any MCP client."** Breadth of compatibility, current client names, no vendor lock-in.
+4. **"Already on npm? Add one keyword — live in minutes."** Lowest-friction publishing; velocity is true and verifiable.
 
 ### Tertiary Messages
-- "180+ official tools, zero config." (Breadth of ready-made tools)
+- "Complementary to the official MCP registry — the curated, runnable layer on top of it." (Positioning vs the new upstream)
+- "~800 tools, indexed live from npm." (One honest, dated number — never "1M+")
 - "Omega Agent: chat with tools built in." (Product showcase for non-technical users)
-- "Publish your own tools to the registry." (Two-sided marketplace value)
 - "Open protocol, open source." (Trust signal for developers)
 
 ---
