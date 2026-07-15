@@ -65,14 +65,16 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
         <div className="max-w-7xl">
           <h1
             className="mb-4 font-bold leading-none tracking-tight text-foreground"
-            style={{ fontSize: 'clamp(48px, 10vw, 96px)' }}
+            style={{ fontSize: 'clamp(44px, 9vw, 92px)' }}
           >
-            THE NPM FOR AI TOOLS
+            ONE COLLECTION.
+            <br />
+            EVERY SURFACE.
           </h1>
 
-          {/* Differentiator line — what a bare registry (npm or the official MCP registry) can't do */}
+          {/* Differentiator line — the multi-modal thesis: one curated collection, every protocol */}
           <p className="mb-8 font-mono text-lg md:text-2xl font-bold uppercase tracking-[0.2em] text-brutalist-accent">
-            Curated · Scored · Sandboxed
+            CLI · MCP · REST · SDK · SKILL
           </p>
 
           {/* Live Metrics Strip */}
@@ -99,10 +101,11 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
 
           {/* Subheading */}
           <p className="mb-12 max-w-3xl text-xl md:text-2xl font-medium leading-relaxed text-foreground-secondary tracking-tight">
-            tpmjs auto-discovers tools published to npm, scores each one for quality and health, and
-            runs it in an isolated hosted sandbox. Serve a curated collection to Claude Code, Cursor,
-            ChatGPT, or any MCP client through a single URL — no local install, no untrusted code on
-            your machine.
+            tpmjs is the tool layer for AI agents. Curate a collection once, then hand it to any
+            agent the way that agent wants it — a CLI command, an MCP server, a REST endpoint, a
+            typed SDK, or a loadable skill. One curated, health-scored, sandboxed source of truth;
+            every protocol. There&apos;s no MCP-vs-CLI-vs-REST war to pick a side in — you get all of
+            them.
           </p>
 
           {/* Brutalist Search Interface */}

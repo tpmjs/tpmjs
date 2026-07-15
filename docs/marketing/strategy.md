@@ -8,7 +8,10 @@
 
 ## Positioning Statement
 
-For **AI developers and teams** who need to **give their agents real-world capabilities they can trust**, TPMJS is **the curated, sandboxed execution layer for AI tools** that **discovers tools published to npm, scores each for quality and health, runs it in an isolated sandbox, and serves curated collections over one MCP URL**. Unlike **a bare directory (npm or the official MCP registry) that only points at packages, or a stack of hand-built MCP servers you host and secure yourself**, TPMJS **curates, scores, and runs the tool — so your agent never installs untrusted code on its own machine**.
+For **AI developers and teams** who need to **give their agents real-world capabilities**, TPMJS is **the protocol-agnostic tool layer for AI agents** that **discovers tools published to npm, health-scores and sandboxes them, and serves each curated collection through every surface at once — CLI, MCP, REST, SDK, and Skill**. Unlike **a bare directory that only points at packages, or a stack of hand-built MCP servers you host yourself**, TPMJS lets you **curate the tools once and consume them however each agent works best — no protocol lock-in, and never untrusted code on your own machine**.
+
+> ### CORRECTION 2026-07-15 (v2 — the multi-modal reframe; supersedes the "curated/scored/sandboxed on top of MCP" primary message below where they conflict)
+> The founder rejected leading with "sandboxed layer on top of the official MCP registry" as too small. Verbatim: *"we offer it as a cli, as an api, as a skill… we dont think there is a fight over apis, clis, or mcp, we think why not have all."* **New primary thesis: one curated collection, delivered as CLI · MCP · REST · SDK · Skill — write once, consume everywhere, no protocol war.** Curation/scoring/sandboxing are real differentiators but they are FEATURES on top of every protocol, not the headline, and tpmjs is NOT subordinate to the official MCP registry (that registry is one input among many, not the thing we sit on top of). The homepage `ProtocolSection` already carried this thesis ("mcp vs cli vs rest is the wrong argument"); it's now elevated, with **Skill added as the 5th surface**. Hero = **"ONE COLLECTION. EVERY SURFACE."**
 
 > ### What changed in 2026 (read before touching copy)
 > - **MCP is now neutral infrastructure**, donated to the **Linux Foundation (Agentic AI Foundation)** in Dec 2025. Stop teaching "what MCP is" and stop tying it to one vendor — it spans Anthropic, OpenAI, Google, Microsoft, and AWS.
@@ -22,12 +25,13 @@ For **AI developers and teams** who need to **give their agents real-world capab
 ## Messaging Hierarchy
 
 ### Primary Message
-**"The npm for AI tools — curated, scored, and sandboxed."** Keeps the sticky, instantly-legible anchor, then names the three things a bare index (npm or the official MCP registry) can't do. Positions TPMJS as the execution/trust layer, not another directory.
+**"One collection. Every surface — CLI · MCP · REST · SDK · Skill."** Curate the tools an agent needs once, and TPMJS serves that exact set through every protocol at once. The "which transport wins" debate is the wrong argument — each is better in a different context, so you get all of them from one source of truth.
 
 ### Secondary Messages
-1. **"You never run an untrusted MCP server on your own machine."** Leads with the security wedge — every tool runs in an isolated hosted sandbox. The most timely message of 2026.
-2. **"One MCP URL. Curated, health-scored tools. On-demand — not 55K tokens of schemas."** Solves tool sprawl.
-3. **"Works with Claude Code, Cursor, ChatGPT, VS Code, and any MCP client."** Breadth of compatibility, current client names, no vendor lock-in.
+1. **"Write the tool once. Consume it everywhere."** Author-facing framing — publish a Zod-schema'd function to npm, and it's instantly a CLI command, an MCP server, a REST endpoint, an SDK import, and a skill. No four separate integrations.
+2. **"You never run an untrusted tool on your own machine."** The security wedge — every tool runs in an isolated hosted sandbox, health-scored and quality-ranked. Trust and quality ride on top of *every* surface.
+3. **"On-demand discovery, not 55K tokens of schemas."** A collection is curated discovery — the fix for tool sprawl — live across all five surfaces at once.
+4. **"Works with Claude Code, Cursor, ChatGPT, VS Code, your backend, and your TypeScript app."** Breadth of compatibility across surfaces, current client names, no vendor or protocol lock-in.
 4. **"Already on npm? Add one keyword — live in minutes."** Lowest-friction publishing; velocity is true and verifiable.
 
 ### Tertiary Messages

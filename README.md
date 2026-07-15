@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>The npm for AI tools — curated, scored, and sandboxed.</strong>
+  <strong>One tool collection. Every surface — CLI, MCP, REST, SDK & Skill.</strong>
 </p>
 
 <p align="center">
@@ -24,15 +24,16 @@
 
 ---
 
-TPMJS is an open-source registry **and execution platform** for AI agent tools. It automatically discovers tools published to npm, scores each one for quality and health, runs it in an isolated hosted Deno sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client through a single URL.
+TPMJS is the **tool layer for AI agents**. It automatically discovers tools published to npm, scores each one for quality and health, and runs it in an isolated hosted Deno sandbox — then serves your curated collection through **every surface an agent might want**: a CLI command, an MCP server, a REST API, a typed SDK, or a loadable skill.
 
-The [Model Context Protocol](https://modelcontextprotocol.io) is the standard for connecting tools to agents, and the official MCP registry indexes where to find them — but it points at packages, it doesn't run, score, or curate them. TPMJS is the layer that does: **complementary to the official registry, not competing with it.** Give your agent real-world capabilities without installing untrusted code on your own machine.
+We don't think there's a fight to win between MCP, CLI, and REST. They're each better in a different context — CLI in Claude Code, MCP in Cursor and Claude Desktop, REST in your backend, the SDK in your TypeScript app, a Skill when the agent needs to *learn* the tools. So you write (or curate) the tool once, and TPMJS gives you **all of them from one source of truth.** The [Model Context Protocol](https://modelcontextprotocol.io) and the official MCP registry are one input we build on — not the whole story.
 
 ## Key Concepts
 
+- **One collection, every protocol** — The same curated set is a CLI command, an MCP server URL, a REST endpoint, a typed SDK import, and a loadable skill. Pick the surface your agent works best with, or use them all — no lock-in to a single transport.
 - **Sandboxed execution** — Every tool runs in an isolated hosted Deno sandbox with timeouts and rate limits. Your agent never installs the package or runs its code locally.
 - **Quality & health scoring** — Tools are auto-scored on schema validity, docs, downloads, and continuous health checks — the runtime verification a bare index skips.
-- **Curated collections = one MCP URL** — Group the tools an agent actually needs and connect them to Claude Code, Cursor, or any MCP client with a single URL. On-demand discovery instead of a context window full of schemas.
+- **Curated collections** — Group the tools an agent actually needs; it's instantly live on all five surfaces. On-demand discovery instead of a context window full of schemas up front.
 - **npm-native publishing** — Any npm package with the `tpmjs` keyword is auto-indexed within minutes. No server to host, no OAuth, no uptime to run.
 - **Agent platform** — Build, share, and fork AI agents with custom prompts and dynamic tool access.
 

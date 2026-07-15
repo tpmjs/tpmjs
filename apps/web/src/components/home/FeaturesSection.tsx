@@ -82,6 +82,14 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
     href?: string;
   }> = [
     {
+      icon: 'globe',
+      title: 'every surface',
+      description:
+        'The same curated collection is a CLI command, an MCP server URL, a REST endpoint, a typed SDK import, and a loadable skill. Write once; consume it however your agent works best. No lock-in to a single transport.',
+      badge: 'cli·mcp·rest·sdk·skill',
+      href: '/integrations',
+    },
+    {
       icon: 'key',
       title: 'sandboxed execution',
       description:
@@ -98,10 +106,10 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
     },
     {
       icon: 'link',
-      title: 'collections = one mcp url',
+      title: 'collections',
       description:
-        'Curate a set of tools and expose it to Claude Code, Cursor, ChatGPT, or any MCP client through a single URL. On-demand discovery instead of tens of thousands of tokens of tool schemas up front.',
-      badge: 'universal',
+        'Group the exact tools an agent needs into one collection — instantly live on all five surfaces. On-demand discovery instead of tens of thousands of tokens of tool schemas loaded up front.',
+      badge: 'one source',
       href: '/integrations',
     },
     {
@@ -162,12 +170,12 @@ export function FeaturesSection({ toolCount }: FeaturesSectionProps): React.Reac
             what you get
           </p>
           <h2 className="font-mono text-3xl md:text-4xl font-semibold mb-4 text-foreground lowercase">
-            the layer on top of the registry
+            one source of truth. every protocol.
           </h2>
           <p className="text-base text-foreground-secondary max-w-2xl mx-auto font-sans">
-            The official MCP registry points at packages. tpmjs is the curated, health-scored,
-            sandboxed execution layer on top of it — discovery, quality scoring, isolated runtime,
-            MCP endpoints, collections, agents, and an SDK. All open source.
+            Curate tools from npm into a collection, and tpmjs delivers that exact set as a CLI, an
+            MCP server, a REST API, a typed SDK, and a loadable skill — each one health-scored and
+            sandboxed. Pick the surface your agent wants, or use them all. Open source.
           </p>
         </div>
 

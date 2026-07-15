@@ -24,11 +24,11 @@ const spaceMono = Space_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL('https://tpmjs.com'),
   title: {
-    default: 'TPMJS - Curated, Sandboxed AI Agent Tools over MCP',
+    default: 'TPMJS — AI Agent Tools as CLI, MCP, REST, SDK & Skill',
     template: '%s | TPMJS',
   },
   description:
-    'Open-source registry and execution platform for AI agent tools. tpmjs auto-discovers tools published to npm, scores each for quality and health, runs them in an isolated hosted sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client through a single URL.',
+    'tpmjs is the tool layer for AI agents. Curate tools from npm into a collection, then serve that exact set as a CLI, an MCP server, a REST API, a typed SDK, or a loadable skill — each one health-scored and sandboxed. One source of truth, every protocol. Open source.',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
@@ -49,7 +49,13 @@ export const metadata: Metadata = {
     'npm tools',
     'MCP',
     'Model Context Protocol',
-    'tool registry',
+    'MCP server',
+    'CLI',
+    'REST API',
+    'SDK',
+    'agent skills',
+    'Claude Skills',
+    'tool collections',
   ],
   authors: [{ name: 'TPMJS' }],
   creator: 'TPMJS',
@@ -59,9 +65,9 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://tpmjs.com',
     siteName: 'TPMJS',
-    title: 'TPMJS - Curated, Sandboxed AI Agent Tools over MCP',
+    title: 'TPMJS — AI Agent Tools as CLI, MCP, REST, SDK & Skill',
     description:
-      'Open-source registry and execution platform for AI agent tools. Auto-discovers npm-published tools, scores quality and health, runs them in an isolated hosted sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client through one URL.',
+      'One curated collection, delivered as a CLI, an MCP server, a REST API, a typed SDK, and a loadable skill. Auto-discovers npm-published tools, health-scores them, and runs them in an isolated sandbox. One source of truth, every protocol — no MCP-vs-CLI-vs-REST war to pick a side in.',
     images: [
       {
         url: '/api/og/home',
@@ -75,9 +81,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@tpmjs_registry',
     creator: '@tpmjs_registry',
-    title: 'TPMJS - Curated, Sandboxed AI Agent Tools over MCP',
+    title: 'TPMJS — AI Agent Tools as CLI, MCP, REST, SDK & Skill',
     description:
-      'The npm for AI tools — curated, scored, and sandboxed. Auto-discovers npm-published tools, scores quality and health, runs them in an isolated sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client.',
+      'One curated collection, every surface: CLI, MCP, REST, SDK, and Skill. Auto-discovers npm-published tools, health-scores them, and runs them in an isolated sandbox. Write once; give your agent tools the way it works best.',
     images: ['/api/og/home'],
   },
   manifest: '/manifest.json',
@@ -106,7 +112,7 @@ export default function RootLayout({
     url: 'https://tpmjs.com',
     logo: 'https://tpmjs.com/logo.png',
     description:
-      'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools to Claude Code, Cursor, Windsurf, and any MCP client.',
+      'Open-source tool layer for AI agents. Auto-discovers npm packages, extracts schemas, and health-scores tools — then serves each curated collection as a CLI, an MCP server, a REST API, a typed SDK, and a loadable skill.',
     sameAs: ['https://github.com/tpmjs/tpmjs', 'https://x.com/tpmjs_registry'],
   };
 
@@ -116,7 +122,7 @@ export default function RootLayout({
     name: 'TPMJS',
     url: 'https://tpmjs.com',
     description:
-      'Open-source registry for AI agent tools. Auto-discovers npm packages, extracts schemas, scores quality, and serves tools to Claude Code, Cursor, Windsurf, and any MCP client.',
+      'Open-source tool layer for AI agents. Auto-discovers npm packages, extracts schemas, and health-scores tools — then serves each curated collection as a CLI, an MCP server, a REST API, a typed SDK, and a loadable skill.',
     potentialAction: {
       '@type': 'SearchAction',
       target: {

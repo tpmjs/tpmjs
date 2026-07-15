@@ -43,7 +43,7 @@ const claudeCodePrompts = [
   },
 ];
 
-type Protocol = 'cli' | 'mcp' | 'rest' | 'sdk';
+type Protocol = 'cli' | 'mcp' | 'rest' | 'sdk' | 'skill';
 
 interface ProtocolInfo {
   id: Protocol;
@@ -103,6 +103,18 @@ const result = await generateText({
            registryExecute: registryExecuteTool },
   prompt: 'Find and run a web scraping tool',
 });`,
+    tokens: 'N/A',
+  },
+  {
+    id: 'skill',
+    label: 'Skill',
+    bestFor: 'Claude Skills, agent playbooks',
+    why: 'More than a tool list — a loadable capability. The collection ships proven usage guidance, distilled from real question patterns, alongside its tools. The agent learns how to use them, not just that they exist.',
+    example: `curl https://tpmjs.com/@you/collections/my-tools/skills \\
+  -d '{"question":"scrape a page and summarize it"}'
+
+# → markdown guidance + the exact tools to call,
+#   getting sharper every time someone asks.`,
     tokens: 'N/A',
   },
 ];
@@ -171,7 +183,8 @@ export function ProtocolSection() {
                 CLI is better in Claude Code &mdash; fewer tokens, native bash reasoning, no
                 protocol overhead. MCP is better in Cursor and Claude Desktop &mdash; structured
                 tools without a shell. REST is better in your backend. SDK is better in your
-                TypeScript app.
+                TypeScript app. A Skill is better when the agent needs to <em>learn</em> the tools,
+                not just call them.
               </p>
               <p className="text-foreground font-medium">
                 The mistake is universalizing from one context. The real questions are discovery,
@@ -188,13 +201,13 @@ export function ProtocolSection() {
           </h3>
           <p className="text-sm text-foreground-secondary max-w-xl mx-auto font-sans">
             A tool author publishes a Zod-schema&apos;d function to npm. TPMJS automatically makes
-            it available via CLI, MCP, REST, and SDK. The consumer picks the right protocol for
-            their context.
+            it available via CLI, MCP, REST, SDK, and Skill. The consumer picks the right surface
+            for their context &mdash; or reaches for all of them.
           </p>
         </div>
 
         {/* Protocol Selector */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 mb-6">
           {protocols.map((p) => (
             <ProtocolCard
               key={p.id}
@@ -297,7 +310,7 @@ export function ProtocolSection() {
                 portability
               </h4>
               <p className="font-sans text-xs text-foreground-secondary">
-                Same tool over CLI, MCP, REST, SDK. Bet on tools, not transport.
+                Same tool over CLI, MCP, REST, SDK, Skill. Bet on tools, not transport.
               </p>
             </div>
           </div>

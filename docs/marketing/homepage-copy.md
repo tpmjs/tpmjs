@@ -4,16 +4,16 @@
 
 ---
 
-> **Updated 2026-07-15** for the post-official-MCP-registry landscape. The "1M+ tools" framing is retired (false against our own ~800-tool registry, and this audience fact-checks). The tagline keeps "the npm for AI tools" as the anchor but adds the three things a bare index can't do: **curated, scored, sandboxed**. See `strategy.md` → "What changed in 2026".
+> **Updated 2026-07-15 (v2 — multi-modal reframe).** Earlier this day the hero led with "the npm for AI tools — curated, scored, sandboxed," positioning tpmjs as the sandboxed layer *on top of* the official MCP registry. The founder rejected that as too small: *"we offer it as a cli, as an api, as a skill… we dont think there is a fight over apis, clis, or mcp, we think why not have all."* The pitch now leads with the **multi-modal thesis**: one curated collection, served through **every surface at once — CLI · MCP · REST · SDK · Skill**. Curation/scoring/sandboxing are features layered on top of every protocol, not the headline. The "1M+ tools" framing stays retired (real ~800). See `strategy.md` → "What changed in 2026".
 
 ## SEO Metadata
 
 ```
-Meta Title: TPMJS - Curated, Sandboxed AI Agent Tools over MCP
-Meta Description: Open-source registry and execution platform for AI agent tools. Auto-discovers npm-published tools, scores quality and health, runs them in an isolated sandbox, and serves curated collections to Claude Code, Cursor, ChatGPT, and any MCP client through one URL.
+Meta Title: TPMJS — AI Agent Tools as CLI, MCP, REST, SDK & Skill
+Meta Description: tpmjs is the tool layer for AI agents. Curate tools from npm into a collection, then serve that exact set as a CLI, an MCP server, a REST API, a typed SDK, or a loadable skill — each one health-scored and sandboxed. One source of truth, every protocol.
 ```
 
-> **Annotation:** Title leads with the differentiators (curated/sandboxed) rather than a raw count, because the free official MCP registry now owns the "index of npm packages" position. Description hits both audiences with the trust wedge (sandboxed, no local install) and current client names. Under 160 characters where it counts.
+> **Annotation:** Title enumerates the surfaces (CLI/MCP/REST/SDK/Skill) — the multi-modal delivery *is* the differentiator, and it's keyword-dense for every transport a developer might search. Description leads with the "tool layer for AI agents" positioning and the write-once-serve-everywhere mechanic; trust wedge (health-scored, sandboxed) rides along as a qualifier, not the lede.
 
 ---
 
@@ -21,32 +21,33 @@ Meta Description: Open-source registry and execution platform for AI agent tools
 
 ### Headline Options
 
-**Option A (Recommended): "The npm for AI tools — curated, scored, and sandboxed."**
+**Option A (Recommended): "One collection. Every surface."** with differentiator line `CLI · MCP · REST · SDK · Skill`.
 
-Rationale: Keeps the universally-understood npm anchor (instant mental model) but no longer lets it stand alone. As of 2026 the *free* official MCP registry is literally "the index of npm packages," so the bare anchor now describes the competitor. The second clause names the exact three things a raw index (npm or the official registry) can't do — the whole reason to choose TPMJS.
+Rationale: "Collection" is the product primitive; "every surface" captures the whole thesis in three words. The mono sub-line spells out the five protocols so nobody has to guess. This is what shipped.
 
-**Option B: "Run agent tools you can trust — over one MCP URL."**
+**Option B: "Write the tool once. Consume it everywhere."**
 
-Rationale: Leads with the security wedge (the strongest, most timely message of 2026 given the year's MCP supply-chain incidents) plus the delivery mechanism. Best for the enterprise/security-conscious segment.
+Rationale: Author-facing framing of the same idea (mirrors the existing ProtocolSection headline "write the tool once. we serve it everywhere."). Good for the publisher audience.
 
-**Option C: "Curated, health-scored AI tools, sandboxed and ready for any MCP client."**
+**Option C: "Tools for AI agents — every protocol, one source of truth."**
 
-Rationale: Most literal and enterprise-legible. Every word defensible. Slightly less sticky than A.
+Rationale: Most literal and enterprise-legible. Every word defensible; slightly less sticky than A.
 
-> **Retired:** "Your AI Agent Just Got 1 Million Tools" and any "1M+" framing — false against the real ~800-tool registry, and this audience fact-checks headline numbers. Don't enter a count race (the MCP census already measures ~177K tools).
+> **Retired:** (1) "Your AI Agent Just Got 1 Million Tools" / any "1M+" framing — false against the real ~800-tool registry. (2) "The npm for AI tools — curated, scored, sandboxed" as the *hero* — it made tpmjs subordinate to MCP/the registry and buried the multi-modal vision. ("npm for AI tools" survives as a supporting mental model on /getting-started, /faq, blog — just not as the headline.)
 
 ### Hero Copy
 
 ```
 [Badge: {packageCount} PACKAGES / {toolCount} TOOLS — live from npm]
 
-# The npm for AI tools
-## Curated · Scored · Sandboxed
+# ONE COLLECTION. EVERY SURFACE.
+## CLI · MCP · REST · SDK · SKILL
 
-tpmjs auto-discovers tools published to npm, scores each for quality and
-health, and runs it in an isolated hosted sandbox. Serve a curated collection
-to Claude Code, Cursor, ChatGPT, or any MCP client through a single URL —
-no local install, no untrusted code on your machine.
+tpmjs is the tool layer for AI agents. Curate a collection once, then hand it
+to any agent the way that agent wants it — a CLI command, an MCP server, a
+REST endpoint, a typed SDK, or a loadable skill. One curated, health-scored,
+sandboxed source of truth; every protocol. There's no MCP-vs-CLI-vs-REST war
+to pick a side in — you get all of them.
 
 [Search Bar: $ search tools...]
 Try: "web scraper", "discord", "code interpreter"
@@ -55,7 +56,7 @@ Try: "web scraper", "discord", "code interpreter"
 [Secondary CTA: Publish a Tool]
 ```
 
-> **Annotation:** Clarity over cleverness. The headline keeps the sticky npm anchor and immediately qualifies it with the three differentiators the official registry punts on (curate/score/run). The live stats badge shows a real, dated number (never a rounded-up "1M+"). The subhead leads with the mechanism and closes on the trust wedge ("no untrusted code on your machine") that 2026's security climate makes urgent. Client names are current: Claude Code, Cursor, ChatGPT — no stale "GPT plugins" or "works with Claude" single-vendor framing.
+> **Annotation:** Leads with the vision, not the security wedge. The headline is a three-word statement of the whole product; the mono sub-line enumerates the five surfaces. The subhead resolves the "protocol war" explicitly ("you get all of them") — the exact objection the founder wanted answered. Curated/health-scored/sandboxed appears as a mid-sentence qualifier, present but demoted. Client-specific names live in the ProtocolSection below, where each surface names its best-fit clients.
 
 ---
 
