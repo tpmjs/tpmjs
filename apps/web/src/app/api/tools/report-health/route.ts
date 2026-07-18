@@ -128,7 +128,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       // brittle isNonBreakingError message-regex (kept below as a fallback only
       // for legacy clients that don't send errorStage).
       healthStatus = 'HEALTHY';
-      console.log(`ℹ️  ${packageName}/${name} ran but threw (errorStage=execute, not broken): ${error}`);
+      console.log(
+        `ℹ️  ${packageName}/${name} ran but threw (errorStage=execute, not broken): ${error}`
+      );
     } else if (!errorStage && error && isNonBreakingError(error)) {
       // Legacy path: no errorStage supplied — fall back to message matching.
       healthStatus = 'HEALTHY';

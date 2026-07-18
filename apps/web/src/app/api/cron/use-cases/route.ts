@@ -12,7 +12,7 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
-import { env } from '~/env';
+import { requireCronAuth } from '~/lib/cron-auth';
 import {
   computeRankScores,
   generateUseCasesForQualifyingScenarios,
@@ -26,12 +26,8 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   // 1. Verify cron secret
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (env.CRON_SECRET && token !== env.CRON_SECRET) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronAuth(request);
+  if (unauthorized) return unauthorized;
 
   try {
     // 2. Generate use cases for qualifying scenarios

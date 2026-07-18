@@ -1,5 +1,6 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { requireCronAuth } from '~/lib/cron-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -18,13 +19,8 @@ interface HealthCheckReport {
  * Requires CRON_SECRET authorization
  */
 export async function POST(request: NextRequest) {
-  // Verify authorization
-  const authHeader = request.headers.get('authorization');
-  const expectedToken = process.env.CRON_SECRET;
-
-  if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronAuth(request);
+  if (unauthorized) return unauthorized;
 
   try {
     const report: HealthCheckReport = await request.json();

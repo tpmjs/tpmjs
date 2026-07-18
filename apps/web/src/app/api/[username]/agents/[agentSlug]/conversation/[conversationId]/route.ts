@@ -20,7 +20,7 @@ import type { LanguageModel, ModelMessage } from 'ai';
 import { type NextRequest, NextResponse } from 'next/server';
 import { decryptApiKey } from '@/lib/crypto/api-keys';
 import { logActivity } from '~/lib/activity';
-import { authenticateRequest, hasScope, type AuthResult } from '~/lib/api-keys/middleware';
+import { type AuthResult, authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
 import { trackUsage } from '~/lib/api-keys/usage';
 import { checkRateLimit, type RateLimitConfig } from '~/lib/rate-limit';
 import { inferErrorCategory } from '~/lib/tracking/error-categories';

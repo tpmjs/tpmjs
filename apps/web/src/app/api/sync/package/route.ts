@@ -3,7 +3,7 @@ import { fetchLatestPackageWithMetadata } from '@tpmjs/npm-client';
 import type { TpmjsToolDefinition } from '@tpmjs/types/tpmjs';
 import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
-import { env } from '~/env';
+import { requireCronAuth } from '~/lib/cron-auth';
 import { performHealthCheck } from '~/lib/health-check/health-check-service';
 import {
   convertJsonSchemaToParameters,
@@ -23,13 +23,8 @@ export const maxDuration = 60;
  * Requires Authorization: Bearer <CRON_SECRET>
  */
 export async function POST(request: NextRequest) {
-  // Verify cron secret for security
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (env.CRON_SECRET && token !== env.CRON_SECRET) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronAuth(request);
+  if (unauthorized) return unauthorized;
 
   try {
     const body = await request.json();

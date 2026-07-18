@@ -1,6 +1,6 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
-import { env } from '~/env';
+import { requireCronAuth } from '~/lib/cron-auth';
 import { extractSignature } from '~/lib/enrichment/signature-extractor';
 import { extractTags } from '~/lib/enrichment/tag-extractor';
 import { performHealthCheck } from '~/lib/health-check/health-check-service';
@@ -27,12 +27,8 @@ const RETRY_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour before retrying failed extra
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex but straightforward queue processing
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (env.CRON_SECRET && token !== env.CRON_SECRET) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronAuth(request);
+  if (unauthorized) return unauthorized;
 
   const startTime = Date.now();
   let enriched = 0;

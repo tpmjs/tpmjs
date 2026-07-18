@@ -20,13 +20,16 @@ globalThis.addEventListener('error', (event) => {
 });
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
-// When EXECUTOR_API_KEY is set, every endpoint except GET /health requires
-// `Authorization: Bearer <key>`. When unset, auth is disabled (dev mode) —
-// same contract as the agent-sandbox server and the executor docs.
+// Every endpoint except GET /health requires `Authorization: Bearer
+// <EXECUTOR_API_KEY>`. Auth is fail-closed: if the key is unset, all requests
+// are refused — a missing env var must never expose arbitrary code execution.
+// For local development only, set EXECUTOR_ALLOW_UNAUTHENTICATED=true to run
+// without a key. Same contract as the agent-sandbox server.
 const EXECUTOR_API_KEY = Deno.env.get('EXECUTOR_API_KEY');
+const ALLOW_UNAUTHENTICATED = Deno.env.get('EXECUTOR_ALLOW_UNAUTHENTICATED') === 'true';
 
 function checkAuth(req: Request): boolean {
-  if (!EXECUTOR_API_KEY) return true;
+  if (!EXECUTOR_API_KEY) return ALLOW_UNAUTHENTICATED;
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return false;
   const token = authHeader.replace('Bearer ', '');
@@ -1077,7 +1080,9 @@ Deno.addSignalListener('SIGINT', () => handleShutdown('SIGINT'));
 const port = Number.parseInt(Deno.env.get('PORT') || '3002', 10);
 
 console.log(`🚀 Railway Tool Executor (Deno) running on port ${port}`);
-console.log(`🔒 Auth: ${EXECUTOR_API_KEY ? 'enabled (Bearer token required)' : 'DISABLED (set EXECUTOR_API_KEY)'}`);
+console.log(
+  `🔒 Auth: ${EXECUTOR_API_KEY ? 'enabled (Bearer token required)' : 'DISABLED (set EXECUTOR_API_KEY)'}`
+);
 console.log('📦 HTTP imports: ENABLED');
 console.log(`🔗 Health check: http://localhost:${port}/health`);
 console.log('🛠️  Endpoints:');

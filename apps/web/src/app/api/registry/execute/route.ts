@@ -37,12 +37,12 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest, getClientMetadata } from '~/lib/api-keys/middleware';
-import { executorAuthHeaders } from '~/lib/executors/internal-auth';
 import {
   checkApiKeyRateLimit,
   createRateLimitResponse,
   getRateLimitHeaders,
 } from '~/lib/api-keys/rate-limit';
+import { executorAuthHeaders } from '~/lib/executors/internal-auth';
 import { checkRateLimit } from '~/lib/rate-limit';
 import { trackExecution } from '~/lib/tracking/executions';
 

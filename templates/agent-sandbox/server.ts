@@ -210,8 +210,13 @@ setInterval(cleanupExpiredCache, 60 * 1000);
 
 // ─── Auth Middleware ─────────────────────────────────────────────────────────
 
+// Fail-closed: if the key is unset, all requests are refused — a missing env
+// var must never expose arbitrary code execution. For local development only,
+// set EXECUTOR_ALLOW_UNAUTHENTICATED=true to run without a key.
 function checkAuth(req: Request): boolean {
-  if (!EXECUTOR_API_KEY) return true;
+  if (!EXECUTOR_API_KEY) {
+    return Deno.env.get('EXECUTOR_ALLOW_UNAUTHENTICATED') === 'true';
+  }
   const authHeader = req.headers.get('Authorization');
   if (!authHeader) return false;
   const token = authHeader.replace('Bearer ', '');

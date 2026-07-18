@@ -1,7 +1,7 @@
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
-import { env } from '~/env';
 import { cleanupOldUsageRecords } from '~/lib/api-keys/usage';
+import { requireCronAuth } from '~/lib/cron-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -15,12 +15,8 @@ export const maxDuration = 300;
  * Requires Authorization: Bearer <CRON_SECRET>
  */
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-
-  if (env.CRON_SECRET && token !== env.CRON_SECRET) {
-    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-  }
+  const unauthorized = requireCronAuth(request);
+  if (unauthorized) return unauthorized;
 
   const startTime = Date.now();
 
