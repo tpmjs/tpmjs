@@ -6,9 +6,10 @@ This guide shows you how to create and publish an AI tool that will be automatic
 
 1. Create a new NPM package
 2. Add `"tpmjs"` to the `keywords` array in package.json
-3. Add a `tpmjs` field with your tool's metadata
-4. Publish to NPM
-5. Your tool will automatically appear on tpmjs.com within 15 minutes
+3. Export your tool(s) using the Vercel AI SDK `tool()` helper
+4. Add a `tpmjs` field with a `category`
+5. Publish to NPM
+6. Your tool will automatically appear on tpmjs.com within a few minutes
 
 ## Step-by-Step Guide
 
@@ -37,164 +38,108 @@ In your `package.json`, add `"tpmjs"` to the keywords array:
 
 **Important:** The `"tpmjs"` keyword is REQUIRED for automatic discovery!
 
-### 3. Add TPMJS Metadata
+### 3. Add TPMJS Metadata (Multi-Tool Format)
 
-Add a `tpmjs` field to your `package.json` with your tool's metadata. There are three tiers:
+Add a `tpmjs` field to your `package.json`. The current format is the **multi-tool format** (`TpmjsMultiToolSchema` in `packages/types/src/tpmjs.ts`): package-level metadata plus an optional `tools` array. One package can publish one tool or many.
 
-#### Tier 1: Minimal (Required Fields Only)
+#### Minimal (category only)
 
-The bare minimum to get listed:
-
-```json
-{
-  "tpmjs": {
-    "category": "text-analysis",
-    "description": "A concise description of what your tool does"
-  }
-}
-```
-
-**Required fields:**
-- `category` - One of: `text-analysis`, `code-generation`, `data-processing`, `image-generation`, `audio-processing`, `search`, `integration`, `other`
-- `description` - Clear description of what the tool does (1-3 sentences)
-
-#### Tier 2: Basic (Recommended)
-
-Add parameter and return type information:
+The only required field is `category`:
 
 ```json
 {
   "tpmjs": {
-    "category": "text-analysis",
-    "description": "Analyzes sentiment in text and returns a score",
-    "parameters": [
-      {
-        "name": "text",
-        "type": "string",
-        "description": "The text to analyze",
-        "required": true
-      },
-      {
-        "name": "language",
-        "type": "string",
-        "description": "Language code (e.g., 'en', 'es')",
-        "required": false,
-        "default": "en"
-      }
-    ],
-    "returns": {
-      "type": "SentimentResult",
-      "description": "Object containing score (-1 to 1) and label (positive/negative/neutral)"
-    }
+    "category": "data"
   }
 }
 ```
 
-#### Tier 3: Rich (Full Documentation)
+If you don't list `tools`, TPMJS **auto-discovers** them: after publish, the registry loads your package in the executor, lists its exports, identifies the AI-SDK-shaped tools, and extracts each tool's description and parameters from its `inputSchema`.
 
-Complete metadata for maximum visibility:
+#### Recommended (explicit tools + frameworks)
+
+Declare your tools explicitly to control exactly what gets listed:
 
 ```json
 {
   "tpmjs": {
-    "category": "text-analysis",
-    "description": "Advanced sentiment analysis with emotion detection",
-    "parameters": [
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
       {
-        "name": "text",
-        "type": "string",
-        "description": "The text to analyze",
-        "required": true
-      },
-      {
-        "name": "language",
-        "type": "string",
-        "description": "Language code",
-        "required": false,
-        "default": "en"
-      },
-      {
-        "name": "includeEmotions",
-        "type": "boolean",
-        "description": "Whether to include emotion breakdown",
-        "required": false,
-        "default": false
+        "name": "csvParseTool",
+        "description": "Parse CSV text into array of objects with automatic header detection"
       }
-    ],
-    "returns": {
-      "type": "SentimentResult",
-      "description": "Object with score, label, and optional emotions array"
-    },
-    "env": [
-      {
-        "name": "SENTIMENT_API_KEY",
-        "description": "API key for sentiment analysis service",
-        "required": true
-      }
-    ],
-    "frameworks": ["vercel-ai", "langchain"],
-    "aiAgent": {
-      "useCase": "Use this tool when users need to analyze sentiment in text, detect emotions, or understand the tone of customer feedback, reviews, or social media posts.",
-      "limitations": "Only supports English and Spanish. Maximum 10,000 characters per request.",
-      "examples": [
-        "Analyze customer review sentiment",
-        "Detect emotions in user feedback",
-        "Monitor social media sentiment"
-      ]
-    }
+    ]
   }
 }
 ```
+
+- `tools[].name` (required) — the **export name** of the tool from your package
+- `tools[].description` (optional, 20–500 chars) — auto-extracted from the tool's `description` if omitted
+
+#### What NOT to hand-author
+
+The legacy per-tool `parameters`, `returns`, and `aiAgent` fields are **@deprecated** — they are now auto-extracted from the tool itself at runtime (parameters come from your `inputSchema`). You no longer need to duplicate your schema in package.json; the deprecated fields are only kept as a fallback if auto-extraction fails. See the [legacy format appendix](#appendix-legacy-single-tool-format-deprecated) if you maintain an older package.
 
 ### 4. Implement Your Tool
 
-Write your tool's implementation. Here's the example from `@tpmjs/createblogpost`:
+Tools are authored with the Vercel AI SDK's `tool()` helper: a `description`, an `inputSchema` (this is what TPMJS extracts your parameters from), and an `execute` function. Here's the real implementation from `@tpmjs/tools-csv-parse` (`packages/tools/official/csv-parse/src/index.ts`), abridged:
 
 ```typescript
 // src/index.ts
-export interface BlogPostOptions {
-  title: string;
-  author: string;
-  content: string;
-  tags?: string[];
-  format?: 'markdown' | 'mdx';
-  excerpt?: string;
-}
+import { jsonSchema, tool } from 'ai';
+import Papa from 'papaparse';
 
-export interface BlogPost {
-  frontmatter: {
-    title: string;
-    author: string;
-    date: string;
-    tags: string[];
-    excerpt?: string;
-    slug: string;
-    wordCount: number;
-    readingTime: number;
-  };
-  content: string;
-  formattedOutput: string;
-}
-
-export async function createBlogPost(options: BlogPostOptions): Promise<BlogPost> {
-  // Your implementation here
-  const { title, author, content, tags = [], format = 'markdown', excerpt } = options;
-
-  // Validate inputs
-  if (!title || !author || !content) {
-    throw new Error('Title, author, and content are required');
-  }
-
-  // Process and return result
-  return {
-    frontmatter: { /* ... */ },
-    content,
-    formattedOutput: '...'
+export interface CsvParseResult {
+  rows: Record<string, string | number | boolean | null>[];
+  headers: string[];
+  rowCount: number;
+  metadata: {
+    parsedAt: string;
+    hasErrors: boolean;
+    errorCount: number;
   };
 }
 
-export default createBlogPost;
+type CsvParseInput = {
+  csv: string;
+  hasHeaders?: boolean;
+};
+
+export const csvParseTool = tool({
+  description:
+    'Parse CSV text into an array of objects. Automatically detects headers and infers data types. Returns parsed rows, headers, and metadata.',
+  inputSchema: jsonSchema<CsvParseInput>({
+    type: 'object',
+    properties: {
+      csv: {
+        type: 'string',
+        description: 'The CSV text to parse',
+      },
+      hasHeaders: {
+        type: 'boolean',
+        description: 'Whether the first row contains headers (default: true)',
+        default: true,
+      },
+    },
+    required: ['csv'],
+    additionalProperties: false,
+  }),
+  async execute({ csv, hasHeaders = true }): Promise<CsvParseResult> {
+    const parseResult = Papa.parse(csv, {
+      header: hasHeaders,
+      dynamicTyping: true,
+      skipEmptyLines: true,
+    });
+    // ... build and return CsvParseResult
+  },
+});
+
+export default csvParseTool;
 ```
+
+The export name (`csvParseTool`) is what goes in `tpmjs.tools[].name`. Export multiple tools from one package to publish a multi-tool package.
 
 ### 5. Build and Publish
 
@@ -212,28 +157,27 @@ npm publish --access public
 
 Your tool will be automatically discovered through:
 
-1. **Keyword Search** - Runs every 15 minutes, searches NPM for `"tpmjs"`
-2. **Changes Feed** - Monitors NPM publishes in real-time (every 2 minutes)
+1. **Changes Feed** - Monitors NPM publishes in near real-time (sync runs every 2 minutes)
+2. **Keyword Search** - A full NPM search for `"tpmjs"` runs every 6 hours as a backstop
 
-After publishing, your tool should appear on https://tpmjs.com within 15 minutes!
+After publishing, your tool should appear on https://tpmjs.com within a few minutes.
 
-You can verify by searching (requires API key):
+You can verify by searching the public API (no API key needed):
 ```bash
-curl "https://tpmjs.com/api/tools?q=yourpackagename" \
-  -H "Authorization: Bearer tpmjs_sk_your_api_key_here"
+curl "https://tpmjs.com/api/tools?q=yourpackagename"
 ```
 
-## Real Example: @tpmjs/createblogpost
+## Real Example: @tpmjs/tools-csv-parse
 
-Here's the complete `package.json` from the published example:
+Here's the `package.json` from the published official tool (`packages/tools/official/csv-parse/package.json`), abridged:
 
 ```json
 {
-  "name": "@tpmjs/createblogpost",
+  "name": "@tpmjs/tools-csv-parse",
   "version": "0.2.0",
-  "description": "A tool for creating structured blog posts with AI-generated content",
+  "description": "Parse CSV text into array of objects using papaparse",
   "type": "module",
-  "keywords": ["tpmjs", "blog", "content", "ai", "writing"],
+  "keywords": ["tpmjs", "data", "csv", "parse"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -251,108 +195,58 @@ Here's the complete `package.json` from the published example:
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ajaxdavis/tpmjs.git",
-    "directory": "packages/tools/createBlogPost"
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/csv-parse"
   },
   "homepage": "https://tpmjs.com",
   "license": "MIT",
   "tpmjs": {
-    "category": "text-analysis",
-    "description": "Creates structured blog posts with customizable frontmatter, content sections, and SEO metadata. Supports multiple output formats including Markdown and MDX.",
-    "parameters": [
+    "category": "data",
+    "frameworks": ["vercel-ai"],
+    "tools": [
       {
-        "name": "title",
-        "type": "string",
-        "description": "The title of the blog post",
-        "required": true
-      },
-      {
-        "name": "author",
-        "type": "string",
-        "description": "The author of the blog post",
-        "required": true
-      },
-      {
-        "name": "content",
-        "type": "string",
-        "description": "The main content of the blog post",
-        "required": true
-      },
-      {
-        "name": "tags",
-        "type": "string[]",
-        "description": "Array of tags for categorization",
-        "required": false,
-        "default": []
-      },
-      {
-        "name": "format",
-        "type": "'markdown' | 'mdx'",
-        "description": "Output format for the blog post",
-        "required": false,
-        "default": "markdown"
-      },
-      {
-        "name": "excerpt",
-        "type": "string",
-        "description": "Short excerpt or summary of the post",
-        "required": false
+        "name": "csvParseTool",
+        "description": "Parse CSV text into array of objects with automatic header detection"
       }
-    ],
-    "returns": {
-      "type": "BlogPost",
-      "description": "A structured blog post object with frontmatter, content, and metadata including slug, wordCount, readingTime, and formattedOutput"
-    },
-    "frameworks": ["vercel-ai", "langchain"],
-    "aiAgent": {
-      "useCase": "Use this tool when users need to generate blog posts, articles, or structured content with proper frontmatter and metadata. Ideal for content management systems, static site generators, and documentation sites.",
-      "limitations": "Does not include AI content generation - you must provide the content. Only formats and structures existing content.",
-      "examples": [
-        "Create a blog post about TypeScript best practices",
-        "Generate a tutorial post with code examples",
-        "Format an article with SEO metadata"
-      ]
-    }
+    ]
+  },
+  "dependencies": {
+    "ai": "6.0.49",
+    "papaparse": "^5.5.3"
   }
 }
 ```
 
 ## Field Reference
 
-### Required Fields (Tier 1 - Minimal)
+All fields validated by `TpmjsMultiToolSchema` in `packages/types/src/tpmjs.ts`:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `category` | string | Tool category (see categories below) |
-| `description` | string | Clear description (1-3 sentences) |
-
-### Optional Fields (Tier 2 - Basic)
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `parameters` | array | Array of parameter objects |
-| `returns` | object | Return type information |
-
-### Optional Fields (Tier 3 - Rich)
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `env` | array | Required environment variables |
-| `frameworks` | array | Compatible frameworks |
-| `aiAgent` | object | AI agent integration info |
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `category` | string | ✅ | One of the valid categories (see below) |
+| `tools` | array | — | Tool definitions; omit to use auto-discovery |
+| `tools[].name` | string | ✅ (per tool) | The export name of the tool from the package |
+| `tools[].description` | string | — | 20–500 chars; auto-extracted from the tool if omitted |
+| `env` | array | — | Environment variables the tools need |
+| `frameworks` | array | — | Any of: `vercel-ai`, `langchain`, `llamaindex`, `haystack`, `semantic-kernel` |
 
 ### Categories
 
-Choose one of these for the `category` field:
+The `category` field is validated with `z.enum` against `TPMJS_CATEGORIES` in `packages/types/src/tpmjs.ts` — **that file is the source of truth**; any other value fails validation. The current list, grouped as in the source:
 
-- `text-analysis` - NLP, sentiment, summarization
-- `code-generation` - Code generation and transformation
-- `data-processing` - Data manipulation and transformation
-- `image-generation` - Image creation and editing
-- `audio-processing` - Audio/speech processing
-- `search` - Search and retrieval
-- `integration` - Third-party integrations
-- `other` - Anything else
+**Core categories:**
+`research`, `web`, `data`, `documentation`, `engineering`, `security`, `statistics`, `ops`, `agent`, `sandbox`, `utilities`, `html`, `compliance`
+
+**Legacy categories** (kept for backward compatibility):
+`web-scraping`, `data-processing`, `file-operations`, `communication`, `database`, `api-integration`, `image-processing`, `text-analysis`, `automation`, `ai-ml`, `monitoring`
+
+**Business categories:**
+`finance`, `legal`, `hr`, `marketing`, `cx`, `edu`, `sales`
+
+**Aliases:**
+`doc`, `text`
+
+Prefer a core or business category for new packages.
 
 ### Environment Variables
 
@@ -376,25 +270,27 @@ If your tool requires environment variables:
 
 ## Quality Score
 
-Your tool gets a quality score based on:
+Your tool's quality score is computed by `calculateQualityScore` in `apps/web/src/app/api/sync/metrics/route.ts`:
 
-- **Tier**: Rich (1.0) > Basic (0.5) > Minimal (0.25)
-- **Downloads**: Logarithmic scale based on monthly NPM downloads
-- **GitHub Stars**: Logarithmic scale based on repository stars
+- **Tier base score**: `rich` = 0.6, `minimal` = 0.4. A package is `rich` when it declares `env` or `frameworks` (or a tool carries the legacy `parameters`/`returns`/`aiAgent` fields); otherwise it's `minimal`.
+- **Downloads**: `min(0.2, log10(downloads + 1) / 15)` — logarithmic, max 0.2
+- **GitHub stars**: `min(0.1, log10(stars + 1) / 10)` — logarithmic, max 0.1
+- **Tool metadata richness** (max 0.1): +0.04 if the tool has parameters, +0.03 for a return type, +0.03 for AI-agent guidance — auto-extracted metadata counts
+- **Total**: capped at 1.0, rounded to 2 decimal places
 
 Higher scores = better visibility on tpmjs.com!
 
 ## Tips for Success
 
 1. **Use descriptive names** - Make your package name clear and searchable
-2. **Complete metadata** - Tier 3 (Rich) tools get 4x the base score
-3. **Good documentation** - Add documentation URL to package.json homepage or repository fields
-4. **Active maintenance** - Regular updates boost download counts
-5. **AI-friendly descriptions** - Write the `aiAgent.useCase` field as guidance for AI agents
+2. **Declare `frameworks` and `env`** - This puts you in the `rich` tier (0.6 base score vs 0.4)
+3. **Write a good `inputSchema`** - Parameter descriptions are auto-extracted from it and shown to AI agents
+4. **Good documentation** - Add documentation URL to package.json homepage or repository fields
+5. **Active maintenance** - Regular updates boost download counts
 
 ## Testing Locally
 
-Before publishing, you can validate your `tpmjs` field using the validation schema:
+Before publishing, you can validate your `tpmjs` field using the validation schema (`validateTpmjsField` in `packages/types/src/tpmjs.ts`):
 
 ```bash
 # In the tpmjs monorepo
@@ -405,14 +301,16 @@ Or manually check the structure matches the examples above.
 
 ## Troubleshooting
 
-**Tool not appearing after 15 minutes?**
+**Tool not appearing after a few minutes?**
 - Check that you added `"tpmjs"` to keywords
-- Verify your `tpmjs` field has required fields (category, description)
+- Verify your `tpmjs` field has a valid `category` (see the list above — an invalid category fails validation)
 - Check the NPM package is public: `npm view yourpackage`
 
 **Tool showing as "minimal" tier?**
-- Add `parameters` and `returns` fields for Basic tier
-- Add all Rich tier fields for maximum visibility
+- Declare `frameworks` and/or `env` in your `tpmjs` field — that's what promotes a multi-tool package to `rich`
+
+**Auto-discovery found the wrong exports?**
+- Declare your tools explicitly in `tpmjs.tools` with the exact export names — explicit definitions override auto-discovery
 
 **Want to force a sync?**
 You can manually trigger a sync (requires CRON_SECRET, not a user API key):
@@ -421,9 +319,39 @@ curl -X POST "https://tpmjs.com/api/sync/keyword" \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 
+## Appendix: Legacy Single-Tool Format (Deprecated)
+
+Older packages use a single-tool format with top-level `description`, `parameters`, `returns`, and `aiAgent` fields:
+
+```json
+{
+  "tpmjs": {
+    "category": "text-analysis",
+    "description": "Analyzes sentiment in text and returns a score",
+    "parameters": [
+      {
+        "name": "text",
+        "type": "string",
+        "description": "The text to analyze",
+        "required": true
+      }
+    ],
+    "returns": {
+      "type": "SentimentResult",
+      "description": "Object containing score (-1 to 1) and label"
+    },
+    "aiAgent": {
+      "useCase": "Use this tool when users need to analyze sentiment in text."
+    }
+  }
+}
+```
+
+This format still validates (`TpmjsLegacyMinimalSchema` / `TpmjsLegacyRichSchema` in `packages/types/src/tpmjs.ts`) and is **auto-migrated** on sync into the multi-tool format as a single tool named `default`. But `parameters`, `returns`, and `aiAgent` are all `@deprecated` — the registry auto-extracts them from the tool itself — so new packages should use the multi-tool format above.
+
 ## Support
 
 Questions or issues?
-- File an issue: https://github.com/ajaxdavis/tpmjs/issues
+- File an issue: https://github.com/tpmjs/tpmjs/issues
 - Check the API docs: https://tpmjs.com/docs/api
 - Generate an API key: https://tpmjs.com/dashboard/settings/tpmjs-api-keys

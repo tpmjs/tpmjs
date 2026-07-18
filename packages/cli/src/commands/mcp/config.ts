@@ -118,7 +118,7 @@ function generateConfig(
     mcpServers: {
       [serverName]: {
         command: 'npx',
-        args: ['-y', '@anthropic/mcp-remote', mcpUrl],
+        args: ['-y', 'mcp-remote', mcpUrl],
         ...(apiKey && {
           env: {
             TPMJS_API_KEY: apiKey,

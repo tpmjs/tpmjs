@@ -40,13 +40,16 @@ The following are in scope:
 
 ## Security Measures
 
-- All traffic over HTTPS with HSTS preload
-- Content Security Policy headers on all responses
+- All traffic over HTTPS; every response sends `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` (the `preload` directive is sent, but the domain has not been submitted to the browser preload list)
+- Security headers on all responses, set in `apps/web/next.config.ts` (`headers()`) so they apply regardless of hosting: `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()`
+- No `Content-Security-Policy` header is currently sent
 - Tool execution in isolated Deno sandboxes with timeouts and rate limits
 - Credentials encrypted at rest
 - No secrets in client-side bundles
 - Pre-commit hooks enforce linting and type-checking
 - Dependency updates monitored via automated tooling
+
+> Note: the `headers` block in `vercel.json` is dead configuration — it only applied while the site was served by Vercel. Response headers are now set by the app itself in `apps/web/next.config.ts`.
 
 ## Acknowledgments
 

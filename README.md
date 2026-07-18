@@ -66,8 +66,8 @@ See [HOW_TO_PUBLISH_A_TOOL.md](./HOW_TO_PUBLISH_A_TOOL.md) for the full publishi
 ```bash
 npm install -g @tpmjs/cli
 
-tpmjs tool search "sentiment analysis"
-tpmjs tool execute @tpmjs/tools-sentiment --input "I love this product"
+tpmjs tool search "csv parser"
+tpmjs tool execute @tpmjs/tools-csv-parse --input '{"csv":"name,role\nAda,engineer"}'
 tpmjs tool trending
 ```
 
@@ -80,7 +80,7 @@ TPMJS collections are available as [Model Context Protocol](https://modelcontext
   "mcpServers": {
     "tpmjs": {
       "command": "npx",
-      "args": ["-y", "@anthropic/mcp-remote", "https://tpmjs.com/api/mcp/<username>/<collection>/sse"]
+      "args": ["-y", "mcp-remote", "https://tpmjs.com/api/mcp/<username>/<collection>/sse"]
     }
   }
 }
@@ -128,7 +128,7 @@ const tools = [registrySearchTool, registryExecuteTool];
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 22
-- [pnpm](https://pnpm.io/) >= 8
+- [pnpm](https://pnpm.io/) >= 10
 
 ### Setup
 
@@ -160,17 +160,23 @@ pnpm type-check
 ```
 apps/
   web/                 Next.js web application (tpmjs.com)
+  playground/          AI chat playground (Next.js + AI SDK)
+  tutorial/            Interactive tutorial site (Next.js)
+  railway-executor/    Deno dynamic tool executor (the default sandbox)
+  omega-mac/           Native macOS chat app (SwiftUI)
 packages/
   cli/                 CLI (@tpmjs/cli)
   bridge/              MCP bridge
   mcp-client/          MCP client library
+  npm-client/          npm registry API client (search, changes feed, stats)
+  package-executor/    Client for the remote sandbox executor
   ui/                  React component library
   types/               Shared TypeScript types
   utils/               Utility functions
   env/                 Environment schema loader
   db/                  Prisma database layer
   config/              Shared configs (Biome, ESLint, Tailwind, TypeScript)
-  tools/official/      189 official tools
+  tools/official/      195+ official tool packages
   test/                Vitest shared config
   mocks/               MSW mock server
 ```
@@ -185,8 +191,6 @@ Pre-commit hooks run format, lint, and type-check automatically. CI enforces:
 - Production build
 - Architecture validation (no circular deps, module boundaries)
 - Dead code detection
-
-See [QUALITY-GATES.md](./QUALITY-GATES.md) for details.
 
 ### Releasing
 

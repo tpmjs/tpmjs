@@ -73,6 +73,8 @@ import { Input } from '@tpmjs/ui/Input/Input';
 ### Applications
 - `@tpmjs/web` - Next.js 16 App Router (main website)
 - `@tpmjs/playground` - Tool testing playground
+- `apps/tutorial` - Tutorial site
+- `apps/railway-executor` - Deno tool executor (the default executor; "railway" name is historical — it runs on-box)
 
 ## Development Workflow
 
@@ -197,10 +199,11 @@ export function Button({ onClick, children, className }: ButtonProps) {
 
 ## Deployment & CI
 
-- Vercel deployment requires all CI checks to pass
-- Pre-commit hooks run `format`, `lint`, and `type-check`
-- Use `vercel inspect` to debug deployments
-- Check `/api/health` to verify production deployments
+- Production runs ON-BOX as podman Quadlet services (quadlets in the `donto-infra` repo, `/mnt/donto-data/workspace/donto-infra/quadlets/tpmjs-*.container`) — NOT Vercel/Railway (both legacy, pending decommission; git deploys to Vercel are gated off)
+- There is NO auto-deploy: ship by rebuilding the image (`podman build --build-arg APP=web -f donto-infra/build/tpmjs.Dockerfile`) and `sudo systemctl restart tpmjs-web`
+- CI is GitHub Actions (`.github/workflows/ci.yml`); pre-commit hooks run `format`, `lint`, and `type-check` — if hooks pass locally, CI should pass
+- Debug production with `sudo podman logs <tpmjs-web|tpmjs-playground|...>` and `journalctl -u <unit>`; check `https://tpmjs.com/api/health` to verify the app is up
+- The database is the self-hosted `tpmjs-pg` PostgreSQL 17 container on the same box (`127.0.0.1:5435` from the host; migrated off Neon 2026-07-14) — see `CLAUDE.md` for connection details
 
 ## Getting Help
 

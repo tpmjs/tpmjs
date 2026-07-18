@@ -11,7 +11,7 @@ A comprehensive guide to how TPMJS works, its architecture, and strategies for h
 3. [Tool Execution Flow](#tool-execution-flow)
 4. [The Local Tool Challenge](#the-local-tool-challenge)
 5. [Solution Strategies](#solution-strategies)
-6. [Implementation Roadmap](#implementation-roadmap)
+6. [Historical design exploration (January 2026, unshipped)](#historical-design-exploration-january-2026-unshipped)
 
 ---
 
@@ -37,15 +37,18 @@ Developers add a `tpmjs` field to their package.json:
   "name": "@company/my-tool",
   "keywords": ["tpmjs"],
   "tpmjs": {
-    "tools": {
-      "myTool": {
-        "description": "Does something useful",
-        "export": "myTool"
+    "category": "utilities",
+    "tools": [
+      {
+        "name": "myTool",
+        "description": "Does something useful for AI agents"
       }
-    }
+    ]
   }
 }
 ```
+
+`tools` is an array of `{ name, description? }` where `name` is the package's export name (`TpmjsMultiToolSchema` in `packages/types/src/tpmjs.ts`); if omitted, tools are auto-discovered from the package's exports.
 
 The platform discovers this via npm's changes feed and keyword search, validates the package, and adds it to the registry.
 
@@ -117,7 +120,7 @@ Agent (user-created AI agent)
 1. **Sandbox Executor (Default)**
    - Remote service that loads npm packages dynamically
    - Isolated execution environment
-   - 5-minute timeout per execution
+   - 5-minute timeout per execution (enforced by the web app's executor client — `DEFAULT_TIMEOUT` in `apps/web/src/lib/executors/index.ts`)
    - Supports environment variables
 
 2. **Custom Executor**
@@ -854,7 +857,9 @@ User's Machine
 
 ---
 
-## Implementation Roadmap
+## Historical design exploration (January 2026, unshipped)
+
+> **Note:** This section is a preserved design exploration from January 2026. None of these local-execution deliverables shipped — there is no tunnel service, browser extension, or local-first sync protocol, and tool execution remains remote/sandboxed (the native Omega Mac app in `apps/omega-mac` also executes tools via the remote sandbox). It is kept as context for the local-execution problem space.
 
 Based on complexity, impact, and user experience, here's a suggested prioritization:
 

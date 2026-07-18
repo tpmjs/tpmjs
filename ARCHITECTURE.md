@@ -53,9 +53,9 @@ TPMJS is a **tool registry platform** that automatically discovers, validates, a
 ├───────────────────────┬───────────────────────┬─────────────────────────────┤
 │       Database        │      Execution        │         External            │
 │  ───────────────────  │  ───────────────────  │  ─────────────────────────  │
-│  • PostgreSQL 17      │  • Vercel Sandbox     │  • npm Registry             │
-│    (self-hosted)      │  • Custom Executors   │  • esm.sh CDN               │
-│  • Prisma ORM         │                       │  • GitHub API               │
+│  • PostgreSQL 17      │  • Deno executor      │  • npm Registry             │
+│    (self-hosted)      │    (on-box, default)  │  • esm.sh CDN               │
+│  • Prisma ORM         │  • Custom Executors   │  • GitHub API               │
 └───────────────────────┴───────────────────────┴─────────────────────────────┘
 ```
 
@@ -99,7 +99,7 @@ tpmjs/
 │
 ├── turbo.json                  # Turborepo task configuration
 ├── pnpm-workspace.yaml         # Workspace definitions
-└── vercel.json                 # Deployment & cron configuration
+└── vercel.json                 # Vercel config (deploys gated off; crons block removed — see DEPLOYMENT.md)
 ```
 
 ### Published Packages (npm @tpmjs scope)
@@ -241,11 +241,12 @@ The execution system provides sandboxed environments for safely running npm pack
 
 ### Executor Types
 
-**1. Default Executor (Vercel Sandbox)**
-- Pre-configured sandbox environment
-- Node.js 22, 2 vCPUs, 2 minute timeout
-- Network isolated, per-request env injection
-- Automatic npm install
+**1. Default Executor (Deno, on-box)**
+- The `tpmjs-railway-executor` container (`apps/railway-executor/server.ts`), reached via `SANDBOX_EXECUTOR_URL`
+- No npm install: tools are dynamically imported from `https://esm.sh/{pkg}@{version}`, with a fallback to Deno-native `npm:` resolution when the esm.sh build fails (native/Node-only deps)
+- Per-request env injection (`Deno.env` + Node-compat `process.env`); factory-function exports initialized by trying no-args, config-object, and single-arg call patterns
+- Module cache: 2-minute TTL, max 200 entries; factory-created tools are never served from cache (they may read env at creation time)
+- Fail-closed Bearer auth (`EXECUTOR_API_KEY`) on every endpoint except `GET /health`; the `@tpmjs/package-executor` client aborts calls after 5 minutes
 
 **2. Custom URL Executor**
 - User-deployed executor service
@@ -257,7 +258,7 @@ The execution system provides sandboxed environments for safely running npm pack
 
 ```
 ┌─────────────────────┐
-│   System Default    │ ◄─── Vercel Sandbox
+│   System Default    │ ◄─── Deno executor (SANDBOX_EXECUTOR_URL)
 │   (lowest priority) │
 └─────────┬───────────┘
           │ overridden by
@@ -584,9 +585,11 @@ qualityScore = tierScore + downloadsScore + starsScore + richnessScore
 }
 ```
 
-**Valid Categories:**
-- Core: `research`, `web`, `data`, `documentation`, `engineering`, `security`, `statistics`, `ops`, `agent`, `utilities`, `html`, `compliance`
-- Legacy: `web-scraping`, `data-processing`, `file-operations`, `communication`, `database`, `api-integration`, `image-processing`, `text-analysis`, `automation`, `ai-ml`, `monitoring`
+**Valid Categories** (source of truth: `TPMJS_CATEGORIES` in `packages/types/src/tpmjs.ts`):
+- Core: `research`, `web`, `data`, `documentation`, `engineering`, `security`, `statistics`, `ops`, `agent`, `sandbox`, `utilities`, `html`, `compliance`
+- Legacy (backward compatibility): `web-scraping`, `data-processing`, `file-operations`, `communication`, `database`, `api-integration`, `image-processing`, `text-analysis`, `automation`, `ai-ml`, `monitoring`
+- Business: `finance`, `legal`, `hr`, `marketing`, `cx`, `edu`, `sales`
+- Aliases: `doc`, `text`
 
 ---
 
@@ -646,10 +649,11 @@ The API is built on Next.js 16 App Router with standardized response formats.
 
 | Endpoint Type | Limit | Window |
 |---------------|-------|--------|
-| Default | 100 requests | 1 minute |
-| Strict | 20 requests | 1 minute |
-| Tool Execute | 10 requests | 1 hour |
-| Conversation | 30 requests | 1 minute |
+| Default (`DEFAULT_RATE_LIMIT`) | 1000 requests | 1 minute |
+| Strict (`STRICT_RATE_LIMIT`) | 200 requests | 1 minute |
+| AI Generation (`AI_GENERATION_RATE_LIMIT`) | 50 requests | 1 hour |
+| Tool Execute (`lib/rate-limiter.ts`, DB-backed) | 100 executions | 1 hour |
+| Conversation (`CHAT_RATE_LIMIT`) | 30 requests | 1 minute |
 
 ### Authentication
 
@@ -769,8 +773,8 @@ User API keys (OpenAI, Anthropic, etc.) are stored encrypted:
 
 ### Rate Limiting
 
-- **Distributed:** Vercel KV with in-memory fallback
-- **Per-IP:** Based on `x-forwarded-for`, `x-real-ip`, or `cf-connecting-ip`
+- **Store:** in-memory per-process sliding window (`apps/web/src/lib/rate-limit.ts`); accurate in production because the app runs as a single container. The distributed Vercel KV path (`checkRateLimitDistributed`) is dormant — `KV_REST_API_URL` is unset on-box
+- **Per-IP:** Based on `x-forwarded-for` or `x-real-ip`
 - **Headers:** `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`
 
 ### Cron Security
@@ -780,7 +784,7 @@ All sync endpoints require:
 Authorization: Bearer {CRON_SECRET}
 ```
 
-Vercel Cron automatically adds this header.
+The bearer token comes from GitHub Actions secrets (the fast sync workflows hitting `https://tpmjs.com`) or from the on-box systemd timers' `EnvironmentFile=/etc/donto/tpmjs-web.env` (the daily `tpmjs-cron.timer` and 6-hourly `tpmjs-sync-keyword.timer`, which hit the web container directly). See `DEPLOYMENT.md`.
 
 ### Executor Verification
 
@@ -837,8 +841,8 @@ pnpm build                        # Build all packages
 | Styling | Tailwind CSS 4.1 |
 | Build | Turborepo + pnpm |
 | Testing | Vitest + Testing Library |
-| Deployment | Vercel |
+| Deployment | Self-hosted (podman containers, on-box builds — see DEPLOYMENT.md) |
 
 ---
 
-*This documentation was auto-generated from codebase exploration. Last updated: January 2025*
+*This documentation was auto-generated from codebase exploration. Last updated: 2026-07-18*

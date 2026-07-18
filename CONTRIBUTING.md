@@ -162,28 +162,38 @@ import { TpmjsToolDefinition } from '@tpmjs/types';
 
 ### Code Example
 
-```typescript
-import type { TpmjsToolDefinition } from '@tpmjs/types/tpmjs';
+Tools are authored with the Vercel AI SDK's `tool()` helper (the `ai` package): a `description`, an `inputSchema`, and an `execute` function. This is the shape from the real official tool `packages/tools/official/csv-parse/src/index.ts`:
 
-export const yourTool: TpmjsToolDefinition = {
-  name: 'your_tool_name',
+```typescript
+import { jsonSchema, tool } from 'ai';
+
+type YourToolInput = {
+  query: string;
+};
+
+export const yourTool = tool({
   description: 'What this tool does',
-  inputSchema: {
+  inputSchema: jsonSchema<YourToolInput>({
     type: 'object',
     properties: {
       query: {
         type: 'string',
-        description: 'Query parameter'
-      }
+        description: 'Query parameter',
+      },
     },
-    required: ['query']
-  },
-  handler: async (input) => {
+    required: ['query'],
+    additionalProperties: false,
+  }),
+  async execute({ query }) {
     // Implementation
     return { result: 'success' };
-  }
-};
+  },
+});
+
+export default yourTool;
 ```
+
+The export name (`yourTool`) is what gets listed in the package's `tpmjs.tools[].name`. See `packages/tools/official/csv-parse/` for a complete working example, including its `package.json` `tpmjs` field.
 
 ## Pull Request Process
 
@@ -365,8 +375,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 
 ## Getting Help
 
-- **Discussions**: [GitHub Discussions](https://github.com/tpmjs/tpmjs/discussions)
-- **Issues**: [GitHub Issues](https://github.com/tpmjs/tpmjs/issues)
+- **Issues**: [GitHub Issues](https://github.com/tpmjs/tpmjs/issues) — questions, bug reports, and feature requests all welcome
 
 ## Code of Conduct
 

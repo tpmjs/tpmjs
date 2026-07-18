@@ -45,68 +45,76 @@ pnpm --filter=@tpmjs/db db:studio     # Prisma Studio GUI
 
 Pre-commit runs: format, lint, type-check. Pre-push runs: test. If hooks pass locally, CI will pass too.
 
-## Vercel
+## Deployment (on-box podman)
 
-The Vercel project is `tpmjs-web` (configured in `/.vercel/project.json`). Domains: `tpmjs.com`, `tpmjs-web.vercel.app`.
+Production is the box itself: every tpmjs service runs as a podman Quadlet unit. The quadlets are source-controlled in the **donto-infra** repo (`/mnt/donto-data/workspace/donto-infra/quadlets/tpmjs-*.container` plus the cron `.service`/`.timer` units) — edit there, never in `/etc/containers/systemd/` directly.
 
-**Always run Vercel CLI commands from the repo root** so it picks up the correct project:
+| Unit / container | What | Host port (127.0.0.1) |
+|---|---|---|
+| `tpmjs-web` | tpmjs.com Next.js app (Caddy + Cloudflare in front) | 3200 |
+| `tpmjs-playground` | Tool playground | 3201 |
+| `tpmjs-tutorial` | Tutorial site | 3202 |
+| `tpmjs-railway-executor` | Deno tool executor — the DEFAULT executor ("railway" in the name is historical) | 3210 |
+| `tpmjs-agent-sandbox` | Deno agent sandbox (stateful workspaces) | 3211 |
+| `tpmjs-pg` | PostgreSQL 17 — the production DB | 5435 |
 
-```bash
-vercel env add MY_VAR production              # Add env var
-vercel env ls                                 # List env vars
-vercel redeploy <deployment-url>              # Redeploy with latest env vars
-```
+All containers share the `tpmjs` podman network and reach each other by container name (web → `tpmjs-pg:5432`, playground → `tpmjs-railway-executor:3002`). Secrets/env live in `/etc/donto/tpmjs-<name>.env` (root:ajax 640) — never in the repo, and there are no `.env.local` files in the checkout.
 
-Build command: `cd ../.. && pnpm install && pnpm --filter=@tpmjs/web... build` (the `...` suffix builds all workspace dependencies first).
-
-Auto-deploys on push to `main` via GitHub integration. To redeploy with new env vars:
-
-```bash
-vercel redeploy <current-deployment-url>      # Redeploy with latest env vars
-```
-
-## Railway
-
-Two services in the `tpmjs` project:
-
-| Service | URL | Purpose |
-|---------|-----|---------|
-| `tpmjs-tools-executor` | `endearing-commitment-production.up.railway.app` | Stateless tool executor (Deno) |
-| `agent-sandbox` | `agent-sandbox-production-aa9f.up.railway.app` | Stateful sandbox server (Deno + Docker) |
-
-Link to a service before running commands:
+**Deploy a Next.js app** (web/playground/tutorial). Images are on-box builds (`localhost/tpmjs-*:built`) from one parametrized Dockerfile — there is no image registry, so never prune these images without a replacement build:
 
 ```bash
-railway service agent-sandbox                 # Link to sandbox service
-railway service tpmjs-tools-executor          # Link to executor service
-railway variables                             # List env vars for linked service
-railway variables --set "KEY=value"           # Set env var (triggers redeploy)
-railway deployment list                       # List recent deployments
-railway up /path/to/dir --path-as-root --detach  # Deploy from a subdirectory
+cd /mnt/donto-data/workspace/donto-infra
+sudo podman build --network=host --build-arg APP=web \
+  -t localhost/tpmjs-web:built -f build/tpmjs.Dockerfile /mnt/donto-data/workspace/tpmjs
+sudo ./deploy.sh tpmjs-web        # only needed if the quadlet itself changed
+sudo systemctl restart tpmjs-web
 ```
 
-The sandbox server lives in `templates/agent-sandbox/`. Deploy with:
+**Deploy the Deno services** (each builds from its own directory in this repo):
 
 ```bash
-railway service agent-sandbox
-railway up templates/agent-sandbox --path-as-root --detach
+sudo podman build -t tpmjs-railway-executor:local /mnt/donto-data/workspace/tpmjs/apps/railway-executor/
+sudo systemctl restart tpmjs-railway-executor
+
+sudo podman build -t tpmjs-agent-sandbox:local /mnt/donto-data/workspace/tpmjs/templates/agent-sandbox/
+sudo systemctl restart tpmjs-agent-sandbox
 ```
+
+(The sandbox image builds from `templates/agent-sandbox/` — NOT `services/sandbox-executor/`, which is the unused legacy Node executor.)
+
+**Logs / status**:
+
+```bash
+sudo podman ps --filter name=tpmjs      # what's running (tpmjs-pg has a healthcheck)
+sudo podman logs --tail 100 tpmjs-web   # container stdout
+journalctl -u tpmjs-web -f              # same via systemd, plus restarts
+systemctl status tpmjs-web
+```
+
+## Legacy platforms (pending decommission)
+
+- **Vercel**: git deploys are gated OFF (`vercel.json` → `git.deploymentEnabled.main: false`) — pushing to `main` deploys NOTHING. The Vercel project (`tpmjs-web`, `/.vercel/project.json`) exists only pending decommission; don't add env vars, deployments, or crons there. `vercel.json` is kept for its headers config, not deployment.
+- **Railway**: the old `tpmjs-tools-executor` and `agent-sandbox` services migrated on-box 2026-07 (now `tpmjs-railway-executor` :3210 and `tpmjs-agent-sandbox` :3211). Don't `railway up` anything.
+- **Neon**: the DB migrated to the self-hosted `tpmjs-pg` container 2026-07-14 (final dump archived at `/mnt/donto-data/backups/tpmjs-neon-final-2026-07-14.dump`). The pooled/unpooled DSN split is a Neon leftover — both vars now hold the same DSN.
 
 ## Debugging Production Issues
 
-You have access to `gh`, `vercel`, and `railway` CLIs. **Always use these first** when debugging production problems rather than guessing at fixes.
+You have `gh` plus the on-box tooling (`sudo podman`, `systemctl`/`journalctl`, `psql`). **Always use these first** when debugging production problems rather than guessing at fixes.
 
 ### Verify Deployment Status
 
+There is NO auto-deploy: production is whatever `localhost/tpmjs-web:built` was last built from, so a pushed commit is not live until the image is rebuilt and the unit restarted.
+
 ```bash
-# Check what commit is live in production
+# Is the app up? (build fields report "local" on-box — they were Vercel env vars)
 curl -s https://tpmjs.com/api/health | jq .
+
+# When was the live image built?
+sudo podman image inspect localhost/tpmjs-web:built --format '{{.Created}}'
 
 # Compare with local commit
 git log --oneline -1
 ```
-
-The health endpoint returns `commitSha`, `commitMessage`, and `deploymentUrl`.
 
 ### GitHub Actions (CI)
 
@@ -119,41 +127,43 @@ gh run watch                                  # Watch current run
 gh pr checks <pr-number>                      # Check status on a PR
 ```
 
-### Vercel (Deployments)
+### On-box Services (podman/systemd)
 
 ```bash
-vercel ls                                     # List deployments (run from repo root!)
-vercel inspect <deployment-url>               # Build info + lambda list
-vercel logs <deployment-url>                  # Runtime logs
-vercel logs <deployment-url> --since 1h       # Last hour of logs
-vercel env ls                                 # List env vars (run from repo root!)
+sudo podman ps --filter name=tpmjs            # What's running (+ tpmjs-pg health)
+sudo podman logs --tail 200 tpmjs-web         # Runtime logs (also: -playground, -tutorial,
+                                              #   -railway-executor, -agent-sandbox, -pg)
+journalctl -u tpmjs-web --since -1h           # Same logs via systemd, plus unit restarts
+systemctl status tpmjs-web tpmjs-pg           # Unit state / restart loops
+systemctl list-timers 'tpmjs-*'               # Cron timers: next/last run
+journalctl -u tpmjs-cron.service --since -1d  # Did last night's daily crons run/fail?
 ```
 
-Key things to check:
-- `vercel inspect` shows lambda functions (λ) — if you only see static pages (○), API routes didn't deploy
-- `vercel logs` shows runtime errors, timeouts, and cold start issues
+For sync/cron issues, the `sync_logs` table is often the fastest signal:
 
-### Railway (Services)
-
-```bash
-railway status                                # Current project/environment/service
-railway logs                                  # Service logs (streams, use timeout)
-railway logs --build <deployment-id>          # Build logs for a deployment
-railway variables                             # List env vars
-railway deployment list                       # List recent deployments
+```sql
+SELECT * FROM sync_logs ORDER BY created_at DESC LIMIT 10;
 ```
 
 ### Debugging Workflow
 
 1. **Identify the problem**: Is it a build failure, runtime error, or timeout?
 2. **Check CI first**: `gh run list` then `gh run view <id> --log-failed`
-3. **Check Vercel**: `vercel inspect <url>` to verify lambdas deployed, `vercel logs <url>` for runtime errors
+3. **Check the containers**: `sudo podman logs --tail 200 tpmjs-web` for runtime errors, `systemctl status tpmjs-web` for restart loops
 4. **Check database**: the production DB is the on-box `tpmjs-pg` container — from the box: `sudo podman exec -it tpmjs-pg psql -U tpmjs -d tpmjs`
-5. **Verify the fix**: Push, watch CI with `gh run watch`, then `curl https://tpmjs.com/api/health`
+5. **Verify the fix**: Push, watch CI with `gh run watch`, then rebuild the image + `sudo systemctl restart tpmjs-web` (no auto-deploy!) and `curl https://tpmjs.com/api/health`
 
 ### Direct Database Access
 
-The production database is the local `tpmjs-pg` PostgreSQL 17 container (same box as the site; apps reach it as `tpmjs-pg:5432` on the podman network, host tooling uses `127.0.0.1:5435`). Connection strings are in `.env.local` — `DATABASE_URL` and `DATABASE_URL_UNPOOLED` both point at it (the pooled/unpooled split was a Neon artifact, kept only because `schema.prisma`'s `directUrl` reads the second var).
+The production database is the local `tpmjs-pg` PostgreSQL 17 container (same box as the site; apps reach it as `tpmjs-pg:5432` on the podman network, host tooling uses `127.0.0.1:5435`). There is **no `.env` in the repo** (`packages/db/` ships only `.env.example`, and no `.env.local` exists) — the canonical `DATABASE_URL` lives in `/etc/donto/tpmjs-web.env` (root:ajax 640) and points at the container-DNS host `tpmjs-pg:5432`. For host tooling, rewrite the host to `127.0.0.1:5435`:
+
+```bash
+export DATABASE_URL=$(sudo grep '^DATABASE_URL=' /etc/donto/tpmjs-web.env | cut -d= -f2- | sed 's/tpmjs-pg:5432/127.0.0.1:5435/')
+```
+
+(`DATABASE_URL_UNPOOLED` holds the same DSN — the pooled/unpooled split was a Neon artifact, kept only because `schema.prisma`'s `directUrl` reads the second var.)
+
+Quickest interactive path, no DSN needed: `sudo podman exec -it tpmjs-pg psql -U tpmjs -d tpmjs`.
 
 **Prisma Studio** (GUI for browsing/editing data):
 ```bash
@@ -180,45 +190,42 @@ SELECT * FROM page_views ORDER BY date DESC LIMIT 20;
 cd packages/db && npx tsx scripts/my-script.ts
 ```
 
-**Note:** Prisma reads `.env` from `packages/db/`, not the root. If `db:studio` can't connect, ensure `DATABASE_URL` is set there or exported in your shell.
+**Note:** Prisma reads `.env` from `packages/db/`, not the root — and that file doesn't exist in the checkout. Export `DATABASE_URL` in your shell (recipe above) or create a local gitignored `packages/db/.env` from `.env.example`.
 
-### Manual Cron Triggers
+### Cron Jobs (schedules + manual triggers)
 
-All cron endpoints require `Authorization: Bearer <CRON_SECRET>`. The `CRON_SECRET` value lives in `.env.local` at the repo root (and `apps/web/.env.local`). Source it before running:
+There is NO `crons` block in `vercel.json`. Schedules are split across two lanes — the split exists because **Cloudflare cuts proxied responses at ~100s**, so anything long-running must hit `127.0.0.1:3200` from the box:
+
+**Fast crons — GitHub Actions workflows** (`.github/workflows/`, curl `https://tpmjs.com` with the repo's `CRON_SECRET` secret):
+- `sync-changes.yml` → `POST /api/sync/changes` — NPM changes feed, **every 2min**
+- `sync-enrich.yml` → `POST /api/sync/enrich` — schema extraction + health, **every 2min**
+- `endpoint-health-check.yml` — public-endpoint smoke checks, **every 5min**
+- `discord-summary.yml` — Discord daily summary, **daily 9am UTC** (drives the `ajax/tpmjs-discord` agent via the conversation API, not `/api/cron/discord-summary`)
+- Dispatch-only (schedules removed — they 524'd through Cloudflare or can't reach the on-box DB): `sync-keyword.yml`, `sync-metrics.yml`, `health-check.yml`, `sync-package.yml`, `sync-manual.yml`
+
+**Long crons — on-box systemd timers** (units in `donto-infra/quadlets/`, curl `http://127.0.0.1:3200` directly):
+- `tpmjs-cron.timer` — **daily ~02:30 UTC** (+ ≤10min jitter): `health-check` (full tool sweep, takes minutes), `metrics`, `stats-snapshot` (homepage depends on this), `view-rollup`, `execution-rollup`, `cleanup-activity`, `/api/cron/use-cases`
+- `tpmjs-sync-keyword.timer` — **every 6h**: `keyword` (moved on-box 2026-07-18; the ~150-175s sweep never survived the GH lane)
+
+Currently unscheduled (manual trigger only): `cleanup-executions`, `cleanup-api-usage`, `cleanup-search-logs`, `/api/cron/discord-summary`.
+
+**Manual triggers.** All cron endpoints require `Authorization: Bearer <CRON_SECRET>`. The secret lives in `/etc/donto/tpmjs-web.env` (root:ajax 640; rotated 2026-07-18) — there is no `.env.local` in the repo:
 
 ```bash
-source .env.local
-```
+export CRON_SECRET=$(sudo grep '^CRON_SECRET=' /etc/donto/tpmjs-web.env | cut -d= -f2)
 
-**Sync endpoints** (discovery, enrichment, metrics):
-```bash
-curl -X POST https://tpmjs.com/api/sync/changes -H "Authorization: Bearer $CRON_SECRET"          # NPM changes feed (every 4h)
-curl -X POST https://tpmjs.com/api/sync/keyword -H "Authorization: Bearer $CRON_SECRET"          # NPM keyword search (every 6h)
-curl -X POST https://tpmjs.com/api/sync/enrich -H "Authorization: Bearer $CRON_SECRET"           # Schema extraction + health (every 2min)
-curl -X POST https://tpmjs.com/api/sync/metrics -H "Authorization: Bearer $CRON_SECRET"          # Download stats + quality scores (daily)
-curl -X POST https://tpmjs.com/api/sync/health-check -H "Authorization: Bearer $CRON_SECRET"     # Full health check for all tools (daily 2am UTC)
+# Short endpoints work through the public domain:
+curl -X POST https://tpmjs.com/api/sync/changes -H "Authorization: Bearer $CRON_SECRET"
 curl -X POST https://tpmjs.com/api/sync/package -H "Authorization: Bearer $CRON_SECRET" \
-  -H "Content-Type: application/json" -d '{"packageName":"some-package"}'                         # Sync a specific package
+  -H "Content-Type: application/json" -d '{"packageName":"some-package"}'
+
+# Long endpoints (health-check, keyword, metrics) will 524 through Cloudflare even though
+# the sync completes server-side — hit the container directly from the box instead:
+curl -X POST http://127.0.0.1:3200/api/sync/health-check -H "Authorization: Bearer $CRON_SECRET"
+curl -X POST http://127.0.0.1:3200/api/sync/keyword -H "Authorization: Bearer $CRON_SECRET"
 ```
 
-**Rollup / snapshot endpoints** (aggregation):
-```bash
-curl -X POST https://tpmjs.com/api/sync/stats-snapshot -H "Authorization: Bearer $CRON_SECRET"   # Daily stats snapshot (homepage depends on this)
-curl -X POST https://tpmjs.com/api/sync/view-rollup -H "Authorization: Bearer $CRON_SECRET"      # Roll up page views (daily 0:30 UTC)
-curl -X POST https://tpmjs.com/api/sync/execution-rollup -H "Authorization: Bearer $CRON_SECRET" # Roll up executions (daily 1am UTC)
-curl -X POST https://tpmjs.com/api/sync/cleanup-activity -H "Authorization: Bearer $CRON_SECRET"  # Delete old activity >90d (daily 3am UTC)
-curl -X POST https://tpmjs.com/api/sync/cleanup-executions -H "Authorization: Bearer $CRON_SECRET" # Delete old execution events >90d (daily 3:15am UTC)
-curl -X POST https://tpmjs.com/api/sync/cleanup-api-usage -H "Authorization: Bearer $CRON_SECRET"  # Delete old API usage records >30d (daily 3:30am UTC)
-curl -X POST https://tpmjs.com/api/sync/cleanup-search-logs -H "Authorization: Bearer $CRON_SECRET" # Delete old search logs >90d (daily 3:45am UTC)
-```
-
-**Other cron endpoints**:
-```bash
-curl -X POST https://tpmjs.com/api/cron/discord-summary -H "Authorization: Bearer $CRON_SECRET"  # Discord daily summary (daily 9am UTC)
-curl -X POST https://tpmjs.com/api/cron/use-cases -H "Authorization: Bearer $CRON_SECRET"        # Generate use cases (daily)
-```
-
-Cron schedules are defined in `vercel.json` at the repo root.
+Every sync endpoint under `/api/sync/*` (see `apps/web/src/app/api/sync/`) accepts the same bearer auth; check `sync_logs` for the outcome.
 
 ## Admin Dashboard
 
@@ -254,7 +261,7 @@ Use the `mcp__claude-code-tools__official-memory--createMemory` tool to save a m
 - You make an architectural decision worth remembering (what was chosen, what was rejected, why)
 - You learn something about the production infrastructure (deploy behavior, env var gotchas, service interactions)
 
-Keep memory content structured with concrete details (file paths, error messages, code patterns). Tag with relevant topics like `bug`, `feature`, `prisma`, `vercel`, `architecture`, etc.
+Keep memory content structured with concrete details (file paths, error messages, code patterns). Tag with relevant topics like `bug`, `feature`, `prisma`, `podman`, `architecture`, etc.
 
 ## Publishing Packages
 
