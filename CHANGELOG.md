@@ -28,6 +28,28 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - Copy: tighter, more specific messaging across all public surfaces
 - About page: expanded with differentiators, tech stack, CTAs
 
+## 2026-07-18 — Maintainer overhaul
+
+### Security
+- Rotated `CRON_SECRET` and removed dead Stack Auth keys after finding live secrets reachable in public git history; deleted the two stale branches carrying the leaked env files
+- All 16 cron/sync endpoints and both Deno executors moved to fail-closed, timing-safe auth (`requireCronAuth`); a missing env var can no longer expose destructive endpoints or code execution
+- Both executors now run as non-root (`deno`, uid 1993) with all capabilities dropped and `NoNewPrivileges` — untrusted tool code previously ran as root in the container
+- Security headers (HSTS, nosniff, X-Frame-Options, referrer/permissions policy) restored via `next.config.ts` after silently disappearing in the move off Vercel
+- `better-auth` 1.4.10 → 1.6.23 (OAuth refresh-token replay advisory)
+
+### Fixed
+- Real HTTP 404s for unknown URLs (the catch-all profile route soft-404'd every garbage path with a 200); `/tools` now redirects to the browse UI
+- Enrichment queue un-wedged: auto-discovery failures now back off exponentially instead of pinning the head of the queue (0 packages discovered for 3+ days → advancing again)
+- Metrics sync no longer overwrites download/star counts with 0 when npm/GitHub rate-limit; unknown values keep the previous data
+- README/CLI MCP quickstart pointed at a nonexistent package (`@anthropic/mcp-remote` → `mcp-remote`)
+- Keyword sync moved on-box (its ~155s sweep could never finish under Cloudflare's ~100s cutoff — every scheduled CI run failed for weeks while the sync silently succeeded); metrics sweep moved to the daily on-box cron for the same reason
+
+### Improved
+- CI re-enabled and green (was disabled since May); per-token-era automation workflows deleted
+- Issue tracker triaged 21 → 2 open, each closure with evidence; PR #17 given a full review with an adoption plan (#110)
+- Operator/contributor docs rewritten to match the on-box deployment reality (Vercel/Railway/Neon content moved to history or legacy notes)
+- `/api/health` now reports the deployed git commit (build provenance in the image)
+
 ## 2024 - Initial Release
 
 - Open-source registry and execution layer for AI agent tools
