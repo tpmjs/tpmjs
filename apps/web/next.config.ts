@@ -29,6 +29,13 @@ const nextConfig: NextConfig = {
         destination: '/tool-ideas',
         permanent: true,
       },
+      {
+        // /tools is not a route (the browse UI lives at /tool/tool-search)
+        // but it's a guessable URL people and crawlers keep hitting
+        source: '/tools',
+        destination: '/tool/tool-search',
+        permanent: true,
+      },
     ];
   },
 };

@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   const startTime = Date.now();
   let processed = 0;
-  const skipped = 0;
+  let skipped = 0;
   let errors = 0;
   const errorMessages: string[] = [];
 
@@ -40,7 +40,10 @@ export async function POST(request: NextRequest) {
 
       const results = await Promise.allSettled(
         batch.map(async (pkg) => {
-          // Fetch downloads and GitHub stars in parallel for each package
+          // Fetch downloads and GitHub stars in parallel for each package.
+          // Either fetcher returns null when the value is UNKNOWN (rate
+          // limit / API outage) — in that case we keep the previously stored
+          // value rather than overwriting good data with 0.
           const [downloads, githubStars] = await Promise.all([
             fetchDownloadStats(pkg.npmPackageName),
             fetchGitHubStarsFromRepository(
@@ -48,20 +51,26 @@ export async function POST(request: NextRequest) {
             ),
           ]);
 
-          await prisma.package.update({
-            where: { id: pkg.id },
-            data: {
-              npmDownloadsLastMonth: downloads,
-              githubStars,
-            },
-          });
+          const packageData: { npmDownloadsLastMonth?: number; githubStars?: number } = {};
+          if (downloads !== null) packageData.npmDownloadsLastMonth = downloads;
+          if (githubStars !== null) packageData.githubStars = githubStars;
 
-          // Calculate and update quality score for each tool in this package
+          if (Object.keys(packageData).length > 0) {
+            await prisma.package.update({
+              where: { id: pkg.id },
+              data: packageData,
+            });
+          }
+
+          // Calculate and update quality score for each tool in this package,
+          // using the freshest known values (fetched, else previously stored).
+          const effectiveDownloads = downloads ?? pkg.npmDownloadsLastMonth ?? 0;
+          const effectiveStars = githubStars ?? pkg.githubStars ?? 0;
           for (const tool of pkg.tools) {
             const qualityScore = calculateQualityScore({
               tier: pkg.tier,
-              downloads,
-              githubStars,
+              downloads: effectiveDownloads,
+              githubStars: effectiveStars,
               hasParameters: !!tool.parameters,
               hasReturns: !!tool.returns,
               hasAiAgent: !!tool.aiAgent,
@@ -75,19 +84,32 @@ export async function POST(request: NextRequest) {
             });
           }
 
-          return pkg.npmPackageName;
+          // A package where both values were unknown counts as skipped
+          return {
+            name: pkg.npmPackageName,
+            allUnknown: downloads === null && githubStars === null,
+          };
         })
       );
 
       for (const result of results) {
         if (result.status === 'fulfilled') {
-          processed++;
+          if (result.value.allUnknown) {
+            skipped++;
+          } else {
+            processed++;
+          }
         } else {
           errors++;
           const errorMsg = `Failed to process package: ${result.reason instanceof Error ? result.reason.message : 'Unknown error'}`;
           errorMessages.push(errorMsg);
           console.error(errorMsg);
         }
+      }
+
+      // Pace the sweep — stay under npm/GitHub burst limits
+      if (i + BATCH_SIZE < packages.length) {
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
     }
 

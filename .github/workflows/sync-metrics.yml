@@ -1,9 +1,12 @@
 name: Sync NPM Metrics
 
+# NOTE (2026-07-18): schedule removed — the full-fleet sweep (237 packages x
+# npm downloads + GitHub stars) was hammering both APIs hourly into 429s and,
+# with per-batch pacing added, now runs long enough to risk Cloudflare's ~100s
+# proxied-response cutoff. Downloads data only changes daily anyway. The
+# schedule now lives on-box (tpmjs-cron.service in donto-infra, daily, against
+# 127.0.0.1:3200). This workflow remains for manual dispatch only.
 on:
-  schedule:
-    # Run every hour
-    - cron: '0 * * * *'
   workflow_dispatch:
 
 jobs:

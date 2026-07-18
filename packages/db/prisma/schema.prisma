@@ -40,6 +40,13 @@ model Package {
   npmDownloadsLastMonth Int? @default(0) @map("npm_downloads_last_month")
   githubStars           Int? @default(0) @map("github_stars")
 
+  // Tool auto-discovery queue state (mirrors Tool.schemaExtractionAttemptAt):
+  // lets the enrich cron retry failures with backoff instead of retrying the
+  // same head-of-queue packages forever
+  toolDiscoveryAttemptAt DateTime? @map("tool_discovery_attempt_at")
+  toolDiscoveryFailures  Int       @default(0) @map("tool_discovery_failures")
+  toolDiscoveryError     String?   @map("tool_discovery_error") @db.Text
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

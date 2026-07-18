@@ -41,13 +41,29 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const retryCutoff = new Date(now.getTime() - RETRY_COOLDOWN_MS);
 
-    // Phase 1: Auto-discover tools for packages that have 0 tools
-    const packagesNeedingDiscovery = await prisma.package.findMany({
+    // Phase 1: Auto-discover tools for packages that have 0 tools.
+    // Failures are tracked per-package with exponential backoff (1h doubling,
+    // capped at 7 days) so permanently-broken packages can't pin the head of
+    // the queue and starve everything behind them.
+    const discoveryCandidates = await prisma.package.findMany({
       where: {
         tools: { none: {} },
       },
-      take: 5,
+      orderBy: { toolDiscoveryAttemptAt: { sort: 'asc', nulls: 'first' } },
+      take: 25,
     });
+
+    const MAX_DISCOVERY_BACKOFF_MS = 7 * 24 * 60 * 60 * 1000;
+    const packagesNeedingDiscovery = discoveryCandidates
+      .filter((pkg) => {
+        if (!pkg.toolDiscoveryAttemptAt) return true;
+        const backoff = Math.min(
+          RETRY_COOLDOWN_MS * 2 ** Math.max(0, pkg.toolDiscoveryFailures - 1),
+          MAX_DISCOVERY_BACKOFF_MS
+        );
+        return now.getTime() - pkg.toolDiscoveryAttemptAt.getTime() > backoff;
+      })
+      .slice(0, 5);
 
     for (const pkg of packagesNeedingDiscovery) {
       if (Date.now() - startTime > TIME_BUDGET_MS) {
@@ -56,6 +72,12 @@ export async function POST(request: NextRequest) {
       }
 
       try {
+        // Mark attempt time before starting (prevents concurrent processing)
+        await prisma.package.update({
+          where: { id: pkg.id },
+          data: { toolDiscoveryAttemptAt: new Date() },
+        });
+
         console.log(`Auto-discovering tools for ${pkg.npmPackageName}...`);
         const exportsResult = await listToolExports(
           pkg.npmPackageName,
@@ -67,6 +89,13 @@ export async function POST(request: NextRequest) {
           console.log(
             `Failed to auto-discover tools for ${pkg.npmPackageName}: ${exportsResult.error}`
           );
+          await prisma.package.update({
+            where: { id: pkg.id },
+            data: {
+              toolDiscoveryFailures: { increment: 1 },
+              toolDiscoveryError: exportsResult.error?.slice(0, 1000) ?? 'Unknown error',
+            },
+          });
           errors++;
           errorMessages.push(
             `Auto-discovery failed for ${pkg.npmPackageName}: ${exportsResult.error}`
@@ -102,12 +131,27 @@ export async function POST(request: NextRequest) {
         console.log(
           `Auto-discovered ${validTools.length} tools for ${pkg.npmPackageName}: ${validTools.map((t) => t.name).join(', ')}`
         );
+        await prisma.package.update({
+          where: { id: pkg.id },
+          data: { toolDiscoveryFailures: 0, toolDiscoveryError: null },
+        });
         discovered++;
       } catch (error) {
         errors++;
         const errorMsg = `Auto-discovery error for ${pkg.npmPackageName}: ${error instanceof Error ? error.message : 'Unknown error'}`;
         errorMessages.push(errorMsg);
         console.error(errorMsg);
+        await prisma.package
+          .update({
+            where: { id: pkg.id },
+            data: {
+              toolDiscoveryFailures: { increment: 1 },
+              toolDiscoveryError: errorMsg.slice(0, 1000),
+            },
+          })
+          .catch(() => {
+            // best-effort failure bookkeeping
+          });
       }
     }
 

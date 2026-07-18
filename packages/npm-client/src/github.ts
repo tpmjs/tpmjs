@@ -68,12 +68,14 @@ export function parseGitHubUrl(
 }
 
 /**
- * Fetches star count for a GitHub repository
- * @param owner - Repository owner (user or organization)
- * @param repo - Repository name
- * @returns Star count, or 0 if not found or on error
+ * Fetches star count for a GitHub repository.
+ *
+ * Returns the star count, `0` when the repository does not exist (404), or
+ * `null` when the count is unknown (rate limit, auth failure, transient API
+ * error) — callers must treat `null` as "keep the previous value", never as
+ * zero stars.
  */
-export async function fetchGitHubStars(owner: string, repo: string): Promise<number> {
+export async function fetchGitHubStars(owner: string, repo: string): Promise<number | null> {
   const url = `${GITHUB_API_URL}/repos/${owner}/${repo}`;
 
   try {
@@ -95,15 +97,15 @@ export async function fetchGitHubStars(owner: string, repo: string): Promise<num
       return 0;
     }
 
-    if (response.status === 403) {
-      // Rate limited
-      console.warn('GitHub API rate limited');
-      return 0;
+    if (response.status === 403 || response.status === 429) {
+      // Primary or secondary rate limit — the count is unknown, not zero
+      console.warn(`GitHub API rate limited (${response.status}) for ${owner}/${repo}`);
+      return null;
     }
 
     if (!response.ok) {
       console.error(`GitHub API error: ${response.status} ${response.statusText}`);
-      return 0;
+      return null;
     }
 
     const data = await response.json();
@@ -111,24 +113,26 @@ export async function fetchGitHubStars(owner: string, repo: string): Promise<num
 
     if (!parsed.success) {
       console.error('Failed to parse GitHub response:', parsed.error);
-      return 0;
+      return null;
     }
 
     return parsed.data.stargazers_count;
   } catch (error) {
     console.error(`Failed to fetch GitHub stars for ${owner}/${repo}:`, error);
-    return 0;
+    return null;
   }
 }
 
 /**
- * Fetches star count from a repository URL or object
- * @param repository - Repository URL string or object with url property
- * @returns Star count, or 0 if not a GitHub repo or on error
+ * Fetches star count from a repository URL or object.
+ *
+ * Returns `0` when the package has no (parseable) GitHub repository, and
+ * `null` when the repository exists but the count could not be fetched —
+ * see fetchGitHubStars.
  */
 export async function fetchGitHubStarsFromRepository(
   repository: string | { type?: string; url?: string } | null | undefined
-): Promise<number> {
+): Promise<number | null> {
   const parsed = parseGitHubUrl(repository);
 
   if (!parsed) {
