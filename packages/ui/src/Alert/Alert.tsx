@@ -18,8 +18,12 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(
 Alert.displayName = 'Alert';
 
 export const AlertTitle = forwardRef<HTMLHeadingElement, AlertTitleProps>(
-  ({ className, ...props }, ref) => {
-    return <h5 ref={ref} className={cn(alertTitleVariants(), className)} {...props} />;
+  ({ className, children, ...props }, ref) => {
+    return (
+      <h5 ref={ref} className={cn(alertTitleVariants(), className)} {...props}>
+        {children}
+      </h5>
+    );
   }
 );
 AlertTitle.displayName = 'AlertTitle';

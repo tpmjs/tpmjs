@@ -302,7 +302,9 @@ export default function PrivacyPage(): React.ReactElement {
 
               <div className="p-6 border border-border rounded-lg bg-surface">
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <h3 className="text-xl font-semibold text-foreground">PostgreSQL (self-hosted)</h3>
+                  <h3 className="text-xl font-semibold text-foreground">
+                    PostgreSQL (self-hosted)
+                  </h3>
                   <span className="text-xs px-2 py-1 rounded bg-foreground/10 text-foreground-secondary">
                     Database
                   </span>

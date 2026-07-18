@@ -104,8 +104,8 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
             tpmjs is the tool layer for AI agents. Curate a collection once, then hand it to any
             agent the way that agent wants it — a CLI command, an MCP server, a REST endpoint, a
             typed SDK, or a loadable skill. One curated, health-scored, sandboxed source of truth;
-            every protocol. There&apos;s no MCP-vs-CLI-vs-REST war to pick a side in — you get all of
-            them.
+            every protocol. There&apos;s no MCP-vs-CLI-vs-REST war to pick a side in — you get all
+            of them.
           </p>
 
           {/* Brutalist Search Interface */}

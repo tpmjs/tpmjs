@@ -21,28 +21,29 @@ export default function AboutPage(): React.ReactElement {
 
         <div className="max-w-none space-y-6">
           <p className="text-lg text-foreground-secondary">
-            TPMJS is the open-source <strong className="text-foreground">tool layer for AI agents</strong>.
-            It continuously scans npm for packages tagged as AI tools, extracts their schemas,
-            validates them, and scores their quality — then serves your curated collection through
-            every surface an agent might want: a <strong className="text-foreground">CLI</strong>{' '}
-            command, an <strong className="text-foreground">MCP</strong> server, a{' '}
+            TPMJS is the open-source{' '}
+            <strong className="text-foreground">tool layer for AI agents</strong>. It continuously
+            scans npm for packages tagged as AI tools, extracts their schemas, validates them, and
+            scores their quality — then serves your curated collection through every surface an
+            agent might want: a <strong className="text-foreground">CLI</strong> command, an{' '}
+            <strong className="text-foreground">MCP</strong> server, a{' '}
             <strong className="text-foreground">REST API</strong>, a typed{' '}
             <strong className="text-foreground">SDK</strong>, and a loadable{' '}
             <strong className="text-foreground">Skill</strong>.
           </p>
 
           <p className="text-foreground-secondary">
-            Half the AI-tooling conversation in 2026 is an argument over transport — MCP is dead, MCP
-            is the future, just use REST, no, use the SDK. We think that&apos;s the wrong argument.
-            They&apos;re each better in a different context: CLI is best in Claude Code (fewest
-            tokens, native bash), MCP in Cursor and Claude Desktop (structured tools without a
-            shell), REST in your backend, the SDK in your TypeScript app, and a Skill when the agent
-            needs to <em>learn</em> the tools, not just call them. So instead of picking a side,
-            TPMJS lets you write (or curate) the tool once and delivers <strong className="text-foreground">all
-            of them from one source of truth</strong> — and, because it also runs each tool in an
-            isolated sandbox and health-scores it, you get discovery, trust, and quality on top of
-            every protocol. The Model Context Protocol and its official registry are one input we
-            build on, not the whole story.
+            Half the AI-tooling conversation in 2026 is an argument over transport — MCP is dead,
+            MCP is the future, just use REST, no, use the SDK. We think that&apos;s the wrong
+            argument. They&apos;re each better in a different context: CLI is best in Claude Code
+            (fewest tokens, native bash), MCP in Cursor and Claude Desktop (structured tools without
+            a shell), REST in your backend, the SDK in your TypeScript app, and a Skill when the
+            agent needs to <em>learn</em> the tools, not just call them. So instead of picking a
+            side, TPMJS lets you write (or curate) the tool once and delivers{' '}
+            <strong className="text-foreground">all of them from one source of truth</strong> — and,
+            because it also runs each tool in an isolated sandbox and health-scores it, you get
+            discovery, trust, and quality on top of every protocol. The Model Context Protocol and
+            its official registry are one input we build on, not the whole story.
           </p>
 
           <h2 className="text-xl font-semibold mt-10 mb-4 text-foreground">How it works</h2>
@@ -54,11 +55,14 @@ export default function AboutPage(): React.ReactElement {
             </code>{' '}
             keyword and TPMJS picks it up within minutes. It extracts Zod/JSON schemas, runs health
             checks, and computes quality scores — then serves the tool through the whole surface
-            area at once: a <code className="px-1 py-0.5 bg-surface border border-border text-sm font-mono">tpm</code>{' '}
-            CLI command, an MCP endpoint (works with Claude Code, Cursor, Windsurf, and any compliant
-            client), a REST API, a typed SDK, and a loadable skill. You can group tools into
-            collections, test them with auto-generated scenarios, and build agents that use them —
-            all from one place.
+            area at once: a{' '}
+            <code className="px-1 py-0.5 bg-surface border border-border text-sm font-mono">
+              tpm
+            </code>{' '}
+            CLI command, an MCP endpoint (works with Claude Code, Cursor, Windsurf, and any
+            compliant client), a REST API, a typed SDK, and a loadable skill. You can group tools
+            into collections, test them with auto-generated scenarios, and build agents that use
+            them — all from one place.
           </p>
 
           <h2 className="text-xl font-semibold mt-10 mb-4 text-foreground">
@@ -79,9 +83,9 @@ export default function AboutPage(): React.ReactElement {
               <span className="text-primary font-bold mt-0.5">--</span>
               <span>
                 <strong className="text-foreground">Sandboxed execution.</strong> Tools run in an
-                isolated hosted Deno sandbox with timeouts and rate limits — the agent never installs
-                the package or runs its code locally. A directory can only tell you a tool exists;
-                TPMJS runs it for you at arm&apos;s length.
+                isolated hosted Deno sandbox with timeouts and rate limits — the agent never
+                installs the package or runs its code locally. A directory can only tell you a tool
+                exists; TPMJS runs it for you at arm&apos;s length.
               </span>
             </li>
             <li className="flex gap-3">
@@ -96,10 +100,10 @@ export default function AboutPage(): React.ReactElement {
             <li className="flex gap-3">
               <span className="text-primary font-bold mt-0.5">--</span>
               <span>
-                <strong className="text-foreground">Curated collections.</strong>{' '}
-                Group the tools an agent actually needs and it&apos;s instantly live on all five
-                surfaces — on-demand discovery instead of tens of thousands of tokens of schemas
-                loaded into the context window up front.
+                <strong className="text-foreground">Curated collections.</strong> Group the tools an
+                agent actually needs and it&apos;s instantly live on all five surfaces — on-demand
+                discovery instead of tens of thousands of tokens of schemas loaded into the context
+                window up front.
               </span>
             </li>
             <li className="flex gap-3">
@@ -127,13 +131,13 @@ export default function AboutPage(): React.ReactElement {
 
           <p className="text-foreground-secondary">
             Turborepo monorepo with Next.js (App Router) and PostgreSQL via Prisma, self-hosted in
-            containers. Tool execution runs in isolated Deno sandboxes. The CLI and SDK are published
-            to npm under the{' '}
+            containers. Tool execution runs in isolated Deno sandboxes. The CLI and SDK are
+            published to npm under the{' '}
             <code className="px-1.5 py-0.5 bg-surface border border-border text-sm font-mono">
               @tpmjs
             </code>{' '}
-            scope. The MCP implementation follows the Model Context Protocol specification (Streamable
-            HTTP transport), so a collection works with any compliant client.
+            scope. The MCP implementation follows the Model Context Protocol specification
+            (Streamable HTTP transport), so a collection works with any compliant client.
           </p>
 
           <h2 className="text-xl font-semibold mt-10 mb-4 text-foreground">Built by</h2>

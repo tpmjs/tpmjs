@@ -1,9 +1,13 @@
 name: Sync NPM Keyword Search
 
+# NOTE (2026-07-18): schedule removed — the keyword sweep (~150-175s of npm
+# registry fetches + upserts) can never finish under Cloudflare's ~100s
+# proxied-response cutoff, so every scheduled run here died with a curl
+# timeout even though the sync itself completed server-side. The schedule now
+# lives on-box (tpmjs-sync-keyword.timer in donto-infra, every 6h, hitting
+# 127.0.0.1:3200 directly) — same move as the daily health-check (63f5a206).
+# This workflow remains for manual dispatch only.
 on:
-  schedule:
-    # Run every 15 minutes
-    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -14,7 +18,7 @@ jobs:
       - name: Trigger keyword search sync
         id: sync
         run: |
-          # Call the sync API and capture response (60s timeout for Vercel serverless)
+          # Call the sync API and capture response
           response=$(curl -X POST "https://tpmjs.com/api/sync/keyword" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
@@ -90,7 +94,7 @@ jobs:
                 embeds: [{
                   title: "❌ NPM Keyword Search Sync",
                   color: 15548997,
-                  description: "Sync request failed (likely timeout). Check Vercel function logs.",
+                  description: "Sync request failed. Check sync_logs on the box (the scheduled run is tpmjs-sync-keyword.timer).",
                   fields: [
                     { name: "🔗 Run", value: ("[View Logs](" + $run_url + ")"), inline: true }
                   ],

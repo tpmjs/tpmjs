@@ -141,7 +141,14 @@ export async function generateMetadata({ params }: ToolDetailPageProps): Promise
     return {
       title: `${tool.name} | TPMJS`,
       description: tool.description || `${tool.name} - AI tool from ${tool.package.npmPackageName}`,
-      keywords: [tool.package.category, 'AI', 'npm', 'tool', tool.name, tool.package.npmPackageName],
+      keywords: [
+        tool.package.category,
+        'AI',
+        'npm',
+        'tool',
+        tool.name,
+        tool.package.npmPackageName,
+      ],
       openGraph: {
         title: tool.name,
         description: tool.description,
@@ -174,15 +181,11 @@ export async function generateMetadata({ params }: ToolDetailPageProps): Promise
  * Tool detail page - server component
  */
 export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
+  let slug: string[];
+  let tool: Awaited<ReturnType<typeof getTool>>;
   try {
-    const { slug } = await params;
-    const tool = await getTool(slug);
-
-    if (!tool) {
-      notFound();
-    }
-
-    return <ToolDetailClient tool={tool} slug={slug.join('/')} />;
+    ({ slug } = await params);
+    tool = await getTool(slug);
   } catch (error) {
     // Re-throw Next.js internal errors (notFound, redirect, etc.) so they are handled correctly
     if (error instanceof Error && 'digest' in error) {
@@ -192,4 +195,10 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
     // show 404 rather than propagating an unhandled error to Sentry
     notFound();
   }
+
+  if (!tool) {
+    notFound();
+  }
+
+  return <ToolDetailClient tool={tool} slug={slug.join('/')} />;
 }

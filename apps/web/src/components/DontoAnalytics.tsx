@@ -25,17 +25,29 @@ export function DontoAnalytics() {
       u.defer = true;
       u.setAttribute('data-website-id', UMAMI_ID);
       document.head.appendChild(u);
-    } catch {}
+    } catch {
+      // analytics must never break the page
+    }
     try {
-      window.sentryOnLoad = function () {
-        try { window.Sentry?.init({ tracesSampleRate: 0.2, replaysSessionSampleRate: 0.05, replaysOnErrorSampleRate: 1.0 }); } catch {}
+      window.sentryOnLoad = () => {
+        try {
+          window.Sentry?.init({
+            tracesSampleRate: 0.2,
+            replaysSessionSampleRate: 0.05,
+            replaysOnErrorSampleRate: 1.0,
+          });
+        } catch {
+          // analytics must never break the page
+        }
       };
       const s = document.createElement('script');
       s.src = `https://js.sentry-cdn.com/${SENTRY_KEY}.min.js`;
       s.crossOrigin = 'anonymous';
       s.async = true;
       document.head.appendChild(s);
-    } catch {}
+    } catch {
+      // analytics must never break the page
+    }
   }, []);
   return null;
 }
