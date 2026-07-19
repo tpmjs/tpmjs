@@ -39,27 +39,60 @@ export async function POST(request: NextRequest) {
     // Time boundaries for daily counts
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
+    const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const monthStart = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Gather all statistics in parallel
+    // Registry-wide totals and distributions are transactional projections.
+    // Never COUNT or materialize the complete tools/packages tables here.
+    const [fixedCounters, categoryCounters] = await Promise.all([
+      prisma.registryCounter.findMany({
+        where: {
+          metric: {
+            in: [
+              'total_tools',
+              'total_packages',
+              'official_tools',
+              'official_packages',
+              'tools_with_schema',
+              'total_npm_downloads',
+              'total_github_stars',
+              'public_collections',
+              'public_agents',
+              'total_simulations',
+              'tier_packages',
+              'import_health',
+              'execution_health',
+              'quality_bucket',
+            ],
+          },
+        },
+      }),
+      prisma.registryCounter.findMany({
+        where: { metric: 'category_tools', value: { gt: 0 } },
+        orderBy: [{ value: 'desc' }, { dimension: 'asc' }],
+        take: 100,
+      }),
+    ]);
+    const counter = (metric: string, dimension = '') =>
+      Number(
+        fixedCounters.find((row) => row.metric === metric && row.dimension === dimension)?.value ??
+          0
+      );
+
+    const totalTools = counter('total_tools');
+    const totalPackages = counter('total_packages');
+    const officialTools = counter('official_tools');
+    const officialPackages = counter('official_packages');
+    const toolsWithSchema = counter('tools_with_schema');
+    const importHealthy = counter('import_health', 'HEALTHY');
+    const importBroken = counter('import_health', 'BROKEN');
+    const importUnknown = counter('import_health', 'UNKNOWN');
+    const executionHealthy = counter('execution_health', 'HEALTHY');
+    const executionBroken = counter('execution_health', 'BROKEN');
+    const executionUnknown = counter('execution_health', 'UNKNOWN');
+
+    // Day/window-bounded event statistics remain index-backed reads.
     const [
-      // Tool and package counts
-      totalTools,
-      totalPackages,
-      officialTools,
-      officialPackages,
-      toolsWithSchema,
-
-      // Health status counts
-      importHealthy,
-      importBroken,
-      importUnknown,
-      executionHealthy,
-      executionBroken,
-      executionUnknown,
-
-      // Package data for aggregations
-      packages,
-
       // Daily execution stats
       dailyExecutions,
       dailySuccessful,
@@ -74,9 +107,6 @@ export async function POST(request: NextRequest) {
 
       // Social proof
       activeDevsResult,
-      publicCollectionsCount,
-      publicAgentsCount,
-      totalSimulationsCount,
 
       // Execution events (daily)
       eventToolCallsCount,
@@ -100,36 +130,7 @@ export async function POST(request: NextRequest) {
       conversationStatusResults,
       contextMetricsResult,
       dailyConversationCount,
-
-      // Quality distribution
-      qualityDistribution,
     ] = await Promise.all([
-      // Tool counts
-      prisma.tool.count(),
-      prisma.package.count(),
-      prisma.tool.count({ where: { package: { isOfficial: true } } }),
-      prisma.package.count({ where: { isOfficial: true } }),
-      prisma.tool.count({ where: { schemaSource: 'extracted' } }),
-
-      // Health status
-      prisma.tool.count({ where: { importHealth: 'HEALTHY' } }),
-      prisma.tool.count({ where: { importHealth: 'BROKEN' } }),
-      prisma.tool.count({ where: { importHealth: 'UNKNOWN' } }),
-      prisma.tool.count({ where: { executionHealth: 'HEALTHY' } }),
-      prisma.tool.count({ where: { executionHealth: 'BROKEN' } }),
-      prisma.tool.count({ where: { executionHealth: 'UNKNOWN' } }),
-
-      // Package data
-      prisma.package.findMany({
-        select: {
-          tier: true,
-          category: true,
-          npmDownloadsLastMonth: true,
-          githubStars: true,
-          _count: { select: { tools: true } },
-        },
-      }),
-
       // Daily execution stats
       prisma.simulation.count({
         where: { createdAt: { gte: yesterday, lt: today } },
@@ -169,15 +170,10 @@ export async function POST(request: NextRequest) {
       }),
 
       // Social proof fields
-      prisma.userActivity.groupBy({
-        by: ['userId'],
-        where: {
-          createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
-        },
-      }),
-      prisma.collection.count({ where: { isPublic: true } }),
-      prisma.agent.count({ where: { isPublic: true } }),
-      prisma.simulation.count(),
+      prisma.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(DISTINCT user_id) AS count
+        FROM user_activities WHERE created_at >= ${weekStart}
+      `,
 
       // Execution events (daily counts from ExecutionEvent table)
       prisma.executionEvent.count({
@@ -188,20 +184,20 @@ export async function POST(request: NextRequest) {
       }),
 
       // DAU - distinct users active in last 24h
-      prisma.userActivity.groupBy({
-        by: ['userId'],
-        where: { createdAt: { gte: yesterday, lt: today } },
-      }),
+      prisma.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(DISTINCT user_id) AS count
+        FROM user_activities WHERE created_at >= ${yesterday} AND created_at < ${today}
+      `,
       // WAU - distinct users active in last 7 days
-      prisma.userActivity.groupBy({
-        by: ['userId'],
-        where: { createdAt: { gte: new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000) } },
-      }),
+      prisma.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(DISTINCT user_id) AS count
+        FROM user_activities WHERE created_at >= ${weekStart}
+      `,
       // MAU - distinct users active in last 30 days
-      prisma.userActivity.groupBy({
-        by: ['userId'],
-        where: { createdAt: { gte: new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000) } },
-      }),
+      prisma.$queryRaw<Array<{ count: bigint }>>`
+        SELECT COUNT(DISTINCT user_id) AS count
+        FROM user_activities WHERE created_at >= ${monthStart}
+      `,
 
       // Search volume (last 24h)
       prisma.searchLog.count({
@@ -227,7 +223,7 @@ export async function POST(request: NextRequest) {
         SELECT COUNT(DISTINCT COALESCE(user_id, 'anon')) as count
         FROM execution_events
         WHERE source LIKE 'mcp_%'
-          AND created_at >= ${new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)}
+          AND created_at >= ${weekStart}
       `,
 
       // Error category distribution (daily)
@@ -265,55 +261,23 @@ export async function POST(request: NextRequest) {
       prisma.conversation.count({
         where: { createdAt: { gte: yesterday, lt: today } },
       }),
-
-      // Quality score distribution
-      prisma.$queryRaw<{ bucket: string; count: bigint }[]>`
-        SELECT
-          CASE
-            WHEN quality_score IS NULL THEN 'unscored'
-            WHEN quality_score < 0.3 THEN 'low'
-            WHEN quality_score < 0.5 THEN 'medium-low'
-            WHEN quality_score < 0.7 THEN 'medium'
-            WHEN quality_score < 0.9 THEN 'high'
-            ELSE 'excellent'
-          END as bucket,
-          COUNT(*) as count
-        FROM tools
-        GROUP BY
-          CASE
-            WHEN quality_score IS NULL THEN 'unscored'
-            WHEN quality_score < 0.3 THEN 'low'
-            WHEN quality_score < 0.5 THEN 'medium-low'
-            WHEN quality_score < 0.7 THEN 'medium'
-            WHEN quality_score < 0.9 THEN 'high'
-            ELSE 'excellent'
-          END
-      `,
     ]);
 
-    // Aggregate package data
-    let tiersMinimal = 0;
-    let tiersRich = 0;
-    let totalNpmDownloads = 0;
-    let totalGithubStars = 0;
-    const categories: Record<string, number> = {};
-
-    for (const pkg of packages) {
-      if (pkg.tier === 'minimal') tiersMinimal++;
-      if (pkg.tier === 'rich') tiersRich++;
-      totalNpmDownloads += pkg.npmDownloadsLastMonth || 0;
-      totalGithubStars += pkg.githubStars || 0;
-
-      if (pkg.category) {
-        categories[pkg.category] = (categories[pkg.category] || 0) + pkg._count.tools;
-      }
-    }
-
-    // Format quality distribution
-    const qualityDist: Record<string, number> = {};
-    for (const row of qualityDistribution) {
-      qualityDist[row.bucket] = Number(row.count);
-    }
+    const tiersMinimal = counter('tier_packages', 'minimal');
+    const tiersRich = counter('tier_packages', 'rich');
+    const totalNpmDownloads = counter('total_npm_downloads');
+    const totalGithubStars = counter('total_github_stars');
+    const publicCollectionsCount = counter('public_collections');
+    const publicAgentsCount = counter('public_agents');
+    const totalSimulationsCount = counter('total_simulations');
+    const categories = Object.fromEntries(
+      categoryCounters.map((row) => [row.dimension, Number(row.value)])
+    );
+    const qualityDist = Object.fromEntries(
+      fixedCounters
+        .filter((row) => row.metric === 'quality_bucket' && row.value > 0n)
+        .map((row) => [row.dimension, Number(row.value)])
+    );
 
     // Create the snapshot
     const snapshot = await prisma.statsSnapshot.create({
@@ -367,7 +331,7 @@ export async function POST(request: NextRequest) {
         categories,
 
         // Social proof
-        activeDevs7d: activeDevsResult.length,
+        activeDevs7d: Number(activeDevsResult[0]?.count ?? 0),
         totalCollections: publicCollectionsCount,
         totalAgents: publicAgentsCount,
         totalSimulations: totalSimulationsCount,
@@ -377,9 +341,9 @@ export async function POST(request: NextRequest) {
         eventAgentRuns: eventAgentRunsCount,
 
         // Active user counts
-        dauCount: dauResult.length,
-        wauCount: wauResult.length,
-        mauCount: mauResult.length,
+        dauCount: Number(dauResult[0]?.count ?? 0),
+        wauCount: Number(wauResult[0]?.count ?? 0),
+        mauCount: Number(mauResult[0]?.count ?? 0),
 
         // Search metrics
         searchCount: searchCountResult,

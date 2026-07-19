@@ -132,6 +132,10 @@ export async function POST(request: NextRequest) {
             frameworks: packageData.frameworks || [],
             tier: validation.tier || 'minimal',
             isOfficial: pkg.keywords?.includes('tpmjs') || false,
+            // Package metadata can change quality inputs. Versioning turns
+            // that into bounded downstream work instead of an inline sweep.
+            metricsVersion: { increment: 1 },
+            metricsNextAt: new Date(),
           },
         });
 
@@ -188,6 +192,7 @@ export async function POST(request: NextRequest) {
               // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility workaround
               aiAgent: toolDef.aiAgent ? (toolDef.aiAgent as any) : undefined,
               toolDiscoverySource: 'manual',
+              qualityMetricsVersion: 0,
             },
           });
         }

@@ -1,7 +1,14 @@
+import { randomUUID } from 'node:crypto';
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { requireCronAuth } from '~/lib/cron-auth';
 import { performBatchHealthCheck } from '~/lib/health-check/health-check-service';
+import {
+  boundedPositiveInt,
+  HEALTH_SLICE_DEFAULT,
+  HEALTH_SLICE_MAX,
+  leaseDueToolIds,
+} from '~/lib/maintenance/bounded-work';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -9,9 +16,9 @@ export const maxDuration = 300; // 5 minutes
 
 /**
  * POST /api/sync/health-check
- * Daily health check for all tools
+ * Bounded health-maintenance slice ordered by durable next-due time.
  *
- * This endpoint is called by Vercel Cron (daily at 2am UTC)
+ * Polled by the on-box systemd timer; an empty due queue is a cheap no-op.
  * Requires Authorization: Bearer <CRON_SECRET>
  */
 export async function POST(request: NextRequest) {
@@ -21,19 +28,18 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    console.log('🏥 Daily health check cron job starting...');
+    const limit = boundedPositiveInt(
+      request.nextUrl.searchParams.get('limit'),
+      HEALTH_SLICE_DEFAULT,
+      HEALTH_SLICE_MAX
+    );
+    const leaseOwner = `health:${process.pid}:${randomUUID()}`;
+    const toolIds = await leaseDueToolIds(leaseOwner, limit);
 
-    // Get all tools
-    const tools = await prisma.tool.findMany({
-      select: { id: true },
-    });
-
-    console.log(`📊 Found ${tools.length} tools to check`);
-
-    const toolIds = tools.map((t) => t.id);
+    console.log(`🏥 Health slice leased ${toolIds.length}/${limit} due tools`);
 
     // Perform batch health checks
-    const result = await performBatchHealthCheck(toolIds, 'daily-cron', 5);
+    const result = await performBatchHealthCheck(toolIds, 'scheduled-slice', 5, leaseOwner);
 
     const durationMs = Date.now() - startTime;
 
@@ -45,20 +51,22 @@ export async function POST(request: NextRequest) {
         processed: result.healthy + result.broken + result.unknown,
         skipped: 0,
         errors: result.errors,
-        message: `Checked ${result.total} tools: ${result.healthy} healthy, ${result.broken} broken, ${result.unknown} unknown`,
+        message: `Bounded slice checked ${result.total}/${limit}: ${result.healthy} healthy, ${result.broken} broken, ${result.unknown} unknown`,
         metadata: {
           durationMs,
+          limit,
           ...result,
         },
       },
     });
 
-    console.log(`✅ Daily health check complete in ${durationMs}ms`);
+    console.log(`✅ Health slice complete in ${durationMs}ms`);
 
     return NextResponse.json({
       success: true,
       data: {
         ...result,
+        limit,
         durationMs,
       },
     });

@@ -1,11 +1,12 @@
 /**
  * Health Check Service
- * Checks tool import and execution health via Railway executor
+ * Checks tool import and execution health via the configured Deno executor.
  */
 
 import { type HealthStatus, type Package, type Prisma, prisma, type Tool } from '@tpmjs/db';
 import { env } from '~/env';
 import { executorAuthHeaders } from '~/lib/executors/internal-auth';
+import { nextHealthCheckAt, releaseHealthLease } from '~/lib/maintenance/bounded-work';
 
 const RAILWAY_EXECUTOR_URL = env.RAILWAY_EXECUTOR_URL;
 
@@ -42,7 +43,7 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
         // not key→value pairs — there are no real credential values to send.
         env: {},
       }),
-      signal: AbortSignal.timeout(60000), // 60s — forgiving of executor saturation during bulk sweeps
+      signal: AbortSignal.timeout(60000), // 60s — one leased tool may have a slow cold import.
     });
 
     const timeMs = Date.now() - startTime;
@@ -136,7 +137,7 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
         // Descriptor array, not values — see checkImportHealth.
         env: {},
       }),
-      signal: AbortSignal.timeout(60000), // 60s — forgiving of executor saturation during bulk sweeps
+      signal: AbortSignal.timeout(60000), // 60s — bounded by the route's finite leased slice.
     });
 
     const timeMs = Date.now() - startTime;
@@ -184,8 +185,8 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
 
 /**
  * A transient infrastructure error (executor timeout under load, network blip)
- * — NOT the tool being broken. During a bulk sweep the executor can saturate
- * and legitimate tools time out; marking them BROKEN corrupts the registry with
+ * — NOT the tool being broken. Even a bounded slice can encounter a transient
+ * failure; marking a legitimate tool BROKEN would corrupt the registry with
  * false negatives. These are treated as UNKNOWN (the tool keeps its prior
  * status) instead.
  */
@@ -327,7 +328,8 @@ function generateTestParameters(tool: Tool & { package: Package }): Record<strin
  */
 export async function performHealthCheck(
   toolId: string,
-  triggerSource = 'manual'
+  triggerSource = 'manual',
+  leaseOwner?: string
 ): Promise<HealthCheckResult> {
   // Fetch tool with package relation
   const tool = await prisma.tool.findUnique({
@@ -375,23 +377,6 @@ export async function performHealthCheck(
 
   console.log(`  Overall: ${overallStatus}`);
 
-  // Create HealthCheck record
-  await prisma.healthCheck.create({
-    data: {
-      toolId: tool.id,
-      checkType: 'FULL',
-      triggerSource,
-      importStatus: importResult.status,
-      importError: importResult.error,
-      importTimeMs: importResult.timeMs,
-      executionStatus: executionResult.status,
-      executionError: executionResult.error,
-      executionTimeMs: executionResult.timeMs,
-      testParameters: executionResult.testParams as Prisma.InputJsonValue,
-      overallStatus,
-    },
-  });
-
   // Update Tool record with latest health status. A transient/skipped UNKNOWN
   // result must NOT clobber a good prior status — only definitive HEALTHY/BROKEN
   // results overwrite (otherwise a saturated-executor sweep would wipe the
@@ -399,17 +384,50 @@ export async function performHealthCheck(
   const nextImport = importResult.status === 'UNKNOWN' ? tool.importHealth : importResult.status;
   const nextExecution =
     executionResult.status === 'UNKNOWN' ? tool.executionHealth : executionResult.status;
-  await prisma.tool.update({
-    where: { id: tool.id },
-    data: {
+  const checkedAt = new Date();
+  const nextAt = nextHealthCheckAt(tool.id, overallStatus, checkedAt);
+
+  // The audit row, current status, schedule, and lease release are one commit.
+  // A worker whose lease expired and was reassigned cannot publish a stale
+  // verdict over the newer owner.
+  await prisma.$transaction(async (tx) => {
+    const toolData = {
       importHealth: nextImport,
       executionHealth: nextExecution,
-      lastHealthCheck: new Date(),
-      // Only replace the stored error when we have a definitive verdict.
+      lastHealthCheck: checkedAt,
+      healthCheckNextAt: nextAt,
+      healthCheckLeaseUntil: null,
+      healthCheckLeasedBy: null,
       ...(importResult.status !== 'UNKNOWN' || executionResult.status !== 'UNKNOWN'
         ? { healthCheckError: importResult.error || executionResult.error }
         : {}),
-    },
+    };
+
+    if (leaseOwner) {
+      const owned = await tx.tool.updateMany({
+        where: { id: tool.id, healthCheckLeasedBy: leaseOwner },
+        data: toolData,
+      });
+      if (owned.count !== 1) throw new Error(`Health lease lost for tool ${tool.id}`);
+    } else {
+      await tx.tool.update({ where: { id: tool.id }, data: toolData });
+    }
+
+    await tx.healthCheck.create({
+      data: {
+        toolId: tool.id,
+        checkType: 'FULL',
+        triggerSource,
+        importStatus: importResult.status,
+        importError: importResult.error,
+        importTimeMs: importResult.timeMs,
+        executionStatus: executionResult.status,
+        executionError: executionResult.error,
+        executionTimeMs: executionResult.timeMs,
+        testParameters: executionResult.testParams as Prisma.InputJsonValue,
+        overallStatus,
+      },
+    });
   });
 
   return {
@@ -426,12 +444,13 @@ export async function performHealthCheck(
 
 /**
  * Batch health check for multiple tools
- * Processes in batches to avoid overwhelming Railway
+ * Processes the already-finite lease in small batches to avoid executor bursts.
  */
 export async function performBatchHealthCheck(
   toolIds: string[],
-  triggerSource = 'daily-cron',
-  batchSize = 5
+  triggerSource = 'scheduled-slice',
+  batchSize = 5,
+  leaseOwner?: string
 ): Promise<{
   total: number;
   healthy: number;
@@ -458,13 +477,14 @@ export async function performBatchHealthCheck(
     await Promise.all(
       batch.map(async (toolId) => {
         try {
-          const result = await performHealthCheck(toolId, triggerSource);
+          const result = await performHealthCheck(toolId, triggerSource, leaseOwner);
           if (result.overallStatus === 'HEALTHY') healthy++;
           else if (result.overallStatus === 'BROKEN') broken++;
           else unknown++;
         } catch (error) {
           errors++;
           console.error(`  ❌ Health check failed for tool ${toolId}:`, error);
+          if (leaseOwner) await releaseHealthLease(toolId, leaseOwner).catch(console.error);
         }
       })
     );

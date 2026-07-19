@@ -10,7 +10,7 @@
  */
 
 import { openai } from '@ai-sdk/openai';
-import { prisma } from '@tpmjs/db';
+import { Prisma, prisma } from '@tpmjs/db';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 
@@ -85,6 +85,18 @@ interface UseCaseGenerationResult {
   skipped: number;
   errors: number;
   errorDetails: string[];
+}
+
+const GENERATION_SLICE_DEFAULT = 5;
+const RANK_SLICE_DEFAULT = 500;
+
+function rankScoreForScenario(scenario: {
+  qualityScore: number;
+  totalRuns: number;
+  lastRunStatus: string | null;
+}): number {
+  const recentPassBonus = scenario.lastRunStatus === 'pass' ? 1.2 : 1;
+  return Number(scenario.qualityScore) * (1 + Math.log10(scenario.totalRuns + 1)) * recentPassBonus;
 }
 
 // ============================================================================
@@ -443,6 +455,8 @@ async function createOrUpdateUseCase(
   const categoryIds = await Promise.all(
     marketingData.categories.map((c) => getOrCreateCategory(c.name, c.slug, c.type))
   );
+  const generatedAt = new Date();
+  const rankScore = rankScoreForScenario(scenario);
 
   // Create or update use case
   const useCase = await prisma.useCase.upsert({
@@ -456,8 +470,9 @@ async function createOrUpdateUseCase(
       businessValue: marketingData.businessValue,
       problemStatement: marketingData.problemStatement,
       solutionNarrative: marketingData.solutionNarrative,
-      rankScore: 0,
-      lastRankedAt: new Date(),
+      rankScore,
+      lastRankedAt: generatedAt,
+      lastRegeneratedAt: generatedAt,
       personas: {
         create: personaIds.map((p, idx) => ({
           personaId: p.id,
@@ -478,7 +493,9 @@ async function createOrUpdateUseCase(
       businessValue: marketingData.businessValue,
       problemStatement: marketingData.problemStatement,
       solutionNarrative: marketingData.solutionNarrative,
-      lastRegeneratedAt: new Date(),
+      rankScore,
+      lastRegeneratedAt: generatedAt,
+      lastRankedAt: generatedAt,
       // Replace relations
       personas: {
         deleteMany: {},
@@ -520,12 +537,20 @@ export async function generateUseCasesForQualifyingScenarios(): Promise<UseCaseG
     errorDetails: [],
   };
 
-  // Find qualifying scenarios
+  const regenerationCutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  // Select only work that is actually due. The old top-100 query repeatedly
+  // loaded fresh rows that createOrUpdateUseCase then skipped, starving older
+  // candidates. A daily AI lane gets a deliberately small fixed budget.
   const scenarios = await prisma.scenario.findMany({
     where: {
       qualityScore: { gte: 0 },
       totalRuns: { gte: 0 },
       lastRunStatus: 'pass',
+      OR: [
+        { useCase: { is: null } },
+        { useCase: { is: { lastRegeneratedAt: { lt: regenerationCutoff } } } },
+      ],
     },
     include: {
       collection: {
@@ -541,10 +566,8 @@ export async function generateUseCasesForQualifyingScenarios(): Promise<UseCaseG
         },
       },
     },
-    orderBy: {
-      qualityScore: 'desc',
-    },
-    take: 100, // Limit per run
+    orderBy: [{ updatedAt: 'asc' }, { qualityScore: 'desc' }],
+    take: GENERATION_SLICE_DEFAULT,
   });
 
   for (const scenario of scenarios) {
@@ -625,41 +648,33 @@ export async function generateUseCaseForScenario(
 // ============================================================================
 
 /**
- * Compute rank score for all use cases
+ * Refresh one finite dirty rank slice in a single SQL statement. Scenario
+ * updated_at is the invalidation token; unchanged rows are never revisited.
  */
-export async function computeRankScores(): Promise<number> {
-  const useCases = await prisma.useCase.findMany({
-    include: {
-      scenario: {
-        select: {
-          qualityScore: true,
-          totalRuns: true,
-          lastRunStatus: true,
-        },
-      },
-    },
-  });
-
-  let updated = 0;
-
-  for (const useCase of useCases) {
-    const { qualityScore, totalRuns, lastRunStatus } = useCase.scenario;
-
-    // Rank score formula
-    const recentPassBonus = lastRunStatus === 'pass' ? 1.2 : 1.0;
-    const popularityBoost = Math.log10(totalRuns + 1);
-    const rankScore = Number(qualityScore) * (1 + popularityBoost) * recentPassBonus;
-
-    await prisma.useCase.update({
-      where: { id: useCase.id },
-      data: {
-        rankScore,
-        lastRankedAt: new Date(),
-      },
-    });
-
-    updated++;
-  }
-
-  return updated;
+export async function computeRankScores(limit = RANK_SLICE_DEFAULT): Promise<number> {
+  const boundedLimit = Math.min(2_000, Math.max(1, Math.floor(limit)));
+  const updated = await prisma.$queryRaw<Array<{ id: string }>>(Prisma.sql`
+    WITH due AS (
+      SELECT u.id,
+             s.quality_score,
+             s.total_runs,
+             s.last_run_status
+      FROM use_cases u
+      JOIN scenarios s ON s.id = u.scenario_id
+      WHERE u.last_ranked_at < s.updated_at
+      ORDER BY s.updated_at, u.id
+      FOR UPDATE OF u SKIP LOCKED
+      LIMIT ${boundedLimit}
+    )
+    UPDATE use_cases u
+    SET rank_score = due.quality_score
+                     * (1 + log(10::numeric, (due.total_runs + 1)::numeric))
+                     * CASE WHEN due.last_run_status = 'pass' THEN 1.2 ELSE 1 END,
+        last_ranked_at = CURRENT_TIMESTAMP,
+        updated_at = CURRENT_TIMESTAMP
+    FROM due
+    WHERE u.id = due.id
+    RETURNING u.id
+  `);
+  return updated.length;
 }

@@ -6,9 +6,9 @@
  * 2. Generate marketing content via AI
  * 3. Create/update UseCase records
  * 4. Update SocialProof cache
- * 5. Compute rank scores
+ * 5. Refresh one finite dirty rank slice
  *
- * Schedule: Daily at midnight (configured in vercel.json)
+ * Schedule: Daily from the on-box systemd timer.
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     // 2. Generate use cases for qualifying scenarios
     const generationResult = await generateUseCasesForQualifyingScenarios();
 
-    // 3. Compute rank scores for all use cases
-    const rankedCount = await computeRankScores();
+    // 3. Refresh a finite rank slice invalidated by changed scenarios.
+    const rankedCount = await computeRankScores(500);
 
     const durationMs = Date.now() - startTime;
 

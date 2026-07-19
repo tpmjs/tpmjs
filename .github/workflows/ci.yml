@@ -79,6 +79,50 @@ jobs:
       - name: Test
         run: pnpm test
 
+  migrations:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: tpmjs
+          POSTGRES_PASSWORD: tpmjs
+          POSTGRES_DB: tpmjs_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tpmjs -d tpmjs_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://tpmjs:tpmjs@127.0.0.1:5432/tpmjs_ci
+      DATABASE_URL_UNPOOLED: postgresql://tpmjs:tpmjs@127.0.0.1:5432/tpmjs_ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prove fresh migration history
+        run: pnpm --filter @tpmjs/web exec prisma migrate deploy --schema ../../packages/db/prisma/schema.prisma
+
+      - name: Reject schema drift
+        run: >-
+          pnpm --filter @tpmjs/web exec prisma migrate diff
+          --from-schema-datasource ../../packages/db/prisma/schema.prisma
+          --to-schema-datamodel ../../packages/db/prisma/schema.prisma
+          --exit-code
+
   build:
     runs-on: ubuntu-latest
     steps:

@@ -29,16 +29,23 @@ model Package {
   npmMaintainers Json?    @map("npm_maintainers") @db.JsonB
 
   // TPMJS Package-Level Metadata
-  category       String   @db.VarChar(50)
-  env            Json?    @db.JsonB // Environment variables (shared across tools)
-  frameworks     String[] @default([]) @db.Text
-  tier           String   @db.VarChar(20) // 'minimal' | 'rich'
-  discoveryMethod String  @map("discovery_method") @db.VarChar(20) // 'keyword' | 'changes-feed'
-  isOfficial     Boolean  @default(false) @map("is_official")
+  category        String   @db.VarChar(50)
+  env             Json?    @db.JsonB // Environment variables (shared across tools)
+  frameworks      String[] @default([]) @db.Text
+  tier            String   @db.VarChar(20) // 'minimal' | 'rich'
+  discoveryMethod String   @map("discovery_method") @db.VarChar(20) // 'keyword' | 'changes-feed'
+  isOfficial      Boolean  @default(false) @map("is_official")
 
   // Package Metrics
   npmDownloadsLastMonth Int? @default(0) @map("npm_downloads_last_month")
   githubStars           Int? @default(0) @map("github_stars")
+
+  // Bounded metrics-maintenance lane. Workers atomically lease a small due
+  // slice; no request materializes or rewrites the whole package registry.
+  metricsNextAt     DateTime  @default(now()) @map("metrics_next_at")
+  metricsLeaseUntil DateTime? @map("metrics_lease_until")
+  metricsLeasedBy   String?   @map("metrics_leased_by") @db.VarChar(100)
+  metricsVersion    Int       @default(1) @map("metrics_version")
 
   // Tool auto-discovery queue state (mirrors Tool.schemaExtractionAttemptAt):
   // lets the enrich cron retry failures with backoff instead of retrying the
@@ -57,6 +64,7 @@ model Package {
   @@index([category])
   @@index([isOfficial])
   @@index([npmDownloadsLastMonth])
+  @@index([metricsNextAt, id])
   @@index([createdAt])
   @@map("packages")
 }
@@ -79,11 +87,11 @@ model Tool {
   aiAgent     Json?  @map("ai_agent") @db.JsonB // @deprecated - will be auto-extracted in future
 
   // Schema Extraction Fields
-  inputSchema                Json?     @map("input_schema") @db.JsonB // Full JSON Schema from executor
-  schemaSource               String?   @map("schema_source") @db.VarChar(20) // 'extracted' | 'author' | null
-  schemaExtractedAt          DateTime? @map("schema_extracted_at") // Only updated on successful extraction
-  schemaExtractionAttemptAt  DateTime? @map("schema_extraction_attempt_at") // Updated on every attempt (for rate limiting)
-  schemaExtractionError      String?   @map("schema_extraction_error") @db.Text // Error message from last failed attempt
+  inputSchema               Json?     @map("input_schema") @db.JsonB // Full JSON Schema from executor
+  schemaSource              String?   @map("schema_source") @db.VarChar(20) // 'extracted' | 'author' | null
+  schemaExtractedAt         DateTime? @map("schema_extracted_at") // Only updated on successful extraction
+  schemaExtractionAttemptAt DateTime? @map("schema_extraction_attempt_at") // Updated on every attempt (for rate limiting)
+  schemaExtractionError     String?   @map("schema_extraction_error") @db.Text // Error message from last failed attempt
 
   // Tool Discovery Fields
   toolDiscoverySource String? @map("tool_discovery_source") @db.VarChar(20) // 'auto' | 'manual' | null
@@ -102,15 +110,23 @@ model Tool {
   lastHealthCheck  DateTime?     @map("last_health_check")
   healthCheckError String?       @map("health_check_error") @db.Text
 
+  // Due-time + expiring lease make health work resumable and horizontally
+  // safe. qualityMetricsVersion is a cheap dirty marker for bounded score
+  // propagation when package-level metrics change.
+  healthCheckNextAt     DateTime  @default(now()) @map("health_check_next_at")
+  healthCheckLeaseUntil DateTime? @map("health_check_lease_until")
+  healthCheckLeasedBy   String?   @map("health_check_leased_by") @db.VarChar(100)
+  qualityMetricsVersion Int       @default(0) @map("quality_metrics_version")
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // View tracking (denormalized, rolled up daily)
-  viewCount      Int      @default(0) @map("view_count")
+  viewCount Int @default(0) @map("view_count")
 
   // Execution tracking (denormalized, rolled up daily)
-  executionCount Int      @default(0) @map("execution_count")
+  executionCount Int @default(0) @map("execution_count")
 
   // Rating aggregates
   averageRating Decimal? @map("average_rating") @db.Decimal(2, 1) // 1.0 to 5.0
@@ -118,16 +134,16 @@ model Tool {
   reviewCount   Int      @default(0) @map("review_count")
 
   // Relations
-  simulations     Simulation[]
-  healthChecks    HealthCheck[]
-  collections     CollectionTool[]
-  agents          AgentTool[]
-  likes           ToolLike[]
-  ratings         ToolRating[]
-  reviews         ToolReview[]
-  skillsCache     ToolSkillsCache?
-  skillQuestions  SkillQuestionTool[]
-  workflowNodes   WorkflowNode[]
+  simulations    Simulation[]
+  healthChecks   HealthCheck[]
+  collections    CollectionTool[]
+  agents         AgentTool[]
+  likes          ToolLike[]
+  ratings        ToolRating[]
+  reviews        ToolReview[]
+  skillsCache    ToolSkillsCache?
+  skillQuestions SkillQuestionTool[]
+  workflowNodes  WorkflowNode[]
 
   @@unique([packageId, name])
   @@index([qualityScore])
@@ -140,6 +156,8 @@ model Tool {
   @@index([importHealth])
   @@index([executionHealth])
   @@index([lastHealthCheck])
+  @@index([healthCheckNextAt, id])
+  @@index([qualityMetricsVersion, id])
   @@map("tools")
 }
 
@@ -173,6 +191,20 @@ model SyncLog {
   @@map("sync_logs")
 }
 
+/// Transactionally maintained registry-wide counters. The package_tools
+/// dimension is internal maintenance state; snapshot readers select only the
+/// small fixed metrics plus a bounded number of dynamic categories.
+model RegistryCounter {
+  metric    String   @db.VarChar(50)
+  dimension String   @default("") @db.VarChar(214)
+  value     BigInt   @default(0)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@id([metric, dimension])
+  @@index([metric, value])
+  @@map("registry_counters")
+}
+
 /// Simulations - tracks tool playground executions
 model Simulation {
   id String @id @default(cuid())
@@ -198,8 +230,8 @@ model Simulation {
   model      String? @db.VarChar(50)
 
   // Relations
-  tokenUsage   TokenUsage?
-  logs         ExecutionLog[]
+  tokenUsage TokenUsage?
+  logs       ExecutionLog[]
 
   createdAt   DateTime  @default(now()) @map("created_at")
   completedAt DateTime? @map("completed_at")
@@ -225,6 +257,7 @@ model TokenUsage {
   estimatedCost  Decimal? @map("estimated_cost") @db.Decimal(10, 6)
 
   createdAt DateTime @default(now()) @map("created_at")
+
   @@map("token_usage")
 }
 
@@ -285,14 +318,14 @@ model HealthCheck {
 enum HealthStatus {
   UNKNOWN // Not yet checked
   HEALTHY // Passed health check
-  BROKEN  // Failed health check
+  BROKEN // Failed health check
 }
 
 /// Health check type enum - types of health checks performed
 enum HealthCheckType {
-  IMPORT    // Only import check
+  IMPORT // Only import check
   EXECUTION // Only execution check
-  FULL      // Both import and execution
+  FULL // Both import and execution
 }
 
 /// StatsSnapshot - daily snapshot of registry statistics for historical tracking
@@ -303,20 +336,20 @@ model StatsSnapshot {
   date DateTime @unique @db.Date
 
   // Registry Overview
-  totalTools      Int @default(0) @map("total_tools")
-  totalPackages   Int @default(0) @map("total_packages")
-  officialTools   Int @default(0) @map("official_tools")
+  totalTools       Int @default(0) @map("total_tools")
+  totalPackages    Int @default(0) @map("total_packages")
+  officialTools    Int @default(0) @map("official_tools")
   officialPackages Int @default(0) @map("official_packages")
-  toolsWithSchema Int @default(0) @map("tools_with_schema")
+  toolsWithSchema  Int @default(0) @map("tools_with_schema")
 
   // Downloads & Stars
   totalNpmDownloads Int @default(0) @map("total_npm_downloads")
   totalGithubStars  Int @default(0) @map("total_github_stars")
 
   // Health Status Counts
-  importHealthy   Int @default(0) @map("import_healthy")
-  importBroken    Int @default(0) @map("import_broken")
-  importUnknown   Int @default(0) @map("import_unknown")
+  importHealthy    Int @default(0) @map("import_healthy")
+  importBroken     Int @default(0) @map("import_broken")
+  importUnknown    Int @default(0) @map("import_unknown")
   executionHealthy Int @default(0) @map("execution_healthy")
   executionBroken  Int @default(0) @map("execution_broken")
   executionUnknown Int @default(0) @map("execution_unknown")
@@ -329,16 +362,16 @@ model StatsSnapshot {
   tiersRich    Int @default(0) @map("tiers_rich")
 
   // Execution Stats (daily)
-  executionsTotal      Int @default(0) @map("executions_total")
-  executionsSuccessful Int @default(0) @map("executions_successful")
-  executionsFailed     Int @default(0) @map("executions_failed")
+  executionsTotal      Int  @default(0) @map("executions_total")
+  executionsSuccessful Int  @default(0) @map("executions_successful")
+  executionsFailed     Int  @default(0) @map("executions_failed")
   executionsAvgTimeMs  Int? @map("executions_avg_time_ms")
 
   // Token Usage (daily)
-  tokensInput    BigInt @default(0) @map("tokens_input")
-  tokensOutput   BigInt @default(0) @map("tokens_output")
-  tokensTotal    BigInt @default(0) @map("tokens_total")
-  tokensCostUsd  Decimal? @map("tokens_cost_usd") @db.Decimal(10, 4)
+  tokensInput   BigInt   @default(0) @map("tokens_input")
+  tokensOutput  BigInt   @default(0) @map("tokens_output")
+  tokensTotal   BigInt   @default(0) @map("tokens_total")
+  tokensCostUsd Decimal? @map("tokens_cost_usd") @db.Decimal(10, 4)
 
   // Health Checks (daily)
   healthChecksRun Int @default(0) @map("health_checks_run")
@@ -353,8 +386,8 @@ model StatsSnapshot {
   totalSimulations Int @default(0) @map("total_simulations")
 
   // Execution Event Tracking (daily counts from ExecutionEvent table)
-  eventToolCalls  Int @default(0) @map("event_tool_calls")
-  eventAgentRuns  Int @default(0) @map("event_agent_runs")
+  eventToolCalls Int @default(0) @map("event_tool_calls")
+  eventAgentRuns Int @default(0) @map("event_agent_runs")
 
   // Active user counts (from UserActivity)
   dauCount Int @default(0) @map("dau_count") // Daily active users
@@ -362,20 +395,20 @@ model StatsSnapshot {
   mauCount Int @default(0) @map("mau_count") // Monthly active users
 
   // Search metrics (from SearchLog)
-  searchCount        Int  @default(0) @map("search_count")
-  avgSearchLatencyMs Int? @map("avg_search_latency_ms")
+  searchCount        Int   @default(0) @map("search_count")
+  avgSearchLatencyMs Int?  @map("avg_search_latency_ms")
   topSearchQueries   Json? @map("top_search_queries") @db.JsonB // Array of { query, count }
 
   // MCP unique clients (from ExecutionEvent where source = 'mcp_*')
-  mcpUniqueClients   Int @default(0) @map("mcp_unique_clients")
+  mcpUniqueClients Int @default(0) @map("mcp_unique_clients")
 
   // ML Tracking Metrics (from ExecutionEvent)
-  errorCategories        Json? @map("error_categories") @db.JsonB
-  conversationStatuses   Json? @map("conversation_statuses") @db.JsonB
-  avgContextMessages     Int?  @map("avg_context_messages")
-  avgContextTokens       Int?  @map("avg_context_tokens")
-  avgAvailableTools      Float? @map("avg_available_tools") @db.DoublePrecision
-  totalConversationsDay  Int @default(0) @map("total_conversations_day")
+  errorCategories       Json?  @map("error_categories") @db.JsonB
+  conversationStatuses  Json?  @map("conversation_statuses") @db.JsonB
+  avgContextMessages    Int?   @map("avg_context_messages")
+  avgContextTokens      Int?   @map("avg_context_tokens")
+  avgAvailableTools     Float? @map("avg_available_tools") @db.DoublePrecision
+  totalConversationsDay Int    @default(0) @map("total_conversations_day")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -404,21 +437,21 @@ model PageView {
 
 /// User table - stores authenticated users
 model User {
-  id            String    @id @default(cuid())
+  id            String  @id @default(cuid())
   name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false) @map("email_verified")
+  email         String  @unique
+  emailVerified Boolean @default(false) @map("email_verified")
   image         String?
-  username      String?   @unique @db.VarChar(30) // URL-friendly username (nullable for migration)
+  username      String? @unique @db.VarChar(30) // URL-friendly username (nullable for migration)
 
   // Tier for rate limiting and feature access
-  tier          UserTier  @default(FREE)
+  tier UserTier @default(FREE)
 
   // Role for access control (admin dashboard, etc.)
-  role          UserRole  @default(USER)
+  role UserRole @default(USER)
 
   // Signup source tracking (e.g., 'github', 'google', 'direct')
-  signupSource  String?   @map("signup_source") @db.VarChar(50)
+  signupSource String? @map("signup_source") @db.VarChar(50)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -504,24 +537,24 @@ model Verification {
 
 /// Collection - user-created groups of tools
 model Collection {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId      String   @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Collection metadata
-  name        String   @db.VarChar(100)
-  slug        String?  @db.VarChar(50) // URL-friendly identifier (nullable for migration)
-  description String?  @db.VarChar(500)
-  isPublic    Boolean  @default(false) @map("is_public")
-  likeCount   Int      @default(0) @map("like_count")
+  name        String  @db.VarChar(100)
+  slug        String? @db.VarChar(50) // URL-friendly identifier (nullable for migration)
+  description String? @db.VarChar(500)
+  isPublic    Boolean @default(false) @map("is_public")
+  likeCount   Int     @default(0) @map("like_count")
 
   // View tracking (denormalized, rolled up daily)
-  viewCount      Int      @default(0) @map("view_count")
+  viewCount Int @default(0) @map("view_count")
 
   // Execution tracking (denormalized, rolled up daily)
-  executionCount Int      @default(0) @map("execution_count")
+  executionCount Int @default(0) @map("execution_count")
 
   // Executor configuration (optional - uses system default if not set)
   executorType   String? @map("executor_type") @db.VarChar(50)
@@ -529,41 +562,41 @@ model Collection {
 
   // Tool environment variables (encrypted JSON: { "KEY": "value" })
   // These are passed to tools when executed
-  envVars        Json?   @map("env_vars") @db.JsonB
+  envVars Json? @map("env_vars") @db.JsonB
 
   // Fork tracking - for "fork to use" model
-  forkedFromId String?     @map("forked_from_id")
-  forkedFrom   Collection? @relation("CollectionForks", fields: [forkedFromId], references: [id], onDelete: SetNull)
+  forkedFromId String?      @map("forked_from_id")
+  forkedFrom   Collection?  @relation("CollectionForks", fields: [forkedFromId], references: [id], onDelete: SetNull)
   forks        Collection[] @relation("CollectionForks")
-  forkCount    Int         @default(0) @map("fork_count")
+  forkCount    Int          @default(0) @map("fork_count")
 
   // AI-generated use cases
   useCases            Json?     @map("use_cases") @db.JsonB
   useCasesGeneratedAt DateTime? @map("use_cases_generated_at")
 
   // AI-generated skills documentation
-  skillsMarkdown      String?   @map("skills_markdown") @db.Text
-  skillsGeneratedAt   DateTime? @map("skills_generated_at")
+  skillsMarkdown    String?   @map("skills_markdown") @db.Text
+  skillsGeneratedAt DateTime? @map("skills_generated_at")
 
   // RealSkills lazy seeding state
-  skillsSeeded        Boolean   @default(false) @map("skills_seeded")
-  skillsSeedingAt     DateTime? @map("skills_seeding_at")
+  skillsSeeded    Boolean   @default(false) @map("skills_seeded")
+  skillsSeedingAt DateTime? @map("skills_seeding_at")
 
   // Timestamps
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  tools                  CollectionTool[]
-  agents                 AgentCollection[]
-  likes                  CollectionLike[]
-  bridgeTools            CollectionBridgeTool[]
-  customTools            CollectionCustomTool[]
-  scenarios              Scenario[]
-  skillsGenerationJobs   SkillsGenerationJob[]
-  skillQuestions         SkillQuestion[]
-  skills                 Skill[]
-  skillSessions          SkillSession[]
+  tools                CollectionTool[]
+  agents               AgentCollection[]
+  likes                CollectionLike[]
+  bridgeTools          CollectionBridgeTool[]
+  customTools          CollectionCustomTool[]
+  scenarios            Scenario[]
+  skillsGenerationJobs SkillsGenerationJob[]
+  skillQuestions       SkillQuestion[]
+  skills               Skill[]
+  skillSessions        SkillSession[]
 
   // Unique constraint: user can't have duplicate collection slugs
   @@unique([userId, slug])
@@ -581,7 +614,7 @@ model Collection {
 
 /// CollectionTool - junction table for many-to-many relationship between collections and tools
 model CollectionTool {
-  id           String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Relationships
   collectionId String     @map("collection_id")
@@ -590,13 +623,13 @@ model CollectionTool {
   tool         Tool       @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   // Ordering - allows users to reorder tools within a collection
-  position     Int        @default(0)
+  position Int @default(0)
 
   // Optional user notes about why this tool is in the collection
-  note         String?    @db.VarChar(500)
+  note String? @db.VarChar(500)
 
   // Timestamps
-  addedAt      DateTime   @default(now()) @map("added_at")
+  addedAt DateTime @default(now()) @map("added_at")
 
   // Unique constraint: tool can only be in a collection once
   @@unique([collectionId, toolId])
@@ -628,16 +661,16 @@ enum MessageRole {
 
 /// Agent - user-owned AI agent configurations
 model Agent {
-  id                   String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId               String     @map("user_id")
-  user                 User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Agent identity
-  uid                  String     @unique @db.VarChar(50) // URL-friendly identifier
-  name                 String     @db.VarChar(100)
-  description          String?    @db.VarChar(500)
+  uid         String  @unique @db.VarChar(50) // URL-friendly identifier
+  name        String  @db.VarChar(100)
+  description String? @db.VarChar(500)
 
   // Model configuration
   provider             AIProvider
@@ -648,51 +681,51 @@ model Agent {
   maxMessagesInContext Int        @default(10) @map("max_messages_in_context")
 
   // Visibility
-  isPublic             Boolean    @default(true) @map("is_public")
-  likeCount            Int        @default(0) @map("like_count")
+  isPublic  Boolean @default(true) @map("is_public")
+  likeCount Int     @default(0) @map("like_count")
 
   // View tracking (denormalized, rolled up daily)
-  viewCount            Int        @default(0) @map("view_count")
+  viewCount Int @default(0) @map("view_count")
 
   // Execution/conversation tracking (denormalized, rolled up daily)
-  conversationCount    Int        @default(0) @map("conversation_count")
-  messageCount         Int        @default(0) @map("message_count")
-  executionCount       Int        @default(0) @map("execution_count")
+  conversationCount Int @default(0) @map("conversation_count")
+  messageCount      Int @default(0) @map("message_count")
+  executionCount    Int @default(0) @map("execution_count")
 
   // Executor configuration (optional - uses system default if not set)
   // Agent executor overrides collection executor overrides system default
-  executorType         String?    @map("executor_type") @db.VarChar(50)
-  executorConfig       Json?      @map("executor_config") @db.JsonB
+  executorType   String? @map("executor_type") @db.VarChar(50)
+  executorConfig Json?   @map("executor_config") @db.JsonB
 
   // Sandbox toggle: gives agent persistent workspace with shell, file, and git tools
-  sandboxEnabled       Boolean    @default(false) @map("sandbox_enabled")
+  sandboxEnabled Boolean @default(false) @map("sandbox_enabled")
 
   // Tool environment variables (encrypted JSON: { "KEY": "value" })
   // Agent env vars override collection env vars, otherwise merged
-  envVars              Json?      @map("env_vars") @db.JsonB
+  envVars Json? @map("env_vars") @db.JsonB
 
   // Tool permission policies: { default: "allow", rules: [{ pattern: "shellExec", permission: "deny" }] }
-  toolPermissions      Json?      @map("tool_permissions") @db.JsonB
+  toolPermissions Json? @map("tool_permissions") @db.JsonB
 
   // Dynamic tool discovery: start with searchTools meta-tool instead of loading all tools
-  dynamicToolDiscovery Boolean    @default(false) @map("dynamic_tool_discovery")
+  dynamicToolDiscovery Boolean @default(false) @map("dynamic_tool_discovery")
 
   // Fork tracking - for "fork to use" model
-  forkedFromId         String?    @map("forked_from_id")
-  forkedFrom           Agent?     @relation("AgentForks", fields: [forkedFromId], references: [id], onDelete: SetNull)
-  forks                Agent[]    @relation("AgentForks")
-  forkCount            Int        @default(0) @map("fork_count")
+  forkedFromId String? @map("forked_from_id")
+  forkedFrom   Agent?  @relation("AgentForks", fields: [forkedFromId], references: [id], onDelete: SetNull)
+  forks        Agent[] @relation("AgentForks")
+  forkCount    Int     @default(0) @map("fork_count")
 
   // Timestamps
-  createdAt            DateTime   @default(now()) @map("created_at")
-  updatedAt            DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  collections          AgentCollection[]
-  tools                AgentTool[]
-  conversations        Conversation[]
-  likes                AgentLike[]
-  workflowNodes        WorkflowNode[]
+  collections   AgentCollection[]
+  tools         AgentTool[]
+  conversations Conversation[]
+  likes         AgentLike[]
+  workflowNodes WorkflowNode[]
 
   @@unique([userId, name])
   @@index([userId])
@@ -710,7 +743,7 @@ model Agent {
 
 /// AgentCollection - junction table for Agent -> Collection (many-to-many)
 model AgentCollection {
-  id           String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Relationships
   agentId      String     @map("agent_id")
@@ -719,10 +752,10 @@ model AgentCollection {
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   // Ordering
-  position     Int        @default(0)
+  position Int @default(0)
 
   // Timestamps
-  addedAt      DateTime   @default(now()) @map("added_at")
+  addedAt DateTime @default(now()) @map("added_at")
 
   @@unique([agentId, collectionId])
   @@index([agentId])
@@ -732,19 +765,19 @@ model AgentCollection {
 
 /// AgentTool - junction table for Agent -> Tool (many-to-many)
 model AgentTool {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Relationships
-  agentId   String   @map("agent_id")
-  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  toolId    String   @map("tool_id")
-  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  agentId String @map("agent_id")
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  toolId  String @map("tool_id")
+  tool    Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   // Ordering
-  position  Int      @default(0)
+  position Int @default(0)
 
   // Timestamps
-  addedAt   DateTime @default(now()) @map("added_at")
+  addedAt DateTime @default(now()) @map("added_at")
 
   @@unique([agentId, toolId])
   @@index([agentId])
@@ -754,23 +787,23 @@ model AgentTool {
 
 /// UserApiKey - encrypted API keys/env vars per user
 model UserApiKey {
-  id           String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId       String   @map("user_id")
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Key identification (e.g. OPENAI_API_KEY, MY_SECRET, etc.)
-  keyName      String   @map("key_name") @db.VarChar(100)
+  keyName String @map("key_name") @db.VarChar(100)
 
   // Encrypted key storage
-  encryptedKey String   @map("encrypted_key") @db.Text
-  keyIv        String   @map("key_iv") @db.VarChar(32)
-  keyHint      String?  @map("key_hint") @db.VarChar(10) // Last 4 chars
+  encryptedKey String  @map("encrypted_key") @db.Text
+  keyIv        String  @map("key_iv") @db.VarChar(32)
+  keyHint      String? @map("key_hint") @db.VarChar(10) // Last 4 chars
 
   // Timestamps
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, keyName])
   @@index([userId])
@@ -779,28 +812,28 @@ model UserApiKey {
 
 /// Conversation - chat session with an agent
 model Conversation {
-  id          String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // Agent relationship
-  agentId     String    @map("agent_id")
-  agent       Agent     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String @map("agent_id")
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   // Conversation identity
-  slug        String    @db.VarChar(100) // User-chosen unique ID
+  slug String @db.VarChar(100) // User-chosen unique ID
 
   // Metadata
-  title       String?   @db.VarChar(200)
+  title String? @db.VarChar(200)
 
   // Conversation lifecycle status (tracked programmatically)
-  status      String    @default("active") @db.VarChar(20) // 'active' | 'completed' | 'error'
+  status String @default("active") @db.VarChar(20) // 'active' | 'completed' | 'error'
 
   // Timestamps
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  messages    Message[]
-  approvals   ToolApproval[]
+  messages  Message[]
+  approvals ToolApproval[]
 
   @@unique([agentId, slug])
   @@index([agentId])
@@ -810,24 +843,24 @@ model Conversation {
 
 /// ToolApproval - tracks inline approval requests for tools with "ask" permission
 model ToolApproval {
-  id              String       @id @default(cuid())
+  id String @id @default(cuid())
 
   // Conversation relationship
-  conversationId  String       @map("conversation_id")
-  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   // Approval metadata
-  agentId         String       @map("agent_id")
-  toolCallId      String       @map("tool_call_id") @db.VarChar(200)
-  toolName        String       @map("tool_name") @db.VarChar(200)
-  inputArgs       Json?        @map("input_args") @db.JsonB
+  agentId    String @map("agent_id")
+  toolCallId String @map("tool_call_id") @db.VarChar(200)
+  toolName   String @map("tool_name") @db.VarChar(200)
+  inputArgs  Json?  @map("input_args") @db.JsonB
 
   // Decision: null=pending, 'approve', 'deny'
-  decision        String?      @db.VarChar(10)
+  decision String? @db.VarChar(10)
 
   // Timestamps
-  createdAt       DateTime     @default(now()) @map("created_at")
-  resolvedAt      DateTime?    @map("resolved_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  resolvedAt DateTime? @map("resolved_at")
 
   @@index([conversationId, decision])
   @@map("tool_approvals")
@@ -835,32 +868,32 @@ model ToolApproval {
 
 /// Message - individual message in a conversation
 model Message {
-  id             String       @id @default(cuid())
+  id String @id @default(cuid())
 
   // Conversation relationship
   conversationId String       @map("conversation_id")
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   // Message content
-  role           MessageRole
-  content        String       @db.Text
+  role    MessageRole
+  content String      @db.Text
 
   // Tool call metadata (for role=ASSISTANT with tool calls)
-  toolCalls      Json?        @map("tool_calls") @db.JsonB
+  toolCalls Json? @map("tool_calls") @db.JsonB
 
   // Tool result metadata (for role=TOOL)
-  toolCallId     String?      @map("tool_call_id") @db.VarChar(100)
-  toolName       String?      @map("tool_name") @db.VarChar(200)
-  toolResult     Json?        @map("tool_result") @db.JsonB
+  toolCallId String? @map("tool_call_id") @db.VarChar(100)
+  toolName   String? @map("tool_name") @db.VarChar(200)
+  toolResult Json?   @map("tool_result") @db.JsonB
 
   // Token tracking
-  inputTokens    Int?         @map("input_tokens")
-  outputTokens   Int?         @map("output_tokens")
+  inputTokens  Int? @map("input_tokens")
+  outputTokens Int? @map("output_tokens")
 
   // --- ML Training Data Fields (for ASSISTANT messages) ---
 
   // Available tools at decision time (negative signal: what was NOT chosen)
-  availableToolCount Int?  @map("available_tool_count")  // Number of tools available
+  availableToolCount Int?  @map("available_tool_count") // Number of tools available
   availableToolNames Json? @map("available_tool_names") @db.JsonB // JSON array of tool name strings
 
   // Sequence identifier (groups all tool calls in this response)
@@ -868,10 +901,10 @@ model Message {
 
   // Context window state when this message was generated
   contextMessageCount Int? @map("context_message_count") // Messages sent to LLM
-  contextTokenCount   Int? @map("context_token_count")   // Estimated tokens in context
+  contextTokenCount   Int? @map("context_token_count") // Estimated tokens in context
 
   // Timestamps
-  createdAt      DateTime     @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([conversationId])
   @@index([createdAt])
@@ -884,13 +917,13 @@ model Message {
 
 /// ToolLike - tracks users who liked a tool
 model ToolLike {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Relationships
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  toolId    String   @map("tool_id")
-  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolId String @map("tool_id")
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -903,7 +936,7 @@ model ToolLike {
 
 /// CollectionLike - tracks users who liked a collection
 model CollectionLike {
-  id           String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Relationships
   userId       String     @map("user_id")
@@ -912,7 +945,7 @@ model CollectionLike {
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   // Timestamps
-  createdAt    DateTime   @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([userId, collectionId])
   @@index([collectionId])
@@ -922,13 +955,13 @@ model CollectionLike {
 
 /// AgentLike - tracks users who liked an agent
 model AgentLike {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Relationships
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agentId   String   @map("agent_id")
-  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  userId  String @map("user_id")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId String @map("agent_id")
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -941,16 +974,16 @@ model AgentLike {
 
 /// ToolRating - user ratings for tools (1-5 stars)
 model ToolRating {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Relationships
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  toolId    String   @map("tool_id")
-  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolId String @map("tool_id")
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   // Rating value (1-5)
-  rating    Int      @db.SmallInt
+  rating Int @db.SmallInt
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -965,25 +998,25 @@ model ToolRating {
 
 /// ToolReview - user reviews for tools
 model ToolReview {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Relationships
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  toolId    String   @map("tool_id")
-  tool      Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  toolId String @map("tool_id")
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   // Review content
-  title     String?  @db.VarChar(200)
-  content   String   @db.Text
-  rating    Int      @db.SmallInt // 1-5, denormalized for convenience
+  title   String? @db.VarChar(200)
+  content String  @db.Text
+  rating  Int     @db.SmallInt // 1-5, denormalized for convenience
 
   // Moderation
   isApproved Boolean @default(true) @map("is_approved")
   isHidden   Boolean @default(false) @map("is_hidden")
 
   // Helpful votes
-  helpfulCount Int   @default(0) @map("helpful_count")
+  helpfulCount Int @default(0) @map("helpful_count")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -1043,29 +1076,29 @@ enum ActivityType {
 
 /// UserActivity - tracks user actions for activity stream
 model UserActivity {
-  id           String       @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId       String       @map("user_id")
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Activity type
-  type         ActivityType
+  type ActivityType
 
   // Optional entity references (for linking to entities if they still exist)
-  agentId      String?      @map("agent_id")
-  collectionId String?      @map("collection_id")
-  toolId       String?      @map("tool_id")
+  agentId      String? @map("agent_id")
+  collectionId String? @map("collection_id")
+  toolId       String? @map("tool_id")
 
   // Denormalized fields (stored at creation time for display even after entity deletion)
-  targetName   String       @map("target_name") @db.VarChar(200)
-  targetType   String       @map("target_type") @db.VarChar(50) // 'agent' | 'collection' | 'tool'
+  targetName String @map("target_name") @db.VarChar(200)
+  targetType String @map("target_type") @db.VarChar(50) // 'agent' | 'collection' | 'tool'
 
   // Additional context (e.g., toolName when adding to collection)
-  metadata     Json?        @db.JsonB
+  metadata Json? @db.JsonB
 
   // Timestamps
-  createdAt    DateTime     @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
   @@index([userId, createdAt])
@@ -1080,22 +1113,22 @@ model UserActivity {
 
 /// EndpointHealthReport - stores health check results from GitHub Actions or other monitoring
 model EndpointHealthReport {
-  id            String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Report metadata
-  timestamp     DateTime
-  source        String   @db.VarChar(50) // 'github-actions' | 'manual' | 'uptime-robot' etc.
-  runId         String?  @map("run_id") @db.VarChar(100) // GitHub Actions run ID
+  timestamp DateTime
+  source    String   @db.VarChar(50) // 'github-actions' | 'manual' | 'uptime-robot' etc.
+  runId     String?  @map("run_id") @db.VarChar(100) // GitHub Actions run ID
 
   // Check results
-  checks        Json     @db.JsonB // { check_name: 'pass' | 'fail' }
-  passCount     Int      @map("pass_count")
-  failCount     Int      @map("fail_count")
-  totalChecks   Int      @map("total_checks")
-  overallStatus String   @map("overall_status") @db.VarChar(20) // 'healthy' | 'degraded' | 'down'
+  checks        Json   @db.JsonB // { check_name: 'pass' | 'fail' }
+  passCount     Int    @map("pass_count")
+  failCount     Int    @map("fail_count")
+  totalChecks   Int    @map("total_checks")
+  overallStatus String @map("overall_status") @db.VarChar(20) // 'healthy' | 'degraded' | 'down'
 
   // Timestamps
-  createdAt     DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([timestamp])
   @@index([overallStatus])
@@ -1109,18 +1142,18 @@ model EndpointHealthReport {
 
 /// BridgeConnection - tracks active bridge connections from users
 model BridgeConnection {
-  id            String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId        String    @unique @map("user_id")
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Connection state
-  status        String    @default("disconnected") @db.VarChar(20) // 'connected' | 'disconnected'
-  socketId      String?   @map("socket_id") @db.VarChar(100) // Internal socket identifier for routing
+  status   String  @default("disconnected") @db.VarChar(20) // 'connected' | 'disconnected'
+  socketId String? @map("socket_id") @db.VarChar(100) // Internal socket identifier for routing
 
   // Cached tool definitions from bridge
-  tools         Json      @default("[]") @db.JsonB
+  tools Json @default("[]") @db.JsonB
 
   // Metadata
   lastSeen      DateTime? @map("last_seen")
@@ -1128,8 +1161,8 @@ model BridgeConnection {
   clientOS      String?   @map("client_os") @db.VarChar(50)
 
   // Timestamps
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([status])
   @@map("bridge_connections")
@@ -1137,23 +1170,23 @@ model BridgeConnection {
 
 /// CollectionBridgeTool - tracks which bridge tools are added to collections
 model CollectionBridgeTool {
-  id           String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Collection relationship
   collectionId String     @map("collection_id")
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   // Bridge tool reference
-  serverId     String     @map("server_id") @db.VarChar(100) // e.g., "chrome-devtools"
-  toolName     String     @map("tool_name") @db.VarChar(100) // e.g., "screenshot"
+  serverId String @map("server_id") @db.VarChar(100) // e.g., "chrome-devtools"
+  toolName String @map("tool_name") @db.VarChar(100) // e.g., "screenshot"
 
   // Display customization
-  displayName  String?    @map("display_name") @db.VarChar(100) // Override tool name in MCP
-  note         String?    @db.VarChar(500) // User notes
+  displayName String? @map("display_name") @db.VarChar(100) // Override tool name in MCP
+  note        String? @db.VarChar(500) // User notes
 
   // Timestamps
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([collectionId, serverId, toolName])
   @@index([collectionId])
@@ -1166,20 +1199,20 @@ model CollectionBridgeTool {
 
 /// CustomMcpServer - user-registered remote MCP servers (SSE/HTTP)
 model CustomMcpServer {
-  id            String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId        String    @map("user_id")
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Server identity
-  name          String    @db.VarChar(100)
-  url           String    @db.Text // SSE or HTTP endpoint URL
+  name String @db.VarChar(100)
+  url  String @db.Text // SSE or HTTP endpoint URL
 
   // Authentication
-  authType      String?   @map("auth_type") @db.VarChar(20) // 'bearer' | 'header' | null
-  authHeader    String?   @map("auth_header") @db.VarChar(100) // Header name (default: Authorization)
-  authToken     String?   @map("auth_token") @db.Text // Token value (encrypted)
+  authType   String? @map("auth_type") @db.VarChar(20) // 'bearer' | 'header' | null
+  authHeader String? @map("auth_header") @db.VarChar(100) // Header name (default: Authorization)
+  authToken  String? @map("auth_token") @db.Text // Token value (encrypted)
 
   // Cached tool definitions from remote server
   tools         Json      @default("[]") @db.JsonB
@@ -1188,8 +1221,8 @@ model CustomMcpServer {
   status        String    @default("pending") @db.VarChar(20) // 'pending' | 'synced' | 'error'
 
   // Timestamps
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   collectionTools CollectionCustomTool[]
@@ -1202,26 +1235,26 @@ model CustomMcpServer {
 
 /// CollectionCustomTool - junction table for custom MCP server tools added to collections
 model CollectionCustomTool {
-  id           String          @id @default(cuid())
+  id String @id @default(cuid())
 
   // Collection relationship
-  collectionId String          @map("collection_id")
-  collection   Collection      @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String     @map("collection_id")
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   // Custom MCP server relationship
-  serverId     String          @map("server_id")
-  server       CustomMcpServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  serverId String          @map("server_id")
+  server   CustomMcpServer @relation(fields: [serverId], references: [id], onDelete: Cascade)
 
   // Tool reference
-  toolName     String          @map("tool_name") @db.VarChar(200)
+  toolName String @map("tool_name") @db.VarChar(200)
 
   // Display customization
-  displayName  String?         @map("display_name") @db.VarChar(100)
-  note         String?         @db.VarChar(500)
+  displayName String? @map("display_name") @db.VarChar(100)
+  note        String? @db.VarChar(500)
 
   // Timestamps
-  createdAt    DateTime        @default(now()) @map("created_at")
-  updatedAt    DateTime        @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([collectionId, serverId, toolName])
   @@index([collectionId])
@@ -1248,31 +1281,31 @@ enum UserRole {
 
 /// TpmjsApiKey - user-owned API keys for programmatic access
 model TpmjsApiKey {
-  id          String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId      String    @map("user_id")
-  user        User      @relation("UserTpmjsApiKeys", fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation("UserTpmjsApiKeys", fields: [userId], references: [id], onDelete: Cascade)
 
   // Key identification
-  name        String    @db.VarChar(100) // User-provided name (e.g., "Production Server")
-  keyHash     String    @unique @map("key_hash") @db.VarChar(64) // SHA-256 hash (never store raw keys)
-  keyPrefix   String    @map("key_prefix") @db.VarChar(20) // First 16 chars for identification (tpmjs_sk_abc123...)
+  name      String @db.VarChar(100) // User-provided name (e.g., "Production Server")
+  keyHash   String @unique @map("key_hash") @db.VarChar(64) // SHA-256 hash (never store raw keys)
+  keyPrefix String @map("key_prefix") @db.VarChar(20) // First 16 chars for identification (tpmjs_sk_abc123...)
 
   // Permissions
-  scopes      String[]  @default([]) // ["mcp:execute", "agent:chat", "bridge:connect", "usage:read"]
+  scopes String[] @default([]) // ["mcp:execute", "agent:chat", "bridge:connect", "usage:read"]
 
   // Rate limiting (overrides tier default if set)
-  rateLimit   Int?      @map("rate_limit") // Requests per hour (null = use tier default)
+  rateLimit Int? @map("rate_limit") // Requests per hour (null = use tier default)
 
   // Status
-  isActive    Boolean   @default(true) @map("is_active")
-  lastUsedAt  DateTime? @map("last_used_at")
-  expiresAt   DateTime? @map("expires_at")
+  isActive   Boolean   @default(true) @map("is_active")
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
 
   // Timestamps
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   usageRecords ApiUsageRecord[]
@@ -1286,37 +1319,37 @@ model TpmjsApiKey {
 
 /// ApiUsageRecord - individual API request logs (kept for 30 days)
 model ApiUsageRecord {
-  id           String      @id @default(cuid())
+  id String @id @default(cuid())
 
   // API key relationship
-  apiKeyId     String      @map("api_key_id")
-  apiKey       TpmjsApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  apiKeyId String      @map("api_key_id")
+  apiKey   TpmjsApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
 
   // Request details
-  endpoint     String      @db.VarChar(500)
-  method       String      @db.VarChar(10) // GET, POST, etc.
-  statusCode   Int         @map("status_code")
-  latencyMs    Int         @map("latency_ms")
+  endpoint   String @db.VarChar(500)
+  method     String @db.VarChar(10) // GET, POST, etc.
+  statusCode Int    @map("status_code")
+  latencyMs  Int    @map("latency_ms")
 
   // Resource tracking
-  resourceType String?     @map("resource_type") @db.VarChar(50) // "mcp" | "agent" | "bridge" | "collection"
-  resourceId   String?     @map("resource_id") @db.VarChar(100) // Collection ID, Agent ID, etc.
+  resourceType String? @map("resource_type") @db.VarChar(50) // "mcp" | "agent" | "bridge" | "collection"
+  resourceId   String? @map("resource_id") @db.VarChar(100) // Collection ID, Agent ID, etc.
 
   // LLM usage (if applicable)
-  tokensIn     Int?        @map("tokens_in")
-  tokensOut    Int?        @map("tokens_out")
-  model        String?     @db.VarChar(50) // e.g., "gpt-4o-mini"
+  tokensIn  Int?    @map("tokens_in")
+  tokensOut Int?    @map("tokens_out")
+  model     String? @db.VarChar(50) // e.g., "gpt-4o-mini"
 
   // Error tracking
-  errorCode    String?     @map("error_code") @db.VarChar(50)
-  errorMessage String?     @map("error_message") @db.Text
+  errorCode    String? @map("error_code") @db.VarChar(50)
+  errorMessage String? @map("error_message") @db.Text
 
   // Client metadata
-  userAgent    String?     @map("user_agent") @db.VarChar(500)
-  ipAddress    String?     @map("ip_address") @db.VarChar(45) // IPv4 or IPv6
+  userAgent String? @map("user_agent") @db.VarChar(500)
+  ipAddress String? @map("ip_address") @db.VarChar(45) // IPv4 or IPv6
 
   // Timestamps
-  createdAt    DateTime    @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([apiKeyId])
   @@index([createdAt])
@@ -1327,41 +1360,41 @@ model ApiUsageRecord {
 
 /// ApiUsageSummary - aggregated usage summaries (hourly/daily rollups)
 model ApiUsageSummary {
-  id                 String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // User relationship
-  userId             String   @map("user_id")
-  user               User     @relation("UserUsageSummaries", fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation("UserUsageSummaries", fields: [userId], references: [id], onDelete: Cascade)
 
   // Optional API key (null for user-level summaries)
-  apiKeyId           String?  @map("api_key_id")
+  apiKeyId String? @map("api_key_id")
 
   // Time period
-  periodType         String   @map("period_type") @db.VarChar(20) // "hourly" | "daily" | "monthly"
-  periodStart        DateTime @map("period_start")
+  periodType  String   @map("period_type") @db.VarChar(20) // "hourly" | "daily" | "monthly"
+  periodStart DateTime @map("period_start")
 
   // Request counts
-  totalRequests      Int      @default(0) @map("total_requests")
-  successRequests    Int      @default(0) @map("success_requests")
-  errorRequests      Int      @default(0) @map("error_requests")
+  totalRequests   Int @default(0) @map("total_requests")
+  successRequests Int @default(0) @map("success_requests")
+  errorRequests   Int @default(0) @map("error_requests")
 
   // Endpoint breakdown (JSON: { "/api/mcp/...": 100, ... })
-  endpointCounts     Json     @default("{}") @map("endpoint_counts") @db.JsonB
+  endpointCounts Json @default("{}") @map("endpoint_counts") @db.JsonB
 
   // LLM usage totals
-  totalTokensIn      Int      @default(0) @map("total_tokens_in")
-  totalTokensOut     Int      @default(0) @map("total_tokens_out")
+  totalTokensIn  Int @default(0) @map("total_tokens_in")
+  totalTokensOut Int @default(0) @map("total_tokens_out")
 
   // Performance
-  avgLatencyMs       Float    @default(0) @map("avg_latency_ms")
-  p95LatencyMs       Float    @default(0) @map("p95_latency_ms")
+  avgLatencyMs Float @default(0) @map("avg_latency_ms")
+  p95LatencyMs Float @default(0) @map("p95_latency_ms")
 
   // Cost estimation (in cents)
-  estimatedCostCents Int      @default(0) @map("estimated_cost_cents")
+  estimatedCostCents Int @default(0) @map("estimated_cost_cents")
 
   // Timestamps
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, apiKeyId, periodType, periodStart])
   @@index([userId])
@@ -1375,39 +1408,39 @@ model ApiUsageSummary {
 
 /// Scenario - AI-generated test scenarios for collections
 model Scenario {
-  id           String      @id @default(cuid())
+  id String @id @default(cuid())
 
   // Collection relationship (nullable for orphaned scenarios)
   collectionId String?     @map("collection_id")
   collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
 
   // Content
-  prompt       String      @db.Text // AI-generated free-form prompt
-  name         String?     @db.VarChar(200) // Optional human-readable name
-  description  String?     @db.Text
+  prompt      String  @db.Text // AI-generated free-form prompt
+  name        String? @db.VarChar(200) // Optional human-readable name
+  description String? @db.Text
 
   // Validation (optional assertions)
-  assertions   Json?       @db.JsonB // { regex?: string[], schema?: object }
+  assertions Json? @db.JsonB // { regex?: string[], schema?: object }
 
   // AI-generated metadata
-  tags         String[]    @default([]) @db.Text
+  tags String[] @default([]) @db.Text
 
   // Quality metrics (streak-based scoring)
-  qualityScore      Float   @default(0) @map("quality_score")
-  consecutivePasses Int     @default(0) @map("consecutive_passes")
-  consecutiveFails  Int     @default(0) @map("consecutive_fails")
-  totalRuns         Int     @default(0) @map("total_runs")
+  qualityScore      Float     @default(0) @map("quality_score")
+  consecutivePasses Int       @default(0) @map("consecutive_passes")
+  consecutiveFails  Int       @default(0) @map("consecutive_fails")
+  totalRuns         Int       @default(0) @map("total_runs")
   lastRunAt         DateTime? @map("last_run_at")
   lastRunStatus     String?   @map("last_run_status") @db.VarChar(20) // 'pass' | 'fail' | 'error'
 
   // Timestamps
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  runs         ScenarioRun[]
-  embedding    ScenarioEmbedding?
-  useCase      UseCase?
+  runs      ScenarioRun[]
+  embedding ScenarioEmbedding?
+  useCase   UseCase?
 
   @@index([collectionId])
   @@index([qualityScore])
@@ -1418,18 +1451,18 @@ model Scenario {
 
 /// ScenarioEmbedding - vector embeddings for scenario similarity detection
 model ScenarioEmbedding {
-  id         String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Scenario relationship
   scenarioId String   @unique @map("scenario_id")
   scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
 
   // Embedding data
-  embedding  Json     @db.JsonB // Array of floats (1536 dims for text-embedding-3-small)
-  model      String   @default("text-embedding-3-small") @db.VarChar(50)
+  embedding Json   @db.JsonB // Array of floats (1536 dims for text-embedding-3-small)
+  model     String @default("text-embedding-3-small") @db.VarChar(50)
 
   // Timestamps
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([scenarioId])
   @@map("scenario_embeddings")
@@ -1437,19 +1470,19 @@ model ScenarioEmbedding {
 
 /// ScenarioRun - individual execution records for scenarios
 model ScenarioRun {
-  id         String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Scenario relationship
   scenarioId String   @map("scenario_id")
   scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
 
   // Execution context
-  userId     String   @map("user_id") // Who triggered the run
-  agentId    String?  @map("agent_id") // Ephemeral agent ID (for debugging)
+  userId  String  @map("user_id") // Who triggered the run
+  agentId String? @map("agent_id") // Ephemeral agent ID (for debugging)
 
   // Status
-  status     String   @db.VarChar(20) // 'pending' | 'running' | 'pass' | 'fail' | 'error'
-  retryCount Int      @default(0) @map("retry_count")
+  status     String @db.VarChar(20) // 'pending' | 'running' | 'pass' | 'fail' | 'error'
+  retryCount Int    @default(0) @map("retry_count")
 
   // Results
   conversation Json?   @db.JsonB // Full message history
@@ -1465,10 +1498,10 @@ model ScenarioRun {
   assertionResults Json? @map("assertion_results") @db.JsonB // { passed: string[], failed: string[] }
 
   // Cost tracking
-  inputTokens     Int?    @map("input_tokens")
-  outputTokens    Int?    @map("output_tokens")
-  totalTokens     Int?    @map("total_tokens")
-  executionTimeMs Int?    @map("execution_time_ms")
+  inputTokens     Int?     @map("input_tokens")
+  outputTokens    Int?     @map("output_tokens")
+  totalTokens     Int?     @map("total_tokens")
+  executionTimeMs Int?     @map("execution_time_ms")
   estimatedCost   Decimal? @map("estimated_cost") @db.Decimal(10, 6)
 
   // Timestamps
@@ -1485,10 +1518,10 @@ model ScenarioRun {
 
 /// ScenarioQuota - daily usage quotas for scenario runs
 model ScenarioQuota {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // User relationship
-  userId      String   @unique @map("user_id")
+  userId String @unique @map("user_id")
 
   // Quota configuration
   dailyLimit  Int      @default(50) @map("daily_limit") // Runs per day
@@ -1496,8 +1529,8 @@ model ScenarioQuota {
   lastResetAt DateTime @default(now()) @map("last_reset_at")
 
   // Timestamps
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([userId])
   @@map("scenario_quotas")
@@ -1517,7 +1550,7 @@ model Persona {
   createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
-  useCases    UseCasePersona[]
+  useCases UseCasePersona[]
 
   @@index([slug])
   @@map("personas")
@@ -1525,18 +1558,18 @@ model Persona {
 
 /// Industry - industries for use case categorization (AI-populated)
 model Industry {
-  id          String    @id @default(cuid())
-  name        String    @unique @db.VarChar(100)
-  slug        String    @unique @db.VarChar(100)
-  description String?   @db.Text
-  icon        String?   @db.VarChar(50)
-  parentId    String?   @map("parent_id")
-  parent      Industry? @relation("IndustryHierarchy", fields: [parentId], references: [id])
+  id          String     @id @default(cuid())
+  name        String     @unique @db.VarChar(100)
+  slug        String     @unique @db.VarChar(100)
+  description String?    @db.Text
+  icon        String?    @db.VarChar(50)
+  parentId    String?    @map("parent_id")
+  parent      Industry?  @relation("IndustryHierarchy", fields: [parentId], references: [id])
   children    Industry[] @relation("IndustryHierarchy")
-  createdAt   DateTime  @default(now()) @map("created_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
 
   // Relations
-  useCases    UseCaseIndustry[]
+  useCases UseCaseIndustry[]
 
   @@index([parentId])
   @@index([slug])
@@ -1545,15 +1578,15 @@ model Industry {
 
 /// Category - categories for use case organization (AI-populated)
 model Category {
-  id          String          @id @default(cuid())
-  name        String          @unique @db.VarChar(100)
-  slug        String          @unique @db.VarChar(100)
-  type        String          @map("type") @db.VarChar(50) // 'functional', 'business-process', 'technical'
-  description String?         @db.Text
-  createdAt   DateTime        @default(now()) @map("created_at")
+  id          String   @id @default(cuid())
+  name        String   @unique @db.VarChar(100)
+  slug        String   @unique @db.VarChar(100)
+  type        String   @map("type") @db.VarChar(50) // 'functional', 'business-process', 'technical'
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
 
   // Relations
-  useCases    UseCaseCategory[]
+  useCases UseCaseCategory[]
 
   @@index([type])
   @@index([slug])
@@ -1562,35 +1595,35 @@ model Category {
 
 /// UseCase - auto-generated marketing content from qualifying scenarios
 model UseCase {
-  id                String            @id @default(cuid())
-  scenarioId        String            @unique @map("scenario_id")
-  scenario          Scenario          @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  id         String   @id @default(cuid())
+  scenarioId String   @unique @map("scenario_id")
+  scenario   Scenario @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
 
   // SEO-friendly slug
-  slug              String            @db.VarChar(200)
+  slug String @db.VarChar(200)
 
   // AI-generated marketing content
-  marketingTitle    String            @map("marketing_title") @db.VarChar(200)
-  marketingDesc     String            @map("marketing_desc") @db.Text
-  roiEstimate       String?           @map("roi_estimate") @db.Text  // "Saves ~10 hours/week"
-  businessValue     String?           @map("business_value") @db.Text  // Human-readable benefit
-  problemStatement  String?           @map("problem_statement") @db.Text  // What problem it solves
-  solutionNarrative String?          @map("solution_narrative") @db.Text  // How it works
+  marketingTitle    String  @map("marketing_title") @db.VarChar(200)
+  marketingDesc     String  @map("marketing_desc") @db.Text
+  roiEstimate       String? @map("roi_estimate") @db.Text // "Saves ~10 hours/week"
+  businessValue     String? @map("business_value") @db.Text // Human-readable benefit
+  problemStatement  String? @map("problem_statement") @db.Text // What problem it solves
+  solutionNarrative String? @map("solution_narrative") @db.Text // How it works
 
   // Ranking (computed nightly)
-  rankScore         Float             @default(0) @map("rank_score")
-  lastRankedAt      DateTime          @map("last_ranked_at")
+  rankScore    Float    @default(0) @map("rank_score")
+  lastRankedAt DateTime @map("last_ranked_at")
 
   // Timestamps
-  createdAt         DateTime          @default(now()) @map("created_at")
-  updatedAt         DateTime          @updatedAt @map("updated_at")
-  lastRegeneratedAt DateTime?         @map("last_regenerated_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  lastRegeneratedAt DateTime? @map("last_regenerated_at")
 
   // Relations
-  personas          UseCasePersona[]
-  industries        UseCaseIndustry[]
-  categories        UseCaseCategory[]
-  socialProof       SocialProof?
+  personas    UseCasePersona[]
+  industries  UseCaseIndustry[]
+  categories  UseCaseCategory[]
+  socialProof SocialProof?
 
   @@index([scenarioId])
   @@index([slug])
@@ -1602,11 +1635,11 @@ model UseCase {
 
 /// UseCasePersona - junction table for UseCase <-> Persona
 model UseCasePersona {
-  useCaseId    String  @map("use_case_id")
-  personaId    String  @map("persona_id")
-  useCase      UseCase @relation(fields: [useCaseId], references: [id], onDelete: Cascade)
-  persona      Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
-  relevance    Float?  @map("relevance") // Future: relevance score for this persona
+  useCaseId String  @map("use_case_id")
+  personaId String  @map("persona_id")
+  useCase   UseCase @relation(fields: [useCaseId], references: [id], onDelete: Cascade)
+  persona   Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  relevance Float?  @map("relevance") // Future: relevance score for this persona
 
   @@id([useCaseId, personaId])
   @@index([useCaseId])
@@ -1642,21 +1675,21 @@ model UseCaseCategory {
 
 /// SocialProof - cached metrics from scenario runs for use cases
 model SocialProof {
-  id               String   @id @default(cuid())
-  useCaseId        String   @unique @map("use_case_id")
-  useCase          UseCase  @relation(fields: [useCaseId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  useCaseId String  @unique @map("use_case_id")
+  useCase   UseCase @relation(fields: [useCaseId], references: [id], onDelete: Cascade)
 
-  qualityScore     Float    @map("quality_score")
-  totalRuns        Int      @map("total_runs")
-  consecutivePasses Int     @map("consecutive_passes")
-  lastRunStatus    String?  @map("last_run_status") @db.VarChar(20)
-  lastRunAt        DateTime? @map("last_run_at")
+  qualityScore      Float     @map("quality_score")
+  totalRuns         Int       @map("total_runs")
+  consecutivePasses Int       @map("consecutive_passes")
+  lastRunStatus     String?   @map("last_run_status") @db.VarChar(20)
+  lastRunAt         DateTime? @map("last_run_at")
 
   // Computed display fields
-  successRate      Float?   @map("success_rate")
-  lastRunAgo       String?  @map("last_run_ago") // "2 days ago"
+  successRate Float?  @map("success_rate")
+  lastRunAgo  String? @map("last_run_ago") // "2 days ago"
 
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([useCaseId])
   @@index([qualityScore])
@@ -1670,17 +1703,17 @@ model SocialProof {
 
 /// ToolSkillsCache - per-tool cached skills markdown section
 model ToolSkillsCache {
-  id              String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Tool relationship
-  toolId          String   @unique @map("tool_id")
-  tool            Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  toolId String @unique @map("tool_id")
+  tool   Tool   @relation(fields: [toolId], references: [id], onDelete: Cascade)
 
   // Cached markdown section for this tool
-  skillsMarkdown  String   @map("skills_markdown") @db.Text
+  skillsMarkdown String @map("skills_markdown") @db.Text
 
   // Timestamps
-  generatedAt     DateTime @default(now()) @map("generated_at")
+  generatedAt DateTime @default(now()) @map("generated_at")
 
   @@index([toolId])
   @@map("tool_skills_cache")
@@ -1688,26 +1721,26 @@ model ToolSkillsCache {
 
 /// SkillsGenerationJob - tracks chunked skills.md generation progress
 model SkillsGenerationJob {
-  id               String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Collection relationship
-  collectionId     String     @map("collection_id")
-  collection       Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String     @map("collection_id")
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   // Job status
-  status           String     @default("pending") @db.VarChar(20) // 'pending' | 'processing' | 'completed' | 'failed'
+  status String @default("pending") @db.VarChar(20) // 'pending' | 'processing' | 'completed' | 'failed'
 
   // Progress tracking
-  currentBatch     Int        @default(0) @map("current_batch")
-  totalBatches     Int        @map("total_batches")
-  completedToolIds String[]   @default([]) @map("completed_tool_ids")
+  currentBatch     Int      @default(0) @map("current_batch")
+  totalBatches     Int      @map("total_batches")
+  completedToolIds String[] @default([]) @map("completed_tool_ids")
 
   // Error tracking
-  error            String?    @db.Text
+  error String? @db.Text
 
   // Timestamps
-  createdAt        DateTime   @default(now()) @map("created_at")
-  updatedAt        DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([collectionId])
   @@index([status])
@@ -1720,29 +1753,29 @@ model SkillsGenerationJob {
 
 /// OmegaConversation - chat session for Omega AI agent
 model OmegaConversation {
-  id                String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  ownerId           String   @map("owner_id")
+  ownerId String @map("owner_id")
 
   // Conversation metadata
-  title             String?  @db.VarChar(200)
+  title String? @db.VarChar(200)
 
   // Execution state
-  executionState    String   @default("idle") @map("execution_state") @db.VarChar(20) // idle, running, paused, cancelled
+  executionState String @default("idle") @map("execution_state") @db.VarChar(20) // idle, running, paused, cancelled
 
   // Token tracking (aggregate across all messages)
-  inputTokensTotal  Int      @default(0) @map("input_tokens_total")
-  outputTokensTotal Int      @default(0) @map("output_tokens_total")
+  inputTokensTotal  Int @default(0) @map("input_tokens_total")
+  outputTokensTotal Int @default(0) @map("output_tokens_total")
 
   // Timestamps
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  messages          OmegaMessage[]
-  participants      OmegaParticipant[]
-  toolRuns          OmegaToolRun[]
+  messages     OmegaMessage[]
+  participants OmegaParticipant[]
+  toolRuns     OmegaToolRun[]
 
   @@index([ownerId])
   @@index([createdAt])
@@ -1751,30 +1784,30 @@ model OmegaConversation {
 
 /// OmegaMessage - individual message in an Omega conversation
 model OmegaMessage {
-  id             String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Conversation relationship
-  conversationId String   @map("conversation_id")
+  conversationId String            @map("conversation_id")
   conversation   OmegaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   // Message content
-  role           MessageRole
-  content        String   @db.Text
+  role    MessageRole
+  content String      @db.Text
 
   // Author info (for multi-user conversations)
-  authorId       String?  @map("author_id")
-  authorEmail    String?  @map("author_email")
-  authorName     String?  @map("author_name") @db.VarChar(100)
+  authorId    String? @map("author_id")
+  authorEmail String? @map("author_email")
+  authorName  String? @map("author_name") @db.VarChar(100)
 
   // Tool calls (for ASSISTANT messages)
-  toolCalls      Json?    @map("tool_calls") @db.JsonB
+  toolCalls Json? @map("tool_calls") @db.JsonB
 
   // Token tracking
-  inputTokens    Int?     @map("input_tokens")
-  outputTokens   Int?     @map("output_tokens")
+  inputTokens  Int? @map("input_tokens")
+  outputTokens Int? @map("output_tokens")
 
   // Timestamps
-  createdAt      DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([conversationId])
   @@index([createdAt])
@@ -1783,22 +1816,22 @@ model OmegaMessage {
 
 /// OmegaParticipant - tracks users in an Omega conversation
 model OmegaParticipant {
-  id             String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Conversation relationship
-  conversationId String   @map("conversation_id")
+  conversationId String            @map("conversation_id")
   conversation   OmegaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   // User info
-  userId         String?  @map("user_id")
-  displayName    String   @map("display_name") @db.VarChar(100)
-  email          String?
+  userId      String? @map("user_id")
+  displayName String  @map("display_name") @db.VarChar(100)
+  email       String?
 
   // Role in conversation
-  role           String   @default("collaborator") @db.VarChar(20) // owner, collaborator
+  role String @default("collaborator") @db.VarChar(20) // owner, collaborator
 
   // Timestamps
-  joinedAt       DateTime @default(now()) @map("joined_at")
+  joinedAt DateTime @default(now()) @map("joined_at")
 
   @@unique([conversationId, userId])
   @@index([conversationId])
@@ -1807,23 +1840,23 @@ model OmegaParticipant {
 
 /// OmegaToolRun - tracks tool executions within Omega conversations
 model OmegaToolRun {
-  id              String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // Conversation relationship
-  conversationId  String    @map("conversation_id")
-  conversation    OmegaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String            @map("conversation_id")
+  conversation   OmegaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   // Message relationship (optional - for linking to specific message)
-  messageId       String?   @map("message_id")
+  messageId String? @map("message_id")
 
   // Tool execution details
-  toolName        String    @map("tool_name") @db.VarChar(200)
-  input           Json      @db.JsonB
-  output          Json?     @db.JsonB
-  error           String?   @db.Text
+  toolName String  @map("tool_name") @db.VarChar(200)
+  input    Json    @db.JsonB
+  output   Json?   @db.JsonB
+  error    String? @db.Text
 
   // Status tracking
-  status          String    @db.VarChar(20) // pending, running, success, error
+  status String @db.VarChar(20) // pending, running, success, error
 
   // Timing
   startedAt       DateTime  @default(now()) @map("started_at")
@@ -1837,24 +1870,24 @@ model OmegaToolRun {
 
 /// OmegaUserSettings - user preferences for Omega
 model OmegaUserSettings {
-  id                 String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // User relationship
-  userId             String   @unique @map("user_id")
+  userId String @unique @map("user_id")
 
   // Tool preferences
-  pinnedToolIds      String[] @default([]) @map("pinned_tool_ids")
-  blockedToolIds     String[] @default([]) @map("blocked_tool_ids")
+  pinnedToolIds  String[] @default([]) @map("pinned_tool_ids")
+  blockedToolIds String[] @default([]) @map("blocked_tool_ids")
 
   // Customization
-  customSystemPrompt String?  @map("custom_system_prompt") @db.Text
+  customSystemPrompt String? @map("custom_system_prompt") @db.Text
 
   // UI preferences
-  showDebugMode      Boolean  @default(false) @map("show_debug_mode")
+  showDebugMode Boolean @default(false) @map("show_debug_mode")
 
   // Timestamps
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("omega_user_settings")
 }
@@ -1865,37 +1898,37 @@ model OmegaUserSettings {
 
 /// SkillQuestion - Agent questions stored with embeddings for RAG
 model SkillQuestion {
-  id           String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Collection relationship
   collectionId String     @map("collection_id")
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   // Question content
-  question     String     @db.Text
-  embedding    Json       @db.JsonB // Array of floats (3072 dims for text-embedding-3-large)
+  question  String @db.Text
+  embedding Json   @db.JsonB // Array of floats (3072 dims for text-embedding-3-large)
 
   // Response
-  answer       String     @db.Text
-  answerTokens Int        @default(0) @map("answer_tokens")
+  answer       String @db.Text
+  answerTokens Int    @default(0) @map("answer_tokens")
 
   // Agent identity (anonymized in UI)
-  agentHash    String?    @map("agent_hash") @db.VarChar(64) // Hash of IP + user-agent for deduplication
-  agentName    String?    @map("agent_name") @db.VarChar(100) // Self-reported agent name
-  sessionId    String?    @map("session_id") // Optional session for multi-turn
+  agentHash String? @map("agent_hash") @db.VarChar(64) // Hash of IP + user-agent for deduplication
+  agentName String? @map("agent_name") @db.VarChar(100) // Self-reported agent name
+  sessionId String? @map("session_id") // Optional session for multi-turn
 
   // Metadata
-  tags         String[]   @default([]) @db.Text
-  confidence   Float      @default(0)
-  similarCount Int        @default(0) @map("similar_count") // Times similar question asked
+  tags         String[] @default([]) @db.Text
+  confidence   Float    @default(0)
+  similarCount Int      @default(0) @map("similar_count") // Times similar question asked
 
   // Graph relationships
-  skillNodes   SkillQuestionSkill[]
-  toolNodes    SkillQuestionTool[]
+  skillNodes SkillQuestionSkill[]
+  toolNodes  SkillQuestionTool[]
 
   // Timestamps
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([collectionId])
   @@index([sessionId])
@@ -1905,31 +1938,31 @@ model SkillQuestion {
 
 /// Skill - Emergent skill nodes identified from question patterns
 model Skill {
-  id           String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Collection relationship
   collectionId String     @map("collection_id")
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   // Skill identity
-  name         String     @db.VarChar(200) // e.g., "React useEffect debugging"
-  slug         String     @db.VarChar(200) // URL-safe version
-  description  String     @db.Text
-  embedding    Json       @db.JsonB // Array of floats (3072 dims for text-embedding-3-large)
+  name        String @db.VarChar(200) // e.g., "React useEffect debugging"
+  slug        String @db.VarChar(200) // URL-safe version
+  description String @db.Text
+  embedding   Json   @db.JsonB // Array of floats (3072 dims for text-embedding-3-large)
 
   // Stats
-  questionCount Int       @default(0) @map("question_count")
-  confidence    Float     @default(0) // Aggregate confidence
+  questionCount Int   @default(0) @map("question_count")
+  confidence    Float @default(0) // Aggregate confidence
 
   // Graph relationships
   questions     SkillQuestionSkill[]
-  parentSkill   Skill?    @relation("SkillHierarchy", fields: [parentSkillId], references: [id])
-  parentSkillId String?   @map("parent_skill_id")
-  childSkills   Skill[]   @relation("SkillHierarchy")
+  parentSkill   Skill?               @relation("SkillHierarchy", fields: [parentSkillId], references: [id])
+  parentSkillId String?              @map("parent_skill_id")
+  childSkills   Skill[]              @relation("SkillHierarchy")
 
   // Timestamps
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([collectionId, slug])
   @@index([collectionId])
@@ -1967,21 +2000,21 @@ model SkillQuestionTool {
 
 /// SkillSession - Optional multi-turn conversation sessions
 model SkillSession {
-  id           String     @id @default(cuid())
+  id String @id @default(cuid())
 
   // Collection relationship
   collectionId String     @map("collection_id")
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
 
   // Session state
-  context      Json       @default("[]") @db.JsonB // Message history
-  agentHash    String?    @map("agent_hash") @db.VarChar(64)
-  agentName    String?    @map("agent_name") @db.VarChar(100)
+  context   Json    @default("[]") @db.JsonB // Message history
+  agentHash String? @map("agent_hash") @db.VarChar(64)
+  agentName String? @map("agent_name") @db.VarChar(100)
 
   // Timestamps
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  expiresAt    DateTime   @map("expires_at") // Auto-expire sessions
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  expiresAt DateTime @map("expires_at") // Auto-expire sessions
 
   @@index([collectionId])
   @@index([expiresAt])
@@ -1994,35 +2027,35 @@ model SkillSession {
 
 /// Memory - user-owned persistent memories for AI agents
 model Memory {
-  id               String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId           String    @map("user_id")
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Content
-  content          Json      @db.JsonB // Arbitrary JSON payload
-  summary          String    @db.VarChar(500) // Auto-generated or user-provided preview
-  namespace        String?   @db.VarChar(100) // Grouping like "project-x", "personal"
-  tags             String[]  @default([]) @db.Text // Categorization tags
+  content   Json     @db.JsonB // Arbitrary JSON payload
+  summary   String   @db.VarChar(500) // Auto-generated or user-provided preview
+  namespace String?  @db.VarChar(100) // Grouping like "project-x", "personal"
+  tags      String[] @default([]) @db.Text // Categorization tags
 
   // Embedding for semantic search
-  embedding        Json      @db.JsonB // 3072-dim float array (text-embedding-3-large)
+  embedding Json @db.JsonB // 3072-dim float array (text-embedding-3-large)
 
   // Provenance tracking
-  source           String    @db.VarChar(100) // Which tool created it ("createMemoryTool", "dashboard")
-  sourceAgent      String?   @map("source_agent") @db.VarChar(200) // Agent name/identifier
-  sourceContext    Json?     @map("source_context") @db.JsonB // Additional creation context
+  source        String  @db.VarChar(100) // Which tool created it ("createMemoryTool", "dashboard")
+  sourceAgent   String? @map("source_agent") @db.VarChar(200) // Agent name/identifier
+  sourceContext Json?   @map("source_context") @db.JsonB // Additional creation context
 
   // Size tracking
-  contentSizeBytes Int       @map("content_size_bytes")
+  contentSizeBytes Int @map("content_size_bytes")
 
   // TTL support
-  expiresAt        DateTime? @map("expires_at")
+  expiresAt DateTime? @map("expires_at")
 
   // Timestamps
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([userId])
   @@index([userId, namespace])
@@ -2037,7 +2070,7 @@ model Memory {
 
 /// ExecutionEvent - unified tracking for tool calls, agent runs, collection use, and scenario runs
 model ExecutionEvent {
-  id        String @id @default(cuid())
+  id String @id @default(cuid())
 
   // Event classification
   eventType String @map("event_type") @db.VarChar(30) // 'tool_call' | 'agent_run' | 'collection_use' | 'scenario_run'
@@ -2057,8 +2090,8 @@ model ExecutionEvent {
   packageName String? @map("package_name") @db.VarChar(214)
 
   // Outcome
-  status     String  @db.VarChar(20) // 'success' | 'error' | 'timeout'
-  durationMs Int?    @map("duration_ms")
+  status     String @db.VarChar(20) // 'success' | 'error' | 'timeout'
+  durationMs Int?   @map("duration_ms")
 
   // Token usage (for agent runs)
   tokensIn  Int? @map("tokens_in")
@@ -2078,8 +2111,8 @@ model ExecutionEvent {
   conversationId String? @map("conversation_id") // Links to conversation (no FK for resilience)
 
   // Tool call I/O (truncated for storage efficiency)
-  inputArgs     Json? @map("input_args") @db.JsonB     // Tool call arguments (truncated to 2KB)
-  outputSummary Json? @map("output_summary") @db.JsonB  // Tool result summary (truncated to 2KB)
+  inputArgs     Json? @map("input_args") @db.JsonB // Tool call arguments (truncated to 2KB)
+  outputSummary Json? @map("output_summary") @db.JsonB // Tool result summary (truncated to 2KB)
 
   // Structured error classification
   errorCategory String? @map("error_category") @db.VarChar(30) // 'schema_validation' | 'auth_failure' | 'rate_limit' | 'timeout' | 'invalid_input' | 'tool_bug' | 'network_error' | 'provider_error' | 'not_found' | 'unknown'
@@ -2089,7 +2122,7 @@ model ExecutionEvent {
 
   // Context window state at time of execution
   contextMessageCount Int? @map("context_message_count") // Messages in LLM context window
-  contextTokenCount   Int? @map("context_token_count")   // Estimated tokens in context window
+  contextTokenCount   Int? @map("context_token_count") // Estimated tokens in context window
 
   // Available tools (what the model could choose from)
   availableToolCount Int? @map("available_tool_count") // Number of tools available to the model
@@ -2113,19 +2146,19 @@ model ExecutionEvent {
 
 /// SearchLog - tracks search queries, result counts, and latency
 model SearchLog {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Search data
-  query       String   @db.VarChar(500)
-  resultCount Int      @map("result_count")
-  latencyMs   Int      @map("latency_ms")
+  query       String @db.VarChar(500)
+  resultCount Int    @map("result_count")
+  latencyMs   Int    @map("latency_ms")
 
   // Optional actor
-  userId      String?  @map("user_id")
-  sessionId   String?  @map("session_id")
+  userId    String? @map("user_id")
+  sessionId String? @map("session_id")
 
   // Timestamps
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([createdAt])
   @@index([query])
@@ -2182,36 +2215,36 @@ enum WorkflowNodeExecutionStatus {
 
 /// Workflow - top-level workflow definition owned by a user
 model Workflow {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner relationship
-  userId      String   @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Identity
-  uid         String   @unique @db.VarChar(100)
-  name        String   @db.VarChar(100)
-  description String?  @db.Text
+  uid         String  @unique @db.VarChar(100)
+  name        String  @db.VarChar(100)
+  description String? @db.Text
 
   // Status & trigger
-  status      WorkflowStatus      @default(DRAFT)
-  triggerType WorkflowTriggerType  @default(MANUAL)
-  triggerConfig Json?              @map("trigger_config") @db.JsonB
+  status        WorkflowStatus      @default(DRAFT)
+  triggerType   WorkflowTriggerType @default(MANUAL)
+  triggerConfig Json?               @map("trigger_config") @db.JsonB
 
   // Canvas state (persists React Flow zoom/pan)
-  canvasViewport Json?             @map("canvas_viewport") @db.JsonB
+  canvasViewport Json? @map("canvas_viewport") @db.JsonB
 
   // Versioning (incremented on each save)
-  version     Int                  @default(1)
+  version Int @default(1)
 
   // Executor configuration (optional, same pattern as agents/collections)
-  executorType   String?           @map("executor_type") @db.VarChar(20)
-  executorConfig Json?             @map("executor_config") @db.JsonB
-  envVars        Json?             @map("env_vars") @db.JsonB
+  executorType   String? @map("executor_type") @db.VarChar(20)
+  executorConfig Json?   @map("executor_config") @db.JsonB
+  envVars        Json?   @map("env_vars") @db.JsonB
 
   // Denormalized counters
-  executionCount  Int              @default(0) @map("execution_count")
-  lastExecutedAt  DateTime?        @map("last_executed_at")
+  executionCount Int       @default(0) @map("execution_count")
+  lastExecutedAt DateTime? @map("last_executed_at")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -2231,37 +2264,37 @@ model Workflow {
 
 /// WorkflowNode - individual nodes in the workflow graph
 model WorkflowNode {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Workflow relationship
-  workflowId  String           @map("workflow_id")
-  workflow    Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String   @map("workflow_id")
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   // React Flow node identity
-  nodeId      String           @map("node_id") @db.VarChar(100)
-  type        WorkflowNodeType
+  nodeId String           @map("node_id") @db.VarChar(100)
+  type   WorkflowNodeType
 
   // Display
-  label       String           @db.VarChar(200)
-  positionX   Float            @map("position_x")
-  positionY   Float            @map("position_y")
+  label     String @db.VarChar(200)
+  positionX Float  @map("position_x")
+  positionY Float  @map("position_y")
 
   // Configuration (varies by node type)
-  config      Json?            @db.JsonB
+  config Json? @db.JsonB
 
   // Optional references to existing entities
-  toolId      String?          @map("tool_id")
-  tool        Tool?            @relation(fields: [toolId], references: [id], onDelete: SetNull)
-  agentId     String?          @map("agent_id")
-  agent       Agent?           @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  toolId  String? @map("tool_id")
+  tool    Tool?   @relation(fields: [toolId], references: [id], onDelete: SetNull)
+  agentId String? @map("agent_id")
+  agent   Agent?  @relation(fields: [agentId], references: [id], onDelete: SetNull)
 
   // Timestamps
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  sourceEdges WorkflowEdge[]   @relation("SourceNode")
-  targetEdges WorkflowEdge[]   @relation("TargetNode")
+  sourceEdges    WorkflowEdge[]          @relation("SourceNode")
+  targetEdges    WorkflowEdge[]          @relation("TargetNode")
   nodeExecutions WorkflowNodeExecution[]
 
   @@unique([workflowId, nodeId])
@@ -2273,30 +2306,30 @@ model WorkflowNode {
 
 /// WorkflowEdge - connections between nodes in the workflow graph
 model WorkflowEdge {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Workflow relationship
-  workflowId  String           @map("workflow_id")
-  workflow    Workflow          @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String   @map("workflow_id")
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   // React Flow edge identity
-  edgeId      String           @map("edge_id") @db.VarChar(100)
+  edgeId String @map("edge_id") @db.VarChar(100)
 
   // Source and target nodes
-  sourceNodeId String          @map("source_node_id")
-  sourceNode  WorkflowNode     @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
-  targetNodeId String          @map("target_node_id")
-  targetNode  WorkflowNode     @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
+  sourceNodeId String       @map("source_node_id")
+  sourceNode   WorkflowNode @relation("SourceNode", fields: [sourceNodeId], references: [id], onDelete: Cascade)
+  targetNodeId String       @map("target_node_id")
+  targetNode   WorkflowNode @relation("TargetNode", fields: [targetNodeId], references: [id], onDelete: Cascade)
 
   // Handle identifiers (for branching: "true", "false", etc.)
-  sourceHandle String?         @map("source_handle") @db.VarChar(50)
-  targetHandle String?         @map("target_handle") @db.VarChar(50)
+  sourceHandle String? @map("source_handle") @db.VarChar(50)
+  targetHandle String? @map("target_handle") @db.VarChar(50)
 
   // Data mapping (template expressions like {{source.output.field}})
-  dataMapping  Json?           @map("data_mapping") @db.JsonB
+  dataMapping Json? @map("data_mapping") @db.JsonB
 
   // Timestamps
-  createdAt   DateTime         @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([workflowId, edgeId])
   @@index([workflowId])
@@ -2307,35 +2340,35 @@ model WorkflowEdge {
 
 /// WorkflowExecution - a single run of a workflow
 model WorkflowExecution {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Workflow relationship
-  workflowId  String                  @map("workflow_id")
-  workflow    Workflow                 @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  workflowId String   @map("workflow_id")
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
 
   // Execution state
   status      WorkflowExecutionStatus @default(PENDING)
   triggeredBy String                  @map("triggered_by") @db.VarChar(50) // 'manual' | 'webhook' | 'schedule'
 
   // Input/output
-  triggerInput Json?                  @map("trigger_input") @db.JsonB
-  output       Json?                  @db.JsonB
-  error        String?                @db.Text
+  triggerInput Json?   @map("trigger_input") @db.JsonB
+  output       Json?   @db.JsonB
+  error        String? @db.Text
 
   // Timing
-  startedAt    DateTime?              @map("started_at")
-  completedAt  DateTime?              @map("completed_at")
-  durationMs   Int?                   @map("duration_ms")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  durationMs  Int?      @map("duration_ms")
 
   // Token usage (aggregated from node executions)
-  totalTokensIn  Int?                 @map("total_tokens_in")
-  totalTokensOut Int?                 @map("total_tokens_out")
+  totalTokensIn  Int? @map("total_tokens_in")
+  totalTokensOut Int? @map("total_tokens_out")
 
   // Snapshot of workflow version at execution time
-  workflowVersion Int                 @map("workflow_version")
+  workflowVersion Int @map("workflow_version")
 
   // Timestamps
-  createdAt   DateTime                @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
   nodeExecutions WorkflowNodeExecution[]
@@ -2348,35 +2381,35 @@ model WorkflowExecution {
 
 /// WorkflowNodeExecution - per-node result within a workflow execution
 model WorkflowNodeExecution {
-  id          String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Execution relationship
-  executionId String                    @map("execution_id")
-  execution   WorkflowExecution         @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  executionId String            @map("execution_id")
+  execution   WorkflowExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
 
   // Node relationship
-  nodeId      String                    @map("node_id")
-  node        WorkflowNode              @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  nodeId String       @map("node_id")
+  node   WorkflowNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
 
   // Execution state
-  status      WorkflowNodeExecutionStatus @default(NODE_PENDING)
+  status WorkflowNodeExecutionStatus @default(NODE_PENDING)
 
   // Input/output
-  input       Json?                     @db.JsonB
-  output      Json?                     @db.JsonB
-  error       String?                   @db.Text
+  input  Json?   @db.JsonB
+  output Json?   @db.JsonB
+  error  String? @db.Text
 
   // Timing
-  startedAt   DateTime?                 @map("started_at")
-  completedAt DateTime?                 @map("completed_at")
-  durationMs  Int?                      @map("duration_ms")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  durationMs  Int?      @map("duration_ms")
 
   // Retry tracking
-  attempt     Int                       @default(1)
-  maxRetries  Int                       @default(0) @map("max_retries")
+  attempt    Int @default(1)
+  maxRetries Int @default(0) @map("max_retries")
 
   // Timestamps
-  createdAt   DateTime                  @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([executionId])
   @@index([nodeId])
@@ -2386,28 +2419,28 @@ model WorkflowNodeExecution {
 /// SetupToken - one-time tokens for the install.sh setup flow
 /// Created from the web UI, redeemed by the install script to configure editors
 model SetupToken {
-  id        String   @id @default(cuid())
+  id String @id @default(cuid())
 
   // Owner
-  userId    String   @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Token (unique, short-lived)
-  token     String   @unique @db.VarChar(64)
+  token String @unique @db.VarChar(64)
 
   // Claim code - used by install.sh to poll for token completion
   // When install.sh runs without a token, it generates a claim code,
   // opens the browser to /setup?claim=<code>, and polls until the user completes setup
-  claimCode String?  @unique @map("claim_code") @db.VarChar(32)
+  claimCode String? @unique @map("claim_code") @db.VarChar(32)
 
   // Configuration payload (collections + editors mapping)
-  config    Json     @db.JsonB
+  config Json @db.JsonB
   // config shape: { mappings: [{ collectionId, collectionSlug, collectionName, editor }], apiKey?: string }
 
   // Status
-  redeemed    Boolean   @default(false)
-  redeemedAt  DateTime? @map("redeemed_at")
-  expiresAt   DateTime  @map("expires_at")
+  redeemed   Boolean   @default(false)
+  redeemedAt DateTime? @map("redeemed_at")
+  expiresAt  DateTime  @map("expires_at")
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")

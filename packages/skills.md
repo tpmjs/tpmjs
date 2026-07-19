@@ -80,7 +80,7 @@ POST https://tpmjs.com/api/mcp/username/collection/http
 ```
 
 **Execution infrastructure:**
-- Stateless tool executor on Railway (Deno runtime)
+- Stateless on-box tool executor (Deno runtime)
 - Sandbox server for persistent workspaces (Docker containers, 24h TTL)
 - Custom executor support (point to your own server URL)
 - Environment variables passed securely per-request or stored encrypted per-collection
@@ -589,8 +589,8 @@ POST /api/sync/package                    # Sync specific npm package
 POST /api/sync/changes                    # NPM changes feed sync
 POST /api/sync/keyword                    # NPM keyword search
 POST /api/sync/enrich                     # Schema extraction + health
-POST /api/sync/metrics                    # Download stats + quality
-POST /api/sync/health-check               # Full health check (all tools)
+POST /api/sync/metrics                    # Leased package metrics + finite quality slice
+POST /api/sync/health-check               # Leased finite slice of due tools
 POST /api/sync/stats-snapshot             # Daily stats snapshot
 ```
 
