@@ -8,11 +8,11 @@
  * - Updates confidence scores
  */
 
-import { openai } from '@ai-sdk/openai';
 import type { Skill, Tool } from '@prisma/client';
 import { prisma } from '@tpmjs/db';
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { textModel } from './provider';
 import { cosineSimilarity, embedQuestion } from './skills-embedding';
 
 const SKILL_MATCH_THRESHOLD = 0.75;
@@ -43,7 +43,7 @@ export async function extractSkillsFromQuestion(
   const toolNames = tools.map((t) => t.name).join(', ');
 
   const { object } = await generateObject({
-    model: openai('gpt-4.1-mini'),
+    model: textModel(),
     schema: z.object({
       skills: z.array(
         z.object({

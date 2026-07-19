@@ -8,11 +8,11 @@
  * - Common use case patterns
  */
 
-import { openai } from '@ai-sdk/openai';
 import type { Collection, Tool } from '@prisma/client';
 import { prisma } from '@tpmjs/db';
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { textModel } from './provider';
 import { embedQuestion } from './skills-embedding';
 import { updateSkillGraph } from './skills-graph-updater';
 import { type CollectionContext, generateSkillResponse } from './skills-response-generator';
@@ -37,7 +37,7 @@ async function generateQuestionsFromSkillsMarkdown(
   count: number = 5
 ): Promise<string[]> {
   const { object } = await generateObject({
-    model: openai('gpt-4.1-mini'),
+    model: textModel(),
     schema: z.object({
       questions: z.array(z.string()),
     }),
@@ -69,7 +69,7 @@ async function generateQuestionsFromTools(
     .join('\n');
 
   const { object } = await generateObject({
-    model: openai('gpt-4.1-mini'),
+    model: textModel(),
     schema: z.object({
       questions: z.array(z.string()),
     }),
@@ -99,7 +99,7 @@ async function generateCommonUseCaseQuestions(
   count: number = 3
 ): Promise<string[]> {
   const { object } = await generateObject({
-    model: openai('gpt-4.1-mini'),
+    model: textModel(),
     schema: z.object({
       questions: z.array(z.string()),
     }),

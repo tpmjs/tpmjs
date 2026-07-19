@@ -3,9 +3,9 @@
  * Uses Vercel AI SDK with structured output to generate realistic workflows
  */
 
-import { openai } from '@ai-sdk/openai';
 import { generateObject } from 'ai';
 import { z } from 'zod';
+import { textModel } from './provider';
 
 // Schema for structured output
 const ToolStepSchema = z.object({
@@ -111,7 +111,7 @@ export async function generateUseCases(
   const userPrompt = buildUserPrompt(collectionName, collectionDescription, tools);
 
   const result = await generateObject({
-    model: openai('gpt-4.1-mini'),
+    model: textModel(),
     schema: UseCasesOutputSchema,
     system: systemPrompt,
     prompt: userPrompt,

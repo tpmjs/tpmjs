@@ -8,10 +8,9 @@
  * - skills-summary-generator.ts: Summary/intro generation
  */
 
-import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-
 import type { PackageSource } from './package-source-fetcher';
+import { textModel } from './provider';
 
 export interface CollectionData {
   id: string;
@@ -294,7 +293,7 @@ export async function generateSkillsMarkdown(
   const prompt = buildSkillsPrompt(collection, tools, packageSources, mcpUrls);
 
   const { text } = await generateText({
-    model: openai('gpt-4.1-mini'),
+    model: textModel(),
     system: SKILLS_SYSTEM_PROMPT,
     prompt,
     temperature: 0.3, // Lower temperature for more factual output

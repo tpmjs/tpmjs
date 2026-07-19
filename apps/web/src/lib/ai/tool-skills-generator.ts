@@ -3,10 +3,9 @@
  * Generates markdown section for a single tool, designed for batched processing
  */
 
-import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-
 import type { PackageSource } from './package-source-fetcher';
+import { textModel } from './provider';
 import { generateRegistryToolSkills, generationErrorMessage } from './skills-fallback-generator';
 
 export interface ToolData {
@@ -94,7 +93,7 @@ export async function generateToolSkills(
   const prompt = buildToolPrompt(tool, packageSource);
 
   const { text } = await generateText({
-    model: openai('gpt-4.1-mini'),
+    model: textModel(),
     system: TOOL_SKILLS_SYSTEM_PROMPT,
     prompt,
     temperature: 0.3,

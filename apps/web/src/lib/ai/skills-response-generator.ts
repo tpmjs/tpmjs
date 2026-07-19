@@ -5,12 +5,11 @@
  * from stored questions and collection context.
  */
 
-import { openai } from '@ai-sdk/openai';
 import type { Collection, Tool } from '@prisma/client';
 import { generateText, streamText } from 'ai';
+import { textModel } from './provider';
 import type { SimilarQuestion } from './skills-embedding';
 
-const RESPONSE_MODEL = 'gpt-4.1-mini';
 const TEMPERATURE = 0.3;
 
 export interface CollectionContext {
@@ -129,7 +128,7 @@ export async function generateSkillResponse(
   const userPrompt = buildUserPrompt(params);
 
   const { text, usage } = await generateText({
-    model: openai(RESPONSE_MODEL),
+    model: textModel(),
     system: systemPrompt,
     prompt: userPrompt,
     temperature: TEMPERATURE,
@@ -152,7 +151,7 @@ export async function generateSkillResponseStream(
   const userPrompt = buildUserPrompt(params);
 
   const result = streamText({
-    model: openai(RESPONSE_MODEL),
+    model: textModel(),
     system: systemPrompt,
     prompt: userPrompt,
     temperature: TEMPERATURE,
@@ -170,7 +169,7 @@ export async function generateFollowupSuggestions(
   collectionName: string
 ): Promise<string[]> {
   const { text } = await generateText({
-    model: openai(RESPONSE_MODEL),
+    model: textModel(),
     system: `You suggest follow-up questions based on a Q&A about the "${collectionName}" tool collection.
 Return exactly 3 short follow-up questions, one per line. No numbering or bullets.`,
     prompt: `Original question: ${question}

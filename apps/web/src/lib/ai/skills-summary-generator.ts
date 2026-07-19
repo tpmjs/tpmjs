@@ -3,9 +3,9 @@
  * Analyzes all tool sections and generates cohesive intro, workflows, and summary
  */
 
-import { openai } from '@ai-sdk/openai';
 import { generateText, tool } from 'ai';
 import { z } from 'zod';
+import { textModel } from './provider';
 
 import { generateRegistrySkillsSummary, generationErrorMessage } from './skills-fallback-generator';
 
@@ -105,7 +105,7 @@ export async function generateSkillsSummary(
 
   try {
     const result = await generateText({
-      model: openai('gpt-4.1-mini'),
+      model: textModel(),
       system: SUMMARY_SYSTEM_PROMPT,
       prompt,
       temperature: 0.3,
