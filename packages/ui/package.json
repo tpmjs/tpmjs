@@ -273,7 +273,7 @@
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
-    "lint": "eslint .",
+    "lint": "eslint src tsup.config.ts",
     "clean": "rm -rf dist .turbo"
   },
   "peerDependencies": {
