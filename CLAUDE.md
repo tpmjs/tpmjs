@@ -60,15 +60,24 @@ Production is the box itself: every tpmjs service runs as a podman Quadlet unit.
 
 All containers share the `tpmjs` podman network and reach each other by container name (web → `tpmjs-pg:5432`, playground → `tpmjs-railway-executor:3002`). Secrets/env live in `/etc/donto/tpmjs-<name>.env` (root:ajax 640) — never in the repo, and there are no `.env.local` files in the checkout.
 
-**Deploy a Next.js app** (web/playground/tutorial). Images are on-box builds (`localhost/tpmjs-*:built`) from one parametrized Dockerfile — there is no image registry, so never prune these images without a replacement build:
+**Deploy the web app.** Next.js standalone output keeps the production image limited to traced runtime dependencies rather than the entire monorepo. The repo-root `Dockerfile` expects `apps/web/.next` as its build context. There is no image registry, so retain a rollback tag and never prune the live image without a verified replacement:
 
 ```bash
-cd /mnt/donto-data/workspace/donto-infra
-sudo podman build --network=host --build-arg APP=web \
-  -t localhost/tpmjs-web:built -f build/tpmjs.Dockerfile /mnt/donto-data/workspace/tpmjs
-sudo ./deploy.sh tpmjs-web        # only needed if the quadlet itself changed
+cd /mnt/donto-data/workspace/tpmjs
+COMMIT_SHA=$(git rev-parse --short=8 HEAD)
+COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+LIVE_SHA=$(curl -fsS https://tpmjs.com/api/health | jq -r .build.commitSha)
+pnpm --filter @tpmjs/web build
+sudo podman tag localhost/tpmjs-web:built "localhost/tpmjs-web:rollback-${LIVE_SHA}"
+sudo podman build --network=host \
+  --build-arg "COMMIT_SHA=${COMMIT_SHA}" \
+  --build-arg "COMMIT_MESSAGE=${COMMIT_MESSAGE}" \
+  -t localhost/tpmjs-web:built -f Dockerfile apps/web/.next
 sudo systemctl restart tpmjs-web
+curl -fsS https://tpmjs.com/api/health
 ```
+
+The playground and tutorial still use the parametrized `donto-infra/build/tpmjs.Dockerfile` until they adopt standalone output. Run `donto-infra/deploy.sh tpmjs-<app>` only when a Quadlet changed, not for an image-only deployment.
 
 **Deploy the Deno services** (each builds from its own directory in this repo):
 
@@ -106,7 +115,7 @@ You have `gh` plus the on-box tooling (`sudo podman`, `systemctl`/`journalctl`, 
 There is NO auto-deploy: production is whatever `localhost/tpmjs-web:built` was last built from, so a pushed commit is not live until the image is rebuilt and the unit restarted.
 
 ```bash
-# Is the app up? (build fields report "local" on-box — they were Vercel env vars)
+# Is the app up? Build fields must match the deployed commit.
 curl -s https://tpmjs.com/api/health | jq .
 
 # When was the live image built?

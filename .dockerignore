@@ -4,4 +4,7 @@ node_modules
 **/.next
 .git
 **/dist
+.turbo
 **/.turbo
+**/coverage
+**/*.log

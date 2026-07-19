@@ -1,7 +1,16 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
+const monorepoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
 const nextConfig: NextConfig = {
+  // Produce a traced runtime instead of shipping the entire monorepo and its
+  // development dependencies in the production container. The tracing root
+  // must include workspace packages imported by the web application.
+  output: 'standalone',
+  outputFileTracingRoot: monorepoRoot,
   transpilePackages: [
     '@tpmjs/ui',
     '@tpmjs/utils',
