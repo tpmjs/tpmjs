@@ -69,7 +69,7 @@ COMMIT_MESSAGE=$(git log -1 --pretty=%s)
 LIVE_SHA=$(curl -fsS https://tpmjs.com/api/health | jq -r .build.commitSha)
 pnpm --filter @tpmjs/web build
 sudo podman tag localhost/tpmjs-web:built "localhost/tpmjs-web:rollback-${LIVE_SHA}"
-sudo podman build --network=host \
+sudo podman build --no-cache --network=host \
   --build-arg "COMMIT_SHA=${COMMIT_SHA}" \
   --build-arg "COMMIT_MESSAGE=${COMMIT_MESSAGE}" \
   -t localhost/tpmjs-web:built -f Dockerfile apps/web/.next

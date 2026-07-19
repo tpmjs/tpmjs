@@ -1,7 +1,9 @@
 # syntax=docker/dockerfile:1
 
 # Runtime-only image for the traced Next.js server. Build @tpmjs/web first and
-# use apps/web/.next as the container build context; see AGENTS.md.
+# use apps/web/.next as the container build context; see AGENTS.md. The on-box
+# Podman build must use --no-cache so changed provenance ARGs cannot reuse an
+# older image's LABEL and ENV metadata.
 FROM docker.io/library/node:22-bookworm-slim
 
 RUN apt-get update \
