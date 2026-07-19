@@ -4,7 +4,10 @@
  */
 
 import { openai } from '@ai-sdk/openai';
-import { generateText } from 'ai';
+import { generateText, tool } from 'ai';
+import { z } from 'zod';
+
+import { generateRegistrySkillsSummary, generationErrorMessage } from './skills-fallback-generator';
 
 export interface CollectionData {
   id: string;
@@ -23,7 +26,16 @@ export interface SkillsSummary {
   intro: string;
   workflows: string;
   summary: string;
+  generationMode: 'ai' | 'registry-fallback';
 }
+
+const SkillsSummarySchema = z.object({
+  intro: z.string().describe('Two or three concise paragraphs describing the collection.'),
+  workflows: z.string().describe('Markdown for two or three realistic multi-tool workflows.'),
+  summary: z
+    .string()
+    .describe('Markdown covering limitations, authentication, rate limits, and versioning.'),
+});
 
 const SUMMARY_SYSTEM_PROMPT = `You are an expert technical writer creating cohesive documentation from individual tool sections.
 
@@ -49,7 +61,7 @@ function buildSummaryPrompt(
   const baseUrl = mcpUrls.http.replace(/\/api\/mcp\/.*$/, '');
   const collectionUrl = `${baseUrl}/${collection.username}/collections/${collection.slug}`;
 
-  return `Analyze these tool documentation sections and generate summary content for the skills.md document.
+  return `Analyze these tool documentation sections and submit structured summary content for the skills.md document.
 
 ## Collection Info
 - **Name:** ${collection.name}
@@ -68,36 +80,7 @@ ${toolSections.join('\n\n---\n\n')}
 
 ---
 
-Generate three sections. Output each section with its exact header:
-
-## INTRO_START
-[Generate an introduction paragraph describing the collection's overall capabilities and primary use cases. Keep it to 2-3 paragraphs max.]
-## INTRO_END
-
-## WORKFLOWS_START
-[Generate 2-3 multi-tool workflow examples showing how tools can work together. Include TypeScript/bash code examples for each workflow.]
-## WORKFLOWS_END
-
-## SUMMARY_START
-[Generate a summary section with:
-- What the collection does NOT support (limitations)
-- Rate limits info
-- Authentication requirements
-- Versioning info with current timestamp]
-## SUMMARY_END`;
-}
-
-function parseSummaryResponse(text: string): SkillsSummary {
-  // Extract sections using markers
-  const introMatch = text.match(/## INTRO_START\n([\s\S]*?)## INTRO_END/);
-  const workflowsMatch = text.match(/## WORKFLOWS_START\n([\s\S]*?)## WORKFLOWS_END/);
-  const summaryMatch = text.match(/## SUMMARY_START\n([\s\S]*?)## SUMMARY_END/);
-
-  return {
-    intro: introMatch?.[1]?.trim() || 'Skills documentation for this collection.',
-    workflows: workflowsMatch?.[1]?.trim() || '',
-    summary: summaryMatch?.[1]?.trim() || '',
-  };
+Use the submitSummary tool. Keep the introduction to two or three paragraphs. Include two or three realistic workflow examples in Markdown. The summary must distinguish verified limitations from assumptions.`;
 }
 
 /**
@@ -114,19 +97,47 @@ export async function generateSkillsSummary(
       intro: 'This collection has no tools.',
       workflows: '',
       summary: '',
+      generationMode: 'registry-fallback',
     };
   }
 
   const prompt = buildSummaryPrompt(collection, toolSections, mcpUrls, packageNames);
 
-  const { text } = await generateText({
-    model: openai('gpt-4.1-mini'),
-    system: SUMMARY_SYSTEM_PROMPT,
-    prompt,
-    temperature: 0.3,
-  });
+  try {
+    const result = await generateText({
+      model: openai('gpt-4.1-mini'),
+      system: SUMMARY_SYSTEM_PROMPT,
+      prompt,
+      temperature: 0.3,
+      toolChoice: 'required',
+      tools: {
+        submitSummary: tool({
+          description: 'Submit the validated collection skills summary.',
+          inputSchema: SkillsSummarySchema,
+        }),
+      },
+    });
 
-  return parseSummaryResponse(text);
+    const submitted = result.toolCalls.find((call) => call.toolName === 'submitSummary');
+    if (!submitted) {
+      throw new Error('The model did not submit a skills summary');
+    }
+
+    const parsedSummary = SkillsSummarySchema.safeParse(submitted.input);
+    if (!parsedSummary.success) {
+      throw new Error('The model submitted an invalid skills summary');
+    }
+
+    return {
+      ...parsedSummary.data,
+      generationMode: 'ai',
+    };
+  } catch (error) {
+    console.warn(
+      `[SkillsSummaryGenerator] Enhanced generation unavailable; using registry metadata: ${generationErrorMessage(error)}`
+    );
+    return generateRegistrySkillsSummary(collection, toolSections.length, packageNames);
+  }
 }
 
 /**

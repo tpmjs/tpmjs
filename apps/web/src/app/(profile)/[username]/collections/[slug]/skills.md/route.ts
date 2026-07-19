@@ -1,10 +1,10 @@
 /**
  * GET /:username/collections/:slug/skills.md
- * Generate AI-powered skills documentation for a collection
+ * Generate skills documentation for a collection.
  *
- * Supports chunked generation for large collections (60+ tools) to avoid
- * Vercel's 120s timeout limit. Uses per-tool caching and recursive batch
- * processing.
+ * Enhanced generation analyzes package source with a model. Registry-backed
+ * generation remains available when that provider is unavailable. Large
+ * collections use per-tool caching and recursive batch processing.
  */
 
 import { prisma } from '@tpmjs/db';
@@ -15,6 +15,11 @@ import {
   fetchPackageSource,
   type PackageSource,
 } from '~/lib/ai/package-source-fetcher';
+import {
+  generateRegistrySkillsSummary,
+  generateRegistryToolSkills,
+  generationErrorMessage,
+} from '~/lib/ai/skills-fallback-generator';
 import { generateSkillsMarkdown } from '~/lib/ai/skills-generator';
 import { assembleSkillsDocument, generateSkillsSummary } from '~/lib/ai/skills-summary-generator';
 import { generateToolSkillsBatch } from '~/lib/ai/tool-skills-generator';
@@ -228,19 +233,62 @@ async function handleSmallCollection(
   // Fetch package sources (limit to 5 packages for performance)
   const packageSources = await fetchMultiplePackageSources(uniquePackages.slice(0, 5));
 
-  // Generate skills markdown using original function
-  const skillsMarkdown = await generateSkillsMarkdown(
-    {
-      id: collection.id,
-      name: collection.name,
-      slug: collection.slug || '',
-      description: collection.description,
-      username,
-    },
-    tools,
-    packageSources,
-    mcpUrls
-  );
+  const collectionData = {
+    id: collection.id,
+    name: collection.name,
+    slug: collection.slug || '',
+    description: collection.description,
+    username,
+  };
+  let generationMode: 'monolithic-ai' | 'registry-fallback' = 'monolithic-ai';
+  let skillsMarkdown: string;
+
+  try {
+    skillsMarkdown = await generateSkillsMarkdown(collectionData, tools, packageSources, mcpUrls);
+  } catch (error) {
+    console.warn(
+      `[Skills.md] Enhanced generation unavailable for ${username}/${collection.slug}; using available documentation: ${generationErrorMessage(error)}`
+    );
+
+    // Preserve a richer prior document if revalidation fails. The response is
+    // explicitly marked stale and receives a bounded shared-cache lifetime.
+    if (collection.skillsMarkdown) {
+      return new Response(collection.skillsMarkdown, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/markdown; charset=utf-8',
+          'Cache-Control': 'public, s-maxage=3600, stale-if-error=604800',
+          Warning: '110 - "Enhanced generation unavailable; serving stale documentation"',
+          'X-Cache': 'STALE',
+          'X-Generation-Mode': 'stale-cache',
+        },
+      });
+    }
+
+    generationMode = 'registry-fallback';
+    const toolSections = collection.tools.map((ct) =>
+      generateRegistryToolSkills({
+        name: ct.tool.name,
+        description: ct.tool.description,
+        packageName: ct.tool.package.npmPackageName,
+        packageVersion: ct.tool.package.npmVersion,
+        inputSchema: ct.tool.inputSchema,
+      })
+    );
+    const packageNames = collection.tools.map((ct) => ct.tool.package.npmPackageName);
+    const summary = generateRegistrySkillsSummary(
+      collectionData,
+      toolSections.length,
+      packageNames
+    );
+    skillsMarkdown = assembleSkillsDocument(
+      collectionData,
+      toolSections,
+      summary,
+      mcpUrls,
+      packageNames
+    );
+  }
 
   // Save to database for caching
   await prisma.collection.update({
@@ -257,7 +305,7 @@ async function handleSmallCollection(
       'Content-Type': 'text/markdown; charset=utf-8',
       'Cache-Control': `public, s-maxage=${CACHE_DURATION_SECONDS}, stale-while-revalidate=86400`,
       'X-Cache': 'MISS',
-      'X-Generation-Mode': 'monolithic',
+      'X-Generation-Mode': generationMode,
     },
   });
 }
@@ -554,17 +602,22 @@ async function processBatch(
   const results = await generateToolSkillsBatch(batchTools, packageSourcesMap);
 
   // Save to per-tool cache
-  const cacheUpserts = Array.from(results.entries()).map(([toolId, markdown]) =>
+  const cacheUpserts = Array.from(results.entries()).map(([toolId, result]) =>
     prisma.toolSkillsCache.upsert({
       where: { toolId },
       create: {
         toolId,
-        skillsMarkdown: markdown,
+        skillsMarkdown: result.markdown,
       },
-      update: {
-        skillsMarkdown: markdown,
-        generatedAt: new Date(),
-      },
+      // A provider outage must not replace richer cached AI documentation with
+      // a fallback. The fallback is only created when no cache exists.
+      update:
+        result.generationMode === 'ai'
+          ? {
+              skillsMarkdown: result.markdown,
+              generatedAt: new Date(),
+            }
+          : {},
     })
   );
 
@@ -652,7 +705,8 @@ async function assembleFinalDocument(
       'Content-Type': 'text/markdown; charset=utf-8',
       'Cache-Control': `public, s-maxage=${CACHE_DURATION_SECONDS}, stale-while-revalidate=86400`,
       'X-Cache': 'MISS',
-      'X-Generation-Mode': 'chunked',
+      'X-Generation-Mode':
+        summary.generationMode === 'registry-fallback' ? 'chunked-fallback' : 'chunked-ai',
       'X-Tool-Count': toolSections.length.toString(),
     },
   });

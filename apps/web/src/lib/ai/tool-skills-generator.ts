@@ -7,6 +7,7 @@ import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 
 import type { PackageSource } from './package-source-fetcher';
+import { generateRegistryToolSkills, generationErrorMessage } from './skills-fallback-generator';
 
 export interface ToolData {
   id: string;
@@ -15,6 +16,11 @@ export interface ToolData {
   packageName: string;
   packageVersion: string;
   inputSchema: unknown | null;
+}
+
+export interface ToolSkillsGenerationResult {
+  markdown: string;
+  generationMode: 'ai' | 'registry-fallback';
 }
 
 const TOOL_SKILLS_SYSTEM_PROMPT = `You are an expert technical writer generating skills documentation for a single tool.
@@ -104,26 +110,23 @@ export async function generateToolSkills(
 export async function generateToolSkillsBatch(
   tools: ToolData[],
   packageSources: Map<string, PackageSource>
-): Promise<Map<string, string>> {
-  const results = new Map<string, string>();
+): Promise<Map<string, ToolSkillsGenerationResult>> {
+  const results = new Map<string, ToolSkillsGenerationResult>();
 
   // Process tools in parallel (10 at a time is reasonable for API limits)
   const promises = tools.map(async (tool) => {
     try {
       const packageSource = packageSources.get(tool.packageName) || null;
       const markdown = await generateToolSkills(tool, packageSource);
-      return { toolId: tool.id, markdown };
+      return { toolId: tool.id, markdown, generationMode: 'ai' as const };
     } catch (error) {
-      console.error(`[ToolSkillsGenerator] Failed to generate skills for ${tool.name}:`, error);
-      // Return a fallback section on error
+      console.warn(
+        `[ToolSkillsGenerator] Enhanced generation unavailable for ${tool.name}; using registry metadata: ${generationErrorMessage(error)}`
+      );
       return {
         toolId: tool.id,
-        markdown: `### Skill: ${tool.name}
-**Package:** \`${tool.packageName}\`
-**Description:** ${tool.description}
-
-*Skills documentation generation failed. Please retry.*
-`,
+        markdown: generateRegistryToolSkills(tool),
+        generationMode: 'registry-fallback' as const,
       };
     }
   });
@@ -132,7 +135,10 @@ export async function generateToolSkillsBatch(
 
   for (const result of settledResults) {
     if (result.status === 'fulfilled') {
-      results.set(result.value.toolId, result.value.markdown);
+      results.set(result.value.toolId, {
+        markdown: result.value.markdown,
+        generationMode: result.value.generationMode,
+      });
     }
   }
 
