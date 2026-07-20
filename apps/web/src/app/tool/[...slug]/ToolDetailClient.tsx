@@ -18,6 +18,10 @@ import { Markdown } from '~/components/Markdown';
 import { Rating } from '~/components/Rating';
 import { ToolPlayground } from '~/components/ToolPlayground';
 import { useTrackView } from '~/hooks/useTrackView';
+import {
+  isPersistentlyImportBroken,
+  PERSISTENT_IMPORT_FAILURE_THRESHOLD,
+} from '~/lib/tool-health-policy';
 
 interface Package {
   id: string;
@@ -70,6 +74,7 @@ export interface Tool {
   qualityScore: string | null;
   importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
+  consecutiveImportFailures: number;
   healthCheckError?: string | null;
   lastHealthCheck?: string | null;
   likeCount?: number;
@@ -97,6 +102,7 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
   useTrackView('tool', tool.id);
 
   const pkg = tool.package;
+  const isPersistentlyBroken = isPersistentlyImportBroken(tool.consecutiveImportFailures);
   const authorName = typeof pkg.npmAuthor === 'string' ? pkg.npmAuthor : pkg.npmAuthor?.name;
 
   // Generate JSON-LD structured data for SEO
@@ -273,6 +279,11 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                 Auto-discovered
               </Badge>
             )}
+            {isPersistentlyBroken && (
+              <Badge variant="error" size="sm">
+                Hidden from discovery
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -296,20 +307,35 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
 
         {/* Health warning banner */}
         {(tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN') && (
-          <div className="mb-6 p-4 rounded-lg bg-error/10 border border-error/20">
+          <section
+            aria-labelledby="tool-health-status"
+            className="mb-6 p-4 rounded-lg bg-error/10 border border-error/20"
+          >
             <div className="flex items-start gap-3">
-              <span className="text-xl mt-0.5">⚠️</span>
+              <span aria-hidden="true" className="text-xl mt-0.5">
+                ⚠️
+              </span>
               <div className="flex-1">
-                <h3 className="text-sm font-semibold text-error mb-1">
-                  This tool is currently broken
+                <h3 id="tool-health-status" className="text-sm font-semibold text-error mb-1">
+                  {isPersistentlyBroken
+                    ? 'This tool is persistently import-broken'
+                    : 'This tool is currently broken'}
                 </h3>
+                {isPersistentlyBroken && (
+                  <p className="text-sm text-error/80 mb-3 max-w-3xl">
+                    It has failed {tool.consecutiveImportFailures.toLocaleString()} consecutive
+                    import checks (threshold: {PERSISTENT_IMPORT_FAILURE_THRESHOLD}) and is hidden
+                    from default search and browse results. This evidence page remains available,
+                    and a healthy check will automatically restore discovery.
+                  </p>
+                )}
                 <div className="space-y-1 text-sm text-error/80">
                   {tool.importHealth === 'BROKEN' && (
                     <div className="flex items-center gap-2">
                       <Badge variant="error" size="sm">
                         Import Failed
                       </Badge>
-                      <span className="text-xs">Cannot load from Railway service</span>
+                      <span className="text-xs">Cannot be imported by the TPMJS executor</span>
                     </div>
                   )}
                   {tool.executionHealth === 'BROKEN' && (
@@ -342,7 +368,7 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                 </Button>
               </div>
             </div>
-          </div>
+          </section>
         )}
 
         {/* Main grid */}

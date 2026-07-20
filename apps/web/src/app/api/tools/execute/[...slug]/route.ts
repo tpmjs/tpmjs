@@ -155,6 +155,7 @@ export async function POST(
               data: {
                 importHealth: 'HEALTHY',
                 executionHealth: 'HEALTHY',
+                consecutiveImportFailures: 0,
                 healthCheckError: null,
                 lastHealthCheck: new Date(),
               },

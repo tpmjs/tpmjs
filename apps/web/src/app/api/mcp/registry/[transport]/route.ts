@@ -10,6 +10,7 @@ import {
 import { trackUsage } from '~/lib/api-keys/usage';
 import { executeWithExecutor } from '~/lib/executors';
 import { calculateBM25, tokenize } from '~/lib/search/bm25';
+import { defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
 import { trackExecution } from '~/lib/tracking/executions';
 
 export const runtime = 'nodejs';
@@ -135,7 +136,7 @@ async function handleSearchTools(
     const limit = Math.min(args.limit || 10, 50);
 
     // Fetch tools from DB
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = defaultToolDiscoveryFilter();
     if (category) {
       where.package = { category };
     }

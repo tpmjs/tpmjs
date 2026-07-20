@@ -7,6 +7,7 @@ import { type HealthStatus, type Package, type Prisma, prisma, type Tool } from 
 import { env } from '~/env';
 import { executorAuthHeaders } from '~/lib/executors/internal-auth';
 import { nextHealthCheckAt, releaseHealthLease } from '~/lib/maintenance/bounded-work';
+import { importFailureStreakUpdate } from '~/lib/tool-health-policy';
 
 const RAILWAY_EXECUTOR_URL = env.RAILWAY_EXECUTOR_URL;
 
@@ -394,6 +395,7 @@ export async function performHealthCheck(
     const toolData = {
       importHealth: nextImport,
       executionHealth: nextExecution,
+      ...importFailureStreakUpdate(importResult.status),
       lastHealthCheck: checkedAt,
       healthCheckNextAt: nextAt,
       healthCheckLeaseUntil: null,

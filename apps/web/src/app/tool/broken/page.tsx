@@ -17,6 +17,10 @@ import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
+import {
+  isPersistentlyImportBroken,
+  PERSISTENT_IMPORT_FAILURE_THRESHOLD,
+} from '~/lib/tool-health-policy';
 
 interface BrokenTool {
   id: string;
@@ -24,6 +28,7 @@ interface BrokenTool {
   description: string;
   importHealth: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
   executionHealth: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
+  consecutiveImportFailures: number;
   healthCheckError: string | null;
   lastHealthCheck: string | null;
   package: {
@@ -143,6 +148,9 @@ export default function BrokenToolsPage(): React.ReactElement {
               {/* biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Broken tools page requires conditional rendering for health status */}
               {tools.map((tool) => {
                 const toolUrl = `/tool/${tool.package.npmPackageName}/${tool.name}`;
+                const isPersistentlyBroken = isPersistentlyImportBroken(
+                  tool.consecutiveImportFailures
+                );
                 const lastCheckedDate = tool.lastHealthCheck
                   ? new Date(tool.lastHealthCheck)
                   : null;
@@ -177,7 +185,19 @@ export default function BrokenToolsPage(): React.ReactElement {
                             Official
                           </Badge>
                         )}
+                        {isPersistentlyBroken && (
+                          <Badge variant="error" size="sm">
+                            Hidden from discovery
+                          </Badge>
+                        )}
                       </div>
+
+                      {isPersistentlyBroken && (
+                        <p className="text-xs text-error">
+                          {tool.consecutiveImportFailures.toLocaleString()} consecutive import
+                          failures; hidden after {PERSISTENT_IMPORT_FAILURE_THRESHOLD}.
+                        </p>
+                      )}
 
                       {/* Health status badges */}
                       <div className="space-y-2">

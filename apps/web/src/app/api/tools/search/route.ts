@@ -4,6 +4,7 @@ import { authenticateRequest } from '~/lib/api-keys/middleware';
 import { checkApiKeyRateLimit, getRateLimitHeaders } from '~/lib/api-keys/rate-limit';
 import { checkRateLimit, STRICT_RATE_LIMIT } from '~/lib/rate-limit';
 import { calculateBM25, hasExactNameMatch, hasPackageNameMatch, tokenize } from '~/lib/search/bm25';
+import { defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
 import { trackSearch } from '~/lib/tracking/search';
 
 export const runtime = 'nodejs';
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q') || searchParams.get('query') || '';
     const category = searchParams.get('category');
     const tag = searchParams.get('tag'); // Exact tag filter
+    const includePersistentBroken = searchParams.get('includePersistentBroken') === 'true';
     const limit = Math.min(Number.parseInt(searchParams.get('limit') || '10', 10), 100);
 
     // Parse excludeIds to filter out tools already in user's collection
@@ -76,6 +78,7 @@ export async function GET(request: NextRequest) {
     // Build database filter - pre-filter at DB level to reduce in-memory processing
     // Use OR conditions to find tools that match ANY search token
     const dbFilter = {
+      ...(!includePersistentBroken && defaultToolDiscoveryFilter()),
       // Exclude tools already in collection (if provided)
       ...(excludeIds.length > 0 && { id: { notIn: excludeIds } }),
       ...(category && { package: { category } }),

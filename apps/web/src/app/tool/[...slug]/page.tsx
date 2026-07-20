@@ -81,6 +81,7 @@ const getTool = cache(async function getTool(slug: string[]): Promise<Tool | nul
       qualityScore: tool.qualityScore?.toString() ?? null,
       importHealth: tool.importHealth ?? undefined,
       executionHealth: tool.executionHealth ?? undefined,
+      consecutiveImportFailures: tool.consecutiveImportFailures,
       healthCheckError: tool.healthCheckError ?? null,
       lastHealthCheck: tool.lastHealthCheck?.toISOString() ?? null,
       likeCount: tool.likeCount,

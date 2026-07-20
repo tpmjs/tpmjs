@@ -110,6 +110,11 @@ model Tool {
   lastHealthCheck  DateTime?     @map("last_health_check")
   healthCheckError String?       @map("health_check_error") @db.Text
 
+  // Consecutive definitive import failures. UNKNOWN checks leave this streak
+  // unchanged; a successful import resets it. Default discovery quarantines a
+  // tool only after repeated evidence while direct pages remain available.
+  consecutiveImportFailures Int @default(0) @map("consecutive_import_failures")
+
   // Due-time + expiring lease make health work resumable and horizontally
   // safe. qualityMetricsVersion is a cheap dirty marker for bounded score
   // propagation when package-level metrics change.
@@ -155,6 +160,7 @@ model Tool {
   @@index([reviewCount])
   @@index([importHealth])
   @@index([executionHealth])
+  @@index([consecutiveImportFailures])
   @@index([lastHealthCheck])
   @@index([healthCheckNextAt, id])
   @@index([qualityMetricsVersion, id])

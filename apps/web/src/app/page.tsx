@@ -13,6 +13,7 @@ import { HeroSection } from '../components/home/HeroSection';
 import { McpSection } from '../components/home/McpSection';
 import { ProtocolSection } from '../components/home/ProtocolSection';
 import { SocialProofSection } from '../components/home/SocialProofSection';
+import { defaultToolDiscoveryFilter } from '../lib/tool-health-policy';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,7 @@ async function getHomePageData() {
     const [featuredTools, categoryStats, featuredScenarios, latestSnapshot] = await Promise.all([
       // Top 6 featured tools by quality score
       prisma.tool.findMany({
+        where: defaultToolDiscoveryFilter(),
         orderBy: [{ qualityScore: 'desc' }, { package: { npmDownloadsLastMonth: 'desc' } }],
         take: 6,
         select: {

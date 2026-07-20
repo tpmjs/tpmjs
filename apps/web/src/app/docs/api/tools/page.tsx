@@ -42,6 +42,10 @@ export default function ToolsApiPage(): React.ReactElement {
             <li>
               <code>q</code> - Search query
             </li>
+            <li>
+              <code>includePersistentBroken</code> - Include tools hidden after repeated import
+              failures (default: false; explicit broken-health filters also include them)
+            </li>
           </ul>
 
           <h4 className="font-semibold">Example Request</h4>

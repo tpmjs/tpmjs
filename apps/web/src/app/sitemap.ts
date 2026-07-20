@@ -1,5 +1,6 @@
 import { prisma } from '@tpmjs/db';
 import type { MetadataRoute } from 'next';
+import { defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
 
 // Force dynamic rendering to avoid database calls during build
 export const dynamic = 'force-dynamic';
@@ -128,6 +129,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const tools = await prisma.tool.findMany({
+      where: defaultToolDiscoveryFilter(),
       select: {
         package: {
           select: {

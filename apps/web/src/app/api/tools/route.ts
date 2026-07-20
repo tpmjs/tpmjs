@@ -2,6 +2,10 @@ import { type Prisma, prisma } from '@tpmjs/db';
 import { kv } from '@vercel/kv';
 import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '~/lib/rate-limit';
+import {
+  defaultToolDiscoveryFilter,
+  shouldIncludePersistentlyBrokenTools,
+} from '~/lib/tool-health-policy';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -256,6 +260,7 @@ function validatePagination(
  * - importHealth: Filter by import health (HEALTHY, BROKEN, UNKNOWN)
  * - executionHealth: Filter by execution health (HEALTHY, BROKEN, UNKNOWN)
  * - broken: Shorthand for "at least one health check failed" (true/false)
+ * - includePersistentBroken: Include tools quarantined after repeated import failures
  * - limit: Results per page (default: 20, max: 1000, min: 1)
  * - offset: Pagination offset (default: 0, min: 0)
  *
@@ -281,6 +286,7 @@ export async function GET(request: NextRequest) {
     const importHealth = searchParams.get('importHealth');
     const executionHealth = searchParams.get('executionHealth');
     const brokenParam = searchParams.get('broken');
+    const includePersistentBrokenParam = searchParams.get('includePersistentBroken');
     const limitParam = searchParams.get('limit');
     const offsetParam = searchParams.get('offset');
 
@@ -324,6 +330,14 @@ export async function GET(request: NextRequest) {
     try {
       packageFilter = buildPackageFilter(category, officialParam);
       healthFilters = buildHealthFilters(brokenParam, importHealth, executionHealth);
+      const includePersistentBroken = shouldIncludePersistentlyBrokenTools({
+        includePersistentBroken: includePersistentBrokenParam === 'true',
+        brokenOnly: brokenParam === 'true',
+        importHealth,
+      });
+      if (!includePersistentBroken) {
+        healthFilters.push(defaultToolDiscoveryFilter());
+      }
       where = buildWhereClause(query, packageFilter, healthFilters);
     } catch (error) {
       return createErrorResponse(
