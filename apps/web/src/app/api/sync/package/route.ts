@@ -1,4 +1,4 @@
-import { prisma } from '@tpmjs/db';
+import { Prisma, prisma } from '@tpmjs/db';
 import { fetchLatestPackageWithMetadata } from '@tpmjs/npm-client';
 import type { TpmjsToolDefinition } from '@tpmjs/types/tpmjs';
 import { validateTpmjsField } from '@tpmjs/types/tpmjs';
@@ -197,6 +197,9 @@ export async function POST(request: NextRequest) {
           returns: toolDef.returns ? (toolDef.returns as any) : undefined,
           // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           aiAgent: toolDef.aiAgent ? (toolDef.aiAgent as any) : undefined,
+          healthCheckConfig: toolDef.healthCheck
+            ? (toolDef.healthCheck as Prisma.InputJsonValue)
+            : Prisma.DbNull,
           qualityScore: null,
           schemaSource: toolDef.parameters ? 'author' : null,
           toolDiscoverySource,
@@ -209,6 +212,10 @@ export async function POST(request: NextRequest) {
           returns: toolDef.returns ? (toolDef.returns as any) : undefined,
           // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           aiAgent: toolDef.aiAgent ? (toolDef.aiAgent as any) : undefined,
+          // Clear stale behavior when an author removes the declaration.
+          healthCheckConfig: toolDef.healthCheck
+            ? (toolDef.healthCheck as Prisma.InputJsonValue)
+            : Prisma.DbNull,
           toolDiscoverySource,
         },
       });

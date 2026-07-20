@@ -4,8 +4,15 @@
  */
 
 import { type HealthStatus, type Package, type Prisma, prisma, type Tool } from '@tpmjs/db';
+import type { ToolHealthCheckCleanupStep } from '@tpmjs/types/tpmjs';
 import { env } from '~/env';
 import { executorAuthHeaders } from '~/lib/executors/internal-auth';
+import {
+  HEALTH_CHECK_SKIP_REASON,
+  parseHealthCheckConfig,
+  renderHealthCheckParams,
+  resolveCleanupParams,
+} from '~/lib/health-check/health-check-config';
 import { nextHealthCheckAt, releaseHealthLease } from '~/lib/maintenance/bounded-work';
 import { importFailureStreakUpdate } from '~/lib/tool-health-policy';
 
@@ -20,6 +27,57 @@ interface HealthCheckResult {
   executionError: string | null;
   executionTimeMs: number | null;
   overallStatus: HealthStatus;
+}
+
+/**
+ * Run author-declared, same-package cleanup in order. Cleanup is deliberately
+ * best effort: it mitigates a successful test's side effects, but can neither
+ * make execution safe nor rewrite the health verdict after the fact.
+ */
+async function executeCleanup(
+  tool: Tool & { package: Package },
+  cleanupSteps: ToolHealthCheckCleanupStep[],
+  executionOutput: unknown,
+  timestamp: number
+): Promise<void> {
+  for (const step of cleanupSteps) {
+    const resolution = resolveCleanupParams(step, executionOutput, timestamp);
+    if (!resolution.ok) {
+      console.warn(
+        `  Cleanup skipped: ${step.tool} could not resolve output path(s): ${resolution.missingPaths.join(', ')}`
+      );
+      continue;
+    }
+
+    try {
+      console.log(`  Cleanup: calling same-package tool ${step.tool}`);
+      const response = await fetch(`${RAILWAY_EXECUTOR_URL}/execute-tool`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...executorAuthHeaders() },
+        body: JSON.stringify({
+          packageName: tool.package.npmPackageName,
+          name: step.tool,
+          version: tool.package.npmVersion,
+          params: resolution.params,
+          env: {},
+        }),
+        signal: AbortSignal.timeout(10000),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.success !== true) {
+        console.warn(
+          `  Cleanup warning: ${step.tool} returned ${response.status}: ${data.error || 'unknown error'}`
+        );
+      } else {
+        console.log(`  Cleanup: ${step.tool} succeeded`);
+      }
+    } catch (error) {
+      console.warn(
+        `  Cleanup warning: ${step.tool} failed: ${error instanceof Error ? error.message : 'unknown error'}`
+      );
+    }
+  }
 }
 
 /**
@@ -115,7 +173,7 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
  * We only mark as BROKEN for infrastructure failures (timeouts, network errors).
  * Validation errors mean the tool IS working - it's correctly rejecting bad input.
  */
-async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<{
+export async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<{
   status: HealthStatus;
   error: string | null;
   timeMs: number;
@@ -123,8 +181,29 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
 }> {
   const startTime = Date.now();
 
-  // Generate test parameters based on tool schema
-  const testParams = generateTestParameters(tool);
+  // The database is an untrusted persistence boundary even though package
+  // metadata was validated during sync. Invalid/stale JSON gets no authority
+  // over execution behavior.
+  const healthCheckConfig = parseHealthCheckConfig(tool.healthCheckConfig);
+  if (tool.healthCheckConfig !== null && !healthCheckConfig) {
+    console.warn(`  Execution: ignoring invalid persisted healthCheck config for tool ${tool.id}`);
+  }
+
+  if (healthCheckConfig?.skipExecution) {
+    return {
+      status: 'UNKNOWN',
+      error: HEALTH_CHECK_SKIP_REASON,
+      timeMs: 0,
+      testParams: {},
+    };
+  }
+
+  // A single render timestamp is shared with cleanup, so a declared resource
+  // name such as health-check-{{timestamp}} is exactly reproducible for undo.
+  const templateTimestamp = Date.now();
+  const testParams = healthCheckConfig?.testParams
+    ? renderHealthCheckParams(healthCheckConfig.testParams, templateTimestamp)
+    : generateTestParameters(tool);
 
   try {
     const response = await fetch(`${RAILWAY_EXECUTOR_URL}/execute-tool`, {
@@ -147,7 +226,14 @@ async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<
     // Any error in the response is from the tool itself (validation, env, etc.)
     // which means the tool IS working - it's correctly processing/rejecting input
     if (response.ok) {
-      // Executor responded - tool executed (success or tool-level error)
+      // Executor responded - tool executed (success or tool-level error). A
+      // tool may have produced a side effect before throwing, so cleanup runs
+      // for both structured outcomes and remains best effort.
+      if (healthCheckConfig?.cleanup?.length) {
+        const data = await response.json().catch(() => ({}));
+        const executionOutput = data.output ?? data.result ?? data;
+        await executeCleanup(tool, healthCheckConfig.cleanup, executionOutput, templateTimestamp);
+      }
       return { status: 'HEALTHY', error: null, timeMs, testParams };
     }
 

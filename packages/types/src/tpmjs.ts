@@ -102,6 +102,63 @@ export const TpmjsAiAgentSchema = z.object({
 export type TpmjsAiAgent = z.infer<typeof TpmjsAiAgentSchema>;
 
 /**
+ * A health check may perform only a small, ordered cleanup sequence. This is a
+ * registry-work amplification bound, not a guarantee that cleanup succeeds.
+ */
+export const MAX_HEALTH_CHECK_CLEANUP_STEPS = 3;
+
+/**
+ * One best-effort cleanup call after a health-check execution.
+ *
+ * `params` contains literal parameters (with `{{timestamp}}` templating).
+ * `mapping` maps cleanup parameter names to dot-separated paths in the checked
+ * tool's output. The latter preserves the original proposal's useful ability
+ * to clean up resources identified only by the execution result.
+ */
+export const ToolHealthCheckCleanupStepSchema = z
+  .object({
+    tool: z.string().min(1),
+    params: z.record(z.string(), z.unknown()).optional(),
+    mapping: z.record(z.string(), z.string().min(1)).optional(),
+  })
+  .strict();
+
+export type ToolHealthCheckCleanupStep = z.infer<typeof ToolHealthCheckCleanupStepSchema>;
+
+/**
+ * Author-owned instructions for checking a tool without surprising side
+ * effects. Cleanup is best effort; `skipExecution` is the only declaration
+ * that guarantees the scheduled check will not invoke the tool.
+ */
+export const ToolHealthCheckConfigSchema = z
+  .object({
+    /** Import the tool, but do not call execute(). */
+    skipExecution: z.boolean().optional(),
+    /** Known-safe parameters. String values may contain `{{timestamp}}`. */
+    testParams: z.record(z.string(), z.unknown()).optional(),
+    /** Ordered same-package cleanup calls, bounded to avoid call amplification. */
+    cleanup: z
+      .array(ToolHealthCheckCleanupStepSchema)
+      .max(MAX_HEALTH_CHECK_CLEANUP_STEPS)
+      .optional(),
+  })
+  .strict()
+  .superRefine((config, ctx) => {
+    if (
+      config.skipExecution &&
+      (config.testParams !== undefined || (config.cleanup?.length ?? 0) > 0)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'skipExecution cannot be combined with testParams or cleanup',
+        path: ['skipExecution'],
+      });
+    }
+  });
+
+export type ToolHealthCheckConfig = z.infer<typeof ToolHealthCheckConfigSchema>;
+
+/**
  * Individual tool definition within a multi-tool package
  *
  * Required fields:
@@ -109,6 +166,7 @@ export type TpmjsAiAgent = z.infer<typeof TpmjsAiAgentSchema>;
  *
  * Optional fields (auto-extracted if not provided):
  * - description: A description of what the tool does (20-500 chars) - auto-extracted from tool
+ * - healthCheck: Author-declared safe execution and cleanup behavior
  *
  * @deprecated fields (now auto-extracted):
  * - parameters: Tool input parameters - auto-extracted from inputSchema
@@ -126,6 +184,8 @@ export const TpmjsToolDefinitionSchema = z.object({
   returns: TpmjsReturnsSchema.optional(),
   // @deprecated - now auto-extracted from tool
   aiAgent: TpmjsAiAgentSchema.optional(),
+  // Author-owned health-check behavior for tools with side effects
+  healthCheck: ToolHealthCheckConfigSchema.optional(),
 });
 
 export type TpmjsToolDefinition = z.infer<typeof TpmjsToolDefinitionSchema>;
@@ -231,7 +291,10 @@ export function validateTpmjsField(tpmjs: unknown): ValidationResult {
 
     // Determine tier based on tool richness
     const hasRichFields =
-      (data.tools?.some((tool) => tool.parameters || tool.returns || tool.aiAgent) ?? false) ||
+      (data.tools?.some(
+        (tool) => tool.parameters || tool.returns || tool.aiAgent || tool.healthCheck
+      ) ??
+        false) ||
       data.env ||
       data.frameworks;
 

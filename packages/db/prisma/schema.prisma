@@ -104,6 +104,9 @@ model Tool {
   qualityScore Decimal? @map("quality_score") @db.Decimal(3, 2) // 0.00 to 1.00
   likeCount    Int      @default(0) @map("like_count")
 
+  // Author-declared execution/cleanup behavior from the tpmjs package spec.
+  healthCheckConfig Json? @map("health_check_config") @db.JsonB
+
   // Health Status Fields
   importHealth     HealthStatus? @default(UNKNOWN) @map("import_health")
   executionHealth  HealthStatus? @default(UNKNOWN) @map("execution_health")

@@ -48,7 +48,22 @@
     "tools": [
       {
         "name": "executeCodeAsync",
-        "description": "Execute code asynchronously in a secure sandbox. Returns a job_id immediately. Use getJob to check status and retrieve results. Supports 42+ languages."
+        "description": "Execute code asynchronously in a secure sandbox. Returns a job_id immediately. Use getJob to check status and retrieve results. Supports 42+ languages.",
+        "healthCheck": {
+          "testParams": {
+            "language": "python",
+            "code": "print('tpmjs health check')",
+            "ttl": 5
+          },
+          "cleanup": [
+            {
+              "tool": "deleteJob",
+              "mapping": {
+                "job_id": "job_id"
+              }
+            }
+          ]
+        }
       },
       {
         "name": "execute",
@@ -60,7 +75,21 @@
       },
       {
         "name": "runAsync",
-        "description": "Execute code asynchronously with automatic language detection via shebang. Returns job_id for polling."
+        "description": "Execute code asynchronously with automatic language detection via shebang. Returns job_id for polling.",
+        "healthCheck": {
+          "testParams": {
+            "code": "#!/usr/bin/env python3\nprint('tpmjs health check')",
+            "ttl": 5
+          },
+          "cleanup": [
+            {
+              "tool": "deleteJob",
+              "mapping": {
+                "job_id": "job_id"
+              }
+            }
+          ]
+        }
       },
       {
         "name": "getJob",
@@ -84,7 +113,21 @@
       },
       {
         "name": "createSession",
-        "description": "Create a new persistent session with configurable language, resources, and networking. Sessions maintain state across executions."
+        "description": "Create a new persistent session with configurable language, resources, and networking. Sessions maintain state across executions.",
+        "healthCheck": {
+          "testParams": {
+            "shell": "bash",
+            "ttl": 30
+          },
+          "cleanup": [
+            {
+              "tool": "deleteSession",
+              "mapping": {
+                "session_id": "session_id"
+              }
+            }
+          ]
+        }
       },
       {
         "name": "getSession",
@@ -149,7 +192,20 @@
       },
       {
         "name": "createService",
-        "description": "Create a long-running service with persistent state, networking, and auto-restart capabilities."
+        "description": "Create a long-running service with persistent state, networking, and auto-restart capabilities.",
+        "healthCheck": {
+          "testParams": {
+            "name": "tpmjs-health-check-{{timestamp}}"
+          },
+          "cleanup": [
+            {
+              "tool": "deleteService",
+              "mapping": {
+                "service_id": "service_id"
+              }
+            }
+          ]
+        }
       },
       {
         "name": "getService",

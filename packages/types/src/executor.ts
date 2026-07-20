@@ -39,6 +39,8 @@ export interface ExecuteToolResponse {
   output?: unknown;
   /** Error message on failure */
   error?: string;
+  /** Whether failure happened before invocation or inside tool.execute(). */
+  errorStage?: 'load' | 'execute';
   /** Execution duration in milliseconds */
   executionTimeMs: number;
 }
@@ -112,6 +114,7 @@ export const ExecuteToolResponseSchema = z.object({
   success: z.boolean(),
   output: z.unknown().optional(),
   error: z.string().optional(),
+  errorStage: z.enum(['load', 'execute']).optional(),
   executionTimeMs: z.number(),
 });
 

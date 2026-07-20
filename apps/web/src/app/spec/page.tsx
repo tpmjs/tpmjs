@@ -221,6 +221,44 @@ function SpecificationView(): React.ReactElement {
 ]`}
             showCopy
           />
+
+          <div className="mt-8 border-l-2 border-amber-500 pl-5">
+            <h3 className="text-lg font-bold text-foreground mb-2">Declared health checks</h3>
+            <p className="text-foreground-secondary mb-4">
+              Tools with side effects can declare safe test inputs, up to three ordered same-package
+              cleanup calls, or opt out of execution checks. Cleanup is best effort; a skipped
+              execution is reported as unknown, never healthy.
+            </p>
+            <CodeBlock
+              language="json"
+              code={`{
+  "name": "createReport",
+  "healthCheck": {
+    "testParams": {
+      "name": "health-check-{{timestamp}}"
+    },
+    "cleanup": [
+      {
+        "tool": "deleteReport",
+        "params": {
+          "name": "health-check-{{timestamp}}"
+        },
+        "mapping": {
+          "reportId": "report.id"
+        }
+      }
+    ]
+  }
+}`}
+              showCopy
+            />
+            <p className="text-sm text-foreground-tertiary mt-3">
+              String values support <code className="font-mono">{'{{timestamp}}'}</code>. A cleanup{' '}
+              <code className="font-mono">mapping</code> copies fields from the execution output by
+              dot path. Use <code className="font-mono">{'{ "skipExecution": true }'}</code> only
+              when invoking the tool cannot be made safe.
+            </p>
+          </div>
         </section>
 
         {/* Env Array */}
@@ -297,6 +335,22 @@ function SpecificationView(): React.ReactElement {
               <div className="flex justify-between">
                 <span className="text-foreground-secondary">└─ description</span>
                 <span className="text-foreground-tertiary">string</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground-secondary">└─ healthCheck</span>
+                <span className="text-foreground-tertiary">object</span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span className="text-foreground-secondary">├─ skipExecution</span>
+                <span className="text-foreground-tertiary">boolean</span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span className="text-foreground-secondary">├─ testParams</span>
+                <span className="text-foreground-tertiary">object</span>
+              </div>
+              <div className="flex justify-between pl-4">
+                <span className="text-foreground-secondary">└─ cleanup[]</span>
+                <span className="text-foreground-tertiary">max 3</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-foreground-secondary">env[]</span>
