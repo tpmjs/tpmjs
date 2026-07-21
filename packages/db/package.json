@@ -10,6 +10,7 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
+    "db:verify-counter-invariants": "tsx scripts/verify-counter-invariants.ts",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
     "db:backfill-usernames": "tsx prisma/backfill-usernames.ts",

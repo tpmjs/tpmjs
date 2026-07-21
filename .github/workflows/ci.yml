@@ -120,6 +120,9 @@ jobs:
       - name: Prove fresh migration history
         run: pnpm --filter @tpmjs/web exec prisma migrate deploy --schema ../../packages/db/prisma/schema.prisma
 
+      - name: Prove registry counter invariants
+        run: pnpm --filter @tpmjs/db db:verify-counter-invariants
+
       - name: Reject schema drift
         run: >-
           pnpm --filter @tpmjs/web exec prisma migrate diff
