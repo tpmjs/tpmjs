@@ -1,24 +1,7 @@
 import useSWR from 'swr';
+import type { DiscoveryTool } from '~/lib/discovery/types';
 
-export interface Tool {
-  id: string;
-  name: string;
-  description: string;
-  qualityScore: string;
-  likeCount?: number;
-  importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
-  executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN';
-  createdAt: string;
-  package: {
-    npmPackageName: string;
-    npmVersion: string;
-    npmPublishedAt: string;
-    category: string;
-    npmRepository: { url: string; type: string } | null;
-    isOfficial: boolean;
-    npmDownloadsLastMonth: number | null;
-  };
-}
+export type Tool = DiscoveryTool;
 
 export interface UseToolsParams {
   category?: string;
@@ -28,7 +11,11 @@ export interface UseToolsParams {
   limit?: number;
 }
 
-export function useTools(params: UseToolsParams = {}) {
+interface UseToolsOptions {
+  fallbackData?: Tool[];
+}
+
+export function useTools(params: UseToolsParams = {}, options: UseToolsOptions = {}) {
   const searchParams = new URLSearchParams();
 
   if (params.category && params.category !== 'all') {
@@ -47,5 +34,7 @@ export function useTools(params: UseToolsParams = {}) {
 
   const queryString = searchParams.toString();
 
-  return useSWR<Tool[]>(`/api/tools?${queryString}`);
+  return useSWR<Tool[]>(`/api/tools?${queryString}`, {
+    fallbackData: options.fallbackData,
+  });
 }

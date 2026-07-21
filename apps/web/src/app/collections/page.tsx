@@ -1,308 +1,58 @@
-'use client';
+import { loadInitialCollections } from '~/lib/discovery/server';
+import type { PublicCollection } from '~/lib/discovery/types';
+import { CollectionsClient } from './CollectionsClient';
 
-import { Badge } from '@tpmjs/ui/Badge/Badge';
-import { EmptyState } from '@tpmjs/ui/EmptyState/EmptyState';
-import { ErrorState } from '@tpmjs/ui/ErrorState/ErrorState';
-import { Icon } from '@tpmjs/ui/Icon/Icon';
-import { Input } from '@tpmjs/ui/Input/Input';
-import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
-import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
-import { Select } from '@tpmjs/ui/Select/Select';
-import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TableVirtuoso } from 'react-virtuoso';
-import { AppHeader } from '~/components/AppHeader';
-import { CopyDropdown, getCollectionCopyOptions } from '~/components/CopyDropdown';
-import { LikeButton } from '~/components/LikeButton';
-import { trackCollectionMcpCopy } from '~/lib/analytics';
+export const dynamic = 'force-dynamic';
 
-interface PublicCollection {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  likeCount: number;
-  forkCount: number;
-  toolCount: number;
-  createdAt: string;
-  createdBy: {
-    id: string;
-    name: string;
-    image: string | null;
-    username: string | null;
+function collectionUrl(collection: PublicCollection): string {
+  return collection.createdBy.username && collection.slug
+    ? `https://tpmjs.com/${collection.createdBy.username}/collections/${collection.slug}`
+    : `https://tpmjs.com/collections/${collection.id}`;
+}
+
+export default async function PublicCollectionsPage(): Promise<React.ReactElement> {
+  let initialCollections: PublicCollection[] = [];
+  let initialHasMore = false;
+  let initialLoadFailed = false;
+
+  try {
+    const initial = await loadInitialCollections();
+    initialCollections = initial.collections;
+    initialHasMore = initial.hasMore;
+  } catch (error) {
+    initialLoadFailed = true;
+    console.error('[Collections] Initial server load failed; client retry enabled:', error);
+  }
+
+  const itemList = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'TPMJS Public Collections',
+    numberOfItems: initialCollections.length,
+    itemListElement: initialCollections.map((collection, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: collectionUrl(collection),
+      name: collection.name,
+      description: collection.description,
+    })),
   };
-}
-
-type SortOption = 'likes' | 'recent' | 'tools';
-
-function sortCollections(collections: PublicCollection[], sortBy: SortOption): PublicCollection[] {
-  return [...collections].sort((a, b) => {
-    switch (sortBy) {
-      case 'likes':
-        return b.likeCount - a.likeCount;
-      case 'recent':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      case 'tools':
-        return b.toolCount - a.toolCount;
-      default:
-        return 0;
-    }
-  });
-}
-
-function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength).trim()}...`;
-}
-
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: large page component with table rendering
-export default function PublicCollectionsPage(): React.ReactElement {
-  const [collections, setCollections] = useState<PublicCollection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(false);
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<SortOption>('likes');
-  const loadingMore = useRef(false);
-
-  const fetchCollections = useCallback(
-    async (offset: number, resetList = false) => {
-      try {
-        if (loadingMore.current && !resetList) return;
-        loadingMore.current = true;
-
-        const params = new URLSearchParams({
-          limit: '100',
-          offset: String(offset),
-          sort,
-        });
-
-        const response = await fetch(`/api/public/collections?${params}`);
-        const data = await response.json();
-
-        if (data.success) {
-          if (resetList || offset === 0) {
-            setCollections(data.data);
-          } else {
-            setCollections((prev) => [...prev, ...data.data]);
-          }
-          setHasMore(data.pagination.hasMore);
-        } else {
-          setError(data.error?.message || 'Failed to fetch collections');
-        }
-      } catch (err) {
-        console.error('Failed to fetch collections:', err);
-        setError('Failed to fetch collections');
-      } finally {
-        setIsLoading(false);
-        loadingMore.current = false;
-      }
-    },
-    [sort]
-  );
-
-  useEffect(() => {
-    setIsLoading(true);
-    fetchCollections(0, true);
-  }, [fetchCollections]);
-
-  const loadMore = useCallback(() => {
-    if (!hasMore || loadingMore.current) return;
-    fetchCollections(collections.length);
-  }, [hasMore, collections.length, fetchCollections]);
-
-  // Filter and sort collections
-  const filteredCollections = useMemo(() => {
-    let result = collections;
-
-    if (search) {
-      const query = search.toLowerCase();
-      result = result.filter(
-        (c) => c.name.toLowerCase().includes(query) || c.description?.toLowerCase().includes(query)
-      );
-    }
-
-    return sortCollections(result, sort);
-  }, [collections, search, sort]);
-
-  const TableHeader = useCallback(
-    () => (
-      <tr className="bg-surface-secondary text-left text-xs font-semibold uppercase tracking-wider text-foreground-secondary border-b border-border">
-        <th className="px-4 py-3 w-[250px]">Name</th>
-        <th className="px-4 py-3 w-[250px]">Description</th>
-        <th className="px-4 py-3 w-[80px] text-center">Tools</th>
-        <th className="px-4 py-3 w-[70px] text-center">Forks</th>
-        <th className="px-4 py-3 w-[80px] text-center">Likes</th>
-        <th className="px-4 py-3 w-[150px]">Creator</th>
-        <th className="px-4 py-3 w-[100px] text-right">Copy</th>
-      </tr>
-    ),
-    []
-  );
-
-  const TableRow = useCallback((_index: number, collection: PublicCollection) => {
-    return (
-      <>
-        <td className="px-4 py-3">
-          <Link
-            href={
-              collection.createdBy.username
-                ? `/${collection.createdBy.username}/collections/${collection.slug}`
-                : `/collections/${collection.id}`
-            }
-            className="font-semibold text-foreground hover:text-primary group-hover:text-primary transition-colors"
-          >
-            {collection.name}
-          </Link>
-        </td>
-        <td className="px-4 py-3 text-sm text-foreground-secondary">
-          {collection.description ? truncateText(collection.description, 60) : '—'}
-        </td>
-        <td className="px-4 py-3 text-center">
-          <Badge variant="secondary" size="sm">
-            {collection.toolCount}
-          </Badge>
-        </td>
-        <td className="px-4 py-3 text-center text-sm text-foreground-secondary">
-          {collection.forkCount > 0 ? collection.forkCount : '—'}
-        </td>
-        <td className="px-4 py-3 text-center">
-          <LikeButton
-            entityType="collection"
-            entityId={collection.id}
-            initialCount={collection.likeCount}
-            size="sm"
-            showCount={true}
-          />
-        </td>
-        <td className="px-4 py-3">
-          <div className="flex items-center gap-2">
-            {collection.createdBy.image ? (
-              <img
-                src={collection.createdBy.image}
-                alt={collection.createdBy.name}
-                className="w-5 h-5 rounded-full"
-              />
-            ) : (
-              <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                <Icon icon="user" size="xs" className="text-primary" />
-              </div>
-            )}
-            <span className="text-sm text-foreground-secondary truncate max-w-[100px]">
-              {collection.createdBy.name}
-            </span>
-          </div>
-        </td>
-        <td className="px-4 py-3 text-right">
-          {collection.createdBy.username && (
-            <CopyDropdown
-              options={getCollectionCopyOptions(
-                collection.createdBy.username,
-                collection.slug,
-                collection.name
-              )}
-              buttonLabel="Copy"
-              onCopy={(option) => {
-                if (option.id) trackCollectionMcpCopy(collection.id, option.id);
-              }}
-            />
-          )}
-        </td>
-      </>
-    );
-  }, []);
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PageHeader
-          title="Public Collections"
-          description="Discover curated tool collections shared by the community"
+    <>
+      {initialCollections.length > 0 && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(itemList).replace(/</g, '\\u003c'),
+          }}
         />
-
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1">
-            <Input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search collections..."
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-foreground-secondary">Sort:</span>
-            <Select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as SortOption)}
-              options={[
-                { value: 'likes', label: 'Most Liked' },
-                { value: 'recent', label: 'Most Recent' },
-                { value: 'tools', label: 'Most Tools' },
-              ]}
-            />
-          </div>
-        </div>
-
-        {/* Content */}
-        {error ? (
-          <ErrorState message={error} onRetry={() => fetchCollections(0, true)} />
-        ) : isLoading ? (
-          <LoadingState message="Loading collections..." size="lg" />
-        ) : filteredCollections.length === 0 ? (
-          <EmptyState
-            icon="folder"
-            title="No collections found"
-            description={
-              search
-                ? 'Try adjusting your search terms'
-                : 'Be the first to share a public collection!'
-            }
-          />
-        ) : (
-          <>
-            <div className="border border-border rounded-lg overflow-hidden">
-              <TableVirtuoso
-                style={{ height: 'calc(100vh - 350px)', minHeight: '400px' }}
-                data={filteredCollections}
-                overscan={30}
-                endReached={loadMore}
-                fixedHeaderContent={TableHeader}
-                itemContent={TableRow}
-                components={{
-                  Table: (props) => (
-                    <table
-                      {...props}
-                      className="w-full border-collapse text-sm"
-                      style={{ tableLayout: 'fixed' }}
-                    />
-                  ),
-                  TableHead: (props) => (
-                    <thead {...props} className="bg-surface-secondary sticky top-0 z-10" />
-                  ),
-                  TableBody: (props) => <tbody {...props} />,
-                  TableRow: (props) => (
-                    <tr
-                      {...props}
-                      className="border-b border-border bg-surface hover:bg-surface-secondary transition-all duration-150 group"
-                    />
-                  ),
-                }}
-              />
-            </div>
-
-            <div className="mt-4 text-sm text-foreground-tertiary">
-              Showing {filteredCollections.length} collection
-              {filteredCollections.length !== 1 ? 's' : ''}
-              {search && ` matching "${search}"`}
-              {hasMore && ' (scroll for more)'}
-            </div>
-          </>
-        )}
-      </main>
-    </div>
+      )}
+      <CollectionsClient
+        initialCollections={initialCollections}
+        initialHasMore={initialHasMore}
+        initialLoadFailed={initialLoadFailed}
+      />
+    </>
   );
 }

@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Tool Search | TPMJS',
+  title: 'Tool Search',
   description:
     'Search and discover AI tools from the TPMJS registry. Browse by category, sort by downloads or recency.',
+  alternates: { canonical: '/tool/tool-search' },
+  robots: { index: true, follow: true },
   openGraph: {
     title: 'Tool Search | TPMJS',
     description:
