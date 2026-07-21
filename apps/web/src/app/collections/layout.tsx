@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Public Collections | TPMJS',
+  title: 'Public Collections',
   description:
     'Browse tool collections on TPMJS. Collections group related AI tools into shareable workflow bundles with test scenarios.',
+  alternates: { canonical: '/collections' },
+  robots: { index: true, follow: true },
   openGraph: {
     title: 'Public Collections | TPMJS',
     description:
