@@ -7,6 +7,7 @@ Thank you for your interest in contributing to TPMJS! This guide will help you g
 - **Node.js**: 22.x or higher
 - **pnpm**: 10.x or higher
 - **Git**: Latest stable version
+- **Containers**: Docker with Compose v2, or Podman Compose
 
 Install pnpm globally if you haven't already:
 
@@ -29,24 +30,21 @@ cd tpmjs
 pnpm install
 ```
 
-3. **Set up environment variables:**
+3. **Provision the local environment and database:**
 
 ```bash
-cp .env.example apps/web/.env.local
-# Edit .env.local with your database credentials
-# (start a local Postgres container first — see packages/db/README.md)
+pnpm dev:setup
 ```
 
-4. **Generate Prisma client:**
+This starts an isolated PostgreSQL 17 instance on `127.0.0.1:55433`, applies the
+checked-in migrations, creates `apps/web/.env.local` with generated local-only
+secrets if it does not exist, and seeds two executable starter tools. Existing
+environment files and the persistent database volume are never overwritten.
+
+4. **Run the development server:**
 
 ```bash
-pnpm --filter=@tpmjs/db db:generate
-```
-
-5. **Run development server:**
-
-```bash
-pnpm dev --filter=@tpmjs/web
+pnpm --filter=@tpmjs/web dev
 ```
 
 ## Development Workflow
@@ -93,6 +91,9 @@ pnpm --filter=@tpmjs/db db:push
 
 # Create migrations (production)
 pnpm --filter=@tpmjs/db db:migrate
+
+# Apply checked-in migrations without creating new ones
+pnpm --filter=@tpmjs/db db:migrate:deploy
 
 # Open Prisma Studio
 pnpm --filter=@tpmjs/db db:studio
