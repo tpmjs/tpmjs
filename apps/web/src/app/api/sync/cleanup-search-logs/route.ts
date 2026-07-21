@@ -11,7 +11,7 @@ export const maxDuration = 300;
  * POST /api/sync/cleanup-search-logs
  * Delete search logs older than 90 days
  *
- * Called by Vercel Cron (daily at 3:45 AM UTC)
+ * Called by authenticated scheduled automation.
  * Requires Authorization: Bearer <CRON_SECRET>
  */
 export async function POST(request: NextRequest) {

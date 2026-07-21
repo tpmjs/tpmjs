@@ -100,9 +100,9 @@ journalctl -u tpmjs-web -f              # same via systemd, plus restarts
 systemctl status tpmjs-web
 ```
 
-## Legacy platforms (pending decommission)
+## Retired hosting platforms
 
-- **Vercel**: git deploys are gated OFF (`vercel.json` → `git.deploymentEnabled.main: false`) — pushing to `main` deploys NOTHING. The Vercel project (`tpmjs-web`, `/.vercel/project.json`) exists only pending decommission; don't add env vars, deployments, or crons there. `vercel.json` is kept for its headers config, not deployment.
+- **Vercel hosting**: forbidden. TPMJS has no Vercel deployment config, analytics, Blob, or KV dependency. The product may still integrate with Vercel as a third-party tool/executor target; that does not host TPMJS itself. The architecture gate prevents regressions; external project/GitHub-App removal is tracked in #138.
 - **Railway**: the old `tpmjs-tools-executor` and `agent-sandbox` services migrated on-box 2026-07 (now `tpmjs-railway-executor` :3210 and `tpmjs-agent-sandbox` :3211). Don't `railway up` anything.
 - **Neon**: the DB migrated to the self-hosted `tpmjs-pg` container 2026-07-14 (final dump archived at `/mnt/donto-data/backups/tpmjs-neon-final-2026-07-14.dump`). The pooled/unpooled DSN split is a Neon leftover — both vars now hold the same DSN.
 
@@ -203,7 +203,7 @@ cd packages/db && npx tsx scripts/my-script.ts
 
 ### Cron Jobs (schedules + manual triggers)
 
-There is NO `crons` block in `vercel.json`. Schedules are split across two lanes — the split exists because **Cloudflare cuts proxied responses at ~100s**, so anything long-running must hit `127.0.0.1:3200` from the box:
+Schedules are split across two lanes — the split exists because **Cloudflare cuts proxied responses at ~100s**, so anything long-running must hit `127.0.0.1:3200` from the box:
 
 **Fast crons — GitHub Actions workflows** (`.github/workflows/`, curl `https://tpmjs.com` with the repo's `CRON_SECRET` secret):
 - `sync-changes.yml` → `POST /api/sync/changes` — NPM changes feed, **every 2min**

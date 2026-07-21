@@ -98,8 +98,7 @@ tpmjs/
 │       └── official/           # @tpmjs/tools-* packages
 │
 ├── turbo.json                  # Turborepo task configuration
-├── pnpm-workspace.yaml         # Workspace definitions
-└── vercel.json                 # Vercel config (deploys gated off; crons block removed — see DEPLOYMENT.md)
+└── pnpm-workspace.yaml         # Workspace definitions
 ```
 
 ### Published Packages (npm @tpmjs scope)
@@ -773,7 +772,7 @@ User API keys (OpenAI, Anthropic, etc.) are stored encrypted:
 
 ### Rate Limiting
 
-- **Store:** in-memory per-process sliding window (`apps/web/src/lib/rate-limit.ts`); accurate in production because the app runs as a single container. The distributed Vercel KV path (`checkRateLimitDistributed`) is dormant — `KV_REST_API_URL` is unset on-box
+- **Store:** bounded in-process sliding window (`apps/web/src/lib/rate-limit.ts`); authoritative in production because the app runs as one container/process. The async-compatible entry point uses the same store; no remote rate-limit service is involved
 - **Per-IP:** Based on `x-forwarded-for` or `x-real-ip`
 - **Headers:** `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`
 

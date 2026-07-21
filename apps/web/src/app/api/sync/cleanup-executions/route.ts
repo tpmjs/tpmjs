@@ -11,7 +11,7 @@ export const maxDuration = 300;
  * POST /api/sync/cleanup-executions
  * Delete execution events older than 90 days
  *
- * Called by Vercel Cron (daily at 3:15 AM UTC)
+ * Called by authenticated scheduled automation.
  * Requires Authorization: Bearer <CRON_SECRET>
  */
 export async function POST(request: NextRequest) {

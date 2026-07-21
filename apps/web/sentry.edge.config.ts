@@ -10,5 +10,5 @@ Sentry.init({
     tags: { runtime: 'edge' },
   },
 
-  release: process.env.VERCEL_GIT_COMMIT_SHA,
+  release: process.env.TPMJS_COMMIT_SHA,
 });

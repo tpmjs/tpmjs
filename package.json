@@ -43,7 +43,7 @@
     "type-check": "turbo type-check",
     "type-coverage": "type-coverage --at-least 95",
     "find-deadcode": "knip",
-    "check-architecture": "depcruise --validate --config .dependency-cruiser.js apps packages",
+    "check-architecture": "node scripts/check-no-vercel-hosting.mjs && depcruise --validate --config .dependency-cruiser.js apps packages",
     "clean": "turbo clean && rm -rf node_modules .turbo",
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm install --no-frozen-lockfile",
@@ -56,7 +56,7 @@
     "release:preview": "pnpm release:status && pnpm release:audit",
     "verify:vercel-api": "tsx scripts/verify-vercel-api.ts",
     "verify:vercel-api:test": "tsx --test scripts/vercel-contract.test.ts scripts/vercel-tools.test.ts",
-    "prepare": "node -e \"if (!process.env.CI && !process.env.VERCEL && require('fs').existsSync('.git')) { require('child_process').execSync('lefthook install', {stdio: 'inherit'}) }\""
+    "prepare": "node -e \"if (!process.env.CI && require('fs').existsSync('.git')) { require('child_process').execSync('lefthook install', {stdio: 'inherit'}) }\""
   },
   "pnpm": {
     "onlyBuiltDependencies": [

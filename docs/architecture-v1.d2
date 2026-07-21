@@ -185,7 +185,7 @@ schema_pipeline: Schema Extraction Pipeline {
     class: external
   }
 
-  sync_workers: "Sync Workers (Vercel Cron)" {
+  sync_workers: "Sync Workers (Actions + on-box timers)" {
     changes_feed: "/api/sync/changes (every 2 min)\nnpm _changes feed"
     keyword_search: "/api/sync/keyword (every 15 min)\nkeyword search"
     metrics_sync: "/api/sync/metrics (every hour)\ndownloads, stars"
@@ -338,7 +338,7 @@ database: "Database (Neon PostgreSQL)" {
 # 8. BACKGROUND WORKERS
 # ==============================================================================
 
-workers: "Background Workers (Vercel Cron)" {
+workers: "Background Workers (Self-hosted schedules)" {
   class: external
 
   sync_jobs: "Sync Jobs" {

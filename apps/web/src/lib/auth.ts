@@ -3,17 +3,11 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { sendResetPasswordEmail, sendVerificationEmail } from './email';
 
-// Determine base URL for auth - MUST match the domain users are browsing on
-// VERCEL_URL is the deployment URL (e.g., tpmjs-xxx.vercel.app), not the custom domain
-// So we prioritize BETTER_AUTH_URL or fall back to the production domain
+// The configured URL must match the domain users are browsing on. Production
+// has one canonical self-hosted origin; local development keeps its own URL.
 const getBaseURL = () => {
   if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL;
-  // Local development
   if (process.env.NODE_ENV === 'development') return 'http://localhost:3000';
-  // In production, always use the custom domain, not VERCEL_URL
-  if (process.env.VERCEL_ENV === 'production') return 'https://tpmjs.com';
-  // For preview deployments, use the Vercel URL
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return 'https://tpmjs.com';
 };
 

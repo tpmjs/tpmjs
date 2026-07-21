@@ -38,7 +38,7 @@ This release adds comprehensive metrics tracking, search analytics, cleanup auto
 | `apps/web/src/components/dashboard/DashboardLayout.tsx` | Added conditional Admin nav section in sidebar |
 | `apps/web/src/lib/auth.ts` | Added `databaseHooks` to track signup source on user creation |
 | `apps/web/src/app/api/activity/public/route.ts` | Added more event types to public activity feed |
-| `vercel.json` | Added 3 new cleanup cron schedules |
+| Scheduled cleanup jobs | Added three authenticated cleanup schedules (now run by self-hosted automation) |
 
 ---
 

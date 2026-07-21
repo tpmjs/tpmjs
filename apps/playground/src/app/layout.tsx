@@ -1,4 +1,3 @@
-import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 import { Space_Grotesk, Space_Mono } from 'next/font/google';
 import { ThemeProvider } from 'next-themes';
@@ -37,7 +36,6 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
           {children}
         </ThemeProvider>
-        <Analytics />
       </body>
     </html>
   );

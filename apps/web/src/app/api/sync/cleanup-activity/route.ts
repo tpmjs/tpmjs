@@ -12,7 +12,7 @@ const DELETE_SLICE = 1_000;
  * POST /api/sync/cleanup-activity
  * Delete activity records older than 90 days
  *
- * This endpoint is called by Vercel Cron (daily at 3 AM UTC)
+ * This endpoint is called by authenticated scheduled automation.
  * Requires Authorization: Bearer <CRON_SECRET>
  */
 export async function POST(request: NextRequest) {

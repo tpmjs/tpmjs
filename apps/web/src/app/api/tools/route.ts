@@ -1,5 +1,4 @@
 import { type Prisma, prisma } from '@tpmjs/db';
-import { kv } from '@vercel/kv';
 import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '~/lib/rate-limit';
 import {
@@ -14,29 +13,37 @@ export const maxDuration = 60;
 // Cache configuration
 const CACHE_TTL = 300; // 5 minutes
 const CACHE_PREFIX = 'tools:';
+const MAX_CACHE_ENTRIES = 500;
+const responseCache = new Map<string, { value: unknown; expiresAt: number }>();
 
 /**
- * Try to get cached response, returns null if KV not configured or cache miss
+ * Read a response from the bounded process-local cache.
  */
-async function getCached<T>(key: string): Promise<T | null> {
-  try {
-    if (!process.env.KV_REST_API_URL) return null;
-    return await kv.get<T>(key);
-  } catch {
+function getCached<T>(key: string): T | null {
+  const entry = responseCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt <= Date.now()) {
+    responseCache.delete(key);
     return null;
   }
+  return entry.value as T;
 }
 
 /**
- * Try to set cache, silently fails if KV not configured
+ * Cache a response for this single-process deployment without remote state.
  */
-async function setCache<T>(key: string, value: T, ttl: number): Promise<void> {
-  try {
-    if (!process.env.KV_REST_API_URL) return;
-    await kv.set(key, value, { ex: ttl });
-  } catch {
-    // Silently ignore cache errors
+function setCache<T>(key: string, value: T, ttlSeconds: number): void {
+  const now = Date.now();
+  for (const [cachedKey, entry] of responseCache) {
+    if (entry.expiresAt <= now) responseCache.delete(cachedKey);
   }
+
+  if (!responseCache.has(key) && responseCache.size >= MAX_CACHE_ENTRIES) {
+    const oldestKey = responseCache.keys().next().value;
+    if (oldestKey !== undefined) responseCache.delete(oldestKey);
+  }
+
+  responseCache.set(key, { value, expiresAt: now + ttlSeconds * 1000 });
 }
 
 // Constants

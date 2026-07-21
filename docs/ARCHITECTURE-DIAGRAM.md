@@ -149,7 +149,7 @@ The pipeline that discovers npm packages and extracts tool schemas:
 ```
 NPM Registry (packages with "tpmjs" keyword)
     ↓
-Sync Workers (Vercel Cron):
+Sync Workers (GitHub Actions and on-box timers):
   - /api/sync/changes  (every 2 min)  - npm _changes feed
   - /api/sync/keyword  (every 15 min) - keyword search
   - /api/sync/metrics  (every hour)   - downloads, stars
@@ -276,7 +276,10 @@ System Default (Railway)
 
 ---
 
-## 8. Background Workers (Vercel Cron)
+## 8. Background Workers (Self-hosted Schedules)
+
+Jobs call authenticated application endpoints from GitHub Actions or the
+on-box `tpmjs-cron` timer. TPMJS does not use a hosted cron provider.
 
 | Schedule | Endpoint | Description |
 |----------|----------|-------------|

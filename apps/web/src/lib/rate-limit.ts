@@ -1,40 +1,36 @@
-import { kv } from '@vercel/kv';
 import { type NextRequest, NextResponse } from 'next/server';
-import { env } from '~/env';
 
 /**
- * Distributed rate limiter using Vercel KV (with in-memory fallback)
+ * Bounded in-process rate limiter for the self-hosted web service.
  *
- * Uses Vercel KV in production for accurate rate limiting across serverless instances.
- * Falls back to in-memory store when KV is not available (development).
+ * Production runs one Next.js process, so a process-local sliding window is
+ * the authoritative limiter without a network round trip or remote state.
  */
 
 interface RateLimitEntry {
   timestamps: number[];
+  windowMs: number;
 }
 
-// In-memory fallback store (used when Vercel KV is not available)
+// One bounded store shared by all requests in the Next.js process.
 const memoryStore = new Map<string, RateLimitEntry>();
 
-// Check if Vercel KV is available
-const isKVAvailable = !!process.env.KV_REST_API_URL;
-
-// Cleanup interval for in-memory fallback
+// Cleanup interval for the process-local store.
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const MAX_STORE_SIZE = 10000;
 let lastCleanup = Date.now();
 
 /**
- * Clean up old entries from the in-memory fallback store
+ * Clean up old entries from the process-local store.
  */
 function cleanupMemoryStore() {
   const now = Date.now();
   if (now - lastCleanup < CLEANUP_INTERVAL_MS) return;
 
-  const cutoff = now - 60 * 1000;
   let removedCount = 0;
 
   for (const [key, entry] of memoryStore.entries()) {
+    const cutoff = now - entry.windowMs;
     entry.timestamps = entry.timestamps.filter((ts) => ts > cutoff);
     if (entry.timestamps.length === 0) {
       memoryStore.delete(key);
@@ -112,100 +108,20 @@ export const AI_GENERATION_RATE_LIMIT: RateLimitConfig = {
   prefix: 'ai-gen',
 };
 
-/**
- * Helper to add timeout to promises
- */
-function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T | null> {
-  const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
-  return Promise.race([promise, timeout]);
+function isAuthenticatedScheduler(request: NextRequest): boolean {
+  const authHeader = request.headers.get('authorization');
+  const token = authHeader?.replace('Bearer ', '');
+  const cronSecret = process.env.CRON_SECRET;
+  return Boolean(cronSecret && token === cronSecret);
 }
 
 /**
- * Get rate limit entry from Vercel KV (with timeout)
+ * Check if a request should be rate limited in this process.
  */
-async function getKVEntry(key: string): Promise<RateLimitEntry | null> {
-  try {
-    const result = await withTimeout(kv.get<RateLimitEntry>(key), 2000);
-    return result;
-  } catch (error) {
-    console.error('[Rate Limit] KV get error:', error);
-    return null;
-  }
-}
-
-/**
- * Set rate limit entry in Vercel KV (with timeout, fire-and-forget)
- */
-async function setKVEntry(key: string, entry: RateLimitEntry, ttlSeconds: number): Promise<void> {
-  try {
-    // Fire and forget - don't wait for result, just timeout if slow
-    withTimeout(kv.set(key, entry, { ex: ttlSeconds }), 2000);
-  } catch (error) {
-    console.error('[Rate Limit] KV set error:', error);
-  }
-}
-
-/**
- * Check if a request should be rate limited (async version for KV)
- */
-async function checkRateLimitAsync(
+function checkRateLimitInProcess(
   request: NextRequest,
   config: RateLimitConfig
-): Promise<NextResponse | null> {
-  const clientId = getClientId(request);
-  const prefix = config.prefix || 'ratelimit';
-  const key = `${prefix}:${clientId}`;
-  const now = Date.now();
-  const windowMs = config.windowSeconds * 1000;
-  const cutoff = now - windowMs;
-
-  // Get or create entry from KV
-  let entry = await getKVEntry(key);
-  if (!entry) {
-    entry = { timestamps: [] };
-  }
-
-  // Remove timestamps outside the current window
-  entry.timestamps = entry.timestamps.filter((ts) => ts > cutoff);
-
-  // Check if limit exceeded
-  if (entry.timestamps.length >= config.limit) {
-    const oldestInWindow = entry.timestamps[0] || now;
-    const resetTime = oldestInWindow + windowMs;
-    const retryAfterSeconds = Math.ceil((resetTime - now) / 1000);
-
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Rate limit exceeded',
-        message: `Too many requests. Please try again in ${retryAfterSeconds} seconds.`,
-        retryAfter: retryAfterSeconds,
-        limit: config.limit,
-        window: config.windowSeconds,
-      },
-      {
-        status: 429,
-        headers: {
-          'Retry-After': retryAfterSeconds.toString(),
-          'X-RateLimit-Limit': config.limit.toString(),
-          'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': Math.ceil(resetTime / 1000).toString(),
-        },
-      }
-    );
-  }
-
-  // Add current timestamp and save
-  entry.timestamps.push(now);
-  await setKVEntry(key, entry, config.windowSeconds + 10); // TTL slightly longer than window
-
-  return null;
-}
-
-/**
- * Check if a request should be rate limited (sync version for in-memory)
- */
-function checkRateLimitSync(request: NextRequest, config: RateLimitConfig): NextResponse | null {
+): NextResponse | null {
   cleanupMemoryStore();
 
   const clientId = getClientId(request);
@@ -218,8 +134,11 @@ function checkRateLimitSync(request: NextRequest, config: RateLimitConfig): Next
   // Get or create entry
   let entry = memoryStore.get(key);
   if (!entry) {
-    entry = { timestamps: [] };
+    entry = { timestamps: [], windowMs };
     memoryStore.set(key, entry);
+  } else {
+    // A prefix may be reused with a changed configuration after a deploy.
+    entry.windowMs = windowMs;
   }
 
   // Remove timestamps outside the current window
@@ -261,9 +180,6 @@ function checkRateLimitSync(request: NextRequest, config: RateLimitConfig): Next
 /**
  * Check if a request should be rate limited
  *
- * Uses Vercel KV in production for distributed rate limiting,
- * falls back to in-memory store in development.
- *
  * @param request - Next.js request object
  * @param config - Rate limit configuration
  * @returns null if allowed, NextResponse with 429 if rate limited
@@ -273,23 +189,15 @@ export function checkRateLimit(
   config: RateLimitConfig = DEFAULT_RATE_LIMIT
 ): NextResponse | null {
   // Skip rate limiting for cron jobs (authenticated with CRON_SECRET)
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-  if (env.CRON_SECRET && token === env.CRON_SECRET) {
+  if (isAuthenticatedScheduler(request)) {
     return null;
   }
 
-  // Use sync in-memory check for immediate response
-  // Note: KV would require async, but checkRateLimit is called synchronously
-  // This is a limitation - for truly distributed rate limiting, consider
-  // using middleware or making the rate limit check async
-  return checkRateLimitSync(request, config);
+  return checkRateLimitInProcess(request, config);
 }
 
 /**
- * Check if a request should be rate limited (async version)
- *
- * Use this when you can await the rate limit check for true distributed limiting.
+ * Async-compatible rate-limit entry point for existing route handlers.
  *
  * @param request - Next.js request object
  * @param config - Rate limit configuration
@@ -300,18 +208,11 @@ export async function checkRateLimitDistributed(
   config: RateLimitConfig = DEFAULT_RATE_LIMIT
 ): Promise<NextResponse | null> {
   // Skip rate limiting for cron jobs
-  const authHeader = request.headers.get('authorization');
-  const token = authHeader?.replace('Bearer ', '');
-  if (env.CRON_SECRET && token === env.CRON_SECRET) {
+  if (isAuthenticatedScheduler(request)) {
     return null;
   }
 
-  // Use KV if available, otherwise fall back to in-memory
-  if (isKVAvailable) {
-    return checkRateLimitAsync(request, config);
-  }
-
-  return checkRateLimitSync(request, config);
+  return checkRateLimitInProcess(request, config);
 }
 
 /**
@@ -338,6 +239,6 @@ export function getRateLimitStatus(
     remaining,
     used: recentRequests,
     resetAt: new Date(now + windowMs),
-    isDistributed: isKVAvailable,
+    isDistributed: false,
   };
 }
