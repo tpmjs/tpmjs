@@ -165,6 +165,29 @@ describe('CodeBlock', () => {
       });
     });
 
+    it('calls onCopy only after the clipboard write succeeds', async () => {
+      const onCopy = vi.fn();
+      render(<CodeBlock code="test code" onCopy={onCopy} />);
+      screen.getByTestId('copy-button').click();
+
+      await waitFor(() => {
+        expect(onCopy).toHaveBeenCalledOnce();
+      });
+    });
+
+    it('keeps a successful copy successful when onCopy throws', async () => {
+      const onCopy = vi.fn(() => {
+        throw new Error('observer unavailable');
+      });
+      render(<CodeBlock code="test code" onCopy={onCopy} />);
+      const button = screen.getByTestId('copy-button');
+      button.click();
+
+      await waitFor(() => {
+        expect(button).toHaveAttribute('aria-label', 'Copied!');
+      });
+    });
+
     it('shows check icon after successful copy', async () => {
       render(<CodeBlock code="test code" data-testid="codeblock" />);
       const button = screen.getByTestId('copy-button');
@@ -233,16 +256,18 @@ describe('CodeBlock', () => {
 
     it('handles clipboard API errors gracefully', async () => {
       const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const onCopy = vi.fn();
       mockClipboard.writeText.mockRejectedValueOnce(new Error('Clipboard not available'));
 
       try {
-        render(<CodeBlock code="test code" />);
+        render(<CodeBlock code="test code" onCopy={onCopy} />);
         const button = screen.getByTestId('copy-button');
         button.click();
 
         await waitFor(
           () => {
             expect(consoleErrorSpy).toHaveBeenCalled();
+            expect(onCopy).not.toHaveBeenCalled();
           },
           { timeout: 1000 }
         );

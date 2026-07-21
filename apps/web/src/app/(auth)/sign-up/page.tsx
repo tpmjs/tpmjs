@@ -7,6 +7,7 @@ import { Input } from '@tpmjs/ui/Input/Input';
 import { Label } from '@tpmjs/ui/Label/Label';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { trackSignup } from '~/lib/analytics';
 import { signUp } from '~/lib/auth-client';
 
 interface UsernameCheckResult {
@@ -99,6 +100,7 @@ export default function SignUpPage() {
       return;
     }
 
+    trackSignup('started');
     setLoading(true);
 
     try {
@@ -116,6 +118,9 @@ export default function SignUpPage() {
       }
 
       if (data) {
+        // Better Auth has durably created the account; profile setup is a separate milestone.
+        trackSignup('completed');
+
         // Account created - now set the username (REQUIRED)
         let usernameSet = false;
         let retries = 3;

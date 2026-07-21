@@ -14,6 +14,7 @@ import { TableVirtuoso } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
 import { CopyDropdown, getCollectionCopyOptions } from '~/components/CopyDropdown';
 import { LikeButton } from '~/components/LikeButton';
+import { trackCollectionMcpCopy } from '~/lib/analytics';
 
 interface PublicCollection {
   id: string;
@@ -201,6 +202,9 @@ export default function PublicCollectionsPage(): React.ReactElement {
                 collection.name
               )}
               buttonLabel="Copy"
+              onCopy={(option) => {
+                if (option.id) trackCollectionMcpCopy(collection.id, option.id);
+              }}
             />
           )}
         </td>
