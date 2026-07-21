@@ -67,9 +67,16 @@ curl http://127.0.0.1:3002/health
 ```
 
 The live unit is `tpmjs-railway-executor.service`; its container binds to
-`127.0.0.1:3210` on the host.
+`127.0.0.1:3210` on the host. The normal production path is transactional and
+smoke-tests a candidate container before moving the live image tag:
 
-Production images are commit-stamped and retain the previous image under a
+```bash
+scripts/deploy-on-box.sh executor
+scripts/deploy-on-box.sh verify
+```
+
+For recovery when the operator script itself is unavailable, the manual
+fallback below commit-stamps the image and retains the previous image under a
 rollback tag:
 
 ```bash

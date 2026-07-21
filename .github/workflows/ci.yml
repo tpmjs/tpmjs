@@ -34,6 +34,9 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
+      - name: Validate operator scripts
+        run: bash -n scripts/deploy-on-box.sh
+
   type-check:
     runs-on: ubuntu-latest
     steps:
