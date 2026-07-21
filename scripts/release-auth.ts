@@ -2,8 +2,9 @@
 
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import {
-  authorizeNpmPackage,
+  authorizeNpmPackages,
   type OidcAuthorization,
+  type OidcDenial,
   releaseCandidates,
   requestGitHubOidcToken,
 } from './release-auth-lib';
@@ -44,37 +45,66 @@ function appendGithubFile(path: string | undefined, content: string): void {
   if (path) appendFileSync(path, content);
 }
 
-function writeEvidence(
-  options: CliOptions,
-  mode: 'none' | 'oidc',
-  authorizations: readonly OidcAuthorization[]
-): void {
-  const evidence = {
-    checkedAt: new Date().toISOString(),
-    mode,
-    repository: process.env.GITHUB_REPOSITORY ?? null,
-    workflow: process.env.GITHUB_WORKFLOW_REF ?? null,
-    packages: authorizations,
-  };
-  if (options.output) writeFileSync(options.output, `${JSON.stringify(evidence, null, 2)}\n`);
-  appendGithubFile(
-    process.env.GITHUB_OUTPUT,
-    `mode=${mode}\npublish-count=${authorizations.length}\n`
-  );
+function evidenceSummary(
+  mode: 'none' | 'oidc' | 'denied',
+  authorizedCount: number,
+  deniedCount: number
+): string {
+  if (mode === 'none') {
+    return 'No unpublished package versions were found; npm authorization was not needed.';
+  }
+  if (mode === 'oidc') {
+    return `Trusted publishing authorized ${authorizedCount} package${authorizedCount === 1 ? '' : 's'} through GitHub OIDC.`;
+  }
+  return `Trusted publishing denied ${deniedCount} package${deniedCount === 1 ? '' : 's'}; nothing was built or published.`;
+}
 
-  const lines = [
-    '## npm publish authorization',
-    '',
-    mode === 'none'
-      ? 'No unpublished package versions were found; npm authorization was not needed.'
-      : `Trusted publishing authorized ${authorizations.length} package${authorizations.length === 1 ? '' : 's'} through GitHub OIDC.`,
-  ];
+function evidenceTables(
+  authorizations: readonly OidcAuthorization[],
+  denials: readonly OidcDenial[]
+): string[] {
+  const lines: string[] = [];
   if (authorizations.length > 0) {
     lines.push('', '| Package | Version | Exchange expires |', '| --- | --- | --- |');
     for (const authorization of authorizations) {
       lines.push(`| ${authorization.name} | ${authorization.version} | ${authorization.expires} |`);
     }
   }
+  if (denials.length > 0) {
+    lines.push('', '| Denied package | Version | Reason |', '| --- | --- | --- |');
+    for (const denial of denials) {
+      lines.push(`| ${denial.name} | ${denial.version} | ${denial.error} |`);
+    }
+  }
+  return lines;
+}
+
+function writeEvidence(
+  options: CliOptions,
+  mode: 'none' | 'oidc' | 'denied',
+  authorizations: readonly OidcAuthorization[],
+  denials: readonly OidcDenial[]
+): void {
+  const evidence = {
+    checkedAt: new Date().toISOString(),
+    mode,
+    repository: process.env.GITHUB_REPOSITORY ?? null,
+    workflow: process.env.GITHUB_WORKFLOW_REF ?? null,
+    authorized: authorizations,
+    denied: denials,
+  };
+  if (options.output) writeFileSync(options.output, `${JSON.stringify(evidence, null, 2)}\n`);
+  appendGithubFile(
+    process.env.GITHUB_OUTPUT,
+    `mode=${mode}\nauthorized-count=${authorizations.length}\ndenied-count=${denials.length}\n`
+  );
+
+  const lines = [
+    '## npm publish authorization',
+    '',
+    evidenceSummary(mode, authorizations.length, denials.length),
+    ...evidenceTables(authorizations, denials),
+  ];
   appendGithubFile(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`);
 }
 
@@ -82,7 +112,7 @@ async function main(): Promise<void> {
   const options = parseOptions(process.argv.slice(2));
   const candidates = releaseCandidates(JSON.parse(readFileSync(options.audit, 'utf8')));
   if (candidates.length === 0) {
-    writeEvidence(options, 'none', []);
+    writeEvidence(options, 'none', [], []);
     console.log('npm authorization: not needed (nothing would publish)');
     return;
   }
@@ -103,13 +133,16 @@ async function main(): Promise<void> {
   }
 
   const oidcToken = await requestGitHubOidcToken({ requestUrl, requestToken });
-  const authorizations: OidcAuthorization[] = [];
-  for (const candidate of candidates) {
-    authorizations.push(await authorizeNpmPackage(candidate, oidcToken));
+  const report = await authorizeNpmPackages(candidates, oidcToken);
+  if (report.denied.length > 0) {
+    writeEvidence(options, 'denied', report.authorized, report.denied);
+    throw new Error(
+      `npm trusted publishing preflight denied ${report.denied.length} package${report.denied.length === 1 ? '' : 's'}:\n${report.denied.map((denial) => `- ${denial.error}`).join('\n')}`
+    );
   }
-  writeEvidence(options, 'oidc', authorizations);
+  writeEvidence(options, 'oidc', report.authorized, []);
   console.log(
-    `npm authorization: OIDC trusted publishing verified for ${authorizations.map((entry) => `${entry.name}@${entry.version}`).join(', ')}`
+    `npm authorization: OIDC trusted publishing verified for ${report.authorized.map((entry) => `${entry.name}@${entry.version}`).join(', ')}`
   );
 }
 

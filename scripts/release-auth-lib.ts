@@ -17,6 +17,17 @@ export interface OidcAuthorization {
   expires: string;
 }
 
+export interface OidcDenial {
+  name: string;
+  version: string;
+  error: string;
+}
+
+export interface OidcAuthorizationReport {
+  authorized: OidcAuthorization[];
+  denied: OidcDenial[];
+}
+
 type Fetcher = typeof fetch;
 
 function asRecord(value: unknown, description: string): Record<string, unknown> {
@@ -138,4 +149,24 @@ export async function authorizeNpmPackage(
     version: candidate.version,
     expires: requiredString(document, 'expires', 'npm OIDC exchange response'),
   };
+}
+
+export async function authorizeNpmPackages(
+  candidates: readonly ReleaseCandidate[],
+  oidcToken: string,
+  fetcher: Fetcher = fetch
+): Promise<OidcAuthorizationReport> {
+  const report: OidcAuthorizationReport = { authorized: [], denied: [] };
+  for (const candidate of candidates) {
+    try {
+      report.authorized.push(await authorizeNpmPackage(candidate, oidcToken, fetcher));
+    } catch (error) {
+      report.denied.push({
+        name: candidate.name,
+        version: candidate.version,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+  return report;
 }

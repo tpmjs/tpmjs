@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   authorizeNpmPackage,
+  authorizeNpmPackages,
   githubOidcUrl,
   npmOidcExchangeUrl,
   releaseCandidates,
@@ -108,4 +109,27 @@ test('reports package identity and HTTP status when npm rejects trust', async ()
     ),
     /@tpmjs\/tools-vercel@0\.3\.0.*HTTP 401.*trusted publisher not configured/
   );
+});
+
+test('checks every publish candidate and reports all denied trust grants', async () => {
+  const attempted: string[] = [];
+  const fetcher: typeof fetch = async (input) => {
+    const packageName = decodeURIComponent(String(input).split('/').at(-1) ?? '');
+    attempted.push(packageName);
+    return Response.json({ message: 'trusted publisher not configured' }, { status: 404 });
+  };
+  const report = await authorizeNpmPackages(
+    [
+      { name: '@tpmjs/tools-unsandbox', version: '0.1.5', state: 'publish' },
+      { name: '@tpmjs/tools-vercel', version: '0.3.0', state: 'publish' },
+    ],
+    'github-identity',
+    fetcher
+  );
+
+  assert.deepEqual(attempted, ['@tpmjs/tools-unsandbox', '@tpmjs/tools-vercel']);
+  assert.deepEqual(report.authorized, []);
+  assert.equal(report.denied.length, 2);
+  assert.match(report.denied[0].error, /@tpmjs\/tools-unsandbox@0\.1\.5.*HTTP 404/);
+  assert.match(report.denied[1].error, /@tpmjs\/tools-vercel@0\.3\.0.*HTTP 404/);
 });
