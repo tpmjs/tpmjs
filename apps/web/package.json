@@ -2,6 +2,7 @@
   "name": "@tpmjs/web",
   "version": "0.0.0",
   "private": true,
+  "description": "TPMJS web app (tpmjs.com) — the registry UI plus the hosted REST API, MCP server, and documentation site.",
   "scripts": {
     "postinstall": "prisma generate --schema=../../packages/db/prisma/schema.prisma",
     "dev": "next dev",

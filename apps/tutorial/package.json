@@ -2,6 +2,7 @@
   "name": "@tpmjs/tutorial",
   "version": "0.0.0",
   "private": true,
+  "description": "TPMJS interactive tutorial site — learn to build and use agent tools step by step.",
   "scripts": {
     "dev": "next dev --port 3001",
     "build": "next build",
