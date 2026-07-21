@@ -191,7 +191,7 @@ export const ExecutorTypeSchema = z.enum(['default', 'custom_url']);
 export type ExecutorType = z.infer<typeof ExecutorTypeSchema>;
 
 /**
- * Default executor config (uses TPMJS Railway executor)
+ * Default executor config (uses the TPMJS-managed executor)
  */
 export const DefaultExecutorConfigSchema = z.object({
   type: z.literal('default'),
