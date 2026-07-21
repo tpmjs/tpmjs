@@ -79,6 +79,7 @@ jobs:
       - name: Test
         run: |
           pnpm release:audit:test
+          pnpm release:auth:test
           pnpm verify:vercel-api:test
           pnpm test
 
