@@ -126,6 +126,47 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   return createGitHubIssue(issue, action === 'regression', githubToken);
 }
 
+/**
+ * Look for an already-open `auto-fix` issue with the same title, so we don't
+ * file a duplicate. Sentry can deliver two webhooks for one error (an `issue`
+ * subscription event AND an `event_alert`), which otherwise creates two
+ * identical GitHub issues seconds apart. Uses the list API (immediately
+ * consistent, unlike search) and fails open — if the lookup fails we still
+ * create the issue rather than silently drop a production error.
+ */
+async function findOpenAutoFixIssue(
+  ghTitle: string,
+  githubToken: string
+): Promise<{ number: number; html_url: string } | null> {
+  try {
+    const resp = await fetch(
+      'https://api.github.com/repos/tpmjs/tpmjs/issues?state=open&labels=auto-fix&per_page=100',
+      {
+        headers: {
+          Authorization: `token ${githubToken}`,
+          Accept: 'application/vnd.github.v3+json',
+        },
+      }
+    );
+    if (!resp.ok) {
+      return null;
+    }
+    const items = (await resp.json()) as Array<{
+      number: number;
+      title: string;
+      html_url: string;
+      pull_request?: unknown;
+    }>;
+    if (!Array.isArray(items)) {
+      return null;
+    }
+    const match = items.find((it) => it && !it.pull_request && it.title === ghTitle);
+    return match ? { number: match.number, html_url: match.html_url } : null;
+  } catch {
+    return null;
+  }
+}
+
 async function createGitHubIssue(
   issue: Record<string, unknown>,
   isRegression: boolean,
@@ -139,6 +180,19 @@ async function createGitHubIssue(
   const platform = (issue.platform as string) || '';
   const count = (issue.count as number) || 1;
   const runtime = (issue.runtime as string) || '';
+
+  // Idempotency: skip if we already have an open auto-fix issue for this error.
+  const ghTitle = `[Sentry] ${title}`;
+  const existing = await findOpenAutoFixIssue(ghTitle, githubToken);
+  if (existing) {
+    console.log(`[Sentry Webhook] Duplicate of #${existing.number} — skipping (${ghTitle})`);
+    return NextResponse.json({
+      ok: true,
+      deduped: true,
+      issue: existing.number,
+      url: existing.html_url,
+    });
+  }
 
   const ghBody = [
     `## ${isRegression ? 'Regression' : 'Production Error'} (Auto-reported by Sentry)`,

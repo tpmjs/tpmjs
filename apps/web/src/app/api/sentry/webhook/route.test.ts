@@ -31,7 +31,23 @@ function issueHeaders(body: unknown, resource = 'issue'): Record<string, string>
   };
 }
 
+const GH_ISSUES_URL = 'https://api.github.com/repos/tpmjs/tpmjs/issues';
 const MOCK_GH_ISSUE_RESPONSE = { number: 42, html_url: 'https://github.com/tpmjs/tpmjs/issues/42' };
+
+function urlOf(input: unknown): string {
+  return typeof input === 'string' ? input : (input as Request).url;
+}
+function methodOf(init: { method?: string } | undefined): string {
+  return (init?.method || 'GET').toUpperCase();
+}
+// Is this fetch call the GitHub issue-creation POST (vs. the dedup list GET)?
+function isCreateCall([input, init]: [unknown, { method?: string } | undefined]): boolean {
+  return urlOf(input) === GH_ISSUES_URL && methodOf(init) === 'POST';
+}
+// Is this fetch call the dedup lookup (GET .../issues?...)?
+function isDedupCall([input, init]: [unknown, { method?: string } | undefined]): boolean {
+  return urlOf(input).startsWith(`${GH_ISSUES_URL}?`) && methodOf(init) === 'GET';
+}
 
 // ---------------------------------------------------------------------------
 // Setup / Teardown
@@ -49,14 +65,26 @@ beforeEach(() => {
   fetchSpy = vi.fn();
   vi.stubGlobal('fetch', fetchSpy);
 
-  // Default: GitHub issue creation succeeds
-  fetchSpy.mockResolvedValue(new Response(JSON.stringify(MOCK_GH_ISSUE_RESPONSE), { status: 201 }));
+  // Default: dedup lookup finds no existing issue (empty list); creation succeeds.
+  fetchSpy.mockImplementation(async (input: unknown, init?: { method?: string }) => {
+    if (isDedupCall([input, init])) {
+      return new Response('[]', { status: 200 });
+    }
+    return new Response(JSON.stringify(MOCK_GH_ISSUE_RESPONSE), { status: 201 });
+  });
 });
 
 afterEach(() => {
   process.env = savedEnv;
   vi.restoreAllMocks();
 });
+
+function createCall() {
+  const call = fetchSpy.mock.calls.find((c) =>
+    isCreateCall(c as [unknown, { method?: string } | undefined])
+  );
+  return call as [string, { method: string; body: string }] | undefined;
+}
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -157,9 +185,9 @@ describe('POST /api/sentry/webhook', () => {
     const res = await POST(makeRequest(body, issueHeaders(body)));
     expect(res.status).toBe(200);
 
-    const [url, opts] = fetchSpy.mock.calls[0]!;
-    expect(url).toBe('https://api.github.com/repos/tpmjs/tpmjs/issues');
-    const ghBody = JSON.parse(opts.body);
+    const call = createCall();
+    expect(call).toBeDefined();
+    const ghBody = JSON.parse(call![1].body);
     expect(ghBody.title).toBe('[Sentry] ReferenceError: foo is not defined');
     expect(ghBody.labels).toEqual(['auto-fix', 'production-error']);
     expect(ghBody.body).toContain('src/utils/foo.ts');
@@ -184,7 +212,7 @@ describe('POST /api/sentry/webhook', () => {
     const res = await POST(makeRequest(body, issueHeaders(body)));
     expect(res.status).toBe(200);
 
-    const ghBody = JSON.parse(fetchSpy.mock.calls[0]![1].body);
+    const ghBody = JSON.parse(createCall()![1].body);
     expect(ghBody.labels).toEqual(['auto-fix', 'production-error', 'regression']);
     expect(ghBody.body).toContain('Regression');
     expect(ghBody.body).toContain('previously resolved');
@@ -228,7 +256,7 @@ describe('POST /api/sentry/webhook', () => {
     const res = await POST(makeRequest(body, issueHeaders(body, 'event_alert')));
     expect(res.status).toBe(200);
 
-    const ghBody = JSON.parse(fetchSpy.mock.calls[0]![1].body);
+    const ghBody = JSON.parse(createCall()![1].body);
     expect(ghBody.title).toBe('[Sentry] Alert: high error rate');
     expect(ghBody.labels).toEqual(['auto-fix', 'production-error']);
     expect(ghBody.body).toContain('fatal');
@@ -245,10 +273,15 @@ describe('POST /api/sentry/webhook', () => {
       count: 99,
     };
 
-    // First fetch: Sentry API enrichment. Second fetch: GitHub issue creation.
-    fetchSpy
-      .mockResolvedValueOnce(new Response(JSON.stringify(enrichedIssue), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(MOCK_GH_ISSUE_RESPONSE), { status: 201 }));
+    fetchSpy.mockImplementation(async (input: unknown, init?: { method?: string }) => {
+      if (urlOf(input) === 'https://sentry.io/api/0/issues/123/') {
+        return new Response(JSON.stringify(enrichedIssue), { status: 200 });
+      }
+      if (isDedupCall([input, init])) {
+        return new Response('[]', { status: 200 });
+      }
+      return new Response(JSON.stringify(MOCK_GH_ISSUE_RESPONSE), { status: 201 });
+    });
 
     const body = {
       action: 'triggered',
@@ -264,12 +297,15 @@ describe('POST /api/sentry/webhook', () => {
     const res = await POST(makeRequest(body, issueHeaders(body, 'event_alert')));
     expect(res.status).toBe(200);
 
-    // Verify Sentry API was called
-    expect(fetchSpy.mock.calls[0]![0]).toBe('https://sentry.io/api/0/issues/123/');
-    expect(fetchSpy.mock.calls[0]![1].headers.Authorization).toBe(`Bearer ${MOCK_SENTRY_TOKEN}`);
+    // Verify Sentry API enrichment was called with the auth token
+    const enrichCall = fetchSpy.mock.calls.find(
+      (c) => urlOf(c[0]) === 'https://sentry.io/api/0/issues/123/'
+    );
+    expect(enrichCall).toBeDefined();
+    expect(enrichCall![1].headers.Authorization).toBe(`Bearer ${MOCK_SENTRY_TOKEN}`);
 
     // Verify GitHub issue uses enriched data
-    const ghBody = JSON.parse(fetchSpy.mock.calls[1]![1].body);
+    const ghBody = JSON.parse(createCall()![1].body);
     expect(ghBody.title).toBe('[Sentry] Enriched title from API');
     expect(ghBody.body).toContain('src/enriched.ts');
     expect(ghBody.body).toContain('99');
@@ -289,9 +325,15 @@ describe('POST /api/sentry/webhook', () => {
       ],
     };
 
-    fetchSpy
-      .mockResolvedValueOnce(new Response(JSON.stringify(enrichedIssue), { status: 200 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify(MOCK_GH_ISSUE_RESPONSE), { status: 201 }));
+    fetchSpy.mockImplementation(async (input: unknown, init?: { method?: string }) => {
+      if (urlOf(input) === 'https://sentry.io/api/0/issues/rt/') {
+        return new Response(JSON.stringify(enrichedIssue), { status: 200 });
+      }
+      if (isDedupCall([input, init])) {
+        return new Response('[]', { status: 200 });
+      }
+      return new Response(JSON.stringify(MOCK_GH_ISSUE_RESPONSE), { status: 201 });
+    });
 
     const body = {
       action: 'triggered',
@@ -307,7 +349,7 @@ describe('POST /api/sentry/webhook', () => {
     const res = await POST(makeRequest(body, issueHeaders(body, 'event_alert')));
     expect(res.status).toBe(200);
 
-    const ghBody = JSON.parse(fetchSpy.mock.calls[1]![1].body);
+    const ghBody = JSON.parse(createCall()![1].body);
     expect(ghBody.body).toContain('**Runtime:** browser');
   });
 
@@ -331,7 +373,7 @@ describe('POST /api/sentry/webhook', () => {
     const res = await POST(makeRequest(body, issueHeaders(body)));
     expect(res.status).toBe(200);
 
-    const ghBody = JSON.parse(fetchSpy.mock.calls[0]![1].body);
+    const ghBody = JSON.parse(createCall()![1].body);
     expect(ghBody.body).toContain('**Runtime:** browser');
   });
 
@@ -354,7 +396,7 @@ describe('POST /api/sentry/webhook', () => {
     const res = await POST(makeRequest(body, issueHeaders(body)));
     expect(res.status).toBe(200);
 
-    const ghBody = JSON.parse(fetchSpy.mock.calls[0]![1].body);
+    const ghBody = JSON.parse(createCall()![1].body);
     expect(ghBody.body).not.toContain('**Runtime:**');
   });
 
@@ -380,9 +422,14 @@ describe('POST /api/sentry/webhook', () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  // 14. GitHub API failure → 500
+  // 14. GitHub create API failure → 500 (dedup lookup succeeds/empty, create fails)
   it('returns 500 when GitHub API fails', async () => {
-    fetchSpy.mockResolvedValueOnce(new Response('Not Found', { status: 404 }));
+    fetchSpy.mockImplementation(async (input: unknown, init?: { method?: string }) => {
+      if (isDedupCall([input, init])) {
+        return new Response('[]', { status: 200 });
+      }
+      return new Response('Not Found', { status: 404 });
+    });
     const body = {
       action: 'created',
       data: {
@@ -401,5 +448,63 @@ describe('POST /api/sentry/webhook', () => {
       expect.stringContaining('GitHub issue creation failed'),
       expect.any(String)
     );
+  });
+
+  // 15. Dedup: an open auto-fix issue with the same title → skip creation
+  it('skips creating a duplicate when an open auto-fix issue already exists', async () => {
+    fetchSpy.mockImplementation(async (input: unknown, init?: { method?: string }) => {
+      if (isDedupCall([input, init])) {
+        return new Response(
+          JSON.stringify([
+            {
+              number: 113,
+              title: '[Sentry] PrismaClientInitializationError',
+              html_url: 'https://github.com/tpmjs/tpmjs/issues/113',
+            },
+          ]),
+          { status: 200 }
+        );
+      }
+      return new Response(JSON.stringify(MOCK_GH_ISSUE_RESPONSE), { status: 201 });
+    });
+
+    const body = {
+      action: 'created',
+      data: {
+        issue: {
+          title: 'PrismaClientInitializationError',
+          culprit: 'src/[username]/page.tsx',
+          level: 'error',
+        },
+      },
+    };
+    const res = await POST(makeRequest(body, issueHeaders(body)));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.deduped).toBe(true);
+    expect(json.issue).toBe(113);
+    // No creation POST should have been made
+    expect(createCall()).toBeUndefined();
+  });
+
+  // 16. Dedup lookup fails → fail open and still create (never drop a prod error)
+  it('still creates the issue when the dedup lookup fails (fail-open)', async () => {
+    fetchSpy.mockImplementation(async (input: unknown, init?: { method?: string }) => {
+      if (isDedupCall([input, init])) {
+        return new Response('rate limited', { status: 403 });
+      }
+      return new Response(JSON.stringify(MOCK_GH_ISSUE_RESPONSE), { status: 201 });
+    });
+
+    const body = {
+      action: 'created',
+      data: { issue: { title: 'Transient lookup failure', culprit: 'src/x.ts', level: 'error' } },
+    };
+    const res = await POST(makeRequest(body, issueHeaders(body)));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.issue).toBe(42);
+    expect(json.deduped).toBeUndefined();
+    expect(createCall()).toBeDefined();
   });
 });
