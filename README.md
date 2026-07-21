@@ -201,9 +201,15 @@ pnpm changeset:publish    # Publish to npm
 git push --follow-tags
 ```
 
+## Examples
+
+See [`examples/`](./examples) for one small, runnable example per surface — the same real registry tool served through **CLI · REST · SDK · MCP · Skill**.
+
 ## Community
 
+- [Examples](./examples) — one runnable example per surface
 - [GitHub Issues](https://github.com/tpmjs/tpmjs/issues) — Bug reports and feature requests
+- [Discord](https://discord.gg/KuJRBCn89c) — Chat and get help
 - [tpmjs.com](https://tpmjs.com) — Browse the registry
 
 ## License
