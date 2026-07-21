@@ -102,11 +102,6 @@ export interface AccordionContentProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Accordion ref type
- */
-export type AccordionRef = HTMLDivElement;
-
-/**
  * Internal accordion context
  */
 export interface AccordionContextValue {

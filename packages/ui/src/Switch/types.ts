@@ -60,8 +60,3 @@ export interface SwitchProps
    */
   value?: string;
 }
-
-/**
- * Switch ref type
- */
-export type SwitchRef = HTMLButtonElement;

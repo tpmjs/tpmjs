@@ -22,8 +22,3 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
    */
   fullWidth?: boolean;
 }
-
-/**
- * Input ref type
- */
-export type InputRef = HTMLInputElement;

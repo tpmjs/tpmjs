@@ -6,7 +6,7 @@
  */
 
 import type { Collection, Tool } from '@prisma/client';
-import { generateText, streamText } from 'ai';
+import { generateText } from 'ai';
 import { textModel } from './provider';
 import type { SimilarQuestion } from './skills-embedding';
 
@@ -138,26 +138,6 @@ export async function generateSkillResponse(
     answer: text,
     tokensUsed: usage?.totalTokens ?? 0,
   };
-}
-
-/**
- * Generate a skill response with streaming
- * Returns a ReadableStream for SSE
- */
-export async function generateSkillResponseStream(
-  params: GenerateResponseParams
-): Promise<ReadableStream> {
-  const systemPrompt = buildSystemPrompt(params);
-  const userPrompt = buildUserPrompt(params);
-
-  const result = streamText({
-    model: textModel(),
-    system: systemPrompt,
-    prompt: userPrompt,
-    temperature: TEMPERATURE,
-  });
-
-  return result.textStream as unknown as ReadableStream;
 }
 
 /**

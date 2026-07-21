@@ -49,8 +49,3 @@ export interface InstallSnippetProps extends HTMLAttributes<HTMLDivElement> {
    */
   variant?: 'default' | 'minimal' | 'dark';
 }
-
-/**
- * InstallSnippet ref type
- */
-export type InstallSnippetRef = HTMLDivElement;

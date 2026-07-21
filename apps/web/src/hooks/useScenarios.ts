@@ -68,19 +68,3 @@ export function useScenarios(params: UseScenariosParams = {}) {
     };
   });
 }
-
-/**
- * Fetch featured scenarios for homepage
- */
-export function useFeaturedScenarios(limit = 6) {
-  return useSWR<PublicScenario[]>(`/api/scenarios/featured?limit=${limit}`, async (url: string) => {
-    const res = await fetch(url);
-    const json = await res.json();
-
-    if (!json.success) {
-      throw new Error(json.error?.message || 'Failed to fetch featured scenarios');
-    }
-
-    return json.data;
-  });
-}

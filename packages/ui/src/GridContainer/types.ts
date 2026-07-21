@@ -34,8 +34,3 @@ export interface GridContainerProps extends HTMLAttributes<HTMLDivElement> {
    */
   justify?: 'start' | 'center' | 'end' | 'between' | 'around' | 'evenly';
 }
-
-/**
- * GridContainer ref type
- */
-export type GridContainerRef = HTMLDivElement;

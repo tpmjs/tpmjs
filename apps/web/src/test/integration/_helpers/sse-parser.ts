@@ -11,48 +11,6 @@ export interface SSEEvent {
 }
 
 /**
- * Parse SSE response text into array of events
- */
-export function parseSSEResponse(text: string): SSEEvent[] {
-  const events: SSEEvent[] = [];
-  const lines = text.split('\n');
-
-  let currentEvent = '';
-  let currentData = '';
-  let currentId: string | undefined;
-
-  for (const line of lines) {
-    if (line.startsWith('event: ')) {
-      currentEvent = line.slice(7);
-    } else if (line.startsWith('data: ')) {
-      currentData = line.slice(6);
-      if (currentEvent && currentData) {
-        try {
-          events.push({
-            event: currentEvent,
-            data: JSON.parse(currentData),
-            id: currentId,
-          });
-        } catch {
-          events.push({
-            event: currentEvent,
-            data: currentData,
-            id: currentId,
-          });
-        }
-        currentEvent = '';
-        currentData = '';
-        currentId = undefined;
-      }
-    } else if (line.startsWith('id: ')) {
-      currentId = line.slice(4);
-    }
-  }
-
-  return events;
-}
-
-/**
  * Collect SSE events from a streaming response
  */
 export async function collectSSEEvents(
@@ -158,22 +116,4 @@ export function extractTextFromChunks(events: SSEEvent[]): string {
       return data.text || '';
     })
     .join('');
-}
-
-/**
- * Wait for a specific event type in the stream
- */
-export async function waitForEvent(
-  response: Response,
-  eventType: string,
-  timeout = 30000
-): Promise<SSEEvent> {
-  const events = await collectSSEEvents(response, { timeout });
-  const event = findSSEEvent(events, eventType);
-
-  if (!event) {
-    throw new Error(`Event '${eventType}' not found in SSE stream`);
-  }
-
-  return event;
 }

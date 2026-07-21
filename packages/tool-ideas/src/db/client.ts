@@ -32,17 +32,6 @@ export function getDatabase(dbPath = './data/tool-ideas.db') {
 }
 
 /**
- * Close the database connection
- */
-export function closeDatabase() {
-  if (sqlite) {
-    sqlite.close();
-    sqlite = null;
-    db = null;
-  }
-}
-
-/**
  * Initialize database tables
  */
 function initializeTables(sqlite: Database.Database) {
@@ -187,6 +176,4 @@ function initializeTables(sqlite: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_errors_skeleton ON processing_errors(skeleton_id);
   `);
 }
-
-export type Database = ReturnType<typeof getDatabase>;
 export { schema };

@@ -51,8 +51,3 @@ export interface TabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onChang
    */
   variant?: 'default' | 'blueprint';
 }
-
-/**
- * Tabs ref type
- */
-export type TabsRef = HTMLDivElement;

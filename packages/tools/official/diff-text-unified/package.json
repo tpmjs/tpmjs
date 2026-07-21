@@ -27,7 +27,6 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/diff": "^8.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },

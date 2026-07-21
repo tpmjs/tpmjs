@@ -1,58 +1,42 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
+  "exclude": ["duplicates"],
+  "ignoreExportsUsedInFile": true,
+  "ignoreFiles": [
+    ".claude/**",
+    "docs/PLANNER_TYPE_DEFINITIONS.ts",
+    "packages/tools/official/*/block.ts",
+    "packages/tools/official/*/index.ts"
+  ],
   "workspaces": {
     ".": {
-      "entry": ["turbo.json"],
-      "project": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
-      "ignore": [
-        "**/*.test.ts",
-        "**/*.test.tsx",
-        "**/*.spec.ts",
-        "**/*.spec.tsx",
-        "**/dist/**",
-        "**/.next/**",
-        "**/node_modules/**",
-        "**/.turbo/**",
-        "**/storybook-static/**"
-      ]
-    },
-    "apps/*": {
       "entry": [
-        "app/**/*.ts",
-        "app/**/*.tsx",
-        "pages/**/*.ts",
-        "pages/**/*.tsx",
-        "src/**/*.ts",
-        "src/**/*.tsx",
-        "sentry.*.config.ts"
+        "examples/**/*.{ts,tsx,js,mjs,cjs}",
+        "manual-tools.ts",
+        "reset.d.ts",
+        "scripts/**/*.{ts,tsx,js,mjs,cjs}",
+        "sync-*.ts",
+        "templates/**/*.{ts,tsx,js,mjs,cjs}",
+        "vitest.coverage.config.ts"
       ],
-      "project": ["**/*.ts", "**/*.tsx"]
+      "ignoreDependencies": ["@vitest/coverage-v8"]
     },
-    "packages/*": {
-      "entry": ["src/**/*.ts", "src/**/*.tsx", "index.ts", "index.tsx"],
-      "project": ["**/*.ts", "**/*.tsx"]
+    "apps/railway-executor": {
+      "entry": ["server.ts"]
+    },
+    "examples/sdk": {},
+    "packages/db": {
+      "entry": ["*.{js,mjs,cjs}", "prisma/*.ts", "scripts/**/*.ts"]
+    },
+    "packages/config/tsconfig": {
+      "ignoreUnresolved": ["next"]
+    },
+    "packages/video": {
+      "entry": ["remotion.config.ts", "src/index.ts"]
+    },
+    "services/sandbox-executor": {},
+    "templates/vercel-executor": {
+      "ignoreBinaries": ["next"]
     }
-  },
-  "ignore": [
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
-    "**/vitest.config.ts",
-    "**/tsup.config.ts",
-    "**/tailwind.config.ts",
-    "reset.d.ts"
-  ],
-  "ignoreDependencies": [
-    "@changesets/cli",
-    "lefthook",
-    "turbo",
-    "typescript",
-    "@biomejs/biome",
-    "@total-typescript/ts-reset",
-    "type-coverage",
-    "knip",
-    "dependency-cruiser"
-  ],
-  "ignoreExportsUsedInFile": true
+  }
 }

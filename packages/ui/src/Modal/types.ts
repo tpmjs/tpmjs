@@ -79,8 +79,3 @@ export interface ModalBodyProps extends HTMLAttributes<HTMLDivElement> {
 export interface ModalFooterProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
-
-/**
- * Modal ref type
- */
-export type ModalRef = HTMLDivElement;

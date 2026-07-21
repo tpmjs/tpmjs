@@ -48,8 +48,6 @@ export interface ApiErrorResponse {
   meta: ApiMeta;
 }
 
-export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
-
 /**
  * Common error codes for API responses
  */
@@ -175,24 +173,6 @@ export function apiValidationError(
 
 export function apiConflict(message: string, requestId?: string): NextResponse<ApiErrorResponse> {
   return apiError(ErrorCodes.CONFLICT, message, { status: 409, requestId });
-}
-
-export function apiRateLimited(
-  retryAfterSeconds: number,
-  requestId?: string
-): NextResponse<ApiErrorResponse> {
-  return apiError(
-    ErrorCodes.RATE_LIMITED,
-    `Rate limit exceeded. Retry after ${retryAfterSeconds} seconds.`,
-    {
-      status: 429,
-      requestId,
-      details: { retryAfter: retryAfterSeconds },
-      headers: {
-        'Retry-After': retryAfterSeconds.toString(),
-      },
-    }
-  );
 }
 
 export function apiInternalError(

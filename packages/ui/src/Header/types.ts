@@ -26,8 +26,3 @@ export interface HeaderProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> 
    */
   sticky?: boolean;
 }
-
-/**
- * Header ref type
- */
-export type HeaderRef = HTMLElement;

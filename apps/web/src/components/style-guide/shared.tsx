@@ -217,25 +217,3 @@ export function TokenRow({
     </div>
   );
 }
-
-/**
- * Navigation item for table of contents
- */
-export function NavItem({
-  href,
-  children,
-  indent = false,
-}: {
-  href: string;
-  children: React.ReactNode;
-  indent?: boolean;
-}): React.ReactElement {
-  return (
-    <a
-      href={href}
-      className={`block font-mono text-sm text-foreground-secondary hover:text-accent transition-colors ${indent ? 'pl-4' : ''}`}
-    >
-      {children}
-    </a>
-  );
-}

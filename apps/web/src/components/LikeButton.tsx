@@ -97,20 +97,3 @@ export function LikeButton({
     </div>
   );
 }
-
-/**
- * Display-only like count (no interaction)
- */
-interface LikeCountProps {
-  count: number;
-  className?: string;
-}
-
-export function LikeCount({ count, className }: LikeCountProps): React.ReactElement {
-  return (
-    <span className={`inline-flex items-center gap-1 text-foreground-secondary ${className || ''}`}>
-      <Icon icon="heart" size="xs" />
-      <span className="text-sm">{count}</span>
-    </span>
-  );
-}

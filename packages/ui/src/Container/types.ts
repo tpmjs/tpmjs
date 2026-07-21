@@ -16,8 +16,3 @@ export interface ContainerProps extends HTMLAttributes<HTMLDivElement> {
    */
   padding?: 'none' | 'sm' | 'md' | 'lg';
 }
-
-/**
- * Container ref type
- */
-export type ContainerRef = HTMLDivElement;

@@ -19,7 +19,6 @@ export interface TpmCredentials {
 
 const CONFIG_DIR = path.join(os.homedir(), '.tpmjs');
 const CREDENTIALS_FILE = path.join(CONFIG_DIR, 'credentials.json');
-const HISTORY_DIR = path.join(CONFIG_DIR, 'history');
 
 // Ensure config directory exists
 function ensureConfigDir(): void {
@@ -59,10 +58,6 @@ export function getConfigValue<K extends keyof TpmConfig>(key: K): TpmConfig[K] 
 
 export function setConfigValue<K extends keyof TpmConfig>(key: K, value: TpmConfig[K]): void {
   configStore.set(key, value);
-}
-
-export function resetConfig(): void {
-  configStore.clear();
 }
 
 // Credentials management with secure file permissions
@@ -118,14 +113,6 @@ export function getApiKey(): string | undefined {
 // Get API URL
 export function getApiUrl(): string {
   return process.env.TPMJS_API_URL ?? getConfigValue('apiUrl') ?? 'https://tpmjs.com/api';
-}
-
-// History directory for conversation caching
-export function getHistoryDir(): string {
-  if (!fs.existsSync(HISTORY_DIR)) {
-    fs.mkdirSync(HISTORY_DIR, { recursive: true, mode: 0o700 });
-  }
-  return HISTORY_DIR;
 }
 
 // Config directory path

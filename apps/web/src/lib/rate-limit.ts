@@ -214,31 +214,3 @@ export async function checkRateLimitDistributed(
 
   return checkRateLimitInProcess(request, config);
 }
-
-/**
- * Get current rate limit status for debugging
- */
-export function getRateLimitStatus(
-  request: NextRequest,
-  config: RateLimitConfig = DEFAULT_RATE_LIMIT
-) {
-  const clientId = getClientId(request);
-  const prefix = config.prefix || 'ratelimit';
-  const key = `${prefix}:${clientId}`;
-  const entry = memoryStore.get(key);
-  const now = Date.now();
-  const windowMs = config.windowSeconds * 1000;
-  const cutoff = now - windowMs;
-
-  const recentRequests = entry?.timestamps.filter((ts) => ts > cutoff).length || 0;
-  const remaining = Math.max(0, config.limit - recentRequests);
-
-  return {
-    clientId,
-    limit: config.limit,
-    remaining,
-    used: recentRequests,
-    resetAt: new Date(now + windowMs),
-    isDistributed: false,
-  };
-}

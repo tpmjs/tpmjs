@@ -29,7 +29,6 @@ export {
   ColorCard,
   DoDontCard,
   FieldsetSection,
-  NavItem,
   PrincipleCard,
   SubSection,
   TokenRow,

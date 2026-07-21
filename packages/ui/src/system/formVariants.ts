@@ -46,30 +46,6 @@ export const formControlBase = [
 ].join(' ');
 
 /**
- * Error state classes
- * Applied when a form field has validation errors
- */
-export const formErrorState = ['border-error', 'focus:border-error', 'focus:ring-error/20'].join(
-  ' '
-);
-
-/**
- * Success state classes
- * Applied when a form field has been validated successfully
- */
-export const formSuccessState = [
-  'border-success',
-  'focus:border-success',
-  'focus:ring-success/20',
-].join(' ');
-
-/**
- * Loading state classes
- * Applied when a form field is in loading state
- */
-export const formLoadingState = ['cursor-wait', 'pointer-events-none', 'opacity-70'].join(' ');
-
-/**
  * Helper text base classes
  * For error messages, helper text, and field descriptions
  */

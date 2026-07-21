@@ -60,8 +60,3 @@ export interface SliderProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
    */
   fullWidth?: boolean;
 }
-
-/**
- * Slider ref type
- */
-export type SliderRef = HTMLInputElement;

@@ -34,8 +34,3 @@ export interface CheckboxProps
    */
   labelPosition?: 'left' | 'right';
 }
-
-/**
- * Checkbox ref type
- */
-export type CheckboxRef = HTMLInputElement;

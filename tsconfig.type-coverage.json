@@ -1,0 +1,27 @@
+{
+  "extends": "./packages/config/tsconfig/react-library.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "*.ts",
+    "*.tsx",
+    ".claude/**/*.ts",
+    ".claude/**/*.tsx",
+    "apps/railway-executor/**/*.ts",
+    "apps/railway-executor/**/*.tsx",
+    "docs/**/*.ts",
+    "docs/**/*.tsx",
+    "examples/**/*.ts",
+    "examples/**/*.tsx",
+    "packages/**/*.ts",
+    "packages/**/*.tsx",
+    "packages/**/.storybook/**/*.ts",
+    "packages/**/.storybook/**/*.tsx",
+    "scripts/**/*.ts",
+    "scripts/**/*.tsx",
+    "templates/**/*.ts",
+    "templates/**/*.tsx"
+  ],
+  "exclude": ["node_modules", "dist", ".next", ".turbo", "coverage"]
+}

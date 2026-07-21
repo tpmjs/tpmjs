@@ -68,8 +68,3 @@ export interface StatCardProps extends HTMLAttributes<HTMLDivElement> {
    */
   decimals?: number;
 }
-
-/**
- * StatCard ref type
- */
-export type StatCardRef = HTMLDivElement;

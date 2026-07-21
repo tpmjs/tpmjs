@@ -9,14 +9,9 @@
     "build": "tsc",
     "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo"
   },
-  "dependencies": {
-    "semver": "^7.7.3",
-    "zod": "^4.3.5"
-  },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
     "@types/node": "^25.0.3",
-    "@types/semver": "^7.7.1",
     "typescript": "^5.9.3"
   }
 }

@@ -77,8 +77,3 @@ export interface TooltipProps extends Omit<HTMLAttributes<HTMLDivElement>, 'cont
    */
   onOpenChange?: (open: boolean) => void;
 }
-
-/**
- * Tooltip ref type
- */
-export type TooltipRef = HTMLDivElement;

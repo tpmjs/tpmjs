@@ -34,8 +34,3 @@ export interface SectionProps extends HTMLAttributes<HTMLElement> {
    */
   centered?: boolean;
 }
-
-/**
- * Section ref type
- */
-export type SectionRef = HTMLElement;

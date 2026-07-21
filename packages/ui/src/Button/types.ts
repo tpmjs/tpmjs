@@ -30,8 +30,3 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
    */
   loading?: boolean;
 }
-
-/**
- * Button ref type
- */
-export type ButtonRef = HTMLButtonElement;
