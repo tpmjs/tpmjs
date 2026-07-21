@@ -8,6 +8,7 @@ import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
+import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
 import { useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
@@ -97,6 +98,7 @@ interface ToolDetailClientProps {
 export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.ReactElement {
   const [recheckLoading, setRecheckLoading] = useState(false);
   const [extractSchemaLoading, setExtractSchemaLoading] = useState(false);
+  const [surface, setSurface] = useState<'sdk' | 'mcp' | 'rest' | 'cli' | 'skill'>('sdk');
 
   // Track page view
   useTrackView('tool', tool.id);
@@ -379,59 +381,40 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
             {/* biome-ignore lint/suspicious/noExplicitAny: Prisma Tool type compatibility with component props */}
             <ToolPlayground tool={tool as any} />
 
-            {/* Installation & Usage */}
+            {/* Use this tool — every surface */}
             <Card>
               <CardHeader>
-                <CardTitle>Installation & Usage</CardTitle>
-                <CardDescription>Install this tool and use it with the AI SDK</CardDescription>
+                <CardTitle>Use this tool</CardTitle>
+                <CardDescription>
+                  One tool, every surface — SDK, MCP, REST, CLI, or Skill. Pick the one that fits
+                  where your agent runs.
+                </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-3">
-                    1. Install the package
-                  </h4>
-                  <div className="space-y-2">
+              <CardContent className="space-y-4">
+                <Tabs
+                  tabs={[
+                    { id: 'sdk', label: 'SDK' },
+                    { id: 'mcp', label: 'MCP' },
+                    { id: 'rest', label: 'REST' },
+                    { id: 'cli', label: 'CLI' },
+                    { id: 'skill', label: 'Skill' },
+                  ]}
+                  activeTab={surface}
+                  onTabChange={(id) => setSurface(id as typeof surface)}
+                />
+
+                {surface === 'sdk' && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-foreground-secondary">
+                      Install the package and pass the tool straight to the Vercel AI SDK.
+                    </p>
                     <CodeBlock
                       code={`npm install ${pkg.npmPackageName}`}
                       language="bash"
                       showCopy={true}
                     />
                     <CodeBlock
-                      code={`pnpm add ${pkg.npmPackageName}`}
-                      language="bash"
-                      showCopy={true}
-                    />
-                    <CodeBlock
-                      code={`yarn add ${pkg.npmPackageName}`}
-                      language="bash"
-                      showCopy={true}
-                    />
-                    <CodeBlock
-                      code={`bun add ${pkg.npmPackageName}`}
-                      language="bash"
-                      showCopy={true}
-                    />
-                    <CodeBlock
-                      code={`deno add npm:${pkg.npmPackageName}`}
-                      language="bash"
-                      showCopy={true}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-3">2. Import the tool</h4>
-                  <CodeBlock
-                    code={`import { ${tool.name} } from '${pkg.npmPackageName}';`}
-                    language="typescript"
-                    showCopy={true}
-                  />
-                </div>
-
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground mb-3">3. Use with AI SDK</h4>
-                  <CodeBlock
-                    code={`import { generateText } from 'ai';
+                      code={`import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { ${tool.name} } from '${pkg.npmPackageName}';
 
@@ -439,13 +422,84 @@ const result = await generateText({
   model: openai('gpt-4o'),
   tools: { ${tool.name} },
   prompt: 'Your prompt here...',
-});
+});`}
+                      language="typescript"
+                      showCopy={true}
+                    />
+                    <p className="text-xs text-foreground-tertiary">
+                      Prefer no install? Load it from the registry with <code>@tpmjs/compose</code>:{' '}
+                      <code>{`fromRegistry('${pkg.npmPackageName}::${tool.name}')`}</code>.
+                    </p>
+                  </div>
+                )}
 
-console.log(result.text);`}
-                    language="typescript"
-                    showCopy={true}
-                  />
-                </div>
+                {surface === 'mcp' && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-foreground-secondary">
+                      Add the TPMJS registry as one MCP server; your agent then calls this tool by
+                      id via <code>execute_tool</code>.
+                    </p>
+                    <CodeBlock
+                      code={`claude mcp add tpmjs-registry \\
+  https://tpmjs.com/api/mcp/registry/http -t http`}
+                      language="bash"
+                      showCopy={true}
+                    />
+                    <CodeBlock
+                      code={`{ "toolId": "${pkg.npmPackageName}::${tool.name}", "params": { /* see Parameters */ } }`}
+                      language="json"
+                      showCopy={true}
+                    />
+                  </div>
+                )}
+
+                {surface === 'rest' && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-foreground-secondary">
+                      Call the tool over plain HTTP — no SDK, and no signup for public tools.
+                    </p>
+                    <CodeBlock
+                      code={`curl -s https://tpmjs.com/api/registry/execute \\
+  -H 'content-type: application/json' \\
+  -d '{"toolId":"${pkg.npmPackageName}::${tool.name}","params":{}}'`}
+                      language="bash"
+                      showCopy={true}
+                    />
+                  </div>
+                )}
+
+                {surface === 'cli' && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-foreground-secondary">
+                      Use the <code>tpm</code> command line (from <code>@tpmjs/cli</code>).
+                    </p>
+                    <CodeBlock code={`npm install -g @tpmjs/cli`} language="bash" showCopy={true} />
+                    <CodeBlock
+                      code={`tpm tool info ${pkg.npmPackageName} ${tool.name}
+tpm tool execute ${tool.name} --input '{}'`}
+                      language="bash"
+                      showCopy={true}
+                    />
+                  </div>
+                )}
+
+                {surface === 'skill' && (
+                  <div className="space-y-4">
+                    <p className="text-sm text-foreground-secondary">
+                      Add this tool to a{' '}
+                      <Link href="/collections" className="text-primary hover:underline">
+                        collection
+                      </Link>{' '}
+                      — each collection is served as a live <strong>Skill</strong> endpoint your
+                      agent can query to learn how and when to use its tools, not just call them.
+                    </p>
+                    <CodeBlock
+                      code={`GET https://tpmjs.com/@<user>/collections/<slug>/skills`}
+                      language="bash"
+                      showCopy={true}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
 
