@@ -406,13 +406,26 @@ deploy_web() {
 }
 
 verify_live() {
-  sudo systemctl is-active --quiet "$EXECUTOR_SERVICE"
-  sudo systemctl is-active --quiet "$WEB_SERVICE"
-  [[ "$(image_revision "$EXECUTOR_IMAGE")" == "$COMMIT_SHA" ]]
-  [[ "$(image_revision "$WEB_IMAGE")" == "$COMMIT_SHA" ]]
-  wait_for_executor_health "$EXECUTOR_HEALTH_URL"
-  wait_for_web_health "$WEB_HEALTH_URL"
-  wait_for_web_health "$PUBLIC_WEB_HEALTH_URL"
+  local executor_revision web_revision
+
+  sudo systemctl is-active --quiet "$EXECUTOR_SERVICE" ||
+    fail "$EXECUTOR_SERVICE is not active"
+  sudo systemctl is-active --quiet "$WEB_SERVICE" ||
+    fail "$WEB_SERVICE is not active"
+
+  executor_revision=$(image_revision "$EXECUTOR_IMAGE")
+  web_revision=$(image_revision "$WEB_IMAGE")
+  [[ "$executor_revision" == "$COMMIT_SHA" ]] ||
+    fail "executor image is stamped ${executor_revision:-<missing>}, expected $COMMIT_SHA"
+  [[ "$web_revision" == "$COMMIT_SHA" ]] ||
+    fail "web image is stamped ${web_revision:-<missing>}, expected $COMMIT_SHA"
+
+  wait_for_executor_health "$EXECUTOR_HEALTH_URL" ||
+    fail "executor health did not prove protocol 1.1 at $COMMIT_SHA"
+  wait_for_web_health "$WEB_HEALTH_URL" ||
+    fail "loopback web health did not prove database access at $COMMIT_SHA"
+  wait_for_web_health "$PUBLIC_WEB_HEALTH_URL" ||
+    fail "public web health did not prove database access at $COMMIT_SHA"
   log "executor and web both match $COMMIT_SHA"
 }
 
