@@ -1,298 +1,322 @@
-# Tool Health System
+# Tool health system
 
-This document describes how TPMJS tracks and reports tool health status, including the classification of errors and the architecture that makes this work.
+TPMJS health answers two different questions for every active tool:
 
-## Overview
+1. **Import health:** can the pinned package version be loaded and can the named
+   export be described?
+2. **Execution health:** can that export be invoked through the production Deno
+   executor boundary?
 
-Every tool in the TPMJS registry has two health indicators:
+Each dimension is `UNKNOWN`, `HEALTHY`, or `BROKEN`. `UNKNOWN` is not a softer
+form of `BROKEN`: it means the observation did not establish anything about the
+tool. Transport failures, executor failures, malformed protocol responses, and
+credential-free checks of configuration-dependent factories are all
+indeterminate.
 
-1. **Import Health** - Can the tool be loaded from esm.sh?
-2. **Execution Health** - Does the tool execute successfully?
+The central invariant is:
 
-These are stored in the database as `importHealth` and `executionHealth` with values: `UNKNOWN`, `HEALTHY`, or `BROKEN`.
+> Health decisions use the typed executor protocol. Human-readable error text
+> is retained for operators, but is never parsed, matched, or classified.
 
-## Architecture
+## Current architecture
 
-```
-┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
-│   Playground    │────▶│   Railway Executor   │────▶│  Health API     │
-│   (or any       │     │   (Deno on Railway)  │     │  /api/tools/    │
-│    client)      │     │                      │     │  report-health  │
-└─────────────────┘     └──────────────────────┘     └─────────────────┘
-                               │                            │
-                               │  Reports every             │  Classifies
-                               │  execution result          │  error type
-                               │                            │
-                               ▼                            ▼
-                        Success/Failure           HEALTHY or BROKEN
-                        + error message           + stores in DB
-```
+```text
+package metadata
+    │  sync + Zod validation
+    ▼
+tools.health_check_config
+    │
+    │                         ┌──────────────────────────────┐
+systemd maintenance timer ──▶ │ POST /api/sync/health-check │
+                              └──────────────┬───────────────┘
+                                             │ lease a finite due slice
+                                             ▼
+                              ┌──────────────────────────────┐
+                              │ TPMJS Deno executor          │
+                              │ /load-and-describe           │
+                              │ /execute-tool                │
+                              └──────────────┬───────────────┘
+                                             │ protocol 1.1 typed result
+                                             ▼
+                              ┌──────────────────────────────┐
+                              │ health verdict policy        │
+                              └──────────────┬───────────────┘
+                                             │ one DB transaction
+                                             ▼
+                              current status + audit row
+                              + next due time + lease release
 
-### Key Design Decision: Centralized Reporting at Executor
-
-All tool executions flow through the Railway executor, regardless of which client initiates them (playground, direct API, future CLI, etc.). This makes the executor the **single point of truth** for health reporting.
-
-The executor reports every execution result to the centralized health API, which then determines the appropriate health status.
-
-## Error Classification
-
-Not all errors mean a tool is broken. The health API classifies errors into three categories:
-
-### 1. Environment Configuration Errors → HEALTHY
-
-These errors indicate the tool works correctly but needs API keys or configuration:
-
-```
-Pattern Examples:
-- "EXA_API_KEY is required"
-- "API key not provided"
-- "Missing environment variable"
-- "OPENAI_API_KEY must be set"
-- "Please set your API key"
-```
-
-**Why HEALTHY?** The tool's code is correct. It's validating that required credentials exist, which is proper behavior. The user just needs to configure their environment.
-
-### 2. Input Validation Errors → HEALTHY
-
-These errors indicate the tool is correctly validating input:
-
-```
-Pattern Examples:
-- "URL must have a valid domain"
-- "Invalid URL format"
-- "Expected string, received number"
-- "Value too short"
-- "Validation failed"
+ordinary executor calls ──▶ POST /api/tools/report-health
+                              │ typed observation only
+                              ▼
+                         current execution status
 ```
 
-**Why HEALTHY?** The tool is working as designed. It received invalid input and correctly rejected it. This is good behavior.
+The executor is hosted on the TPMJS box under Podman/systemd. Some paths,
+service names, and environment variables still contain the legacy word
+`railway` for compatibility; they do not describe the deployment platform.
 
-### 3. Infrastructure/Code Errors → BROKEN
+The implementation lives in:
 
-These are real bugs or infrastructure failures:
+- `packages/types/src/executor.ts` — protocol schemas and failure taxonomy.
+- `apps/railway-executor/server.ts` — the production Deno executor.
+- `apps/web/src/lib/health-check/executor-health-verdict.ts` — the only verdict
+  mapping.
+- `apps/web/src/lib/health-check/health-check-service.ts` — import, execution,
+  cleanup, and persistence.
+- `apps/web/src/lib/maintenance/bounded-work.ts` — due times, leases, and work
+  bounds.
+- `apps/web/src/app/api/sync/health-check/route.ts` — scheduled bounded slice.
+- `apps/web/src/app/api/tools/report-health/route.ts` — typed observations from
+  ordinary executions.
 
-```
-Pattern Examples:
-- "Cannot read property 'foo' of undefined"
-- "startTime is not defined"
-- "Network request failed"
-- "Module not found"
-- "TypeError: x is not a function"
-```
+## Executor protocol 1.1
 
-**Why BROKEN?** These indicate actual problems with the tool's code or its dependencies. Users can't fix these - the package author needs to.
+A compliant production executor exposes:
 
-## Implementation Details
+- `GET /health`
+- `POST /load-and-describe`
+- `POST /execute-tool`
 
-### Health Reporting API
+`GET /health` must report `protocolVersion: "1.1"` and an
+`implementationVersion` matching the deployed Git revision. The deployment
+workflow verifies both values before activation.
 
-Location: `apps/web/src/app/api/tools/report-health/route.ts`
+Successful execution has this shape:
 
-```typescript
-// Error classification patterns
-function isEnvironmentConfigError(error: string): boolean {
-  const patterns = [
-    /is required/i,
-    /is not set/i,
-    /missing.*environment/i,
-    /api key.*required/i,
-    /must be set/i,
-    // ... more patterns
-  ];
-  return patterns.some(p => p.test(error));
-}
-
-function isInputValidationError(error: string): boolean {
-  const patterns = [
-    /must have a valid.*domain/i,
-    /invalid.*url/i,
-    /expected.*received/i,
-    /validation.*failed/i,
-    // ... more patterns
-  ];
-  return patterns.some(p => p.test(error));
-}
-
-// Classification logic
-if (success) {
-  healthStatus = 'HEALTHY';
-} else if (error && isNonBreakingError(error)) {
-  healthStatus = 'HEALTHY';  // Config/validation issue
-} else {
-  healthStatus = 'BROKEN';   // Real failure
+```json
+{
+  "success": true,
+  "output": { "text": "hello world" },
+  "executionTimeMs": 42
 }
 ```
 
-### Railway Executor Health Reporting
+Failure is a strict discriminated contract:
 
-Location: `apps/railway-executor/server.ts`
-
-After every tool execution, the executor reports the result:
-
-```typescript
-// On successful execution
-reportToolHealth(packageName, name, true).catch(() => {});
-
-// On failed execution
-reportToolHealth(packageName, name, false, error.message).catch(() => {});
+```json
+{
+  "success": false,
+  "error": "Tool not found",
+  "errorStage": "load",
+  "errorCode": "TOOL_NOT_FOUND",
+  "retryable": false,
+  "executionTimeMs": 0
+}
 ```
 
-The reporting is non-blocking (fire-and-forget) to avoid slowing down tool execution.
+The schemas reject missing stage/code/retry metadata and impossible
+stage/code combinations. `error` is operator-facing prose only.
 
-## Debugging Health Issues
+### Failure stages
 
-### Common Scenarios
+| Stage | Boundary described |
+| --- | --- |
+| `request` | The caller sent an invalid or unauthenticated request. |
+| `load` | The package, export, factory, or schema could not be loaded. |
+| `execute` | A callable tool was invoked and returned or threw an error. |
+| `executor` | The executor itself was unavailable or failed internally. |
 
-#### Scenario 1: Tool shows BROKEN but user says "it works for me"
+### Stable error codes
 
-The tool likely requires an API key that the previous tester didn't have. Check if the error message contains environment-related keywords. If so, the error classification patterns may need updating.
+| Stage | Codes |
+| --- | --- |
+| `request` | `INVALID_REQUEST`, `AUTHENTICATION_REQUIRED` |
+| `load` | `PACKAGE_IMPORT_FAILED`, `TOOL_NOT_FOUND`, `TOOL_CONFIGURATION_REQUIRED`, `INVALID_TOOL`, `SCHEMA_UNAVAILABLE` |
+| `execute` | `TOOL_EXECUTION_FAILED`, `EXECUTION_TIMEOUT` |
+| `executor` | `EXECUTOR_UNAVAILABLE`, `EXECUTOR_INTERNAL_ERROR` |
 
-#### Scenario 2: Tool shows HEALTHY but actually crashes
+Add a new code only when it represents a durable machine-readable distinction,
+then extend the shared Zod schema, executor, verdict policy, and tests together.
+Never add a regex or provider-message lookup table.
 
-The error message might be matching our "safe" patterns incorrectly. Check the actual error in `healthCheckError` field and verify our regex patterns aren't too broad.
+## Verdict policy
 
-#### Scenario 3: Tool shows BROKEN with our executor's error, not the tool's
+The policy is intentionally conservative:
 
-This happened with the `startTime is not defined` bug. Our executor code had a bug that manifested before the tool even ran. Always verify the error originates from the tool's code, not our wrapper.
+| Observation | Verdict | Reason |
+| --- | --- | --- |
+| Import or execution succeeds | `HEALTHY` | The checked boundary was proven. |
+| Deterministic non-retryable `load` failure | `BROKEN` | The pinned package/export cannot satisfy the registry contract. |
+| `TOOL_CONFIGURATION_REQUIRED` | `UNKNOWN` | The credential-free sweep cannot evaluate the configured factory. |
+| Retryable `load` failure | `UNKNOWN` | A transient import dependency must not condemn the tool. |
+| `TOOL_EXECUTION_FAILED` | `HEALTHY` | Invocation proves the package loaded and exposed a callable tool; input, credentials, or a downstream API may have rejected the call. |
+| `EXECUTION_TIMEOUT` | `UNKNOWN` | The timeout does not identify whether the tool or infrastructure was responsible. |
+| Any `request` or `executor` failure | `UNKNOWN` | The observation describes the caller or executor, not the tool. |
+| Transport exception or invalid protocol payload | `UNKNOWN` | No trustworthy tool-level observation exists. |
 
-### Investigating a Specific Tool
+A full check is `BROKEN` if either dimension is definitively broken, `HEALTHY`
+only if both are healthy, and otherwise `UNKNOWN`.
 
-```bash
-# Check current health status (requires API key)
-curl -s 'https://tpmjs.com/api/tools?limit=50' \
-  -H 'Authorization: Bearer tpmjs_sk_your_api_key_here' | \
-  jq '.data[] | select(.package.npmPackageName == "PACKAGE_NAME") | {
-    packageName: .package.npmPackageName,
-    name: .name,
-    importHealth: .importHealth,
-    executionHealth: .executionHealth,
-    healthCheckError: .healthCheckError,
-    lastHealthCheck: .lastHealthCheck
-  }'
+An `UNKNOWN` observation never overwrites a prior definitive tool status. It is
+still written to the full-check audit history so operators can distinguish
+"last known state" from "latest observation."
 
-# Download and inspect the package
-cd /tmp && mkdir debug && cd debug
-npm pack PACKAGE_NAME@VERSION
-tar -xzf *.tgz
-cat package/dist/index.js
-```
+## Author-declared health checks
 
-### Manually Updating Health Status
+Package authors may place a `healthCheck` contract on a tool definition. The
+contract is Zod-validated during sync and validated again when read from the
+database.
 
-For testing or correction (requires API key with appropriate scope):
-
-```bash
-curl -X POST 'https://tpmjs.com/api/tools/report-health' \
-  -H 'Authorization: Bearer tpmjs_sk_your_api_key_here' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "packageName": "@scope/package",
-    "name": "toolName",
-    "success": true
-  }'
-```
-
-## Edge Cases and Lessons Learned
-
-### 1. Executor Bugs Masking Tool Errors
-
-**Problem:** Our executor had variables like `startTime`, `packageName`, and `name` declared inside try blocks but referenced in catch blocks. When errors occurred early (like during JSON parsing), the catch block crashed first, showing errors like "startTime is not defined" or "packageName is not defined" instead of the actual tool error.
-
-**Lesson:** Always ensure executor error handling is bulletproof. Any variable used in a catch block MUST be declared before the try block with sensible defaults:
-
-```typescript
-async function executeTool(req: Request): Promise<Response> {
-  const startTime = Date.now();
-  // Declare with defaults BEFORE try
-  let packageName = 'unknown';
-  let name = 'unknown';
-  try {
-    const body = await req.json();
-    const { packageName: pkg, name: exp, ... } = body;
-    packageName = pkg || 'unknown';
-    name = exp || 'unknown';
-    // ... rest of execution
-  } catch (error) {
-    // Now these are always in scope
-    reportToolHealth(packageName, name, false, error.message);
-    return Response.json({
-      success: false,
-      error: error.message,
-      executionTimeMs: Date.now() - startTime,
-    });
+```json
+{
+  "name": "createThing",
+  "healthCheck": {
+    "testParams": {
+      "name": "tpmjs-health-{{timestamp}}"
+    },
+    "cleanup": [
+      {
+        "tool": "deleteThing",
+        "mapping": {
+          "id": "id"
+        }
+      }
+    ]
   }
 }
 ```
 
-### 2. Factory Functions Without API Keys
+The supported fields are:
 
-**Problem:** Many tools are factory functions like `webSearch({ apiKey })`. When called without the API key, they might:
-- Throw immediately during factory call
-- Return a tool that throws on first execution
-- Return a tool that silently fails
+- `skipExecution`: import and describe the tool without invoking it. This
+  cannot be combined with test parameters or cleanup.
+- `testParams`: known-safe parameters. String values may contain the tiny
+  `{{timestamp}}` template.
+- `cleanup`: at most three ordered, best-effort calls to exports from the same
+  package. A step may contain literal `params` and may map cleanup parameters
+  from dot-separated paths in the checked tool's output.
 
-**Lesson:** The executor tries multiple initialization strategies (no args, env object, config object) to handle various factory patterns.
+Cleanup limits side effects; it does not prove that an execution is safe and it
+does not rewrite the verdict if cleanup fails. `skipExecution` is the only
+declaration that guarantees the scheduled check will not call the tool.
 
-### 3. esm.sh Bundling Issues
+If no explicit `testParams` exist, the checker derives a minimal value for each
+required parameter. JSON Schema defaults and enum members are preferred before
+type-based fallback values.
 
-**Problem:** Some packages work locally but fail when loaded from esm.sh due to:
-- Missing dependencies not properly bundled
-- Node.js-specific APIs not available in Deno
-- Circular dependency issues
+Scheduled checks never send package environment descriptors as credentials.
+The executor receives an empty environment map. A tool that genuinely needs
+configuration should return the typed `TOOL_CONFIGURATION_REQUIRED` boundary
+and remain `UNKNOWN` under the registry sweep.
 
-**Lesson:** Import health and execution health are separate for a reason. A tool can import successfully but fail to execute.
+## Scheduling and concurrency
 
-### 4. Rate Limiting and Transient Failures
+Health maintenance is a bounded queue, not a daily full-registry sweep.
 
-**Problem:** External API rate limits or temporary network issues could mark tools as BROKEN when they're actually fine.
+- `tpmjs-health-maintenance.timer` requests a slice every five minutes with
+  small randomized delay.
+- The production request uses `limit=20`; the route hard-caps any request at
+  100 tools.
+- Due rows are claimed with `FOR UPDATE SKIP LOCKED` and a 20-minute expiring
+  lease, so workers may run concurrently without duplicate ownership.
+- One slice runs batches of five with a brief delay between batches.
+- The audit row, current status, next due time, and lease release commit in one
+  transaction. A worker that lost its lease cannot publish stale state.
 
-**Current State:** We don't distinguish transient failures from permanent ones. Health status reflects the last execution only.
+The next due time is deterministic per tool with stable jitter:
 
-**Future Consideration:** Track failure frequency. A tool that fails once after 100 successes shouldn't be marked BROKEN immediately.
+| Latest full-check verdict | Base interval | Jitter window |
+| --- | ---: | ---: |
+| `HEALTHY` | 7 days | 12 hours |
+| `BROKEN` | 1 day | 6 hours |
+| `UNKNOWN` | 15 minutes | 15 minutes |
 
-## Database Schema
+Worker exceptions release the lease and schedule a retry after roughly 30–45
+minutes. New or materially changed tools are made due immediately by the sync
+lifecycle.
 
-```prisma
-model Tool {
-  id                String    @id @default(cuid())
-  // ... other fields
+## Persistence model
 
-  importHealth      String    @default("UNKNOWN")  // UNKNOWN, HEALTHY, BROKEN
-  executionHealth   String    @default("UNKNOWN")  // UNKNOWN, HEALTHY, BROKEN
-  healthCheckError  String?                        // Last error message if BROKEN
-  lastHealthCheck   DateTime?                      // When health was last updated
-}
+`tools` carries the current operational projection:
+
+- `import_health`
+- `execution_health`
+- `health_check_error`
+- `last_health_check`
+- `health_check_next_at`
+- `health_check_lease_until`
+- `health_check_leased_by`
+- consecutive import-failure visibility fields
+
+`health_checks` is the append-only audit history for full checks. It stores the
+trigger source, both observations, both timings, generated test parameters,
+overall verdict, errors, and timestamp.
+
+The passive `/api/tools/report-health` path validates the same typed failure
+contract and updates the current execution projection. It is intentionally
+non-blocking from the executor's perspective, so failure to report health never
+changes the result of a user's tool call.
+
+## Manual checks
+
+A manual full check is a `POST` to the tool's canonical API path:
+
+```bash
+curl --fail-with-body --request POST \
+  'https://tpmjs.com/api/tools/@tpmjs/tools-normalize-whitespace/normalizeWhitespaceTool'
 ```
 
-## Adding New Error Patterns
+Manual checks have a five-minute per-tool cooldown. The response contains
+separate import, execution, and overall verdicts with timings.
 
-When you encounter a new error type that should be classified as HEALTHY (not BROKEN), add it to the appropriate function in `apps/web/src/app/api/tools/report-health/route.ts`:
+## Production verification
 
-```typescript
-// For environment/config errors
-function isEnvironmentConfigError(error: string): boolean {
-  const envErrorPatterns = [
-    // Add new pattern here
-    /your new pattern/i,
-  ];
-  return envErrorPatterns.some((pattern) => pattern.test(error));
-}
+Verify deployed provenance and both service boundaries without changing state:
 
-// For input validation errors
-function isInputValidationError(error: string): boolean {
-  const validationErrorPatterns = [
-    // Add new pattern here
-    /your new pattern/i,
-  ];
-  return validationErrorPatterns.some((pattern) => pattern.test(error));
-}
+```bash
+scripts/deploy-on-box.sh verify
 ```
 
-## Future Improvements
+Inspect the bounded scheduler:
 
-1. **Confidence Scores** - Track success/failure ratio over time instead of just last result
-2. **Transient Failure Detection** - Distinguish network blips from real bugs
-3. **Automated Retries** - Retry BROKEN tools periodically to detect fixes
-4. **Error Categorization UI** - Admin interface to manually classify new error patterns
-5. **Package Author Notifications** - Alert maintainers when their tools are marked BROKEN
+```bash
+sudo systemctl status tpmjs-health-maintenance.timer
+sudo journalctl -u tpmjs-health-maintenance.service -n 50 --no-pager
+```
+
+Inspect recent full-check evidence:
+
+```sql
+SELECT
+  p.npm_package_name,
+  t.name,
+  h.trigger_source,
+  h.import_status,
+  h.execution_status,
+  h.overall_status,
+  h.import_error,
+  h.execution_error,
+  h.created_at
+FROM health_checks AS h
+JOIN tools AS t ON t.id = h.tool_id
+JOIN packages AS p ON p.id = t.package_id
+ORDER BY h.created_at DESC
+LIMIT 50;
+```
+
+## Debugging rules
+
+When a tool appears broken:
+
+1. Read the latest `health_checks` row and compare it with the current `tools`
+   projection.
+2. Inspect `errorStage`, `errorCode`, and `retryable` at the executor boundary.
+3. Reproduce the pinned package version and named export, not `latest`.
+4. Trigger one manual check after the cooldown.
+5. If the observation is `UNKNOWN`, investigate executor transport, protocol,
+   capacity, or missing author configuration before changing the tool.
+
+Do not:
+
+- classify by exception wording;
+- add error-message regexes or string lists;
+- turn timeouts or malformed executor responses into tool breakage;
+- overwrite a definitive status with infrastructure uncertainty;
+- run an unbounded all-tools sweep;
+- bypass the shared schemas at an executor or persistence boundary;
+- manually edit current health without preserving the reason and evidence.
+
+The correct fix for a new failure mode is a better typed boundary, a better
+author health contract, or a better executor observation—not another prose
+heuristic.
