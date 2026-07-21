@@ -107,7 +107,7 @@ describe('MCP HTTP Endpoint', () => {
       }
     });
 
-    it('should reject without API key', async () => {
+    it('should initialize a public collection without an API key', async () => {
       if (!testCollection) {
         console.log('Skipping: No test collection available');
         return;
@@ -122,8 +122,12 @@ describe('MCP HTTP Endpoint', () => {
         }
       );
 
-      expect(result.ok).toBe(false);
-      expect(result.status).toBe(401);
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        const response = result.data as JsonRpcResponse;
+        expect(response.jsonrpc).toBe('2.0');
+        expect(response.result).toBeDefined();
+      }
     });
   });
 
@@ -149,6 +153,28 @@ describe('MCP HTTP Endpoint', () => {
         expect(result.data.id).toBe(2);
         expect(result.data.result).toBeDefined();
 
+        const listResult = result.data.result as { tools: unknown[] };
+        expect(Array.isArray(listResult.tools)).toBe(true);
+      }
+    });
+
+    it('should expose public collection tools without an API key', async () => {
+      if (!testCollection) {
+        console.log('Skipping: No test collection available');
+        return;
+      }
+
+      const result = await ctx.publicClient.post<JsonRpcResponse>(
+        `/api/mcp/${actualUsername}/${testCollection.slug}/http`,
+        {
+          jsonrpc: '2.0',
+          method: 'tools/list',
+          id: 3,
+        }
+      );
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
         const listResult = result.data.result as { tools: unknown[] };
         expect(Array.isArray(listResult.tools)).toBe(true);
       }

@@ -15,6 +15,7 @@ import {
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
+import { formatLastRefresh } from './refresh-label';
 
 interface CheckStat {
   name: string;
@@ -125,7 +126,9 @@ export default function HealthPage() {
   const [healthData, setHealthData] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  // Keep the server render and the browser's first render identical. Creating
+  // a Date during render produces different text on either side of hydration.
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const fetchHealthData = useCallback(async () => {
     try {
@@ -186,9 +189,7 @@ export default function HealthPage() {
             </div>
             <div className="text-right">
               <p className="text-sm text-foreground-tertiary">Last updated</p>
-              <p className="text-sm text-foreground-secondary">
-                {lastRefresh.toLocaleTimeString()}
-              </p>
+              <p className="text-sm text-foreground-secondary">{formatLastRefresh(lastRefresh)}</p>
             </div>
           </div>
         </div>
