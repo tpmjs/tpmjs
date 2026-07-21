@@ -1,10 +1,59 @@
 /**
- * Railway Dynamic Tool Executor (Deno)
+ * TPMJS Dynamic Tool Executor (Deno)
  * Uses Deno's native HTTP import support
  */
 
 // Import zod-to-json-schema for Zod v3 support
 import { zodToJsonSchema } from 'https://esm.sh/zod-to-json-schema@3.25.0';
+
+type ExecutorErrorStage = 'request' | 'load' | 'execute' | 'executor';
+type ExecutorErrorCode =
+  | 'INVALID_REQUEST'
+  | 'AUTHENTICATION_REQUIRED'
+  | 'PACKAGE_IMPORT_FAILED'
+  | 'TOOL_NOT_FOUND'
+  | 'TOOL_CONFIGURATION_REQUIRED'
+  | 'INVALID_TOOL'
+  | 'SCHEMA_UNAVAILABLE'
+  | 'TOOL_EXECUTION_FAILED'
+  | 'EXECUTOR_UNAVAILABLE'
+  | 'EXECUTION_TIMEOUT'
+  | 'EXECUTOR_INTERNAL_ERROR';
+
+interface ExecutorFailure {
+  error: string;
+  errorStage: ExecutorErrorStage;
+  errorCode: ExecutorErrorCode;
+  retryable: boolean;
+}
+
+// biome-ignore lint/suspicious/noExplicitAny: Third-party module namespace values are runtime-defined.
+type DynamicModule = Record<string, any>;
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+function failureResponse(
+  failure: ExecutorFailure,
+  options: {
+    status?: number;
+    executionTimeMs?: number;
+    extra?: Record<string, unknown>;
+  } = {}
+): Response {
+  return Response.json(
+    {
+      success: false,
+      ...(options.extra || {}),
+      ...failure,
+      ...(options.executionTimeMs === undefined
+        ? {}
+        : { executionTimeMs: options.executionTimeMs }),
+    },
+    { status: options.status ?? 500 }
+  );
+}
 
 // ─── Crash Protection ───────────────────────────────────────────────────────
 // Catch unhandled promise rejections so they don't crash the process
@@ -42,12 +91,11 @@ function checkAuth(req: Request): boolean {
  * transform can't handle — bindings, ssh2, node:sqlite, canvas…), fall back to
  * Deno-native npm: resolution, which handles optional native deps correctly.
  */
-// biome-ignore lint/suspicious/noExplicitAny: Tool modules are dynamic
 async function importToolModule(
   packageName: string,
   version: string,
   importUrl?: string
-): Promise<any> {
+): Promise<DynamicModule> {
   if (importUrl) {
     console.log(`📦 Importing (explicit): ${importUrl}`);
     return await import(importUrl);
@@ -151,8 +199,7 @@ async function reportToolHealth(
   packageName: string,
   name: string,
   success: boolean,
-  error?: string,
-  errorStage?: 'load' | 'execute'
+  failure?: ExecutorFailure
 ): Promise<void> {
   try {
     const response = await fetch(`${TPMJS_API_URL}/api/tools/report-health`, {
@@ -162,8 +209,7 @@ async function reportToolHealth(
         packageName,
         name,
         success,
-        error,
-        errorStage,
+        ...(failure || {}),
       }),
     });
 
@@ -288,15 +334,35 @@ function sanitizeJsonSchema(schema: any): any {
  * Load and describe a tool from esm.sh
  */
 async function loadAndDescribe(req: Request): Promise<Response> {
+  let body: Record<string, unknown>;
   try {
-    const body = await req.json();
+    body = (await req.json()) as Record<string, unknown>;
+  } catch (error) {
+    return failureResponse(
+      {
+        error: `Request body must be valid JSON: ${errorMessage(error)}`,
+        errorStage: 'request',
+        errorCode: 'INVALID_REQUEST',
+        retryable: false,
+      },
+      { status: 400 }
+    );
+  }
+
+  try {
     const { packageName, name, version, importUrl, env } = body;
 
-    if (!packageName || !name || !version) {
-      return Response.json(
+    if (
+      typeof packageName !== 'string' ||
+      typeof name !== 'string' ||
+      typeof version !== 'string'
+    ) {
+      return failureResponse(
         {
-          success: false,
           error: 'Missing required fields: packageName, name, version',
+          errorStage: 'request',
+          errorCode: 'INVALID_REQUEST',
+          retryable: false,
         },
         { status: 400 }
       );
@@ -314,18 +380,23 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       toolModule = cachedEntry.module;
     } else {
       // Dynamic import: esm.sh with npm: fallback (Deno supports both natively)
-      const module = await importToolModule(packageName, version, importUrl);
+      const module = await importToolModule(
+        packageName,
+        version,
+        typeof importUrl === 'string' ? importUrl : undefined
+      );
       let rawExport = module[name];
 
       if (!rawExport) {
         console.error(`❌ Export "${name}" not found. Available:`, Object.keys(module));
-        return Response.json(
+        return failureResponse(
           {
-            success: false,
             error: `Export "${name}" not found in module`,
-            availableExports: Object.keys(module),
+            errorStage: 'load',
+            errorCode: 'TOOL_NOT_FOUND',
+            retryable: false,
           },
-          { status: 404 }
+          { status: 404, extra: { availableExports: Object.keys(module) } }
         );
       }
 
@@ -344,7 +415,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
             rawExport = factoryResult;
           }
         } catch (error) {
-          console.log('  ❌ No-args failed:', error.message);
+          console.log('  ❌ No-args failed:', errorMessage(error));
         }
 
         // Strategy 2: Try calling with env vars as config object
@@ -379,7 +450,7 @@ async function loadAndDescribe(req: Request): Promise<Response> {
                 break;
               }
             } catch (error) {
-              console.log('  ❌ Config', Object.keys(config), 'failed:', error.message);
+              console.log('  ❌ Config', Object.keys(config), 'failed:', errorMessage(error));
             }
           }
         }
@@ -397,20 +468,26 @@ async function loadAndDescribe(req: Request): Promise<Response> {
               }
             }
           } catch (error) {
-            console.log('  ❌ Single-arg failed:', error.message);
+            console.log('  ❌ Single-arg failed:', errorMessage(error));
           }
         }
 
         // If all factory strategies failed, return error
         if (!factoryResult) {
           console.error('❌ Factory function detected but all call strategies failed');
-          return Response.json(
+          return failureResponse(
             {
-              success: false,
               error: `Tool "${name}" is a factory function but couldn't be initialized. Tried: no-args, config object, and single-arg patterns.`,
-              hint: 'This tool may require specific configuration. Check package documentation.',
+              errorStage: 'load',
+              errorCode: 'TOOL_CONFIGURATION_REQUIRED',
+              retryable: false,
             },
-            { status: 400 }
+            {
+              status: 400,
+              extra: {
+                hint: 'This tool may require specific configuration. Check package documentation.',
+              },
+            }
           );
         }
       }
@@ -425,13 +502,14 @@ async function loadAndDescribe(req: Request): Promise<Response> {
           hasInputSchema: !!toolModule.inputSchema,
           keys: Object.keys(toolModule),
         });
-        return Response.json(
+        return failureResponse(
           {
-            success: false,
             error: 'Invalid AI SDK tool structure (missing description or execute)',
-            toolKeys: Object.keys(toolModule),
+            errorStage: 'load',
+            errorCode: 'INVALID_TOOL',
+            retryable: false,
           },
-          { status: 400 }
+          { status: 400, extra: { toolKeys: Object.keys(toolModule) } }
         );
       }
 
@@ -528,18 +606,24 @@ async function loadAndDescribe(req: Request): Promise<Response> {
         hasSchema: !!toolModule.inputSchema?.schema,
         keys: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
       });
-      return Response.json(
+      return failureResponse(
         {
-          success: false,
           error: `Tool "${name}" has no valid inputSchema. Tools must use AI SDK jsonSchema(), Zod v4 (._zod), or Zod v3 (._def) schemas.`,
-          debug: {
-            hasInputSchema: !!toolModule.inputSchema,
-            availableMethods: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
-            hasZodV4: !!toolModule.inputSchema?._zod,
-            hasZodV3Def: !!toolModule.inputSchema?._def,
-          },
+          errorStage: 'load',
+          errorCode: 'SCHEMA_UNAVAILABLE',
+          retryable: false,
         },
-        { status: 400 }
+        {
+          status: 400,
+          extra: {
+            debug: {
+              hasInputSchema: !!toolModule.inputSchema,
+              availableMethods: toolModule.inputSchema ? Object.keys(toolModule.inputSchema) : [],
+              hasZodV4: !!toolModule.inputSchema?._zod,
+              hasZodV3Def: !!toolModule.inputSchema?._def,
+            },
+          },
+        }
       );
     }
 
@@ -563,10 +647,12 @@ async function loadAndDescribe(req: Request): Promise<Response> {
     });
   } catch (error) {
     console.error('❌ Failed to load tool:', error);
-    return Response.json(
+    return failureResponse(
       {
-        success: false,
-        error: error.message,
+        error: errorMessage(error),
+        errorStage: 'load',
+        errorCode: 'PACKAGE_IMPORT_FAILED',
+        retryable: true,
       },
       { status: 500 }
     );
@@ -582,10 +668,23 @@ async function executeTool(req: Request): Promise<Response> {
   let packageName = 'unknown';
   let toolName = 'unknown';
   try {
-    const body = await req.json();
+    let body: Record<string, unknown>;
+    try {
+      body = (await req.json()) as Record<string, unknown>;
+    } catch (error) {
+      return failureResponse(
+        {
+          error: `Request body must be valid JSON: ${errorMessage(error)}`,
+          errorStage: 'request',
+          errorCode: 'INVALID_REQUEST',
+          retryable: false,
+        },
+        { status: 400, executionTimeMs: Date.now() - startTime }
+      );
+    }
     const { packageName: pkg, name, version, importUrl, params, env } = body;
-    packageName = pkg || 'unknown';
-    toolName = name || 'unknown';
+    packageName = typeof pkg === 'string' ? pkg : 'unknown';
+    toolName = typeof name === 'string' ? name : 'unknown';
 
     console.log('📥 Execute request:', {
       packageName,
@@ -595,13 +694,15 @@ async function executeTool(req: Request): Promise<Response> {
       envValues: env || {},
     });
 
-    if (!packageName || !toolName || !version) {
-      return Response.json(
+    if (typeof pkg !== 'string' || typeof name !== 'string' || typeof version !== 'string') {
+      return failureResponse(
         {
-          success: false,
           error: 'Missing required fields: packageName, name, version',
+          errorStage: 'request',
+          errorCode: 'INVALID_REQUEST',
+          retryable: false,
         },
-        { status: 400 }
+        { status: 400, executionTimeMs: Date.now() - startTime }
       );
     }
 
@@ -661,17 +762,22 @@ async function executeTool(req: Request): Promise<Response> {
     }
 
     if (needsImport) {
-      const module = await importToolModule(packageName, version, importUrl);
+      const module = await importToolModule(
+        packageName,
+        version,
+        typeof importUrl === 'string' ? importUrl : undefined
+      );
       let rawExport = module[toolName];
 
       if (!rawExport) {
-        return Response.json(
+        return failureResponse(
           {
-            success: false,
             error: 'Tool not found',
-            executionTimeMs: Date.now() - startTime,
+            errorStage: 'load',
+            errorCode: 'TOOL_NOT_FOUND',
+            retryable: false,
           },
-          { status: 404 }
+          { status: 404, executionTimeMs: Date.now() - startTime }
         );
       }
 
@@ -695,7 +801,7 @@ async function executeTool(req: Request): Promise<Response> {
             rawExport = factoryResult;
           }
         } catch (error) {
-          console.log('  ❌ No-args failed:', error.message);
+          console.log('  ❌ No-args failed:', errorMessage(error));
         }
 
         // Strategy 2: Try calling with env vars as config object
@@ -730,7 +836,7 @@ async function executeTool(req: Request): Promise<Response> {
                 break;
               }
             } catch (error) {
-              console.log('  ❌ Config', Object.keys(config), 'failed:', error.message);
+              console.log('  ❌ Config', Object.keys(config), 'failed:', errorMessage(error));
             }
           }
         }
@@ -748,18 +854,19 @@ async function executeTool(req: Request): Promise<Response> {
               }
             }
           } catch (error) {
-            console.log('  ❌ Single-arg failed:', error.message);
+            console.log('  ❌ Single-arg failed:', errorMessage(error));
           }
         }
 
         if (!factoryResult) {
-          return Response.json(
+          return failureResponse(
             {
-              success: false,
               error: `Tool "${toolName}" is a factory function but couldn't be initialized`,
-              executionTimeMs: Date.now() - startTime,
+              errorStage: 'load',
+              errorCode: 'TOOL_CONFIGURATION_REQUIRED',
+              retryable: false,
             },
-            { status: 400 }
+            { status: 400, executionTimeMs: Date.now() - startTime }
           );
         }
       }
@@ -767,13 +874,14 @@ async function executeTool(req: Request): Promise<Response> {
       toolModule = rawExport;
 
       if (!toolModule.execute) {
-        return Response.json(
+        return failureResponse(
           {
-            success: false,
             error: 'Tool missing execute function',
-            executionTimeMs: Date.now() - startTime,
+            errorStage: 'load',
+            errorCode: 'INVALID_TOOL',
+            retryable: false,
           },
-          { status: 400 }
+          { status: 400, executionTimeMs: Date.now() - startTime }
         );
       }
 
@@ -803,19 +911,20 @@ async function executeTool(req: Request): Promise<Response> {
       const executionTimeMs = Date.now() - startTime;
       const message = executeError instanceof Error ? executeError.message : String(executeError);
       console.error('❌ Tool threw during execute():', message);
-      reportToolHealth(packageName, toolName, false, message, 'execute').catch(() => {});
+      const failure: ExecutorFailure = {
+        error: message,
+        errorStage: 'execute',
+        errorCode: 'TOOL_EXECUTION_FAILED',
+        retryable: false,
+      };
+      reportToolHealth(packageName, toolName, false, failure).catch(() => {});
 
       // The tool imported, initialized, and RAN — the throw came from inside
       // tool.execute() (input validation, missing credentials, a remote API
       // failure). That is not an executor/infrastructure failure, so respond
       // 200 with a structured errorStage instead of a blanket 500: callers
       // (health checks) can classify by stage instead of regexing messages.
-      return Response.json({
-        success: false,
-        error: message,
-        errorStage: 'execute',
-        executionTimeMs,
-      });
+      return failureResponse(failure, { status: 200, executionTimeMs });
     }
 
     const executionTimeMs = Date.now() - startTime;
@@ -834,17 +943,15 @@ async function executeTool(req: Request): Promise<Response> {
     console.error('❌ Tool execution failed:', error);
 
     // Report failed execution to health service (non-blocking)
-    reportToolHealth(packageName, toolName, false, error.message, 'load').catch(() => {});
+    const failure: ExecutorFailure = {
+      error: errorMessage(error),
+      errorStage: 'load',
+      errorCode: 'PACKAGE_IMPORT_FAILED',
+      retryable: true,
+    };
+    reportToolHealth(packageName, toolName, false, failure).catch(() => {});
 
-    return Response.json(
-      {
-        success: false,
-        error: error.message,
-        errorStage: 'load', // failed before tool.execute() ran (import/factory/schema)
-        executionTimeMs,
-      },
-      { status: 500 }
-    );
+    return failureResponse(failure, { status: 500, executionTimeMs });
   }
 }
 
@@ -937,7 +1044,7 @@ async function listExports(req: Request): Promise<Response> {
     return Response.json(
       {
         success: false,
-        error: error.message,
+        error: errorMessage(error),
       },
       { status: 500 }
     );
@@ -953,6 +1060,8 @@ const startedAt = Date.now();
 function health(): Response {
   return Response.json({
     status: 'ok',
+    protocolVersion: '1.1',
+    implementationVersion: Deno.env.get('TPMJS_EXECUTOR_VERSION') || 'development',
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
     cacheSize: moduleCache.size,
@@ -1025,7 +1134,15 @@ async function handler(req: Request): Promise<Response> {
     if (url.pathname === '/health' && req.method === 'GET') {
       response = health();
     } else if (!checkAuth(req)) {
-      response = Response.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      response = failureResponse(
+        {
+          error: 'Unauthorized',
+          errorStage: 'request',
+          errorCode: 'AUTHENTICATION_REQUIRED',
+          retryable: false,
+        },
+        { status: 401, executionTimeMs: 0 }
+      );
     } else if (url.pathname === '/load-and-describe' && req.method === 'POST') {
       response = await loadAndDescribe(req);
     } else if (url.pathname === '/list-exports' && req.method === 'POST') {
@@ -1048,13 +1165,19 @@ async function handler(req: Request): Promise<Response> {
     return response;
   } catch (error) {
     console.error('Request handler error:', error);
-    return Response.json(
+    const response = failureResponse(
       {
-        success: false,
-        error: error.message,
+        error: errorMessage(error),
+        errorStage: 'executor',
+        errorCode: 'EXECUTOR_INTERNAL_ERROR',
+        retryable: true,
       },
-      { status: 500, headers }
+      { status: 500, executionTimeMs: 0 }
     );
+    for (const [key, value] of Object.entries(headers)) {
+      response.headers.set(key, value);
+    }
+    return response;
   }
 }
 
@@ -1079,7 +1202,7 @@ Deno.addSignalListener('SIGINT', () => handleShutdown('SIGINT'));
 // Start server
 const port = Number.parseInt(Deno.env.get('PORT') || '3002', 10);
 
-console.log(`🚀 Railway Tool Executor (Deno) running on port ${port}`);
+console.log(`🚀 TPMJS Dynamic Executor (Deno) running on port ${port}`);
 console.log(
   `🔒 Auth: ${EXECUTOR_API_KEY ? 'enabled (Bearer token required)' : 'DISABLED (set EXECUTOR_API_KEY)'}`
 );

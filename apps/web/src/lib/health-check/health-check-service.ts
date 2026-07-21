@@ -4,9 +4,17 @@
  */
 
 import { type HealthStatus, type Package, type Prisma, prisma, type Tool } from '@tpmjs/db';
+import {
+  LoadAndDescribeResponseSchema,
+  TypedExecuteToolResponseSchema,
+} from '@tpmjs/types/executor';
 import type { ToolHealthCheckCleanupStep } from '@tpmjs/types/tpmjs';
 import { env } from '~/env';
 import { executorAuthHeaders } from '~/lib/executors/internal-auth';
+import {
+  classifyExecutorFailure,
+  indeterminateExecutorResult,
+} from '~/lib/health-check/executor-health-verdict';
 import {
   HEALTH_CHECK_SKIP_REASON,
   parseHealthCheckConfig,
@@ -83,7 +91,7 @@ async function executeCleanup(
 /**
  * Check if a tool can be imported (load-and-describe)
  */
-async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
+export async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
   status: HealthStatus;
   error: string | null;
   timeMs: number;
@@ -106,61 +114,30 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
     });
 
     const timeMs = Date.now() - startTime;
-    const data = await response.json();
+    const rawData: unknown = await response.json().catch(() => undefined);
+    const parsed = LoadAndDescribeResponseSchema.safeParse(rawData);
 
-    if (!response.ok || !data.success) {
-      const error = data.error || `HTTP ${response.status}`;
-
-      // If error is config/input issue, tool is not broken
-      if (isNonBreakingError(error)) {
-        return {
-          status: 'HEALTHY',
-          error: null,
-          timeMs,
-        };
-      }
-
-      return {
-        status: 'BROKEN',
-        error,
-        timeMs,
-      };
+    if (!parsed.success) {
+      const verdict = indeterminateExecutorResult(
+        `Executor protocol error during import (HTTP ${response.status})`
+      );
+      return { ...verdict, timeMs };
     }
 
-    // Verify tool has required fields
-    if (!data.tool?.description || !data.tool?.inputSchema) {
-      return {
-        status: 'BROKEN',
-        error: 'Missing required tool fields (description or inputSchema)',
-        timeMs,
-      };
+    if (!parsed.data.success) {
+      const verdict = classifyExecutorFailure(parsed.data);
+      return { ...verdict, timeMs };
     }
 
     return { status: 'HEALTHY', error: null, timeMs };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
-    // If error is config/input issue, tool is not broken
-    if (isNonBreakingError(errorMessage)) {
-      return {
-        status: 'HEALTHY',
-        error: null,
-        timeMs: Date.now() - startTime,
-      };
-    }
-
-    // Transient infra (timeout/network under sweep load) — don't mark BROKEN.
-    if (isTransientInfraError(errorMessage)) {
-      return {
-        status: 'UNKNOWN',
-        error: `Transient (kept prior status): ${errorMessage}`,
-        timeMs: Date.now() - startTime,
-      };
-    }
-
+    // Exceptions here are transport/protocol failures by control flow. They
+    // say nothing about the package, regardless of their wording.
     return {
-      status: 'BROKEN',
-      error: errorMessage,
+      status: 'UNKNOWN',
+      error: `Executor transport failure (kept prior status): ${errorMessage}`,
       timeMs: Date.now() - startTime,
     };
   }
@@ -169,9 +146,9 @@ async function checkImportHealth(tool: Tool & { package: Package }): Promise<{
 /**
  * Check if a tool can execute with test parameters
  *
- * IMPORTANT: If the tool executes at all (even with errors), it's HEALTHY.
- * We only mark as BROKEN for infrastructure failures (timeouts, network errors).
- * Validation errors mean the tool IS working - it's correctly rejecting bad input.
+ * IMPORTANT: A typed execute-stage error proves the tool is callable and is
+ * HEALTHY. Deterministic load-stage failures are BROKEN. Transport, executor,
+ * request, and untyped legacy failures are UNKNOWN and preserve prior state.
  */
 export async function checkExecutionHealth(tool: Tool & { package: Package }): Promise<{
   status: HealthStatus;
@@ -222,38 +199,31 @@ export async function checkExecutionHealth(tool: Tool & { package: Package }): P
 
     const timeMs = Date.now() - startTime;
 
-    // If we got a response from the executor, the tool executed
-    // Any error in the response is from the tool itself (validation, env, etc.)
-    // which means the tool IS working - it's correctly processing/rejecting input
-    if (response.ok) {
-      // Executor responded - tool executed (success or tool-level error). A
-      // tool may have produced a side effect before throwing, so cleanup runs
-      // for both structured outcomes and remains best effort.
+    const rawData: unknown = await response.json().catch(() => undefined);
+    const parsed = TypedExecuteToolResponseSchema.safeParse(rawData);
+
+    if (!parsed.success) {
+      const verdict = indeterminateExecutorResult(
+        `Executor protocol error during execution (HTTP ${response.status})`
+      );
+      return { ...verdict, timeMs, testParams };
+    }
+
+    const data = parsed.data;
+    if (data.success) {
       if (healthCheckConfig?.cleanup?.length) {
-        const data = await response.json().catch(() => ({}));
-        const executionOutput = data.output ?? data.result ?? data;
-        await executeCleanup(tool, healthCheckConfig.cleanup, executionOutput, templateTimestamp);
+        await executeCleanup(tool, healthCheckConfig.cleanup, data.output, templateTimestamp);
       }
       return { status: 'HEALTHY', error: null, timeMs, testParams };
     }
 
-    // HTTP error from executor - could be tool-level or infrastructure
-    const data = await response.json().catch(() => ({}));
-    const error = data.error || `HTTP ${response.status}`;
-
-    // Check if this is a config/validation error (tool is working, just missing setup)
-    // The executor returns 500 for all tool errors, so we need to inspect the message
-    if (isNonBreakingError(error)) {
-      return { status: 'HEALTHY', error: null, timeMs, testParams };
+    const verdict = classifyExecutorFailure(data);
+    if (verdict.status === 'HEALTHY' && healthCheckConfig?.cleanup?.length) {
+      // execute-stage errors may happen after a side effect. Cleanup remains
+      // best effort; unresolved output mappings are skipped honestly.
+      await executeCleanup(tool, healthCheckConfig.cleanup, undefined, templateTimestamp);
     }
-
-    // True infrastructure failures (executor down, rate limited, etc.)
-    if (response.status >= 500) {
-      return { status: 'BROKEN', error, timeMs, testParams };
-    }
-
-    // 4xx errors are likely tool-level validation/config issues
-    return { status: 'HEALTHY', error: null, timeMs, testParams };
+    return { ...verdict, timeMs, testParams };
   } catch (error) {
     // Network/timeout errors are infrastructure issues
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -263,95 +233,11 @@ export async function checkExecutionHealth(tool: Tool & { package: Package }): P
     // BROKEN. The tool keeps its prior status; the next sweep re-checks it.
     return {
       status: 'UNKNOWN',
-      error: `Transient (kept prior status): ${errorMessage}`,
+      error: `Executor transport failure (kept prior status): ${errorMessage}`,
       timeMs: Date.now() - startTime,
       testParams,
     };
   }
-}
-
-/**
- * A transient infrastructure error (executor timeout under load, network blip)
- * — NOT the tool being broken. Even a bounded slice can encounter a transient
- * failure; marking a legitimate tool BROKEN would corrupt the registry with
- * false negatives. These are treated as UNKNOWN (the tool keeps its prior
- * status) instead.
- */
-function isTransientInfraError(error: string | null): boolean {
-  if (!error) return false;
-  const patterns = [
-    /aborted/i,
-    /timeout/i,
-    /timed out/i,
-    /econnrefused/i,
-    /econnreset/i,
-    /socket hang up/i,
-    /network/i,
-    /fetch failed/i,
-    /502|503|504/,
-  ];
-  return patterns.some((p) => p.test(error));
-}
-
-/**
- * Check if an error is due to missing environment variables (configuration issue)
- * rather than a broken tool (code issue)
- */
-function isEnvironmentConfigError(error: string | null): boolean {
-  if (!error) return false;
-
-  const envErrorPatterns = [
-    /is required/i,
-    /is not set/i,
-    /missing.*environment/i,
-    /environment.*missing/i,
-    /api key.*required/i,
-    /api key.*not provided/i,
-    /missing.*api key/i,
-    /must be set/i,
-    /not found.*environment/i,
-    /please set/i,
-    /please provide/i,
-    /configure.*environment/i,
-  ];
-
-  return envErrorPatterns.some((pattern) => pattern.test(error));
-}
-
-/**
- * Check if an error is due to input validation (Zod validation, URL format, etc.)
- * These errors mean the tool is working correctly - it's validating input as expected
- */
-function isInputValidationError(error: string | null): boolean {
-  if (!error) return false;
-
-  const validationErrorPatterns = [
-    /must have a valid.*domain/i, // URL validation
-    /valid.*path/i, // Path validation
-    /invalid.*url/i, // URL format
-    /invalid.*format/i, // General format validation
-    /expected.*received/i, // Zod type errors
-    /must be.*string/i, // Type validation
-    /must be.*number/i,
-    /must be.*boolean/i,
-    /must be.*array/i,
-    /must be.*object/i,
-    /validation.*failed/i, // General validation
-    /does not match/i, // Pattern/regex validation
-    /too short/i, // Length validation
-    /too long/i,
-    /minimum.*length/i,
-    /maximum.*length/i,
-  ];
-
-  return validationErrorPatterns.some((pattern) => pattern.test(error));
-}
-
-/**
- * Check if an error is a configuration or input issue (not a broken tool)
- */
-function isNonBreakingError(error: string | null): boolean {
-  return isEnvironmentConfigError(error) || isInputValidationError(error);
 }
 
 /**

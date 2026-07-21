@@ -145,6 +145,99 @@ jobs:
       - name: Build
         run: pnpm build
 
+  executor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build and type-check the production executor image
+        run: docker build -t tpmjs-executor:ci apps/railway-executor
+
+      - name: Verify typed protocol at runtime
+        run: |
+          docker run -d --name tpmjs-executor-ci -p 3002:3002 \
+            -e EXECUTOR_API_KEY=ci-executor-key tpmjs-executor:ci
+          trap 'docker rm -f tpmjs-executor-ci >/dev/null 2>&1 || true' EXIT
+
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:3002/health > /tmp/executor-health.json; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              docker logs tpmjs-executor-ci
+              exit 1
+            fi
+            sleep 1
+          done
+
+          jq --exit-status '
+            .status == "ok" and
+            .protocolVersion == "1.1" and
+            (.implementationVersion | type == "string")
+          ' /tmp/executor-health.json
+
+          curl --silent --output /tmp/executor-auth.json \
+            --write-out '%{http_code}' \
+            --request POST http://127.0.0.1:3002/execute-tool \
+            --header 'Content-Type: application/json' \
+            --data '{}' | grep --quiet '^401$'
+          jq --exit-status '
+            .success == false and
+            .errorStage == "request" and
+            .errorCode == "AUTHENTICATION_REQUIRED" and
+            .retryable == false
+          ' /tmp/executor-auth.json
+
+          curl --silent --output /tmp/executor-invalid.json \
+            --write-out '%{http_code}' \
+            --request POST http://127.0.0.1:3002/execute-tool \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Bearer ci-executor-key' \
+            --data-binary '{' | grep --quiet '^400$'
+          jq --exit-status '
+            .success == false and
+            .errorStage == "request" and
+            .errorCode == "INVALID_REQUEST" and
+            .retryable == false and
+            (.executionTimeMs | type == "number")
+          ' /tmp/executor-invalid.json
+
+          curl --fail-with-body --silent --show-error \
+            --retry 2 --retry-all-errors --max-time 120 \
+            --request POST http://127.0.0.1:3002/execute-tool \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Bearer ci-executor-key' \
+            --data '{
+              "packageName":"@tpmjs/tools-normalize-whitespace",
+              "name":"normalizeWhitespaceTool",
+              "version":"0.2.0",
+              "params":{"text":"hello   world"}
+            }' > /tmp/executor-success.json
+          jq --exit-status '
+            .success == true and
+            .output.text == "hello world" and
+            (.executionTimeMs | type == "number")
+          ' /tmp/executor-success.json
+
+          curl --silent --output /tmp/executor-missing-export.json \
+            --write-out '%{http_code}' \
+            --request POST http://127.0.0.1:3002/execute-tool \
+            --header 'Content-Type: application/json' \
+            --header 'Authorization: Bearer ci-executor-key' \
+            --data '{
+              "packageName":"@tpmjs/tools-normalize-whitespace",
+              "name":"missingTool",
+              "version":"0.2.0",
+              "params":{}
+            }' | grep --quiet '^404$'
+          jq --exit-status '
+            .success == false and
+            .errorStage == "load" and
+            .errorCode == "TOOL_NOT_FOUND" and
+            .retryable == false and
+            (.executionTimeMs | type == "number")
+          ' /tmp/executor-missing-export.json
+
   architecture:
     runs-on: ubuntu-latest
     steps:

@@ -39,11 +39,134 @@ export interface ExecuteToolResponse {
   output?: unknown;
   /** Error message on failure */
   error?: string;
-  /** Whether failure happened before invocation or inside tool.execute(). */
-  errorStage?: 'load' | 'execute';
+  /** Machine-readable phase in which the failure occurred. */
+  errorStage?: ExecutorErrorStage;
+  /** Stable machine-readable failure category. Never classify by `error` text. */
+  errorCode?: ExecutorErrorCode;
+  /** Whether retrying the same request may succeed without changing the tool. */
+  retryable?: boolean;
   /** Execution duration in milliseconds */
   executionTimeMs: number;
 }
+
+/**
+ * Failure phases are deliberately about the execution boundary, not prose in
+ * an exception message. Consumers can make health and retry decisions without
+ * maintaining lists of provider-specific strings.
+ */
+export const ExecutorErrorStageSchema = z.enum(['request', 'load', 'execute', 'executor']);
+export type ExecutorErrorStage = z.infer<typeof ExecutorErrorStageSchema>;
+
+/** Stable failure categories emitted by compliant executors. */
+export const ExecutorErrorCodeSchema = z.enum([
+  'INVALID_REQUEST',
+  'AUTHENTICATION_REQUIRED',
+  'PACKAGE_IMPORT_FAILED',
+  'TOOL_NOT_FOUND',
+  'TOOL_CONFIGURATION_REQUIRED',
+  'INVALID_TOOL',
+  'SCHEMA_UNAVAILABLE',
+  'TOOL_EXECUTION_FAILED',
+  'EXECUTOR_UNAVAILABLE',
+  'EXECUTION_TIMEOUT',
+  'EXECUTOR_INTERNAL_ERROR',
+]);
+export type ExecutorErrorCode = z.infer<typeof ExecutorErrorCodeSchema>;
+
+const ExecutorFailureBaseShape = {
+  success: z.literal(false),
+  error: z.string().min(1),
+  retryable: z.boolean(),
+};
+
+const RequestFailureSchema = z.object({
+  ...ExecutorFailureBaseShape,
+  errorStage: z.literal('request'),
+  errorCode: z.enum(['INVALID_REQUEST', 'AUTHENTICATION_REQUIRED']),
+});
+
+const LoadFailureSchema = z.object({
+  ...ExecutorFailureBaseShape,
+  errorStage: z.literal('load'),
+  errorCode: z.enum([
+    'PACKAGE_IMPORT_FAILED',
+    'TOOL_NOT_FOUND',
+    'TOOL_CONFIGURATION_REQUIRED',
+    'INVALID_TOOL',
+    'SCHEMA_UNAVAILABLE',
+  ]),
+});
+
+const ExecuteFailureSchema = z.object({
+  ...ExecutorFailureBaseShape,
+  errorStage: z.literal('execute'),
+  errorCode: z.enum(['TOOL_EXECUTION_FAILED', 'EXECUTION_TIMEOUT']),
+});
+
+const ExecutorInternalFailureSchema = z.object({
+  ...ExecutorFailureBaseShape,
+  errorStage: z.literal('executor'),
+  errorCode: z.enum(['EXECUTOR_UNAVAILABLE', 'EXECUTOR_INTERNAL_ERROR']),
+});
+
+export const ExecutorFailureSchema = z.discriminatedUnion('errorStage', [
+  RequestFailureSchema,
+  LoadFailureSchema,
+  ExecuteFailureSchema,
+  ExecutorInternalFailureSchema,
+]);
+export type ExecutorFailure = z.infer<typeof ExecutorFailureSchema>;
+
+export const ExecuteToolSuccessResponseSchema = z.object({
+  success: z.literal(true),
+  output: z.unknown().optional(),
+  executionTimeMs: z.number().nonnegative(),
+});
+
+/** Strict response contract used at TPMJS-owned executor boundaries. */
+const ExecuteToolFailureResponseSchema = z.discriminatedUnion('errorStage', [
+  RequestFailureSchema.extend({ executionTimeMs: z.number().nonnegative() }),
+  LoadFailureSchema.extend({ executionTimeMs: z.number().nonnegative() }),
+  ExecuteFailureSchema.extend({ executionTimeMs: z.number().nonnegative() }),
+  ExecutorInternalFailureSchema.extend({ executionTimeMs: z.number().nonnegative() }),
+]);
+
+export const TypedExecuteToolResponseSchema = z.union([
+  ExecuteToolSuccessResponseSchema,
+  ExecuteToolFailureResponseSchema,
+]);
+export type TypedExecuteToolResponse = z.infer<typeof TypedExecuteToolResponseSchema>;
+
+export const LoadAndDescribeRequestSchema = z.object({
+  packageName: z.string().min(1),
+  name: z.string().min(1),
+  version: z.string().min(1),
+  importUrl: z.string().url().optional(),
+  env: z.record(z.string(), z.string()).optional(),
+});
+export type LoadAndDescribeRequest = z.infer<typeof LoadAndDescribeRequestSchema>;
+
+export const LoadAndDescribeResponseSchema = z.discriminatedUnion('success', [
+  z.object({
+    success: z.literal(true),
+    tool: z.object({
+      name: z.string().min(1),
+      description: z.string().min(1),
+      inputSchema: z.unknown(),
+    }),
+  }),
+  ExecutorFailureSchema,
+]);
+export type LoadAndDescribeResponse = z.infer<typeof LoadAndDescribeResponseSchema>;
+
+export const ReportToolHealthRequestSchema = z.intersection(
+  z.object({
+    packageName: z.string().min(1),
+    name: z.string().min(1),
+  }),
+  z.discriminatedUnion('success', [z.object({ success: z.literal(true) }), ExecutorFailureSchema])
+);
+export type ReportToolHealthRequest = z.infer<typeof ReportToolHealthRequestSchema>;
 
 /**
  * Response from GET /health (optional but recommended)
@@ -114,7 +237,9 @@ export const ExecuteToolResponseSchema = z.object({
   success: z.boolean(),
   output: z.unknown().optional(),
   error: z.string().optional(),
-  errorStage: z.enum(['load', 'execute']).optional(),
+  errorStage: ExecutorErrorStageSchema.optional(),
+  errorCode: ExecutorErrorCodeSchema.optional(),
+  retryable: z.boolean().optional(),
   executionTimeMs: z.number(),
 });
 

@@ -21,7 +21,16 @@ COPY server.ts .
 COPY start.sh .
 RUN chmod +x start.sh
 
-# Expose port (Railway will set PORT env var)
+# Compile the real production entrypoint during every image build. This keeps
+# TypeScript/Deno errors out of deploys and warms the immutable dependency
+# cache used at startup.
+RUN deno check --no-lock server.ts
+# Production's Quadlet deliberately bypasses start.sh and starts as User=deno.
+# Give that process ownership of the prewarmed cache so later dynamic npm/HTTP
+# imports can extend it without falling back to root.
+RUN chown -R deno:deno /tmp/deno-cache
+
+# Expose the service port (the on-box Quadlet sets PORT when overridden)
 EXPOSE 3002
 
 # Docker-level health check as a fallback

@@ -70,6 +70,23 @@ const response: ExecuteToolResponse = {
 };
 ```
 
+TPMJS-owned executors also validate failures with
+`TypedExecuteToolResponseSchema`. `error` is operator-facing prose; decisions
+must use the stable metadata fields:
+
+```typescript
+const failure = {
+  success: false,
+  error: 'Export not found in package',
+  errorStage: 'load',
+  errorCode: 'TOOL_NOT_FOUND',
+  retryable: false,
+  executionTimeMs: 19,
+};
+```
+
+Never classify failures by parsing or matching the `error` string.
+
 ### Parse API responses
 
 Domain schemas cover the objects the API returns — collections, agents, users, and so on.

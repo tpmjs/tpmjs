@@ -47,8 +47,8 @@ console.log(core.results.every((r) => r.passed) ? 'Core: PASS' : 'Core: FAIL');
 
 ## What it checks
 
-- **Core** — `GET /health` returns 200 with `protocolVersion` + `implementationVersion`; `POST /execute-tool` accepts a valid request, returns a structured `{ success, executionTimeMs, output|error }` response, and errors on an unknown package; CORS headers and `OPTIONS` preflight.
-- **Standard** — `GET /info` returns 200 with a valid `capabilities` block (`isolation`, `executionModes`, `maxExecutionTimeMs`, `maxRequestBodyBytes`), advertised protocol version, enforced authentication, a `maxExecutionTimeMs` of at least 60000, and standard structured error codes (`PACKAGE_NOT_FOUND`, `TOOL_NOT_FOUND`, `EXECUTION_TIMEOUT`, …).
+- **Core** — `GET /health` returns 200 with `protocolVersion` + `implementationVersion`; `POST /execute-tool` runs a pinned public fixture, returns a structured `{ success, executionTimeMs, output|error }` response, and emits typed failure metadata for an unknown package; CORS headers and `OPTIONS` preflight.
+- **Standard** — `GET /info` returns 200 with a valid `capabilities` block (`isolation`, `executionModes`, `maxExecutionTimeMs`, `maxRequestBodyBytes`), advertised protocol version, enforced authentication, a `maxExecutionTimeMs` of at least 60000, and Protocol 1.1 failure metadata (`errorStage`, `errorCode`, and `retryable`) using stable codes such as `PACKAGE_IMPORT_FAILED`, `TOOL_NOT_FOUND`, and `EXECUTION_TIMEOUT`.
 
 ## API
 

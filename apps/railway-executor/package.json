@@ -1,12 +1,12 @@
 {
   "name": "railway-executor",
   "version": "1.0.0",
-  "description": "Dynamic tool executor for TPMJS with esm.sh imports",
+  "description": "TPMJS on-box dynamic tool executor",
+  "private": true,
   "type": "module",
-  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "deno run --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys --allow-ffi server.ts",
+    "dev": "deno run --watch --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys --allow-ffi server.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
