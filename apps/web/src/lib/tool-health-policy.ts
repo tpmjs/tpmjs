@@ -30,11 +30,18 @@ export function isPersistentlyImportBroken(consecutiveImportFailures: number): b
 
 /** Prisma-compatible filter used by every default tool-discovery surface. */
 export function defaultToolDiscoveryFilter(): {
+  isActive: true;
   consecutiveImportFailures: { lt: number };
 } {
   return {
+    isActive: true,
     consecutiveImportFailures: { lt: PERSISTENT_IMPORT_FAILURE_THRESHOLD },
   };
+}
+
+/** Retired package exports remain durable evidence but are never executable. */
+export function activeToolFilter(): { isActive: true } {
+  return { isActive: true };
 }
 
 /** Explicit broken-tool requests remain an evidence and recovery surface. */

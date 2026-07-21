@@ -1,10 +1,26 @@
-import { prisma } from '@tpmjs/db';
+import { type Prisma, prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '~/lib/rate-limit';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+
+const statsPackageSelect = {
+  npmPackageName: true,
+  npmVersion: true,
+  npmDownloadsLastMonth: true,
+  githubStars: true,
+  category: true,
+  tier: true,
+  isOfficial: true,
+  npmHomepage: true,
+  npmRepository: true,
+} satisfies Prisma.PackageSelect;
+
+type ToolStatsRow = Prisma.ToolGetPayload<{
+  include: { package: { select: typeof statsPackageSelect } };
+}>;
 
 /**
  * GET /api/stats/tools
@@ -42,7 +58,7 @@ export async function GET(request: NextRequest) {
     const now = new Date();
 
     // Build where clause
-    const whereClause: Record<string, unknown> = {};
+    const whereClause: Record<string, unknown> = { isActive: true };
     if (category) {
       whereClause.package = { category };
     }
@@ -70,7 +86,7 @@ export async function GET(request: NextRequest) {
     }
 
     // For execution sorting, we need a different query
-    let tools;
+    let tools: ToolStatsRow[];
     let executionCounts: Map<string, number> = new Map();
 
     if (sortBy === 'executions') {
@@ -92,19 +108,7 @@ export async function GET(request: NextRequest) {
         },
         take: limit,
         include: {
-          package: {
-            select: {
-              npmPackageName: true,
-              npmVersion: true,
-              npmDownloadsLastMonth: true,
-              githubStars: true,
-              category: true,
-              tier: true,
-              isOfficial: true,
-              npmHomepage: true,
-              npmRepository: true,
-            },
-          },
+          package: { select: statsPackageSelect },
         },
       });
 
@@ -116,19 +120,7 @@ export async function GET(request: NextRequest) {
         orderBy,
         take: limit,
         include: {
-          package: {
-            select: {
-              npmPackageName: true,
-              npmVersion: true,
-              npmDownloadsLastMonth: true,
-              githubStars: true,
-              category: true,
-              tier: true,
-              isOfficial: true,
-              npmHomepage: true,
-              npmRepository: true,
-            },
-          },
+          package: { select: statsPackageSelect },
           _count: {
             select: { simulations: true },
           },

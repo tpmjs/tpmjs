@@ -51,6 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse<ApiRespons
 
     // Build where clause
     const where: Record<string, unknown> = {
+      isActive: true,
       importHealth: 'HEALTHY',
     };
 

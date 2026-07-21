@@ -72,13 +72,14 @@ export async function POST(
     const tool =
       slug.length === 1
         ? // Single slug - treat as tool ID
-          await prisma.tool.findUnique({
-            where: { id: slug[0] || '' },
+          await prisma.tool.findFirst({
+            where: { id: slug[0] || '', isActive: true },
             include: { package: true },
           })
         : // Multiple slugs - treat as packageName/name
           await prisma.tool.findFirst({
             where: {
+              isActive: true,
               package: { npmPackageName: decodeURIComponent(slug.slice(0, -1).join('/')) },
               name: decodeURIComponent(slug[slug.length - 1] || ''),
             },

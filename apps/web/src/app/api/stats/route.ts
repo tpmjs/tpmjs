@@ -82,25 +82,27 @@ export async function GET(request: NextRequest) {
       qualityScoreDistribution,
     ] = await Promise.all([
       // Total tools
-      prisma.tool.count(),
+      prisma.tool.count({ where: { isActive: true } }),
 
       // Official tools
       prisma.tool.count({
-        where: { package: { isOfficial: true } },
+        where: { isActive: true, package: { isOfficial: true } },
       }),
 
       // Tools with extracted schema
       prisma.tool.count({
-        where: { schemaSource: 'extracted' },
+        where: { isActive: true, schemaSource: 'extracted' },
       }),
 
       // Health status distribution - consolidated groupBy queries
       prisma.tool.groupBy({
         by: ['importHealth'],
+        where: { isActive: true },
         _count: { _all: true },
       }),
       prisma.tool.groupBy({
         by: ['executionHealth'],
+        where: { isActive: true },
         _count: { _all: true },
       }),
 
@@ -112,14 +114,14 @@ export async function GET(request: NextRequest) {
           npmDownloadsLastMonth: true,
           githubStars: true,
           isOfficial: true,
-          _count: { select: { tools: true } },
+          _count: { select: { tools: { where: { isActive: true } } } },
         },
       }),
 
       // Recent tools
-      prisma.tool.count({ where: { createdAt: { gte: last24h } } }),
-      prisma.tool.count({ where: { createdAt: { gte: last7d } } }),
-      prisma.tool.count({ where: { createdAt: { gte: last30d } } }),
+      prisma.tool.count({ where: { isActive: true, createdAt: { gte: last24h } } }),
+      prisma.tool.count({ where: { isActive: true, createdAt: { gte: last7d } } }),
+      prisma.tool.count({ where: { isActive: true, createdAt: { gte: last30d } } }),
       prisma.package.count({ where: { createdAt: { gte: last7d } } }),
 
       // Simulation status counts - consolidated groupBy query
@@ -197,6 +199,7 @@ export async function GET(request: NextRequest) {
           END as bucket,
           COUNT(*) as count
         FROM tools
+        WHERE is_active
         GROUP BY
           CASE
             WHEN quality_score IS NULL THEN 'unscored'

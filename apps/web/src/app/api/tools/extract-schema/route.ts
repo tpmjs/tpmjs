@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     // Find the tool by package name and export name
     const tool = await prisma.tool.findFirst({
       where: {
+        isActive: true,
         name,
         package: {
           npmPackageName: packageName,

@@ -2,6 +2,7 @@ import { type Prisma, prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '~/lib/rate-limit';
 import {
+  activeToolFilter,
   defaultToolDiscoveryFilter,
   shouldIncludePersistentlyBrokenTools,
 } from '~/lib/tool-health-policy';
@@ -344,6 +345,8 @@ export async function GET(request: NextRequest) {
       });
       if (!includePersistentBroken) {
         healthFilters.push(defaultToolDiscoveryFilter());
+      } else {
+        healthFilters.push(activeToolFilter());
       }
       where = buildWhereClause(query, packageFilter, healthFilters);
     } catch (error) {

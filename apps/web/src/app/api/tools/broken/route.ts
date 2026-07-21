@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
   try {
     const brokenTools = await prisma.tool.findMany({
       where: {
+        isActive: true,
         OR: [{ importHealth: 'BROKEN' }, { executionHealth: 'BROKEN' }],
       },
       include: {

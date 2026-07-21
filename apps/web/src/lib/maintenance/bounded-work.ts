@@ -63,7 +63,8 @@ export async function leaseDueToolIds(owner: string, limit: number): Promise<str
     WITH due AS (
       SELECT id
       FROM tools
-      WHERE health_check_next_at <= CURRENT_TIMESTAMP
+      WHERE is_active
+        AND health_check_next_at <= CURRENT_TIMESTAMP
         AND (health_check_lease_until IS NULL OR health_check_lease_until <= CURRENT_TIMESTAMP)
       ORDER BY health_check_next_at, id
       FOR UPDATE SKIP LOCKED
@@ -151,7 +152,8 @@ export async function refreshQualityScoreSlice(limit: number): Promise<number> {
              ) AS score
       FROM tools AS t
       JOIN packages AS p ON p.id = t.package_id
-      WHERE t.quality_metrics_version < p.metrics_version
+      WHERE t.is_active
+        AND t.quality_metrics_version < p.metrics_version
       ORDER BY t.quality_metrics_version, t.id
       FOR UPDATE OF t SKIP LOCKED
       LIMIT ${limit}

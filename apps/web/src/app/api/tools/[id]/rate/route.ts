@@ -45,8 +45,8 @@ export async function GET(
     });
 
     // Get tool rating stats (always available)
-    const tool = await prisma.tool.findUnique({
-      where: { id },
+    const tool = await prisma.tool.findFirst({
+      where: { id, isActive: true },
       select: {
         averageRating: true,
         ratingCount: true,
@@ -143,9 +143,9 @@ export async function POST(
       );
     }
 
-    // Check tool exists
-    const tool = await prisma.tool.findUnique({
-      where: { id },
+    // Only active registry tools accept new ratings.
+    const tool = await prisma.tool.findFirst({
+      where: { id, isActive: true },
     });
 
     if (!tool) {

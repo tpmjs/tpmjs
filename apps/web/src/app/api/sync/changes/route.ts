@@ -3,6 +3,12 @@ import { fetchChanges, fetchLatestPackageWithMetadata } from '@tpmjs/npm-client'
 import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
 import { requireCronAuth } from '~/lib/cron-auth';
+import {
+  newToolLifecycle,
+  refreshedToolLifecycle,
+  retireMissingTools,
+  retireToolsFromOtherVersions,
+} from '~/lib/sync/tool-lifecycle';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -112,8 +118,9 @@ export async function POST(request: NextRequest) {
 
         // For auto-discovery packages, skip tool creation — enrichment will handle it
         if (validation.needsAutoDiscovery) {
+          const retired = await retireToolsFromOtherVersions(packageRecord.id, pkg.version);
           console.log(
-            `Package ${pkg.name} needs auto-discovery — enrichment will handle tool creation`
+            `Package ${pkg.name} needs auto-discovery — retired ${retired} prior-version tools and queued enrichment`
           );
           processed++;
           continue;
@@ -125,6 +132,7 @@ export async function POST(request: NextRequest) {
         const existingTools = await prisma.tool.findMany({
           where: { packageId: packageRecord.id },
         });
+        const existingByName = new Map(existingTools.map((tool) => [tool.name, tool]));
 
         for (const toolDef of toolsToProcess) {
           const toolName = toolDef.name;
@@ -156,6 +164,7 @@ export async function POST(request: NextRequest) {
               qualityScore: null,
               schemaSource: toolDef.parameters ? 'author' : null,
               toolDiscoverySource: 'manual',
+              ...newToolLifecycle(pkg.version),
             },
             update: {
               description: toolDef.description || undefined,
@@ -170,22 +179,17 @@ export async function POST(request: NextRequest) {
                 ? (toolDef.healthCheck as Prisma.InputJsonValue)
                 : Prisma.DbNull,
               toolDiscoverySource: 'manual',
+              ...refreshedToolLifecycle(existingByName.get(toolName), pkg.version),
             },
           });
         }
 
-        // Delete orphaned tools (tools removed from package.json)
-        const orphanedTools = existingTools.filter(
-          (existingTool) => !toolsToProcess.some((toolDef) => toolDef.name === existingTool.name)
+        const retired = await retireMissingTools(
+          packageRecord.id,
+          toolsToProcess.flatMap((tool) => (tool.name ? [tool.name] : []))
         );
-
-        if (orphanedTools.length > 0) {
-          await prisma.tool.deleteMany({
-            where: {
-              id: { in: orphanedTools.map((t) => t.id) },
-            },
-          });
-          console.log(`Deleted ${orphanedTools.length} orphaned tools from package: ${pkg.name}`);
+        if (retired > 0) {
+          console.log(`Retired ${retired} absent tools from package ${pkg.name}@${pkg.version}`);
         }
 
         processed++;

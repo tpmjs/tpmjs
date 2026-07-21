@@ -215,8 +215,8 @@ export async function POST(
     }
 
     // Verify tool exists
-    const tool = await prisma.tool.findUnique({
-      where: { id: toolId },
+    const tool = await prisma.tool.findFirst({
+      where: { id: toolId, isActive: true },
       include: {
         package: {
           select: {

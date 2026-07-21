@@ -424,7 +424,7 @@ export async function performHealthCheck(
     include: { package: true },
   });
 
-  if (!tool) {
+  if (!tool || !tool.isActive) {
     throw new Error(`Tool not found: ${toolId}`);
   }
 

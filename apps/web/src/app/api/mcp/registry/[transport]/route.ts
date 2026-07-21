@@ -289,6 +289,7 @@ async function handleExecuteTool(
     const tool = await withTimeout(
       prisma.tool.findFirst({
         where: {
+          isActive: true,
           name: args.toolName,
           package: { npmPackageName: args.packageName },
         },
