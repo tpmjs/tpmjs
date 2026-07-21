@@ -8,6 +8,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 import { LikeButton } from '~/components/LikeButton';
+import { trackCollectionMcpCopy } from '~/lib/analytics';
 
 interface CollectionTool {
   id: string;
@@ -46,7 +47,15 @@ interface PublicCollection {
   tools: CollectionTool[];
 }
 
-function McpUrlSection({ username, slug }: { username: string; slug: string }) {
+function McpUrlSection({
+  collectionId,
+  username,
+  slug,
+}: {
+  collectionId: string;
+  username: string;
+  slug: string;
+}) {
   const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
   const [showConfig, setShowConfig] = useState(false);
 
@@ -56,6 +65,7 @@ function McpUrlSection({ username, slug }: { username: string; slug: string }) {
 
   const copyToClipboard = async (url: string, type: 'http' | 'sse') => {
     await navigator.clipboard.writeText(url);
+    trackCollectionMcpCopy(collectionId, `${type}_url`);
     setCopiedUrl(type);
     setTimeout(() => setCopiedUrl(null), 2000);
   };
@@ -152,8 +162,9 @@ function McpUrlSection({ username, slug }: { username: string; slug: string }) {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                navigator.clipboard.writeText(configSnippet);
+              onClick={async () => {
+                await navigator.clipboard.writeText(configSnippet);
+                trackCollectionMcpCopy(collectionId, 'claude_config');
                 setCopiedUrl('http');
                 setTimeout(() => setCopiedUrl(null), 2000);
               }}
@@ -312,7 +323,11 @@ export default function PublicCollectionDetailPage(): React.ReactElement {
 
         {/* MCP URLs */}
         {collection.createdBy?.username && collection.slug && (
-          <McpUrlSection username={collection.createdBy.username} slug={collection.slug} />
+          <McpUrlSection
+            collectionId={collection.id}
+            username={collection.createdBy.username}
+            slug={collection.slug}
+          />
         )}
 
         {/* Tools */}

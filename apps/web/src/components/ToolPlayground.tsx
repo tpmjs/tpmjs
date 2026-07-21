@@ -14,6 +14,7 @@ import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { TokenBreakdown as TokenData } from '@/lib/ai-agent/tool-executor-agent';
+import { createPlaygroundOutcomeRecorder } from '~/lib/analytics';
 import { TokenBreakdown } from './TokenBreakdown';
 
 interface ToolPlaygroundProps {
@@ -42,6 +43,8 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
   // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: SSE stream handling requires sequential logic
   const handleExecute = async () => {
     if (!prompt.trim() || isExecuting) return;
+
+    const recordTerminalOutcome = createPlaygroundOutcomeRecorder(tool.id);
 
     setIsExecuting(true);
     setOutput('');
@@ -137,6 +140,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                       timestamp: new Date(),
                     },
                   ]);
+                  recordTerminalOutcome('success');
                   break;
 
                 case 'error':
@@ -149,12 +153,16 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
                       timestamp: new Date(),
                     },
                   ]);
+                  recordTerminalOutcome('failure');
                   break;
               }
             }
           }
         }
       }
+
+      // A clean stream close without a terminal event is still an incomplete execution.
+      recordTerminalOutcome('failure');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message);
@@ -166,6 +174,7 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
           timestamp: new Date(),
         },
       ]);
+      recordTerminalOutcome('failure');
     } finally {
       setIsExecuting(false);
     }

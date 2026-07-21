@@ -19,7 +19,7 @@ import { Markdown } from '~/components/Markdown';
 import { Rating } from '~/components/Rating';
 import { ToolPlayground } from '~/components/ToolPlayground';
 import { useTrackView } from '~/hooks/useTrackView';
-import { trackEvent } from '~/lib/analytics';
+import { type InstallSurface, trackEvent, trackInstallCommandCopy } from '~/lib/analytics';
 import {
   isPersistentlyImportBroken,
   PERSISTENT_IMPORT_FAILURE_THRESHOLD,
@@ -99,18 +99,19 @@ interface ToolDetailClientProps {
 export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.ReactElement {
   const [recheckLoading, setRecheckLoading] = useState(false);
   const [extractSchemaLoading, setExtractSchemaLoading] = useState(false);
-  const [surface, setSurface] = useState<'sdk' | 'mcp' | 'rest' | 'cli' | 'skill'>('sdk');
+  const [surface, setSurface] = useState<InstallSurface>('sdk');
 
   // Track page view
   useTrackView('tool', tool.id);
 
   const pkg = tool.package;
+  const toolAnalyticsId = tool.id;
   const isPersistentlyBroken = isPersistentlyImportBroken(tool.consecutiveImportFailures);
 
   // Activation-funnel analytics: this tool was viewed.
   useEffect(() => {
-    trackEvent('tool_view', { tool: `${pkg.npmPackageName}::${tool.name}` });
-  }, [pkg.npmPackageName, tool.name]);
+    trackEvent('tool_view', { tool: toolAnalyticsId });
+  }, [toolAnalyticsId]);
   const authorName = typeof pkg.npmAuthor === 'string' ? pkg.npmAuthor : pkg.npmAuthor?.name;
 
   // Generate JSON-LD structured data for SEO
@@ -407,11 +408,11 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                   ]}
                   activeTab={surface}
                   onTabChange={(id) => {
-                    const next = id as typeof surface;
+                    const next = id as InstallSurface;
                     setSurface(next);
                     trackEvent('install_surface', {
                       surface: next,
-                      tool: `${pkg.npmPackageName}::${tool.name}`,
+                      tool: toolAnalyticsId,
                     });
                   }}
                 />
@@ -425,6 +426,7 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                       code={`npm install ${pkg.npmPackageName}`}
                       language="bash"
                       showCopy={true}
+                      onCopy={() => trackInstallCommandCopy(toolAnalyticsId, surface)}
                     />
                     <CodeBlock
                       code={`import { generateText } from 'ai';
@@ -438,6 +440,7 @@ const result = await generateText({
 });`}
                       language="typescript"
                       showCopy={true}
+                      onCopy={() => trackInstallCommandCopy(toolAnalyticsId, surface)}
                     />
                     <p className="text-xs text-foreground-tertiary">
                       Prefer no install? Load it from the registry with <code>@tpmjs/compose</code>:{' '}
@@ -457,11 +460,13 @@ const result = await generateText({
   https://tpmjs.com/api/mcp/registry/http -t http`}
                       language="bash"
                       showCopy={true}
+                      onCopy={() => trackInstallCommandCopy(toolAnalyticsId, surface)}
                     />
                     <CodeBlock
                       code={`{ "toolId": "${pkg.npmPackageName}::${tool.name}", "params": { /* see Parameters */ } }`}
                       language="json"
                       showCopy={true}
+                      onCopy={() => trackInstallCommandCopy(toolAnalyticsId, surface)}
                     />
                   </div>
                 )}
@@ -477,6 +482,7 @@ const result = await generateText({
   -d '{"toolId":"${pkg.npmPackageName}::${tool.name}","params":{}}'`}
                       language="bash"
                       showCopy={true}
+                      onCopy={() => trackInstallCommandCopy(toolAnalyticsId, surface)}
                     />
                   </div>
                 )}
@@ -486,12 +492,18 @@ const result = await generateText({
                     <p className="text-sm text-foreground-secondary">
                       Use the <code>tpm</code> command line (from <code>@tpmjs/cli</code>).
                     </p>
-                    <CodeBlock code={`npm install -g @tpmjs/cli`} language="bash" showCopy={true} />
+                    <CodeBlock
+                      code={`npm install -g @tpmjs/cli`}
+                      language="bash"
+                      showCopy={true}
+                      onCopy={() => trackInstallCommandCopy(toolAnalyticsId, surface)}
+                    />
                     <CodeBlock
                       code={`tpm tool info ${pkg.npmPackageName} ${tool.name}
 tpm tool execute ${tool.name} --input '{}'`}
                       language="bash"
                       showCopy={true}
+                      onCopy={() => trackInstallCommandCopy(toolAnalyticsId, surface)}
                     />
                   </div>
                 )}
@@ -510,6 +522,7 @@ tpm tool execute ${tool.name} --input '{}'`}
                       code={`GET https://tpmjs.com/@<user>/collections/<slug>/skills`}
                       language="bash"
                       showCopy={true}
+                      onCopy={() => trackInstallCommandCopy(toolAnalyticsId, surface)}
                     />
                   </div>
                 )}

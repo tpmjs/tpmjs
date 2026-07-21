@@ -15,6 +15,7 @@ import { ShareButton } from '~/components/ShareButton';
 import { SkillsSection } from '~/components/skills/SkillsSection';
 import { UseCasesSection } from '~/components/UseCasesSection';
 import { useTrackView } from '~/hooks/useTrackView';
+import { trackCollectionMcpCopy } from '~/lib/analytics';
 import { useSession } from '~/lib/auth-client';
 
 /**
@@ -106,10 +107,12 @@ export interface PublicCollection {
 }
 
 function McpUrlSection({
+  collectionId,
   username,
   slug,
   isOwner,
 }: {
+  collectionId: string;
   username: string;
   slug: string;
   isOwner: boolean;
@@ -124,6 +127,7 @@ function McpUrlSection({
 
   const copyToClipboard = async (url: string, type: 'http' | 'sse') => {
     await navigator.clipboard.writeText(url);
+    trackCollectionMcpCopy(collectionId, `${type}_url`);
     setCopiedUrl(type);
     setTimeout(() => setCopiedUrl(null), 2000);
   };
@@ -245,7 +249,10 @@ const response = await fetch("${httpUrl}", {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigator.clipboard.writeText(claudeCodeCommand)}
+            onClick={async () => {
+              await navigator.clipboard.writeText(claudeCodeCommand);
+              trackCollectionMcpCopy(collectionId, 'claude_code');
+            }}
             className="absolute top-1.5 right-1.5"
           >
             <Icon icon="copy" className="w-3.5 h-3.5" />
@@ -269,7 +276,11 @@ const response = await fetch("${httpUrl}", {
 
         {showConfig && (
           <div className="mt-3">
-            <CodeBlock language="json" code={configSnippet} />
+            <CodeBlock
+              language="json"
+              code={configSnippet}
+              onCopy={() => trackCollectionMcpCopy(collectionId, 'claude_config')}
+            />
           </div>
         )}
 
@@ -286,7 +297,11 @@ const response = await fetch("${httpUrl}", {
 
             {showApiExample && (
               <div className="mt-3">
-                <CodeBlock language="typescript" code={apiExampleSnippet} />
+                <CodeBlock
+                  language="typescript"
+                  code={apiExampleSnippet}
+                  onCopy={() => trackCollectionMcpCopy(collectionId, 'api_example')}
+                />
               </div>
             )}
           </>
@@ -405,7 +420,12 @@ export function CollectionDetailClient({
           </div>
 
           {/* MCP Server URLs - Available to everyone (non-owners must provide their own credentials) */}
-          <McpUrlSection username={username} slug={collection.slug} isOwner={!!isOwner} />
+          <McpUrlSection
+            collectionId={collection.id}
+            username={username}
+            slug={collection.slug}
+            isOwner={!!isOwner}
+          />
 
           {/* Tools */}
           {collection.tools.length > 0 ? (

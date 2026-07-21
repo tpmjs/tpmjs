@@ -5,7 +5,9 @@ import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-interface CopyOption {
+export interface CopyOption {
+  /** Stable identifier for consumers such as analytics; never derived from the label. */
+  id?: string;
   label: string;
   value: string;
   description?: string;
@@ -15,12 +17,14 @@ interface CopyDropdownProps {
   options: CopyOption[];
   buttonLabel?: string;
   className?: string;
+  onCopy?: (option: CopyOption) => void;
 }
 
 export function CopyDropdown({
   options,
   buttonLabel = 'Copy',
   className = '',
+  onCopy,
 }: CopyDropdownProps): React.ReactElement {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -35,15 +39,23 @@ export function CopyDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleCopy = useCallback(async (option: CopyOption) => {
-    try {
-      await navigator.clipboard.writeText(option.value);
-      toast.success(`${option.label} copied to clipboard`);
-      setIsOpen(false);
-    } catch {
-      toast.error('Failed to copy');
-    }
-  }, []);
+  const handleCopy = useCallback(
+    async (option: CopyOption) => {
+      try {
+        await navigator.clipboard.writeText(option.value);
+        toast.success(`${option.label} copied to clipboard`);
+        setIsOpen(false);
+        try {
+          onCopy?.(option);
+        } catch {
+          // Follow-up observers must never turn a successful copy into a UI failure.
+        }
+      } catch {
+        toast.error('Failed to copy');
+      }
+    },
+    [onCopy]
+  );
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
@@ -112,9 +124,10 @@ export function getCollectionCopyOptions(
   );
 
   return [
-    { label: 'MCP URL (HTTP)', value: mcpUrlHttp, description: mcpUrlHttp },
-    { label: 'MCP URL (SSE)', value: mcpUrlSse, description: mcpUrlSse },
+    { id: 'http_url', label: 'MCP URL (HTTP)', value: mcpUrlHttp, description: mcpUrlHttp },
+    { id: 'sse_url', label: 'MCP URL (SSE)', value: mcpUrlSse, description: mcpUrlSse },
     {
+      id: 'claude_config',
       label: 'Claude Config',
       value: claudeConfig,
       description: 'JSON for claude_desktop_config.json',

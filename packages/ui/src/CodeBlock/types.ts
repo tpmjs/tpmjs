@@ -28,6 +28,11 @@ export interface CodeBlockProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
   showCopy?: boolean;
 
   /**
+   * Called after the clipboard write succeeds.
+   */
+  onCopy?: () => void;
+
+  /**
    * Color theme for syntax highlighting
    * If not provided, auto-detects from .dark class on html element
    */

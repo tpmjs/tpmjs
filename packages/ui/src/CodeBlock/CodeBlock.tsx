@@ -62,7 +62,10 @@ function useDarkMode(): boolean {
  * ```
  */
 export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>(
-  ({ className, code, language = 'text', size = 'md', showCopy = true, theme, ...props }, ref) => {
+  (
+    { className, code, language = 'text', size = 'md', showCopy = true, theme, onCopy, ...props },
+    ref
+  ) => {
     const [copied, setCopied] = useState(false);
     const isDarkMode = useDarkMode();
 
@@ -77,6 +80,13 @@ export const CodeBlock = forwardRef<HTMLDivElement, CodeBlockProps>(
       } catch (err) {
         // Silently fail if clipboard API is not available
         console.error('Failed to copy code:', err);
+        return;
+      }
+
+      try {
+        onCopy?.();
+      } catch {
+        // Follow-up observers must never turn a successful copy into a UI failure.
       }
     };
 
