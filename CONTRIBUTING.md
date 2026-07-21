@@ -226,6 +226,8 @@ Select the packages that changed and describe the changes. Choose the appropriat
 - **minor**: New features, non-breaking changes
 - **major**: Breaking changes
 
+Commit the generated `.changeset/*.md` file with your change — release intent is tracked in git. For the full release flow, the provenance/dry-run gate (`pnpm release:preview`), and rollback, see [RELEASING.md](./RELEASING.md).
+
 ### 4. Pre-commit Checks
 
 Before committing, lefthook will automatically run:

@@ -1,0 +1,48 @@
+name: Release Preview
+
+# Provenance gate: shows EXACTLY which packages and versions would publish,
+# on a clean checkout, without publishing anything. Run before a release.
+on:
+  workflow_dispatch:
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  preview:
+    if: github.repository_owner == 'tpmjs'
+    name: Preview what would publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.14.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Preview release
+        run: |
+          {
+            echo '## Release preview'
+            echo
+            echo '### Pending version bumps (from changesets)'
+            echo '```'
+            pnpm changeset status --verbose 2>&1 || true
+            echo '```'
+            echo
+            echo '### Packages ahead of npm (would publish)'
+            echo '```'
+            pnpm -r publish --dry-run --no-git-checks 2>&1 || true
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"

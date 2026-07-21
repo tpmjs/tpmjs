@@ -83,9 +83,8 @@ USER_ACCOUNT_ANALYSIS_*.md
 # storybook
 storybook-static
 
-# changesets
-.changeset/*.md
-!.changeset/README.md
+# changesets: release-intent files (.changeset/*.md) ARE tracked in git so that
+# releases are reviewable and reproducible. Do not re-ignore them.
 .vercel
 packages/tool-ideas/data/tools-export.json
 .env*.local
