@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Close published issues older than 24h
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: issues } = await github.rest.issues.listForRepo({

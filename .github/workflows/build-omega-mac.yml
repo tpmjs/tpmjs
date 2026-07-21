@@ -8,7 +8,7 @@ jobs:
     if: github.repository_owner == 'tpmjs'
     runs-on: macos-15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_16.2.app/Contents/Developer
@@ -67,7 +67,7 @@ jobs:
           codesign --force --sign - OmegaMac.app
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: OmegaMac
           path: apps/omega-mac/OmegaMac.app

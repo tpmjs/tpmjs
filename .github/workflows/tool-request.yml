@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Add working label
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const issueNumber = context.issue?.number || ${{ inputs.issue_number || 0 }};
@@ -32,7 +32,7 @@ jobs:
             });
 
       - name: Comment to trigger Claude
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const issueNumber = context.issue?.number || ${{ inputs.issue_number || 0 }};
@@ -75,7 +75,7 @@ jobs:
       issues: write
     steps:
       - name: Schedule auto-close
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             await github.rest.issues.createComment({
