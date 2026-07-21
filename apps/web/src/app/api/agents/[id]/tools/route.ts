@@ -122,8 +122,8 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     }
 
     // Check tool exists
-    const tool = await prisma.tool.findUnique({
-      where: { id: parsed.data.toolId },
+    const tool = await prisma.tool.findFirst({
+      where: { id: parsed.data.toolId, isActive: true },
       select: {
         id: true,
         name: true,

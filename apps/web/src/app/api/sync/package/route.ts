@@ -10,6 +10,11 @@ import {
   extractToolSchema,
   listToolExports,
 } from '~/lib/schema-extraction';
+import {
+  newToolLifecycle,
+  refreshedToolLifecycle,
+  retireMissingTools,
+} from '~/lib/sync/tool-lifecycle';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -173,6 +178,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const existingTools = await prisma.tool.findMany({
+      where: { packageId: packageRecord.id },
+    });
+    const existingByName = new Map(existingTools.map((tool) => [tool.name, tool]));
     const syncedTools: string[] = [];
 
     // Upsert each tool
@@ -203,6 +212,7 @@ export async function POST(request: NextRequest) {
           qualityScore: null,
           schemaSource: toolDef.parameters ? 'author' : null,
           toolDiscoverySource,
+          ...newToolLifecycle(pkg.version),
         },
         update: {
           description: toolDef.description || undefined,
@@ -217,6 +227,7 @@ export async function POST(request: NextRequest) {
             ? (toolDef.healthCheck as Prisma.InputJsonValue)
             : Prisma.DbNull,
           toolDiscoverySource,
+          ...refreshedToolLifecycle(existingByName.get(toolName), pkg.version),
         },
       });
 
@@ -246,6 +257,11 @@ export async function POST(request: NextRequest) {
       });
 
       syncedTools.push(toolName);
+    }
+
+    const retired = await retireMissingTools(packageRecord.id, syncedTools);
+    if (retired > 0) {
+      console.log(`Retired ${retired} absent tools from package ${pkg.name}@${pkg.version}`);
     }
 
     return NextResponse.json({

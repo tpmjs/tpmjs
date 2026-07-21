@@ -60,6 +60,7 @@ export async function GET(
       // Find specific tool by package name and export name
       const tool = await prisma.tool.findFirst({
         where: {
+          isActive: true,
           package: { npmPackageName: packageName },
           name: name,
         },
@@ -84,7 +85,7 @@ export async function GET(
     // Find all tools for the package
     const pkg = await prisma.package.findUnique({
       where: { npmPackageName: packageName },
-      include: { tools: true },
+      include: { tools: { where: { isActive: true } } },
     });
 
     if (!pkg) {
@@ -154,6 +155,7 @@ export async function POST(
     // Find the tool
     const tool = await prisma.tool.findFirst({
       where: {
+        isActive: true,
         package: { npmPackageName: packageName },
         name: name,
       },

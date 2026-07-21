@@ -192,6 +192,59 @@ async function verifyUpsertAndCascadeBalance(): Promise<void> {
         'dimension changes must move, not duplicate, projected counts'
       );
 
+      await tx.tool.update({
+        where: { id: toolId },
+        data: { isActive: false, retiredAt: new Date() },
+      });
+      const expectedWhileRetired = withDeltas(expectedAfterUpdate, [
+        [['total_tools', ''], -1n],
+        [['official_tools', ''], -1n],
+        [['package_tools', packageId], -1n],
+        [['category_tools', categoryB], -1n],
+        [['tools_with_schema', ''], -1n],
+        [['import_health', 'HEALTHY'], -1n],
+        [['execution_health', 'BROKEN'], -1n],
+        [['quality_bucket', 'high'], -1n],
+      ]);
+      assertSnapshot(
+        await readCounters(tx, keys),
+        expectedWhileRetired,
+        'retiring a tool must remove only its active-registry projections'
+      );
+
+      await tx.tool.update({
+        where: { id: toolId },
+        data: {
+          description: 'Mutable historical evidence',
+          importHealth: 'UNKNOWN',
+          executionHealth: 'UNKNOWN',
+          schemaSource: null,
+          qualityScore: null,
+        },
+      });
+      assertSnapshot(
+        await readCounters(tx, keys),
+        expectedWhileRetired,
+        'mutating retired evidence must not leak into active-registry projections'
+      );
+
+      await tx.tool.update({
+        where: { id: toolId },
+        data: {
+          isActive: true,
+          retiredAt: null,
+          importHealth: 'HEALTHY',
+          executionHealth: 'BROKEN',
+          schemaSource: 'extracted',
+          qualityScore: new Prisma.Decimal('0.75'),
+        },
+      });
+      assertSnapshot(
+        await readCounters(tx, keys),
+        expectedAfterUpdate,
+        'reactivating a tool must restore its current active-registry projections once'
+      );
+
       const driftedKeys: CounterKey[] = [
         ['total_packages', ''],
         ['tier_packages', 'rich'],

@@ -67,20 +67,20 @@ export async function GET(request: NextRequest) {
       dailyTrends,
     ] = await Promise.all([
       // Total tools
-      prisma.tool.count(),
+      prisma.tool.count({ where: { isActive: true } }),
 
       // Import health distribution
-      prisma.tool.count({ where: { importHealth: 'HEALTHY' } }),
-      prisma.tool.count({ where: { importHealth: 'BROKEN' } }),
-      prisma.tool.count({ where: { importHealth: 'UNKNOWN' } }),
+      prisma.tool.count({ where: { isActive: true, importHealth: 'HEALTHY' } }),
+      prisma.tool.count({ where: { isActive: true, importHealth: 'BROKEN' } }),
+      prisma.tool.count({ where: { isActive: true, importHealth: 'UNKNOWN' } }),
 
       // Execution health distribution
-      prisma.tool.count({ where: { executionHealth: 'HEALTHY' } }),
-      prisma.tool.count({ where: { executionHealth: 'BROKEN' } }),
-      prisma.tool.count({ where: { executionHealth: 'UNKNOWN' } }),
+      prisma.tool.count({ where: { isActive: true, executionHealth: 'HEALTHY' } }),
+      prisma.tool.count({ where: { isActive: true, executionHealth: 'BROKEN' } }),
+      prisma.tool.count({ where: { isActive: true, executionHealth: 'UNKNOWN' } }),
 
       // Never checked tools
-      prisma.tool.count({ where: { lastHealthCheck: null } }),
+      prisma.tool.count({ where: { isActive: true, lastHealthCheck: null } }),
 
       // Health check counts
       prisma.healthCheck.count({ where: { createdAt: { gte: last24h } } }),
@@ -120,6 +120,7 @@ export async function GET(request: NextRequest) {
       // Broken tools with error details
       prisma.tool.findMany({
         where: {
+          isActive: true,
           OR: [{ importHealth: 'BROKEN' }, { executionHealth: 'BROKEN' }],
         },
         select: {

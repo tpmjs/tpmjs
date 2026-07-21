@@ -22,6 +22,7 @@ describe('persistent import-failure policy', () => {
     expect(isPersistentlyImportBroken(PERSISTENT_IMPORT_FAILURE_THRESHOLD - 1)).toBe(false);
     expect(isPersistentlyImportBroken(PERSISTENT_IMPORT_FAILURE_THRESHOLD)).toBe(true);
     expect(defaultToolDiscoveryFilter()).toEqual({
+      isActive: true,
       consecutiveImportFailures: { lt: PERSISTENT_IMPORT_FAILURE_THRESHOLD },
     });
   });

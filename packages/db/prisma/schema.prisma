@@ -96,6 +96,12 @@ model Tool {
   // Tool Discovery Fields
   toolDiscoverySource String? @map("tool_discovery_source") @db.VarChar(20) // 'auto' | 'manual' | null
 
+  // Package-release lifecycle. Missing exports are retired, never deleted, so
+  // historical health, usage, ratings, and collection evidence remains.
+  isActive        Boolean   @default(true) @map("is_active")
+  lastSeenVersion String?   @map("last_seen_version") @db.VarChar(50)
+  retiredAt       DateTime? @map("retired_at")
+
   // Enriched metadata for search and discoverability
   tags      String[] @default([])
   signature String?  @db.VarChar(500) // e.g. "(url: string) => Promise<{ content: string }>"
@@ -167,6 +173,8 @@ model Tool {
   @@index([lastHealthCheck])
   @@index([healthCheckNextAt, id])
   @@index([qualityMetricsVersion, id])
+  @@index([isActive])
+  @@index([packageId, isActive])
   @@map("tools")
 }
 

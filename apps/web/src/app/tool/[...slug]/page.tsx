@@ -52,6 +52,7 @@ const getTool = cache(async function getTool(slug: string[]): Promise<Tool | nul
     const tool = await prisma.tool.findFirst({
       where: {
         packageId: pkg.id,
+        isActive: true,
         ...(toolName && { name: toolName }),
       },
       include: {

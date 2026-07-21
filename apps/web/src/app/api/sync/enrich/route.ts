@@ -9,6 +9,11 @@ import {
   extractToolSchema,
   listToolExports,
 } from '~/lib/schema-extraction';
+import {
+  newToolLifecycle,
+  refreshedToolLifecycle,
+  retireMissingTools,
+} from '~/lib/sync/tool-lifecycle';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,7 +52,7 @@ export async function POST(request: NextRequest) {
     // the queue and starve everything behind them.
     const discoveryCandidates = await prisma.package.findMany({
       where: {
-        tools: { none: {} },
+        tools: { none: { isActive: true } },
       },
       orderBy: { toolDiscoveryAttemptAt: { sort: 'asc', nulls: 'first' } },
       take: 25,
@@ -104,6 +109,8 @@ export async function POST(request: NextRequest) {
         }
 
         const validTools = exportsResult.tools.filter((t) => t.isValidTool);
+        const existingTools = await prisma.tool.findMany({ where: { packageId: pkg.id } });
+        const existingByName = new Map(existingTools.map((tool) => [tool.name, tool]));
 
         for (const tool of validTools) {
           await prisma.tool.upsert({
@@ -120,16 +127,23 @@ export async function POST(request: NextRequest) {
               qualityScore: null,
               schemaSource: null,
               toolDiscoverySource: 'auto',
+              ...newToolLifecycle(pkg.npmVersion),
             },
             update: {
               description: tool.description || undefined,
               toolDiscoverySource: 'auto',
+              ...refreshedToolLifecycle(existingByName.get(tool.name), pkg.npmVersion),
             },
           });
         }
 
+        const retired = await retireMissingTools(
+          pkg.id,
+          validTools.map((tool) => tool.name)
+        );
+
         console.log(
-          `Auto-discovered ${validTools.length} tools for ${pkg.npmPackageName}: ${validTools.map((t) => t.name).join(', ')}`
+          `Auto-discovered ${validTools.length} tools for ${pkg.npmPackageName}; retired ${retired}: ${validTools.map((t) => t.name).join(', ')}`
         );
         await prisma.package.update({
           where: { id: pkg.id },
@@ -158,6 +172,7 @@ export async function POST(request: NextRequest) {
     // Phase 2: Enrich tools that need schema extraction
     const toolsToEnrich = await prisma.tool.findMany({
       where: {
+        isActive: true,
         schemaSource: null,
         OR: [
           { schemaExtractionAttemptAt: null },
@@ -265,6 +280,7 @@ export async function POST(request: NextRequest) {
     if (Date.now() - startTime < TIME_BUDGET_MS) {
       const toolsNeedingTags = await prisma.tool.findMany({
         where: {
+          isActive: true,
           schemaSource: 'extracted',
           tags: { isEmpty: true },
         },

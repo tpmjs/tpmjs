@@ -51,8 +51,8 @@ export async function GET(
     const sort = searchParams.get('sort') || 'recent'; // 'recent', 'helpful', 'highest', 'lowest'
 
     // Check tool exists
-    const tool = await prisma.tool.findUnique({
-      where: { id },
+    const tool = await prisma.tool.findFirst({
+      where: { id, isActive: true },
       select: { id: true, reviewCount: true },
     });
 
@@ -241,9 +241,9 @@ export async function POST(
       );
     }
 
-    // Check tool exists
-    const tool = await prisma.tool.findUnique({
-      where: { id },
+    // Only active registry tools accept new reviews.
+    const tool = await prisma.tool.findFirst({
+      where: { id, isActive: true },
     });
 
     if (!tool) {

@@ -81,6 +81,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Find the tool
     const tool = await prisma.tool.findFirst({
       where: {
+        isActive: true,
         name,
         package: {
           npmPackageName: packageName,

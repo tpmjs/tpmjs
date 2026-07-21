@@ -65,8 +65,8 @@ export async function GET(
       },
     });
 
-    const tool = await prisma.tool.findUnique({
-      where: { id },
+    const tool = await prisma.tool.findFirst({
+      where: { id, isActive: true },
       select: { likeCount: true },
     });
 
@@ -118,9 +118,9 @@ export async function POST(
       );
     }
 
-    // Check tool exists
-    const tool = await prisma.tool.findUnique({
-      where: { id },
+    // Only active registry tools accept new likes.
+    const tool = await prisma.tool.findFirst({
+      where: { id, isActive: true },
     });
 
     if (!tool) {

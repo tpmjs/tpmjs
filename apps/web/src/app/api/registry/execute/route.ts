@@ -175,13 +175,13 @@ export async function POST(request: NextRequest) {
   const safeEnv = (env as Record<string, string>) || {};
 
   // --- Look up tool metadata ---
-  let toolDbId: string | undefined;
-  let version = 'latest';
-  let importUrl = `https://esm.sh/${packageName}@latest`;
+  let toolDbId: string;
+  let version: string;
 
   try {
     const tool = await prisma.tool.findFirst({
       where: {
+        isActive: true,
         name: exportName,
         package: { npmPackageName: packageName },
       },
@@ -193,15 +193,30 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (tool) {
-      toolDbId = tool.id;
-      version = tool.package.npmVersion;
-      importUrl = `https://esm.sh/${packageName}@${version}`;
+    if (!tool) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'TOOL_NOT_FOUND', message: `Active registry tool not found: ${toolId}` },
+        },
+        { status: 404 }
+      );
     }
+
+    toolDbId = tool.id;
+    version = tool.package.npmVersion;
   } catch (error) {
-    // DB lookup failed - continue with 'latest' version
     console.warn(`[REGISTRY EXECUTE] DB lookup failed for ${toolId}:`, error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: { code: 'REGISTRY_UNAVAILABLE', message: 'Registry lookup temporarily unavailable' },
+      },
+      { status: 503 }
+    );
   }
+
+  const importUrl = `https://esm.sh/${packageName}@${version}`;
 
   // --- Execute via executor service ---
   let executorResult: {
