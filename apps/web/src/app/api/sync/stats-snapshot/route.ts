@@ -19,8 +19,9 @@ export async function POST(request: NextRequest) {
   if (unauthorized) return unauthorized;
 
   try {
-    // Self-heal the trigger-maintained registry counters from the source tables
-    // before snapshotting, so historical stats never inherit counter drift.
+    // Audit and exactly reconcile the trigger-maintained projection before the
+    // daily historical snapshot. Normal reads/writes remain O(1); this bounded
+    // backstop catches any future trigger regression before it enters history.
     await prisma.$executeRawUnsafe('SELECT tpmjs_reconcile_counters()');
 
     // Get today's date at midnight UTC

@@ -40,13 +40,19 @@ updated in the same transaction as their source event:
 - execution events update execution counters;
 - conversation/message writes update agent counters;
 - registry writes update totals and low-cardinality distributions in
-  `registry_counters`.
+  `registry_counters` using `AFTER` row triggers, so an
+  `INSERT ... ON CONFLICT DO UPDATE` contributes exactly one real operation;
 - daily use-case generation selects only five due scenarios; rank refresh uses
   one 500-row dirty slice rather than loading and updating every use case.
 
-The daily stats snapshot reads those projections and only scans explicitly
-time-bounded event windows. View and execution rollup endpoints remain as
-cheap compatibility responses; they no longer perform work.
+The daily stats snapshot first reconciles the small current registry from a
+single locked source snapshot, then reads those projections and scans only
+explicitly time-bounded event windows. This is a defensive audit, not the
+normal read path: registry reads and writes remain O(1). Before an eventual
+registry size makes a complete audit exceed its maintenance window, the same
+check must become partitioned or replica-backed rather than being removed.
+View and execution rollup endpoints remain cheap compatibility responses; they
+no longer perform work.
 
 ## Migration discipline
 
@@ -83,5 +89,8 @@ FROM tools t JOIN packages p ON p.id = t.package_id
 WHERE t.quality_metrics_version < p.metrics_version;
 ```
 
-Correctness is checked against source rows after deployment. A projection
-reconciliation is a diagnostic, not a recurring cron job.
+Correctness is checked against source rows after deployment. CI also executes
+real package/tool upserts, dimension changes, and cascade deletion inside a
+rolled-back transaction; it rejects both double-counting and silent counter
+underflow. The daily exact reconciliation remains a backstop while its measured
+source scan is comfortably inside the maintenance window.
