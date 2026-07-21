@@ -6,7 +6,7 @@
  * 2. Summarize them
  * 3. Post the summary to a Discord channel
  *
- * Schedule: Daily at 9 AM UTC (configured in vercel.json)
+ * Schedule: Daily at 9 AM UTC via GitHub Actions.
  */
 
 import { prisma } from '@tpmjs/db';

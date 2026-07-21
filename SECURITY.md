@@ -49,7 +49,8 @@ The following are in scope:
 - Pre-commit hooks enforce linting and type-checking
 - Dependency updates monitored via automated tooling
 
-> Note: the `headers` block in `vercel.json` is dead configuration — it only applied while the site was served by Vercel. Response headers are now set by the app itself in `apps/web/next.config.ts`.
+Response headers are set by the app itself in `apps/web/next.config.ts`, so the
+policy travels with the self-hosted deployment.
 
 ## Acknowledgments
 

@@ -1,19 +1,19 @@
 import type { UserTier } from '@prisma/client';
-import { kv } from '@vercel/kv';
 import { RATE_LIMITS_BY_TIER } from './index';
 
 /**
- * Rate limiting for API keys using Vercel KV
+ * Rate limiting for API keys in the self-hosted web process.
  *
  * Each API key has a rate limit based on the user's tier.
  * Limits are enforced per hour (rolling window).
  */
 
-// Check if Vercel KV is available
-const isKVAvailable = !!process.env.KV_REST_API_URL;
-
-// In-memory fallback for development
+// Production runs one web process, so this bounded store is shared by every
+// API route without depending on a remote platform service.
 const memoryStore = new Map<string, { count: number; windowStart: number }>();
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+const MAX_STORE_SIZE = 10000;
+let lastCleanup = Date.now();
 
 /**
  * Result of a rate limit check
@@ -41,7 +41,7 @@ function getHourlyWindowStart(): number {
 }
 
 /**
- * Check rate limit for an API key using Vercel KV
+ * Check the rate limit for an API key.
  *
  * @param identifier - API key ID or user ID (for session auth)
  * @param tier - User's tier for determining rate limit
@@ -67,52 +67,7 @@ export async function checkApiKeyRateLimit(
 
   const key = `apikey:ratelimit:${identifier}:${windowStart}`;
 
-  if (isKVAvailable) {
-    return checkRateLimitKV(key, limit, windowMs, resetAt);
-  }
-
   return checkRateLimitMemory(key, limit, windowStart, resetAt);
-}
-
-/**
- * Check rate limit using Vercel KV (distributed)
- */
-async function checkRateLimitKV(
-  key: string,
-  limit: number,
-  windowMs: number,
-  resetAt: Date
-): Promise<RateLimitResult> {
-  try {
-    // Increment counter atomically
-    const current = await kv.incr(key);
-
-    // Set expiry on first request in window
-    if (current === 1) {
-      await kv.expire(key, Math.ceil(windowMs / 1000) + 60); // Add 60s buffer
-    }
-
-    const remaining = Math.max(0, limit - current);
-    const allowed = current <= limit;
-
-    return {
-      allowed,
-      remaining,
-      resetAt,
-      limit,
-      current,
-    };
-  } catch (error) {
-    console.error('[API Key Rate Limit] KV error:', error);
-    // On error, allow the request but log the issue
-    return {
-      allowed: true,
-      remaining: limit,
-      resetAt,
-      limit,
-      current: 0,
-    };
-  }
 }
 
 /**
@@ -138,10 +93,10 @@ function checkRateLimitMemory(
   const remaining = Math.max(0, limit - entry.count);
   const allowed = entry.count <= limit;
 
-  // Cleanup old entries periodically
-  if (Math.random() < 0.01) {
-    // 1% chance per request
+  const now = Date.now();
+  if (now - lastCleanup >= CLEANUP_INTERVAL_MS || memoryStore.size > MAX_STORE_SIZE) {
     cleanupMemoryStore(windowStart);
+    lastCleanup = now;
   }
 
   return {
@@ -160,6 +115,18 @@ function cleanupMemoryStore(currentWindowStart: number): void {
   for (const [key, entry] of memoryStore.entries()) {
     if (entry.windowStart < currentWindowStart) {
       memoryStore.delete(key);
+    }
+  }
+
+  // Map iteration order is insertion order, so evict the oldest active keys
+  // deterministically if a single clock-hour receives unusually high churn.
+  const overflow = memoryStore.size - MAX_STORE_SIZE;
+  if (overflow > 0) {
+    const keys = memoryStore.keys();
+    for (let index = 0; index < overflow; index++) {
+      const oldest = keys.next().value;
+      if (oldest === undefined) break;
+      memoryStore.delete(oldest);
     }
   }
 }

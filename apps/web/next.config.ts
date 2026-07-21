@@ -50,8 +50,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Security headers set here (not in vercel.json, which no longer
-        // serves traffic) so they apply regardless of where the app is hosted.
+        // Security headers live with the application so they apply to every
+        // self-hosted deployment.
         // SAMEORIGIN (not DENY): TechDiagram frames /isoflow-embed.html same-origin.
         source: '/(.*)',
         headers: [

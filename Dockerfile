@@ -18,8 +18,9 @@ LABEL org.opencontainers.image.revision=${COMMIT_SHA} \
 ENV NODE_ENV=production \
     PORT=3000 \
     HOSTNAME=0.0.0.0 \
-    VERCEL_GIT_COMMIT_SHA=${COMMIT_SHA} \
-    VERCEL_GIT_COMMIT_MESSAGE=${COMMIT_MESSAGE}
+    TPMJS_COMMIT_SHA=${COMMIT_SHA} \
+    TPMJS_COMMIT_MESSAGE=${COMMIT_MESSAGE} \
+    TPMJS_DEPLOYMENT_URL=https://tpmjs.com
 
 WORKDIR /app
 COPY --chown=node:node standalone ./

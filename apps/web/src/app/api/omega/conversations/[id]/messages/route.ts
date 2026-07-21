@@ -181,14 +181,15 @@ async function searchRelevantTools(
     limit: String(limit),
   });
 
-  // Determine base URL from request or environment
+  // Prefer the incoming origin so local/canary traffic stays local. A neutral
+  // explicit base URL remains available for jobs without a request URL.
   let baseUrl: string;
-  if (process.env.VERCEL_URL) {
-    baseUrl = `https://${process.env.VERCEL_URL}`;
-  } else if (requestUrl) {
+  if (requestUrl) {
     // Extract origin from the incoming request URL
     const url = new URL(requestUrl);
     baseUrl = url.origin;
+  } else if (process.env.TPMJS_BASE_URL) {
+    baseUrl = process.env.TPMJS_BASE_URL;
   } else {
     // Fallback to PORT env var or default
     const port = process.env.PORT || '3000';

@@ -131,9 +131,7 @@ async function fetchToolContent(path: string): Promise<PageContent> {
   const { packageName, toolName } = parseToolPath(path);
 
   // Build API URL
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   const apiPath = toolName
     ? `/api/tools/${encodeURIComponent(packageName)}/${encodeURIComponent(toolName)}`

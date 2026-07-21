@@ -40,11 +40,12 @@ export function TpmjsDiagram(): React.ReactElement {
     // === Sync Workers (top left) ===
     drawNode(mainGroup, leftX, topY, 150, 60, {
       label: 'Sync Workers',
-      sublabel: 'Vercel Cron',
+      sublabel: 'Actions + timers',
       type: 'info',
       tooltip: {
         title: 'Sync Workers',
-        description: 'Automated jobs running on Vercel Cron to discover and sync npm packages.',
+        description:
+          'GitHub Actions and on-box systemd timers discover and synchronize npm packages.',
       },
       delay: 0,
     });

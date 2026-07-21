@@ -13,7 +13,7 @@ export const maxDuration = 60;
  * Discovery-only sync: monitors NPM changes feed, upserts packages and tools.
  * Does NOT call the executor for schema extraction or health checks — that's handled by /api/sync/enrich.
  *
- * Called by Vercel Cron (every 4 hours) or GitHub Actions.
+ * Called by the authenticated GitHub Actions schedule.
  * Requires Authorization: Bearer <CRON_SECRET>
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex but straightforward CRUD operation

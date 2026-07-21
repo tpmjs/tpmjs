@@ -19,10 +19,9 @@ export async function GET(request: NextRequest) {
     status: 'ok',
     timestamp: new Date().toISOString(),
     build: {
-      // Vercel provides these at runtime
-      commitSha: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'local',
-      commitMessage: process.env.VERCEL_GIT_COMMIT_MESSAGE || 'local',
-      deploymentUrl: process.env.VERCEL_URL || 'localhost',
+      commitSha: process.env.TPMJS_COMMIT_SHA?.slice(0, 7) || 'local',
+      commitMessage: process.env.TPMJS_COMMIT_MESSAGE || 'local',
+      deploymentUrl: process.env.TPMJS_DEPLOYMENT_URL || 'localhost',
     },
     env: {
       hasDatabase: !!process.env.DATABASE_URL,

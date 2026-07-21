@@ -3,10 +3,9 @@
 ## Current deployment (since 2026-07)
 
 tpmjs.com is **self-hosted**: the apps run as podman containers on a single box,
-built on-box from this repo, fronted by Caddy (with Cloudflare in front). Vercel
-auto-deploys are disabled (`vercel.json` → `git.deploymentEnabled.main: false`)
-pending decommission; the old Vercel deployment-protection guide is archived at
-`docs/history/vercel-deployment.md`.
+built on-box from this repo, fronted by Caddy (with Cloudflare in front). There is
+no Vercel hosting or deployment path. The old deployment-protection guide remains
+archived at `docs/history/vercel-deployment.md` as historical context only.
 
 | Component | Container | Port (localhost) |
 |---|---|---|
@@ -28,7 +27,7 @@ pending decommission; the old Vercel deployment-protection guide is archived at
 - **DB backup**: `podman exec tpmjs-pg pg_dump -U tpmjs -Fc tpmjs > backup.dump`.
 - **Scheduled jobs**: API-driven sync crons run from GitHub Actions against
   `https://tpmjs.com`; the daily rollup/cleanup crons run from an on-box systemd
-  timer (`tpmjs-cron.timer`). The `crons` block was removed from `vercel.json`.
+  timer (`tpmjs-cron.timer`).
 
 ---
 

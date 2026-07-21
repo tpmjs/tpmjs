@@ -22,7 +22,7 @@ const RETRY_COOLDOWN_MS = 60 * 60 * 1000; // 1 hour before retrying failed extra
  * Enrichment queue processor: extracts schemas and runs health checks for tools
  * that haven't been enriched yet. Also handles auto-discovery for packages with no tools.
  *
- * Called by Vercel Cron (every 2 minutes) or GitHub Actions.
+ * Called by the authenticated GitHub Actions schedule.
  * Requires Authorization: Bearer <CRON_SECRET>
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex but straightforward queue processing
