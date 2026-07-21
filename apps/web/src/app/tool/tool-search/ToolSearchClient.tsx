@@ -12,15 +12,7 @@ import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
 import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
 import { Select } from '@tpmjs/ui/Select/Select';
 import Link from 'next/link';
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
 import { CopyButton } from '~/components/CopyButton';
@@ -96,12 +88,6 @@ export function ToolSearchClient({
   const [healthFilter, setHealthFilter] = useState('all');
   const [sortBy, setSortBy] = useState<SortOption>('downloads');
   const [packageManager, setPackageManager] = usePackageManager();
-  // Keep a ref so TableRow callback stays stable and doesn't cause react-virtuoso
-  // to reconcile DOM nodes mid-render (which triggers null.removeChild errors).
-  const packageManagerRef = useRef(packageManager);
-  useLayoutEffect(() => {
-    packageManagerRef.current = packageManager;
-  });
 
   const hasDefaultFilters = categoryFilter === 'all' && healthFilter === 'all';
 
@@ -197,57 +183,57 @@ export function ToolSearchClient({
     []
   );
 
-  const TableRow = useCallback((_index: number, tool: Tool) => {
-    const isBroken = tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN';
-    const displayName = tool.name !== 'default' ? tool.name : tool.package.npmPackageName;
-    const installCommand = getInstallCommand(
-      tool.package.npmPackageName,
-      packageManagerRef.current
-    );
+  const TableRow = useCallback(
+    (_index: number, tool: Tool) => {
+      const isBroken = tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN';
+      const displayName = tool.name !== 'default' ? tool.name : tool.package.npmPackageName;
+      const installCommand = getInstallCommand(tool.package.npmPackageName, packageManager);
 
-    return (
-      <>
-        <td className="px-4 py-3">
-          <Link href={`/tool/${tool.package.npmPackageName}/${tool.name}`} className="block">
-            <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
-              {displayName}
-              {isBroken && (
-                <Badge variant="error" size="sm" className="ml-2">
-                  Broken
-                </Badge>
-              )}
-            </div>
-            <div className="text-xs text-foreground-tertiary truncate max-w-[230px]">
-              {tool.package.npmPackageName}
-            </div>
-          </Link>
-        </td>
-        <td className="px-4 py-3 text-sm text-foreground-secondary">
-          {tool.description ? truncateText(tool.description, 60) : '—'}
-        </td>
-        <td className="px-4 py-3">
-          <Badge variant="secondary" size="sm">
-            {tool.package.category}
-          </Badge>
-        </td>
-        <td className="px-4 py-3 text-right text-sm text-foreground-secondary tabular-nums">
-          {formatDownloads(tool.package.npmDownloadsLastMonth ?? 0)}
-        </td>
-        <td className="px-4 py-3 text-right">
-          <LikeButton
-            entityType="tool"
-            entityId={tool.id}
-            initialCount={tool.likeCount ?? 0}
-            size="sm"
-            showCount={true}
-          />
-        </td>
-        <td className="px-4 py-3 text-right">
-          <CopyButton text={installCommand} label="Copy" size="xs" />
-        </td>
-      </>
-    );
-  }, []);
+      return (
+        <>
+          <td className="px-4 py-3">
+            <Link href={`/tool/${tool.package.npmPackageName}/${tool.name}`} className="block">
+              <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                {displayName}
+                {isBroken && (
+                  <Badge variant="error" size="sm" className="ml-2">
+                    Broken
+                  </Badge>
+                )}
+              </div>
+              <div className="text-xs text-foreground-tertiary truncate max-w-[230px]">
+                {tool.package.npmPackageName}
+              </div>
+            </Link>
+          </td>
+          <td className="px-4 py-3 text-sm text-foreground-secondary">
+            {tool.description ? truncateText(tool.description, 60) : '—'}
+          </td>
+          <td className="px-4 py-3">
+            <Badge variant="secondary" size="sm">
+              {tool.package.category}
+            </Badge>
+          </td>
+          <td className="px-4 py-3 text-right text-sm text-foreground-secondary tabular-nums">
+            {formatDownloads(tool.package.npmDownloadsLastMonth ?? 0)}
+          </td>
+          <td className="px-4 py-3 text-right">
+            <LikeButton
+              entityType="tool"
+              entityId={tool.id}
+              initialCount={tool.likeCount ?? 0}
+              size="sm"
+              showCount={true}
+            />
+          </td>
+          <td className="px-4 py-3 text-right">
+            <CopyButton text={installCommand} label="Copy" size="xs" />
+          </td>
+        </>
+      );
+    },
+    [packageManager]
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -358,6 +344,9 @@ export function ToolSearchClient({
           <div className="border border-border rounded-lg overflow-hidden">
             {isHydrated ? (
               <TableVirtuoso
+                // Remount when install syntax changes. This keeps Virtuoso from
+                // reconciling table cells while its item renderer is changing.
+                key={packageManager}
                 style={{ height: 'calc(100vh - 400px)', minHeight: '400px' }}
                 data={filteredTools}
                 overscan={50}
