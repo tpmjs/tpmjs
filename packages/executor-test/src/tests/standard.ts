@@ -1,4 +1,4 @@
-import type { InfoResponse, TestResult, TestSuite } from '../types.js';
+import type { ExecuteToolResponse, InfoResponse, TestResult, TestSuite } from '../types.js';
 
 async function testInfoReturns200(baseUrl: string, _apiKey?: string): Promise<TestResult> {
   const start = Date.now();
@@ -8,7 +8,7 @@ async function testInfoReturns200(baseUrl: string, _apiKey?: string): Promise<Te
     const response = await fetch(`${baseUrl}/info`, {
       method: 'GET',
       headers: {
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
     });
 
@@ -54,7 +54,7 @@ async function testInfoIncludesCapabilities(
     const response = await fetch(`${baseUrl}/info`, {
       method: 'GET',
       headers: {
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
     });
 
@@ -116,7 +116,7 @@ async function testInfoIncludesProtocolVersion(
     const response = await fetch(`${baseUrl}/info`, {
       method: 'GET',
       headers: {
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
     });
 
@@ -161,7 +161,7 @@ async function testInfoIsolationLevel(baseUrl: string, _apiKey?: string): Promis
     const response = await fetch(`${baseUrl}/info`, {
       method: 'GET',
       headers: {
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
     });
 
@@ -209,12 +209,13 @@ async function testAuthenticationEnforced(baseUrl: string, apiKey?: string): Pro
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
       body: JSON.stringify({
-        packageName: '@anthropic-ai/sdk',
-        name: 'default',
-        params: {},
+        packageName: '@tpmjs/tools-normalize-whitespace',
+        name: 'normalizeWhitespaceTool',
+        version: '0.2.0',
+        params: { text: 'hello   world' },
       }),
     });
 
@@ -245,13 +246,14 @@ async function testAuthenticationEnforced(baseUrl: string, apiKey?: string): Pro
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        packageName: '@anthropic-ai/sdk',
-        name: 'default',
-        params: {},
+        packageName: '@tpmjs/tools-normalize-whitespace',
+        name: 'normalizeWhitespaceTool',
+        version: '0.2.0',
+        params: { text: 'hello   world' },
       }),
     });
 
@@ -288,7 +290,7 @@ async function testExecutionTimeoutEnforced(
     const response = await fetch(`${baseUrl}/info`, {
       method: 'GET',
       headers: {
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
     });
 
@@ -337,11 +339,11 @@ async function testStructuredErrorCodes(baseUrl: string, apiKey?: string): Promi
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'X-TPMJS-Protocol-Version': '1.0',
+      'X-TPMJS-Protocol-Version': '1.1',
     };
 
     if (apiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
+      headers.Authorization = `Bearer ${apiKey}`;
     }
 
     const response = await fetch(`${baseUrl}/execute-tool`, {
@@ -350,6 +352,7 @@ async function testStructuredErrorCodes(baseUrl: string, apiKey?: string): Promi
       body: JSON.stringify({
         packageName: '@tpmjs/nonexistent-package-xyz-12345',
         name: 'nonexistentTool',
+        version: '0.0.0',
         params: {},
       }),
     });
@@ -366,34 +369,36 @@ async function testStructuredErrorCodes(baseUrl: string, apiKey?: string): Promi
       };
     }
 
-    const data = (await response.json()) as {
-      success: boolean;
-      error?: { code: string; message: string };
-    };
+    const data = (await response.json()) as ExecuteToolResponse;
 
-    if (!data.error?.code) {
+    if (!data.errorCode || !data.errorStage || typeof data.retryable !== 'boolean') {
       return {
         name,
         passed: false,
-        message: 'Error response missing "code" field',
+        message: 'Error response missing typed failure metadata',
         durationMs,
       };
     }
 
     const validCodes = [
-      'PACKAGE_NOT_FOUND',
+      'INVALID_REQUEST',
+      'AUTHENTICATION_REQUIRED',
+      'PACKAGE_IMPORT_FAILED',
       'TOOL_NOT_FOUND',
-      'TOOL_INVALID',
-      'TOOL_EXECUTION_ERROR',
+      'TOOL_CONFIGURATION_REQUIRED',
+      'INVALID_TOOL',
+      'SCHEMA_UNAVAILABLE',
+      'TOOL_EXECUTION_FAILED',
+      'EXECUTOR_UNAVAILABLE',
       'EXECUTION_TIMEOUT',
-      'INTERNAL_ERROR',
+      'EXECUTOR_INTERNAL_ERROR',
     ];
 
-    if (validCodes.includes(data.error.code)) {
+    if (validCodes.includes(data.errorCode)) {
       return {
         name,
         passed: true,
-        message: `Error code: ${data.error.code}`,
+        message: `Error code: ${data.errorCode}`,
         durationMs,
       };
     }
@@ -401,7 +406,7 @@ async function testStructuredErrorCodes(baseUrl: string, apiKey?: string): Promi
     return {
       name,
       passed: false,
-      message: `Non-standard error code: ${data.error.code}`,
+      message: `Non-standard error code: ${data.errorCode}`,
       durationMs,
     };
   } catch (error) {

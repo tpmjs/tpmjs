@@ -44,10 +44,10 @@ export interface ExecuteToolRequest {
 export interface ExecuteToolResponse {
   success: boolean;
   output?: unknown;
-  error?: {
-    code: string;
-    message: string;
-  };
+  error?: string;
+  errorStage?: 'request' | 'load' | 'execute' | 'executor';
+  errorCode?: string;
+  retryable?: boolean;
   executionTimeMs: number;
 }
 

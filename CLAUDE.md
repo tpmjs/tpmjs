@@ -82,8 +82,20 @@ The playground and tutorial still use the parametrized `donto-infra/build/tpmjs.
 **Deploy the Deno services** (each builds from its own directory in this repo):
 
 ```bash
-sudo podman build -t tpmjs-railway-executor:local /mnt/donto-data/workspace/tpmjs/apps/railway-executor/
+cd /mnt/donto-data/workspace/tpmjs
+COMMIT_SHA=$(git rev-parse --short=8 HEAD)
+COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+OLD_SHA=$(sudo podman image inspect localhost/tpmjs-railway-executor:local \
+  --format '{{ index .Labels "org.opencontainers.image.revision" }}')
+sudo podman tag localhost/tpmjs-railway-executor:local \
+  "localhost/tpmjs-railway-executor:rollback-${OLD_SHA:-legacy}"
+sudo podman build \
+  --build-arg "COMMIT_SHA=${COMMIT_SHA}" \
+  --build-arg "COMMIT_MESSAGE=${COMMIT_MESSAGE}" \
+  -t localhost/tpmjs-railway-executor:local apps/railway-executor/
 sudo systemctl restart tpmjs-railway-executor
+curl -fsS http://127.0.0.1:3210/health | jq --arg sha "$COMMIT_SHA" \
+  --exit-status '.protocolVersion == "1.1" and .implementationVersion == $sha'
 
 sudo podman build -t tpmjs-agent-sandbox:local /mnt/donto-data/workspace/tpmjs/templates/agent-sandbox/
 sudo systemctl restart tpmjs-agent-sandbox

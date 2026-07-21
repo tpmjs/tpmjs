@@ -1,5 +1,12 @@
 import type { ExecuteToolResponse, HealthResponse, TestResult, TestSuite } from '../types.js';
 
+const FIXTURE = {
+  packageName: '@tpmjs/tools-normalize-whitespace',
+  name: 'normalizeWhitespaceTool',
+  version: '0.2.0',
+  params: { text: 'hello   world' },
+};
+
 async function testHealthReturns200(baseUrl: string, _apiKey?: string): Promise<TestResult> {
   const start = Date.now();
   const name = 'GET /health returns 200';
@@ -8,7 +15,7 @@ async function testHealthReturns200(baseUrl: string, _apiKey?: string): Promise<
     const response = await fetch(`${baseUrl}/health`, {
       method: 'GET',
       headers: {
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
     });
 
@@ -45,7 +52,7 @@ async function testHealthIncludesProtocolVersion(
     const response = await fetch(`${baseUrl}/health`, {
       method: 'GET',
       headers: {
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
     });
 
@@ -83,7 +90,7 @@ async function testHealthIncludesImplementationVersion(
     const response = await fetch(`${baseUrl}/health`, {
       method: 'GET',
       headers: {
-        'X-TPMJS-Protocol-Version': '1.0',
+        'X-TPMJS-Protocol-Version': '1.1',
       },
     });
 
@@ -120,20 +127,18 @@ async function testExecuteToolAcceptsValidRequest(
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'X-TPMJS-Protocol-Version': '1.0',
+      'X-TPMJS-Protocol-Version': '1.1',
     };
 
     if (apiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
+      headers.Authorization = `Bearer ${apiKey}`;
     }
 
     const response = await fetch(`${baseUrl}/execute-tool`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        packageName: '@anthropic-ai/sdk',
-        name: 'default',
-        params: {},
+        ...FIXTURE,
       }),
     });
 
@@ -180,20 +185,18 @@ async function testExecuteToolReturnsStructuredResponse(
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'X-TPMJS-Protocol-Version': '1.0',
+      'X-TPMJS-Protocol-Version': '1.1',
     };
 
     if (apiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
+      headers.Authorization = `Bearer ${apiKey}`;
     }
 
     const response = await fetch(`${baseUrl}/execute-tool`, {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        packageName: '@anthropic-ai/sdk',
-        name: 'default',
-        params: {},
+        ...FIXTURE,
       }),
     });
 
@@ -248,6 +251,18 @@ async function testExecuteToolReturnsStructuredResponse(
       };
     }
 
+    if (
+      !data.success &&
+      (!data.errorStage || !data.errorCode || typeof data.retryable !== 'boolean')
+    ) {
+      return {
+        name,
+        passed: false,
+        message: 'Error response missing typed failure metadata',
+        durationMs,
+      };
+    }
+
     return { name, passed: true, durationMs };
   } catch (error) {
     return {
@@ -269,11 +284,11 @@ async function testExecuteToolReturnsErrorForInvalidTool(
   try {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'X-TPMJS-Protocol-Version': '1.0',
+      'X-TPMJS-Protocol-Version': '1.1',
     };
 
     if (apiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`;
+      headers.Authorization = `Bearer ${apiKey}`;
     }
 
     const response = await fetch(`${baseUrl}/execute-tool`, {
@@ -282,6 +297,7 @@ async function testExecuteToolReturnsErrorForInvalidTool(
       body: JSON.stringify({
         packageName: '@tpmjs/nonexistent-package-12345',
         name: 'nonexistentTool',
+        version: '0.0.0',
         params: {},
       }),
     });
@@ -300,7 +316,13 @@ async function testExecuteToolReturnsErrorForInvalidTool(
 
     const data = (await response.json()) as ExecuteToolResponse;
 
-    if (data.success === false && data.error?.code) {
+    if (
+      data.success === false &&
+      data.error &&
+      data.errorCode &&
+      data.errorStage &&
+      typeof data.retryable === 'boolean'
+    ) {
       return { name, passed: true, durationMs };
     }
 

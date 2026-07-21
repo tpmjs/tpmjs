@@ -1,160 +1,89 @@
-# Railway Dynamic Tool Executor
+# TPMJS Dynamic Executor
 
-Dynamic tool executor service that runs with `--experimental-network-imports` to support loading npm packages from esm.sh at runtime.
+The production TPMJS executor dynamically loads exact npm package versions and
+invokes AI SDK tools. Despite the historical directory name, it is built and
+run on the TPMJS host as a Podman service; it is not deployed on Railway or
+Vercel.
 
-## Features
+`server.ts` is the only implementation. The image build runs `deno check`
+before producing an artifact, so the same source that CI checks is the source
+the container executes.
 
-- 🔥 **Dynamic imports** from esm.sh
-- 💾 **Module caching** for fast repeated loads
-- 🛡️ **Validation** of AI SDK tool structure
-- 🚀 **Remote execution** of tools with parameters
+## Protocol
 
-## Endpoints
-
-### `GET /health`
-Health check and cache statistics
+All endpoints except `GET /health` require
+`Authorization: Bearer $EXECUTOR_API_KEY`.
 
 ### `POST /load-and-describe`
-Load a tool from esm.sh and return its schema
 
-**Request:**
 ```json
 {
-  "packageName": "firecrawl-aisdk",
-  "name": "webSearchTool",
-  "version": "0.7.2",
-  "importUrl": "https://esm.sh/firecrawl-aisdk@0.7.2"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "tool": {
-    "name": "webSearchTool",
-    "description": "Search the web using Firecrawl",
-    "inputSchema": { ... }
-  }
+  "packageName": "@tpmjs/tools-normalize-whitespace",
+  "name": "normalizeWhitespaceTool",
+  "version": "0.2.0",
+  "env": {}
 }
 ```
 
 ### `POST /execute-tool`
-Execute a tool with parameters
 
-**Request:**
 ```json
 {
-  "packageName": "firecrawl-aisdk",
-  "name": "webSearchTool",
-  "version": "0.7.2",
-  "params": {
-    "query": "latest AI news"
-  }
+  "packageName": "@tpmjs/tools-normalize-whitespace",
+  "name": "normalizeWhitespaceTool",
+  "version": "0.2.0",
+  "params": { "text": "hello   world" },
+  "env": {}
 }
 ```
 
-**Response:**
+Successful executions return `success`, `output`, and `executionTimeMs`.
+Failures retain a human-readable `error` for operators and always include the
+machine-readable fields below:
+
 ```json
 {
-  "success": true,
-  "output": { ... },
-  "executionTimeMs": 1234
+  "success": false,
+  "error": "Tool not found",
+  "errorStage": "load",
+  "errorCode": "TOOL_NOT_FOUND",
+  "retryable": false,
+  "executionTimeMs": 42
 }
 ```
 
-### `POST /cache/clear`
-Clear the module cache
+Consumers must classify failures using `errorStage`, `errorCode`, and
+`retryable`; they must never infer meaning from the wording of `error`. The
+canonical Zod contract lives in `@tpmjs/types/executor`.
 
-### `GET /cache/stats`
-Get cache statistics
-
-## Local Development
+## Local verification
 
 ```bash
-# Install dependencies
-npm install
-
-# Start server
-npm start
-
-# Server runs on http://localhost:3001
+podman build -t tpmjs-railway-executor:local apps/railway-executor
+podman run --rm -p 3002:3002 \
+  -e EXECUTOR_API_KEY=local-test \
+  tpmjs-railway-executor:local
+curl http://127.0.0.1:3002/health
 ```
 
-## Railway Deployment
+The live unit is `tpmjs-railway-executor.service`; its container binds to
+`127.0.0.1:3210` on the host.
 
-This service is designed to run on Railway.
+Production images are commit-stamped and retain the previous image under a
+rollback tag:
 
-### Deploy Steps
-
-1. Initialize Railway in this directory:
 ```bash
-cd apps/railway-executor
-railway init
+COMMIT_SHA=$(git rev-parse --short=8 HEAD)
+COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+OLD_SHA=$(sudo podman image inspect localhost/tpmjs-railway-executor:local \
+  --format '{{ index .Labels "org.opencontainers.image.revision" }}')
+sudo podman tag localhost/tpmjs-railway-executor:local \
+  "localhost/tpmjs-railway-executor:rollback-${OLD_SHA:-legacy}"
+sudo podman build \
+  --build-arg "COMMIT_SHA=${COMMIT_SHA}" \
+  --build-arg "COMMIT_MESSAGE=${COMMIT_MESSAGE}" \
+  -t localhost/tpmjs-railway-executor:local apps/railway-executor
 ```
 
-2. Link to your Railway project:
-```bash
-railway link
-```
-
-3. Deploy:
-```bash
-railway up
-```
-
-4. Railway will automatically:
-   - Detect Node.js
-   - Run `npm install`
-   - Execute `npm start` (which includes `--experimental-network-imports`)
-
-### Environment Variables
-
-No environment variables required for basic operation. Optional:
-
-- `PORT` - Server port (Railway sets this automatically)
-- `NODE_ENV` - Set to `production` in Railway
-
-## Testing
-
-### Test health endpoint:
-```bash
-curl http://localhost:3001/health
-```
-
-### Test tool loading:
-```bash
-curl -X POST http://localhost:3001/load-and-describe \
-  -H "Content-Type: application/json" \
-  -d '{
-    "packageName": "@tpmjs/hello",
-    "name": "helloWorldTool",
-    "version": "0.1.0"
-  }'
-```
-
-### Test tool execution:
-```bash
-curl -X POST http://localhost:3001/execute-tool \
-  -H "Content-Type: application/json" \
-  -d '{
-    "packageName": "@tpmjs/hello",
-    "name": "helloWorldTool",
-    "version": "0.1.0",
-    "params": {}
-  }'
-```
-
-## Integration with Playground
-
-The playground app calls this service to load and execute tools dynamically.
-
-Set in playground environment:
-```bash
-RAILWAY_SERVICE_URL=https://your-service.up.railway.app
-```
-
-Or use existing:
-```bash
-SANDBOX_EXECUTOR_URL=https://your-service.up.railway.app
-```
+After restart, `GET /health` must report that exact commit as
+`implementationVersion`.

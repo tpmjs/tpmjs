@@ -1,6 +1,6 @@
 import type { Package, Tool } from '@tpmjs/db';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { checkExecutionHealth } from './health-check-service';
+import { checkExecutionHealth, checkImportHealth } from './health-check-service';
 
 function healthTool(healthCheckConfig: Tool['healthCheckConfig']): Tool & { package: Package } {
   return {
@@ -43,7 +43,13 @@ describe('checkExecutionHealth', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ success: true, output: { resource: { id: 'thing_1' } } }))
+        new Response(
+          JSON.stringify({
+            success: true,
+            output: { resource: { id: 'thing_1' } },
+            executionTimeMs: 10,
+          })
+        )
       )
       .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, output: {} })));
     vi.stubGlobal('fetch', fetchMock);
@@ -84,5 +90,134 @@ describe('checkExecutionHealth', () => {
     expect(cleanupInit.headers).toMatchObject({
       Authorization: 'Bearer test-executor-key',
     });
+  });
+
+  it('treats a typed execute-stage throw as proof the tool is callable', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: 'message wording is irrelevant',
+            errorStage: 'execute',
+            errorCode: 'TOOL_EXECUTION_FAILED',
+            retryable: false,
+            executionTimeMs: 12,
+          })
+        )
+      )
+    );
+
+    const result = await checkExecutionHealth(healthTool(null));
+
+    expect(result).toMatchObject({ status: 'HEALTHY', error: null });
+  });
+
+  it('marks a deterministic typed load failure broken', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: 'export does not exist',
+            errorStage: 'load',
+            errorCode: 'TOOL_NOT_FOUND',
+            retryable: false,
+            executionTimeMs: 8,
+          }),
+          { status: 404 }
+        )
+      )
+    );
+
+    const result = await checkExecutionHealth(healthTool(null));
+
+    expect(result).toMatchObject({
+      status: 'BROKEN',
+      error: 'TOOL_NOT_FOUND: export does not exist',
+    });
+  });
+
+  it('keeps prior state for legacy prose-only failures instead of guessing', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ success: false, error: 'API key is required' }), {
+          status: 500,
+        })
+      )
+    );
+
+    const result = await checkExecutionHealth(healthTool(null));
+
+    expect(result.status).toBe('UNKNOWN');
+    expect(result.error).toContain('Executor protocol error');
+  });
+});
+
+describe('checkImportHealth', () => {
+  it('marks a deterministic typed load failure broken', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: 'missing export',
+            errorStage: 'load',
+            errorCode: 'TOOL_NOT_FOUND',
+            retryable: false,
+          }),
+          { status: 404 }
+        )
+      )
+    );
+
+    const result = await checkImportHealth(healthTool(null));
+
+    expect(result).toMatchObject({
+      status: 'BROKEN',
+      error: 'TOOL_NOT_FOUND: missing export',
+    });
+  });
+
+  it('keeps prior state when a factory requires configuration', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            success: false,
+            error: 'configuration is required',
+            errorStage: 'load',
+            errorCode: 'TOOL_CONFIGURATION_REQUIRED',
+            retryable: false,
+          }),
+          { status: 400 }
+        )
+      )
+    );
+
+    const result = await checkImportHealth(healthTool(null));
+
+    expect(result.status).toBe('UNKNOWN');
+  });
+
+  it('does not infer health from an untyped environment-error message', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ success: false, error: 'API key is required' }), {
+          status: 400,
+        })
+      )
+    );
+
+    const result = await checkImportHealth(healthTool(null));
+
+    expect(result.status).toBe('UNKNOWN');
+    expect(result.error).toContain('Executor protocol error');
   });
 });

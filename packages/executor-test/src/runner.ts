@@ -3,8 +3,8 @@ import { runCoreTests } from './tests/core.js';
 import { runStandardTests } from './tests/standard.js';
 import type { ComplianceResult, TestSuite } from './types.js';
 
-const VERSION = '0.1.0';
-const PROTOCOL_VERSION = '1.0';
+const VERSION = '0.2.0';
+const PROTOCOL_VERSION = '1.1';
 
 function printUsage(): void {
   console.log(`
