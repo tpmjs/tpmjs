@@ -1,7 +1,7 @@
 /**
  * @tpmjs/tools-vercel — Vercel Platform API Tools for AI Agents
  *
- * Full access to the Vercel REST API: manage projects, deployments, domains,
+ * Broad access to the Vercel REST API: manage projects, deployments, domains,
  * DNS, teams, edge config, environment variables, and more.
  *
  * @requires VERCEL_TOKEN environment variable
@@ -39,7 +39,7 @@ function buildQueryString(params: Record<string, unknown>): string {
   for (const [k, v] of entries) {
     parts.push(`${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`);
   }
-  return parts.length > 0 ? '?' + parts.join('&') : '';
+  return parts.length > 0 ? `?${parts.join('&')}` : '';
 }
 
 async function handleApiError(response: Response): Promise<never> {
@@ -81,7 +81,7 @@ async function apiRequest<T>(
   query?: Record<string, unknown>
 ): Promise<T> {
   const token = getToken();
-  const qs = query ? buildQueryString(query) : getTeamParams() ? '?' + getTeamParams() : '';
+  const qs = query ? buildQueryString(query) : getTeamParams() ? `?${getTeamParams()}` : '';
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export const listProjects = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('GET', '/v9/projects', undefined, input);
+    return apiRequest<unknown>('GET', '/v10/projects', undefined, input);
   },
 });
 
@@ -155,7 +155,7 @@ export const createProject = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('POST', '/v10/projects', input);
+    return apiRequest<unknown>('POST', '/v11/projects', input);
   },
 });
 
@@ -609,7 +609,7 @@ export const listDeployments = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('GET', '/v6/deployments', undefined, input);
+    return apiRequest<unknown>('GET', '/v7/deployments', undefined, input);
   },
 });
 
@@ -750,7 +750,7 @@ export const getDeploymentFile = tool({
   async execute(input) {
     return apiRequest<unknown>(
       'GET',
-      `/v7/deployments/${encodeURIComponent(input.id)}/files/${encodeURIComponent(input.fileId)}`
+      `/v8/deployments/${encodeURIComponent(input.id)}/files/${encodeURIComponent(input.fileId)}`
     );
   },
 });
@@ -790,16 +790,30 @@ export const getDomain = tool({
 
 export const addDomain = tool({
   description: 'Add a domain to the account.',
-  inputSchema: jsonSchema<{ name: string }>({
+  inputSchema: jsonSchema<{
+    name: string;
+    method?: 'add' | 'move-in';
+    cdnEnabled?: boolean;
+    zone?: boolean;
+    token?: string;
+  }>({
     type: 'object',
     properties: {
       name: { type: 'string', description: 'Domain name to add.' },
+      method: {
+        type: 'string',
+        enum: ['add', 'move-in'],
+        description: 'Add a domain or complete an existing move-in request.',
+      },
+      cdnEnabled: { type: 'boolean', description: 'Enable the Vercel Edge Network.' },
+      zone: { type: 'boolean', description: 'Create a Vercel DNS zone.' },
+      token: { type: 'string', description: 'Move-in token when method is move-in.' },
     },
     required: ['name'],
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('POST', '/v5/domains', input);
+    return apiRequest<unknown>('POST', '/v7/domains', input);
   },
 });
 
@@ -852,7 +866,7 @@ export const listDnsRecords = tool({
     const { domain, ...query } = input;
     return apiRequest<unknown>(
       'GET',
-      `/v4/domains/${encodeURIComponent(domain)}/records`,
+      `/v5/domains/${encodeURIComponent(domain)}/records`,
       undefined,
       query
     );
@@ -962,40 +976,106 @@ export const checkDomainAvailability = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('GET', '/v4/domains/status', undefined, input);
+    return apiRequest<unknown>(
+      'GET',
+      `/v1/registrar/domains/${encodeURIComponent(input.name)}/availability`
+    );
   },
 });
 
 export const getDomainPrice = tool({
   description: 'Get domain pricing information.',
-  inputSchema: jsonSchema<{ name: string; type?: string }>({
+  inputSchema: jsonSchema<{ name: string; years?: number }>({
     type: 'object',
     properties: {
       name: { type: 'string', description: 'Domain name.' },
-      type: { type: 'string', description: 'Price type (new, renewal, transfer).' },
+      years: { type: 'number', description: 'Number of registration years.' },
     },
     required: ['name'],
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('GET', '/v4/domains/price', undefined, input);
+    const { name, ...query } = input;
+    return apiRequest<unknown>(
+      'GET',
+      `/v1/registrar/domains/${encodeURIComponent(name)}/price`,
+      undefined,
+      query
+    );
   },
 });
 
 export const buySingleDomain = tool({
   description: 'Purchase a domain.',
-  inputSchema: jsonSchema<{ name: string; expectedPrice?: number; renew?: boolean }>({
+  inputSchema: jsonSchema<{
+    name: string;
+    expectedPrice: number;
+    years: number;
+    autoRenew: boolean;
+    contactInformation: {
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone: string;
+      address1: string;
+      address2?: string;
+      city: string;
+      state: string;
+      zip: string;
+      country: string;
+      companyName?: string;
+      fax?: string;
+    };
+    languageCode?: string;
+  }>({
     type: 'object',
     properties: {
       name: { type: 'string', description: 'Domain name to purchase.' },
-      expectedPrice: { type: 'number', description: 'Expected price in cents (safety check).' },
-      renew: { type: 'boolean', description: 'Enable auto-renewal.' },
+      expectedPrice: { type: 'number', description: 'Expected purchase price.' },
+      years: { type: 'number', description: 'Number of years to purchase.' },
+      autoRenew: { type: 'boolean', description: 'Enable automatic renewal.' },
+      contactInformation: {
+        type: 'object',
+        description: 'Registrant contact information.',
+        properties: {
+          firstName: { type: 'string' },
+          lastName: { type: 'string' },
+          email: { type: 'string' },
+          phone: { type: 'string', description: 'E.164 phone number.' },
+          address1: { type: 'string' },
+          address2: { type: 'string' },
+          city: { type: 'string' },
+          state: { type: 'string' },
+          zip: { type: 'string' },
+          country: { type: 'string', description: 'ISO 3166-1 alpha-2 country code.' },
+          companyName: { type: 'string' },
+          fax: { type: 'string' },
+        },
+        required: [
+          'firstName',
+          'lastName',
+          'email',
+          'phone',
+          'address1',
+          'city',
+          'state',
+          'zip',
+          'country',
+        ],
+        additionalProperties: false,
+      },
+      languageCode: { type: 'string', description: 'Language code for punycode domains.' },
     },
-    required: ['name'],
+    required: ['name', 'expectedPrice', 'years', 'autoRenew', 'contactInformation'],
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('POST', '/v5/domains/buy', input);
+    const { name, ...body } = input;
+    return apiRequest<unknown>(
+      'POST',
+      `/v1/registrar/domains/${encodeURIComponent(name)}/buy`,
+      body
+    );
   },
 });
 
@@ -1108,7 +1188,7 @@ export const listTeamMembers = tool({
     const { teamId, ...query } = input;
     return apiRequest<unknown>(
       'GET',
-      `/v2/teams/${encodeURIComponent(teamId)}/members`,
+      `/v3/teams/${encodeURIComponent(teamId)}/members`,
       undefined,
       query
     );
@@ -1128,8 +1208,8 @@ export const inviteTeamMembers = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    const { teamId, ...body } = input;
-    return apiRequest<unknown>('POST', `/v1/teams/${encodeURIComponent(teamId)}/members`, body);
+    const { teamId, ...member } = input;
+    return apiRequest<unknown>('POST', `/v2/teams/${encodeURIComponent(teamId)}/members`, [member]);
   },
 });
 
@@ -2095,31 +2175,38 @@ export const removeCustomEnvironment = tool({
 
 export const getAttackStatus = tool({
   description: 'Get attack challenge mode status.',
-  inputSchema: jsonSchema<{ projectId?: string }>({
+  inputSchema: jsonSchema<{ projectId: string; since?: number }>({
     type: 'object',
     properties: {
       projectId: { type: 'string', description: 'Project ID.' },
+      since: { type: 'number', description: 'Only include attacks after this timestamp.' },
     },
+    required: ['projectId'],
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('GET', '/v1/security/attack-challenge', undefined, input);
+    return apiRequest<unknown>('GET', '/v1/security/firewall/attack-status', undefined, input);
   },
 });
 
 export const toggleAttackMode = tool({
   description: 'Enable or disable attack challenge mode.',
-  inputSchema: jsonSchema<{ projectId?: string; enabled: boolean }>({
+  inputSchema: jsonSchema<{ projectId: string; enabled: boolean; activeUntil?: number }>({
     type: 'object',
     properties: {
       projectId: { type: 'string', description: 'Project ID.' },
       enabled: { type: 'boolean', description: 'Enable attack challenge mode.' },
+      activeUntil: { type: 'number', description: 'Optional attack-mode expiry timestamp.' },
     },
-    required: ['enabled'],
+    required: ['projectId', 'enabled'],
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('POST', '/v1/security/attack-challenge', input);
+    return apiRequest<unknown>('POST', '/v1/security/attack-mode', {
+      projectId: input.projectId,
+      attackModeEnabled: input.enabled,
+      ...(input.activeUntil === undefined ? {} : { attackModeActiveUntil: input.activeUntil }),
+    });
   },
 });
 
@@ -2345,7 +2432,7 @@ export const createCheck = tool({
     const { deploymentId, ...body } = input;
     return apiRequest<unknown>(
       'POST',
-      `/v1/deployments/${encodeURIComponent(deploymentId)}/checks`,
+      `/v2/deployments/${encodeURIComponent(deploymentId)}/check-runs`,
       body
     );
   },
@@ -2364,7 +2451,7 @@ export const listChecks = tool({
   async execute(input) {
     return apiRequest<unknown>(
       'GET',
-      `/v1/deployments/${encodeURIComponent(input.deploymentId)}/checks`
+      `/v2/deployments/${encodeURIComponent(input.deploymentId)}/check-runs`
     );
   },
 });
@@ -2383,7 +2470,7 @@ export const getCheck = tool({
   async execute(input) {
     return apiRequest<unknown>(
       'GET',
-      `/v1/deployments/${encodeURIComponent(input.deploymentId)}/checks/${encodeURIComponent(input.checkId)}`
+      `/v2/deployments/${encodeURIComponent(input.deploymentId)}/check-runs/${encodeURIComponent(input.checkId)}`
     );
   },
 });
@@ -2429,7 +2516,7 @@ export const updateCheck = tool({
     const { deploymentId, checkId, ...body } = input;
     return apiRequest<unknown>(
       'PATCH',
-      `/v1/deployments/${encodeURIComponent(deploymentId)}/checks/${encodeURIComponent(checkId)}`,
+      `/v2/deployments/${encodeURIComponent(deploymentId)}/check-runs/${encodeURIComponent(checkId)}`,
       body
     );
   },
@@ -2521,47 +2608,79 @@ export const deleteWebhook = tool({
 // ─── 14. Log Drains ─────────────────────────────────────────────────────────
 
 export const createDrain = tool({
-  description: 'Create an integration log drain.',
+  description: 'Create an observability drain.',
   inputSchema: jsonSchema<{
     name: string;
-    type: string;
-    url: string;
-    sources?: string[];
-    environments?: string[];
+    projects: 'some' | 'all';
+    projectIds?: string[];
+    schemas: Record<string, { version: string }>;
+    delivery?: {
+      type: string;
+      endpoint: string;
+      encoding: 'json' | 'ndjson';
+      headers: Record<string, string>;
+      compression?: 'gzip' | 'none';
+      secret?: string;
+    };
   }>({
     type: 'object',
     properties: {
-      name: { type: 'string', description: 'Log drain name.' },
-      type: { type: 'string', description: 'Type: json, ndjson, syslog.' },
-      url: { type: 'string', description: 'Log drain URL.' },
-      sources: {
-        type: 'array',
-        items: { type: 'string' },
-        description: 'Log sources (build, edge, function, etc).',
+      name: { type: 'string', description: 'Drain name.' },
+      projects: {
+        type: 'string',
+        enum: ['some', 'all'],
+        description: 'Apply the drain to selected projects or all projects.',
       },
-      environments: {
+      projectIds: {
         type: 'array',
         items: { type: 'string' },
-        description: 'Environments (production, preview, development).',
+        description: 'Project IDs when projects is some.',
+      },
+      schemas: {
+        type: 'object',
+        description: 'Enabled drain schemas keyed by schema name.',
+        additionalProperties: {
+          type: 'object',
+          properties: { version: { type: 'string' } },
+          required: ['version'],
+          additionalProperties: false,
+        },
+      },
+      delivery: {
+        type: 'object',
+        description: 'HTTP delivery configuration.',
+        properties: {
+          type: { type: 'string' },
+          endpoint: { type: 'string' },
+          encoding: { type: 'string', enum: ['json', 'ndjson'] },
+          headers: { type: 'object', additionalProperties: { type: 'string' } },
+          compression: { type: 'string', enum: ['gzip', 'none'] },
+          secret: { type: 'string' },
+        },
+        required: ['type', 'endpoint', 'encoding', 'headers'],
+        additionalProperties: false,
       },
     },
-    required: ['name', 'type', 'url'],
+    required: ['name', 'projects', 'schemas'],
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('POST', '/v1/integrations/log-drains', input);
+    return apiRequest<unknown>('POST', '/v1/drains', input);
   },
 });
 
 export const listDrains = tool({
-  description: 'List integration log drains.',
-  inputSchema: jsonSchema<Record<string, never>>({
+  description: 'List observability drains.',
+  inputSchema: jsonSchema<{ projectId?: string; includeMetadata?: boolean }>({
     type: 'object',
-    properties: {},
+    properties: {
+      projectId: { type: 'string', description: 'Filter drains by project ID.' },
+      includeMetadata: { type: 'boolean', description: 'Include drain metadata.' },
+    },
     additionalProperties: false,
   }),
-  async execute() {
-    return apiRequest<unknown>('GET', '/v1/integrations/log-drains');
+  async execute(input) {
+    return apiRequest<unknown>('GET', '/v1/drains', undefined, input);
   },
 });
 
@@ -2576,10 +2695,7 @@ export const deleteDrain = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>(
-      'DELETE',
-      `/v1/integrations/log-drains/${encodeURIComponent(input.id)}`
-    );
+    return apiRequest<unknown>('DELETE', `/v1/drains/${encodeURIComponent(input.id)}`);
   },
 });
 
@@ -2600,7 +2716,7 @@ export const issueCertificate = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('POST', '/v7/certs', input);
+    return apiRequest<unknown>('POST', '/v8/certs', { cns: input.domains });
   },
 });
 
@@ -2617,7 +2733,7 @@ export const uploadCertificate = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('PUT', '/v7/certs', input);
+    return apiRequest<unknown>('PUT', '/v8/certs', input);
   },
 });
 
@@ -2632,7 +2748,7 @@ export const getCertificate = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('GET', `/v7/certs/${encodeURIComponent(input.id)}`);
+    return apiRequest<unknown>('GET', `/v8/certs/${encodeURIComponent(input.id)}`);
   },
 });
 
@@ -2647,7 +2763,7 @@ export const deleteCertificate = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('DELETE', `/v7/certs/${encodeURIComponent(input.id)}`);
+    return apiRequest<unknown>('DELETE', `/v8/certs/${encodeURIComponent(input.id)}`);
   },
 });
 
@@ -2823,7 +2939,7 @@ export const listAuthTokens = tool({
     additionalProperties: false,
   }),
   async execute() {
-    return apiRequest<unknown>('GET', '/v5/user/tokens');
+    return apiRequest<unknown>('GET', '/v6/user/tokens');
   },
 });
 
@@ -2922,11 +3038,17 @@ export const stageRedirects = tool({
   description: 'Stage bulk redirects for a project.',
   inputSchema: jsonSchema<{
     projectId: string;
+    teamId: string;
+    name?: string;
+    overwrite?: boolean;
     redirects: Array<{ source: string; destination: string; statusCode?: number }>;
   }>({
     type: 'object',
     properties: {
       projectId: { type: 'string', description: 'Project ID.' },
+      teamId: { type: 'string', description: 'Team ID that owns the project.' },
+      name: { type: 'string', description: 'Optional staged version name.' },
+      overwrite: { type: 'boolean', description: 'Replace the complete staged redirect set.' },
       redirects: {
         type: 'array',
         items: {
@@ -2941,16 +3063,11 @@ export const stageRedirects = tool({
         description: 'Redirects to stage.',
       },
     },
-    required: ['projectId', 'redirects'],
+    required: ['projectId', 'teamId', 'redirects'],
     additionalProperties: false,
   }),
   async execute(input) {
-    const { projectId, ...body } = input;
-    return apiRequest<unknown>(
-      'POST',
-      `/v1/projects/${encodeURIComponent(projectId)}/redirects`,
-      body
-    );
+    return apiRequest<unknown>('PUT', '/v1/bulk-redirects', input);
   },
 });
 
@@ -2965,30 +3082,35 @@ export const getRedirects = tool({
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>(
-      'GET',
-      `/v1/projects/${encodeURIComponent(input.projectId)}/redirects`
-    );
+    return apiRequest<unknown>('GET', '/v1/bulk-redirects', undefined, input);
   },
 });
 
 export const deleteRedirects = tool({
   description: 'Delete staged redirects.',
-  inputSchema: jsonSchema<{ projectId: string; ids: string[] }>({
+  inputSchema: jsonSchema<{ projectId: string; sources: string[]; name?: string }>({
     type: 'object',
     properties: {
       projectId: { type: 'string', description: 'Project ID.' },
-      ids: { type: 'array', items: { type: 'string' }, description: 'Redirect IDs to delete.' },
+      sources: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Redirect source patterns to delete.',
+      },
+      name: { type: 'string', description: 'Optional staged version name.' },
     },
-    required: ['projectId', 'ids'],
+    required: ['projectId', 'sources'],
     additionalProperties: false,
   }),
   async execute(input) {
-    const { projectId, ...body } = input;
+    const { projectId, sources, name } = input;
     return apiRequest<unknown>(
       'DELETE',
-      `/v1/projects/${encodeURIComponent(projectId)}/redirects`,
-      body
+      '/v1/bulk-redirects',
+      { redirects: sources, name },
+      {
+        projectId,
+      }
     );
   },
 });
@@ -2997,74 +3119,84 @@ export const editRedirect = tool({
   description: 'Edit a staged redirect.',
   inputSchema: jsonSchema<{
     projectId: string;
-    redirectId: string;
-    source?: string;
+    source: string;
     destination?: string;
     statusCode?: number;
+    permanent?: boolean;
+    caseSensitive?: boolean;
+    query?: boolean;
+    preserveQueryParams?: boolean;
+    name?: string;
+    restore?: boolean;
   }>({
     type: 'object',
     properties: {
       projectId: { type: 'string', description: 'Project ID.' },
-      redirectId: { type: 'string', description: 'Redirect ID.' },
-      source: { type: 'string', description: 'New source path pattern.' },
+      source: { type: 'string', description: 'Existing redirect source pattern to edit.' },
       destination: { type: 'string', description: 'New destination URL.' },
       statusCode: { type: 'number', description: 'New HTTP status code.' },
+      permanent: { type: 'boolean' },
+      caseSensitive: { type: 'boolean' },
+      query: { type: 'boolean' },
+      preserveQueryParams: { type: 'boolean' },
+      name: { type: 'string', description: 'Optional staged version name.' },
+      restore: { type: 'boolean', description: 'Restore from the latest production version.' },
     },
-    required: ['projectId', 'redirectId'],
+    required: ['projectId', 'source'],
     additionalProperties: false,
   }),
   async execute(input) {
-    const { projectId, redirectId, ...body } = input;
+    const { projectId, name, restore, ...redirect } = input;
     return apiRequest<unknown>(
       'PATCH',
-      `/v1/projects/${encodeURIComponent(projectId)}/redirects/${encodeURIComponent(redirectId)}`,
-      body
+      '/v1/bulk-redirects',
+      { redirect, name, restore },
+      {
+        projectId,
+      }
     );
   },
 });
 
 export const restoreRedirects = tool({
   description: 'Restore redirects from a previous version.',
-  inputSchema: jsonSchema<{ projectId: string; version: number }>({
+  inputSchema: jsonSchema<{ projectId: string; sources: string[]; name?: string }>({
     type: 'object',
     properties: {
       projectId: { type: 'string', description: 'Project ID.' },
-      version: { type: 'number', description: 'Version number to restore.' },
+      sources: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Redirect source patterns to restore.',
+      },
+      name: { type: 'string', description: 'Optional staged version name.' },
     },
-    required: ['projectId', 'version'],
+    required: ['projectId', 'sources'],
     additionalProperties: false,
   }),
   async execute(input) {
-    const { projectId, ...body } = input;
+    const { projectId, sources, name } = input;
     return apiRequest<unknown>(
       'POST',
-      `/v1/projects/${encodeURIComponent(projectId)}/redirects/restore`,
-      body
+      '/v1/bulk-redirects/restore',
+      { redirects: sources, name },
+      { projectId }
     );
   },
 });
 
 export const getRedirectVersions = tool({
   description: 'Get redirect version history.',
-  inputSchema: jsonSchema<{ projectId: string; limit?: number; since?: number; until?: number }>({
+  inputSchema: jsonSchema<{ projectId: string }>({
     type: 'object',
     properties: {
       projectId: { type: 'string', description: 'Project ID.' },
-      limit: { type: 'number', description: 'Max results.' },
-      since: { type: 'number', description: 'Timestamp filter (after).' },
-      until: { type: 'number', description: 'Timestamp filter (before).' },
     },
     required: ['projectId'],
     additionalProperties: false,
   }),
   async execute(input) {
-    const { projectId, ...query } = input;
-    return apiRequest<unknown>(
-      'GET',
-      `/v1/projects/${encodeURIComponent(projectId)}/redirects/versions`,
-      undefined,
-      query
-    );
+    return apiRequest<unknown>('GET', '/v1/bulk-redirects/versions', undefined, input);
   },
 });
 
@@ -3082,7 +3214,9 @@ export const promoteRedirectVersion = tool({
   async execute(input) {
     return apiRequest<unknown>(
       'POST',
-      `/v1/projects/${encodeURIComponent(input.projectId)}/redirects/versions/${encodeURIComponent(input.versionId)}/promote`
+      '/v1/bulk-redirects/versions',
+      { id: input.versionId, action: 'promote' },
+      { projectId: input.projectId }
     );
   },
 });
@@ -3091,34 +3225,53 @@ export const promoteRedirectVersion = tool({
 
 export const listNetworks = tool({
   description: 'List secure compute networks.',
-  inputSchema: jsonSchema<{ limit?: number; since?: number; until?: number; projectId?: string }>({
+  inputSchema: jsonSchema<{
+    search?: string;
+    includeHostedZones?: boolean;
+    includePeeringConnections?: boolean;
+    includeProjects?: boolean;
+  }>({
     type: 'object',
     properties: {
-      limit: { type: 'number', description: 'Max results.' },
-      since: { type: 'number', description: 'Timestamp filter (after).' },
-      until: { type: 'number', description: 'Timestamp filter (before).' },
-      projectId: { type: 'string', description: 'Filter by project ID.' },
+      search: { type: 'string', description: 'Search networks by name.' },
+      includeHostedZones: { type: 'boolean', description: 'Include hosted zones.' },
+      includePeeringConnections: {
+        type: 'boolean',
+        description: 'Include peering connections.',
+      },
+      includeProjects: { type: 'boolean', description: 'Include connected projects.' },
     },
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('GET', '/v1/security/network', undefined, input);
+    return apiRequest<unknown>('GET', '/v1/connect/networks', undefined, input);
   },
 });
 
 export const createNetwork = tool({
   description: 'Create a secure compute network.',
-  inputSchema: jsonSchema<{ name: string; projectId: string }>({
+  inputSchema: jsonSchema<{
+    name: string;
+    cidr: string;
+    region: string;
+    awsAvailabilityZoneIds?: string[];
+  }>({
     type: 'object',
     properties: {
       name: { type: 'string', description: 'Network name.' },
-      projectId: { type: 'string', description: 'Project ID.' },
+      cidr: { type: 'string', description: 'Private IPv4 CIDR block.' },
+      region: { type: 'string', description: 'Network region.' },
+      awsAvailabilityZoneIds: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Optional AWS availability zone IDs.',
+      },
     },
-    required: ['name', 'projectId'],
+    required: ['name', 'cidr', 'region'],
     additionalProperties: false,
   }),
   async execute(input) {
-    return apiRequest<unknown>('POST', '/v1/security/network', input);
+    return apiRequest<unknown>('POST', '/v1/connect/networks', input);
   },
 });
 
@@ -3135,27 +3288,27 @@ export const getNetwork = tool({
   async execute(input) {
     return apiRequest<unknown>(
       'GET',
-      `/v1/security/network/${encodeURIComponent(input.networkId)}`
+      `/v1/connect/networks/${encodeURIComponent(input.networkId)}`
     );
   },
 });
 
 export const updateNetwork = tool({
   description: 'Update a network.',
-  inputSchema: jsonSchema<{ networkId: string; name?: string }>({
+  inputSchema: jsonSchema<{ networkId: string; name: string }>({
     type: 'object',
     properties: {
       networkId: { type: 'string', description: 'Network ID.' },
       name: { type: 'string', description: 'New network name.' },
     },
-    required: ['networkId'],
+    required: ['networkId', 'name'],
     additionalProperties: false,
   }),
   async execute(input) {
     const { networkId, ...body } = input;
     return apiRequest<unknown>(
       'PATCH',
-      `/v1/security/network/${encodeURIComponent(networkId)}`,
+      `/v1/connect/networks/${encodeURIComponent(networkId)}`,
       body
     );
   },
@@ -3174,7 +3327,7 @@ export const deleteNetwork = tool({
   async execute(input) {
     return apiRequest<unknown>(
       'DELETE',
-      `/v1/security/network/${encodeURIComponent(input.networkId)}`
+      `/v1/connect/networks/${encodeURIComponent(input.networkId)}`
     );
   },
 });
@@ -3194,7 +3347,7 @@ export const getRollingRelease = tool({
   async execute(input) {
     return apiRequest<unknown>(
       'GET',
-      `/v1/projects/${encodeURIComponent(input.idOrName)}/rolling-release/current`
+      `/v1/projects/${encodeURIComponent(input.idOrName)}/rolling-release`
     );
   },
 });
@@ -3232,7 +3385,7 @@ export const updateRollingReleaseConfig = tool({
   async execute(input) {
     const { idOrName, ...body } = input;
     return apiRequest<unknown>(
-      'PUT',
+      'PATCH',
       `/v1/projects/${encodeURIComponent(idOrName)}/rolling-release/config`,
       body
     );
@@ -3259,20 +3412,25 @@ export const deleteRollingReleaseConfig = tool({
 
 export const approveRollingReleaseStage = tool({
   description: 'Approve a rolling release stage.',
-  inputSchema: jsonSchema<{ idOrName: string; stageIndex: number }>({
+  inputSchema: jsonSchema<{
+    idOrName: string;
+    nextStageIndex: number;
+    canaryDeploymentId: string;
+  }>({
     type: 'object',
     properties: {
       idOrName: { type: 'string', description: 'Project ID or name.' },
-      stageIndex: { type: 'number', description: 'Stage index to approve.' },
+      nextStageIndex: { type: 'number', description: 'Stage index to approve.' },
+      canaryDeploymentId: { type: 'string', description: 'Canary deployment ID.' },
     },
-    required: ['idOrName', 'stageIndex'],
+    required: ['idOrName', 'nextStageIndex', 'canaryDeploymentId'],
     additionalProperties: false,
   }),
   async execute(input) {
     const { idOrName, ...body } = input;
     return apiRequest<unknown>(
       'POST',
-      `/v1/projects/${encodeURIComponent(idOrName)}/rolling-release/approve`,
+      `/v1/projects/${encodeURIComponent(idOrName)}/rolling-release/approve-stage`,
       body
     );
   },

@@ -49,7 +49,11 @@
     "changeset:version": "changeset version && pnpm install --no-frozen-lockfile",
     "changeset:publish": "pnpm build && changeset publish",
     "release:status": "changeset status --verbose",
-    "release:preview": "echo '── pending version bumps (from changesets) ──' && changeset status --verbose && echo '── packages ahead of npm (would publish) ──' && pnpm -r publish --dry-run --no-git-checks",
+    "release:audit": "tsx scripts/release-audit.ts",
+    "release:audit:test": "tsx --test scripts/release-audit.test.ts",
+    "release:preview": "pnpm release:status && pnpm release:audit",
+    "verify:vercel-api": "tsx scripts/verify-vercel-api.ts",
+    "verify:vercel-api:test": "tsx --test scripts/vercel-contract.test.ts scripts/vercel-tools.test.ts",
     "prepare": "node -e \"if (!process.env.CI && !process.env.VERCEL && require('fs').existsSync('.git')) { require('child_process').execSync('lefthook install', {stdio: 'inherit'}) }\""
   },
   "pnpm": {

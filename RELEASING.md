@@ -25,16 +25,24 @@ How TPMJS packages get versioned and published to npm. The goals: **every releas
 > [!IMPORTANT]
 > **Every push to `main` runs `changeset publish`.** When there are no pending changesets, the Release workflow still runs the publish step to catch up any package whose source `version` is **ahead of npm** — and it *will* publish it. In other words: **bumping a package's `version` in `package.json` and pushing to `main` publishes it.** Always bump versions through changesets (never by hand on `main`), and run `pnpm release:preview` first to see exactly what is ahead of npm. New non-published packages (examples, demos, internal tooling) must be marked `"private": true` so they're never picked up.
 
-## The dry-run / provenance gate
+## The release audit / provenance gate
 
 Before (and independently of) any publish, you can see **exactly what would ship**:
 
 ```bash
 pnpm release:status     # pending version bumps from changesets
-pnpm release:preview    # the above, plus which packages are ahead of npm (would actually publish)
+pnpm release:audit      # compare every publishable workspace version with npm
+pnpm release:preview    # run both checks in sequence
 ```
 
-`release:preview` combines `changeset status --verbose` (intended bumps) with `pnpm -r publish --dry-run` (registry-aware — it lists only packages whose source version is newer than what's on npm). In CI, run the **Release Preview** workflow (`release-preview.yml`, manual dispatch) to get the same report on a clean checkout.
+The registry audit is fail-closed and machine-readable. It blocks when:
+
+- a source package is behind npm;
+- a source version is unpublished without the matching Changesets-generated `CHANGELOG.md` entry;
+- npm metadata is invalid or unavailable after bounded retries; or
+- a workspace contains an invalid semantic version.
+
+`pnpm release:audit --format json` emits the complete plan for automation, while `--format markdown` produces a review summary. Pass `--json-output <path>` to persist the full JSON evidence alongside any selected display format without refetching npm. The manual **Release Preview** workflow uploads its status, human summary, and package-by-package JSON audit as immutable run artifacts. The Release workflow runs the same audit immediately before Changesets can publish.
 
 ## Changelogs
 
@@ -49,17 +57,12 @@ npm publishes are effectively append-only. To back out a bad release:
 - **After 72h:** publish a corrected higher version and, if needed, `npm deprecate @tpmjs/<pkg>@<bad-version> "use >= <fixed>"` and move the `latest` dist-tag: `npm dist-tag add @tpmjs/<pkg>@<good> latest`.
 - **Registry state:** the version PR is a normal git commit — revert it to undo source bumps.
 
-## Known drift to reconcile: `@tpmjs/tools-unsandbox`
+## 2026-07 registry reconciliation
 
-There is a source↔npm mismatch that must be resolved carefully **without clobbering the newer published version** (tracked in [#115](https://github.com/tpmjs/tpmjs/issues/115)):
+The first complete registry audit found four packages whose source version lagged npm. They were reconciled without reusing any published version:
 
-- **Source:** `0.1.3`, 85 tools.
-- **npm `latest`:** `0.1.4`, 59 tools (npm is *ahead* in version number but has *fewer* tools).
+- `@tpmjs/social-post-draft` and `@tpmjs/ticket-categorize`: npm `0.1.1` and source `0.1.0` had byte-identical compiled JavaScript and declarations. Their source baselines were aligned to `0.1.1`; no release is needed.
+- `@tpmjs/tools-unsandbox`: npm `0.1.4` was published from git commit `ae0d5e37` with 59 tools. The later source commit `1be86cbe` deliberately expanded that surface to 85 tools with no removals, and the health-check work added 22 execution/cleanup contracts. Source was aligned to the existing `0.1.4` baseline and its committed patch changeset produces `0.1.5`.
+- `@tpmjs/tools-vercel`: npm `0.2.0` contains 14 tools, while a later unreleased source rewrite contains 167. Before release, all 167 routes were checked against Vercel's current official OpenAPI document, 35 stale routes/request shapes were repaired, and runtime mapping tests plus a weekly upstream-contract workflow were added. Source was aligned to the existing `0.2.0` baseline and its committed minor changeset produces `0.3.0`.
 
-A naive patch changeset from source `0.1.3` would compute `0.1.4` and **collide** with the different content already on npm. The safe reconciliation:
-
-1. Confirm the canonical tool set (source's 85 is presumed correct; npm's 59 looks like a regression/partial publish — **maintainer to confirm**).
-2. Align the source baseline so the next bump lands **above** npm: publish the canonical set as **`0.1.5`**, superseding `0.1.4` (never reuse `0.1.4` for different content).
-3. Add a changeset describing the restoration, let the version PR compute `0.1.5`, then publish and verify the tool declarations persist (`health_check_config` rows).
-
-Until this is confirmed and published, `tools-unsandbox` stays as-is; the release path above is safe because nothing is ahead of npm.
+The invariant is simple: a published version is immutable. Source may be aligned to an existing registry baseline only as part of a reviewed reconciliation with a pending changeset that lands above npm.

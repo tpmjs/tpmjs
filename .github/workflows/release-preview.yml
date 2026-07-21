@@ -31,18 +31,33 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Preview release
+      - name: Test release policy and external contracts
         run: |
-          {
-            echo '## Release preview'
-            echo
-            echo '### Pending version bumps (from changesets)'
-            echo '```'
-            pnpm changeset status --verbose 2>&1 || true
-            echo '```'
-            echo
-            echo '### Packages ahead of npm (would publish)'
-            echo '```'
-            pnpm -r publish --dry-run --no-git-checks 2>&1 || true
-            echo '```'
-          } | tee -a "$GITHUB_STEP_SUMMARY"
+          pnpm release:audit:test
+          pnpm verify:vercel-api:test
+          pnpm verify:vercel-api
+
+      - name: Show pending Changesets releases
+        run: |
+          set -o pipefail
+          pnpm release:status | tee release-status.txt
+
+      - name: Audit npm release plan
+        run: |
+          set +e
+          pnpm release:audit --format markdown --output release-audit.md --json-output release-audit.json
+          audit_status=$?
+          set -e
+          cat release-audit.md >> "$GITHUB_STEP_SUMMARY"
+          exit "$audit_status"
+
+      - name: Upload machine-readable release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-preview-${{ github.sha }}
+          path: |
+            release-status.txt
+            release-audit.md
+            release-audit.json
+          if-no-files-found: error

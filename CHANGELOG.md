@@ -11,6 +11,8 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - Platform skills documentation
 - Comprehensive style guide and missing UI components
 - Auto-close and auto-merge pipelines for CI
+- Fail-closed registry release audit with machine-readable CI evidence
+- Weekly Vercel OpenAPI contract-drift verification for all 167 Vercel tools
 
 ### Fixed
 - Prisma client lazy initialization to prevent Lambda cold-start crashes
@@ -19,6 +21,8 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - OpenAI quota error handling in memory embedding
 - Duplicate `browserTracingIntegration` causing `pushState` conflicts
 - Omega agent: chronological saving, error surfacing, white screen fix
+- Source/npm version drift across four packages without reusing published versions
+- 35 stale Vercel API routes and request contracts; deprecated checks migrated to v2
 
 ### Improved
 - Security: SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates

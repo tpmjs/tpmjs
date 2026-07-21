@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-vercel",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vercel platform API tools for AI agents. Manage projects, deployments, domains, DNS, teams, edge config, environment variables, and more.",
   "type": "module",
   "keywords": [
