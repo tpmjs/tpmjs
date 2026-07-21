@@ -22,9 +22,6 @@ export const maxDuration = 60;
 
 const DB_TIMEOUT_MS = 10000; // 10 second timeout for database queries
 
-// Authentication is required for all MCP operations
-const REQUIRE_AUTH = true;
-
 interface RouteContext {
   params: Promise<{ username: string; slug: string; transport: string }>;
 }
@@ -325,19 +322,10 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
     // Authenticate the request
     authResult = await authenticateRequest();
 
-    // Check if auth is required
-    if (REQUIRE_AUTH && !authResult.authenticated) {
-      return NextResponse.json(
-        {
-          jsonrpc: '2.0',
-          error: { code: -32000, message: authResult.error || 'Authentication required' },
-          id: null,
-        },
-        { status: 401 }
-      );
-    }
-
-    // Check scope if authenticated
+    // Public collections are intentionally usable without a TPMJS account. An
+    // authenticated caller still has to carry the MCP execution scope; private
+    // collections are restricted to their owner below. This keeps the public
+    // "one MCP URL, no signup" contract while never exposing stored owner env.
     if (authResult.authenticated && !hasScope(authResult, API_KEY_SCOPES.MCP_EXECUTE)) {
       return NextResponse.json(
         {
@@ -359,14 +347,6 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       if (!rateLimitResult.allowed) {
         return createRateLimitResponse(rateLimitResult);
       }
-    }
-
-    // Log warning for unauthenticated requests (soft launch)
-    if (!authResult.authenticated && !REQUIRE_AUTH) {
-      console.warn(
-        `[MCP] Unauthenticated request to /${username}/${slug}/${transport} - ` +
-          'API key authentication will be required in a future update'
-      );
     }
 
     // First, find the user by username
