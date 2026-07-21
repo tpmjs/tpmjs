@@ -63,8 +63,3 @@ export interface AnimatedCounterProps extends Omit<HTMLAttributes<HTMLSpanElemen
    */
   mono?: boolean;
 }
-
-/**
- * AnimatedCounter ref type
- */
-export type AnimatedCounterRef = HTMLSpanElement;

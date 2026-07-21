@@ -63,17 +63,6 @@ export function decryptApiKey(encrypted: string, iv: string): string {
 }
 
 /**
- * Creates a masked version of an API key for display (e.g., "sk-...XXXX")
- */
-export function maskApiKey(apiKey: string): string {
-  if (apiKey.length <= 8) return '****';
-
-  const prefix = apiKey.slice(0, 4);
-  const suffix = apiKey.slice(-4);
-  return `${prefix}...${suffix}`;
-}
-
-/**
  * Gets the last 4 characters of an API key for identification
  */
 export function getKeyHint(apiKey: string): string {

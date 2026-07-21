@@ -585,23 +585,3 @@ export async function verifyExecutor(
     errors,
   };
 }
-
-/**
- * Get executor description for display
- */
-export function getExecutorDescription(config: ExecutorConfig | null): string {
-  if (!config || config.type === 'default') {
-    return 'TPMJS Default Executor';
-  }
-
-  if (config.type === 'custom_url') {
-    try {
-      const url = new URL(config.url);
-      return `Custom: ${url.hostname}`;
-    } catch {
-      return 'Custom Executor';
-    }
-  }
-
-  return 'Unknown Executor';
-}

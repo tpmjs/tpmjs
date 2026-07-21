@@ -29,11 +29,6 @@ export interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
 }
 
 /**
- * Radio ref type
- */
-export type RadioRef = HTMLInputElement;
-
-/**
  * RadioGroup component props
  */
 export interface RadioGroupProps {

@@ -65,8 +65,3 @@ export interface CardFooterProps extends HTMLAttributes<HTMLDivElement> {
    */
   padding?: 'none' | 'sm' | 'md' | 'lg';
 }
-
-/**
- * Card ref type
- */
-export type CardRef = HTMLDivElement;

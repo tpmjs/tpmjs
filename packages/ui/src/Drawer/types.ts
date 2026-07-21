@@ -95,8 +95,3 @@ export interface DrawerBodyProps extends HTMLAttributes<HTMLDivElement> {
 export interface DrawerFooterProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode;
 }
-
-/**
- * Drawer ref type
- */
-export type DrawerRef = HTMLDivElement;

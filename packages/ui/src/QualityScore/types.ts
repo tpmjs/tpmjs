@@ -94,8 +94,3 @@ export interface QualityScoreBreakdown {
    */
   tests?: number;
 }
-
-/**
- * QualityScore ref type
- */
-export type QualityScoreRef = HTMLDivElement;

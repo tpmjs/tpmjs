@@ -88,11 +88,10 @@
     "open": "^10.1.0",
     "picocolors": "^1.1.1",
     "ora": "^8.2.0",
-    "eventsource-parser": "^3.0.1",
     "cli-table3": "^0.6.5"
   },
   "devDependencies": {
-    "@tpmjs/test": "workspace:*",
+    "@vitest/coverage-v8": "4.0.16",
     "@tpmjs/tsconfig": "workspace:*",
     "@types/node": "^22.15.29",
     "oclif": "^4.17.35",

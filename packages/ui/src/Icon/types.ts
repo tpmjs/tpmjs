@@ -16,8 +16,3 @@ export interface IconProps extends Omit<SVGAttributes<SVGSVGElement>, 'children'
    */
   size?: 'xs' | 'sm' | 'md' | 'lg';
 }
-
-/**
- * Icon ref type
- */
-export type IconRef = SVGSVGElement;

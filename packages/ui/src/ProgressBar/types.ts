@@ -27,8 +27,3 @@ export interface ProgressBarProps extends Omit<HTMLAttributes<HTMLDivElement>, '
    */
   showLabel?: boolean;
 }
-
-/**
- * ProgressBar ref type
- */
-export type ProgressBarRef = HTMLDivElement;

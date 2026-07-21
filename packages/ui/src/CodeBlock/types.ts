@@ -38,8 +38,3 @@ export interface CodeBlockProps extends Omit<HTMLAttributes<HTMLDivElement>, 'ch
    */
   theme?: 'light' | 'dark';
 }
-
-/**
- * CodeBlock ref type
- */
-export type CodeBlockRef = HTMLDivElement;

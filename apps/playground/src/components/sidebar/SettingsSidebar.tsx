@@ -157,38 +157,3 @@ export function SettingsSidebar(): React.ReactElement {
     </aside>
   );
 }
-
-/**
- * Hook to get current env vars from localStorage
- * Can be used in other components to access env vars
- */
-export function useEnvVars(): EnvVar[] {
-  const [envVars, setEnvVars] = useState<EnvVar[]>([]);
-
-  useEffect(() => {
-    // Load initially
-    const loadEnvVars = () => {
-      try {
-        const stored = localStorage.getItem(ENV_STORAGE_KEY);
-        if (stored) {
-          setEnvVars(JSON.parse(stored));
-        }
-      } catch (error) {
-        console.error('Failed to load env vars:', error);
-      }
-    };
-
-    loadEnvVars();
-
-    // Listen for updates
-    const handleUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent<EnvVar[]>;
-      setEnvVars(customEvent.detail);
-    };
-
-    window.addEventListener('env-vars-updated', handleUpdate);
-    return () => window.removeEventListener('env-vars-updated', handleUpdate);
-  }, []);
-
-  return envVars;
-}

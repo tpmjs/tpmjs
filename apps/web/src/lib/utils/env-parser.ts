@@ -45,34 +45,3 @@ export function parseEnvString(input: string): Array<{ key: string; value: strin
 
   return result;
 }
-
-/**
- * Convert parsed env vars to a Record object
- */
-export function envArrayToRecord(
-  vars: Array<{ key: string; value: string }>
-): Record<string, string> {
-  const record: Record<string, string> = {};
-  for (const { key, value } of vars) {
-    const trimmedKey = key.trim();
-    if (trimmedKey) {
-      record[trimmedKey] = value;
-    }
-  }
-  return record;
-}
-
-/**
- * Convert a Record to an array of env vars
- */
-export function envRecordToArray(
-  record: Record<string, string> | null | undefined
-): Array<{ key: string; value: string }> {
-  if (!record || typeof record !== 'object') {
-    return [];
-  }
-  return Object.entries(record).map(([key, value]) => ({
-    key,
-    value: String(value),
-  }));
-}

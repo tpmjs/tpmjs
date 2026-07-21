@@ -118,8 +118,3 @@ export interface PaginationEllipsisProps extends HTMLAttributes<HTMLSpanElement>
    */
   size?: PaginationSize;
 }
-
-/**
- * Pagination ref type
- */
-export type PaginationRef = HTMLElement;

@@ -9,7 +9,9 @@
     "vitest.config.ts"
   ],
   "dependencies": {
-    "vitest": "^4.0.16",
-    "zod": "^4.3.5"
+    "vitest": "^4.0.16"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.0.16"
   }
 }

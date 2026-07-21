@@ -10,7 +10,6 @@ import { prisma } from '@tpmjs/db';
 import { embed } from 'ai';
 
 export const SKILLS_EMBEDDING_MODEL = 'text-embedding-3-large';
-export const SKILLS_EMBEDDING_DIMS = 3072;
 export const DEFAULT_SIMILARITY_THRESHOLD = 0.8;
 export const CACHE_HIT_THRESHOLD = 0.95;
 
@@ -135,21 +134,6 @@ export async function checkCacheHit(
   }
 
   return null;
-}
-
-/**
- * Find questions that match a text query (convenience wrapper)
- */
-export async function searchQuestions(
-  query: string,
-  collectionId: string,
-  options: {
-    threshold?: number;
-    limit?: number;
-  } = {}
-): Promise<SimilarQuestion[]> {
-  const embedding = await embedQuestion(query);
-  return findSimilarQuestions(embedding, collectionId, options);
 }
 
 export interface SimilarityResult {

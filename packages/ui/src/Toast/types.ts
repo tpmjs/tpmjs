@@ -101,8 +101,3 @@ export interface ToastState extends Omit<ToastProps, 'open' | 'onClose'> {
   id: string;
   open: boolean;
 }
-
-/**
- * Toast ref type
- */
-export type ToastRef = HTMLDivElement;

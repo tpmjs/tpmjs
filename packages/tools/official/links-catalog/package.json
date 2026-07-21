@@ -28,7 +28,6 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "@types/cheerio": "^1.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"
   },

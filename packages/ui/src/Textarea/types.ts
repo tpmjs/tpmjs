@@ -35,8 +35,3 @@ export interface TextareaProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaE
    */
   showCount?: boolean;
 }
-
-/**
- * Textarea ref type
- */
-export type TextareaRef = HTMLTextAreaElement;

@@ -63,85 +63,6 @@ export async function fetchAgentWithTools(agentId: string): Promise<AgentWithRel
 }
 
 /**
- * Fetch an agent by UID with all tool relations
- * Includes executor config for cascade resolution
- */
-export async function fetchAgentByUidWithTools(uid: string): Promise<AgentWithRelations | null> {
-  return prisma.agent.findUnique({
-    where: { uid },
-    include: {
-      collections: {
-        include: {
-          collection: {
-            include: {
-              tools: {
-                include: {
-                  tool: {
-                    include: { package: true },
-                  },
-                },
-                orderBy: { position: 'asc' },
-              },
-            },
-          },
-        },
-        orderBy: { position: 'asc' },
-      },
-      tools: {
-        include: {
-          tool: {
-            include: { package: true },
-          },
-        },
-        orderBy: { position: 'asc' },
-      },
-    },
-  });
-}
-
-/**
- * Fetch an agent by ID or UID with all tool relations
- * Accepts either the cuid or the user-friendly uid
- * Includes executor config for cascade resolution
- */
-export async function fetchAgentByIdOrUidWithTools(
-  idOrUid: string
-): Promise<AgentWithRelations | null> {
-  return prisma.agent.findFirst({
-    where: {
-      OR: [{ id: idOrUid }, { uid: idOrUid }],
-    },
-    include: {
-      collections: {
-        include: {
-          collection: {
-            include: {
-              tools: {
-                include: {
-                  tool: {
-                    include: { package: true },
-                  },
-                },
-                orderBy: { position: 'asc' },
-              },
-            },
-          },
-        },
-        orderBy: { position: 'asc' },
-      },
-      tools: {
-        include: {
-          tool: {
-            include: { package: true },
-          },
-        },
-        orderBy: { position: 'asc' },
-      },
-    },
-  });
-}
-
-/**
  * Fetch an agent by username and uid with all tool relations
  * Uses the username/uid pretty URL format
  * Includes executor config for cascade resolution
@@ -432,36 +353,6 @@ export function buildAgentTools(
   // Apply tool permissions: deny removes tools, ask wraps with approval handler
   const permissions = parseToolPermissions(agent.toolPermissions);
   return applyToolPermissions(tools, permissions, approvalHandler);
-}
-
-/**
- * Get list of tool names for an agent (for display)
- */
-export function getAgentToolNames(agent: AgentWithRelations): string[] {
-  const names: string[] = [];
-  const seenTools = new Set<string>();
-
-  for (const agentCollection of agent.collections) {
-    for (const collectionTool of agentCollection.collection.tools) {
-      const tool = collectionTool.tool;
-      const toolKey = `${tool.package.npmPackageName}::${tool.name}`;
-      if (!seenTools.has(toolKey)) {
-        seenTools.add(toolKey);
-        names.push(sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`));
-      }
-    }
-  }
-
-  for (const agentTool of agent.tools) {
-    const tool = agentTool.tool;
-    const toolKey = `${tool.package.npmPackageName}::${tool.name}`;
-    if (!seenTools.has(toolKey)) {
-      seenTools.add(toolKey);
-      names.push(sanitizeToolName(`${tool.package.npmPackageName}-${tool.name}`));
-    }
-  }
-
-  return names;
 }
 
 /**

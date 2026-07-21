@@ -16,8 +16,3 @@ export interface BadgeProps extends HTMLAttributes<HTMLDivElement> {
    */
   size?: 'sm' | 'md' | 'lg';
 }
-
-/**
- * Badge ref type
- */
-export type BadgeRef = HTMLDivElement;

@@ -43,15 +43,6 @@ export interface GeneratorConfig {
   mode: 'simple' | 'advanced';
 }
 
-export interface CLIOptions {
-  name?: string;
-  description?: string;
-  category?: string;
-  tool?: string[];
-  output?: string;
-  yes?: boolean;
-}
-
 export interface GenerationResult {
   success: boolean;
   outputPath: string;

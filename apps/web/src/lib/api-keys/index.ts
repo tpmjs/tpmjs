@@ -118,10 +118,3 @@ export const RATE_LIMITS_BY_TIER = {
   PRO: 10000,
   ENTERPRISE: 100000,
 } as const;
-
-/**
- * Gets the rate limit for a user tier
- */
-export function getRateLimitForTier(tier: keyof typeof RATE_LIMITS_BY_TIER): number {
-  return RATE_LIMITS_BY_TIER[tier];
-}

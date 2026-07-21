@@ -79,8 +79,3 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
    */
   loading?: boolean;
 }
-
-/**
- * Select ref type
- */
-export type SelectRef = HTMLSelectElement;

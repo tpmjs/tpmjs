@@ -27,8 +27,6 @@ const UseCaseOutputSchema = z.object({
 const UseCasesOutputSchema = z.object({
   useCases: z.array(UseCaseOutputSchema).min(6).max(6).describe('Array of EXACTLY 6 use cases'),
 });
-
-export type GeneratedUseCase = z.infer<typeof UseCaseOutputSchema>;
 export type GeneratedUseCases = z.infer<typeof UseCasesOutputSchema>;
 
 interface ToolInfo {

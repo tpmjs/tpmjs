@@ -135,8 +135,3 @@ export interface DropdownMenuGroupProps extends HTMLAttributes<HTMLDivElement> {
    */
   children: ReactNode;
 }
-
-/**
- * DropdownMenu ref type
- */
-export type DropdownMenuRef = HTMLDivElement;

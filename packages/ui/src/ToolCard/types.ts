@@ -95,8 +95,3 @@ export interface ToolCardProps extends HTMLAttributes<HTMLDivElement> {
    */
   icon?: ReactNode;
 }
-
-/**
- * ToolCard ref type
- */
-export type ToolCardRef = HTMLDivElement;

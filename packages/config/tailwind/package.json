@@ -7,8 +7,7 @@
     "base.ts"
   ],
   "dependencies": {
-    "tailwindcss": "^4.1.18",
-    "zod": "^4.3.5"
+    "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

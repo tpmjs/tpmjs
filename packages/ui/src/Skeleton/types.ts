@@ -122,8 +122,3 @@ export interface SkeletonCardProps extends HTMLAttributes<HTMLDivElement> {
    */
   animation?: SkeletonAnimation;
 }
-
-/**
- * Skeleton ref type
- */
-export type SkeletonRef = HTMLDivElement;

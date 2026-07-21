@@ -587,62 +587,6 @@ export async function generateUseCasesForQualifyingScenarios(): Promise<UseCaseG
   return result;
 }
 
-/**
- * Generate use case for a specific scenario
- */
-export async function generateUseCaseForScenario(
-  scenarioId: string
-): Promise<{ success: boolean; useCase?: { id: string }; error?: string }> {
-  const scenario = await prisma.scenario.findUnique({
-    where: { id: scenarioId },
-    include: {
-      collection: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          user: {
-            select: {
-              username: true,
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!scenario) {
-    return { success: false, error: 'Scenario not found' };
-  }
-
-  // Check qualification
-  if (scenario.qualityScore < 0 || scenario.totalRuns < 0 || scenario.lastRunStatus !== 'pass') {
-    return {
-      success: false,
-      error: 'Scenario does not meet qualification criteria',
-    };
-  }
-
-  try {
-    await createOrUpdateUseCase(scenario);
-    const useCase = await prisma.useCase.findUnique({
-      where: { scenarioId },
-      select: { id: true },
-    });
-
-    if (!useCase) {
-      return { success: false, error: 'Failed to create use case' };
-    }
-
-    return { success: true, useCase };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
-
 // ============================================================================
 // Ranking Algorithm
 // ============================================================================

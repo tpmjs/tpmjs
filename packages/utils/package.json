@@ -40,11 +40,9 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
-    "tailwind-merge": "^3.4.0",
-    "zod": "^4.3.5"
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
-    "@tpmjs/test": "workspace:*",
     "@tpmjs/tsconfig": "workspace:*",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",

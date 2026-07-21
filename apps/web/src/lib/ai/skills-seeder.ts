@@ -308,16 +308,3 @@ export async function getSeedingStatus(collectionId: string): Promise<{
     questionCount,
   };
 }
-
-/**
- * Reset seeding status (for manual re-seeding)
- */
-export async function resetSeedingStatus(collectionId: string): Promise<void> {
-  await prisma.collection.update({
-    where: { id: collectionId },
-    data: {
-      skillsSeeded: false,
-      skillsSeedingAt: null,
-    },
-  });
-}

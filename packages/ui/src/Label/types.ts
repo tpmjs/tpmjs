@@ -22,8 +22,3 @@ export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
    */
   disabled?: boolean;
 }
-
-/**
- * Label ref type
- */
-export type LabelRef = HTMLLabelElement;

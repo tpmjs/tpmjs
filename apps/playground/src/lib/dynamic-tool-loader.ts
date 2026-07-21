@@ -330,32 +330,3 @@ export function addConversationTools(conversationId: string, toolKeys: string[])
     tools.add(key);
   }
 }
-
-/**
- * Get all tools for a conversation
- */
-export function getConversationTools(conversationId: string): string[] {
-  return Array.from(conversationTools.get(conversationId) || []);
-}
-
-/**
- * Clear conversation tools (on session end)
- */
-export function clearConversationTools(conversationId: string): void {
-  conversationTools.delete(conversationId);
-  conversationEnv.delete(conversationId);
-  moduleCache.delete(conversationId);
-}
-
-/**
- * Get cache statistics
- */
-export function getCacheStats() {
-  return {
-    moduleCacheSize: Array.from(moduleCache.values()).reduce(
-      (toolCount, cache) => toolCount + cache.size,
-      0
-    ),
-    conversationCount: conversationTools.size,
-  };
-}

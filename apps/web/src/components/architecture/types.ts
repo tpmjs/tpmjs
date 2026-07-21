@@ -1,28 +1,3 @@
-// Shared types for architecture diagrams
-
-export interface DiagramNode {
-  id: string;
-  label: string;
-  sublabel?: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  type: string;
-  tooltip?: {
-    title: string;
-    description: string;
-  };
-}
-
-export interface DiagramConnection {
-  from: string;
-  to: string;
-  label?: string;
-  animated?: boolean;
-  dashed?: boolean;
-}
-
 export interface ColorScheme {
   fill: string;
   stroke: string;

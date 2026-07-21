@@ -101,18 +101,3 @@ export function createCronFetch(cronSecret?: string): typeof fetch {
     });
   };
 }
-
-/**
- * Create all authenticated fetch functions
- */
-export function createAuthenticatedFetches(auth: TestAuthContext): {
-  sessionFetch: typeof fetch;
-  apiKeyFetch: typeof fetch;
-  cronFetch: typeof fetch;
-} {
-  return {
-    sessionFetch: createSessionFetch(auth.sessionToken),
-    apiKeyFetch: createApiKeyFetch(auth.apiKey),
-    cronFetch: createCronFetch(),
-  };
-}

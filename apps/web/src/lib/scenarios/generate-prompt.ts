@@ -6,7 +6,7 @@
  */
 
 import { openai } from '@ai-sdk/openai';
-import { generateObject, generateText } from 'ai';
+import { generateObject } from 'ai';
 import { z } from 'zod';
 
 const GENERATOR_MODEL = 'gpt-4o-mini';
@@ -20,33 +20,6 @@ interface Collection {
   name: string;
   description: string | null;
   tools: Tool[];
-}
-
-/**
- * Generate a single scenario prompt for a collection
- */
-export async function generateScenarioPrompt(collection: Collection): Promise<string> {
-  const toolDescriptions = collection.tools
-    .map((t) => `- ${t.name}: ${t.description || 'No description'}`)
-    .join('\n');
-
-  const { text } = await generateText({
-    model: openai(GENERATOR_MODEL),
-    prompt: `Generate a realistic test scenario for this tool collection.
-
-Collection: ${collection.name}
-Description: ${collection.description || 'No description provided'}
-
-Available tools:
-${toolDescriptions}
-
-Write a single, specific task that a user might want to accomplish using these tools.
-Be concrete and include example data where helpful (like URLs, file paths, or specific values).
-The task should be achievable using the available tools.
-Output only the scenario prompt, nothing else.`,
-  });
-
-  return text.trim();
 }
 
 /**
@@ -100,44 +73,4 @@ ${count > 1 ? 'Make the scenarios diverse - cover different use cases and tool c
   });
 
   return object.scenarios;
-}
-
-/**
- * Generate tags for an existing prompt
- */
-export async function generateTags(prompt: string): Promise<string[]> {
-  const TagsSchema = z.object({
-    tags: z.array(z.string()).min(1).max(5).describe('Relevant tags for the scenario'),
-  });
-
-  const { object } = await generateObject({
-    model: openai(GENERATOR_MODEL),
-    schema: TagsSchema,
-    prompt: `Generate 1-5 relevant tags for this scenario prompt:
-
-"${prompt}"
-
-Tags should be:
-- Lowercase
-- Single words or short phrases (max 2 words)
-- Descriptive of the task type, domain, or tools involved`,
-  });
-
-  return object.tags;
-}
-
-/**
- * Generate a name for an existing prompt
- */
-export async function generateName(prompt: string): Promise<string> {
-  const { text } = await generateText({
-    model: openai(GENERATOR_MODEL),
-    prompt: `Generate a short, descriptive name (max 50 characters) for this scenario:
-
-"${prompt}"
-
-Output only the name, nothing else.`,
-  });
-
-  return text.trim().slice(0, 50);
 }

@@ -33,14 +33,6 @@ export interface HealthResponse {
   timestamp?: string;
 }
 
-export interface ExecuteToolRequest {
-  packageName: string;
-  version?: string;
-  name: string;
-  params?: Record<string, unknown>;
-  env?: Record<string, string>;
-}
-
 export interface ExecuteToolResponse {
   success: boolean;
   output?: unknown;

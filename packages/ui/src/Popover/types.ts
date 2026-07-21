@@ -1,4 +1,4 @@
-import type { HTMLAttributes, ReactNode, RefObject } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 /**
  * Popover placement types
@@ -105,33 +105,4 @@ export interface PopoverProps extends Omit<HTMLAttributes<HTMLDivElement>, 'cont
    * @default false
    */
   disabled?: boolean;
-}
-
-/**
- * PopoverContent component props
- */
-export interface PopoverContentProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode;
-}
-
-/**
- * PopoverTrigger component props
- */
-export interface PopoverTriggerProps extends HTMLAttributes<HTMLElement> {
-  children: ReactNode;
-  asChild?: boolean;
-}
-
-/**
- * Popover ref type
- */
-export type PopoverRef = HTMLDivElement;
-
-/**
- * Internal popover state
- */
-export interface PopoverState {
-  isOpen: boolean;
-  triggerRef: RefObject<HTMLElement | null>;
-  contentRef: RefObject<HTMLDivElement | null>;
 }
