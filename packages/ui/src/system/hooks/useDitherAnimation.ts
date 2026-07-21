@@ -118,9 +118,15 @@ export function useDitherAnimation(options: DitherAnimationOptions): DitherAnima
     };
   }, [frames, mode, speed, delay, onComplete, paused]);
 
-  return {
-    currentFrame,
-    isComplete,
-    frameIndex,
-  };
+  // Static frames can arrive after hydration. Derive static state directly so
+  // reduced-motion users see the final frame without starting an animation.
+  if (mode === 'static') {
+    return {
+      currentFrame: frames[frames.length - 1] || null,
+      isComplete: true,
+      frameIndex: Math.max(frames.length - 1, 0),
+    };
+  }
+
+  return { currentFrame, isComplete, frameIndex };
 }
