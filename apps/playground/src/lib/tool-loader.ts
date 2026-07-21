@@ -1,11 +1,21 @@
 // Static imports for tools (required for Next.js/webpack)
 import { helloNameTool, helloWorldTool } from '@tpmjs/hello';
+import type { Tool } from 'ai';
+
+type RuntimeTool = Tool;
+type RuntimeToolSet = Record<string, RuntimeTool>;
+
+function isRuntimeTool(value: unknown): value is RuntimeTool {
+  if (typeof value !== 'object' || value === null) return false;
+  const candidate = value as Record<string, unknown>;
+  return 'inputSchema' in candidate && typeof candidate.execute === 'function';
+}
 
 /**
  * Tool registry mapping package names + export names to actual tool functions
  * This is a static mapping required for Next.js/webpack bundling
  */
-const TOOL_REGISTRY: Record<string, Record<string, any>> = {
+const TOOL_REGISTRY: Record<string, Record<string, unknown>> = {
   '@tpmjs/hello': {
     helloWorldTool,
     helloNameTool,
@@ -16,8 +26,10 @@ const TOOL_REGISTRY: Record<string, Record<string, any>> = {
  * Load a specific TPMJS tool by package name and export name
  * Uses static imports to work with Next.js/webpack bundling
  */
-// biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
-export async function loadTpmjsTool(packageName: string, name: string): Promise<any | null> {
+export async function loadTpmjsTool(
+  packageName: string,
+  name: string
+): Promise<RuntimeTool | null> {
   try {
     // Look up the package in the registry
     const packageTools = TOOL_REGISTRY[packageName];
@@ -27,8 +39,8 @@ export async function loadTpmjsTool(packageName: string, name: string): Promise<
     }
 
     // Look up the specific tool export
-    const tool = packageTools[name];
-    if (!tool) {
+    const candidate = packageTools[name];
+    if (!candidate) {
       console.warn(
         `Export '${name}' not found in package ${packageName}. Available exports:`,
         Object.keys(packageTools)
@@ -36,7 +48,12 @@ export async function loadTpmjsTool(packageName: string, name: string): Promise<
       return null;
     }
 
-    return tool;
+    if (!isRuntimeTool(candidate)) {
+      console.warn(`Export '${name}' from ${packageName} is not an executable AI SDK tool.`);
+      return null;
+    }
+
+    return candidate;
   } catch (error) {
     console.error(`Failed to load tool ${packageName}/${name}:`, error);
     return null;
@@ -58,17 +75,20 @@ export function sanitizeToolName(name: string): string {
  * Load all installed TPMJS tools
  * Returns a flat object with all tools keyed by sanitized packageName-name
  */
-// biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
-export async function loadAllTools(): Promise<Record<string, any>> {
-  // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex and using any is appropriate here
-  const tools: Record<string, any> = {};
+export async function loadAllTools(): Promise<RuntimeToolSet> {
+  const tools: RuntimeToolSet = {};
 
   // Iterate through all registered packages
   for (const [packageName, packageTools] of Object.entries(TOOL_REGISTRY)) {
-    for (const [name, tool] of Object.entries(packageTools)) {
+    for (const [name, candidate] of Object.entries(packageTools)) {
+      if (!isRuntimeTool(candidate)) {
+        console.warn(`Skipping non-tool export '${name}' from ${packageName}.`);
+        continue;
+      }
+
       // Create a unique, sanitized key for this tool
       const toolKey = sanitizeToolName(`${packageName}-${name}`);
-      tools[toolKey] = tool;
+      tools[toolKey] = candidate;
     }
   }
 
