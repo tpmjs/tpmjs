@@ -129,6 +129,7 @@ const tools = [registrySearchTool, registryExecuteTool];
 
 - [Node.js](https://nodejs.org/) >= 22
 - [pnpm](https://pnpm.io/) >= 10
+- Docker with Compose v2, or Podman Compose
 
 ### Setup
 
@@ -136,13 +137,19 @@ const tools = [registrySearchTool, registryExecuteTool];
 git clone https://github.com/tpmjs/tpmjs.git
 cd tpmjs
 pnpm install
+pnpm dev:setup
 ```
+
+`dev:setup` provisions an isolated PostgreSQL 17 database, applies every
+checked-in migration, creates a local environment with generated secrets, and
+seeds an offline starter registry. It is idempotent and preserves both existing
+environment files and database data.
 
 ### Development
 
 ```bash
-# Start the dev server
-pnpm dev --filter=@tpmjs/web
+# Start the web app
+pnpm --filter=@tpmjs/web dev
 
 # Run tests
 pnpm test

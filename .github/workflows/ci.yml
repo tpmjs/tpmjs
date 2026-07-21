@@ -35,7 +35,9 @@ jobs:
         run: pnpm format:check
 
       - name: Validate operator scripts
-        run: bash -n scripts/deploy-on-box.sh
+        run: |
+          bash -n scripts/deploy-on-box.sh
+          docker compose --file compose.dev.yaml config --quiet
 
   type-check:
     runs-on: ubuntu-latest
@@ -79,6 +81,7 @@ jobs:
 
       - name: Test
         run: |
+          pnpm dev:setup:test
           pnpm release:audit:test
           pnpm release:auth:test
           pnpm verify:vercel-api:test

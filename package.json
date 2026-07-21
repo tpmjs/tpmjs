@@ -30,6 +30,8 @@
   "packageManager": "pnpm@10.14.0",
   "scripts": {
     "dev": "turbo dev",
+    "dev:setup": "tsx scripts/dev-setup.ts",
+    "dev:setup:test": "tsx --test scripts/dev-setup.test.ts",
     "build": "turbo build",
     "build:web": "turbo run build --filter=@tpmjs/web...",
     "build:playground": "turbo run build --filter=@tpmjs/playground...",
