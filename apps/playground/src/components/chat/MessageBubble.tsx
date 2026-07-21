@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
-import type { UIMessage } from 'ai';
+import { getToolName, isToolUIPart, type UIMessage } from 'ai';
 import { useEffect, useRef, useState } from 'react';
 import { Streamdown } from 'streamdown';
 
@@ -16,11 +16,26 @@ interface MessageBubbleProps {
   isStreaming?: boolean;
 }
 
+type MessagePart = UIMessage['parts'][number];
+
 function formatDuration(ms: number): string {
   if (ms < 1000) {
     return `${ms}ms`;
   }
   return `${(ms / 1000).toFixed(2)}s`;
+}
+
+function getPartKey(part: MessagePart, index: number): string {
+  return isToolUIPart(part) ? part.toolCallId : `${part.type}-${index}`;
+}
+
+function isCompleteToolPart(part: MessagePart): boolean {
+  return (
+    isToolUIPart(part) &&
+    (part.state === 'output-available' ||
+      part.state === 'output-error' ||
+      part.state === 'output-denied')
+  );
 }
 
 export function MessageBubble({
@@ -38,12 +53,11 @@ export function MessageBubble({
     if (!message.parts || isUser) return;
 
     const currentPartsKey = JSON.stringify(
-      // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
-      message.parts.map((p: any) => ({
-        type: p.type,
-        id: p.toolCallId || p.type,
-        state: p.state,
-        textLen: p.text?.length,
+      message.parts.map((part, index) => ({
+        type: part.type,
+        id: getPartKey(part, index),
+        state: 'state' in part ? part.state : undefined,
+        textLen: 'text' in part && typeof part.text === 'string' ? part.text.length : undefined,
       }))
     );
 
@@ -57,10 +71,8 @@ export function MessageBubble({
     setPartTimings((prev) => {
       const updated = new Map(prev);
 
-      // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
-      // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex part timing logic for streaming messages
-      message.parts?.forEach((part: any, idx: number) => {
-        const partKey = part.toolCallId || `${part.type}-${idx}`;
+      message.parts?.forEach((part, idx) => {
+        const partKey = getPartKey(part, idx);
         const existing = updated.get(partKey);
 
         // Skip step-start markers
@@ -71,7 +83,7 @@ export function MessageBubble({
           updated.set(partKey, { startTime: now });
         } else if (!existing.endTime) {
           // Check if part is complete
-          const isToolComplete = part.type.startsWith('tool-') && part.state === 'result';
+          const isToolComplete = isCompleteToolPart(part);
           const isTextComplete = part.type === 'text' && !isStreaming;
 
           if (isToolComplete || isTextComplete) {
@@ -89,9 +101,8 @@ export function MessageBubble({
   }, [message.parts, isStreaming, isUser]);
 
   // Get timing for a specific part
-  // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
-  const getPartTiming = (part: any, idx: number): PartTiming | undefined => {
-    const partKey = part.toolCallId || `${part.type}-${idx}`;
+  const getPartTiming = (part: MessagePart, idx: number): PartTiming | undefined => {
+    const partKey = getPartKey(part, idx);
     return partTimings.get(partKey);
   };
 
@@ -142,18 +153,24 @@ export function MessageBubble({
                 );
               }
 
-              // Render tool calls (type starts with 'tool-')
-              if (part.type.startsWith('tool-')) {
-                const toolName = part.type.replace('tool-', '');
-                // biome-ignore lint/suspicious/noExplicitAny: Tool part properties vary by AI SDK version
-                const toolPart = part as any;
+              // Render static and dynamic tool calls using the AI SDK's discriminated union.
+              if (isToolUIPart(part)) {
+                const toolName = getToolName(part);
                 const timing = getPartTiming(part, idx);
-                const isResult = toolPart.state === 'result';
-                const hasError = toolPart.errorText || toolPart.error;
+                const isResult = part.state === 'output-available';
+                const hasError = part.state === 'output-error';
+                const stateLabel =
+                  part.state === 'output-available'
+                    ? 'result'
+                    : part.state === 'output-error'
+                      ? 'error'
+                      : part.state === 'output-denied'
+                        ? 'denied'
+                        : part.state.replace('-', ' ');
 
                 return (
                   <div
-                    key={toolPart.toolCallId || idx}
+                    key={part.toolCallId}
                     className={`rounded-lg border p-3 ${
                       hasError
                         ? 'border-red-500/30 bg-red-500/5'
@@ -167,7 +184,7 @@ export function MessageBubble({
                         variant={hasError ? 'error' : isResult ? 'success' : 'secondary'}
                         size="sm"
                       >
-                        {hasError ? 'error' : toolPart.state || 'running'}
+                        {stateLabel}
                       </Badge>
                       {timing?.duration && (
                         <span className="ml-auto text-xs text-foreground-tertiary">
@@ -177,25 +194,25 @@ export function MessageBubble({
                     </div>
 
                     {/* Tool Input */}
-                    {toolPart.input && (
+                    {part.input !== undefined && (
                       <details className="group">
                         <summary className="cursor-pointer text-xs font-medium text-foreground-secondary hover:text-foreground">
                           Input
                         </summary>
                         <pre className="mt-2 overflow-x-auto rounded-md bg-surface p-2 text-xs text-foreground-secondary">
-                          {JSON.stringify(toolPart.input, null, 2)}
+                          {JSON.stringify(part.input, null, 2)}
                         </pre>
                       </details>
                     )}
 
                     {/* Tool Output */}
-                    {toolPart.output && (
+                    {isResult && part.output !== undefined && (
                       <details className="group mt-2" open>
                         <summary className="cursor-pointer text-xs font-medium text-foreground-secondary hover:text-foreground">
                           Output
                         </summary>
                         <pre className="mt-2 max-h-48 overflow-auto rounded-md bg-surface p-2 text-xs text-foreground-secondary">
-                          {JSON.stringify(toolPart.output, null, 2)}
+                          {JSON.stringify(part.output, null, 2)}
                         </pre>
                       </details>
                     )}
@@ -205,9 +222,7 @@ export function MessageBubble({
                       <div className="mt-2">
                         <div className="mb-1 text-xs font-medium text-red-500">Error</div>
                         <pre className="overflow-x-auto rounded-md bg-red-500/10 p-2 text-xs text-red-400">
-                          {typeof (toolPart.errorText || toolPart.error) === 'string'
-                            ? toolPart.errorText || toolPart.error
-                            : JSON.stringify(toolPart.errorText || toolPart.error, null, 2)}
+                          {part.errorText}
                         </pre>
                       </div>
                     )}

@@ -1,7 +1,15 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { searchTpmjsToolsTool } from '@tpmjs/search-registry';
-import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
+import {
+  convertToModelMessages,
+  safeValidateUIMessages,
+  stepCountIs,
+  streamText,
+  type Tool,
+  type UIMessage,
+} from 'ai';
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { env } from '~/env';
 import {
   addConversationTools,
@@ -10,20 +18,33 @@ import {
 } from '~/lib/dynamic-tool-loader';
 import { loadAllTools, sanitizeToolName } from '~/lib/tool-loader';
 
-interface ToolSearchResult {
-  query: string;
-  matchCount: number;
-  // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool registry result type - tools have varying shapes
-  tools: any[];
-}
+const ChatRequestSchema = z.object({
+  messages: z.unknown().optional().default([]),
+  conversationId: z.string().trim().min(1).optional().default('default'),
+  env: z.record(z.string(), z.string()).optional().default({}),
+});
+
+const ToolSearchResultSchema = z.object({
+  query: z.string(),
+  matchCount: z.number().int().nonnegative(),
+  tools: z.array(
+    z.object({
+      packageName: z.string().min(1),
+      name: z.string().min(1),
+      version: z.string().min(1),
+      importUrl: z.string().url().optional(),
+    })
+  ),
+});
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300; // 5 minutes for complex tool loading
 
 // Add conversation state tracking (in-memory for MVP)
-// biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
-const conversationStates = new Map<string, { loadedTools: Record<string, any> }>();
+type RuntimeToolSet = Record<string, Tool>;
+
+const conversationStates = new Map<string, { loadedTools: RuntimeToolSet }>();
 
 /**
  * POST /api/chat
@@ -32,13 +53,38 @@ const conversationStates = new Map<string, { loadedTools: Record<string, any> }>
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex chat handler with tool loading requires this complexity
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    console.log('📥 Request body:', JSON.stringify(body, null, 2));
+    let rawBody: unknown;
+    try {
+      rawBody = await request.json();
+    } catch {
+      return Response.json(
+        { success: false, error: 'Request body must be valid JSON.' },
+        { status: 400 }
+      );
+    }
 
-    const messages: UIMessage[] = body.messages || [];
-    const conversationId: string = body.conversationId || 'default';
-    const clientEnv: Record<string, string> = body.env || {};
+    const parsedBody = ChatRequestSchema.safeParse(rawBody);
+    if (!parsedBody.success) {
+      return Response.json(
+        { success: false, error: 'Request body has an invalid chat payload.' },
+        { status: 400 }
+      );
+    }
 
+    const validatedMessages = await safeValidateUIMessages<UIMessage>({
+      messages: parsedBody.data.messages,
+    });
+    if (!validatedMessages.success) {
+      return Response.json(
+        { success: false, error: 'Request body contains invalid chat messages.' },
+        { status: 400 }
+      );
+    }
+
+    const messages = validatedMessages.data;
+    const { conversationId, env: clientEnv } = parsedBody.data;
+
+    console.log(`📥 Received ${messages.length} chat messages`);
     console.log(`🔑 Conversation ID: ${conversationId}`);
     console.log(
       `🔐 Client env vars: ${Object.keys(clientEnv).length} keys`,
@@ -97,9 +143,7 @@ export async function POST(request: NextRequest) {
     let userQuery = '';
     if (lastMessage?.role === 'user') {
       // Extract text from message parts
-      // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
-      const parts = (lastMessage as any).parts || [];
-      for (const part of parts) {
+      for (const part of lastMessage.parts) {
         if (part.type === 'text') {
           userQuery = part.text;
           break;
@@ -113,9 +157,7 @@ export async function POST(request: NextRequest) {
       .slice(-3)
       .map((msg) => {
         // Extract text from parts
-        // biome-ignore lint/suspicious/noExplicitAny: UIMessage.parts type varies by AI SDK version
-        const parts = (msg as any).parts || [];
-        for (const part of parts) {
+        for (const part of msg.parts) {
           if (part.type === 'text') {
             return part.text;
           }
@@ -127,39 +169,44 @@ export async function POST(request: NextRequest) {
     console.log(`💬 User query: "${userQuery}"`);
     console.log(`📝 Recent messages: ${recentUserMessages.length}`);
 
+    const modelMessages = await convertToModelMessages(messages);
+
     // 3. Automatically search for relevant tools based on the user's message
     if (userQuery && userQuery.trim().length > 0) {
       console.log('🔎 Searching for relevant tools...');
 
       try {
-        // biome-ignore lint/style/noNonNullAssertion: Tool created with tool() always has execute
-        const result = await searchTpmjsToolsTool.execute!(
+        const executeSearch = searchTpmjsToolsTool.execute;
+        if (!executeSearch) {
+          throw new Error('The TPMJS search tool is not executable.');
+        }
+
+        const result = await executeSearch(
           {
             query: userQuery,
             limit: 5, // Get top 5 relevant tools
             recentMessages: recentUserMessages,
           },
-          // biome-ignore lint/suspicious/noExplicitAny: AI SDK execute context type is complex
-          {} as any
+          {
+            toolCallId: `playground-search-${crypto.randomUUID()}`,
+            messages: modelMessages,
+          }
         );
 
-        // Type assertion: searchTpmjsToolsTool returns direct result, not AsyncIterable
-        const searchResult = result as ToolSearchResult;
+        const searchResult = ToolSearchResultSchema.parse(result);
 
         console.log(`📦 Found ${searchResult.matchCount} matching tools`);
 
         if (searchResult.tools && searchResult.tools.length > 0) {
           console.log(
             '🔧 Tools found:',
-            // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool registry result type
-            searchResult.tools.map((t: any) => `${t.packageName}/${t.name}`)
+            searchResult.tools.map((tool) => `${tool.packageName}/${tool.name}`)
           );
 
           // Dynamically load tools from esm.sh
           console.log(`📥 Loading ${searchResult.tools.length} tools dynamically...`);
 
-          // biome-ignore lint/suspicious/noExplicitAny: Dynamic tool registry result type
-          const toolsToLoad = searchResult.tools.map((meta: any) => ({
+          const toolsToLoad = searchResult.tools.map((meta) => ({
             packageName: meta.packageName,
             name: meta.name,
             version: meta.version,
@@ -192,8 +239,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 4. Merge with conversation's dynamically loaded tools
-    // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
-    const allTools: Record<string, any> = { ...staticTools, ...state.loadedTools };
+    const allTools: RuntimeToolSet = { ...staticTools, ...state.loadedTools };
 
     // 5. Build system prompt with available tools
     const toolsList = Object.keys(allTools)
@@ -237,7 +283,7 @@ Remember: Your value is in EXECUTING tools to get real results, not just describ
     const result = streamText({
       model: openai('gpt-4o-mini'),
       system,
-      messages: await convertToModelMessages(messages),
+      messages: modelMessages,
       tools: allTools,
       stopWhen: stepCountIs(5), // Allow model to call tools AND generate text response
     });

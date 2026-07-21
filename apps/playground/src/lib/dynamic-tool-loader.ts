@@ -1,8 +1,11 @@
-import { jsonSchema, tool } from 'ai';
+import { jsonSchema, type Tool, tool } from 'ai';
+import { z } from 'zod';
 
 // Cache for tool wrappers (process-level)
-// biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
-const moduleCache = new Map<string, any>();
+type RuntimeTool = Tool;
+type RuntimeToolSet = Record<string, RuntimeTool>;
+
+const moduleCache = new Map<string, Map<string, RuntimeTool>>();
 
 // Cache for per-conversation active tools
 const conversationTools = new Map<string, Set<string>>();
@@ -14,11 +17,50 @@ const conversationEnv = new Map<string, Record<string, string>>();
 const RAILWAY_SERVICE_URL =
   process.env.RAILWAY_SERVICE_URL || process.env.SANDBOX_EXECUTOR_URL || 'http://localhost:3001';
 
+const LoadToolResponseSchema = z.discriminatedUnion('success', [
+  z.object({
+    success: z.literal(true),
+    tool: z.object({
+      description: z.string(),
+      inputSchema: z.unknown().optional(),
+    }),
+  }),
+  z.object({
+    success: z.literal(false),
+    error: z.string().optional(),
+  }),
+]);
+
+const ExecuteToolResponseSchema = z.discriminatedUnion('success', [
+  z.object({
+    success: z.literal(true),
+    output: z.unknown(),
+    executionTimeMs: z.number().optional(),
+  }),
+  z.object({
+    success: z.literal(false),
+    error: z.string().optional(),
+  }),
+]);
+
 /**
- * Generate cache key for a tool
+ * Generate the stable logical key used to expose a tool to the model.
  */
-function getCacheKey(packageName: string, name: string): string {
+function getToolKey(packageName: string, name: string): string {
   return `${packageName}::${name}`;
+}
+
+/**
+ * Generate the exact artifact key used by the executable-wrapper cache.
+ * A package update or alternate import URL must create a fresh wrapper.
+ */
+function getCacheKey(
+  packageName: string,
+  name: string,
+  version: string,
+  importUrl: string | undefined
+): string {
+  return JSON.stringify([packageName, name, version, importUrl ?? null]);
 }
 
 /**
@@ -37,6 +79,119 @@ function getConversationEnv(conversationId: string): Record<string, string> {
   return conversationEnv.get(conversationId) || {};
 }
 
+interface RemoteToolDescription {
+  description: string;
+  inputSchema?: unknown;
+}
+
+async function fetchToolDescription(
+  packageName: string,
+  name: string,
+  version: string,
+  importUrl: string | undefined,
+  env: Record<string, string>
+): Promise<RemoteToolDescription> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  try {
+    const response = await fetch(`${RAILWAY_SERVICE_URL}/load-and-describe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageName,
+        name,
+        version,
+        importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
+        env,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Railway returned HTTP ${response.status}: ${errorText}`);
+    }
+
+    const rawData: unknown = await response.json();
+    const parsedData = LoadToolResponseSchema.safeParse(rawData);
+    if (!parsedData.success) {
+      throw new Error('Railway returned a malformed tool description');
+    }
+    if (!parsedData.data.success) {
+      throw new Error(parsedData.data.error || 'Railway could not load the tool');
+    }
+    return parsedData.data.tool;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Railway request timed out after 120s for ${packageName}/${name}`, {
+        cause: error,
+      });
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function executeRemoteTool(
+  packageName: string,
+  name: string,
+  version: string,
+  importUrl: string | undefined,
+  conversationId: string,
+  params: unknown
+): Promise<unknown> {
+  const currentEnv = getConversationEnv(conversationId);
+  console.log(`🔐 Using ${Object.keys(currentEnv).length} env vars for ${conversationId}`);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  try {
+    const response = await fetch(`${RAILWAY_SERVICE_URL}/execute-tool`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        packageName,
+        name,
+        version,
+        importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
+        params,
+        env: currentEnv,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Tool executor returned HTTP ${response.status}`);
+    }
+
+    const rawResult: unknown = await response.json();
+    const parsedResult = ExecuteToolResponseSchema.safeParse(rawResult);
+    if (!parsedResult.success) {
+      throw new Error('Tool executor returned a malformed response');
+    }
+    if (!parsedResult.data.success) {
+      throw new Error(parsedResult.data.error || 'Tool execution failed');
+    }
+
+    console.log(
+      `✅ Tool executed successfully in ${parsedResult.data.executionTimeMs ?? 'unknown'}ms`
+    );
+    return parsedResult.data.output;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Tool execution timed out after 120s for ${packageName}/${name}`, {
+        cause: error,
+      });
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 /**
  * Dynamically load a tool via Railway service
  * Railway service runs with --experimental-network-imports and can import from esm.sh
@@ -48,127 +203,50 @@ export async function loadToolDynamically(
   conversationId: string,
   importUrl?: string,
   env?: Record<string, string>
-  // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
-): Promise<any | null> {
-  const cacheKey = getCacheKey(packageName, name);
+): Promise<RuntimeTool | null> {
+  const toolKey = getToolKey(packageName, name);
+  const cacheKey = getCacheKey(packageName, name, version, importUrl);
+  let toolCache = moduleCache.get(conversationId);
+  if (!toolCache) {
+    toolCache = new Map();
+    moduleCache.set(conversationId, toolCache);
+  }
 
-  // Check cache first
-  if (moduleCache.has(cacheKey)) {
-    console.log(`✅ Cache hit: ${cacheKey}`);
-    return moduleCache.get(cacheKey);
+  // Tool wrappers close over a conversation ID, so they must never be shared
+  // across conversations (which would route one conversation through another's env).
+  const cachedTool = toolCache.get(cacheKey);
+  if (cachedTool) {
+    console.log(`✅ Cache hit: ${toolKey}@${version}`);
+    return cachedTool;
   }
 
   try {
     console.log(`📦 Loading from Railway: ${packageName}/${name}`);
     console.log(`🔗 Railway URL: ${RAILWAY_SERVICE_URL}`);
 
-    // Call Railway service to load and describe tool
-    // 120 second timeout per tool to handle large dependency downloads
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000);
+    const description = await fetchToolDescription(
+      packageName,
+      name,
+      version,
+      importUrl,
+      env || {}
+    );
+    console.log(`✅ Tool loaded from Railway: ${toolKey}@${version}`);
+    console.log(`📋 Description: ${description.description}`);
 
-    let response: Response | undefined;
-    let data:
-      | { success: boolean; tool?: { description: string; inputSchema?: unknown }; error?: string }
-      | undefined;
-
-    try {
-      response = await fetch(`${RAILWAY_SERVICE_URL}/load-and-describe`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          packageName,
-          name,
-          version,
-          importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
-          env: env || {},
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeout);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`❌ Railway service error (${response.status}): ${errorText}`);
-        return null;
-      }
-
-      data = await response.json();
-
-      if (!data || !data.success) {
-        const errorMsg = data?.error || 'Unknown error';
-        console.error(`❌ Failed to load tool: ${errorMsg}`);
-        return null;
-      }
-    } catch (fetchError) {
-      clearTimeout(timeout);
-
-      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-        console.error(`❌ Railway request timeout after 120s for ${packageName}/${name}`);
-        return null;
-      }
-
-      throw fetchError;
-    }
-
-    // Type guard - data and data.tool are guaranteed after successful response
-    if (!data?.tool) {
-      console.error('❌ Invalid response from Railway: missing tool data');
-      return null;
-    }
-
-    console.log(`✅ Tool loaded from Railway: ${cacheKey}`);
-    console.log(`📋 Description: ${data.tool.description}`);
-
-    // Create a proper AI SDK tool wrapper that executes remotely
-    // Railway returns plain JSON Schema - wrap it with jsonSchema() for AI SDK
     const toolWrapper = tool({
-      description: data.tool.description,
-      inputSchema: data.tool.inputSchema
-        ? jsonSchema(data.tool.inputSchema)
+      description: description.description,
+      inputSchema: description.inputSchema
+        ? jsonSchema(description.inputSchema)
         : jsonSchema({ type: 'object', properties: {}, additionalProperties: false }),
-      // biome-ignore lint/suspicious/noExplicitAny: Tool params are dynamic
-      execute: async (params: any) => {
+      execute: async (params: unknown) => {
         console.log(`🚀 Executing ${packageName}/${name} remotely with params:`, params);
-
-        // Get the latest env vars for this conversation (not from closure!)
-        const currentEnv = getConversationEnv(conversationId);
-        console.log(
-          `🔐 Using env vars for conversation ${conversationId}:`,
-          Object.keys(currentEnv)
-        );
-
-        const execResponse = await fetch(`${RAILWAY_SERVICE_URL}/execute-tool`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            packageName,
-            name,
-            version,
-            importUrl: importUrl || `https://esm.sh/${packageName}@${version}`,
-            params,
-            env: currentEnv,
-          }),
-        });
-
-        const result = await execResponse.json();
-
-        if (!result.success) {
-          console.error(`❌ Tool execution failed: ${result.error}`);
-          throw new Error(result.error || 'Tool execution failed');
-        }
-
-        // Health status is reported by the Railway executor
-        console.log(`✅ Tool executed successfully in ${result.executionTimeMs}ms`);
-        return result.output;
+        return executeRemoteTool(packageName, name, version, importUrl, conversationId, params);
       },
     });
 
-    // Cache the wrapper
-    moduleCache.set(cacheKey, toolWrapper);
-    console.log(`✅ Cached tool wrapper: ${cacheKey}`);
-
+    toolCache.set(cacheKey, toolWrapper);
+    console.log(`✅ Cached tool wrapper: ${toolKey}@${version}`);
     return toolWrapper;
   } catch (error) {
     console.error(`❌ Failed to load ${packageName}#${name}:`, error);
@@ -189,8 +267,7 @@ export async function loadToolsBatch(
   }>,
   conversationId: string,
   env?: Record<string, string>
-  // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
-): Promise<Record<string, any>> {
+): Promise<RuntimeToolSet> {
   console.log(`📦 Loading ${toolMetadata.length} tools for conversation ${conversationId}`);
   console.log('🔑 Env vars being passed:', Object.keys(env || {}));
 
@@ -205,7 +282,7 @@ export async function loadToolsBatch(
     ).then((tool) => ({
       packageName: meta.packageName,
       name: meta.name,
-      key: getCacheKey(meta.packageName, meta.name),
+      key: getToolKey(meta.packageName, meta.name),
       tool,
       success: tool !== null,
     }))
@@ -218,9 +295,9 @@ export async function loadToolsBatch(
   const failed = results.filter((r) => !r.success);
 
   // Build tools object
-  // biome-ignore lint/suspicious/noExplicitAny: Tool types from AI SDK are complex
-  const tools: Record<string, any> = {};
+  const tools: RuntimeToolSet = {};
   for (const result of successful) {
+    if (!result.tool) continue;
     tools[result.key] = result.tool;
   }
 
@@ -266,6 +343,8 @@ export function getConversationTools(conversationId: string): string[] {
  */
 export function clearConversationTools(conversationId: string): void {
   conversationTools.delete(conversationId);
+  conversationEnv.delete(conversationId);
+  moduleCache.delete(conversationId);
 }
 
 /**
@@ -273,7 +352,10 @@ export function clearConversationTools(conversationId: string): void {
  */
 export function getCacheStats() {
   return {
-    moduleCacheSize: moduleCache.size,
+    moduleCacheSize: Array.from(moduleCache.values()).reduce(
+      (toolCount, cache) => toolCount + cache.size,
+      0
+    ),
     conversationCount: conversationTools.size,
   };
 }
