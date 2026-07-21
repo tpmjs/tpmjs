@@ -60,7 +60,17 @@ Production is the box itself: every tpmjs service runs as a podman Quadlet unit.
 
 All containers share the `tpmjs` podman network and reach each other by container name (web → `tpmjs-pg:5432`, playground → `tpmjs-railway-executor:3002`). Secrets/env live in `/etc/donto/tpmjs-<name>.env` (root:ajax 640) — never in the repo, and there are no `.env.local` files in the checkout.
 
-**Deploy the web app.** Next.js standalone output keeps the production image limited to traced runtime dependencies rather than the entire monorepo. The repo-root `Dockerfile` expects `apps/web/.next` as its build context. There is no image registry, so retain a rollback tag and never prune the live image without a verified replacement:
+**Deploy from `main` with the transactional operator script.** It refuses a dirty or non-`origin/main` checkout, low disk headroom, and web deploys whose Prisma migration ledger differs from the repository. It builds under a candidate tag, smoke-tests the candidate runtime, preserves the exact old image, activates the candidate, and automatically restores the old image if live commit health fails. `all` deploys the executor before the web app; `verify` is read-only:
+
+```bash
+cd /mnt/donto-data/workspace/tpmjs
+scripts/deploy-on-box.sh all
+scripts/deploy-on-box.sh verify
+```
+
+Use `executor` or `web` to deploy one service. The script does not apply database migrations or modify Quadlets: migrations remain a separate backup-verified operation, and a changed Quadlet must be merged in `donto-infra`, installed, and reloaded before running this deploy.
+
+**Manual web fallback.** Next.js standalone output keeps the production image limited to traced runtime dependencies rather than the entire monorepo. The repo-root `Dockerfile` expects `apps/web/.next` as its build context. There is no image registry, so retain a rollback tag and never prune the live image without a verified replacement:
 
 ```bash
 cd /mnt/donto-data/workspace/tpmjs
@@ -79,7 +89,7 @@ curl -fsS https://tpmjs.com/api/health
 
 The playground and tutorial still use the parametrized `donto-infra/build/tpmjs.Dockerfile` until they adopt standalone output. Run `donto-infra/deploy.sh tpmjs-<app>` only when a Quadlet changed, not for an image-only deployment.
 
-**Deploy the Deno services** (each builds from its own directory in this repo):
+**Manual Deno fallback** (each service builds from its own directory in this repo):
 
 ```bash
 cd /mnt/donto-data/workspace/tpmjs
