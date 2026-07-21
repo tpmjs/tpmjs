@@ -93,7 +93,7 @@ export function HeroSection({ stats }: HeroSectionProps): React.ReactElement {
                 <span className="text-foreground-tertiary">/</span>
                 <div className="flex items-center gap-2">
                   <span className="text-foreground">{formatNumber(stats.totalDownloads)}</span>
-                  <span className="text-foreground-secondary">DOWNLOADS</span>
+                  <span className="text-foreground-secondary">NPM DOWNLOADS</span>
                 </div>
               </>
             )}

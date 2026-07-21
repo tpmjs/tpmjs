@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
   if (unauthorized) return unauthorized;
 
   try {
+    // Self-heal the trigger-maintained registry counters from the source tables
+    // before snapshotting, so historical stats never inherit counter drift.
+    await prisma.$executeRawUnsafe('SELECT tpmjs_reconcile_counters()');
+
     // Get today's date at midnight UTC
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);

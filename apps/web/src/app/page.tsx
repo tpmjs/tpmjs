@@ -20,10 +20,17 @@ export const dynamic = 'force-dynamic';
 async function getHomePageData() {
   try {
     // Fetch stats in parallel
-    const [featuredTools, categoryStats, featuredScenarios, latestSnapshot] = await Promise.all([
-      // Top 6 featured tools by quality score
+    const [
+      featuredTools,
+      categoryStats,
+      featuredScenarios,
+      latestSnapshot,
+      liveToolCount,
+      livePackageCount,
+    ] = await Promise.all([
+      // Top 6 featured tools by quality score (never feature an import-broken tool)
       prisma.tool.findMany({
-        where: defaultToolDiscoveryFilter(),
+        where: { ...defaultToolDiscoveryFilter(), importHealth: { not: 'BROKEN' } },
         orderBy: [{ qualityScore: 'desc' }, { package: { npmDownloadsLastMonth: 'desc' } }],
         take: 6,
         select: {
@@ -113,6 +120,11 @@ async function getHomePageData() {
           categories: true,
         },
       }),
+
+      // Live registry totals — counted directly (tables are small; always accurate,
+      // never trust the drift-prone counters/snapshot for the headline numbers).
+      prisma.tool.count({ where: defaultToolDiscoveryFilter() }),
+      prisma.package.count(),
     ]);
 
     // Always query all-time avg execution time (snapshot only has daily value)
@@ -132,7 +144,7 @@ async function getHomePageData() {
       });
 
       ecosystemStats = {
-        publishedTools: latestSnapshot.totalTools,
+        publishedTools: liveToolCount,
         activeDevelopers: latestSnapshot.activeDevs7d,
         totalExecutions: latestSnapshot.totalSimulations,
         avgResponseMs: avgExecTime._avg.executionTimeMs
@@ -159,7 +171,7 @@ async function getHomePageData() {
       ]);
 
       ecosystemStats = {
-        publishedTools: 0,
+        publishedTools: liveToolCount,
         activeDevelopers: activeDevsResult,
         totalExecutions: 0,
         avgResponseMs: avgExecTime._avg.executionTimeMs
@@ -169,10 +181,10 @@ async function getHomePageData() {
       };
     }
 
-    // Use snapshot counts (pre-computed daily), falling back to category sum
-    const packageCount =
-      latestSnapshot?.totalPackages ?? categoryStats.reduce((sum, c) => sum + c._count._all, 0);
-    const toolCount = latestSnapshot?.totalTools ?? ecosystemStats.publishedTools;
+    // Live registry totals (accurate; the snapshot/counters have drifted — see the
+    // reconcile job). Small tables, so a direct count is instant.
+    const packageCount = livePackageCount;
+    const toolCount = liveToolCount;
 
     return {
       stats: {

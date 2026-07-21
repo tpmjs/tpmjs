@@ -68,13 +68,7 @@ export function PublicActivityStream(): React.ReactElement {
     };
   }, []);
 
-  // Pass activities to the existing ActivityStream component
-  // If no real activities exist yet, ActivityStream will auto-generate mock activity
-  return (
-    <ActivityStream
-      activities={activities.length > 0 ? activities : undefined}
-      updateInterval={30_000}
-      maxItems={5}
-    />
-  );
+  // Render only real activity (fetched above, refreshed every 30s). When there's
+  // none yet, ActivityStream shows an honest empty state — never synthetic data.
+  return <ActivityStream activities={activities} maxItems={5} />;
 }
