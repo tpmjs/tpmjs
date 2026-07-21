@@ -624,25 +624,26 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
               <div className="p-6 border-2 border-primary/20 rounded-lg bg-primary/5">
                 <div className="flex items-center gap-2 mb-4">
                   <span className="px-3 py-1 text-sm font-semibold bg-primary/20 text-primary rounded-full">
-                    Coming Soon
+                    Available Now
                   </span>
                   <h3 className="text-xl font-semibold text-foreground">Collections</h3>
                 </div>
                 <p className="text-foreground-secondary mb-4">
-                  Pre-configured tool bundles for specific domains. Think of them as &ldquo;skill
-                  packs&rdquo; for your AI agent.
+                  A collection is a curated tool bundle you hand to any agent as a single MCP URL.
+                  One collection, every surface&mdash;CLI, MCP, REST, SDK, and Skill. Add it to
+                  Claude Code with one command:
                 </p>
                 <CodeBlock
-                  language="typescript"
-                  code={`// Future API concept
-const tools = await tpmjs.loadCollection('web-scraping');
-// Includes: scrapeTool, crawlTool, extractTool, searchTool...
+                  language="bash"
+                  code={`# Add a collection to Claude Code as one MCP endpoint
+claude mcp add web-scraping \\
+  https://tpmjs.com/@ada/collections/web-scraping/mcp \\
+  -t http
 
-const tools = await tpmjs.loadCollection('data-analysis');
-// Includes: csvParser, jsonTransform, statistics, plotting...
-
-// Or create your own private collections
-const tools = await tpmjs.loadCollection('my-company/internal-tools');`}
+# Private collection? Pass your TPMJS API key
+claude mcp add web-scraping \\
+  https://tpmjs.com/@ada/collections/web-scraping/mcp \\
+  -t http -H "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
                 />
               </div>
 

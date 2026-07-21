@@ -587,37 +587,29 @@ const result = await streamText({
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold mb-3 text-foreground">
-                    🎯 Coming Soon: Collections
-                  </h3>
+                  <h3 className="text-xl font-semibold mb-3 text-foreground">🎯 Collections</h3>
                   <p className="text-foreground-secondary mb-4">
-                    Imagine pre-configured tool bundles (mini sub-agents) that you can reference by
-                    name:
+                    A collection is a curated tool bundle you hand to any agent as a single MCP URL.
+                    Add one to Claude Code with a single command&mdash;no code required:
                   </p>
                   <CodeBlock
-                    language="typescript"
-                    code={`// Future API concept (not yet implemented)
-const result = await streamText({
-  model: openai('gpt-4'),
-  messages,
-  tools: await tpmjs.loadToolsFor(messages, {
-    collections: ['web-scraping', 'data-analysis'],
-    // Loads curated tool sets optimized for specific tasks
-    // Collections can be public (official) or private (your own)
-  }),
-});
+                    language="bash"
+                    code={`# Add a collection to Claude Code as one MCP endpoint
+claude mcp add web-scraping \\
+  https://tpmjs.com/@ada/collections/web-scraping/mcp \\
+  -t http
 
-// Example collections:
-// - 'web-scraping': puppeteer, cheerio, readability tools
-// - 'data-analysis': pandas-like tools, plotting, statistics
-// - 'ecommerce': payment, inventory, shipping tools
-// - Or build your own custom collections!`}
+# Private collection? Pass your TPMJS API key
+claude mcp add web-scraping \\
+  https://tpmjs.com/@ada/collections/web-scraping/mcp \\
+  -t http -H "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
                   />
                   <div className="mt-4 p-4 bg-primary/5 border border-primary/20 rounded">
                     <p className="text-sm text-foreground-secondary">
-                      <strong className="text-foreground">Why collections?</strong> They let you
-                      compose specialized sub-agents without manually curating tool lists. Think of
-                      them as &ldquo;skill packs&rdquo; for your AI.
+                      <strong className="text-foreground">Why collections?</strong> They bundle a
+                      specialized tool set behind one URL, reachable on every surface&mdash;CLI,
+                      MCP, REST, SDK, and Skill&mdash;so you can compose sub-agents without manually
+                      curating tool lists.
                     </p>
                   </div>
                 </div>
