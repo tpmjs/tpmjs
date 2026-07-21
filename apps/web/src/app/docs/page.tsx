@@ -1380,7 +1380,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                 </p>
                 <CodeBlock
                   language="text"
-                  code="https://tpmjs.com/api/mcp/<username>/<collection-slug>/http"
+                  code="https://tpmjs.com/@<username>/collections/<collection-slug>/mcp"
                 />
                 <p className="text-foreground-secondary mt-4">
                   This URL is what you&apos;ll use to connect MCP clients to your collection.
@@ -1406,7 +1406,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://tpmjs.com/api/mcp/<username>/<collection-slug>/http",
+        "https://tpmjs.com/@<username>/collections/<collection-slug>/mcp",
         "--header",
         "Authorization: Bearer YOUR_TPMJS_API_KEY"
       ]
@@ -1439,7 +1439,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                 <CodeBlock
                   language="bash"
                   code={`claude mcp add tpmjs-my-collection \\
-  https://tpmjs.com/api/mcp/<username>/<collection-slug>/http \\
+  https://tpmjs.com/@<username>/collections/<collection-slug>/mcp \\
   -t http -H "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
                 />
                 <p className="text-foreground-secondary mt-4">
@@ -1470,7 +1470,7 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
               <DocSubSection title="Endpoint Format">
                 <CodeBlock
                   language="text"
-                  code="POST https://tpmjs.com/api/mcp/<username>/<collection-slug>/http"
+                  code="POST https://tpmjs.com/@<username>/collections/<collection-slug>/mcp"
                 />
               </DocSubSection>
               <DocSubSection title="Request Headers">

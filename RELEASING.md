@@ -22,6 +22,9 @@ How TPMJS packages get versioned and published to npm. The goals: **every releas
 
 4. **Merge the version PR.** On merge, the Release workflow runs `pnpm changeset:publish` and publishes the bumped packages to npm using the `NPM_TOKEN` repository secret. Only packages whose source version is ahead of npm are published.
 
+> [!IMPORTANT]
+> **Every push to `main` runs `changeset publish`.** When there are no pending changesets, the Release workflow still runs the publish step to catch up any package whose source `version` is **ahead of npm** — and it *will* publish it. In other words: **bumping a package's `version` in `package.json` and pushing to `main` publishes it.** Always bump versions through changesets (never by hand on `main`), and run `pnpm release:preview` first to see exactly what is ahead of npm. New non-published packages (examples, demos, internal tooling) must be marked `"private": true` so they're never picked up.
+
 ## The dry-run / provenance gate
 
 Before (and independently of) any publish, you can see **exactly what would ship**:

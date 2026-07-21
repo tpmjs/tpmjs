@@ -772,7 +772,7 @@ Invalid usernames:
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://tpmjs.com/api/mcp/YOUR_USERNAME/YOUR_COLLECTION_SLUG/http",
+        "https://tpmjs.com/@YOUR_USERNAME/collections/YOUR_COLLECTION_SLUG/mcp",
         "--header",
         "Authorization: Bearer YOUR_TPMJS_API_KEY"
       ]
@@ -802,7 +802,7 @@ Invalid usernames:
                 <CodeBlock
                   language="bash"
                   code={`claude mcp add tpmjs-my-collection \\
-  https://tpmjs.com/api/mcp/YOUR_USERNAME/YOUR_COLLECTION_SLUG/http \\
+  https://tpmjs.com/@YOUR_USERNAME/collections/YOUR_COLLECTION_SLUG/mcp \\
   -t http -H "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
                 />
               </DocSubSection>
