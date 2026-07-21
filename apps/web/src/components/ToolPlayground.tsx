@@ -15,6 +15,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { TokenBreakdown as TokenData } from '@/lib/ai-agent/tool-executor-agent';
 import { createPlaygroundOutcomeRecorder } from '~/lib/analytics';
+import { createServerSentEventParser, type ServerSentEvent } from '~/lib/server-sent-events';
 import { TokenBreakdown } from './TokenBreakdown';
 
 interface ToolPlaygroundProps {
@@ -84,82 +85,77 @@ export function ToolPlayground({ tool }: ToolPlaygroundProps): React.ReactElemen
         throw new Error('No response body');
       }
 
-      let buffer = '';
+      const parser = createServerSentEventParser();
+
+      const handleEvents = (events: ServerSentEvent[]) => {
+        for (const { event, data: serializedData } of events) {
+          const data = JSON.parse(serializedData);
+
+          switch (event) {
+            case 'chunk':
+              setOutput((prev) => prev + data.text);
+              setLogs((prev) => [
+                ...prev,
+                {
+                  level: 'info',
+                  message: `Streaming: ${data.text.slice(0, 50)}${data.text.length > 50 ? '...' : ''}`,
+                  timestamp: new Date(),
+                },
+              ]);
+              break;
+
+            case 'tokens':
+              setTokens(data as TokenData);
+              setLogs((prev) => [
+                ...prev,
+                {
+                  level: 'debug',
+                  message: `Token update: ${data.totalTokens || 0} total tokens`,
+                  timestamp: new Date(),
+                },
+              ]);
+              break;
+
+            case 'complete':
+              // Keep the accumulated streamed output rather than replacing it.
+              setTokens(data.tokenBreakdown);
+              setLogs((prev) => [
+                ...prev,
+                {
+                  level: 'info',
+                  message: `Execution completed in ${data.executionTimeMs}ms with ${data.agentSteps} agent steps`,
+                  timestamp: new Date(),
+                },
+              ]);
+              recordTerminalOutcome('success');
+              break;
+
+            case 'error':
+              setError(data.message);
+              setLogs((prev) => [
+                ...prev,
+                {
+                  level: 'error',
+                  message: data.message,
+                  timestamp: new Date(),
+                },
+              ]);
+              recordTerminalOutcome('failure');
+              break;
+          }
+        }
+      };
 
       while (true) {
         const { done, value } = await reader.read();
 
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('event:')) {
-            const event = line.slice(6).trim();
-            const nextLine = lines.shift();
-
-            if (nextLine?.startsWith('data:')) {
-              const data = JSON.parse(nextLine.slice(5).trim());
-
-              switch (event) {
-                case 'chunk':
-                  setOutput((prev) => prev + data.text);
-                  setLogs((prev) => [
-                    ...prev,
-                    {
-                      level: 'info',
-                      message: `Streaming: ${data.text.slice(0, 50)}${data.text.length > 50 ? '...' : ''}`,
-                      timestamp: new Date(),
-                    },
-                  ]);
-                  break;
-
-                case 'tokens':
-                  setTokens(data as TokenData);
-                  setLogs((prev) => [
-                    ...prev,
-                    {
-                      level: 'debug',
-                      message: `Token update: ${data.totalTokens || 0} total tokens`,
-                      timestamp: new Date(),
-                    },
-                  ]);
-                  break;
-
-                case 'complete':
-                  // Don't replace output - keep the streamed text
-                  // setOutput(data.output); // Removed: this was overwriting streamed content
-                  setTokens(data.tokenBreakdown);
-                  setLogs((prev) => [
-                    ...prev,
-                    {
-                      level: 'info',
-                      message: `Execution completed in ${data.executionTimeMs}ms with ${data.agentSteps} agent steps`,
-                      timestamp: new Date(),
-                    },
-                  ]);
-                  recordTerminalOutcome('success');
-                  break;
-
-                case 'error':
-                  setError(data.message);
-                  setLogs((prev) => [
-                    ...prev,
-                    {
-                      level: 'error',
-                      message: data.message,
-                      timestamp: new Date(),
-                    },
-                  ]);
-                  recordTerminalOutcome('failure');
-                  break;
-              }
-            }
-          }
-        }
+        handleEvents(parser.push(decoder.decode(value, { stream: true })));
       }
+
+      handleEvents(parser.push(decoder.decode()));
+      handleEvents(parser.finish());
 
       // A clean stream close without a terminal event is still an incomplete execution.
       recordTerminalOutcome('failure');
