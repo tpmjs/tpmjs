@@ -366,7 +366,10 @@ finish_activation() {
 deploy_executor() {
   log 'building executor candidate'
   CANDIDATE_IMAGE="localhost/tpmjs-railway-executor:candidate-${COMMIT_SHA}"
-  sudo podman build \
+  # Podman's layer cache can reuse an ARG-expanded LABEL from an older build
+  # when the executor source itself is unchanged. That produces correct code
+  # with false provenance, so release candidates deliberately rebuild metadata.
+  sudo podman build --no-cache \
     --build-arg "COMMIT_SHA=$COMMIT_SHA" \
     --build-arg "COMMIT_MESSAGE=$COMMIT_MESSAGE" \
     --tag "$CANDIDATE_IMAGE" \
