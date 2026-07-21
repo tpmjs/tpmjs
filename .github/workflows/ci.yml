@@ -151,7 +151,11 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Build and type-check the production executor image
-        run: docker build -t tpmjs-executor:ci apps/railway-executor
+        run: |
+          docker build \
+            --build-arg "COMMIT_SHA=${GITHUB_SHA}" \
+            --build-arg "COMMIT_MESSAGE=CI ${GITHUB_SHA}" \
+            -t tpmjs-executor:ci apps/railway-executor
 
       - name: Verify typed protocol at runtime
         run: |
@@ -170,10 +174,10 @@ jobs:
             sleep 1
           done
 
-          jq --exit-status '
+          jq --arg commit "$GITHUB_SHA" --exit-status '
             .status == "ok" and
             .protocolVersion == "1.1" and
-            (.implementationVersion | type == "string")
+            .implementationVersion == $commit
           ' /tmp/executor-health.json
 
           curl --silent --output /tmp/executor-auth.json \

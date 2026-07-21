@@ -68,3 +68,22 @@ curl http://127.0.0.1:3002/health
 
 The live unit is `tpmjs-railway-executor.service`; its container binds to
 `127.0.0.1:3210` on the host.
+
+Production images are commit-stamped and retain the previous image under a
+rollback tag:
+
+```bash
+COMMIT_SHA=$(git rev-parse --short=8 HEAD)
+COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+OLD_SHA=$(sudo podman image inspect localhost/tpmjs-railway-executor:local \
+  --format '{{ index .Labels "org.opencontainers.image.revision" }}')
+sudo podman tag localhost/tpmjs-railway-executor:local \
+  "localhost/tpmjs-railway-executor:rollback-${OLD_SHA:-legacy}"
+sudo podman build \
+  --build-arg "COMMIT_SHA=${COMMIT_SHA}" \
+  --build-arg "COMMIT_MESSAGE=${COMMIT_MESSAGE}" \
+  -t localhost/tpmjs-railway-executor:local apps/railway-executor
+```
+
+After restart, `GET /health` must report that exact commit as
+`implementationVersion`.

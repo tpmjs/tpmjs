@@ -30,6 +30,13 @@ RUN deno check --no-lock server.ts
 # imports can extend it without falling back to root.
 RUN chown -R deno:deno /tmp/deno-cache
 
+ARG COMMIT_SHA=local
+ARG COMMIT_MESSAGE=local
+LABEL org.opencontainers.image.revision=${COMMIT_SHA} \
+      org.opencontainers.image.title="TPMJS Dynamic Executor"
+ENV TPMJS_EXECUTOR_VERSION=${COMMIT_SHA} \
+    TPMJS_EXECUTOR_COMMIT_MESSAGE=${COMMIT_MESSAGE}
+
 # Expose the service port (the on-box Quadlet sets PORT when overridden)
 EXPOSE 3002
 
