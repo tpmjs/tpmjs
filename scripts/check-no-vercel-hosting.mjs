@@ -46,6 +46,21 @@ const forbiddenRuntimeTokens = [
   'NEXT_PUBLIC_VERCEL_URL',
 ];
 
+const forbiddenWorkflowTokens = ['TURBO_TOKEN', 'TURBO_TEAM'];
+const workflowRoot = join(root, '.github', 'workflows');
+
+for (const entry of readdirSync(workflowRoot)) {
+  const path = join(workflowRoot, entry);
+  if (statSync(path).isDirectory()) continue;
+
+  const contents = readFileSync(path, 'utf8');
+  for (const token of forbiddenWorkflowTokens) {
+    if (contents.includes(token)) {
+      errors.push(`${relative(root, path)} contains Vercel remote-cache token ${token}`);
+    }
+  }
+}
+
 function scan(directory) {
   for (const entry of readdirSync(directory)) {
     if (entry === 'node_modules' || entry === '.next') continue;
@@ -73,4 +88,4 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-console.log('Vercel hosting independence: verified');
+console.log('Vercel hosting and remote-cache independence: verified');
