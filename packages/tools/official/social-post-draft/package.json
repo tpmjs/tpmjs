@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/social-post-draft",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Draft social media posts optimized for specific platforms with hashtags and call-to-action",
   "type": "module",
   "keywords": [

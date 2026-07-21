@@ -34,6 +34,13 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Verify release provenance and external contracts
+        run: |
+          pnpm release:audit:test
+          pnpm verify:vercel-api:test
+          pnpm verify:vercel-api
+          pnpm release:audit
+
       - name: Create Release Pull Request or Publish
         id: changesets
         uses: changesets/action@v1
