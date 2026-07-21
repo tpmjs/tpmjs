@@ -12,6 +12,7 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - Comprehensive style guide and missing UI components
 - Auto-close and auto-merge pipelines for CI
 - Fail-closed registry release audit with machine-readable CI evidence
+- Package-scoped npm Trusted Publishing preflight with short-lived GitHub OIDC credentials
 - Weekly Vercel OpenAPI contract-drift verification for all 167 Vercel tools
 
 ### Fixed

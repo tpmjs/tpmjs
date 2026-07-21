@@ -1,0 +1,141 @@
+export type ReleaseCandidateState = 'publish' | 'new-package';
+
+export interface ReleaseCandidate {
+  name: string;
+  version: string;
+  state: ReleaseCandidateState;
+}
+
+export interface OidcEnvironment {
+  requestUrl: string;
+  requestToken: string;
+}
+
+export interface OidcAuthorization {
+  name: string;
+  version: string;
+  expires: string;
+}
+
+type Fetcher = typeof fetch;
+
+function asRecord(value: unknown, description: string): Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error(`${description} must be an object`);
+  }
+  return value as Record<string, unknown>;
+}
+
+function requiredString(record: Record<string, unknown>, key: string, description: string): string {
+  const value = record[key];
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error(`${description}.${key} must be a non-empty string`);
+  }
+  return value;
+}
+
+export function releaseCandidates(audit: unknown): ReleaseCandidate[] {
+  const document = asRecord(audit, 'Release audit');
+  const summary = asRecord(document.summary, 'Release audit summary');
+  if (summary.safe !== true) {
+    throw new Error('Release audit is not safe; refusing to authorize publishing');
+  }
+  if (!Number.isInteger(summary.publishCount) || Number(summary.publishCount) < 0) {
+    throw new Error('Release audit summary.publishCount must be a non-negative integer');
+  }
+  if (!Array.isArray(document.packages)) {
+    throw new Error('Release audit packages must be an array');
+  }
+
+  const candidates: ReleaseCandidate[] = [];
+  for (const [index, value] of document.packages.entries()) {
+    const entry = asRecord(value, `Release audit package ${index}`);
+    if (entry.safe !== true) {
+      throw new Error(`Release audit package ${index} is not safe`);
+    }
+    if (entry.state !== 'publish' && entry.state !== 'new-package') continue;
+    candidates.push({
+      name: requiredString(entry, 'name', `Release audit package ${index}`),
+      version: requiredString(entry, 'version', `Release audit package ${index}`),
+      state: entry.state,
+    });
+  }
+
+  if (candidates.length !== summary.publishCount) {
+    throw new Error(
+      `Release audit publish count mismatch: summary=${summary.publishCount}, packages=${candidates.length}`
+    );
+  }
+  return candidates;
+}
+
+export function githubOidcUrl(requestUrl: string): string {
+  const url = new URL(requestUrl);
+  url.searchParams.set('audience', 'npm:registry.npmjs.org');
+  return url.toString();
+}
+
+export function npmOidcExchangeUrl(packageName: string): string {
+  return `https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/${encodeURIComponent(packageName)}`;
+}
+
+async function responseMessage(response: Response): Promise<string> {
+  try {
+    const value: unknown = await response.json();
+    const record = asRecord(value, 'Error response');
+    for (const key of ['message', 'error']) {
+      if (typeof record[key] === 'string') return record[key];
+    }
+  } catch {
+    // The status remains sufficient when a remote endpoint does not return JSON.
+  }
+  return response.statusText || 'request failed';
+}
+
+export async function requestGitHubOidcToken(
+  environment: OidcEnvironment,
+  fetcher: Fetcher = fetch
+): Promise<string> {
+  const response = await fetcher(githubOidcUrl(environment.requestUrl), {
+    headers: { Authorization: `Bearer ${environment.requestToken}` },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `GitHub OIDC request failed with HTTP ${response.status}: ${await responseMessage(response)}`
+    );
+  }
+  const document = asRecord(await response.json(), 'GitHub OIDC response');
+  return requiredString(document, 'value', 'GitHub OIDC response');
+}
+
+export async function authorizeNpmPackage(
+  candidate: ReleaseCandidate,
+  oidcToken: string,
+  fetcher: Fetcher = fetch
+): Promise<OidcAuthorization> {
+  const response = await fetcher(npmOidcExchangeUrl(candidate.name), {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${oidcToken}`,
+    },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (response.status !== 201) {
+    throw new Error(
+      `npm trusted publishing rejected ${candidate.name}@${candidate.version} with HTTP ${response.status}: ${await responseMessage(response)}`
+    );
+  }
+
+  const document = asRecord(await response.json(), 'npm OIDC exchange response');
+  requiredString(document, 'token', 'npm OIDC exchange response');
+  if (document.token_type !== 'oidc') {
+    throw new Error('npm OIDC exchange response.token_type must be oidc');
+  }
+  return {
+    name: candidate.name,
+    version: candidate.version,
+    expires: requiredString(document, 'expires', 'npm OIDC exchange response'),
+  };
+}

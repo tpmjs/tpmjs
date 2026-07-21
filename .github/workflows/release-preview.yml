@@ -34,6 +34,7 @@ jobs:
       - name: Test release policy and external contracts
         run: |
           pnpm release:audit:test
+          pnpm release:auth:test
           pnpm verify:vercel-api:test
           pnpm verify:vercel-api
 

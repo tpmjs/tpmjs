@@ -51,6 +51,8 @@
     "release:status": "changeset status --verbose",
     "release:audit": "tsx scripts/release-audit.ts",
     "release:audit:test": "tsx --test scripts/release-audit.test.ts",
+    "release:auth": "tsx scripts/release-auth.ts",
+    "release:auth:test": "tsx --test scripts/release-auth.test.ts",
     "release:preview": "pnpm release:status && pnpm release:audit",
     "verify:vercel-api": "tsx scripts/verify-vercel-api.ts",
     "verify:vercel-api:test": "tsx --test scripts/vercel-contract.test.ts scripts/vercel-tools.test.ts",

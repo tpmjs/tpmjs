@@ -20,7 +20,7 @@ How TPMJS packages get versioned and published to npm. The goals: **every releas
 
 3. **Review the version PR.** It shows exactly which packages bump to which versions and why. This is the human gate.
 
-4. **Merge the version PR.** On merge, the Release workflow runs `pnpm changeset:publish` and publishes the bumped packages to npm using the `NPM_TOKEN` repository secret. Only packages whose source version is ahead of npm are published.
+4. **Merge the version PR.** On merge, the Release workflow proves package-level publish authority through npm Trusted Publishing, runs `pnpm changeset:publish`, and publishes the bumped packages. Only packages whose source version is ahead of npm are published.
 
 > [!IMPORTANT]
 > **Every push to `main` runs `changeset publish`.** When there are no pending changesets, the Release workflow still runs the publish step to catch up any package whose source `version` is **ahead of npm** — and it *will* publish it. In other words: **bumping a package's `version` in `package.json` and pushing to `main` publishes it.** Always bump versions through changesets (never by hand on `main`), and run `pnpm release:preview` first to see exactly what is ahead of npm. New non-published packages (examples, demos, internal tooling) must be marked `"private": true` so they're never picked up.
@@ -43,6 +43,34 @@ The registry audit is fail-closed and machine-readable. It blocks when:
 - a workspace contains an invalid semantic version.
 
 `pnpm release:audit --format json` emits the complete plan for automation, while `--format markdown` produces a review summary. Pass `--json-output <path>` to persist the full JSON evidence alongside any selected display format without refetching npm. The manual **Release Preview** workflow uploads its status, human summary, and package-by-package JSON audit as immutable run artifacts. The Release workflow runs the same audit immediately before Changesets can publish.
+
+## npm authentication
+
+TPMJS publishes through [npm Trusted Publishing](https://docs.npmjs.com/trusted-publishers/) rather than a rotating registry token. The Release job has GitHub's `id-token: write` permission and uses npm 11.18.0. Before the monorepo build, `pnpm release:auth` requests an identity token with the exact `npm:registry.npmjs.org` audience and exchanges it with npm independently for every package in the audited publish set. The short-lived exchange tokens are checked in memory and discarded; release evidence contains only package names, versions, and expiry times.
+
+Every existing npm package must trust this exact publisher:
+
+```text
+GitHub owner/repository: tpmjs/tpmjs
+Workflow filename:       release.yml
+Allowed action:          npm publish
+Environment:             (none)
+```
+
+An npm maintainer with an interactive session and 2FA can configure a package with npm 11.18.0:
+
+```bash
+npm trust github @tpmjs/PACKAGE --file release.yml --repo tpmjs/tpmjs --allow-publish
+```
+
+Trusted Publishing cannot bootstrap a name that does not exist on npm. A genuinely new package must be published once by a maintainer, then configured with the command above before normal automated releases. The preflight fails explicitly for that state.
+
+During the July 2026 migration, the required commands for the pending releases are:
+
+```bash
+npm trust github @tpmjs/tools-unsandbox --file release.yml --repo tpmjs/tpmjs --allow-publish
+npm trust github @tpmjs/tools-vercel --file release.yml --repo tpmjs/tpmjs --allow-publish
+```
 
 ## Changelogs
 
