@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getDitherEngine } from '../system/canvas/DitherEngine';
 import { useDitherAnimation } from '../system/hooks/useDitherAnimation';
 import { useReducedMotion } from '../system/hooks/useReducedMotion';
@@ -27,6 +27,14 @@ export function DitherCanvas({
 }: DitherCanvasProps): React.ReactElement {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    // Intentional hydration boundary: browser-only canvas work starts after
+    // the server markup and first client render have matched.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsHydrated(true);
+  }, []);
 
   // Adjust mode for accessibility
   const effectiveMode = prefersReducedMotion ? 'static' : mode;
@@ -35,12 +43,13 @@ export function DitherCanvas({
   const engine = useMemo(() => getDitherEngine(lowDetail), [lowDetail]);
 
   // Get canvas scale for retina displays
-  const scale = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+  const scale = isHydrated ? window.devicePixelRatio || 1 : 1;
 
   // Generate animation frames
   const frames = useMemo(() => {
-    // Skip frame generation during SSR
-    if (typeof window === 'undefined') {
+    // The server and the first client render must match. Generate browser-only
+    // canvas frames after hydration, when devicePixelRatio is authoritative.
+    if (!isHydrated) {
       return [];
     }
 
@@ -61,7 +70,7 @@ export function DitherCanvas({
       console.error('Failed to generate dither frames:', error);
       return [];
     }
-  }, [text, font, threshold, color, effectiveMode, engine, scale, lowDetail]);
+  }, [text, font, threshold, color, effectiveMode, engine, scale, lowDetail, isHydrated]);
 
   // Animate frames
   const { currentFrame } = useDitherAnimation({
