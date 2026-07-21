@@ -10,7 +10,7 @@ import { ProgressBar } from '@tpmjs/ui/ProgressBar/ProgressBar';
 import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
 import { Tabs } from '@tpmjs/ui/Tabs/Tabs';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
 import { BundleSize } from '~/components/BundleSize';
 import { DownloadSparkline } from '~/components/DownloadSparkline';
@@ -19,6 +19,7 @@ import { Markdown } from '~/components/Markdown';
 import { Rating } from '~/components/Rating';
 import { ToolPlayground } from '~/components/ToolPlayground';
 import { useTrackView } from '~/hooks/useTrackView';
+import { trackEvent } from '~/lib/analytics';
 import {
   isPersistentlyImportBroken,
   PERSISTENT_IMPORT_FAILURE_THRESHOLD,
@@ -105,6 +106,11 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
 
   const pkg = tool.package;
   const isPersistentlyBroken = isPersistentlyImportBroken(tool.consecutiveImportFailures);
+
+  // Activation-funnel analytics: this tool was viewed.
+  useEffect(() => {
+    trackEvent('tool_view', { tool: `${pkg.npmPackageName}::${tool.name}` });
+  }, [pkg.npmPackageName, tool.name]);
   const authorName = typeof pkg.npmAuthor === 'string' ? pkg.npmAuthor : pkg.npmAuthor?.name;
 
   // Generate JSON-LD structured data for SEO
@@ -400,7 +406,14 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                     { id: 'skill', label: 'Skill' },
                   ]}
                   activeTab={surface}
-                  onTabChange={(id) => setSurface(id as typeof surface)}
+                  onTabChange={(id) => {
+                    const next = id as typeof surface;
+                    setSurface(next);
+                    trackEvent('install_surface', {
+                      surface: next,
+                      tool: `${pkg.npmPackageName}::${tool.name}`,
+                    });
+                  }}
                 />
 
                 {surface === 'sdk' && (

@@ -12,7 +12,7 @@ import { LoadingState } from '@tpmjs/ui/LoadingState/LoadingState';
 import { PageHeader } from '@tpmjs/ui/PageHeader/PageHeader';
 import { Select } from '@tpmjs/ui/Select/Select';
 import Link from 'next/link';
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { TableVirtuoso } from 'react-virtuoso';
 import { AppHeader } from '~/components/AppHeader';
 import { CopyButton } from '~/components/CopyButton';
@@ -23,6 +23,7 @@ import {
   usePackageManager,
 } from '~/components/PackageManagerSelector';
 import { type Tool, useTools } from '~/hooks/useTools';
+import { trackEvent } from '~/lib/analytics';
 
 type SortOption = 'downloads' | 'likes' | 'recent' | 'name';
 
@@ -130,6 +131,17 @@ export default function ToolSearchPage(): React.ReactElement {
     // Sort tools
     return sortTools(result, sortBy);
   }, [tools, searchQuery, sortBy]);
+
+  // Activation-funnel analytics: a search was performed (debounced so we count
+  // intent, not keystrokes). Records the query and how many tools matched.
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 2) return;
+    const timer = setTimeout(() => {
+      trackEvent('tool_search', { query: q, results: filteredTools.length });
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [searchQuery, filteredTools.length]);
 
   const TableHeader = useCallback(
     () => (
