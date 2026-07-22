@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       reuse: ${{ steps.provenance.outputs.reuse }}
+      source_run_id: ${{ steps.provenance.outputs.source_run_id }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -31,6 +32,42 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/reuse-pr-validation.mjs
+
+      - name: Import compiler state from validated pull request
+        id: compiler_state
+        if: steps.provenance.outputs.reuse == 'true'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          pattern: pr-compiler-state-*
+          path: .
+          merge-multiple: true
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.provenance.outputs.source_run_id }}
+
+      - name: Promote validated build state to main cache scope
+        if: steps.compiler_state.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            apps/web/.next/cache
+            .turbo
+          key: ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+
+      - name: Promote validated TypeScript state to main cache scope
+        if: steps.compiler_state.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            .turbo
+            apps/*/tsconfig.tsbuildinfo
+            apps/*/.next/cache/tsconfig.tsbuildinfo
+            packages/*/tsconfig.tsbuildinfo
+            packages/tools/*/tsconfig.tsbuildinfo
+            packages/tools/official/*/tsconfig.tsbuildinfo
+          key: ${{ runner.os }}-typescript-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
 
   lint:
     needs: validation_provenance
@@ -108,6 +145,24 @@ jobs:
             exit 0
           fi
           pnpm exec turbo run type-check --affected
+
+      - name: Export validated TypeScript state
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-compiler-state-typescript
+          path: |
+            .turbo
+            apps/*/tsconfig.tsbuildinfo
+            apps/*/.next/cache/tsconfig.tsbuildinfo
+            packages/*/tsconfig.tsbuildinfo
+            packages/tools/*/tsconfig.tsbuildinfo
+            packages/tools/official/*/tsconfig.tsbuildinfo
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 1
+          compression-level: 1
 
   type-coverage:
     needs: validation_provenance
@@ -271,6 +326,20 @@ jobs:
             exit 0
           fi
           pnpm exec turbo run build --affected
+
+      - name: Export validated build state
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-compiler-state-build
+          path: |
+            apps/web/.next/cache
+            .turbo
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 1
+          compression-level: 1
 
   executor:
     needs: validation_provenance

@@ -284,6 +284,40 @@ requireText(
 );
 requireText(
   ci,
+  'run-id: ${{ steps.provenance.outputs.source_run_id }}',
+  'main cache promotion must import only the exact validated pull-request run'
+);
+requireText(
+  ci,
+  'pattern: pr-compiler-state-*',
+  'main cache promotion must import the validated compiler-state artifacts'
+);
+requireText(
+  ci,
+  "if: steps.compiler_state.outcome == 'success'",
+  'cache promotion must remain conditional on a successful artifact import'
+);
+const bestEffortPromotionSteps = ci.match(
+  /name: Promote validated [^\n]+\n\s+if: steps\.compiler_state\.outcome == 'success'\n\s+continue-on-error: true/g
+);
+if (bestEffortPromotionSteps?.length !== 2) {
+  failures.push('both main cache promotions must remain best-effort optimizations');
+}
+const bestEffortExportSteps = ci.match(
+  /name: Export validated [^\n]+\n\s+if: github\.event_name == 'pull_request'\n\s+continue-on-error: true/g
+);
+if (bestEffortExportSteps?.length !== 2) {
+  failures.push('both pull-request compiler-state exports must remain best-effort optimizations');
+}
+for (const cacheKey of ['next-build-', 'typescript-']) {
+  const exactKey =
+    'key: ${{ runner.os }}-' + cacheKey + "${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}";
+  if (ci.split(exactKey).length - 1 !== 2) {
+    failures.push(`${cacheKey} restore and promotion must use the same exact cache key`);
+  }
+}
+requireText(
+  ci,
   'node --test scripts/reuse-pr-validation.test.mjs',
   'CI must exercise the validation provenance contract tests'
 );
@@ -421,6 +455,21 @@ requireText(
   'github.event.pull_request.base.sha || github.event.before',
   'affected type checking must compare exact event SHAs instead of a local branch name'
 );
+requireText(
+  typeCheckJob,
+  'name: pr-compiler-state-typescript',
+  'successful pull requests must export reusable TypeScript state'
+);
+requireText(
+  typeCheckJob,
+  'include-hidden-files: true',
+  'TypeScript state export must include the hidden Turbo cache explicitly'
+);
+requireText(
+  typeCheckJob,
+  'retention-days: 1',
+  'TypeScript promotion artifacts must remain short-lived'
+);
 
 const buildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
 requireText(buildJob, '.turbo', 'the build job must preserve Turbo task artifacts');
@@ -440,6 +489,17 @@ requireText(
   'github.event.pull_request.base.sha || github.event.before',
   'affected builds must compare exact event SHAs instead of a local branch name'
 );
+requireText(
+  buildJob,
+  'name: pr-compiler-state-build',
+  'successful pull requests must export reusable build state'
+);
+requireText(
+  buildJob,
+  'include-hidden-files: true',
+  'build state export must include the hidden Turbo cache explicitly'
+);
+requireText(buildJob, 'retention-days: 1', 'build promotion artifacts must remain short-lived');
 
 if (sandboxTests.includes('run: pnpm build')) {
   failures.push('sandbox integration tests must not rebuild the unrelated monorepo');

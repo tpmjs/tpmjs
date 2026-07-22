@@ -46,6 +46,20 @@ pull-request merge ref available to the base branch. The provenance proof
 therefore removes the truly duplicate main run without adding an external
 cache service or placing TPMJS infrastructure on Vercel.
 
+Successful pull-request build and type-check jobs also export their
+reconstructable Turbo, Next.js, and TypeScript incremental state as one-day
+workflow artifacts. Once the merge provenance check identifies the exact
+successful source run, the trusted `main` push imports those artifacts and
+saves them under the existing default-branch cache keys. Later pull requests
+can therefore reuse work from earlier merged changes even though GitHub keeps
+their original merge-ref caches isolated.
+
+Cache promotion is deliberately best-effort and is never validation evidence.
+An absent, expired, malformed, or temporarily unavailable artifact simply
+leaves the cache cold; future jobs rebuild it. Promotion errors cannot turn a
+failed PR into a valid merge, cannot replace the exact-tree proof, and cannot
+fail an already-proven `main` workflow.
+
 `verify` is read-only. It proves that both systemd services are active, both
 live images carry the expected revision, the executor serves protocol 1.1, the
 web app can reach PostgreSQL, and the public health endpoint reports the same
@@ -224,6 +238,8 @@ fails if a maintainer accidentally:
 - restores the duplicate architecture build;
 - repeats exact green pull-request validation on an identical merge tree or
   lets uncertain provenance skip full validation;
+- lets validated compiler state become stranded in pull-request-only cache
+  scope or makes optional cache promotion a correctness dependency;
 - removes dependency-aware affected builds or their required Git history;
 - restores recursive dependency-tree traversal to TypeScript cache collection;
 - restores duplicate standard tsup configs, uses a monolithic tsdown workspace
