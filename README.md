@@ -59,7 +59,7 @@ Or scaffold a new tool:
 npx @tpmjs/create-basic-tools
 ```
 
-See [HOW_TO_PUBLISH_A_TOOL.md](./HOW_TO_PUBLISH_A_TOOL.md) for the full publishing guide.
+See the [tool publishing guide](./docs/guides/publish-a-tool.md) for the complete contract.
 
 ### Use the CLI
 

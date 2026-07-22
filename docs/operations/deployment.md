@@ -5,7 +5,7 @@
 tpmjs.com is **self-hosted**: the apps run as podman containers on a single box,
 built on-box from this repo, fronted by Caddy (with Cloudflare in front). There is
 no Vercel hosting or deployment path. The old deployment-protection guide remains
-archived at `docs/history/vercel-deployment.md` as historical context only.
+[archived](../history/vercel-deployment.md) as historical context only.
 
 | Component | Container | Port (localhost) |
 |---|---|---|
@@ -20,9 +20,10 @@ archived at `docs/history/vercel-deployment.md` as historical context only.
   2026-07-14). Runtime env (including `DATABASE_URL`) is injected via
   `EnvironmentFile=` from `/etc/donto/tpmjs-*.env` on the box — the image build is
   DB-free.
-- **Deploying app changes**: rebuild the image on the box from the infra repo's
-  Dockerfile, then restart the systemd-managed container
-  (`systemctl restart tpmjs-web`).
+- **Deploying web or executor changes**: use the repository's transactional
+  deploy command. It accepts only the exact `origin/main` revision after proving
+  that revision passed authoritative CI, builds and smokes a candidate, stamps
+  provenance, and rolls back automatically if activation fails.
 - **DB console**: `podman exec -it tpmjs-pg psql -U tpmjs -d tpmjs` (on the box).
 - **DB backup**: `podman exec tpmjs-pg pg_dump -U tpmjs -Fc tpmjs > backup.dump`.
 - **Scheduled jobs**: API-driven sync crons run from GitHub Actions against
@@ -49,32 +50,33 @@ Flow for infra changes: edit the quadlet in the repo → `./deploy.sh <name>`
 ## Building & deploying an app change
 
 Images are **built on-box** (the original registry is gone — never prune the
-`localhost/tpmjs-*` images without a rebuild). The three Next.js apps share one
-parametrized Dockerfile in donto-infra:
+`localhost/tpmjs-*` images without a rebuild). For the production web and
+executor services, the only normal operator entry point is:
 
 ```bash
-# from the box, context = this repo's checkout
-podman build --network=host --build-arg APP=web \
-  -t localhost/tpmjs-web:built \
-  -f /mnt/donto-data/workspace/donto-infra/build/tpmjs.Dockerfile \
-  /mnt/donto-data/workspace/tpmjs
-
-sudo systemctl restart tpmjs-web
+# From a clean /mnt/donto-data/workspace/tpmjs checkout on main
+git fetch origin main
+git merge --ff-only origin/main
+scripts/deploy-on-box.sh all
+scripts/deploy-on-box.sh verify
 ```
 
-Same recipe with `APP=playground` / `APP=tutorial` (tags
-`localhost/tpmjs-playground:built` / `localhost/tpmjs-tutorial:built`). The
-executor and agent-sandbox build from their own app Dockerfiles
-(`apps/railway-executor/Dockerfile` → `localhost/tpmjs-railway-executor:local`,
-`apps/agent-sandbox` → `tpmjs-agent-sandbox:local`).
+Use `web` or `executor` instead of `all` only when the other live service is
+already at the same revision. The final `verify` intentionally rejects mixed
+provenance across the live estate.
+
+Playground and tutorial still use the parametrized app Dockerfile in
+`donto-infra`; the agent sandbox uses its own app Dockerfile. Their Quadlet
+definitions and deployment commands remain owned by that infra repository.
 
 Notes:
 - `NEXT_PUBLIC_*` build-time vars are filtered out of `/etc/donto/tpmjs-<APP>.env`
   into `apps/<APP>/.env.production` before the Next build (client-exposed by
   definition); runtime secrets stay in the quadlet `EnvironmentFile` and win at
   runtime.
-- The `pnpm --filter "{./apps/<APP>}..."` brace filter builds the app **and** its
-  workspace deps (`@tpmjs/ui`, `@tpmjs/env` export from `dist/`) in topo order.
+- The transactional deploy maintains its pnpm and Turbopack caches under
+  `/var/cache/tpmjs`, away from the data volume, while constructing a clean
+  release snapshot from the exact CI-proven commit.
 
 ## Environment files
 
@@ -122,13 +124,15 @@ Check runs: `journalctl -u tpmjs-cron.service` /
 
 ## Rollback
 
-- **App-level**: `sudo systemctl stop <unit>`, then start the old stopped docker
-  container (`sudo docker start <old-container-name>`) — the pre-migration docker
-  containers are kept stopped with `--restart=no` for this purpose.
-- Or rebuild the image from a known-good git ref and restart the unit.
+- Failed candidate smoke tests never move a live tag. If activation fails after
+  a tag moves, `scripts/deploy-on-box.sh` restores the prior image and verifies
+  its health automatically.
+- Successful deployments retain a timestamped `rollback-<revision>-<timestamp>`
+  image tag. Inspect the retained tags before any manual rollback; do not delete
+  them as routine cleanup.
 
 ## CI
 
-GitHub Actions CI (`ci.yml`) was re-enabled 2026-07-18 and is green. CI gates
-merges only — deploys are manual on-box builds (see above), so a green main is
-the thing you build from, not an auto-deploy trigger.
+GitHub Actions CI gates merges. Deploys are manual on-box builds, and the deploy
+script proves the exact revision's CI result again before compiling or changing
+live state.

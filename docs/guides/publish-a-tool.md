@@ -186,9 +186,9 @@ Here's the `package.json` from the published official tool (`packages/tools/offi
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "type-check": "tsc --noEmit"
+    "build": "tsdown --logLevel warn",
+    "dev": "tsdown --watch",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo"
   },
   "publishConfig": {
     "access": "public"

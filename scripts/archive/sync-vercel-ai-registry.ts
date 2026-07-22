@@ -1,15 +1,17 @@
 /**
- * Sync Vercel AI Registry Tools
+ * Historical Vercel AI SDK registry importer.
  *
- * Fetches tools from Vercel's AI SDK registry and adds new ones to manual-tools.ts
- * Uses OpenAI to intelligently convert Vercel's format to our ManualTool format.
+ * This is not part of TPMJS hosting or an automated workflow. It is preserved
+ * solely as an audit trail for the original curated-import process; do not run
+ * it. New registry ingestion must use the current structured-output and review
+ * contracts.
  */
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import OpenAI from 'openai';
-import type { ManualTool } from './manual-tools.js';
-import { manualTools } from './manual-tools.js';
+import type { ManualTool } from '../manual-tools.js';
+import { manualTools } from '../manual-tools.js';
 
 // Vercel registry structure (based on their TypeScript interface)
 interface VercelTool {
@@ -247,9 +249,9 @@ async function appendToManualTools(newTools: ManualTool[]): Promise<void> {
     return;
   }
 
-  console.log(`📝 Adding ${newTools.length} new tools to manual-tools.ts...\n`);
+  console.log(`📝 Adding ${newTools.length} new tools to scripts/manual-tools.ts...\n`);
 
-  const filePath = path.join(process.cwd(), 'manual-tools.ts');
+  const filePath = path.join(process.cwd(), 'scripts/manual-tools.ts');
 
   // Read the current file
   const currentContent = await fs.readFile(filePath, 'utf-8');
@@ -354,7 +356,7 @@ async function appendToManualTools(newTools: ManualTool[]): Promise<void> {
   // Write back to file
   await fs.writeFile(filePath, updatedContent, 'utf-8');
 
-  console.log('✅ Successfully updated manual-tools.ts\n');
+  console.log('✅ Successfully updated scripts/manual-tools.ts\n');
 }
 
 async function main() {
@@ -399,7 +401,7 @@ async function main() {
     console.log(`   Converted ManualTools: ${convertedTools.length}`);
     console.log(`   Errors: ${errors}\n`);
 
-    // Step 4: Append to manual-tools.ts
+    // Step 4: Append to scripts/manual-tools.ts
     if (convertedTools.length > 0) {
       await appendToManualTools(convertedTools);
     }

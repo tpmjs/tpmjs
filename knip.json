@@ -12,10 +12,9 @@
     ".": {
       "entry": [
         "examples/**/*.{ts,tsx,js,mjs,cjs}",
-        "manual-tools.ts",
+        "scripts/manual-tools.ts",
         "reset.d.ts",
         "scripts/**/*.{ts,tsx,js,mjs,cjs}",
-        "sync-*.ts",
         "templates/**/*.{ts,tsx,js,mjs,cjs}",
         "vitest.coverage.config.ts"
       ],
