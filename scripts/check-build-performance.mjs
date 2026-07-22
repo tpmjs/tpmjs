@@ -112,6 +112,8 @@ requireText(
   'CI must preserve Next.js incremental compiler state'
 );
 requireText(ci, "path: '**/*.tsbuildinfo'", 'CI must preserve incremental TypeScript state');
+requireText(ci, '  type-coverage:', 'type coverage must run independently from type checking');
+requireText(ci, 'path: .type-coverage', 'CI must preserve incremental type-coverage analysis');
 requireText(
   ci,
   '> apps/railway-executor/.tpmjs-release-provenance',
@@ -127,6 +129,11 @@ requireText(
   'run: pnpm check-architecture',
   'the architecture job must run the ratchet gates directly'
 );
+
+const typeCheckJob = ci.slice(ci.indexOf('  type-check:'), ci.indexOf('  type-coverage:'));
+if (typeCheckJob.includes('pnpm type-coverage')) {
+  failures.push('type coverage must not serialize behind the complete type-check job');
+}
 
 if (failures.length > 0) {
   console.error('Build-performance contract failed:');

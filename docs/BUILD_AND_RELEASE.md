@@ -53,11 +53,13 @@ can always be reconstructed from Git, pnpm, and the deployment environment.
 
 Turbopack's production filesystem cache is opt-in, so
 `apps/web/next.config.ts` enables it explicitly. GitHub Actions preserves both
-the Next compiler cache and TypeScript `.tsbuildinfo` files. The architecture
-job runs the architecture ratchets directly instead of rebuilding the entire
-monorepo a second time. On-box compiler artifacts are namespaced by the
-absolute release-workspace path because Turbopack caches are not portable
-between source roots.
+the Next compiler cache and TypeScript `.tsbuildinfo` files. Repository-wide
+type coverage remains a mandatory 95% gate, but runs in parallel with ordinary
+type checking and preserves its file-level analysis cache. The architecture job
+runs the architecture ratchets directly instead of rebuilding the entire
+monorepo a second time. On-box compiler artifacts are namespaced by the absolute
+release-workspace path because Turbopack caches are not portable between source
+roots.
 
 Podman layer reuse remains enabled for both images. A tiny release-provenance
 file invalidates only the metadata tail of each Dockerfile, so a new Git commit

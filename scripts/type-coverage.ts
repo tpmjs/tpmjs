@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { readFileSync, statSync } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { lint } from 'type-coverage-core';
@@ -79,9 +80,32 @@ function loadTypeScriptFiles(): Set<string> {
   );
 }
 
+function loadCacheNamespace(): string {
+  const inputs = commandOutput('git', ['ls-files', '-z'])
+    .split('\0')
+    .filter(
+      (file) =>
+        file === 'pnpm-lock.yaml' ||
+        file === 'scripts/type-coverage.ts' ||
+        /(^|\/)tsconfig[^/]*\.json$/.test(file)
+    )
+    .sort();
+  const hash = createHash('sha256');
+
+  for (const file of inputs) {
+    hash.update(file);
+    hash.update('\0');
+    hash.update(readFileSync(resolve(REPOSITORY_ROOT, file)));
+    hash.update('\0');
+  }
+
+  return hash.digest('hex').slice(0, 16);
+}
+
 async function main(): Promise<void> {
   const workspaces = loadWorkspaces();
   const measuredFiles = loadTypeScriptFiles();
+  const cacheNamespace = loadCacheNamespace();
   const countsByFile = new Map<string, { correctCount: number; totalCount: number }>();
   const gaps: TypeGap[] = [];
   const appProjects = workspaces.filter(
@@ -95,9 +119,16 @@ async function main(): Promise<void> {
     tsconfig: string,
     acceptsFile: (file: string) => boolean
   ): Promise<void> => {
+    const cacheDirectory = resolve(
+      REPOSITORY_ROOT,
+      '.type-coverage',
+      cacheNamespace,
+      relative(REPOSITORY_ROOT, tsconfig).split(sep).join('__')
+    );
     const result = await lint(tsconfig, {
       absolutePath: true,
-      enableCache: false,
+      cacheDirectory,
+      enableCache: true,
       fileCounts: true,
     });
 
