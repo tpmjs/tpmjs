@@ -29,6 +29,9 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - 35 stale Vercel API routes and request contracts; deprecated checks migrated to v2
 
 ### Improved
+- `@tpmjs/mcp-client` now owns one leak-free connection lifecycle for local
+  stdio, remote Streamable HTTP, and legacy SSE; the web app uses that same
+  tested transport contract instead of maintaining a private second client
 - The final 20 non-UI package builds now use the shared tsdown/Rolldown contract
   while preserving multi-entry exports, source maps, and executable shebangs;
   only the directive-sensitive UI build remains on tsup, and the cold cohort is
