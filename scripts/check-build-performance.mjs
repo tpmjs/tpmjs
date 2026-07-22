@@ -28,6 +28,7 @@ const executorPackage = JSON.parse(read('apps/railway-executor/package.json'));
 const executorDenoLock = JSON.parse(read('apps/railway-executor/deno.lock'));
 const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
+const reusePrValidation = read('scripts/reuse-pr-validation.mjs');
 const sandboxTests = read('.github/workflows/sandbox-tests.yml');
 const release = read('.github/workflows/release.yml');
 const releasePreview = read('.github/workflows/release-preview.yml');
@@ -266,6 +267,76 @@ for (const [name, dockerfile] of [
 }
 
 requireText(ci, 'apps/web/.next/cache', 'CI must preserve Next.js incremental compiler state');
+requireText(
+  ci,
+  'permissions:\n  contents: read\n  actions: read',
+  'CI provenance lookup must retain least-privilege workflow-run read access'
+);
+requireText(
+  ci,
+  '  validation_provenance:',
+  'CI must retain the exact pull-request validation provenance job'
+);
+requireText(
+  ci,
+  'run: node scripts/reuse-pr-validation.mjs',
+  'CI must run the validation provenance decision before expensive jobs'
+);
+requireText(
+  ci,
+  'node --test scripts/reuse-pr-validation.test.mjs',
+  'CI must exercise the validation provenance contract tests'
+);
+requireText(
+  reusePrValidation,
+  "git(['rev-list', '--parents', '-n', '1', sha])",
+  'validation reuse must be limited to normal merge commits'
+);
+requireText(
+  reusePrValidation,
+  "git(['show', '-s', '--format=%T', sourceSha])",
+  'validation reuse must compare the pull-request head tree'
+);
+requireText(
+  reusePrValidation,
+  'run?.path === CI_WORKFLOW_PATH',
+  'validation reuse must require the authoritative CI workflow'
+);
+
+const fullyValidatedJobs = [
+  'lint',
+  'type-check',
+  'type-coverage',
+  'test',
+  'migrations',
+  'build',
+  'executor',
+  'architecture',
+  'deadcode',
+];
+for (const [index, job] of fullyValidatedJobs.entries()) {
+  const start = ci.indexOf(`  ${job}:`);
+  if (start < 0) {
+    failures.push(`CI must retain the ${job} validation job`);
+    continue;
+  }
+  const nextStarts = fullyValidatedJobs
+    .slice(index + 1)
+    .map((nextJob) => ci.indexOf(`  ${nextJob}:`, start + 1))
+    .filter((position) => position >= 0);
+  const end = nextStarts.length > 0 ? Math.min(...nextStarts) : ci.length;
+  const section = ci.slice(start, end);
+  requireText(
+    section,
+    'needs: validation_provenance',
+    `${job} must wait for the validation provenance decision`
+  );
+  requireText(
+    section,
+    "always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true')",
+    `${job} must run for pull requests and whenever exact validation reuse is unproven`
+  );
+}
 requireText(
   ci,
   'packages/tools/official/*/tsconfig.tsbuildinfo',

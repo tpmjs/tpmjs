@@ -24,6 +24,28 @@ provenance, and smoke-tested as a running container before a live image tag can
 move. The previous image receives a timestamped rollback tag first. A failed
 activation restarts that exact prior image.
 
+### Content-addressed CI reuse
+
+Pull requests run the complete nine-job validation suite. After GitHub creates
+a normal merge commit on `main`, the push workflow proves that the merge tree is
+byte-identical to the pull request's second-parent tree and that the exact
+second-parent SHA already completed this repository's `ci.yml` pull-request
+workflow successfully. Only then does the main workflow reuse that validation
+instead of repeating the same lint, type, test, migration, build, executor,
+architecture, and dead-code work.
+
+This is validation reuse, not branch-name trust. Direct pushes, squash or
+rebase commits, merge-tree changes, missing Git history, unsuccessful or
+unrelated workflow runs, malformed API responses, and GitHub API failures all
+run the complete suite. Pull-request check names remain unchanged. The
+resulting successful main-branch workflow run still attests the exact merge SHA
+that the deployment preflight requires.
+
+GitHub scopes cache visibility by branch and does not make caches created on a
+pull-request merge ref available to the base branch. The provenance proof
+therefore removes the truly duplicate main run without adding an external
+cache service or placing TPMJS infrastructure on Vercel.
+
 `verify` is read-only. It proves that both systemd services are active, both
 live images carry the expected revision, the executor serves protocol 1.1, the
 web app can reach PostgreSQL, and the public health endpoint reports the same
@@ -200,6 +222,8 @@ fails if a maintainer accidentally:
 - bypasses TypeScript without exact-SHA CI proof;
 - moves release compilation back to the data volume;
 - restores the duplicate architecture build;
+- repeats exact green pull-request validation on an identical merge tree or
+  lets uncertain provenance skip full validation;
 - removes dependency-aware affected builds or their required Git history;
 - restores recursive dependency-tree traversal to TypeScript cache collection;
 - restores duplicate standard tsup configs, uses a monolithic tsdown workspace
