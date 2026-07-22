@@ -7,6 +7,8 @@ const mergeSha = 'a'.repeat(40);
 const firstParent = 'b'.repeat(40);
 const sourceSha = 'c'.repeat(40);
 const sharedTree = 'd'.repeat(40);
+const repository = 'tpmjs/tpmjs';
+const refName = 'main';
 
 function gitFixture({
   parents = [mergeSha, firstParent, sourceSha],
@@ -20,11 +22,11 @@ function gitFixture({
   };
 }
 
-function response(workflowRuns, { ok = true, status = 200 } = {}) {
+function jsonResponse(payload, { ok = true, status = 200 } = {}) {
   return {
     ok,
     status,
-    json: async () => ({ workflow_runs: workflowRuns }),
+    json: async () => payload,
   };
 }
 
@@ -36,31 +38,79 @@ function successfulRun(overrides = {}) {
     status: 'completed',
     conclusion: 'success',
     path: '.github/workflows/ci.yml',
+    head_branch: 'perf/squash-validation-reuse',
+    head_repository: { full_name: repository },
     html_url: 'https://github.com/tpmjs/tpmjs/actions/runs/123',
     ...overrides,
   };
 }
 
-function decide({ git = gitFixture(), workflowRuns = [successfulRun()], fetchImpl } = {}) {
+function associatedPullRequest(overrides = {}) {
+  return {
+    number: 171,
+    state: 'closed',
+    merged_at: '2026-07-22T22:24:05Z',
+    merge_commit_sha: mergeSha,
+    base: { ref: refName, repo: { full_name: repository } },
+    head: {
+      sha: sourceSha,
+      ref: 'perf/squash-validation-reuse',
+      repo: { full_name: repository },
+    },
+    ...overrides,
+  };
+}
+
+function fetchFixture({
+  pullRequests = [associatedPullRequest()],
+  sourceTree = sharedTree,
+  workflowRuns = [successfulRun()],
+  onRequest = () => {},
+} = {}) {
+  return async (url) => {
+    onRequest(url);
+    if (url.pathname.endsWith(`/commits/${mergeSha}/pulls`)) {
+      return jsonResponse(pullRequests);
+    }
+    if (url.pathname.endsWith(`/git/commits/${sourceSha}`)) {
+      return jsonResponse({ tree: { sha: sourceTree } });
+    }
+    if (url.pathname.endsWith('/actions/workflows/ci.yml/runs')) {
+      return jsonResponse({ workflow_runs: workflowRuns });
+    }
+    throw new Error(`unexpected GitHub request: ${url}`);
+  };
+}
+
+function decide({
+  git = gitFixture(),
+  workflowRuns = [successfulRun()],
+  fetchImpl,
+  pushedRefName = refName,
+} = {}) {
   return findReusablePullRequestValidation({
     sha: mergeSha,
-    repository: 'tpmjs/tpmjs',
+    repository,
+    refName: pushedRefName,
     token: 'test-token',
     git,
-    fetchImpl: fetchImpl ?? (async () => response(workflowRuns)),
+    fetchImpl: fetchImpl ?? fetchFixture({ workflowRuns }),
   });
 }
 
-test('reuses an exact successful pull-request validation for an identical merge tree', async () => {
+test('reuses exact pull-request validation for an identical two-parent merge tree', async () => {
   let requestedUrl;
   const result = await decide({
-    fetchImpl: async (url) => {
-      requestedUrl = url;
-      return response([successfulRun()]);
-    },
+    fetchImpl: fetchFixture({
+      onRequest: (url) => {
+        requestedUrl = url;
+      },
+    }),
   });
 
   assert.equal(result.reuse, true);
+  assert.equal(result.integrationMethod, 'merge');
+  assert.equal(result.sourcePullRequest, undefined);
   assert.equal(result.sourceSha, sourceSha);
   assert.equal(result.sourceTree, sharedTree);
   assert.equal(result.sourceRunId, '123');
@@ -69,26 +119,92 @@ test('reuses an exact successful pull-request validation for an identical merge 
   assert.equal(requestedUrl.searchParams.get('status'), 'completed');
 });
 
-test('rejects a direct push before consulting GitHub', async () => {
+test('reuses exact pull-request validation for a uniquely associated squash merge', async () => {
+  const requestedPaths = [];
+  const result = await decide({
+    git: gitFixture({ parents: [mergeSha, firstParent] }),
+    fetchImpl: fetchFixture({ onRequest: (url) => requestedPaths.push(url.pathname) }),
+  });
+
+  assert.equal(result.reuse, true);
+  assert.equal(result.integrationMethod, 'squash');
+  assert.equal(result.sourcePullRequest, '171');
+  assert.equal(result.sourceSha, sourceSha);
+  assert.equal(result.sourceTree, sharedTree);
+  assert.deepEqual(requestedPaths, [
+    `/repos/${repository}/commits/${mergeSha}/pulls`,
+    `/repos/${repository}/git/commits/${sourceSha}`,
+    `/repos/${repository}/actions/workflows/ci.yml/runs`,
+  ]);
+});
+
+test('rejects a direct push when GitHub has no exact merged pull-request association', async () => {
+  const result = await decide({
+    git: gitFixture({ parents: [mergeSha, firstParent] }),
+    fetchImpl: fetchFixture({ pullRequests: [] }),
+  });
+
+  assert.equal(result.reuse, false);
+  assert.match(result.reason, /not uniquely associated/);
+});
+
+test('rejects ambiguous or inexact single-parent pull-request associations', async () => {
+  const invalidAssociations = [
+    [associatedPullRequest(), associatedPullRequest({ number: 172 })],
+    [associatedPullRequest({ merge_commit_sha: firstParent })],
+    [
+      associatedPullRequest({
+        base: { ref: 'release', repo: { full_name: repository } },
+      }),
+    ],
+    [
+      associatedPullRequest({
+        base: { ref: refName, repo: { full_name: 'someone/else' } },
+      }),
+    ],
+    [associatedPullRequest({ state: 'open', merged_at: null })],
+    [associatedPullRequest({ number: undefined })],
+    [associatedPullRequest({ head: { sha: sourceSha, ref: '', repo: { full_name: repository } } })],
+    [associatedPullRequest({ head: { sha: sourceSha, ref: 'feature', repo: null } })],
+  ];
+
+  for (const pullRequests of invalidAssociations) {
+    const result = await decide({
+      git: gitFixture({ parents: [mergeSha, firstParent] }),
+      fetchImpl: fetchFixture({ pullRequests }),
+    });
+    assert.equal(result.reuse, false);
+    assert.match(result.reason, /not uniquely associated/);
+  }
+});
+
+test('rejects a single-parent revision when its destination ref is unavailable', async () => {
   let fetched = false;
   const result = await decide({
     git: gitFixture({ parents: [mergeSha, firstParent] }),
+    pushedRefName: '',
     fetchImpl: async () => {
       fetched = true;
-      return response([]);
+      return jsonResponse([]);
     },
   });
 
   assert.equal(result.reuse, false);
-  assert.match(result.reason, /not a normal two-parent merge/);
+  assert.match(result.reason, /ref name is unavailable/);
   assert.equal(fetched, false);
 });
 
 test('rejects a merge whose tree differs from the pull-request head', async () => {
-  const result = await decide({ git: gitFixture({ sourceTree: 'e'.repeat(40) }) });
+  const normalMerge = await decide({ git: gitFixture({ sourceTree: 'e'.repeat(40) }) });
+  const squashMerge = await decide({
+    git: gitFixture({ parents: [mergeSha, firstParent] }),
+    fetchImpl: fetchFixture({ sourceTree: 'e'.repeat(40) }),
+  });
 
-  assert.equal(result.reuse, false);
-  assert.match(result.reason, /tree differs/);
+  assert.equal(normalMerge.reuse, false);
+  assert.match(normalMerge.reason, /tree differs/);
+  assert.equal(squashMerge.reuse, false);
+  assert.match(squashMerge.reason, /tree differs/);
 });
 
 test('requires the exact workflow, commit, event, status, and successful conclusion', async () => {
@@ -104,16 +220,39 @@ test('requires the exact workflow, commit, event, status, and successful conclus
   }
 });
 
+test('binds squash validation to the associated pull-request branch and repository', async () => {
+  for (const run of [
+    successfulRun({ head_branch: 'different-branch' }),
+    successfulRun({ head_repository: { full_name: 'someone/else' } }),
+  ]) {
+    const result = await decide({
+      git: gitFixture({ parents: [mergeSha, firstParent] }),
+      fetchImpl: fetchFixture({ workflowRuns: [run] }),
+    });
+    assert.equal(result.reuse, false);
+    assert.match(result.reason, /no successful completed pull-request CI run/);
+  }
+});
+
 test('fails open to complete validation when GitHub is unavailable or malformed', async () => {
   const unavailable = await decide({
-    fetchImpl: async () => response([], { ok: false, status: 503 }),
+    fetchImpl: async () => jsonResponse({}, { ok: false, status: 503 }),
   });
   const malformed = await decide({
-    fetchImpl: async () => ({ ok: true, status: 200, json: async () => ({}) }),
+    fetchImpl: async () => jsonResponse({}),
   });
   const rejected = await decide({
     fetchImpl: async () => {
       throw new Error('network unavailable');
+    },
+  });
+  const malformedSourceCommit = await decide({
+    git: gitFixture({ parents: [mergeSha, firstParent] }),
+    fetchImpl: async (url) => {
+      if (url.pathname.endsWith('/pulls')) {
+        return jsonResponse([associatedPullRequest()]);
+      }
+      return jsonResponse({});
     },
   });
 
@@ -123,4 +262,9 @@ test('fails open to complete validation when GitHub is unavailable or malformed'
   assert.match(malformed.reason, /unexpected response/);
   assert.equal(rejected.reuse, false);
   assert.match(rejected.reason, /failed safely/);
+  assert.equal(malformedSourceCommit.reuse, false);
+  assert.match(
+    malformedSourceCommit.reason,
+    /source-commit lookup returned an unexpected response/
+  );
 });

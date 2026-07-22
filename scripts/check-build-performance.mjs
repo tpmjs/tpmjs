@@ -270,7 +270,7 @@ for (const [name, dockerfile] of [
 requireText(ci, 'apps/web/.next/cache', 'CI must preserve Next.js incremental compiler state');
 requireText(
   ci,
-  'permissions:\n  contents: read\n  actions: read',
+  'permissions:\n  contents: read\n  actions: read\n  pull-requests: read',
   'CI provenance lookup must retain least-privilege workflow-run read access'
 );
 requireText(
@@ -285,7 +285,7 @@ requireText(
 );
 requireText(
   ci,
-  'run-id: ${{ steps.provenance.outputs.source_run_id }}',
+  `run-id: \${{ steps.provenance.outputs.source_run_id }}`,
   'main cache promotion must import only the exact validated pull-request run'
 );
 for (const artifact of ['pr-compiler-state-typescript', 'pr-compiler-state-build']) {
@@ -326,8 +326,7 @@ for (const [cacheKey, expectedCount] of [
   ['next-build-', 3],
   ['typescript-', 2],
 ]) {
-  const exactKey =
-    'key: ${{ runner.os }}-' + cacheKey + "${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}";
+  const exactKey = `key: \${{ runner.os }}-${cacheKey}\${{ hashFiles('pnpm-lock.yaml') }}-\${{ github.sha }}`;
   if (ci.split(exactKey).length - 1 !== expectedCount) {
     failures.push(`${cacheKey} restore and promotion must use the same exact cache key`);
   }
@@ -345,12 +344,52 @@ requireText(
 requireText(
   reusePrValidation,
   "git(['rev-list', '--parents', '-n', '1', sha])",
-  'validation reuse must be limited to normal merge commits'
+  'validation reuse must inspect the exact pushed commit topology'
 );
 requireText(
   reusePrValidation,
   "git(['show', '-s', '--format=%T', sourceSha])",
-  'validation reuse must compare the pull-request head tree'
+  'normal-merge validation reuse must compare the local pull-request head tree'
+);
+requireText(
+  reusePrValidation,
+  `\`https://api.github.com/repos/\${repository}/commits/\${sha}/pulls\``,
+  'single-parent validation reuse must use GitHub commit-to-pull-request provenance'
+);
+for (const invariant of [
+  "pullRequest?.state === 'closed'",
+  'pullRequest?.merge_commit_sha === sha',
+  'pullRequest?.base?.repo?.full_name === repository',
+  'pullRequest?.base?.ref === refName',
+  "typeof pullRequest?.head?.ref === 'string'",
+  "typeof pullRequest?.head?.repo?.full_name === 'string'",
+  'matchingPullRequests.length !== 1',
+]) {
+  requireText(
+    reusePrValidation,
+    invariant,
+    `single-parent validation reuse must retain provenance invariant: ${invariant}`
+  );
+}
+requireText(
+  reusePrValidation,
+  `\`https://api.github.com/repos/\${repository}/git/commits/\${encodeURIComponent(sourceSha)}\``,
+  'single-parent validation reuse must resolve the associated head tree from GitHub'
+);
+requireText(
+  reusePrValidation,
+  'mergeTree !== sourceTree',
+  'all validation reuse paths must require exact tree equality'
+);
+requireText(
+  reusePrValidation,
+  'run?.head_branch === source.sourceHeadRef',
+  'squash validation reuse must bind the workflow run to the associated head branch'
+);
+requireText(
+  reusePrValidation,
+  'run?.head_repository?.full_name === source.sourceHeadRepository',
+  'squash validation reuse must bind the workflow run to the associated head repository'
 );
 requireText(
   reusePrValidation,

@@ -4,9 +4,9 @@ Concrete steps to actually launch. **[founder]** = needs Thomas / an owner crede
 
 ## Pre-launch — product must not embarrass us
 - [x] **Homepage tells the truth** — real counts, no fabricated activity ticker (shipped 8a4dd141).
-- [ ] **[team]** 5 surfaces visible on the tool detail page (CLI/MCP/REST/SDK/Skill switcher) — the differentiator must be obvious where a dev decides to use a tool. (tracked in #125)
-- [ ] **[team]** Discovery pages SSR'd + indexable (`/tool/tool-search`, `/collections`) — currently client-only "Loading…", zero SEO. (#125)
-- [ ] **[team]** Onboarding collapsed to the one 60-second flow (collection → `claude mcp add` → works).
+- [x] **[team]** 5 surfaces visible on the tool detail page (CLI/MCP/REST/SDK/Skill switcher) — shipped and live. (#125)
+- [x] **[team]** Discovery pages SSR'd + indexable (`/tool/tool-search`, `/collections`) — shipped and live. (#125)
+- [x] **[team]** Onboarding collapsed to the one 60-second flow (collection → `claude mcp add` → works) — #170 / #171, live at `a7d02c21`.
 - [ ] **[team]** Verify every command in this kit runs live the morning of launch (MCP add, REST execute, SDK).
 
 ## Distribution — where devs will find us
@@ -24,7 +24,7 @@ Concrete steps to actually launch. **[founder]** = needs Thomas / an owner crede
 ## Growth — make it worth returning to
 - [ ] **[team]** Reignite tool discovery — the npm-changes sync runs but adds nothing (0 new tools in 30d); fix or seed high-demand tools (real search demand: resend, discord, email, python). (#124 area)
 - [ ] **[team]** Seed 3–5 flagship public collections beyond the founder's (e.g. "web research", "devops", "data wrangling") so the registry doesn't look single-author.
-- [ ] **[team]** Instrument the activation funnel honestly (land → search → tool view → first call) so we can see what converts. (#125 analytics)
+- [x] **[team]** Instrument the activation funnel honestly (land → search → tool view → first call) so we can see what converts. (#128 / #134)
 
 ## Timing
 Don't launch until the tool page shows all 5 surfaces and the npm packages are refreshed — those are the two things a skeptical dev checks first. Everything else can ship in the days after.
