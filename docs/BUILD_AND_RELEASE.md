@@ -78,9 +78,10 @@ roots.
 ### Native TypeScript split
 
 Direct `tsc` builds and checks run on TypeScript 7's native compiler. Tools that
-still import the JavaScript compiler API—currently tsup, typescript-eslint, and
-type-coverage—resolve the official TypeScript 6 compatibility package instead.
-Both identities live in the default pnpm catalog:
+still import the JavaScript compiler API—currently the 22 specialized tsup
+builds, typescript-eslint, and type-coverage—resolve the official TypeScript 6
+compatibility package instead. Both identities live in the default pnpm
+catalog:
 
 ```yaml
 catalog:
@@ -107,6 +108,32 @@ ordering. Its temporary `ignoreDeprecations: "6.0"` exists only because tsup's
 declaration worker injects `baseUrl` internally; repository configs themselves
 contain no removed TypeScript 7 option. Remove that compatibility flag when the
 declaration pipeline leaves tsup.
+
+### Library package builds
+
+The 188 packages with the standard `src/index.ts` → ESM `.js` + `.d.ts`
+contract use the pinned root `tsdown.config.ts`. They deliberately remain
+independent Turbo tasks: that preserves content-addressed caching and releases
+each declaration compiler's memory when its package finishes. The 22 packages
+with multiple entry points, banners, shims, or other nonstandard output retain
+their local tsup configs until each contract is migrated explicitly.
+`turbo.json` treats the shared config as a global dependency, so changing that
+contract invalidates every affected package cache instead of replaying stale
+artifacts. Routine tasks request warning-only tsdown output to avoid multiplying
+startup logs across the cohort.
+
+A single tsdown workspace process is forbidden for this repository. In the
+full-cohort trial it retained more than 4.5 GB of heap, reached V8's heap limit,
+and began using swap. Eight isolated package processes completed without that
+growth. On the same 8-core host and SSD checkout, the cold 188-package cohort
+fell from 238.02s with tsup to 204.10s with tsdown (14.3%). A ten-package sample
+fell from 23.54s to 16.19s.
+
+Normal builds optimize for fast feedback. The release builder additionally
+sets `TPMJS_VALIDATE_PACKAGES=1`, which makes every migrated release candidate
+pass publint at error level and Are the Types Wrong? under the ESM-only profile.
+This proves that declared export files exist and that runtime/module-resolution
+shape agrees with the generated declarations before npm publishing begins.
 
 Podman layer reuse remains enabled for both images. A tiny release-provenance
 file invalidates only the metadata tail of each Dockerfile, so a new Git commit
@@ -156,6 +183,8 @@ fails if a maintainer accidentally:
 - restores the duplicate architecture build;
 - removes dependency-aware affected builds or their required Git history;
 - restores recursive dependency-tree traversal to TypeScript cache collection;
+- restores duplicate standard tsup configs, uses a monolithic tsdown workspace
+  build, or lets release builds skip package-contract validation;
 - disables Podman layers; or
 - disables the executor lockfile or restores static CDN imports; or
 - permits stale image provenance.

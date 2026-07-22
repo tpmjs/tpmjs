@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 const failures = [];
 
@@ -30,8 +31,12 @@ const ci = read('.github/workflows/ci.yml');
 const sandboxTests = read('.github/workflows/sandbox-tests.yml');
 const release = read('.github/workflows/release.yml');
 const releasePreview = read('.github/workflows/release-preview.yml');
+const releaseBuildCommand = read('scripts/release-build.ts');
 const releaseBuild = read('scripts/release-build-lib.ts');
+const createTool = read('scripts/create-tool.ts');
+const tsdownConfig = read('tsdown.config.ts');
 const rootPackage = JSON.parse(read('package.json'));
+const turboConfig = JSON.parse(read('turbo.json'));
 const lefthook = read('lefthook.yml');
 const workspaceConfig = read('pnpm-workspace.yaml');
 const baseTypeScriptConfig = JSON.parse(read('packages/config/tsconfig/base.json'));
@@ -49,6 +54,16 @@ requireText(
 if (rootPackage.devDependencies?.['@typescript/native'] !== 'catalog:') {
   failures.push('the workspace root must expose the cataloged native TypeScript compiler');
 }
+if (rootPackage.engines?.node !== '>=22.18') {
+  failures.push('the workspace Node.js floor must satisfy tsdown 0.22.x');
+}
+if (
+  rootPackage.devDependencies?.tsdown !== '0.22.13' ||
+  rootPackage.devDependencies?.publint !== '0.3.21' ||
+  rootPackage.devDependencies?.['@arethetypeswrong/core'] !== '0.18.5'
+) {
+  failures.push('the shared library builder and package-contract validators must stay pinned');
+}
 if (baseTypeScriptConfig.compilerOptions?.stableTypeOrdering !== true) {
   failures.push('TypeScript 6 compatibility must use TypeScript 7 stable type ordering');
 }
@@ -58,6 +73,7 @@ if (!baseTypeScriptConfig.compilerOptions?.types?.includes('node')) {
 
 for (const path of trackedWorkspaceManifests()) {
   const manifest = JSON.parse(read(path));
+  const packageDirectory = dirname(path);
   const typeScript = manifest.devDependencies?.typescript;
   if (typeScript && typeScript !== 'catalog:') {
     failures.push(`${path} must consume TypeScript through the workspace compiler catalog`);
@@ -69,12 +85,62 @@ for (const path of trackedWorkspaceManifests()) {
       failures.push(`${path} ${task} must avoid nested TypeScript checker parallelism`);
     }
   }
+
+  if (manifest.scripts?.build?.startsWith('tsdown')) {
+    if (manifest.scripts.build !== 'tsdown --logLevel warn') {
+      failures.push(`${path} must keep routine tsdown output concise`);
+    }
+    if (manifest.scripts?.dev !== 'tsdown --watch') {
+      failures.push(`${path} must use tsdown for both build and watch mode`);
+    }
+    if (manifest.devDependencies?.tsup) {
+      failures.push(`${path} must not retain a package-local tsup dependency`);
+    }
+    if (existsSync(join(packageDirectory, 'tsup.config.ts'))) {
+      failures.push(`${path} must not retain a legacy tsup config`);
+    }
+  }
+
+  if (
+    manifest.scripts?.build?.startsWith('tsup') &&
+    !existsSync(join(packageDirectory, 'tsup.config.ts'))
+  ) {
+    failures.push(`${path} uses tsup without a package-specific config`);
+  }
 }
+
+requireText(
+  createTool,
+  "build: 'tsdown --logLevel warn'",
+  'new official tools must use the shared builder'
+);
+if (createTool.includes('tsup')) {
+  failures.push('the official-tool generator must not recreate legacy tsup configuration');
+}
+requireText(tsdownConfig, 'fixedExtension: false', 'shared builds must preserve .js/.d.ts exports');
+if (!turboConfig.globalDependencies?.includes('tsdown.config.ts')) {
+  failures.push('Turbo must invalidate package caches when the shared tsdown config changes');
+}
+requireText(
+  tsdownConfig,
+  "profile: 'esm-only', level: 'error'",
+  'release builds must fail on ESM package-contract errors'
+);
+requireText(
+  releaseBuildCommand,
+  "TPMJS_VALIDATE_PACKAGES: '1'",
+  'release builds must enable publint and attw package-contract validation'
+);
 
 for (const task of ['build', 'test', 'lint', 'type-check']) {
   if (!rootPackage.scripts?.[task]?.includes('--output-logs=new-only')) {
     failures.push(`${task} must suppress replay of cached task logs`);
   }
+}
+if (rootPackage.scripts?.build?.includes('tsdown')) {
+  failures.push(
+    'the root build must preserve Turbo package isolation instead of using tsdown workspace mode'
+  );
 }
 
 requireText(

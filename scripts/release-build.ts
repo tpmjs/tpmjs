@@ -21,7 +21,10 @@ function main(): void {
   console.log(
     `Release build: ${plan.candidates.length} package${plan.candidates.length === 1 ? '' : 's'} plus workspace dependencies: ${plan.candidates.map((candidate) => `${candidate.name}@${candidate.version}`).join(', ')}`
   );
-  const result = spawnSync('pnpm', plan.turboArguments, { stdio: 'inherit' });
+  const result = spawnSync('pnpm', plan.turboArguments, {
+    stdio: 'inherit',
+    env: { ...process.env, TPMJS_VALIDATE_PACKAGES: '1' },
+  });
   if (result.error) throw result.error;
   if (result.status !== 0) process.exitCode = result.status ?? 1;
 }
