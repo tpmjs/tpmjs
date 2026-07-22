@@ -190,7 +190,9 @@ packages/
 
 ### Quality Gates
 
-Pre-commit hooks run format, lint, and type-check automatically. CI enforces:
+Pre-commit hooks run format, lint, and type-check automatically. The hook runner
+is pinned because its formatter must safely restage changes while those checks
+run in parallel. CI enforces:
 
 - Linting (ESLint + Biome)
 - Type checking (TypeScript strict mode)

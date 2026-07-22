@@ -88,7 +88,7 @@
     "@vitest/coverage-v8": "4.0.16",
     "dependency-cruiser": "^17.3.6",
     "knip": "^5.80.2",
-    "lefthook": "^2.0.13",
+    "lefthook": "2.1.10",
     "openai": "^6.15.0",
     "publint": "0.3.21",
     "tsdown": "0.22.13",

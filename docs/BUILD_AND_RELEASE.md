@@ -140,6 +140,14 @@ pass publint at error level and Are the Types Wrong? under the ESM-only profile.
 This proves that declared export files exist and that runtime/module-resolution
 shape agrees with the generated declarations before npm publishing begins.
 
+### Local commit hooks
+
+Lefthook is pinned to `2.1.10`. The pre-commit formatter uses `stage_fixed`
+while formatting, linting, and affected type checks run in parallel; older
+2.0.x releases can finish those child processes and then deadlock while
+restaging their results. The architecture gate protects both the fixed runner
+version and the formatter's atomic-restaging contract.
+
 Podman layer reuse remains enabled for both images. A tiny release-provenance
 file invalidates only the metadata tail of each Dockerfile, so a new Git commit
 cannot inherit stale labels while expensive operating-system and Deno layers
@@ -190,6 +198,7 @@ fails if a maintainer accidentally:
 - restores recursive dependency-tree traversal to TypeScript cache collection;
 - restores duplicate standard tsup configs, uses a monolithic tsdown workspace
   build, or lets release builds skip package-contract validation;
+- weakens the pinned, atomic-restaging pre-commit hook contract;
 - disables Podman layers; or
 - disables the executor lockfile or restores static CDN imports; or
 - permits stale image provenance.
