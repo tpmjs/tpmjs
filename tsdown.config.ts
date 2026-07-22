@@ -1,8 +1,8 @@
-import { defineConfig } from 'tsdown';
+import { defineConfig, type UserConfig } from 'tsdown';
 
 const validatePackage = process.env.TPMJS_VALIDATE_PACKAGES === '1';
 
-export default defineConfig((inlineConfig) => ({
+export const libraryConfig = {
   entry: ['src/index.ts'],
   format: ['esm'],
   dts: { sourcemap: false },
@@ -10,13 +10,19 @@ export default defineConfig((inlineConfig) => ({
   treeshake: true,
   logLevel: 'warn',
   fixedExtension: false,
-  splitting: false,
-  cwd: inlineConfig.cwd ?? process.cwd(),
   inputOptions: {
     checks: {
       pluginTimings: false,
     },
   },
+  outputOptions: {
+    codeSplitting: false,
+  },
   publint: validatePackage ? { level: 'error' } : false,
   attw: validatePackage ? { profile: 'esm-only', level: 'error' } : false,
+} satisfies UserConfig;
+
+export default defineConfig((inlineConfig) => ({
+  ...libraryConfig,
+  cwd: inlineConfig.cwd ?? process.cwd(),
 }));
