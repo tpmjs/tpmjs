@@ -57,6 +57,7 @@
     "release:audit:test": "tsx --test scripts/release-audit.test.ts",
     "release:auth": "tsx scripts/release-auth.ts",
     "release:auth:test": "tsx --test scripts/release-auth.test.ts",
+    "release:trust-bootstrap": "tsx scripts/release-trust-bootstrap.ts",
     "release:build": "tsx scripts/release-build.ts",
     "release:build:test": "tsx --test scripts/release-build.test.ts",
     "release:preview": "pnpm release:status && pnpm release:audit",

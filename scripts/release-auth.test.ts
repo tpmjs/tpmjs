@@ -5,6 +5,8 @@ import {
   authorizeNpmPackages,
   githubOidcUrl,
   npmOidcExchangeUrl,
+  npmTrustGithubArgs,
+  publishedPackageNames,
   releaseCandidates,
   requestGitHubOidcToken,
 } from './release-auth-lib';
@@ -12,9 +14,27 @@ import {
 const audit = {
   summary: { safe: true, publishCount: 2 },
   packages: [
-    { name: '@tpmjs/current', version: '1.0.0', state: 'current', safe: true },
-    { name: '@tpmjs/existing', version: '1.1.0', state: 'publish', safe: true },
-    { name: '@tpmjs/new', version: '0.1.0', state: 'new-package', safe: true },
+    {
+      name: '@tpmjs/current',
+      version: '1.0.0',
+      latest: '1.0.0',
+      state: 'current',
+      safe: true,
+    },
+    {
+      name: '@tpmjs/existing',
+      version: '1.1.0',
+      latest: '1.0.0',
+      state: 'publish',
+      safe: true,
+    },
+    {
+      name: '@tpmjs/new',
+      version: '0.1.0',
+      latest: null,
+      state: 'new-package',
+      safe: true,
+    },
   ],
 };
 
@@ -33,6 +53,33 @@ test('fails closed on an unsafe audit or inconsistent publish count', () => {
   assert.throws(
     () => releaseCandidates({ ...audit, summary: { safe: true, publishCount: 1 } }),
     /publish count mismatch/
+  );
+});
+
+test('derives all existing npm packages for one-time trust bootstrap', () => {
+  assert.deepEqual(publishedPackageNames(audit), ['@tpmjs/current', '@tpmjs/existing']);
+  assert.throws(
+    () => publishedPackageNames({ ...audit, summary: { safe: false, publishCount: 2 } }),
+    /not safe/
+  );
+});
+
+test('constructs exact npm trust arguments without a shell', () => {
+  assert.deepEqual(
+    npmTrustGithubArgs('@tpmjs/tools-vercel', {
+      repository: 'tpmjs/tpmjs',
+      workflow: 'release.yml',
+    }),
+    [
+      'trust',
+      'github',
+      '@tpmjs/tools-vercel',
+      '--file',
+      'release.yml',
+      '--repo',
+      'tpmjs/tpmjs',
+      '--allow-publish',
+    ]
   );
 });
 

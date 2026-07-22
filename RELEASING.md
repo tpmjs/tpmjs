@@ -69,6 +69,11 @@ An npm maintainer with an interactive session and 2FA can configure a package wi
 npm trust github @tpmjs/PACKAGE --file release.yml --repo tpmjs/tpmjs --allow-publish
 ```
 
+For a scope-wide migration, the manual **Bootstrap npm Trusted Publishing** workflow derives every
+existing npm package from the fail-closed release audit and configures the same publisher for each.
+It uses `NPM_TOKEN` only inside GitHub Actions; remove that legacy secret after the bootstrap run and
+the normal release lane remains entirely OIDC-based.
+
 Trusted Publishing cannot bootstrap a name that does not exist on npm. A genuinely new package must be published once by a maintainer, then configured with the command above before normal automated releases. The preflight fails explicitly for that state.
 
 During the July 2026 migration, the required commands for the pending releases are:
