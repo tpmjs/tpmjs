@@ -64,6 +64,9 @@ if (
 ) {
   failures.push('the shared library builder and package-contract validators must stay pinned');
 }
+if (rootPackage.devDependencies?.lefthook !== '2.1.10') {
+  failures.push('Lefthook must stay pinned to the stage_fixed-safe 2.1.10 release');
+}
 if (baseTypeScriptConfig.compilerOptions?.stableTypeOrdering !== true) {
   failures.push('TypeScript 6 compatibility must use TypeScript 7 stable type ordering');
 }
@@ -155,6 +158,11 @@ requireText(
   lefthook,
   "type-check --filter='...[HEAD]' --output-logs=new-only",
   'the staged type-check must not replay cached task logs'
+);
+requireText(
+  lefthook,
+  'stage_fixed: true',
+  'the formatter must atomically restage its fixes before a commit'
 );
 
 requireText(

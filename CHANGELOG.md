@@ -16,6 +16,9 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - Weekly Vercel OpenAPI contract-drift verification for all 167 Vercel tools
 
 ### Fixed
+- Pre-commit hooks no longer deadlock after parallel formatting by pinning the
+  `stage_fixed`-safe Lefthook release and enforcing that contract in the
+  architecture gate
 - Prisma client lazy initialization to prevent Lambda cold-start crashes
 - N+1 count queries in `/api/stats` consolidated into batch operations
 - Tag backfill N+1 queries in `/api/sync/enrich`
