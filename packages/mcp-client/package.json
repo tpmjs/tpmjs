@@ -28,8 +28,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown --sourcemap --logLevel warn",
+    "dev": "tsdown --sourcemap --watch",
     "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "clean": "rm -rf dist .turbo"
   },
@@ -39,7 +39,6 @@
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
     "@types/node": "^22.15.29",
-    "tsup": "^8.5.1",
     "typescript": "catalog:"
   },
   "publishConfig": {

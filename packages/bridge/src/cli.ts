@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import type { MCPServerConfig } from '@tpmjs/mcp-client';
 import { Command } from 'commander';
 import pc from 'picocolors';

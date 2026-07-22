@@ -78,10 +78,9 @@ roots.
 ### Native TypeScript split
 
 Direct `tsc` builds and checks run on TypeScript 7's native compiler. Tools that
-still import the JavaScript compiler API—currently the 21 specialized tsup
-builds, typescript-eslint, and type-coverage—resolve the official TypeScript 6
-compatibility package instead. Both identities live in the default pnpm
-catalog:
+still import the JavaScript compiler API—currently the directive-sensitive UI
+build, typescript-eslint, and type-coverage—resolve the official TypeScript 6
+compatibility package instead. Both identities live in the default pnpm catalog:
 
 ```yaml
 catalog:
@@ -117,9 +116,11 @@ contract with a package-local entry list, source maps, Node shims, and
 content-addressed shared chunks that remain inside its published `dist/`.
 Packages deliberately remain independent Turbo tasks: that preserves
 content-addressed caching and releases each declaration compiler's memory when
-its package finishes. The 21 packages with banners, UI-specific directives, or
-other nonstandard output retain their local tsup configs until each contract is
-migrated explicitly.
+its package finishes. Twenty formerly-specialized non-UI packages now extend
+the same contract with explicit multi-entry maps, source-map profiles, shims,
+or source-owned executable shebangs. The UI package alone retains tsup because
+its many React entry points require directive-preserving output and a separate
+declaration pass.
 `turbo.json` treats the shared config as a global dependency, so changing that
 contract invalidates every affected package cache instead of replaying stale
 artifacts. Routine tasks request warning-only tsdown output to avoid multiplying
@@ -132,7 +133,12 @@ growth. On the same 8-core host and SSD checkout, the cold 188-package cohort
 fell from 238.02s with tsup to 204.10s with tsdown (14.3%). A ten-package sample
 fell from 23.54s to 16.19s. The isolated 42-entry CLI build fell from 20.14s and
 995,288 KB peak RSS to 6.48s and 349,556 KB; its generated oclif manifest and
-public exports remained identical.
+public exports remained identical. Before migrating the final non-UI cohort,
+its 20 cold tsup tasks took 32.30s and 402 MB peak coordinator RSS on the same
+host; the UI package took only 3.29s alone and was therefore excluded from that
+migration. The equivalent cold tsdown cohort completed in 27.61s (14.5%
+faster); a separate release-strength run with publint and ATTW enabled completed
+all 20 packages in 26.56s.
 
 Normal builds optimize for fast feedback. The release builder additionally
 sets `TPMJS_VALIDATE_PACKAGES=1`, which makes every migrated release candidate

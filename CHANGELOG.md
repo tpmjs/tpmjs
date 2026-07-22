@@ -29,6 +29,10 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - 35 stale Vercel API routes and request contracts; deprecated checks migrated to v2
 
 ### Improved
+- The final 20 non-UI package builds now use the shared tsdown/Rolldown contract
+  while preserving multi-entry exports, source maps, and executable shebangs;
+  only the directive-sensitive UI build remains on tsup, and the cold cohort is
+  14.5% faster
 - 188 uniform library packages and the 42-entry CLI now share one pinned tsdown/Rolldown contract instead of maintaining 189 duplicate tsup configs; cold cohort builds are 14% faster, the CLI is 68% faster with 65% lower peak memory, Turbo caching remains package-granular, and migrated release candidates must pass publint plus Are the Types Wrong?
 - Type checking now uses native TypeScript 7 with one checker per Turbo task, while a pnpm catalog keeps the TypeScript 6 API available to tsup and lint tooling
 - The tool-surface contract test isolates its separately-tested syntax highlighter, reducing its focused runtime from 16 seconds to 0.2 seconds under load
