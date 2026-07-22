@@ -18,6 +18,16 @@ const executorPackage = JSON.parse(read('apps/railway-executor/package.json'));
 const executorDenoLock = JSON.parse(read('apps/railway-executor/deno.lock'));
 const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
+const release = read('.github/workflows/release.yml');
+const releasePreview = read('.github/workflows/release-preview.yml');
+const releaseBuild = read('scripts/release-build-lib.ts');
+const rootPackage = JSON.parse(read('package.json'));
+
+for (const task of ['build', 'test', 'lint', 'type-check']) {
+  if (!rootPackage.scripts?.[task]?.includes('--output-logs=new-only')) {
+    failures.push(`${task} must suppress replay of cached task logs`);
+  }
+}
 
 requireText(
   nextConfig,
@@ -212,6 +222,35 @@ requireText(
   buildJob,
   'github.event.pull_request.base.sha || github.event.before',
   'affected builds must compare exact event SHAs instead of a local branch name'
+);
+
+requireText(release, 'path: .turbo', 'release builds must preserve Turbo task artifacts');
+requireText(
+  release,
+  'publish: pnpm changeset:publish:ci',
+  'Changesets must use the candidate-aware CI publishing path'
+);
+if (/\n\s+- name: Build\n/.test(release) || release.includes('run: pnpm build')) {
+  failures.push('the release workflow must not build the complete monorepo before Changesets');
+}
+if (/\n\s+- name: Build\n/.test(releasePreview) || releasePreview.includes('run: pnpm build')) {
+  failures.push('release previews must audit source and registry state without compiling packages');
+}
+if (
+  rootPackage.scripts?.['changeset:publish:ci'] !==
+  'pnpm release:build --audit release-audit.json && changeset publish'
+) {
+  failures.push('CI publishing must build the audited release candidates exactly once');
+}
+requireText(
+  releaseBuild,
+  ['`--filter=$', '{candidate.name}...`'].join(''),
+  'release builds must select each candidate and its complete workspace dependency graph'
+);
+requireText(
+  releaseBuild,
+  "'--output-logs=new-only'",
+  'cached release tasks must not replay large historical logs'
 );
 
 if (failures.length > 0) {

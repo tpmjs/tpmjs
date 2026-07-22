@@ -28,13 +28,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
-
       - name: Test release policy and external contracts
         run: |
           pnpm release:audit:test
           pnpm release:auth:test
+          pnpm release:build:test
           pnpm verify:vercel-api:test
           pnpm verify:vercel-api
 
