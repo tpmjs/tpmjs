@@ -27,6 +27,10 @@ export const coverageBaselines: Record<string, CoverageBaseline> = {
     directory: 'packages/executor-test',
     thresholds: { lines: 2.5, statements: 2.3 },
   },
+  '@tpmjs/mcp-client': {
+    directory: 'packages/mcp-client',
+    thresholds: { branches: 83.6, functions: 64.2, lines: 83, statements: 81.2 },
+  },
   '@tpmjs/tools-jq': {
     directory: 'packages/tools/official/jq',
     thresholds: { lines: 10, statements: 8 },
