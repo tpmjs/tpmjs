@@ -28,6 +28,11 @@ export interface OidcAuthorizationReport {
   denied: OidcDenial[];
 }
 
+export interface NpmTrustPublisher {
+  repository: string;
+  workflow: string;
+}
+
 type Fetcher = typeof fetch;
 
 function asRecord(value: unknown, description: string): Record<string, unknown> {
@@ -78,6 +83,52 @@ export function releaseCandidates(audit: unknown): ReleaseCandidate[] {
     );
   }
   return candidates;
+}
+
+/**
+ * Return every public workspace package that already exists on npm.
+ *
+ * Trusted publishers are configured per package, not per npm scope. Bootstrapping
+ * the complete published workspace set once avoids discovering a missing grant
+ * only when a future version is already queued for release.
+ */
+export function publishedPackageNames(audit: unknown): string[] {
+  const document = asRecord(audit, 'Release audit');
+  const summary = asRecord(document.summary, 'Release audit summary');
+  if (summary.safe !== true) {
+    throw new Error('Release audit is not safe; refusing to configure npm trust');
+  }
+  if (!Array.isArray(document.packages)) {
+    throw new Error('Release audit packages must be an array');
+  }
+
+  const names = new Set<string>();
+  for (const [index, value] of document.packages.entries()) {
+    const entry = asRecord(value, `Release audit package ${index}`);
+    if (entry.safe !== true) {
+      throw new Error(`Release audit package ${index} is not safe`);
+    }
+    const latest = entry.latest;
+    if (latest === null) continue;
+    if (typeof latest !== 'string' || latest.length === 0) {
+      throw new Error(`Release audit package ${index}.latest must be a string or null`);
+    }
+    names.add(requiredString(entry, 'name', `Release audit package ${index}`));
+  }
+  return [...names].sort((left, right) => left.localeCompare(right));
+}
+
+export function npmTrustGithubArgs(packageName: string, publisher: NpmTrustPublisher): string[] {
+  return [
+    'trust',
+    'github',
+    packageName,
+    '--file',
+    publisher.workflow,
+    '--repo',
+    publisher.repository,
+    '--allow-publish',
+  ];
 }
 
 export function githubOidcUrl(requestUrl: string): string {
