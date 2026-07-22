@@ -14,7 +14,7 @@ const nextConfig = read('apps/web/next.config.ts');
 const deploy = read('scripts/deploy-on-box.sh');
 const executorDockerfile = read('apps/railway-executor/Dockerfile');
 const executorServer = read('apps/railway-executor/server.ts');
-const executorDenoConfig = JSON.parse(read('apps/railway-executor/deno.json'));
+const executorPackage = JSON.parse(read('apps/railway-executor/package.json'));
 const executorDenoLock = JSON.parse(read('apps/railway-executor/deno.lock'));
 const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
@@ -121,7 +121,7 @@ requireText(
 
 requireText(
   executorDockerfile,
-  'COPY deno.json deno.lock ./',
+  'COPY package.json deno.json deno.lock ./',
   'executor dependencies must be copied before source for stable image-layer caching'
 );
 requireText(
@@ -143,15 +143,15 @@ if (/^import .*https:\/\/esm\.sh\//m.test(executorServer)) {
   );
 }
 if (
-  executorDenoConfig.imports?.['zod-to-json-schema'] !== 'npm:zod-to-json-schema@3.25.0' ||
-  executorDenoConfig.imports?.['zod-v4'] !== 'npm:zod@4.4.3'
+  executorPackage.dependencies?.['zod-to-json-schema'] !== '3.25.0' ||
+  executorPackage.dependencies?.zod !== '4.3.5'
 ) {
   failures.push('executor build-time dependency versions must remain explicitly pinned');
 }
 if (
   executorDenoLock.version !== '4' ||
   !executorDenoLock.specifiers?.['npm:zod-to-json-schema@3.25.0'] ||
-  !executorDenoLock.specifiers?.['npm:zod@4.4.3']
+  !executorDenoLock.specifiers?.['npm:zod@4.3.5']
 ) {
   failures.push('executor lockfile must cover every pinned build-time dependency');
 }

@@ -6,8 +6,9 @@ run on the TPMJS host as a Podman service; it is not deployed on Railway or
 Vercel.
 
 `server.ts` is the only implementation. Its small static dependency graph is
-declared in `deno.json`, integrity-pinned in `deno.lock`, and installed in a
-container layer before source is copied. The image then runs a frozen
+declared in `package.json`, integrity-pinned in `deno.lock`, and installed in a
+container layer before source is copied. Deno-specific resolution settings
+live in `deno.json`. The image then runs a frozen
 `deno check`, so the same source and dependency graph that CI checks are what
 the container executes. Unchanged dependency layers are reusable across normal
 source edits.

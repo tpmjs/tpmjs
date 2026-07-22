@@ -3,10 +3,10 @@
  * Uses Deno's native HTTP import support
  */
 
-// Build-time dependencies are registry-pinned in deno.json and integrity-locked
+// Build-time dependencies are registry-pinned in package.json and integrity-locked
 // in deno.lock. Runtime tool packages remain dynamic by design.
+import * as zodV4 from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import * as zodV4 from 'zod-v4';
 
 type ExecutorErrorStage = 'request' | 'load' | 'execute' | 'executor';
 type ExecutorErrorCode =

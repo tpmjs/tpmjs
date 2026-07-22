@@ -7,5 +7,9 @@
   "scripts": {
     "start": "deno run --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys --allow-ffi server.ts",
     "dev": "deno run --watch --allow-net --allow-env --allow-read --allow-write --allow-run --allow-sys --allow-ffi server.ts"
+  },
+  "dependencies": {
+    "zod": "4.3.5",
+    "zod-to-json-schema": "3.25.0"
   }
 }

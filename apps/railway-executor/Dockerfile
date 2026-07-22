@@ -19,7 +19,7 @@ ENV DENO_DIR=/tmp/deno-cache
 # Install the small, static executor dependency graph before copying source so
 # normal server edits retain this layer. The committed lockfile pins versions
 # and integrity while the bounded retry tolerates a transient registry outage.
-COPY deno.json deno.lock ./
+COPY package.json deno.json deno.lock ./
 RUN for attempt in 1 2 3; do \
       deno install --lock=deno.lock --frozen && exit 0; \
       if [ "$attempt" -eq 3 ]; then exit 1; fi; \

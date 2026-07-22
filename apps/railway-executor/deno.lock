@@ -1,24 +1,26 @@
 {
   "version": "4",
   "specifiers": {
-    "npm:zod-to-json-schema@3.25.0": "3.25.0_zod@4.4.3",
-    "npm:zod@4.4.3": "4.4.3"
+    "npm:zod-to-json-schema@3.25.0": "3.25.0_zod@4.3.5",
+    "npm:zod@4.3.5": "4.3.5"
   },
   "npm": {
-    "zod-to-json-schema@3.25.0_zod@4.4.3": {
+    "zod-to-json-schema@3.25.0_zod@4.3.5": {
       "integrity": "sha512-HvWtU2UG41LALjajJrML6uQejQhNJx+JBO9IflpSja4R03iNWfKXrj6W2h7ljuLyc1nKS+9yDyL/9tD1U/yBnQ==",
       "dependencies": [
         "zod"
       ]
     },
-    "zod@4.4.3": {
-      "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="
+    "zod@4.3.5": {
+      "integrity": "sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g=="
     }
   },
   "workspace": {
-    "dependencies": [
-      "npm:zod-to-json-schema@3.25.0",
-      "npm:zod@4.4.3"
-    ]
+    "packageJson": {
+      "dependencies": [
+        "npm:zod-to-json-schema@3.25.0",
+        "npm:zod@4.3.5"
+      ]
+    }
   }
 }

@@ -67,13 +67,14 @@ file invalidates only the metadata tail of each Dockerfile, so a new Git commit
 cannot inherit stale labels while expensive operating-system and Deno layers
 remain reusable.
 
-The executor's static Deno dependencies use pinned `npm:` registry specifiers
-instead of build-time CDN imports. `deno.json` is copied before `server.ts`, and
-the dependency install plus type check both enforce the committed `deno.lock`
-with `--frozen`. This removes `esm.sh` from the executor image's static build
-graph, verifies dependency integrity, and lets normal source changes reuse the
-dependency layer. Dynamic tool packages are request-selected at runtime and
-retain their separate `esm.sh`-then-`npm:` resolution path.
+The executor's static Deno dependencies use exact versions in `package.json`
+instead of build-time CDN imports. The package manifest and Deno lock/config
+are copied before `server.ts`, and the dependency install plus type check both
+enforce the committed `deno.lock` with `--frozen`. This removes `esm.sh` from
+the executor image's static build graph, verifies dependency integrity, and
+lets normal source changes reuse the dependency layer. Dynamic tool packages
+are request-selected at runtime and retain their separate
+`esm.sh`-then-`npm:` resolution path.
 
 ## Measured baseline
 
