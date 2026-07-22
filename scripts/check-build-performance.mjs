@@ -1,0 +1,137 @@
+import { readFileSync } from 'node:fs';
+
+const failures = [];
+
+function read(path) {
+  return readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+}
+
+function requireText(source, expected, message) {
+  if (!source.includes(expected)) failures.push(message);
+}
+
+const nextConfig = read('apps/web/next.config.ts');
+const deploy = read('scripts/deploy-on-box.sh');
+const executorDockerfile = read('apps/railway-executor/Dockerfile');
+const webDockerfile = read('Dockerfile');
+const ci = read('.github/workflows/ci.yml');
+
+requireText(
+  nextConfig,
+  'turbopackFileSystemCacheForBuild: true',
+  'Next.js production filesystem caching must remain enabled'
+);
+requireText(
+  nextConfig,
+  'ignoreBuildErrors: ciValidatedRelease',
+  'release-only type-check elision must remain gated by CI validation'
+);
+requireText(
+  deploy,
+  'assert_ci_passed',
+  'the deploy preflight must prove the exact origin/main SHA passed CI'
+);
+requireText(
+  deploy,
+  'TPMJS_CI_VALIDATED_RELEASE=1',
+  'the optimized release build must use the CI-validated configuration'
+);
+requireText(
+  deploy,
+  '/var/cache/tpmjs/next-turbopack',
+  'on-box Turbopack cache must stay off the saturated data volume'
+);
+requireText(
+  deploy,
+  '/var/cache/tpmjs/release-worktree',
+  'on-box release compilation must use the root-volume workspace'
+);
+requireText(
+  deploy,
+  '/var/cache/tpmjs/release-staging',
+  'exact-commit snapshot staging must stay on the root volume'
+);
+requireText(
+  deploy,
+  'git archive --format=tar "$COMMIT_SHA_FULL"',
+  'the release workspace must be populated from the exact CI-proven commit'
+);
+requireText(
+  deploy,
+  'rsync --archive --delete',
+  'stale source files must be removed from the reusable release workspace'
+);
+requireText(
+  deploy,
+  "--exclude 'node_modules/'",
+  'release refreshes must preserve nested pnpm workspace links'
+);
+requireText(
+  deploy,
+  "--filter='@tpmjs/web^...'",
+  'release preparation must build the web workspace dependencies explicitly'
+);
+requireText(
+  deploy,
+  'prepare_next_build_cache',
+  'the web release must prepare its dedicated fast compiler cache'
+);
+requireText(
+  deploy,
+  'cache_namespace=$(printf',
+  'Turbopack state must be namespaced by the absolute release source root'
+);
+requireText(deploy, 'podman build --layers', 'executor image builds must reuse Podman layers');
+requireText(
+  deploy,
+  'podman build --layers --network=host',
+  'web image builds must reuse Podman layers'
+);
+
+if (deploy.includes('--no-cache')) {
+  failures.push('transactional deploys must not discard the complete container layer cache');
+}
+
+for (const [name, dockerfile] of [
+  ['executor', executorDockerfile],
+  ['web', webDockerfile],
+]) {
+  const markerMatch = /^COPY .*\.tpmjs-release-provenance.*$/m.exec(dockerfile);
+  const marker = markerMatch?.index ?? -1;
+  const metadata = dockerfile.indexOf('ARG COMMIT_SHA');
+  if (marker < 0 || metadata < 0 || marker > metadata) {
+    failures.push(
+      `${name} image provenance must be content-invalidated before metadata is stamped`
+    );
+  }
+}
+
+requireText(
+  ci,
+  'path: apps/web/.next/cache',
+  'CI must preserve Next.js incremental compiler state'
+);
+requireText(ci, "path: '**/*.tsbuildinfo'", 'CI must preserve incremental TypeScript state');
+requireText(
+  ci,
+  '> apps/railway-executor/.tpmjs-release-provenance',
+  'CI must create the executor provenance marker before building its image'
+);
+
+const architectureJob = ci.slice(ci.indexOf('  architecture:'), ci.indexOf('  deadcode:'));
+if (architectureJob.includes('pnpm build')) {
+  failures.push('the architecture job must not repeat the full monorepo build');
+}
+requireText(
+  architectureJob,
+  'run: pnpm check-architecture',
+  'the architecture job must run the ratchet gates directly'
+);
+
+if (failures.length > 0) {
+  console.error('Build-performance contract failed:');
+  for (const failure of failures) console.error(`- ${failure}`);
+  process.exit(1);
+}
+
+console.log('Build-performance contract: incremental, CI-gated, and cache-preserving');

@@ -36,6 +36,7 @@
 
 ## Operations
 
+- [`BUILD_AND_RELEASE.md`](./BUILD_AND_RELEASE.md) — CI, incremental build caches, transactional on-box deployment, rollback, and provenance.
 - [`sentry-setup.md`](./sentry-setup.md) — error monitoring setup.
 - [`metrics-tracking-admin.md`](./metrics-tracking-admin.md) — admin metrics tracking.
 

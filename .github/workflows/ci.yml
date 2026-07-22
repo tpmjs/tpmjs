@@ -53,6 +53,14 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
+      - name: Restore incremental TypeScript state
+        uses: actions/cache@v5
+        with:
+          path: '**/*.tsbuildinfo'
+          key: ${{ runner.os }}-typescript-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-typescript-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -159,6 +167,14 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
+      - name: Restore incremental Next.js compiler state
+        uses: actions/cache@v5
+        with:
+          path: apps/web/.next/cache
+          key: ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -172,6 +188,8 @@ jobs:
 
       - name: Build and type-check the production executor image
         run: |
+          printf 'commit=%s\nmessage=CI %s\n' "$GITHUB_SHA" "$GITHUB_SHA" \
+            > apps/railway-executor/.tpmjs-release-provenance
           docker build \
             --build-arg "COMMIT_SHA=${GITHUB_SHA}" \
             --build-arg "COMMIT_MESSAGE=CI ${GITHUB_SHA}" \
@@ -280,7 +298,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Check architecture
-        run: pnpm build && pnpm check-architecture
+        run: pnpm check-architecture
 
   deadcode:
     runs-on: ubuntu-latest

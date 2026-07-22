@@ -30,6 +30,11 @@ RUN deno check --no-lock server.ts
 # imports can extend it without falling back to root.
 RUN chown -R deno:deno /tmp/deno-cache
 
+# The deploy script writes this tiny file from the exact origin/main SHA. Its
+# changing content invalidates only the provenance tail of the image while all
+# expensive runtime and Deno-check layers remain safely reusable.
+COPY .tpmjs-release-provenance /app/.tpmjs-release-provenance
+
 ARG COMMIT_SHA=local
 ARG COMMIT_MESSAGE=local
 LABEL org.opencontainers.image.revision=${COMMIT_SHA} \

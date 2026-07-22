@@ -46,7 +46,7 @@
     "type-check": "turbo type-check",
     "type-coverage": "tsx scripts/type-coverage.ts",
     "find-deadcode": "knip",
-    "check-architecture": "node scripts/check-no-vercel-hosting.mjs && node scripts/check-sentry-instrumentation.mjs && depcruise --validate --config .dependency-cruiser.js apps packages",
+    "check-architecture": "node scripts/check-no-vercel-hosting.mjs && node scripts/check-sentry-instrumentation.mjs && node scripts/check-build-performance.mjs && depcruise --validate --config .dependency-cruiser.js apps packages",
     "clean": "turbo clean && rm -rf node_modules .turbo",
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm install --no-frozen-lockfile",
