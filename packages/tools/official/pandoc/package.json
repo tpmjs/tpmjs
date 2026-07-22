@@ -21,8 +21,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown --logLevel warn",
+    "dev": "tsdown --watch",
     "type-check": "tsc --checkers 1 --noEmit",
     "test": "vitest run",
     "test:ui": "vitest --ui",
@@ -30,7 +30,6 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "tsup": "^8.5.1",
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },

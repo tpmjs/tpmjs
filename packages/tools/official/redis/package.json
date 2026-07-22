@@ -18,8 +18,8 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown --logLevel warn",
+    "dev": "tsdown --watch",
     "type-check": "tsc --checkers 1 --noEmit",
     "test": "vitest",
     "clean": "rm -rf dist .turbo"
@@ -27,7 +27,6 @@
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
     "@tpmjs/tool-test-utils": "workspace:*",
-    "tsup": "^8.5.1",
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },

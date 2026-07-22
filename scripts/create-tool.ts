@@ -47,17 +47,17 @@ async function createToolPackage() {
     },
     files: ['dist'],
     scripts: {
-      build: 'tsup',
-      dev: 'tsup --watch',
-      'type-check': 'tsc --noEmit',
+      build: 'tsdown --logLevel warn',
+      dev: 'tsdown --watch',
+      'type-check':
+        'tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo',
       test: 'vitest',
       clean: 'rm -rf dist .turbo',
     },
     devDependencies: {
       '@tpmjs/tsconfig': 'workspace:*',
       '@tpmjs/tool-test-utils': 'workspace:*',
-      tsup: '^8.5.1',
-      typescript: '^5.9.3',
+      typescript: 'catalog:',
       vitest: '^4.0.16',
     },
     dependencies: {
@@ -85,7 +85,7 @@ async function createToolPackage() {
     },
   };
 
-  await writeFile(join(toolDir, 'package.json'), JSON.stringify(packageJson, null, 2) + '\n');
+  await writeFile(join(toolDir, 'package.json'), `${JSON.stringify(packageJson, null, 2)}\n`);
   console.log(`  Created: package.json`);
 
   // tsconfig.json
@@ -101,24 +101,8 @@ async function createToolPackage() {
     exclude: ['node_modules', 'dist'],
   };
 
-  await writeFile(join(toolDir, 'tsconfig.json'), JSON.stringify(tsconfig, null, 2) + '\n');
+  await writeFile(join(toolDir, 'tsconfig.json'), `${JSON.stringify(tsconfig, null, 2)}\n`);
   console.log(`  Created: tsconfig.json`);
-
-  // tsup.config.ts
-  const tsupConfig = `import { defineConfig } from 'tsup';
-
-export default defineConfig({
-  entry: ['src/index.ts'],
-  format: ['esm'],
-  dts: true,
-  clean: true,
-  treeshake: true,
-  splitting: false,
-});
-`;
-
-  await writeFile(join(toolDir, 'tsup.config.ts'), tsupConfig);
-  console.log(`  Created: tsup.config.ts`);
 
   // README.md
   const readme = `# @tpmjs/tools-${toolName}
