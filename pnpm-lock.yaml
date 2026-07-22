@@ -462,9 +462,6 @@ importers:
       oclif:
         specifier: ^4.17.35
         version: 4.22.65(@types/node@22.19.5)
-      tsup:
-        specifier: ^8.5.1
-        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'

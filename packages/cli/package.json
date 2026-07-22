@@ -71,8 +71,8 @@
     "topicSeparator": " "
   },
   "scripts": {
-    "build": "tsup && oclif manifest",
-    "dev": "tsup --watch",
+    "build": "tsdown --logLevel warn && oclif manifest",
+    "dev": "tsdown --watch",
     "test": "vitest",
     "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "clean": "rm -rf dist .turbo oclif.manifest.json",
@@ -95,7 +95,6 @@
     "@tpmjs/tsconfig": "workspace:*",
     "@types/node": "^22.15.29",
     "oclif": "^4.17.35",
-    "tsup": "^8.5.1",
     "typescript": "catalog:",
     "vitest": "^4.0.16"
   },

@@ -78,7 +78,7 @@ roots.
 ### Native TypeScript split
 
 Direct `tsc` builds and checks run on TypeScript 7's native compiler. Tools that
-still import the JavaScript compiler API—currently the 22 specialized tsup
+still import the JavaScript compiler API—currently the 21 specialized tsup
 builds, typescript-eslint, and type-coverage—resolve the official TypeScript 6
 compatibility package instead. Both identities live in the default pnpm
 catalog:
@@ -112,11 +112,14 @@ declaration pipeline leaves tsup.
 ### Library package builds
 
 The 188 packages with the standard `src/index.ts` → ESM `.js` + `.d.ts`
-contract use the pinned root `tsdown.config.ts`. They deliberately remain
-independent Turbo tasks: that preserves content-addressed caching and releases
-each declaration compiler's memory when its package finishes. The 22 packages
-with multiple entry points, banners, shims, or other nonstandard output retain
-their local tsup configs until each contract is migrated explicitly.
+contract use the pinned root `tsdown.config.ts`. The 42-entry CLI extends that
+contract with a package-local entry list, source maps, Node shims, and
+content-addressed shared chunks that remain inside its published `dist/`.
+Packages deliberately remain independent Turbo tasks: that preserves
+content-addressed caching and releases each declaration compiler's memory when
+its package finishes. The 21 packages with banners, UI-specific directives, or
+other nonstandard output retain their local tsup configs until each contract is
+migrated explicitly.
 `turbo.json` treats the shared config as a global dependency, so changing that
 contract invalidates every affected package cache instead of replaying stale
 artifacts. Routine tasks request warning-only tsdown output to avoid multiplying
@@ -127,7 +130,9 @@ full-cohort trial it retained more than 4.5 GB of heap, reached V8's heap limit,
 and began using swap. Eight isolated package processes completed without that
 growth. On the same 8-core host and SSD checkout, the cold 188-package cohort
 fell from 238.02s with tsup to 204.10s with tsdown (14.3%). A ten-package sample
-fell from 23.54s to 16.19s.
+fell from 23.54s to 16.19s. The isolated 42-entry CLI build fell from 20.14s and
+995,288 KB peak RSS to 6.48s and 349,556 KB; its generated oclif manifest and
+public exports remained identical.
 
 Normal builds optimize for fast feedback. The release builder additionally
 sets `TPMJS_VALIDATE_PACKAGES=1`, which makes every migrated release candidate

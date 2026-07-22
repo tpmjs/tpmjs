@@ -87,7 +87,7 @@ for (const path of trackedWorkspaceManifests()) {
   }
 
   if (manifest.scripts?.build?.startsWith('tsdown')) {
-    if (manifest.scripts.build !== 'tsdown --logLevel warn') {
+    if (!/^tsdown --logLevel warn(?: && .+)?$/.test(manifest.scripts.build)) {
       failures.push(`${path} must keep routine tsdown output concise`);
     }
     if (manifest.scripts?.dev !== 'tsdown --watch') {
@@ -118,6 +118,14 @@ if (createTool.includes('tsup')) {
   failures.push('the official-tool generator must not recreate legacy tsup configuration');
 }
 requireText(tsdownConfig, 'fixedExtension: false', 'shared builds must preserve .js/.d.ts exports');
+requireText(
+  tsdownConfig,
+  'codeSplitting: false',
+  'shared builds must preserve self-contained entry artifacts'
+);
+if (/\bsplitting\s*:/.test(tsdownConfig)) {
+  failures.push('shared builds must use Rolldown outputOptions.codeSplitting, not a stale option');
+}
 if (!turboConfig.globalDependencies?.includes('tsdown.config.ts')) {
   failures.push('Turbo must invalidate package caches when the shared tsdown config changes');
 }
