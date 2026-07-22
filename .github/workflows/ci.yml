@@ -23,10 +23,14 @@ jobs:
     outputs:
       reuse: ${{ steps.provenance.outputs.reuse }}
       source_run_id: ${{ steps.provenance.outputs.source_run_id }}
+      build_baseline_available: ${{ steps.build_baseline.outputs.cache-matched-key != '' }}
+      build_refresh_required: ${{ steps.delta_budget.outputs.refresh-required }}
+    env:
+      MAX_PROMOTED_TURBO_DELTA_BYTES: 134217728
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Find exact successful pull-request validation
         id: provenance
@@ -59,8 +63,8 @@ jobs:
             packages/tools/official/*/tsconfig.tsbuildinfo
           key: ${{ runner.os }}-typescript-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
 
-      - name: Restore inherited main build state
-        id: inherited_build_state
+      - name: Locate reusable main build baseline
+        id: build_baseline
         if: steps.provenance.outputs.reuse == 'true'
         continue-on-error: true
         uses: actions/cache/restore@v5
@@ -68,40 +72,53 @@ jobs:
           path: |
             apps/web/.next/cache
             .turbo
-          key: ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-baseline-v2-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-build-baseline-v2-${{ hashFiles('pnpm-lock.yaml') }}-
             ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-
+          lookup-only: true
 
       - name: Import build delta from validated pull request
         id: build_delta
-        if: steps.provenance.outputs.reuse == 'true'
+        if: >-
+          steps.provenance.outputs.reuse == 'true' &&
+          steps.build_baseline.outputs.cache-matched-key != ''
         continue-on-error: true
         uses: actions/download-artifact@v8
         with:
           name: pr-compiler-state-build
-          path: .ci/imported-build-state
+          path: .ci/compiler-state-build
           github-token: ${{ github.token }}
           run-id: ${{ steps.provenance.outputs.source_run_id }}
 
-      - name: Apply validated Turbo build delta
-        id: build_state
+      - name: Bound the promoted Turbo delta
+        id: delta_budget
         if: steps.build_delta.outcome == 'success'
-        continue-on-error: true
-        run: >-
-          node scripts/compiler-cache-delta.mjs apply
-          .ci/imported-build-state .turbo/cache
+        run: |
+          if ! stats="$(node scripts/compiler-cache-delta.mjs inspect .ci/compiler-state-build)"; then
+            echo 'Validated Turbo delta is invalid; refreshing the complete baseline'
+            echo 'promotable=false' >> "$GITHUB_OUTPUT"
+            echo 'refresh-required=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          bytes="$(jq -r '.bytes' <<< "$stats")"
+          echo "Validated Turbo delta: $bytes bytes"
+          echo "bytes=$bytes" >> "$GITHUB_OUTPUT"
+          if [ "$bytes" -le "$MAX_PROMOTED_TURBO_DELTA_BYTES" ]; then
+            echo 'promotable=true' >> "$GITHUB_OUTPUT"
+            echo 'refresh-required=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'promotable=false' >> "$GITHUB_OUTPUT"
+            echo 'refresh-required=true' >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Promote validated build state to main cache scope
-        if: >-
-          steps.inherited_build_state.outcome == 'success' &&
-          steps.build_state.outcome == 'success'
+      - name: Promote validated Turbo delta to main cache scope
+        if: steps.delta_budget.outputs.promotable == 'true'
         continue-on-error: true
         uses: actions/cache/save@v5
         with:
-          path: |
-            apps/web/.next/cache
-            .turbo
-          key: ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          path: .ci/compiler-state-build
+          key: ${{ runner.os }}-turbo-build-delta-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
 
   lint:
     needs: validation_provenance
@@ -321,11 +338,22 @@ jobs:
 
   build:
     needs: validation_provenance
-    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
+    if: >-
+      ${{
+        always() &&
+        (
+          github.event_name != 'push' ||
+          needs.validation_provenance.outputs.reuse != 'true' ||
+          needs.validation_provenance.outputs.build_baseline_available != 'true' ||
+          needs.validation_provenance.outputs.build_refresh_required == 'true'
+        )
+      }}
     runs-on: ubuntu-latest
     env:
       TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
       TURBO_SCM_HEAD: ${{ github.sha }}
+      BUILD_REFRESH_REQUIRED: ${{ needs.validation_provenance.outputs.build_refresh_required }}
+      MAX_PROMOTED_TURBO_DELTA_BYTES: 134217728
     steps:
       - uses: actions/checkout@v7
         with:
@@ -340,14 +368,16 @@ jobs:
           node-version: 22
           cache: 'pnpm'
 
-      - name: Restore incremental Next.js compiler state
-        uses: actions/cache@v5
+      - name: Restore reusable main build baseline
+        id: build_baseline
+        uses: actions/cache/restore@v5
         with:
           path: |
             apps/web/.next/cache
             .turbo
-          key: ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          key: ${{ runner.os }}-build-baseline-v2-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: |
+            ${{ runner.os }}-build-baseline-v2-${{ hashFiles('pnpm-lock.yaml') }}-
             ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: Snapshot inherited Turbo build state
@@ -355,11 +385,35 @@ jobs:
           node scripts/compiler-cache-delta.mjs snapshot
           .turbo/cache .ci/build-cache-before.json
 
+      - name: Restore latest promoted Turbo build delta
+        id: inherited_build_delta
+        continue-on-error: true
+        uses: actions/cache/restore@v5
+        with:
+          path: .ci/compiler-state-build
+          key: ${{ runner.os }}-turbo-build-delta-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-build-delta-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      - name: Apply promoted Turbo build delta
+        if: steps.inherited_build_delta.outputs.cache-matched-key != ''
+        continue-on-error: true
+        run: >-
+          node scripts/compiler-cache-delta.mjs apply
+          .ci/compiler-state-build .turbo/cache
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        env:
+          BUILD_BASELINE_MATCHED_KEY: ${{ steps.build_baseline.outputs.cache-matched-key }}
         run: |
+          if [ "$GITHUB_EVENT_NAME" = 'push' ] && { [ -z "$BUILD_BASELINE_MATCHED_KEY" ] || [ "$BUILD_REFRESH_REQUIRED" = 'true' ]; }; then
+            echo 'Seeding or refreshing the complete main build baseline'
+            pnpm exec turbo run build
+            exit 0
+          fi
           affected_count="$(pnpm exec turbo ls --affected --output=json | jq '.packages.count')"
           if [ "$affected_count" -eq 0 ]; then
             echo 'No workspaces require building'
@@ -368,9 +422,70 @@ jobs:
           pnpm exec turbo run build --affected
 
       - name: Prepare validated Turbo build delta
+        id: prepared_build_delta
+        if: >-
+          github.event_name == 'pull_request' ||
+          (
+            github.event_name == 'push' &&
+            steps.build_baseline.outputs.cache-matched-key != '' &&
+            env.BUILD_REFRESH_REQUIRED != 'true'
+          )
         run: >-
           node scripts/compiler-cache-delta.mjs collect
           .turbo/cache .ci/build-cache-before.json .ci/compiler-state-build
+
+      - name: Measure prepared Turbo build delta
+        id: prepared_delta_budget
+        if: steps.prepared_build_delta.outcome == 'success'
+        run: |
+          if ! stats="$(node scripts/compiler-cache-delta.mjs inspect .ci/compiler-state-build)"; then
+            echo 'Prepared Turbo delta is invalid; refreshing the complete baseline when on main'
+            echo 'promotable=false' >> "$GITHUB_OUTPUT"
+            echo 'refresh-required=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          bytes="$(jq -r '.bytes' <<< "$stats")"
+          echo "Prepared Turbo delta: $bytes bytes"
+          echo "bytes=$bytes" >> "$GITHUB_OUTPUT"
+          if [ "$bytes" -le "$MAX_PROMOTED_TURBO_DELTA_BYTES" ]; then
+            echo 'promotable=true' >> "$GITHUB_OUTPUT"
+            echo 'refresh-required=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'promotable=false' >> "$GITHUB_OUTPUT"
+            echo 'refresh-required=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Refresh complete build state after an oversized direct-push delta
+        if: >-
+          github.event_name == 'push' &&
+          steps.prepared_delta_budget.outputs.refresh-required == 'true'
+        run: pnpm exec turbo run build
+
+      - name: Seed reusable main build baseline
+        if: >-
+          github.event_name == 'push' &&
+          (
+            steps.build_baseline.outputs.cache-matched-key == '' ||
+            env.BUILD_REFRESH_REQUIRED == 'true' ||
+            steps.prepared_delta_budget.outputs.refresh-required == 'true'
+          )
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            apps/web/.next/cache
+            .turbo
+          key: ${{ runner.os }}-build-baseline-v2-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+
+      - name: Promote direct-push Turbo delta
+        if: >-
+          github.event_name == 'push' &&
+          steps.prepared_delta_budget.outputs.promotable == 'true'
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: .ci/compiler-state-build
+          key: ${{ runner.os }}-turbo-build-delta-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
 
       - name: Export validated build state
         if: github.event_name == 'pull_request'
