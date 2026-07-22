@@ -29,6 +29,7 @@ const executorDenoLock = JSON.parse(read('apps/railway-executor/deno.lock'));
 const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
 const reusePrValidation = read('scripts/reuse-pr-validation.mjs');
+const compilerCacheDelta = read('scripts/compiler-cache-delta.mjs');
 const sandboxTests = read('.github/workflows/sandbox-tests.yml');
 const release = read('.github/workflows/release.yml');
 const releasePreview = read('.github/workflows/release-preview.yml');
@@ -287,21 +288,33 @@ requireText(
   'run-id: ${{ steps.provenance.outputs.source_run_id }}',
   'main cache promotion must import only the exact validated pull-request run'
 );
+for (const artifact of ['pr-compiler-state-typescript', 'pr-compiler-state-build']) {
+  requireText(ci, `name: ${artifact}`, `main cache promotion must import the exact ${artifact}`);
+}
 requireText(
   ci,
-  'pattern: pr-compiler-state-*',
-  'main cache promotion must import the validated compiler-state artifacts'
+  "if: steps.typescript_state.outcome == 'success'",
+  'TypeScript cache promotion must require a successful exact artifact import'
 );
 requireText(
   ci,
-  "if: steps.compiler_state.outcome == 'success'",
-  'cache promotion must remain conditional on a successful artifact import'
+  "steps.inherited_build_state.outcome == 'success' &&",
+  'build cache promotion must require a successfully restored main baseline'
 );
-const bestEffortPromotionSteps = ci.match(
-  /name: Promote validated [^\n]+\n\s+if: steps\.compiler_state\.outcome == 'success'\n\s+continue-on-error: true/g
+requireText(
+  ci,
+  "steps.build_state.outcome == 'success'",
+  'build cache promotion must require a successfully applied validated delta'
 );
-if (bestEffortPromotionSteps?.length !== 2) {
-  failures.push('both main cache promotions must remain best-effort optimizations');
+for (const promotion of [
+  'Promote validated TypeScript state to main cache scope',
+  'Promote validated build state to main cache scope',
+]) {
+  const start = ci.indexOf(`- name: ${promotion}`);
+  const end = ci.indexOf('\n      - name:', start + 1);
+  const section = ci.slice(start, end < 0 ? ci.length : end);
+  requireText(section, 'continue-on-error: true', `${promotion} must remain best-effort`);
+  requireText(section, 'uses: actions/cache/save@v5', `${promotion} must use an explicit save`);
 }
 const bestEffortExportSteps = ci.match(
   /name: Export validated [^\n]+\n\s+if: github\.event_name == 'pull_request'\n\s+continue-on-error: true/g
@@ -309,10 +322,13 @@ const bestEffortExportSteps = ci.match(
 if (bestEffortExportSteps?.length !== 2) {
   failures.push('both pull-request compiler-state exports must remain best-effort optimizations');
 }
-for (const cacheKey of ['next-build-', 'typescript-']) {
+for (const [cacheKey, expectedCount] of [
+  ['next-build-', 3],
+  ['typescript-', 2],
+]) {
   const exactKey =
     'key: ${{ runner.os }}-' + cacheKey + "${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}";
-  if (ci.split(exactKey).length - 1 !== 2) {
+  if (ci.split(exactKey).length - 1 !== expectedCount) {
     failures.push(`${cacheKey} restore and promotion must use the same exact cache key`);
   }
 }
@@ -320,6 +336,11 @@ requireText(
   ci,
   'node --test scripts/reuse-pr-validation.test.mjs',
   'CI must exercise the validation provenance contract tests'
+);
+requireText(
+  ci,
+  'node --test scripts/compiler-cache-delta.test.mjs',
+  'CI must exercise the compiler-cache delta contract tests'
 );
 requireText(
   reusePrValidation,
@@ -335,6 +356,16 @@ requireText(
   reusePrValidation,
   'run?.path === CI_WORKFLOW_PATH',
   'validation reuse must require the authoritative CI workflow'
+);
+requireText(
+  compilerCacheDelta,
+  'const TURBO_CACHE_ENTRY = /^[0-9a-f]{16}',
+  'compiler-state promotion must admit only content-addressed Turbo cache entries'
+);
+requireText(
+  compilerCacheDelta,
+  'copyFileSync(source, join(cacheDir, name), constants.COPYFILE_EXCL)',
+  'compiler-state promotion must never overwrite an inherited cache entry'
 );
 
 const fullyValidatedJobs = [
@@ -496,8 +527,27 @@ requireText(
 );
 requireText(
   buildJob,
-  'include-hidden-files: true',
-  'build state export must include the hidden Turbo cache explicitly'
+  'compiler-cache-delta.mjs snapshot',
+  'build jobs must snapshot inherited Turbo state before compiling'
+);
+requireText(
+  buildJob,
+  'compiler-cache-delta.mjs collect',
+  'build jobs must export only newly validated content-addressed cache entries'
+);
+const buildExport = buildJob.slice(buildJob.indexOf('- name: Export validated build state'));
+requireText(
+  buildExport,
+  'path: .ci/compiler-state-build/',
+  'build promotion artifacts must contain the bounded validated delta staging directory'
+);
+if (buildExport.includes('apps/web/.next/cache') || buildExport.includes('\n            .turbo')) {
+  failures.push('build promotion artifacts must not re-export the inherited compiler baseline');
+}
+requireText(
+  buildExport,
+  'compression-level: 0',
+  'already-compressed Turbo deltas must avoid redundant artifact compression'
 );
 requireText(buildJob, 'retention-days: 1', 'build promotion artifacts must remain short-lived');
 
