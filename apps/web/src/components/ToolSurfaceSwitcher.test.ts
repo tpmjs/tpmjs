@@ -1,4 +1,5 @@
 import * as React from 'react';
+// eslint-disable-next-line import/no-internal-modules -- React documents this entry point for server rendering.
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
