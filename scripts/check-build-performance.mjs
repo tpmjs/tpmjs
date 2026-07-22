@@ -22,12 +22,19 @@ const release = read('.github/workflows/release.yml');
 const releasePreview = read('.github/workflows/release-preview.yml');
 const releaseBuild = read('scripts/release-build-lib.ts');
 const rootPackage = JSON.parse(read('package.json'));
+const lefthook = read('lefthook.yml');
 
 for (const task of ['build', 'test', 'lint', 'type-check']) {
   if (!rootPackage.scripts?.[task]?.includes('--output-logs=new-only')) {
     failures.push(`${task} must suppress replay of cached task logs`);
   }
 }
+
+requireText(
+  lefthook,
+  "type-check --filter='...[HEAD]' --output-logs=new-only",
+  'the staged type-check must not replay cached task logs'
+);
 
 requireText(
   nextConfig,

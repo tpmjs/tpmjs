@@ -18,7 +18,7 @@ pre-commit:
 
     type-check:
       # Only type-check packages with staged changes
-      run: pnpm turbo type-check --filter='...[HEAD]'
+      run: pnpm turbo type-check --filter='...[HEAD]' --output-logs=new-only
 
 pre-push:
   commands:
