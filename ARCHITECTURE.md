@@ -783,7 +783,7 @@ All sync endpoints require:
 Authorization: Bearer {CRON_SECRET}
 ```
 
-The bearer token comes from GitHub Actions secrets (the fast sync workflows hitting `https://tpmjs.com`) or from the on-box systemd timers' `EnvironmentFile=/etc/donto/tpmjs-web.env` (the daily `tpmjs-cron.timer` and 6-hourly `tpmjs-sync-keyword.timer`, which hit the web container directly). See `DEPLOYMENT.md`.
+The bearer token comes from GitHub Actions secrets (the fast sync workflows hitting `https://tpmjs.com`) or from the on-box systemd timers' `EnvironmentFile=/etc/donto/tpmjs-web.env` (the daily `tpmjs-cron.timer` and 6-hourly `tpmjs-sync-keyword.timer`, which hit the web container directly). See [`docs/operations/deployment.md`](./docs/operations/deployment.md).
 
 ### Executor Verification
 
@@ -840,7 +840,7 @@ pnpm build                        # Build all packages
 | Styling | Tailwind CSS 4.1 |
 | Build | Turborepo + pnpm |
 | Testing | Vitest + Testing Library |
-| Deployment | Self-hosted (podman containers, on-box builds — see DEPLOYMENT.md) |
+| Deployment | Self-hosted (podman containers, on-box builds — see [`docs/operations/deployment.md`](./docs/operations/deployment.md)) |
 
 ---
 

@@ -132,6 +132,7 @@ jobs:
       - name: Test
         run: |
           pnpm dev:setup:test
+          pnpm sync:manual:test
           pnpm release:audit:test
           pnpm release:auth:test
           pnpm release:build:test

@@ -1,0 +1,10 @@
+{
+  "extends": "../packages/config/tsconfig/base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "noEmit": true
+  },
+  "include": ["./manual-tools.ts", "./sync-manual-tools.ts"],
+  "exclude": ["./archive", "../node_modules"]
+}

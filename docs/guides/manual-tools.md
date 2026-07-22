@@ -12,18 +12,18 @@ Some excellent tools (like Vercel's code execution, Exa search, Firecrawl, etc.)
 
 ### Files
 
-1. **`manual-tools.ts`** - The registry of manually curated tools
-2. **`sync-manual-tools.ts`** - Script to sync manual tools to database
-3. **`MANUAL_TOOLS.md`** - This documentation
+1. **`scripts/manual-tools.ts`** - The registry of manually curated tools
+2. **`scripts/sync-manual-tools.ts`** - Script to sync manual tools to database
+3. **`docs/guides/manual-tools.md`** - This documentation
 
 ### How It Works
 
-1. **Manual Tool Registry** (`manual-tools.ts`)
+1. **Manual Tool Registry** (`scripts/manual-tools.ts`)
    - Exports a `manualTools` array with metadata for each tool
    - Each entry includes npm package name, export name, category, description, parameters, etc.
    - Follows the same schema as the standard `tpmjs` field
 
-2. **Sync Script** (`sync-manual-tools.ts`)
+2. **Sync Script** (`scripts/sync-manual-tools.ts`)
    - Fetches latest package metadata from npm
    - Combines npm metadata with manual metadata
    - Upserts Package + Tool records to database
@@ -38,7 +38,7 @@ Some excellent tools (like Vercel's code execution, Exa search, Firecrawl, etc.)
 
 ### Step 1: Add to Registry
 
-Edit `manual-tools.ts` and add a new entry:
+Edit `scripts/manual-tools.ts` and add a new entry:
 
 ```typescript
 {
@@ -93,7 +93,7 @@ Edit `manual-tools.ts` and add a new entry:
 
 ```bash
 # From repository root
-pnpm tsx sync-manual-tools.ts
+pnpm sync:manual
 ```
 
 This will:
@@ -152,14 +152,16 @@ Rich tier tools get 4x quality score multiplier, so add detailed metadata when p
 
 ### Updating Manual Tools
 
-1. Edit the entry in `manual-tools.ts`
-2. Run `pnpm tsx sync-manual-tools.ts`
+1. Edit the entry in `scripts/manual-tools.ts`
+2. Run `pnpm sync:manual`
 3. The upsert will update existing records
 
 ### Removing Manual Tools
 
-1. Remove the entry from `manual-tools.ts`
-2. Manually delete from database OR wait for metrics sync to mark as stale
+1. Remove the entry from `scripts/manual-tools.ts`.
+2. Retire the corresponding row by setting its lifecycle state to inactive and
+   recording `retiredAt`. Never delete the row: its health, usage, ratings, and
+   collection history must remain intact.
 
 ### Version Updates
 
@@ -174,7 +176,7 @@ Add to your deployment workflow:
 ```yaml
 # .github/workflows/deploy.yml
 - name: Sync manual tools
-  run: pnpm tsx sync-manual-tools.ts
+  run: pnpm sync:manual
   env:
     DATABASE_URL: ${{ secrets.DATABASE_URL }}
 ```
@@ -196,14 +198,14 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
-      - run: pnpm install
-      - run: pnpm tsx sync-manual-tools.ts
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm sync:manual
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 ```
@@ -214,7 +216,7 @@ Create a sync endpoint (similar to keyword/changes sync):
 
 ```typescript
 // apps/web/src/app/api/sync/manual/route.ts
-import { manualTools } from '@/manual-tools';
+import { manualTools } from '../../../../../../../scripts/manual-tools.js';
 // ... sync logic
 
 export async function POST(request: Request) {
@@ -252,7 +254,7 @@ We should! But:
 
 ### Will manual tools be replaced by auto-discovered ones?
 
-Yes! If a package adds a proper `tpmjs` field, the auto-discovery sync will update it with `discoveryMethod: 'keyword'` or `'changes-feed'`. Manual entries can then be removed from `manual-tools.ts`.
+Yes! If a package adds a proper `tpmjs` field, the auto-discovery sync will update it with `discoveryMethod: 'keyword'` or `'changes-feed'`. Manual entries can then be removed from `scripts/manual-tools.ts`.
 
 ### Can I mix manual and auto-discovered tools from the same package?
 
@@ -279,8 +281,8 @@ Check the `discoveryMethod` field in the database:
 To contribute new manual tools:
 
 1. Fork the repository
-2. Add your tool to `manual-tools.ts`
-3. Test with `pnpm tsx sync-manual-tools.ts`
+2. Add your tool to `scripts/manual-tools.ts`
+3. Test with `pnpm sync:manual`
 4. Open a pull request with:
    - Why this tool should be included
    - Link to the npm package
@@ -288,6 +290,6 @@ To contribute new manual tools:
 
 ## Related Documentation
 
-- [HOW_TO_PUBLISH_A_TOOL.md](./HOW_TO_PUBLISH_A_TOOL.md) - Standard tpmjs field spec
-- [CLAUDE.md](./CLAUDE.md) - General project documentation
-- [packages/types/src/tpmjs.ts](./packages/types/src/tpmjs.ts) - TypeScript schema definitions
+- [Tool publishing guide](./publish-a-tool.md) - Standard `tpmjs` field specification
+- [CLAUDE.md](../../CLAUDE.md) - General project documentation
+- [packages/types/src/tpmjs.ts](../../packages/types/src/tpmjs.ts) - TypeScript schema definitions

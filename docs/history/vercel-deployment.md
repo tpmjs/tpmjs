@@ -1,10 +1,11 @@
 # Historical: Vercel Deployment Configuration
 
 > **⚠️ Historical document (pre-2026-07-14).** tpmjs.com no longer deploys via
-> Vercel: the apps run as podman containers on-box (see the repo-root
-> `DEPLOYMENT.md`), the database moved off Neon to a self-hosted PostgreSQL 17
-> container, and Vercel auto-deploys are gated off in `vercel.json`
-> (`git.deploymentEnabled.main: false`) pending decommission. This guide is kept
+> Vercel: the apps run as podman containers on-box (see
+> [`docs/operations/deployment.md`](../operations/deployment.md)), the database moved off Neon to a self-hosted PostgreSQL 17
+> container, and all source-side Vercel deployment configuration has been
+> removed. Account-level project and GitHub App cleanup is tracked in issue
+> [#138](https://github.com/tpmjs/tpmjs/issues/138). This guide is kept
 > for reference only — it describes how Vercel was configured to deploy only
 > when GitHub Actions CI passed.
 

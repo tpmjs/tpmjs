@@ -1,44 +1,56 @@
+import { pathToFileURL } from 'node:url';
+import { prisma } from '../packages/db/src/index.js';
+import { fetchLatestPackageWithMetadata } from '../packages/npm-client/src/package.js';
 import { manualTools } from './manual-tools.js';
-import { prisma } from './packages/db/src/index.js';
-import { fetchLatestPackageWithMetadata } from './packages/npm-client/src/package.js';
 
-// Schema extraction is done via HTTP call to Railway executor
-const RAILWAY_EXECUTOR_URL =
-  process.env.RAILWAY_SERVICE_URL || 'https://endearing-commitment-production.up.railway.app';
+// Schema extraction uses the same on-box executor as the production registry.
+// Keep the old variable as a compatibility fallback for existing operator env files.
+const EXECUTOR_URL =
+  process.env.TPMJS_EXECUTOR_URL || process.env.RAILWAY_EXECUTOR_URL || 'http://127.0.0.1:3210';
 
-async function extractToolSchema(
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export async function extractToolSchema(
   packageName: string,
   toolName: string,
   version: string,
-  _importUrl: string | null
+  fetchImpl: typeof fetch = fetch
 ): Promise<
   | { success: true; inputSchema: Record<string, unknown>; description?: string }
   | { success: false; error: string }
 > {
   try {
-    const response = await fetch(`${RAILWAY_EXECUTOR_URL}/load-and-describe`, {
+    const response = await fetchImpl(`${EXECUTOR_URL}/load-and-describe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ packageName, name: toolName, version, env: {} }),
     });
-    const data = await response.json();
-    if (!response.ok || !data.success) {
-      return { success: false, error: data.error || 'Failed to extract schema' };
+    const data: unknown = await response.json();
+    if (!isRecord(data)) {
+      return { success: false, error: 'Executor returned an invalid response' };
     }
-    if (!data.tool?.inputSchema) {
+    if (!response.ok || data.success !== true) {
+      return {
+        success: false,
+        error: typeof data.error === 'string' ? data.error : 'Failed to extract schema',
+      };
+    }
+    if (!isRecord(data.tool) || !isRecord(data.tool.inputSchema)) {
       return { success: false, error: 'No inputSchema returned from executor' };
     }
     return {
       success: true,
       inputSchema: data.tool.inputSchema,
-      description: data.tool.description,
+      ...(typeof data.tool.description === 'string' ? { description: data.tool.description } : {}),
     };
   } catch (error) {
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
   }
 }
 
-function convertJsonSchemaToParameters(inputSchema: Record<string, unknown>): Array<{
+export function convertJsonSchemaToParameters(inputSchema: Record<string, unknown>): Array<{
   name: string;
   type: string;
   description: string;
@@ -55,7 +67,7 @@ function convertJsonSchemaToParameters(inputSchema: Record<string, unknown>): Ar
   }));
 }
 
-function convertParametersToJsonSchema(
+export function convertParametersToJsonSchema(
   parameters: Array<{
     name: string;
     type: string;
@@ -68,13 +80,14 @@ function convertParametersToJsonSchema(
   const required: string[] = [];
 
   for (const param of parameters) {
-    properties[param.name] = {
+    const property: { type: string; description: string; default?: string } = {
       type: param.type || 'string',
       description: param.description || '',
     };
     if (param.default !== undefined) {
-      properties[param.name].default = param.default;
+      property.default = param.default;
     }
+    properties[param.name] = property;
     if (param.required) {
       required.push(param.name);
     }
@@ -88,7 +101,7 @@ function convertParametersToJsonSchema(
   };
 }
 
-async function syncManualTools() {
+async function syncManualTools(): Promise<{ processed: number; skipped: number; errors: number }> {
   console.log('\n🔧 Starting manual tools sync...\n');
 
   let processed = 0;
@@ -112,8 +125,7 @@ async function syncManualTools() {
       const version = manualTool.npmVersion || npmData.version;
 
       // Get published date
-      const publishedAt =
-        npmData.time?.[version] || npmData.time?.modified || new Date().toISOString();
+      const publishedAt = npmData.publishedAt || new Date().toISOString();
 
       // Upsert Package record
       const packageRecord = await prisma.package.upsert({
@@ -123,13 +135,16 @@ async function syncManualTools() {
           npmVersion: version,
           npmPublishedAt: new Date(publishedAt),
           npmDescription: npmData.description || null,
-          npmRepository: npmData.repository || null,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+          npmRepository: npmData.repository ? (npmData.repository as any) : undefined,
           npmHomepage: npmData.homepage || manualTool.websiteUrl || null,
           npmLicense: npmData.license || null,
           npmKeywords: npmData.keywords || [],
           npmReadme: npmData.readme || null,
-          npmAuthor: npmData.author || null,
-          npmMaintainers: npmData.maintainers || null,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+          npmAuthor: npmData.author ? (npmData.author as any) : undefined,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+          npmMaintainers: npmData.maintainers ? (npmData.maintainers as any) : undefined,
           category: manualTool.category,
           // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           env: manualTool.env ? (manualTool.env as any) : null,
@@ -143,13 +158,16 @@ async function syncManualTools() {
           npmVersion: version,
           npmPublishedAt: new Date(publishedAt),
           npmDescription: npmData.description || null,
-          npmRepository: npmData.repository || null,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+          npmRepository: npmData.repository ? (npmData.repository as any) : undefined,
           npmHomepage: npmData.homepage || manualTool.websiteUrl || null,
           npmLicense: npmData.license || null,
           npmKeywords: npmData.keywords || [],
           npmReadme: npmData.readme || null,
-          npmAuthor: npmData.author || null,
-          npmMaintainers: npmData.maintainers || null,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+          npmAuthor: npmData.author ? (npmData.author as any) : undefined,
+          // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
+          npmMaintainers: npmData.maintainers ? (npmData.maintainers as any) : undefined,
           category: manualTool.category,
           // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           env: manualTool.env ? (manualTool.env as any) : null,
@@ -160,11 +178,6 @@ async function syncManualTools() {
       });
 
       console.log(`  ✅ Package upserted: ${packageRecord.id}`);
-
-      // Get existing tools for this package
-      const _existingTools = await prisma.tool.findMany({
-        where: { packageId: packageRecord.id },
-      });
 
       // Upsert the tool
       const tool = await prisma.tool.upsert({
@@ -184,6 +197,10 @@ async function syncManualTools() {
           returns: manualTool.returns ? (manualTool.returns as any) : null,
           // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           aiAgent: manualTool.aiAgent ? (manualTool.aiAgent as any) : null,
+          toolDiscoverySource: 'manual',
+          isActive: true,
+          lastSeenVersion: version,
+          retiredAt: null,
         },
         update: {
           description: manualTool.description,
@@ -193,17 +210,20 @@ async function syncManualTools() {
           returns: manualTool.returns ? (manualTool.returns as any) : null,
           // biome-ignore lint/suspicious/noExplicitAny: Prisma Json type compatibility
           aiAgent: manualTool.aiAgent ? (manualTool.aiAgent as any) : null,
+          toolDiscoverySource: 'manual',
+          isActive: true,
+          lastSeenVersion: version,
+          retiredAt: null,
         },
       });
 
       console.log(`  ✅ Tool upserted: ${tool.name} (${tool.id})`);
 
-      // Try to extract schema from the Railway executor first
+      // Try to extract schema from the production executor first
       const schemaResult = await extractToolSchema(
         manualTool.npmPackageName,
         manualTool.name,
-        version,
-        null
+        version
       );
 
       if (schemaResult.success) {
@@ -224,7 +244,7 @@ async function syncManualTools() {
         });
         console.log(`  ✅ Schema extracted for ${manualTool.name}`);
       } else if (manualTool.parameters && manualTool.parameters.length > 0) {
-        // Fallback: Convert parameters from manual-tools.ts to inputSchema format
+        // Fallback: Convert parameters from scripts/manual-tools.ts to inputSchema format
         const inputSchema = convertParametersToJsonSchema(manualTool.parameters);
         await prisma.tool.update({
           where: { id: tool.id },
@@ -255,6 +275,8 @@ async function syncManualTools() {
   console.log(`  Skipped: ${skipped}`);
   console.log(`  Errors: ${errors}`);
   console.log(`  Total manual tools: ${manualTools.length}\n`);
+
+  return { processed, skipped, errors };
 }
 
 function calculateTier(tool: (typeof manualTools)[0]): 'minimal' | 'rich' {
@@ -265,12 +287,20 @@ function calculateTier(tool: (typeof manualTools)[0]): 'minimal' | 'rich' {
   return 'minimal';
 }
 
-syncManualTools()
-  .then(() => process.exit(0))
-  .catch((error) => {
+async function main(): Promise<void> {
+  try {
+    const result = await syncManualTools();
+    if (result.errors > 0) {
+      process.exitCode = 1;
+    }
+  } catch (error) {
     console.error('❌ Manual sync failed:', error);
-    process.exit(1);
-  })
-  .finally(() => {
-    prisma.$disconnect();
-  });
+    process.exitCode = 1;
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  void main();
+}

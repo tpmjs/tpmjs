@@ -3,10 +3,10 @@ name: Sync Manual Tools
 # NOTE (2026-07-14): the production database moved off Neon to a self-hosted
 # Postgres 17 container on the tpmjs.com box, which GitHub runners cannot reach —
 # so the scheduled/push-triggered sync is disabled here. After changing
-# manual-tools.ts, run the sync ON THE BOX instead:
+# scripts/manual-tools.ts, run the sync ON THE BOX instead:
 #   cd /mnt/donto-data/workspace/tpmjs && \
 #   DATABASE_URL="postgresql://tpmjs:<pw from /etc/donto/tpmjs-pg.env>@127.0.0.1:5435/tpmjs" \
-#   pnpm tsx sync-manual-tools.ts
+#   pnpm sync:manual
 on:
   workflow_dispatch:
 
@@ -39,7 +39,7 @@ jobs:
         id: sync
         run: |
           # Run the sync script and capture output
-          output=$(pnpm tsx sync-manual-tools.ts 2>&1)
+          output=$(pnpm sync:manual 2>&1)
           echo "$output"
 
           # Extract statistics from output

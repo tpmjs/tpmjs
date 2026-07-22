@@ -10,6 +10,12 @@
 - [`MCP-AGGREGATOR-DESIGN.md`](./MCP-AGGREGATOR-DESIGN.md) — serving many tools behind one MCP endpoint.
 - [`AI_SDK_TOOL_EXECUTION.md`](./AI_SDK_TOOL_EXECUTION.md) · [`OVERRIDING_NPM_TOOL_EXECUTE.md`](./OVERRIDING_NPM_TOOL_EXECUTE.md) — how tools execute via the AI SDK and how npm tool execution is wrapped.
 - [`diagrams/`](./diagrams) · [`design/`](./design) — additional diagrams and design docs.
+- [`design/design-system.md`](./design/design-system.md) — the visual system specification.
+
+## Contributor guides
+
+- [`guides/publish-a-tool.md`](./guides/publish-a-tool.md) — package metadata, implementation, publication, and discovery.
+- [`guides/manual-tools.md`](./guides/manual-tools.md) — maintaining the curated compatibility registry.
 
 ## Tool orchestration & scale
 
@@ -36,6 +42,7 @@
 
 ## Operations
 
+- [`operations/deployment.md`](./operations/deployment.md) — the live self-hosted topology and operator workflow.
 - [`BUILD_AND_RELEASE.md`](./BUILD_AND_RELEASE.md) — CI, incremental build caches, transactional on-box deployment, rollback, and provenance.
 - [`sentry-setup.md`](./sentry-setup.md) — error monitoring setup.
 - [`metrics-tracking-admin.md`](./metrics-tracking-admin.md) — admin metrics tracking.
