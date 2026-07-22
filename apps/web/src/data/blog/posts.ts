@@ -645,7 +645,7 @@ Each tool runs in an isolated Deno executor on Railway. The collection stores en
 
 ### 2. Bridge tools
 
-Bridge tools come from MCP servers running on your local machine. You run the TPMJS bridge CLI, which connects your local servers (filesystem access, database tools, IDE integrations) to the cloud. The bridge maintains a WebSocket connection and routes tool calls back to your machine.
+Bridge tools come from MCP servers running on your local machine. You run the TPMJS bridge CLI, which connects your local servers (filesystem access, database tools, IDE integrations) to the cloud. The bridge polls an authenticated HTTP endpoint and routes tool calls back to your machine.
 
 This means your cloud-hosted collection can include tools that run locally. An agent using your MCP endpoint can read your local files, query your local database, or interact with your IDE — all through the same \`tools/call\` interface.
 

@@ -1,4 +1,4 @@
-import type { MCPServerConfig, MCPTool } from '@tpmjs/mcp-client';
+import type { MCPServerConfig, MCPTool, MCPToolResult } from '@tpmjs/mcp-client';
 
 /**
  * Bridge configuration file structure
@@ -20,65 +20,76 @@ export interface BridgeCredentials {
   email?: string;
 }
 
-/**
- * Message from bridge to TPMJS
- */
-export type BridgeToServerMessage =
+/** A tool exposed by one of the bridge's configured MCP servers. */
+export interface BridgeToolDefinition {
+  serverId: string;
+  serverName: string;
+  name: string;
+  description?: string;
+  inputSchema: MCPTool['inputSchema'];
+}
+
+/** A tool invocation returned by the TPMJS bridge polling endpoint. */
+export interface BridgeToolCall {
+  callId: string;
+  serverId: string;
+  toolName: string;
+  args: Record<string, unknown>;
+  timestamp: number;
+}
+
+/** A structured tool-call failure returned to TPMJS. */
+export interface BridgeToolError {
+  code: string;
+  message: string;
+}
+
+/** HTTP POST payloads accepted by `/api/bridge`. */
+export type BridgePostRequest =
   | {
       type: 'register';
-      tools: Array<{
-        serverId: string;
-        serverName: string;
-        name: string;
-        description?: string;
-        inputSchema: MCPTool['inputSchema'];
-      }>;
+      tools: BridgeToolDefinition[];
+      clientVersion: string;
+      clientOS: string;
     }
   | {
       type: 'tool_result';
       callId: string;
-      result: {
-        content: Array<{
-          type: string;
-          text?: string;
-          mimeType?: string;
-          data?: string;
-        }>;
-        isError?: boolean;
-      };
+      result: MCPToolResult;
+      error?: never;
     }
   | {
-      type: 'tool_error';
+      type: 'tool_result';
       callId: string;
-      error: {
-        code: string;
-        message: string;
-      };
+      result?: never;
+      error: BridgeToolError;
     }
   | {
       type: 'heartbeat';
-      timestamp: number;
     };
 
-/**
- * Message from TPMJS to bridge
- */
+/** HTTP GET response returned while polling `/api/bridge`. */
+export interface BridgePollResponse {
+  success: true;
+  calls: BridgeToolCall[];
+}
+
+/** Successful HTTP response returned by bridge POST and DELETE requests. */
+export interface BridgeSuccessResponse {
+  success: true;
+  message?: string;
+}
+
+/** Error response returned by the bridge API. */
+export interface BridgeErrorResponse {
+  error: string;
+}
+
+/** @deprecated Use {@link BridgePostRequest}; the bridge uses HTTP polling, not a socket. */
+export type BridgeToServerMessage = BridgePostRequest;
+
+/** @deprecated Use the specific HTTP response type for the request being made. */
 export type ServerToBridgeMessage =
-  | {
-      type: 'tool_call';
-      callId: string;
-      serverId: string;
-      toolName: string;
-      args: Record<string, unknown>;
-    }
-  | {
-      type: 'ping';
-    }
-  | {
-      type: 'registered';
-      toolCount: number;
-    }
-  | {
-      type: 'error';
-      message: string;
-    };
+  | BridgePollResponse
+  | BridgeSuccessResponse
+  | BridgeErrorResponse;
