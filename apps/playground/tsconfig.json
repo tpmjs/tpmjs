@@ -1,7 +1,6 @@
 {
   "extends": "@tpmjs/tsconfig/nextjs.json",
   "compilerOptions": {
-    "baseUrl": ".",
     "tsBuildInfoFile": ".next/cache/tsconfig.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"],

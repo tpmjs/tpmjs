@@ -23,13 +23,13 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "clean": "rm -rf dist .turbo"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "catalog:"
   },
   "publishConfig": {
     "access": "public"

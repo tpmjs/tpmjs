@@ -75,6 +75,39 @@ cleanup. On-box compiler artifacts are namespaced by the absolute
 release-workspace path because Turbopack caches are not portable between source
 roots.
 
+### Native TypeScript split
+
+Direct `tsc` builds and checks run on TypeScript 7's native compiler. Tools that
+still import the JavaScript compiler API—currently tsup, typescript-eslint, and
+type-coverage—resolve the official TypeScript 6 compatibility package instead.
+Both identities live in the default pnpm catalog:
+
+```yaml
+catalog:
+  '@typescript/native': npm:typescript@^7.0.2
+  typescript: npm:@typescript/typescript6@^6.0.2
+```
+
+Every workspace manifest refers to `typescript` through `catalog:`. The root's
+`@typescript/native` alias owns the `tsc` binary, while the compatibility
+package exposes `tsc6` and the API imported by legacy tooling. pnpm replaces
+catalog references with ordinary version ranges when packages are packed or
+published.
+
+Turbo already runs independent packages concurrently, so each package-level
+`tsc` command uses `--checkers 1`. This avoids multiplying TypeScript's internal
+checker pool by Turbo's task pool. On the production host, the web compiler
+check fell from 39.46s and 1.5 GB RSS with four checkers to 13.38s and 1.21 GB
+with one checker. The first cold 238-task repository run completed in 3m10s
+despite the canonical checkout's saturated data volume; the prior cold baseline
+was approximately 4m06s.
+
+The shared config explicitly declares Node ambient types and stable type
+ordering. Its temporary `ignoreDeprecations: "6.0"` exists only because tsup's
+declaration worker injects `baseUrl` internally; repository configs themselves
+contain no removed TypeScript 7 option. Remove that compatibility flag when the
+declaration pipeline leaves tsup.
+
 Podman layer reuse remains enabled for both images. A tiny release-provenance
 file invalidates only the metadata tail of each Dockerfile, so a new Git commit
 cannot inherit stale labels while expensive operating-system and Deno layers
@@ -117,6 +150,7 @@ finished image also passed its frozen type check with networking disabled.
 fails if a maintainer accidentally:
 
 - disables the production compiler cache;
+- bypasses the TypeScript 7/6 compiler catalog or restores nested checker pools;
 - bypasses TypeScript without exact-SHA CI proof;
 - moves release compilation back to the data volume;
 - restores the duplicate architecture build;

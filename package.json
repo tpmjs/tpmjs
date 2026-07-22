@@ -82,6 +82,7 @@
     "@prisma/client": "^6.19.1",
     "@tpmjs/db": "workspace:*",
     "@total-typescript/ts-reset": "^0.6.1",
+    "@typescript/native": "catalog:",
     "@types/node": "^25.0.3",
     "@vitest/coverage-v8": "4.0.16",
     "dependency-cruiser": "^17.3.6",
@@ -91,7 +92,7 @@
     "tsx": "^4.21.0",
     "turbo": "^2.7.3",
     "type-coverage-core": "2.29.7",
-    "typescript": "^5.9.3",
+    "typescript": "catalog:",
     "vitest": "4.0.16"
   }
 }

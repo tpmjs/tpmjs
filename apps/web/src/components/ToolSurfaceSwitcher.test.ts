@@ -3,6 +3,16 @@ import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+// Syntax highlighting has its own focused UI tests. Keeping Prism's complete
+// grammar graph out of this contract test prevents a small SSR assertion from
+// consuming most of the web test worker's timeout under parallel CI load.
+vi.mock('@tpmjs/ui/CodeBlock/CodeBlock', async () => {
+  const ReactModule = await vi.importActual<typeof import('react')>('react');
+  return {
+    CodeBlock: ({ code }: { code: string }) => ReactModule.createElement('code', null, code),
+  };
+});
+
 afterEach(() => vi.unstubAllGlobals());
 
 describe('ToolSurfaceSwitcher', () => {

@@ -6,8 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "type-check": "tsc --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo"
+    "build": "tsc --checkers 1",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo"
   },
   "keywords": [
     "tpmjs",
@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
-    "typescript": "^5.9.3"
+    "typescript": "catalog:"
   },
   "publishConfig": {
     "access": "public"

@@ -23,7 +23,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --checkers 1 --noEmit",
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "clean": "rm -rf dist .turbo"
@@ -32,7 +32,7 @@
     "@tpmjs/tsconfig": "workspace:*",
     "@types/pg": "^8.11.0",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
+    "typescript": "catalog:",
     "vitest": "^4.0.16"
   },
   "dependencies": {

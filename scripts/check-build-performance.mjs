@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const failures = [];
@@ -10,6 +11,14 @@ function requireText(source, expected, message) {
   if (!source.includes(expected)) failures.push(message);
 }
 
+function trackedWorkspaceManifests() {
+  return execFileSync('git', ['ls-files', '-z', '--', 'package.json', 'apps', 'packages'], {
+    encoding: 'utf8',
+  })
+    .split('\0')
+    .filter((path) => path === 'package.json' || path.endsWith('/package.json'));
+}
+
 const nextConfig = read('apps/web/next.config.ts');
 const deploy = read('scripts/deploy-on-box.sh');
 const executorDockerfile = read('apps/railway-executor/Dockerfile');
@@ -18,11 +27,49 @@ const executorPackage = JSON.parse(read('apps/railway-executor/package.json'));
 const executorDenoLock = JSON.parse(read('apps/railway-executor/deno.lock'));
 const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
+const sandboxTests = read('.github/workflows/sandbox-tests.yml');
 const release = read('.github/workflows/release.yml');
 const releasePreview = read('.github/workflows/release-preview.yml');
 const releaseBuild = read('scripts/release-build-lib.ts');
 const rootPackage = JSON.parse(read('package.json'));
 const lefthook = read('lefthook.yml');
+const workspaceConfig = read('pnpm-workspace.yaml');
+const baseTypeScriptConfig = JSON.parse(read('packages/config/tsconfig/base.json'));
+
+requireText(
+  workspaceConfig,
+  "'@typescript/native': npm:typescript@^7.0.2",
+  'the compiler catalog must pin the native TypeScript 7 command-line implementation'
+);
+requireText(
+  workspaceConfig,
+  'typescript: npm:@typescript/typescript6@^6.0.2',
+  'the compiler catalog must retain the TypeScript 6 compatibility API for ecosystem tools'
+);
+if (rootPackage.devDependencies?.['@typescript/native'] !== 'catalog:') {
+  failures.push('the workspace root must expose the cataloged native TypeScript compiler');
+}
+if (baseTypeScriptConfig.compilerOptions?.stableTypeOrdering !== true) {
+  failures.push('TypeScript 6 compatibility must use TypeScript 7 stable type ordering');
+}
+if (!baseTypeScriptConfig.compilerOptions?.types?.includes('node')) {
+  failures.push('TypeScript 7 projects must declare their Node.js ambient types explicitly');
+}
+
+for (const path of trackedWorkspaceManifests()) {
+  const manifest = JSON.parse(read(path));
+  const typeScript = manifest.devDependencies?.typescript;
+  if (typeScript && typeScript !== 'catalog:') {
+    failures.push(`${path} must consume TypeScript through the workspace compiler catalog`);
+  }
+
+  for (const task of ['build', 'type-check']) {
+    const command = manifest.scripts?.[task];
+    if (command?.startsWith('tsc') && !command.includes('--checkers 1')) {
+      failures.push(`${path} ${task} must avoid nested TypeScript checker parallelism`);
+    }
+  }
+}
 
 for (const task of ['build', 'test', 'lint', 'type-check']) {
   if (!rootPackage.scripts?.[task]?.includes('--output-logs=new-only')) {
@@ -230,6 +277,18 @@ requireText(
   'github.event.pull_request.base.sha || github.event.before',
   'affected builds must compare exact event SHAs instead of a local branch name'
 );
+
+if (sandboxTests.includes('run: pnpm build')) {
+  failures.push('sandbox integration tests must not rebuild the unrelated monorepo');
+}
+const sandboxTestCommands = sandboxTests.match(
+  /pnpm --dir apps\/web exec vitest run --config vitest\.integration\.config\.mjs/g
+);
+if (sandboxTestCommands?.length !== 2) {
+  failures.push(
+    'both sandbox jobs must execute Vitest directly instead of invoking a missing script'
+  );
+}
 
 requireText(release, 'path: .turbo', 'release builds must preserve Turbo task artifacts');
 requireText(

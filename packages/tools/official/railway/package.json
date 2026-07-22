@@ -22,13 +22,13 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "type-check": "tsc --noEmit",
+    "type-check": "tsc --checkers 1 --noEmit",
     "clean": "rm -rf dist .turbo"
   },
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3"
+    "typescript": "catalog:"
   },
   "dependencies": {
     "ai": "6.0.49"
