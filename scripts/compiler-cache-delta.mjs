@@ -5,8 +5,8 @@ import {
   copyFileSync,
   lstatSync,
   mkdirSync,
-  readFileSync,
   readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -39,6 +39,25 @@ function readManifest(path, purpose) {
   return manifest;
 }
 
+function validatedDelta(inputDir) {
+  const manifestPath = join(inputDir, 'manifest.json');
+  const manifest = readManifest(manifestPath, 'delta');
+  const expected = ['manifest.json', ...manifest.files].sort();
+  const actual = readdirSync(inputDir).sort();
+  if (actual.length !== expected.length || actual.some((name, index) => name !== expected[index])) {
+    throw new Error('delta directory contains undeclared entries');
+  }
+
+  let bytes = 0;
+  for (const name of manifest.files) {
+    const entry = lstatSync(join(inputDir, name));
+    if (!entry.isFile()) throw new Error(`delta entry is not a file: ${name}`);
+    bytes += entry.size;
+  }
+
+  return { manifest, bytes };
+}
+
 export function snapshotCompilerCache({ cacheDir, manifestPath }) {
   const files = cacheEntries(cacheDir);
   mkdirSync(dirname(manifestPath), { recursive: true });
@@ -60,16 +79,19 @@ export function collectCompilerCacheDelta({ cacheDir, baselinePath, outputDir })
   return { files: files.length };
 }
 
+export function inspectCompilerCacheDelta({ inputDir }) {
+  const { manifest, bytes } = validatedDelta(inputDir);
+  return { files: manifest.files.length, bytes };
+}
+
 export function applyCompilerCacheDelta({ inputDir, cacheDir }) {
-  const manifest = readManifest(join(inputDir, 'manifest.json'), 'delta');
+  const { manifest } = validatedDelta(inputDir);
   mkdirSync(cacheDir, { recursive: true });
 
   let added = 0;
   let alreadyPresent = 0;
   for (const name of manifest.files) {
     const source = join(inputDir, name);
-    if (!lstatSync(source).isFile()) throw new Error(`delta entry is not a file: ${name}`);
-
     try {
       copyFileSync(source, join(cacheDir, name), constants.COPYFILE_EXCL);
       added += 1;
@@ -87,6 +109,7 @@ function usage() {
     'Usage:',
     '  compiler-cache-delta.mjs snapshot <cache-dir> <manifest>',
     '  compiler-cache-delta.mjs collect <cache-dir> <baseline> <output-dir>',
+    '  compiler-cache-delta.mjs inspect <input-dir>',
     '  compiler-cache-delta.mjs apply <input-dir> <cache-dir>',
   ].join('\n');
 }
@@ -101,6 +124,8 @@ function main([command, ...args]) {
       baselinePath: args[1],
       outputDir: args[2],
     });
+  } else if (command === 'inspect' && args.length === 1) {
+    result = inspectCompilerCacheDelta({ inputDir: args[0] });
   } else if (command === 'apply' && args.length === 2) {
     result = applyCompilerCacheDelta({ inputDir: args[0], cacheDir: args[1] });
   } else {

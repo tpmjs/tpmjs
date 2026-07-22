@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -7,6 +7,7 @@ import test from 'node:test';
 import {
   applyCompilerCacheDelta,
   collectCompilerCacheDelta,
+  inspectCompilerCacheDelta,
   snapshotCompilerCache,
 } from './compiler-cache-delta.mjs';
 
@@ -71,6 +72,48 @@ test('emits a valid empty delta when a job produces no new cache state', () => {
   }
 });
 
+test('carries the promoted delta forward while collecting new entries against the stable baseline', () => {
+  const state = fixture();
+  try {
+    const baselinePath = join(state.root, 'baseline.json');
+    const inheritedDelta = join(state.root, 'inherited-delta');
+    const cumulativeDelta = join(state.root, 'cumulative-delta');
+    const inherited = '5555555555555555.tar.zst';
+    const added = '6666666666666666.tar.zst';
+
+    writeFileSync(join(state.cacheDir, '1111111111111111.tar.zst'), 'baseline');
+    snapshotCompilerCache({ cacheDir: state.cacheDir, manifestPath: baselinePath });
+
+    mkdirSync(inheritedDelta);
+    writeFileSync(join(inheritedDelta, inherited), 'inherited');
+    writeFileSync(
+      join(inheritedDelta, 'manifest.json'),
+      JSON.stringify({ version: 1, files: [inherited] })
+    );
+    applyCompilerCacheDelta({ inputDir: inheritedDelta, cacheDir: state.cacheDir });
+    writeFileSync(join(state.cacheDir, added), 'added');
+
+    assert.deepEqual(
+      collectCompilerCacheDelta({
+        cacheDir: state.cacheDir,
+        baselinePath,
+        outputDir: cumulativeDelta,
+      }),
+      { files: 2 }
+    );
+    assert.deepEqual(inspectCompilerCacheDelta({ inputDir: cumulativeDelta }), {
+      files: 2,
+      bytes: 14,
+    });
+    assert.deepEqual(
+      JSON.parse(readFileSync(join(cumulativeDelta, 'manifest.json'), 'utf8')).files,
+      [inherited, added]
+    );
+  } finally {
+    state.cleanup();
+  }
+});
+
 test('applies only declared safe cache entries and never overwrites an existing entry', () => {
   const state = fixture();
   try {
@@ -111,6 +154,27 @@ test('rejects traversal names before applying an untrusted artifact manifest', (
     assert.throws(
       () => applyCompilerCacheDelta({ inputDir, cacheDir: state.cacheDir }),
       /manifest is invalid/
+    );
+  } finally {
+    state.cleanup();
+  }
+});
+
+test('rejects undeclared files before measuring or applying a promoted delta', () => {
+  const state = fixture();
+  try {
+    const inputDir = join(state.root, 'delta');
+    mkdirSync(inputDir);
+    writeFileSync(join(inputDir, 'manifest.json'), JSON.stringify({ version: 1, files: [] }));
+    writeFileSync(join(inputDir, 'undeclared'), 'must not enter the promoted cache');
+
+    assert.throws(
+      () => inspectCompilerCacheDelta({ inputDir }),
+      /delta directory contains undeclared entries/
+    );
+    assert.throws(
+      () => applyCompilerCacheDelta({ inputDir, cacheDir: state.cacheDir }),
+      /delta directory contains undeclared entries/
     );
   } finally {
     state.cleanup();

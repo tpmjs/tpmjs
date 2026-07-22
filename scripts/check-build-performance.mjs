@@ -283,6 +283,18 @@ requireText(
   'run: node scripts/reuse-pr-validation.mjs',
   'CI must run the validation provenance decision before expensive jobs'
 );
+const validationProvenanceJob = ci.slice(
+  ci.indexOf('  validation_provenance:'),
+  ci.indexOf('  lint:')
+);
+requireText(
+  validationProvenanceJob,
+  'fetch-depth: 2',
+  'validation provenance must fetch both merge parents without cloning complete history'
+);
+if (validationProvenanceJob.includes('fetch-depth: 0')) {
+  failures.push('validation provenance must not refetch the complete repository history');
+}
 requireText(
   ci,
   `run-id: \${{ steps.provenance.outputs.source_run_id }}`,
@@ -298,17 +310,40 @@ requireText(
 );
 requireText(
   ci,
-  "steps.inherited_build_state.outcome == 'success' &&",
-  'build cache promotion must require a successfully restored main baseline'
+  `build_baseline_available: \${{ steps.build_baseline.outputs.cache-matched-key != '' }}`,
+  'main must expose whether a reusable default-branch build baseline exists'
 );
 requireText(
   ci,
-  "steps.build_state.outcome == 'success'",
-  'build cache promotion must require a successfully applied validated delta'
+  `build_refresh_required: \${{ steps.delta_budget.outputs.refresh-required }}`,
+  'an oversized validated delta must force a complete baseline refresh'
 );
+requireText(
+  ci,
+  'lookup-only: true',
+  'validated main merges must inspect baseline availability without downloading it'
+);
+requireText(
+  ci,
+  'MAX_PROMOTED_TURBO_DELTA_BYTES: 134217728',
+  'promoted Turbo deltas must retain an explicit 128 MiB compaction boundary'
+);
+requireText(
+  ci,
+  'node scripts/compiler-cache-delta.mjs inspect .ci/compiler-state-build',
+  'cache promotion must validate and measure the exact delta before saving it'
+);
+requireText(
+  ci,
+  "if: steps.delta_budget.outputs.promotable == 'true'",
+  'main must promote only a validated in-budget Turbo delta'
+);
+
 for (const promotion of [
   'Promote validated TypeScript state to main cache scope',
-  'Promote validated build state to main cache scope',
+  'Promote validated Turbo delta to main cache scope',
+  'Seed reusable main build baseline',
+  'Promote direct-push Turbo delta',
 ]) {
   const start = ci.indexOf(`- name: ${promotion}`);
   const end = ci.indexOf('\n      - name:', start + 1);
@@ -316,21 +351,69 @@ for (const promotion of [
   requireText(section, 'continue-on-error: true', `${promotion} must remain best-effort`);
   requireText(section, 'uses: actions/cache/save@v5', `${promotion} must use an explicit save`);
 }
+const validatedDeltaPromotion = ci.slice(
+  ci.indexOf('- name: Promote validated Turbo delta to main cache scope'),
+  ci.indexOf('\n  lint:')
+);
+requireText(
+  validatedDeltaPromotion,
+  'path: .ci/compiler-state-build',
+  'validated main merges must save only the bounded Turbo delta'
+);
+if (
+  validatedDeltaPromotion.includes('apps/web/.next/cache') ||
+  validatedDeltaPromotion.includes('\n            .turbo')
+) {
+  failures.push('validated main merges must never copy the broad Next/Turbo baseline');
+}
 const bestEffortExportSteps = ci.match(
   /name: Export validated [^\n]+\n\s+if: github\.event_name == 'pull_request'\n\s+continue-on-error: true/g
 );
 if (bestEffortExportSteps?.length !== 2) {
   failures.push('both pull-request compiler-state exports must remain best-effort optimizations');
 }
-for (const [cacheKey, expectedCount] of [
-  ['next-build-', 3],
-  ['typescript-', 2],
+for (const [exactKey, expectedCount, purpose] of [
+  [
+    `key: \${{ runner.os }}-build-baseline-v2-\${{ hashFiles('pnpm-lock.yaml') }}-\${{ github.sha }}`,
+    3,
+    'versioned baseline lookup, restore, and seed',
+  ],
+  [
+    `key: \${{ runner.os }}-turbo-build-delta-\${{ hashFiles('pnpm-lock.yaml') }}-\${{ github.sha }}`,
+    3,
+    'validated, restored, and direct-push Turbo deltas',
+  ],
+  [
+    `key: \${{ runner.os }}-typescript-\${{ hashFiles('pnpm-lock.yaml') }}-\${{ github.sha }}`,
+    2,
+    'TypeScript restore and promotion',
+  ],
 ]) {
-  const exactKey = `key: \${{ runner.os }}-${cacheKey}\${{ hashFiles('pnpm-lock.yaml') }}-\${{ github.sha }}`;
   if (ci.split(exactKey).length - 1 !== expectedCount) {
-    failures.push(`${cacheKey} restore and promotion must use the same exact cache key`);
+    failures.push(`${purpose} must use the expected exact cache key`);
   }
 }
+const cacheAwareBuildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
+if (cacheAwareBuildJob.includes('uses: actions/cache@v5')) {
+  failures.push(
+    'pull-request builds must restore caches explicitly without saving broad branch copies'
+  );
+}
+requireText(
+  cacheAwareBuildJob,
+  'Restore latest promoted Turbo build delta',
+  'pull-request builds must layer the latest default-branch Turbo delta over the stable baseline'
+);
+requireText(
+  cacheAwareBuildJob,
+  "steps.build_baseline.outputs.cache-matched-key == '' ||",
+  'a baseline miss must seed a complete default-branch build cache'
+);
+requireText(
+  cacheAwareBuildJob,
+  "steps.prepared_delta_budget.outputs.refresh-required == 'true'",
+  'an oversized direct-push delta must compact into a new complete baseline'
+);
 requireText(
   ci,
   'node --test scripts/reuse-pr-validation.test.mjs',
@@ -406,6 +489,16 @@ requireText(
   'copyFileSync(source, join(cacheDir, name), constants.COPYFILE_EXCL)',
   'compiler-state promotion must never overwrite an inherited cache entry'
 );
+requireText(
+  compilerCacheDelta,
+  "throw new Error('delta directory contains undeclared entries')",
+  'compiler-state promotion must reject files absent from its validated manifest'
+);
+requireText(
+  compilerCacheDelta,
+  'export function inspectCompilerCacheDelta',
+  'compiler-state deltas must expose validated byte accounting for the compaction boundary'
+);
 
 const fullyValidatedJobs = [
   'lint',
@@ -435,11 +528,22 @@ for (const [index, job] of fullyValidatedJobs.entries()) {
     'needs: validation_provenance',
     `${job} must wait for the validation provenance decision`
   );
-  requireText(
-    section,
-    "always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true')",
-    `${job} must run for pull requests and whenever exact validation reuse is unproven`
-  );
+  if (job === 'build') {
+    for (const condition of [
+      "github.event_name != 'push' ||",
+      "needs.validation_provenance.outputs.reuse != 'true' ||",
+      "needs.validation_provenance.outputs.build_baseline_available != 'true' ||",
+      "needs.validation_provenance.outputs.build_refresh_required == 'true'",
+    ]) {
+      requireText(section, condition, `build must retain its fail-open condition: ${condition}`);
+    }
+  } else {
+    requireText(
+      section,
+      "always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true')",
+      `${job} must run for pull requests and whenever exact validation reuse is unproven`
+    );
+  }
 }
 requireText(
   ci,
