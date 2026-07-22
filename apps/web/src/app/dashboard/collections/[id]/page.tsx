@@ -23,6 +23,11 @@ import { CustomServerPanel } from '~/components/collections/CustomServerPanel';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { EnvVarsEditor } from '~/components/EnvVarsEditor';
 import { ExecutorConfigPanel } from '~/components/ExecutorConfigPanel';
+import {
+  buildClaudeCodeCollectionCommand,
+  buildClaudeDesktopCollectionConfig,
+  buildCollectionMcpUrl,
+} from '~/lib/collection-mcp';
 
 // MCP URL display component
 function McpUrlDisplay({ url, label, sublabel }: { url: string; label: string; sublabel: string }) {
@@ -366,25 +371,11 @@ export default function CollectionDetailPage(): React.ReactElement {
   }
 
   const existingToolIds = collection.tools.map((t) => t.toolId);
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
-  const httpUrl = `${baseUrl}/api/mcp/${collection.user.username}/${collection.slug}/http`;
-  const sseUrl = `${baseUrl}/api/mcp/${collection.user.username}/${collection.slug}/sse`;
-
-  // Claude Code CLI command (correct arg order: options before name and url)
-  const claudeCodeCommand = `claude mcp add ${collection.slug} ${httpUrl} -t http -H "Authorization: Bearer YOUR_TPMJS_API_KEY"`;
-
-  // Claude Desktop native HTTP config
-  const configSnippet = `{
-  "mcpServers": {
-    "${collection.slug}": {
-      "type": "http",
-      "url": "${httpUrl}",
-      "headers": {
-        "Authorization": "Bearer YOUR_TPMJS_API_KEY"
-      }
-    }
-  }
-}`;
+  const mcpTarget = { username: collection.user.username, slug: collection.slug };
+  const httpUrl = buildCollectionMcpUrl(mcpTarget);
+  const ownerAuth = { bearerToken: 'YOUR_TPMJS_API_KEY' };
+  const claudeCodeCommand = buildClaudeCodeCollectionCommand(mcpTarget, ownerAuth);
+  const configSnippet = buildClaudeDesktopCollectionConfig(mcpTarget, ownerAuth);
 
   const envVarsCount = envVars ? Object.keys(envVars).length : 0;
 
@@ -584,12 +575,11 @@ export default function CollectionDetailPage(): React.ReactElement {
                 <div className="p-1.5 bg-primary/10 rounded-lg">
                   <Icon icon="link" size="sm" className="text-primary" />
                 </div>
-                <h3 className="font-semibold text-foreground">MCP Server URLs</h3>
+                <h3 className="font-semibold text-foreground">MCP Server</h3>
               </div>
 
               <div className="space-y-4">
                 <McpUrlDisplay url={httpUrl} label="HTTP Transport" sublabel="recommended" />
-                <McpUrlDisplay url={sseUrl} label="SSE Transport" sublabel="streaming" />
               </div>
 
               {/* Claude Code CLI command */}

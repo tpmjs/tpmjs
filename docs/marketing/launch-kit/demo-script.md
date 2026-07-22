@@ -16,8 +16,8 @@ _Browser: tpmjs.com homepage — 781 tools, 237 packages. Click into a collectio
 
 _On the collection page, click "copy" on the MCP install command. Switch to terminal, paste:_
 ```
-claude mcp add claude-code-tools \
-  https://tpmjs.com/@ajax/collections/claude-code-tools/mcp -t http
+claude mcp add --transport http tpmjs-claude-code-tools \
+  https://tpmjs.com/@ajax/collections/claude-code-tools/mcp
 ```
 _Show `claude mcp list` — the server is connected._
 

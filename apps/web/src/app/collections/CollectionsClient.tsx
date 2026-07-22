@@ -204,11 +204,7 @@ export function CollectionsClient({
         <td className="px-4 py-3 text-right">
           {collection.createdBy.username && collection.slug && (
             <CopyDropdown
-              options={getCollectionCopyOptions(
-                collection.createdBy.username,
-                collection.slug,
-                collection.name
-              )}
+              options={getCollectionCopyOptions(collection.createdBy.username, collection.slug)}
               buttonLabel="Copy"
               onCopy={(option) => {
                 if (option.id) trackCollectionMcpCopy(collection.id, option.id);

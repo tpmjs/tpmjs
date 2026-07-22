@@ -4,6 +4,7 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useState } from 'react';
+import { buildClaudeCodeCollectionCommand } from '~/lib/collection-mcp';
 
 function CopyBtn({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -75,9 +76,7 @@ const protocols: ProtocolInfo[] = [
     label: 'MCP',
     bestFor: 'Claude Desktop, Cursor, Windsurf, ChatGPT, VS Code',
     why: 'Structured tool interface for clients without a shell. One URL, instant access. Open protocol, now stewarded under the Linux Foundation.',
-    example: `claude mcp add my-tools \\
-  https://tpmjs.com/@you/collections/my-tools/mcp \\
-  -t http`,
+    example: buildClaudeCodeCollectionCommand({ username: 'you', slug: 'my-tools' }),
     tokens: '~200 tokens',
   },
   {

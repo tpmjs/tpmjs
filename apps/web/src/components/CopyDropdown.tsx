@@ -4,6 +4,11 @@ import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import {
+  buildClaudeCodeCollectionCommand,
+  buildClaudeDesktopCollectionConfig,
+  buildCollectionMcpUrl,
+} from '~/lib/collection-mcp';
 
 export interface CopyOption {
   /** Stable identifier for consumers such as analytics; never derived from the label. */
@@ -101,35 +106,22 @@ export function CopyDropdown({
 
 // Helper functions to generate copy options for different entity types
 
-export function getCollectionCopyOptions(
-  username: string,
-  slug: string,
-  collectionName: string
-): CopyOption[] {
-  const baseUrl = 'https://tpmjs.com';
-  const mcpUrlHttp = `${baseUrl}/api/mcp/${username}/${slug}/http`;
-  const mcpUrlSse = `${baseUrl}/api/mcp/${username}/${slug}/sse`;
-
-  const claudeConfig = JSON.stringify(
-    {
-      mcpServers: {
-        [collectionName.toLowerCase().replace(/\s+/g, '-')]: {
-          command: 'npx',
-          args: ['-y', '@anthropic-ai/mcp-remote', mcpUrlSse],
-        },
-      },
-    },
-    null,
-    2
-  );
+export function getCollectionCopyOptions(username: string, slug: string): CopyOption[] {
+  const target = { username, slug };
+  const mcpUrl = buildCollectionMcpUrl(target);
 
   return [
-    { id: 'http_url', label: 'MCP URL (HTTP)', value: mcpUrlHttp, description: mcpUrlHttp },
-    { id: 'sse_url', label: 'MCP URL (SSE)', value: mcpUrlSse, description: mcpUrlSse },
+    {
+      id: 'claude_code',
+      label: 'Claude Code command',
+      value: buildClaudeCodeCollectionCommand(target),
+      description: 'Connect this public collection over HTTP',
+    },
+    { id: 'http_url', label: 'MCP URL (HTTP)', value: mcpUrl, description: mcpUrl },
     {
       id: 'claude_config',
-      label: 'Claude Config',
-      value: claudeConfig,
+      label: 'Claude Desktop config',
+      value: buildClaudeDesktopCollectionConfig(target),
       description: 'JSON for claude_desktop_config.json',
     },
   ];
