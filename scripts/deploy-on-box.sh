@@ -22,7 +22,7 @@ readonly GITHUB_REPOSITORY='tpmjs/tpmjs'
 readonly RELEASE_ROOT=${TPMJS_RELEASE_ROOT:-/var/cache/tpmjs/release-worktree}
 readonly RELEASE_STAGING_ROOT=${TPMJS_RELEASE_STAGING_ROOT:-/var/cache/tpmjs/release-staging}
 readonly PNPM_STORE_ROOT=${TPMJS_PNPM_STORE_ROOT:-/var/cache/tpmjs/pnpm-store}
-readonly NEXT_BUILD_CACHE_ROOT=${TPMJS_NEXT_BUILD_CACHE_ROOT:-/var/cache/tpmjs/next-build}
+readonly NEXT_BUILD_CACHE_ROOT=${TPMJS_NEXT_BUILD_CACHE_ROOT:-/var/cache/tpmjs/next-turbopack}
 
 COMMIT_SHA=''
 COMMIT_SHA_FULL=''
@@ -305,7 +305,7 @@ prepare_next_build_cache() {
   fi
 
   ln -s "$cache_target" "$cache_link"
-  log "Next.js build cache is namespaced for $RELEASE_ROOT at $cache_target"
+  log "Turbopack cache is namespaced for $RELEASE_ROOT at $cache_target"
 }
 
 preflight() {

@@ -6,8 +6,8 @@
   "scripts": {
     "postinstall": "prisma generate --schema=../../packages/db/prisma/schema.prisma",
     "dev": "next dev",
-    "build": "prisma generate --schema=../../packages/db/prisma/schema.prisma && next build --webpack",
-    "build:release": "prisma generate --schema=../../packages/db/prisma/schema.prisma && next build --webpack",
+    "build": "prisma generate --schema=../../packages/db/prisma/schema.prisma && next build",
+    "build:release": "prisma generate --schema=../../packages/db/prisma/schema.prisma && next build",
     "start": "next start",
     "lint": "eslint .",
     "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",

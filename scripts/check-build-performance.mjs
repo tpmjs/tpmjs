@@ -84,15 +84,14 @@ requireText(
 
 requireText(
   nextConfig,
+  'turbopackFileSystemCacheForBuild: true',
+  'Next.js production filesystem caching must remain enabled'
+);
+requireText(
+  nextConfig,
   'ignoreBuildErrors: ciValidatedRelease',
   'release-only type-check elision must remain gated by CI validation'
 );
-const webPackage = JSON.parse(read('apps/web/package.json'));
-for (const task of ['build', 'build:release']) {
-  if (!webPackage.scripts?.[task]?.includes('next build --webpack')) {
-    failures.push(`${task} must use the bounded Next.js production bundler`);
-  }
-}
 requireText(
   deploy,
   'assert_ci_passed',
@@ -105,8 +104,8 @@ requireText(
 );
 requireText(
   deploy,
-  '/var/cache/tpmjs/next-build',
-  'on-box Next.js build cache must stay off the saturated data volume'
+  '/var/cache/tpmjs/next-turbopack',
+  'on-box Turbopack cache must stay off the saturated data volume'
 );
 requireText(
   deploy,
@@ -146,7 +145,7 @@ requireText(
 requireText(
   deploy,
   'cache_namespace=$(printf',
-  'Next.js build state must be namespaced by the absolute release source root'
+  'Turbopack state must be namespaced by the absolute release source root'
 );
 requireText(deploy, 'podman build --layers', 'executor image builds must reuse Podman layers');
 requireText(

@@ -40,7 +40,7 @@ reconstructable caches on the root volume:
 | `/var/cache/tpmjs/release-worktree` | Exact source snapshot and generated standalone output |
 | `/var/cache/tpmjs/release-staging` | Short-lived exact-commit archive used to refresh the worktree |
 | `/var/cache/tpmjs/pnpm-store` | Content-addressed dependencies for the web workspace |
-| `/var/cache/tpmjs/next-build` | Source-root-namespaced Next.js production compiler state |
+| `/var/cache/tpmjs/next-turbopack` | Source-root-namespaced Turbopack production compiler state |
 
 The source snapshot comes from `git archive <full-sha>`, not from ambient
 untracked files. `rsync --delete` removes stale source paths while preserving
@@ -51,16 +51,10 @@ from this snapshot, so success never depends on ignored `dist/` files left in
 the canonical checkout. These directories contain no database or user data and
 can always be reconstructed from Git, pnpm, and the deployment environment.
 
-Production builds explicitly use Next.js's supported Webpack path. Next 16's
-default Turbopack path was rejected after a cold build leaked more than 1,500
-persistent PostCSS evaluator processes and still had not completed after
-22m36s on the production host. The Webpack build remained bounded to one main
-process and Next's seven-worker static-generation pool, and completed the same
-99-page output. Turbopack remains the development default for fast HMR.
-
-GitHub Actions preserves the Next compiler cache, TypeScript `.tsbuildinfo`
-files, and Turbo's content-addressed build/type-check artifacts.
-Repository-wide type coverage
+Turbopack's production filesystem cache is opt-in, so
+`apps/web/next.config.ts` enables it explicitly. GitHub Actions preserves both
+the Next compiler cache, TypeScript `.tsbuildinfo` files, and Turbo's
+content-addressed build/type-check artifacts. Repository-wide type coverage
 remains a mandatory 95% gate, but runs in parallel with ordinary type checking
 and preserves its file-level analysis cache. The architecture job runs the
 architecture ratchets directly instead of rebuilding the entire monorepo a
@@ -78,8 +72,8 @@ Turbo conservatively rebuild all 235 workspaces. TypeScript cache paths
 enumerate only workspace output depths; a recursive `**/*.tsbuildinfo` glob is
 forbidden because it traverses the installed dependency tree during post-job
 cleanup. On-box compiler artifacts are namespaced by the absolute
-release-workspace path because Next compiler caches are not portable between
-source roots.
+release-workspace path because Turbopack caches are not portable between source
+roots.
 
 ### Native TypeScript split
 
@@ -155,8 +149,8 @@ finished image also passed its frozen type check with networking disabled.
 `pnpm check-architecture` runs `scripts/check-build-performance.mjs`. The gate
 fails if a maintainer accidentally:
 
+- disables the production compiler cache;
 - bypasses the TypeScript 7/6 compiler catalog or restores nested checker pools;
-- restores the unbounded Turbopack production path;
 - bypasses TypeScript without exact-SHA CI proof;
 - moves release compilation back to the data volume;
 - restores the duplicate architecture build;
