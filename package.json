@@ -95,7 +95,7 @@
     "publint": "0.3.21",
     "tsdown": "0.22.13",
     "tsx": "^4.21.0",
-    "turbo": "^2.7.3",
+    "turbo": "2.9.15",
     "type-coverage-core": "2.29.7",
     "typescript": "catalog:",
     "vitest": "4.0.16"

@@ -1,6 +1,9 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["tsconfig.json", "tsdown.config.ts"],
+  "futureFlags": {
+    "affectedUsingTaskInputs": true
+  },
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -20,6 +23,21 @@
     },
     "test": {
       "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "//#test:coverage": {
+      "inputs": [
+        "apps/**/package.json",
+        "apps/**/src/**",
+        "apps/**/vitest.config.*",
+        "packages/**/package.json",
+        "packages/**/src/**",
+        "packages/**/vitest.config.*",
+        "scripts/coverage-baselines.ts",
+        "scripts/coverage-workspaces.ts",
+        "scripts/test-coverage.ts",
+        "vitest.coverage.config.ts"
+      ],
       "outputs": ["coverage/**"]
     },
     "test:ui": {

@@ -1,82 +1,11 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { resolve } from 'node:path';
 import { defineConfig, defineProject } from 'vitest/config';
 import { coverageBaselines } from './scripts/coverage-baselines.js';
-
-interface Workspace {
-  directory: string;
-  name: string;
-  config?: string;
-}
+import { discoverCoverageWorkspaces } from './scripts/coverage-workspaces.js';
 
 const repositoryRoot = import.meta.dirname;
 const sourcePattern = 'src/**/*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}';
-const testPattern = /(?:^|\/)(?:[^/]+\.)?(?:test|spec)\.[cm]?[jt]sx?$/;
-const configNames = [
-  'vitest.config.ts',
-  'vitest.config.mts',
-  'vitest.config.js',
-  'vitest.config.mjs',
-];
-
-function hasTestFile(directory: string): boolean {
-  for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    if (entry.name === 'node_modules' || entry.name === 'dist' || entry.name.startsWith('.')) {
-      continue;
-    }
-
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) {
-      if (hasTestFile(path)) return true;
-      continue;
-    }
-
-    const relativePath = relative(directory, path).split(sep).join('/');
-    if (testPattern.test(relativePath)) return true;
-  }
-
-  return false;
-}
-
-function discoverWorkspaces(directory: string): Workspace[] {
-  const workspaces: Workspace[] = [];
-
-  for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    if (!entry.isDirectory() || entry.name === 'node_modules' || entry.name.startsWith('.')) {
-      continue;
-    }
-
-    const child = join(directory, entry.name);
-    const manifestPath = join(child, 'package.json');
-    if (!existsSync(manifestPath)) {
-      workspaces.push(...discoverWorkspaces(child));
-      continue;
-    }
-
-    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
-      name?: string;
-      scripts?: Record<string, string>;
-    };
-    if (!manifest.name || !manifest.scripts?.test || !hasTestFile(child)) {
-      workspaces.push(...discoverWorkspaces(child));
-      continue;
-    }
-
-    const config = configNames.map((name) => join(child, name)).find(existsSync);
-    workspaces.push({
-      directory: relative(repositoryRoot, child).split(sep).join('/'),
-      name: manifest.name,
-      config,
-    });
-  }
-
-  return workspaces;
-}
-
-const workspaces = [
-  ...discoverWorkspaces(resolve(repositoryRoot, 'apps')),
-  ...discoverWorkspaces(resolve(repositoryRoot, 'packages')),
-].sort((left, right) => left.name.localeCompare(right.name));
+const workspaces = discoverCoverageWorkspaces(repositoryRoot);
 
 if (workspaces.length === 0) {
   throw new Error('Coverage discovery found no test-bearing workspaces; refusing a vacuous pass.');
