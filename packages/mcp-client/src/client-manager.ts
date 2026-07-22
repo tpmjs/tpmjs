@@ -1,17 +1,20 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import type { MCPClientTransport } from './connection.js';
+import { closeMCPConnection, openMCPConnection } from './connection.js';
 import type {
   ConnectedServer,
   MCPClientStatus,
+  MCPConnectOptions,
   MCPServerConfig,
   MCPTool,
   MCPToolResult,
+  MCPTransportType,
 } from './types.js';
 
 interface ManagedClient {
   config: MCPServerConfig;
-  client: Client;
-  transport: StdioClientTransport;
+  client: Awaited<ReturnType<typeof openMCPConnection>>['client'];
+  transport: MCPClientTransport;
+  transportType: MCPTransportType;
   status: MCPClientStatus;
   tools: MCPTool[];
   error?: string;
@@ -33,7 +36,7 @@ export class MCPClientManager {
   /**
    * Connect to an MCP server
    */
-  async connect(config: MCPServerConfig): Promise<MCPTool[]> {
+  async connect(config: MCPServerConfig, options: MCPConnectOptions = {}): Promise<MCPTool[]> {
     // Disconnect existing connection if any
     if (this.clients.has(config.id)) {
       await this.disconnect(config.id);
@@ -41,32 +44,28 @@ export class MCPClientManager {
 
     this.updateStatus(config.id, 'connecting');
 
+    let connection: Awaited<ReturnType<typeof openMCPConnection>> | undefined;
+
     try {
-      const client = new Client({
-        name: 'tpmjs-bridge',
-        version: '1.0.0',
-      });
+      connection = await openMCPConnection(config);
+      const tools: MCPTool[] = [];
 
-      const transport = new StdioClientTransport({
-        command: config.command,
-        args: config.args || [],
-        env: config.env,
-      });
-
-      await client.connect(transport);
-
-      // Discover tools
-      const toolsResult = await client.listTools();
-      const tools: MCPTool[] = toolsResult.tools.map((tool) => ({
-        name: tool.name,
-        description: tool.description,
-        inputSchema: tool.inputSchema as MCPTool['inputSchema'],
-      }));
+      if (options.discoverTools !== false) {
+        const toolsResult = await connection.client.listTools();
+        tools.push(
+          ...toolsResult.tools.map((tool) => ({
+            name: tool.name,
+            description: tool.description,
+            inputSchema: tool.inputSchema as MCPTool['inputSchema'],
+          }))
+        );
+      }
 
       this.clients.set(config.id, {
         config,
-        client,
-        transport,
+        client: connection.client,
+        transport: connection.transport,
+        transportType: connection.transportType,
         status: 'connected',
         tools,
       });
@@ -74,6 +73,9 @@ export class MCPClientManager {
       this.updateStatus(config.id, 'connected');
       return tools;
     } catch (error) {
+      if (connection) {
+        await closeMCPConnection(connection).catch(() => {});
+      }
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.updateStatus(config.id, 'error', errorMessage);
       throw error;
@@ -88,7 +90,11 @@ export class MCPClientManager {
     if (!managed) return;
 
     try {
-      await managed.client.close();
+      await closeMCPConnection({
+        client: managed.client,
+        transport: managed.transport,
+        transportType: managed.transportType,
+      });
     } catch {
       // Ignore close errors
     }
@@ -172,6 +178,7 @@ export class MCPClientManager {
     return Array.from(this.clients.values()).map((managed) => ({
       id: managed.config.id,
       name: managed.config.name,
+      transport: managed.transportType,
       status: managed.status,
       tools: managed.tools,
       error: managed.error,
@@ -188,6 +195,7 @@ export class MCPClientManager {
     return {
       id: managed.config.id,
       name: managed.config.name,
+      transport: managed.transportType,
       status: managed.status,
       tools: managed.tools,
       error: managed.error,

@@ -1,6 +1,4 @@
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { MCPClientManager, type MCPStreamableHTTPServerConfig } from '@tpmjs/mcp-client';
 
 export interface RemoteMcpServerConfig {
   url: string;
@@ -21,6 +19,7 @@ interface RemoteToolCallResult {
 }
 
 const CONNECT_TIMEOUT_MS = 15_000;
+const REMOTE_SERVER_ID = 'remote';
 
 /**
  * Build auth headers from server config
@@ -41,68 +40,15 @@ function buildAuthHeaders(config: RemoteMcpServerConfig): Record<string, string>
   return {};
 }
 
-/**
- * Create an MCP client and connect to a remote server.
- * Tries StreamableHTTP first, falls back to SSE.
- */
-async function connectToRemote(
-  config: RemoteMcpServerConfig
-): Promise<{ client: Client; transport: StreamableHTTPClientTransport | SSEClientTransport }> {
-  const url = new URL(config.url);
-  const headers = buildAuthHeaders(config);
-  const requestInit: RequestInit = Object.keys(headers).length > 0 ? { headers } : {};
-
-  const client = new Client({ name: 'tpmjs-aggregator', version: '1.0.0' }, { capabilities: {} });
-
-  // Try StreamableHTTP first
-  try {
-    const transport = new StreamableHTTPClientTransport(url, {
-      requestInit,
-      reconnectionOptions: {
-        maxReconnectionDelay: 5000,
-        initialReconnectionDelay: 1000,
-        reconnectionDelayGrowFactor: 1.5,
-        maxRetries: 0,
-      },
-    });
-
-    await Promise.race([
-      client.connect(transport),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Connection timeout')), CONNECT_TIMEOUT_MS)
-      ),
-    ]);
-
-    return { client, transport };
-  } catch {
-    // StreamableHTTP failed, try SSE
-  }
-
-  // Fallback to SSE transport
-  const sseClient = new Client(
-    { name: 'tpmjs-aggregator', version: '1.0.0' },
-    { capabilities: {} }
-  );
-
-  const sseTransport = new SSEClientTransport(url, {
-    requestInit,
-    eventSourceInit: {
-      fetch: (input: string | URL | Request, init?: RequestInit) =>
-        fetch(input, {
-          ...init,
-          headers: { ...(init?.headers as Record<string, string>), ...headers },
-        }),
-    },
-  });
-
-  await Promise.race([
-    sseClient.connect(sseTransport),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Connection timeout')), CONNECT_TIMEOUT_MS)
-    ),
-  ]);
-
-  return { client: sseClient, transport: sseTransport };
+function clientConfig(config: RemoteMcpServerConfig): MCPStreamableHTTPServerConfig {
+  return {
+    id: REMOTE_SERVER_ID,
+    name: new URL(config.url).host,
+    transport: 'streamable-http',
+    url: config.url,
+    headers: buildAuthHeaders(config),
+    connectTimeoutMs: CONNECT_TIMEOUT_MS,
+  };
 }
 
 /**
@@ -110,17 +56,17 @@ async function connectToRemote(
  * Creates a connection, calls listTools(), and disconnects.
  */
 export async function discoverRemoteTools(config: RemoteMcpServerConfig): Promise<RemoteMcpTool[]> {
-  const { client, transport } = await connectToRemote(config);
+  const manager = new MCPClientManager();
 
   try {
-    const result = await client.listTools();
-    return result.tools.map((tool) => ({
+    const tools = await manager.connect(clientConfig(config));
+    return tools.map((tool) => ({
       name: tool.name,
       description: tool.description,
       inputSchema: tool.inputSchema as Record<string, unknown>,
     }));
   } finally {
-    await transport.close().catch(() => {});
+    await manager.disconnectAll();
   }
 }
 
@@ -133,15 +79,12 @@ export async function callRemoteTool(
   toolName: string,
   args: Record<string, unknown>
 ): Promise<RemoteToolCallResult> {
-  const { client, transport } = await connectToRemote(config);
+  const manager = new MCPClientManager();
 
   try {
-    const result = await client.callTool({ name: toolName, arguments: args });
-    return {
-      content: result.content as unknown[],
-      isError: result.isError as boolean | undefined,
-    };
+    await manager.connect(clientConfig(config), { discoverTools: false });
+    return await manager.callTool(REMOTE_SERVER_ID, toolName, args);
   } finally {
-    await transport.close().catch(() => {});
+    await manager.disconnectAll();
   }
 }

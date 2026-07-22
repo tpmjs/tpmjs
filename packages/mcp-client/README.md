@@ -1,13 +1,15 @@
 # @tpmjs/mcp-client
 
-A small MCP (Model Context Protocol) client library for connecting to stdio MCP servers and managing many of them at once.
+A small MCP (Model Context Protocol) client library for connecting to local and remote MCP servers and managing many of them at once.
 
 <p>
   <a href="https://www.npmjs.com/package/@tpmjs/mcp-client"><img src="https://img.shields.io/npm/v/@tpmjs/mcp-client.svg" alt="npm version"></a>
   <a href="https://github.com/tpmjs/tpmjs/blob/main/LICENSE"><img src="https://img.shields.io/github/license/tpmjs/tpmjs" alt="License"></a>
 </p>
 
-`@tpmjs/mcp-client` wraps the official [`@modelcontextprotocol/sdk`](https://modelcontextprotocol.io) client with a `MCPClientManager` that connects to one or more **stdio** MCP servers, discovers their tools, calls them, and tracks connection status. It's the transport layer that [`@tpmjs/bridge`](https://www.npmjs.com/package/@tpmjs/bridge) uses to expose local MCP servers up to [TPMJS](https://tpmjs.com) — the protocol-agnostic tool layer for AI agents (one collection served as CLI · MCP · REST · SDK · Skill). Use it directly whenever you want to drive several local MCP servers from a single Node.js process.
+`@tpmjs/mcp-client` wraps the official [`@modelcontextprotocol/sdk`](https://modelcontextprotocol.io) client with a `MCPClientManager` that connects to one or more MCP servers, discovers their tools, calls them, and tracks connection status. It supports local **stdio**, modern remote **Streamable HTTP**, and deprecated **HTTP+SSE** servers. Streamable HTTP connections can negotiate the legacy fallback without hiding timeouts or server failures behind an unrelated second attempt.
+
+It's the transport layer that [`@tpmjs/bridge`](https://www.npmjs.com/package/@tpmjs/bridge) uses to expose local MCP servers up to [TPMJS](https://tpmjs.com) — the protocol-agnostic tool layer for AI agents (one collection served as CLI · MCP · REST · SDK · Skill). Use it directly whenever one process needs a consistent lifecycle for local tools, remote collections, or both.
 
 ## Installation
 
@@ -40,6 +42,17 @@ const tools = await manager.connect({
 
 console.log(tools.map((t) => t.name));
 
+// Connect to a modern remote MCP server. A protocol-compatible 4xx response
+// falls back to legacy HTTP+SSE unless fallbackToSse is false.
+await manager.connect({
+  id: 'remote-tools',
+  name: 'Remote tools',
+  transport: 'streamable-http',
+  url: 'https://tools.example.com/mcp',
+  headers: { Authorization: `Bearer ${process.env.MCP_TOKEN}` },
+  connectTimeoutMs: 15_000,
+});
+
 // Call a tool on that server
 const result = await manager.callTool('filesystem', 'read_file', {
   path: '/tmp/example.txt',
@@ -60,7 +73,7 @@ await manager.disconnectAll();
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `connect(config: MCPServerConfig)` | `Promise<MCPTool[]>` | Spawn/connect to a stdio server, list its tools, and track it. Reconnects if the `id` is already connected. |
+| `connect(config: MCPServerConfig, options?)` | `Promise<MCPTool[]>` | Connect to a local or remote server, list its tools, and track it. Reconnects if the `id` is already connected. Pass `{ discoverTools: false }` before calling a known tool directly. |
 | `disconnect(serverId: string)` | `Promise<void>` | Close and forget a single server. |
 | `disconnectAll()` | `Promise<void>` | Close every connected server. |
 | `listTools(serverId: string)` | `MCPTool[]` | Cached tools for one server (throws if not connected). |
@@ -73,13 +86,33 @@ await manager.disconnectAll();
 ### Types
 
 ```typescript
-interface MCPServerConfig {
+interface MCPStdioServerConfig {
   id: string;                       // unique id
   name: string;                     // display name
-  transport: 'stdio';               // only stdio is supported today
+  transport: 'stdio';
   command: string;                  // e.g. 'npx'
   args?: string[];
   env?: Record<string, string>;
+  connectTimeoutMs?: number;
+}
+
+interface MCPStreamableHTTPServerConfig {
+  id: string;
+  name: string;
+  transport: 'streamable-http';
+  url: string;
+  headers?: Record<string, string>;
+  connectTimeoutMs?: number;
+  fallbackToSse?: boolean;          // default: true for protocol-compatible 4xx
+}
+
+interface MCPSSEServerConfig {
+  id: string;
+  name: string;
+  transport: 'sse';                 // explicit legacy connection
+  url: string;
+  headers?: Record<string, string>;
+  connectTimeoutMs?: number;
 }
 
 interface MCPTool {
@@ -98,13 +131,14 @@ type MCPClientStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 interface ConnectedServer {
   id: string;
   name: string;
+  transport: 'stdio' | 'streamable-http' | 'sse'; // actual negotiated transport
   status: MCPClientStatus;
   tools: MCPTool[];
   error?: string;
 }
 ```
 
-> **Note:** Only the `stdio` transport is implemented. HTTP/SSE MCP transports are not supported by this package.
+Streamable HTTP is the default remote transport. The SSE fallback follows the MCP compatibility sequence and uses a fresh client after a 4xx initialization rejection. Authentication failures, timeouts, and 5xx responses remain visible to the caller. Every failed connection and failed discovery is closed before the error escapes.
 
 ## Links
 

@@ -131,7 +131,12 @@ program
     for (const server of config.servers) {
       console.log(`  ${pc.cyan(server.id)}`);
       console.log(`    Name: ${server.name}`);
-      console.log(`    Command: ${server.command} ${(server.args || []).join(' ')}`);
+      console.log(`    Transport: ${server.transport}`);
+      if (server.transport === 'stdio') {
+        console.log(`    Command: ${server.command} ${(server.args || []).join(' ')}`);
+      } else {
+        console.log(`    URL: ${server.url}`);
+      }
       console.log();
     }
   });
