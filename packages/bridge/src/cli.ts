@@ -154,7 +154,7 @@ program
   .command('start')
   .description('Start the bridge')
   .option('-v, --verbose', 'Verbose output')
-  .option('--url <url>', 'Custom WebSocket URL')
+  .option('--url <url>', 'Custom TPMJS API base URL')
   .action(async (options) => {
     const config = loadConfig();
     const credentials = loadCredentials();

@@ -19,6 +19,10 @@ export const coverageBaselines: Record<string, CoverageBaseline> = {
     directory: 'packages/cli',
     thresholds: { branches: 3.4, functions: 10.2, lines: 3.2, statements: 3.5 },
   },
+  '@tpmjs/bridge': {
+    directory: 'packages/bridge',
+    thresholds: { branches: 19.2, functions: 30.5, lines: 32.1, statements: 31.2 },
+  },
   '@tpmjs/compose': {
     directory: 'packages/compose',
     thresholds: { branches: 93.1, functions: 91.6, lines: 100, statements: 97.9 },

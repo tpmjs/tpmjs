@@ -1,13 +1,12 @@
 import type { MCPServerConfig } from '@tpmjs/mcp-client';
 import { MCPClientManager } from '@tpmjs/mcp-client';
 import pc from 'picocolors';
-
-interface BridgeToolCall {
-  callId: string;
-  serverId: string;
-  toolName: string;
-  args: Record<string, unknown>;
-}
+import type {
+  BridgePollResponse,
+  BridgePostRequest,
+  BridgeSuccessResponse,
+  BridgeToolCall,
+} from './types.js';
 
 export interface BridgeOptions {
   /** TPMJS API key */
@@ -80,7 +79,13 @@ export class Bridge {
 
     // 2. Register with TPMJS
     this.log('\nConnecting to TPMJS...');
-    await this.registerTools();
+    try {
+      await this.registerTools();
+    } catch (error) {
+      this.isRunning = false;
+      await this.mcpManager.disconnectAll().catch(() => undefined);
+      throw error;
+    }
 
     // 3. Start polling for tool calls
     this.startPolling();
@@ -126,30 +131,20 @@ export class Bridge {
   private async registerTools(): Promise<void> {
     const allTools = this.mcpManager.listAllTools();
 
-    const response = await fetch(`${this.options.apiUrl}/api/bridge`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.options.apiKey}`,
-      },
-      body: JSON.stringify({
-        type: 'register',
-        tools: allTools.map(({ serverId, serverName, tool }) => ({
-          serverId,
-          serverName,
-          name: tool.name,
-          description: tool.description,
-          inputSchema: tool.inputSchema,
-        })),
-        clientVersion: '0.1.0',
-        clientOS: process.platform,
-      }),
-    });
+    const request: BridgePostRequest = {
+      type: 'register',
+      tools: allTools.map(({ serverId, serverName, tool }) => ({
+        serverId,
+        serverName,
+        name: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+      })),
+      clientVersion: '0.1.0',
+      clientOS: process.platform,
+    };
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Failed to register: ${error}`);
-    }
+    await this.postMessage(request, 'register');
 
     this.log(`${pc.green('✓')} Connected to TPMJS`);
     this.log(`Registered ${allTools.length} tools`);
@@ -167,14 +162,16 @@ export class Bridge {
           },
         });
 
-        if (response.ok) {
-          const data = (await response.json()) as { calls?: BridgeToolCall[] };
-          const calls = data.calls || [];
+        if (!response.ok) {
+          throw new Error(`Bridge poll failed with HTTP ${response.status}`);
+        }
 
-          // Process each tool call
-          for (const call of calls) {
-            await this.handleToolCall(call);
-          }
+        const data = (await response.json()) as BridgePollResponse;
+        const calls = Array.isArray(data.calls) ? data.calls : [];
+
+        // Process each tool call
+        for (const call of calls) {
+          await this.handleToolCall(call);
         }
       } catch (error) {
         if (this.options.verbose) {
@@ -196,14 +193,7 @@ export class Bridge {
       if (!this.isRunning) return;
 
       try {
-        await fetch(`${this.options.apiUrl}/api/bridge`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.options.apiKey}`,
-          },
-          body: JSON.stringify({ type: 'heartbeat' }),
-        });
+        await this.postMessage({ type: 'heartbeat' }, 'heartbeat');
       } catch {
         // Ignore heartbeat errors
       }
@@ -223,49 +213,58 @@ export class Bridge {
       this.log(`Tool call: ${serverId}/${toolName}`);
     }
 
+    let outcome: BridgePostRequest;
+    let executionError: Error | undefined;
+
     try {
       const result = await this.mcpManager.callTool(serverId, toolName, args);
-
-      await fetch(`${this.options.apiUrl}/api/bridge`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.options.apiKey}`,
-        },
-        body: JSON.stringify({
-          type: 'tool_result',
-          callId,
-          result: {
-            content: result.content,
-            isError: result.isError,
-          },
-        }),
-      });
-
-      if (this.options.verbose) {
-        this.log(`  ${pc.green('✓')} Result sent`);
-      }
+      outcome = { type: 'tool_result', callId, result };
     } catch (error) {
-      await fetch(`${this.options.apiUrl}/api/bridge`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${this.options.apiKey}`,
+      executionError = error instanceof Error ? error : new Error(String(error));
+      outcome = {
+        type: 'tool_result',
+        callId,
+        error: {
+          code: 'EXECUTION_FAILED',
+          message: executionError.message,
         },
-        body: JSON.stringify({
-          type: 'tool_result',
-          callId,
-          error: {
-            code: 'EXECUTION_FAILED',
-            message: (error as Error).message,
-          },
-        }),
-      });
-
-      if (this.options.verbose) {
-        this.log(`  ${pc.red('✗')} Error: ${(error as Error).message}`);
-      }
+      };
     }
+
+    // Delivery failures are transport failures, not tool execution failures.
+    // Keeping those paths separate prevents a successful call from being
+    // falsely reported as EXECUTION_FAILED when TPMJS rejects the response.
+    await this.postMessage(outcome, executionError ? 'tool error' : 'tool result');
+
+    if (this.options.verbose) {
+      this.log(
+        executionError
+          ? `  ${pc.red('✗')} Error: ${executionError.message}`
+          : `  ${pc.green('✓')} Result sent`
+      );
+    }
+  }
+
+  private async postMessage(
+    message: BridgePostRequest,
+    operation: string
+  ): Promise<BridgeSuccessResponse> {
+    const response = await fetch(`${this.options.apiUrl}/api/bridge`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.options.apiKey}`,
+      },
+      body: JSON.stringify(message),
+    });
+
+    if (!response.ok) {
+      const detail = await response.text();
+      const suffix = detail ? `: ${detail}` : '';
+      throw new Error(`Bridge ${operation} failed with HTTP ${response.status}${suffix}`);
+    }
+
+    return (await response.json()) as BridgeSuccessResponse;
   }
 
   private log(message: string): void {

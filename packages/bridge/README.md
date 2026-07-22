@@ -98,11 +98,11 @@ await bridge.start();
 await bridge.stop();
 ```
 
-Exports: `Bridge`, `BridgeOptions`, config helpers (`loadConfig`, `saveConfig`, `createDefaultConfig`, `loadCredentials`, `saveCredentials`, `deleteCredentials`, `ensureConfigDir`, `getConfigPath`, `getCredentialsPath`), and the types `BridgeConfig`, `BridgeCredentials`, `BridgeToServerMessage`, `ServerToBridgeMessage`.
+Exports: `Bridge`, `BridgeOptions`, config helpers (`loadConfig`, `saveConfig`, `createDefaultConfig`, `loadCredentials`, `saveCredentials`, `deleteCredentials`, `ensureConfigDir`, `getConfigPath`, `getCredentialsPath`), and typed HTTP contracts including `BridgePostRequest`, `BridgePollResponse`, `BridgeSuccessResponse`, `BridgeErrorResponse`, and `BridgeToolCall`. The former `BridgeToServerMessage` and `ServerToBridgeMessage` names remain as deprecated compatibility aliases.
 
 ## How it works
 
-`start` connects to each configured stdio MCP server, `POST`s the discovered tools to TPMJS (`/api/bridge`), then polls that endpoint for pending tool calls, executes them against the local server, and posts results back — with a periodic heartbeat. On shutdown it `DELETE`s its registration and disconnects every server.
+`start` connects to each configured MCP server, `POST`s the discovered tools to TPMJS (`/api/bridge`), then polls that endpoint over authenticated HTTP for pending tool calls, executes them against the configured server, and posts typed results back — with a periodic heartbeat. On shutdown it `DELETE`s its registration and disconnects every server.
 
 ## Links
 

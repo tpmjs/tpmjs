@@ -13,6 +13,13 @@ export {
 export type {
   BridgeConfig,
   BridgeCredentials,
+  BridgeErrorResponse,
+  BridgePollResponse,
+  BridgePostRequest,
+  BridgeSuccessResponse,
+  BridgeToolCall,
+  BridgeToolDefinition,
+  BridgeToolError,
   BridgeToServerMessage,
   ServerToBridgeMessage,
 } from './types.js';
