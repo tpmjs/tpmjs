@@ -13,6 +13,9 @@ function requireText(source, expected, message) {
 const nextConfig = read('apps/web/next.config.ts');
 const deploy = read('scripts/deploy-on-box.sh');
 const executorDockerfile = read('apps/railway-executor/Dockerfile');
+const executorServer = read('apps/railway-executor/server.ts');
+const executorPackage = JSON.parse(read('apps/railway-executor/package.json'));
+const executorDenoLock = JSON.parse(read('apps/railway-executor/deno.lock'));
 const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
 
@@ -116,6 +119,43 @@ requireText(
   'CI must create the executor provenance marker before building its image'
 );
 
+requireText(
+  executorDockerfile,
+  'COPY package.json deno.json deno.lock ./',
+  'executor dependencies must be copied before source for stable image-layer caching'
+);
+requireText(
+  executorDockerfile,
+  'deno install --lock=deno.lock --frozen',
+  'executor dependency installation must use the committed frozen lockfile'
+);
+requireText(
+  executorDockerfile,
+  'deno check --lock=deno.lock --frozen server.ts',
+  'executor type checking must use the committed frozen lockfile'
+);
+if (executorDockerfile.includes('deno check --no-lock')) {
+  failures.push('executor image builds must never disable dependency integrity locking');
+}
+if (/^import .*https:\/\/esm\.sh\//m.test(executorServer)) {
+  failures.push(
+    'executor build-time dependencies must use locked registry imports, not CDN imports'
+  );
+}
+if (
+  executorPackage.dependencies?.['zod-to-json-schema'] !== '3.25.0' ||
+  executorPackage.dependencies?.zod !== '4.3.5'
+) {
+  failures.push('executor build-time dependency versions must remain explicitly pinned');
+}
+if (
+  executorDenoLock.version !== '4' ||
+  !executorDenoLock.specifiers?.['npm:zod-to-json-schema@3.25.0'] ||
+  !executorDenoLock.specifiers?.['npm:zod@4.3.5']
+) {
+  failures.push('executor lockfile must cover every pinned build-time dependency');
+}
+
 const architectureJob = ci.slice(ci.indexOf('  architecture:'), ci.indexOf('  deadcode:'));
 if (architectureJob.includes('pnpm build')) {
   failures.push('the architecture job must not repeat the full monorepo build');
@@ -131,9 +171,21 @@ if (typeCheckJob.includes('pnpm type-coverage')) {
   failures.push('type coverage must not serialize behind the complete type-check job');
 }
 requireText(typeCheckJob, '.turbo', 'the type-check job must preserve Turbo task artifacts');
+requireText(typeCheckJob, 'fetch-depth: 0', 'affected type checking requires complete Git history');
+requireText(
+  typeCheckJob,
+  'turbo run type-check --affected',
+  'CI must type-check only the dependency-aware affected workspace graph'
+);
 
 const buildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
 requireText(buildJob, '.turbo', 'the build job must preserve Turbo task artifacts');
+requireText(buildJob, 'fetch-depth: 0', 'affected builds require complete Git history');
+requireText(
+  buildJob,
+  'turbo run build --affected',
+  'CI must build only the dependency-aware affected workspace graph'
+);
 
 if (failures.length > 0) {
   console.error('Build-performance contract failed:');

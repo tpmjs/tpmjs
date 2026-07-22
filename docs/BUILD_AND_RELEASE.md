@@ -58,14 +58,28 @@ content-addressed build/type-check artifacts. Repository-wide type coverage
 remains a mandatory 95% gate, but runs in parallel with ordinary type checking
 and preserves its file-level analysis cache. The architecture job runs the
 architecture ratchets directly instead of rebuilding the entire monorepo a
-second time. On-box compiler artifacts are namespaced by the absolute
-release-workspace path because Turbopack caches are not portable between source
-roots.
+second time. Build and type-check jobs fetch complete Git history and use
+Turbo's dependency-aware `--affected` graph, so an executor-only change cannot
+trigger hundreds of unrelated tool-package builds. Changes to shared packages
+still include every transitive dependent, while a missing comparison base
+safely falls back to the full graph. `pnpm build` and `pnpm type-check` remain
+the explicit full-repository commands. On-box compiler artifacts are namespaced
+by the absolute release-workspace path because Turbopack caches are not portable
+between source roots.
 
 Podman layer reuse remains enabled for both images. A tiny release-provenance
 file invalidates only the metadata tail of each Dockerfile, so a new Git commit
 cannot inherit stale labels while expensive operating-system and Deno layers
 remain reusable.
+
+The executor's static Deno dependencies use exact versions in `package.json`
+instead of build-time CDN imports. The package manifest and Deno lock/config
+are copied before `server.ts`, and the dependency install plus type check both
+enforce the committed `deno.lock` with `--frozen`. This removes `esm.sh` from
+the executor image's static build graph, verifies dependency integrity, and
+lets normal source changes reuse the dependency layer. Dynamic tool packages
+are request-selected at runtime and retain their separate
+`esm.sh`-then-`npm:` resolution path.
 
 ## Measured baseline
 
@@ -85,6 +99,10 @@ container packaging. This is an approximately 17x end-to-end improvement before
 image-layer reuse, and an approximately 84x improvement for repeated builds of
 the same source.
 
+After locking and separating the executor dependency graph, an on-box image
+build took 14.0s from the first new dependency layer and 4.6s unchanged. The
+finished image also passed its frozen type check with networking disabled.
+
 ## Regression gates
 
 `pnpm check-architecture` runs `scripts/check-build-performance.mjs`. The gate
@@ -94,7 +112,9 @@ fails if a maintainer accidentally:
 - bypasses TypeScript without exact-SHA CI proof;
 - moves release compilation back to the data volume;
 - restores the duplicate architecture build;
+- removes dependency-aware affected builds or their required Git history;
 - disables Podman layers; or
+- disables the executor lockfile or restores static CDN imports; or
 - permits stale image provenance.
 
 Use normal builds for local validation:

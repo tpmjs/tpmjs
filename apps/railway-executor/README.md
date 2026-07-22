@@ -5,9 +5,20 @@ invokes AI SDK tools. Despite the historical directory name, it is built and
 run on the TPMJS host as a Podman service; it is not deployed on Railway or
 Vercel.
 
-`server.ts` is the only implementation. The image build runs `deno check`
-before producing an artifact, so the same source that CI checks is the source
-the container executes.
+`server.ts` is the only implementation. Its small static dependency graph is
+declared in `package.json`, integrity-pinned in `deno.lock`, and installed in a
+container layer before source is copied. Deno-specific resolution settings
+live in `deno.json`. The image then runs a frozen
+`deno check`, so the same source and dependency graph that CI checks are what
+the container executes. Unchanged dependency layers are reusable across normal
+source edits.
+
+The config deliberately sets `"lock": false` for normal runtime execution:
+tool package names and versions arrive dynamically in requests and therefore
+cannot be enumerated in the build lock. This does not weaken the image build;
+both dependency installation and type checking pass `--lock=deno.lock` and
+`--frozen` explicitly. Runtime tool imports retain their existing `esm.sh`
+primary path with Deno-native `npm:` fallback.
 
 ## Protocol
 

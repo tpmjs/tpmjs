@@ -16,6 +16,16 @@ WORKDIR /app
 # Set Deno cache directory (ephemeral, rebuilds on restart)
 ENV DENO_DIR=/tmp/deno-cache
 
+# Install the small, static executor dependency graph before copying source so
+# normal server edits retain this layer. The committed lockfile pins versions
+# and integrity while the bounded retry tolerates a transient registry outage.
+COPY package.json deno.json deno.lock ./
+RUN for attempt in 1 2 3; do \
+      deno install --lock=deno.lock --frozen && exit 0; \
+      if [ "$attempt" -eq 3 ]; then exit 1; fi; \
+      sleep "$((attempt * 2))"; \
+    done
+
 # Copy server file and startup script
 COPY server.ts .
 COPY start.sh .
@@ -24,7 +34,7 @@ RUN chmod +x start.sh
 # Compile the real production entrypoint during every image build. This keeps
 # TypeScript/Deno errors out of deploys and warms the immutable dependency
 # cache used at startup.
-RUN deno check --no-lock server.ts
+RUN deno check --lock=deno.lock --frozen server.ts
 # Production's Quadlet deliberately bypasses start.sh and starts as User=deno.
 # Give that process ownership of the prewarmed cache so later dynamic npm/HTTP
 # imports can extend it without falling back to root.

@@ -3,8 +3,10 @@
  * Uses Deno's native HTTP import support
  */
 
-// Import zod-to-json-schema for Zod v3 support
-import { zodToJsonSchema } from 'https://esm.sh/zod-to-json-schema@3.25.0';
+// Build-time dependencies are registry-pinned in package.json and integrity-locked
+// in deno.lock. Runtime tool packages remain dynamic by design.
+import * as zodV4 from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
 type ExecutorErrorStage = 'request' | 'load' | 'execute' | 'executor';
 type ExecutorErrorCode =
@@ -559,20 +561,16 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       if (!rawJsonSchema && toolModule.inputSchema._zod) {
         console.log(`📋 Detected Zod v4 schema for ${cacheKey}`);
         try {
-          // Dynamically import Zod v4 and use its toJSONSchema method
-          const zod = await import('https://esm.sh/zod@4');
-          if (zod.toJSONSchema) {
-            rawJsonSchema = zod.toJSONSchema(toolModule.inputSchema);
+          if (zodV4.toJSONSchema) {
+            rawJsonSchema = zodV4.toJSONSchema(toolModule.inputSchema);
             console.log(
               `✅ Successfully converted Zod v4 schema using z.toJSONSchema for ${cacheKey}`
             );
-          } else if (zod.default?.toJSONSchema) {
-            rawJsonSchema = zod.default.toJSONSchema(toolModule.inputSchema);
-            console.log(
-              `✅ Successfully converted Zod v4 schema using z.default.toJSONSchema for ${cacheKey}`
-            );
           } else {
-            console.warn('⚠️  Zod v4 toJSONSchema not found. Available exports:', Object.keys(zod));
+            console.warn(
+              '⚠️  Zod v4 toJSONSchema not found. Available exports:',
+              Object.keys(zodV4)
+            );
           }
         } catch (error) {
           console.warn(`⚠️  Zod v4 toJSONSchema conversion failed for ${cacheKey}:`, error);

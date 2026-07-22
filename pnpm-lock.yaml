@@ -144,7 +144,14 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  apps/railway-executor: {}
+  apps/railway-executor:
+    dependencies:
+      zod:
+        specifier: 4.3.5
+        version: 4.3.5
+      zod-to-json-schema:
+        specifier: 3.25.0
+        version: 3.25.0(zod@4.3.5)
 
   apps/tutorial:
     dependencies:
@@ -13517,6 +13524,11 @@ packages:
   zeptomatch@2.0.2:
     resolution: {integrity: sha512-H33jtSKf8Ijtb5BW6wua3G5DhnFjbFML36eFu+VdOoVY4HD9e7ggjqdM6639B+L87rjnR6Y+XeRzBXZdy52B/g==}
 
+  zod-to-json-schema@3.25.0:
+    resolution: {integrity: sha512-HvWtU2UG41LALjajJrML6uQejQhNJx+JBO9IflpSja4R03iNWfKXrj6W2h7ljuLyc1nKS+9yDyL/9tD1U/yBnQ==}
+    peerDependencies:
+      zod: ^3.25 || ^4
+
   zod-to-json-schema@3.25.1:
     resolution: {integrity: sha512-pM/SU9d3YAggzi6MtR4h7ruuQlqKtad8e9S0fmxcMi+ueAK5Korys/aWcV9LIIHTVbj01NdzxcnXSN+O74ZIVA==}
     peerDependencies:
@@ -24413,6 +24425,10 @@ snapshots:
     dependencies:
       grammex: 3.1.12
     optional: true
+
+  zod-to-json-schema@3.25.0(zod@4.3.5):
+    dependencies:
+      zod: 4.3.5
 
   zod-to-json-schema@3.25.1(zod@4.3.5):
     dependencies:
