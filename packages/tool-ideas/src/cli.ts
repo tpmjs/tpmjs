@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { Command } from 'commander';
 import { enrichCommand } from './commands/enrich.js';
 import { exportCommand } from './commands/export.js';

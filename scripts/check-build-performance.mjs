@@ -90,10 +90,12 @@ for (const path of trackedWorkspaceManifests()) {
   }
 
   if (manifest.scripts?.build?.startsWith('tsdown')) {
-    if (!/^tsdown --logLevel warn(?: && .+)?$/.test(manifest.scripts.build)) {
+    const sourceMapped = manifest.scripts.build.startsWith('tsdown --sourcemap ');
+    if (!/^tsdown(?: --sourcemap)? --logLevel warn(?: && .+)?$/.test(manifest.scripts.build)) {
       failures.push(`${path} must keep routine tsdown output concise`);
     }
-    if (manifest.scripts?.dev !== 'tsdown --watch') {
+    const expectedDev = sourceMapped ? 'tsdown --sourcemap --watch' : 'tsdown --watch';
+    if (manifest.scripts?.dev !== expectedDev) {
       failures.push(`${path} must use tsdown for both build and watch mode`);
     }
     if (manifest.devDependencies?.tsup) {
@@ -110,6 +112,9 @@ for (const path of trackedWorkspaceManifests()) {
   ) {
     failures.push(`${path} uses tsup without a package-specific config`);
   }
+  if (manifest.scripts?.build?.startsWith('tsup') && path !== 'packages/ui/package.json') {
+    failures.push(`${path} must not restore tsup outside the directive-sensitive UI build`);
+  }
 }
 
 requireText(
@@ -125,6 +130,11 @@ requireText(
   tsdownConfig,
   'codeSplitting: false',
   'shared builds must preserve self-contained entry artifacts'
+);
+requireText(
+  tsdownConfig,
+  'codeSplitting: true',
+  'shared multi-entry builds must enable Rolldown code splitting'
 );
 if (/\bsplitting\s*:/.test(tsdownConfig)) {
   failures.push('shared builds must use Rolldown outputOptions.codeSplitting, not a stale option');

@@ -22,6 +22,13 @@ export const libraryConfig = {
   attw: validatePackage ? { profile: 'esm-only', level: 'error' } : false,
 } satisfies UserConfig;
 
+export const multiEntryLibraryConfig = {
+  ...libraryConfig,
+  outputOptions: {
+    codeSplitting: true,
+  },
+} satisfies UserConfig;
+
 export default defineConfig((inlineConfig) => ({
   ...libraryConfig,
   cwd: inlineConfig.cwd ?? process.cwd(),

@@ -3,8 +3,10 @@ import { multiEntryLibraryConfig } from '../../tsdown.config.ts';
 
 export default defineConfig((inlineConfig) => ({
   ...multiEntryLibraryConfig,
-  entry: ['src/index.ts', 'src/commands/**/*.ts', 'src/hooks/**/*.ts'],
+  entry: {
+    index: 'src/index.ts',
+    cli: 'src/cli.ts',
+  },
   sourcemap: true,
-  shims: true,
   cwd: inlineConfig.cwd ?? process.cwd(),
 }));
