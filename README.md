@@ -66,9 +66,9 @@ See [HOW_TO_PUBLISH_A_TOOL.md](./HOW_TO_PUBLISH_A_TOOL.md) for the full publishi
 ```bash
 npm install -g @tpmjs/cli
 
-tpmjs tool search "csv parser"
-tpmjs tool execute @tpmjs/tools-csv-parse --input '{"csv":"name,role\nAda,engineer"}'
-tpmjs tool trending
+tpm tool search "csv parser"
+tpm tool execute '@tpmjs/tools-csv-parse::csvParseTool' --input '{"csv":"name,role\nAda,engineer"}'
+tpm tool trending
 ```
 
 ### Connect via MCP

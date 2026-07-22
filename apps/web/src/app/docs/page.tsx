@@ -444,7 +444,7 @@ tpm auth login
 tpm tool search firecrawl
 
 # Execute a tool
-tpm tool execute firecrawl-scrape --input '{"url":"https://example.com"}'
+tpm tool execute '@tpmjs/official-firecrawl::scrapeTool' --input '{"url":"https://example.com"}'
 
 # Show trending tools
 tpm tool trending`}
@@ -476,13 +476,13 @@ tpm tool search [query]
 tpm tool info <package> <tool>
 
 # Execute with JSON input
-tpm tool execute <tool> --input '{"key":"value"}'
+tpm tool execute '@scope/package::toolName' --input '{"key":"value"}'
 
 # Execute with input from file
-tpm tool execute <tool> --input-file params.json
+tpm tool execute '@scope/package::toolName' --input-file params.json
 
 # Stream results
-tpm tool execute <tool> --stream
+tpm tool execute '@scope/package::toolName' --stream
 
 # Initialize a new tool package
 tpm tool init my-tool --template rich
@@ -1438,9 +1438,9 @@ export TPMJS_EXECUTOR_URL=https://executor.mycompany.com`}
                 </p>
                 <CodeBlock
                   language="bash"
-                  code={`claude mcp add tpmjs-my-collection \\
-  https://tpmjs.com/@<username>/collections/<collection-slug>/mcp \\
-  -t http -H "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
+                  code={`claude mcp add --transport http tpmjs-my-collection \\
+  https://tpmjs.com/api/mcp/<username>/<collection-slug>/http \\
+  --header "Authorization: Bearer $TPMJS_API_KEY"`}
                 />
                 <p className="text-foreground-secondary mt-4">
                   This automatically adds the server to your Claude Code configuration.

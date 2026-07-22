@@ -31,7 +31,7 @@ export interface PaginatedResponse<T> {
 export interface Tool {
   id: string;
   name: string;
-  slug: string;
+  slug?: string;
   description: string;
   category: string;
   tier: string;
@@ -52,6 +52,20 @@ export interface Tool {
     npmDownloadsLastMonth: number;
     isOfficial: boolean;
   };
+}
+
+interface RegistryExecuteResponse {
+  success: boolean;
+  toolId: string;
+  result?: unknown;
+  executionTimeMs: number;
+  error?: { code: string; message: string };
+}
+
+/** Return the stable registry identifier represented by a tool response. */
+export function canonicalToolId(tool: Tool): string | null {
+  const packageName = tool.package?.npmPackageName ?? tool.npmPackageName;
+  return packageName && tool.name ? `${packageName}::${tool.name}` : null;
 }
 
 export interface ToolSearchOptions extends PaginationOptions {
@@ -114,6 +128,7 @@ export interface Collection {
   _count?: {
     tools: number;
   };
+  tools?: Array<{ tool: Tool }>;
 }
 
 export interface CreateCollectionInput {
@@ -263,14 +278,17 @@ export class TpmClient {
         signal: controller.signal,
       });
 
-      const data = (await response.json()) as T & { message?: string; error?: string };
+      const data = (await response.json()) as T & {
+        message?: string;
+        error?: string | { message?: string };
+      };
 
       if (!response.ok) {
-        throw new ApiError(
-          data.message || data.error || `HTTP ${response.status}`,
-          response.status,
-          data
-        );
+        const errorMessage =
+          data.message ||
+          (typeof data.error === 'string' ? data.error : data.error?.message) ||
+          `HTTP ${response.status}`;
+        throw new ApiError(errorMessage, response.status, data);
       }
 
       return data as T;
@@ -304,12 +322,16 @@ export class TpmClient {
   }
 
   async getTool(packageName: string, toolName: string): Promise<ApiResponse<Tool>> {
-    return this.request(
-      `/tools/${encodeURIComponent(packageName)}/${encodeURIComponent(toolName)}`
-    );
+    const packagePath = packageName.split('/').map(encodeURIComponent).join('/');
+    return this.request(`/tools/${packagePath}/${encodeURIComponent(toolName)}`);
   }
 
   async getToolBySlug(slug: string): Promise<ApiResponse<Tool>> {
+    const separatorIndex = slug.lastIndexOf('::');
+    if (separatorIndex > 0 && separatorIndex < slug.length - 2) {
+      return this.getTool(slug.slice(0, separatorIndex), slug.slice(separatorIndex + 2));
+    }
+
     // Search for the tool by slug
     const searchResult = await this.searchTools({ query: slug, limit: 1 });
     if (searchResult.data && searchResult.data.length > 0) {
@@ -339,77 +361,54 @@ export class TpmClient {
     });
   }
 
-  async executeTool(slug: string, params: Record<string, unknown>): Promise<unknown> {
-    return this.request(`/tools/${encodeURIComponent(slug)}/execute`, {
+  private async resolveToolId(identifier: string): Promise<string> {
+    const separatorIndex = identifier.lastIndexOf('::');
+    if (separatorIndex > 0 && separatorIndex < identifier.length - 2) return identifier;
+
+    const searchResult = await this.searchTools({ query: identifier, limit: 10 });
+    const exactMatches = searchResult.data.filter(
+      (tool) => tool.id === identifier || tool.slug === identifier || tool.name === identifier
+    );
+    const candidates = exactMatches.length > 0 ? exactMatches : searchResult.data;
+
+    if (candidates.length !== 1) {
+      throw new Error(
+        candidates.length === 0
+          ? `Tool "${identifier}" was not found. Use package::toolName.`
+          : `Tool "${identifier}" is ambiguous. Use package::toolName.`
+      );
+    }
+
+    const candidate = candidates[0];
+    if (!candidate) throw new Error(`Tool "${identifier}" was not found.`);
+    const resolved = canonicalToolId(candidate);
+    if (!resolved) throw new Error(`Tool "${identifier}" has no canonical registry ID.`);
+    return resolved;
+  }
+
+  async executeTool(identifier: string, params: Record<string, unknown>): Promise<unknown> {
+    const toolId = await this.resolveToolId(identifier);
+    const response = await this.request<RegistryExecuteResponse>('/registry/execute', {
       method: 'POST',
-      body: JSON.stringify(params),
+      body: JSON.stringify({ toolId, params }),
     });
+
+    if (!response.success) {
+      throw new Error(response.error?.message || `Execution failed for ${toolId}`);
+    }
+    return response.result;
   }
 
   async *executeToolStream(
-    slug: string,
+    identifier: string,
     params: Record<string, unknown>
   ): AsyncGenerator<{ type: string; data: string }> {
-    const url = `${this.baseUrl}/tools/${encodeURIComponent(slug)}/execute`;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      Accept: 'text/event-stream',
+    const result = await this.executeTool(identifier, params);
+    yield {
+      type: 'text',
+      data: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
     };
-
-    if (this.apiKey) {
-      headers.Authorization = `Bearer ${this.apiKey}`;
-    }
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ ...params, stream: true }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new ApiError(errorText || `HTTP ${response.status}`, response.status);
-    }
-
-    if (!response.body) {
-      throw new ApiError('No response body', 0);
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          yield { type: 'done', data: '' };
-          break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') {
-              yield { type: 'done', data: '' };
-              return;
-            }
-            try {
-              const parsed = JSON.parse(data);
-              yield { type: parsed.type || 'text', data: parsed.content || parsed.data || data };
-            } catch {
-              yield { type: 'text', data };
-            }
-          }
-        }
-      }
-    } finally {
-      reader.releaseLock();
-    }
+    yield { type: 'done', data: '' };
   }
 
   // Agents
@@ -459,7 +458,9 @@ export class TpmClient {
     }
 
     // Strip username prefix if present (e.g., "ajax/dog-research-tools" -> "dog-research-tools")
-    const slug = identifier.includes('/') ? identifier.split('/').pop()! : identifier;
+    const slug = identifier.includes('/')
+      ? (identifier.split('/').at(-1) ?? identifier)
+      : identifier;
 
     // List user's collections and find by slug or name
     const result = await this.listCollections({ limit: 50 });
@@ -498,7 +499,7 @@ export class TpmClient {
   }
 
   async getCollection(id: string): Promise<ApiResponse<Collection>> {
-    return this.request(`/collections/${id}`);
+    return this.request(`/collections/${id}?toolsLimit=100`);
   }
 
   async createCollection(input: CreateCollectionInput): Promise<ApiResponse<Collection>> {

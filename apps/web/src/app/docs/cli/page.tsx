@@ -58,7 +58,7 @@ tpm tool trending
 tpm tool info @tpmjs/official-firecrawl scrapeTool
 
 # Execute a tool
-tpm tool execute firecrawl-scrape --input '{"url":"https://example.com"}'
+tpm tool execute '@tpmjs/official-firecrawl::scrapeTool' --input '{"url":"https://example.com"}'
 
 # Generate MCP config for your AI client
 tpm mcp config ajax/my-collection`}
@@ -209,13 +209,13 @@ tpm tool info @tpmjs/official-firecrawl scrapeTool`}
           </div>
           <CodeBlock
             code={`# Execute with inline JSON
-tpm tool execute firecrawl-scrape --input '{"url":"https://example.com"}'
+tpm tool execute '@tpmjs/official-firecrawl::scrapeTool' --input '{"url":"https://example.com"}'
 
 # Execute with input from file
-tpm tool execute my-tool --input-file params.json
+tpm tool execute '@scope/package::toolName' --input-file params.json
 
 # Stream results
-tpm tool execute my-tool --stream`}
+tpm tool execute '@scope/package::toolName' --stream`}
             language="bash"
             showCopy={true}
           />

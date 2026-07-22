@@ -10,7 +10,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ApiError, TpmClient } from './api-client.js';
+import { ApiError, canonicalToolId, type Tool, TpmClient } from './api-client.js';
 
 // Mock the config module
 vi.mock('./config.js', () => ({
@@ -363,22 +363,167 @@ describe('TpmClient', () => {
   });
 
   describe('tool execution', () => {
-    it('should execute a tool with parameters', async () => {
+    it('executes a canonical tool ID through the registry contract and unwraps the result', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ result: 'executed successfully' }),
+        json: async () => ({
+          success: true,
+          toolId: '@example/tools::parseCsv',
+          result: { rows: 2 },
+          executionTimeMs: 14,
+        }),
       });
 
-      const result = await client.executeTool('my-tool', { input: 'test' });
+      const result = await client.executeTool('@example/tools::parseCsv', { csv: 'a\n1' });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.test.com/tools/my-tool/execute',
+        'https://api.test.com/registry/execute',
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ input: 'test' }),
+          body: JSON.stringify({
+            toolId: '@example/tools::parseCsv',
+            params: { csv: 'a\n1' },
+          }),
         })
       );
-      expect(result).toEqual({ result: 'executed successfully' });
+      expect(result).toEqual({ rows: 2 });
+    });
+
+    it('resolves a unique legacy tool name before execution', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            data: [
+              {
+                id: 'tool-1',
+                name: 'parseCsv',
+                package: { npmPackageName: '@example/tools' },
+              },
+            ],
+            pagination: { limit: 10, offset: 0, hasMore: false },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            success: true,
+            toolId: '@example/tools::parseCsv',
+            result: 'ok',
+            executionTimeMs: 9,
+          }),
+        });
+
+      await expect(client.executeTool('parseCsv', {})).resolves.toBe('ok');
+
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
+        'https://api.test.com/tools?q=parseCsv&limit=10',
+        expect.any(Object)
+      );
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
+        'https://api.test.com/registry/execute',
+        expect.objectContaining({
+          body: JSON.stringify({ toolId: '@example/tools::parseCsv', params: {} }),
+        })
+      );
+    });
+
+    it('refuses ambiguous legacy names instead of executing the wrong package', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: [
+            { id: 'one', name: 'search', package: { npmPackageName: '@one/tools' } },
+            { id: 'two', name: 'search', package: { npmPackageName: '@two/tools' } },
+          ],
+          pagination: { limit: 10, offset: 0, hasMore: false },
+        }),
+      });
+
+      await expect(client.executeTool('search', {})).rejects.toThrow(
+        'Tool "search" is ambiguous. Use package::toolName.'
+      );
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+    });
+
+    it('turns an atomic registry result into stream-compatible events', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          success: true,
+          toolId: '@example/tools::parseCsv',
+          result: { rows: 2 },
+          executionTimeMs: 11,
+        }),
+      });
+
+      const events = [];
+      for await (const event of client.executeToolStream('@example/tools::parseCsv', {})) {
+        events.push(event);
+      }
+
+      expect(events).toEqual([
+        { type: 'text', data: '{\n  "rows": 2\n}' },
+        { type: 'done', data: '' },
+      ]);
+    });
+
+    it('surfaces structured API error messages', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 422,
+        json: async () => ({
+          success: false,
+          error: { code: 'TOOL_ERROR', message: 'Required parameter missing' },
+        }),
+      });
+
+      await expect(client.executeTool('@example/tools::parseCsv', {})).rejects.toThrow(
+        'Required parameter missing'
+      );
+    });
+  });
+
+  describe('tool identity routes', () => {
+    it('preserves the path boundary in scoped package names', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: { id: 'tool-1' } }),
+      });
+
+      await client.getTool('@example/tools', 'parseCsv');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.test.com/tools/%40example/tools/parseCsv',
+        expect.any(Object)
+      );
+    });
+
+    it('resolves canonical IDs through the same scoped route', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, data: { id: 'tool-1' } }),
+      });
+
+      await client.getToolBySlug('@example/tools::parseCsv');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://api.test.com/tools/%40example/tools/parseCsv',
+        expect.any(Object)
+      );
+    });
+  });
+
+  describe('canonicalToolId', () => {
+    it('uses the package relation returned by the registry', () => {
+      expect(
+        canonicalToolId({
+          name: 'parseCsv',
+          package: { npmPackageName: '@example/tools' },
+        } as Tool)
+      ).toBe('@example/tools::parseCsv');
     });
   });
 

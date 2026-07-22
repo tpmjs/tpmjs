@@ -1,3 +1,5 @@
+import type { ToolSurfaceId } from './tool-surfaces';
+
 /**
  * Emit a custom Umami event for the activation funnel (search → view → use).
  *
@@ -7,7 +9,7 @@
  */
 type UmamiApi = { track?: (name: string, data?: Record<string, unknown>) => void };
 
-export type InstallSurface = 'sdk' | 'mcp' | 'rest' | 'cli' | 'skill';
+export type InstallSurface = ToolSurfaceId;
 export type PlaygroundOutcome = 'success' | 'failure';
 
 export function trackEvent(name: string, data?: Record<string, unknown>): void {
@@ -21,8 +23,12 @@ export function trackEvent(name: string, data?: Record<string, unknown>): void {
 }
 
 /** Record a successful copy without sending the copied command itself. */
-export function trackInstallCommandCopy(tool: string, surface: InstallSurface): void {
-  trackEvent('install_command_copy', { tool, surface });
+export function trackInstallCommandCopy(
+  tool: string,
+  surface: InstallSurface,
+  snippet?: string
+): void {
+  trackEvent('install_command_copy', { tool, surface, ...(snippet && { snippet }) });
 }
 
 /** Record only the terminal outcome; prompts, output, and errors stay private. */

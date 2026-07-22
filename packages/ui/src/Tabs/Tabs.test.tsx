@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { Tabs } from './Tabs';
 import type { Tab } from './types';
@@ -117,15 +117,15 @@ describe('Tabs', () => {
       const handleChange = vi.fn();
       render(<Tabs tabs={mockTabs} activeTab="all" onTabChange={handleChange} />);
       const recentTab = screen.getByTestId('tab-recent');
-      const badge = recentTab.querySelector('span[aria-label]');
+      const badge = recentTab.querySelector('span[aria-hidden="true"]');
       expect(badge).not.toBeInTheDocument();
     });
 
-    it('count badge has aria-label', () => {
+    it('includes the count in the tab accessible name', () => {
       const handleChange = vi.fn();
       render(<Tabs tabs={mockTabs} activeTab="all" onTabChange={handleChange} />);
-      const badge = screen.getByText('1234');
-      expect(badge).toHaveAttribute('aria-label', '1234 items');
+      expect(screen.getByTestId('tab-all')).toHaveAttribute('aria-label', 'All Tools, 1234 items');
+      expect(screen.getByText('1234')).toHaveAttribute('aria-hidden', 'true');
     });
 
     it('applies active styling to count badge on active tab', () => {
@@ -212,6 +212,40 @@ describe('Tabs', () => {
         'aria-controls',
         'tabpanel-featured'
       );
+    });
+
+    it('keeps only the active tab in the sequential focus order', () => {
+      render(<Tabs tabs={mockTabs} activeTab="featured" onTabChange={vi.fn()} />);
+
+      expect(screen.getByTestId('tab-all')).toHaveAttribute('tabindex', '-1');
+      expect(screen.getByTestId('tab-featured')).toHaveAttribute('tabindex', '0');
+      expect(screen.getByTestId('tab-recent')).toHaveAttribute('tabindex', '-1');
+    });
+
+    it('moves and selects tabs with arrow keys', () => {
+      const handleChange = vi.fn();
+      render(<Tabs tabs={mockTabs} activeTab="all" onTabChange={handleChange} />);
+
+      fireEvent.keyDown(screen.getByTestId('tab-all'), { key: 'ArrowRight' });
+
+      expect(handleChange).toHaveBeenCalledWith('featured');
+      expect(screen.getByTestId('tab-featured')).toHaveFocus();
+    });
+
+    it('wraps backward and supports Home and End', () => {
+      const handleChange = vi.fn();
+      render(<Tabs tabs={mockTabs} activeTab="all" onTabChange={handleChange} />);
+      const first = screen.getByTestId('tab-all');
+
+      fireEvent.keyDown(first, { key: 'ArrowLeft' });
+      expect(handleChange).toHaveBeenLastCalledWith('recent');
+      expect(screen.getByTestId('tab-recent')).toHaveFocus();
+
+      fireEvent.keyDown(screen.getByTestId('tab-recent'), { key: 'Home' });
+      expect(handleChange).toHaveBeenLastCalledWith('all');
+
+      fireEvent.keyDown(first, { key: 'End' });
+      expect(handleChange).toHaveBeenLastCalledWith('recent');
     });
   });
 
