@@ -73,7 +73,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Type check
-        run: pnpm exec turbo run type-check --affected
+        run: |
+          affected_count="$(pnpm exec turbo ls --affected --output=json | jq '.packages.count')"
+          if [ "$affected_count" -eq 0 ]; then
+            echo 'No workspaces require type checking'
+            exit 0
+          fi
+          pnpm exec turbo run type-check --affected
 
   type-coverage:
     runs-on: ubuntu-latest
@@ -216,7 +222,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm exec turbo run build --affected
+        run: |
+          affected_count="$(pnpm exec turbo ls --affected --output=json | jq '.packages.count')"
+          if [ "$affected_count" -eq 0 ]; then
+            echo 'No workspaces require building'
+            exit 0
+          fi
+          pnpm exec turbo run build --affected
 
   executor:
     runs-on: ubuntu-latest

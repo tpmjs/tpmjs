@@ -184,6 +184,11 @@ requireText(
   'turbo run type-check --affected',
   'CI must type-check only the dependency-aware affected workspace graph'
 );
+requireText(
+  typeCheckJob,
+  'turbo ls --affected --output=json',
+  'CI must skip type checking cleanly when no workspaces are affected'
+);
 
 const buildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
 requireText(buildJob, '.turbo', 'the build job must preserve Turbo task artifacts');
@@ -192,6 +197,11 @@ requireText(
   buildJob,
   'turbo run build --affected',
   'CI must build only the dependency-aware affected workspace graph'
+);
+requireText(
+  buildJob,
+  'turbo ls --affected --output=json',
+  'CI must skip building cleanly when no workspaces are affected'
 );
 
 if (failures.length > 0) {
