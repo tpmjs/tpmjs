@@ -124,8 +124,13 @@ jobs:
     needs: validation_provenance
     if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
+    env:
+      TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+      TURBO_SCM_HEAD: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
 
       - uses: pnpm/action-setup@v6
         with:
@@ -140,7 +145,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm exec turbo run lint --affected --output-logs=new-only
 
       - name: Format check
         run: pnpm format:check
@@ -160,7 +165,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - uses: pnpm/action-setup@v6
         with:
@@ -249,8 +254,13 @@ jobs:
     needs: validation_provenance
     if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
+    env:
+      TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+      TURBO_SCM_HEAD: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
 
       - uses: pnpm/action-setup@v6
         with:
@@ -264,7 +274,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Test
+      - name: Test repository contracts
         run: |
           pnpm dev:setup:test
           pnpm sync:manual:test
@@ -274,13 +284,25 @@ jobs:
           pnpm verify:vercel-api:test
           node --test scripts/reuse-pr-validation.test.mjs
           node --test scripts/compiler-cache-delta.test.mjs
-          pnpm test
 
-      - name: Report and enforce test coverage
+      - name: Plan dependency-aware coverage
+        id: coverage_plan
+        run: |
+          task_count="$(pnpm exec turbo run test:coverage --affected --dry=json | jq '.tasks | length')"
+          echo "Selected coverage tasks: $task_count"
+          if [ "$task_count" -eq 0 ]; then
+            echo 'required=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'required=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Test packages and enforce coverage
+        id: coverage
+        if: steps.coverage_plan.outputs.required == 'true'
         run: pnpm test:coverage
 
       - name: Preserve test coverage report
-        if: always()
+        if: always() && steps.coverage_plan.outputs.required == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: test-coverage
@@ -357,7 +379,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - uses: pnpm/action-setup@v6
         with:
