@@ -27,6 +27,7 @@ const executorPackage = JSON.parse(read('apps/railway-executor/package.json'));
 const executorDenoLock = JSON.parse(read('apps/railway-executor/deno.lock'));
 const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
+const sandboxTests = read('.github/workflows/sandbox-tests.yml');
 const release = read('.github/workflows/release.yml');
 const releasePreview = read('.github/workflows/release-preview.yml');
 const releaseBuild = read('scripts/release-build-lib.ts');
@@ -276,6 +277,18 @@ requireText(
   'github.event.pull_request.base.sha || github.event.before',
   'affected builds must compare exact event SHAs instead of a local branch name'
 );
+
+if (sandboxTests.includes('run: pnpm build')) {
+  failures.push('sandbox integration tests must not rebuild the unrelated monorepo');
+}
+const sandboxTestCommands = sandboxTests.match(
+  /pnpm --dir apps\/web exec vitest run --config vitest\.integration\.config\.mjs/g
+);
+if (sandboxTestCommands?.length !== 2) {
+  failures.push(
+    'both sandbox jobs must execute Vitest directly instead of invoking a missing script'
+  );
+}
 
 requireText(release, 'path: .turbo', 'release builds must preserve Turbo task artifacts');
 requireText(

@@ -28,6 +28,7 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 ### Improved
 - Type checking now uses native TypeScript 7 with one checker per Turbo task, while a pnpm catalog keeps the TypeScript 6 API available to tsup and lint tooling
 - The tool-surface contract test isolates its separately-tested syntax highlighter, reducing its focused runtime from 16 seconds to 0.2 seconds under load
+- Sandbox CI executes its integration suites directly instead of spending eight minutes on an unrelated full build and then silently running zero tests
 - Release administration no longer exposes a long-lived npm token to GitHub Actions; npm trust is bootstrapped from an audited interactive maintainer session and routine publishing is OIDC-only
 - Security: SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates
 - SEO: sitemap expanded from 7 to 40+ static pages

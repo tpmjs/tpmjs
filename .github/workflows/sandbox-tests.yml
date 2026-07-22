@@ -76,9 +76,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build packages
-        run: pnpm build
-
       - name: Run sandbox-direct tests
         env:
           INTEGRATION_TESTS: 'true'
@@ -90,7 +87,7 @@ jobs:
           INTEGRATION_TEST_SESSION_TOKEN: dummy-not-used
           INTEGRATION_TEST_API_KEY: dummy-not-used
         run: |
-          pnpm --filter=@tpmjs/web vitest run --config vitest.integration.config.mjs \
+          pnpm --dir apps/web exec vitest run --config vitest.integration.config.mjs \
             src/test/integration/sandbox/sandbox-health.integration.test.ts \
             src/test/integration/sandbox/sandbox-sessions.integration.test.ts \
             src/test/integration/sandbox/sandbox-tools.integration.test.ts \
@@ -133,9 +130,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build packages
-        run: pnpm build
-
       - name: Wait for web app health
         run: |
           echo "Checking if web app is available at $TEST_BASE_URL..."
@@ -164,5 +158,5 @@ jobs:
           AGENT_SANDBOX_URL: ${{ secrets.AGENT_SANDBOX_URL }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
-          pnpm --filter=@tpmjs/web vitest run --config vitest.integration.config.mjs \
+          pnpm --dir apps/web exec vitest run --config vitest.integration.config.mjs \
             src/test/integration/sandbox/sandbox-shell-e2e.integration.test.ts
