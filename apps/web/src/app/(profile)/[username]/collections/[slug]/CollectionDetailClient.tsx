@@ -1,12 +1,11 @@
 'use client';
 
 import { Badge } from '@tpmjs/ui/Badge/Badge';
-import { Button } from '@tpmjs/ui/Button/Button';
-import { CodeBlock } from '@tpmjs/ui/CodeBlock/CodeBlock';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
+import { CollectionActivationPanel } from '~/components/collections/CollectionActivationPanel';
 import { ForkButton } from '~/components/ForkButton';
 import { ForkedFromBadge } from '~/components/ForkedFromBadge';
 import { LikeButton } from '~/components/LikeButton';
@@ -15,8 +14,6 @@ import { ShareButton } from '~/components/ShareButton';
 import { SkillsSection } from '~/components/skills/SkillsSection';
 import { UseCasesSection } from '~/components/UseCasesSection';
 import { useTrackView } from '~/hooks/useTrackView';
-import { trackCollectionMcpCopy } from '~/lib/analytics';
-import { useSession } from '~/lib/auth-client';
 
 /**
  * Locked state for private collections viewed by non-owners
@@ -106,218 +103,6 @@ export interface PublicCollection {
   useCasesGeneratedAt?: string | null;
 }
 
-function McpUrlSection({
-  collectionId,
-  username,
-  slug,
-  isOwner,
-}: {
-  collectionId: string;
-  username: string;
-  slug: string;
-  isOwner: boolean;
-}) {
-  const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
-  const [showConfig, setShowConfig] = useState(false);
-  const [showApiExample, setShowApiExample] = useState(false);
-
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
-  const httpUrl = `${baseUrl}/api/mcp/${username}/${slug}/http`;
-  const sseUrl = `${baseUrl}/api/mcp/${username}/${slug}/sse`;
-
-  const copyToClipboard = async (url: string, type: 'http' | 'sse') => {
-    await navigator.clipboard.writeText(url);
-    trackCollectionMcpCopy(collectionId, `${type}_url`);
-    setCopiedUrl(type);
-    setTimeout(() => setCopiedUrl(null), 2000);
-  };
-
-  // Claude Code CLI command (correct arg order: options before name and url)
-  const claudeCodeCommand = `claude mcp add tpmjs-${slug} ${httpUrl} -t http`;
-
-  // Claude Desktop native HTTP config
-  const configSnippet = `{
-  "mcpServers": {
-    "tpmjs-${slug}": {
-      "type": "http",
-      "url": "${httpUrl}"
-    }
-  }
-}`;
-
-  const apiExampleSnippet = `// Call a tool with your own credentials
-const response = await fetch("${httpUrl}", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": "Bearer YOUR_TPMJS_API_KEY"
-  },
-  body: JSON.stringify({
-    jsonrpc: "2.0",
-    method: "tools/call",
-    params: {
-      name: "tool-name",
-      arguments: { /* tool args */ },
-      env: {
-        // Your env vars for the tools
-        "API_KEY": "your-key-here"
-      }
-    },
-    id: 1
-  })
-});`;
-
-  return (
-    <section className="p-4 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 border border-primary/20 rounded-xl">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 bg-primary/10 rounded-lg">
-          <Icon icon="link" className="w-4 h-4 text-primary" />
-        </div>
-        <h3 className="font-semibold text-foreground">MCP Server URLs</h3>
-      </div>
-
-      <div className="space-y-3">
-        {/* HTTP Transport */}
-        <div className="group">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
-              HTTP Transport
-            </span>
-            <span className="text-xs text-foreground-tertiary">(recommended)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
-              {httpUrl}
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => copyToClipboard(httpUrl, 'http')}
-              className="shrink-0"
-            >
-              <Icon icon={copiedUrl === 'http' ? 'check' : 'copy'} className="w-4 h-4 mr-1" />
-              {copiedUrl === 'http' ? 'Copied!' : 'Copy'}
-            </Button>
-          </div>
-        </div>
-
-        {/* SSE Transport */}
-        <div className="group">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
-              SSE Transport
-            </span>
-            <span className="text-xs text-foreground-tertiary">(streaming)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
-              {sseUrl}
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => copyToClipboard(sseUrl, 'sse')}
-              className="shrink-0"
-            >
-              <Icon icon={copiedUrl === 'sse' ? 'check' : 'copy'} className="w-4 h-4 mr-1" />
-              {copiedUrl === 'sse' ? 'Copied!' : 'Copy'}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Note for non-owners */}
-      {!isOwner && (
-        <div className="mt-4 p-3 bg-warning/10 border border-warning/20 rounded-lg">
-          <p className="text-sm text-warning-foreground">
-            <Icon icon="info" className="w-4 h-4 inline mr-1" />
-            You&apos;ll need to provide your own API keys for any tools that require them. Pass
-            credentials via the{' '}
-            <code className="font-mono text-xs bg-surface px-1 rounded">env</code> parameter in your
-            API calls.
-          </p>
-        </div>
-      )}
-
-      {/* Claude Code CLI command */}
-      <div className="mt-4 pt-4 border-t border-border/50">
-        <h4 className="text-sm font-medium text-foreground mb-2">Add to Claude Code</h4>
-        <div className="relative">
-          <pre className="p-3 bg-surface border border-border rounded-lg text-xs font-mono text-foreground-secondary overflow-x-auto whitespace-pre-wrap break-all">
-            {claudeCodeCommand}
-          </pre>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={async () => {
-              await navigator.clipboard.writeText(claudeCodeCommand);
-              trackCollectionMcpCopy(collectionId, 'claude_code');
-            }}
-            className="absolute top-1.5 right-1.5"
-          >
-            <Icon icon="copy" className="w-3.5 h-3.5" />
-          </Button>
-        </div>
-        <p className="mt-1.5 text-xs text-foreground-tertiary">
-          Run <code className="font-mono">/mcp</code> in Claude Code to verify the connection.
-        </p>
-      </div>
-
-      {/* Config snippet toggle */}
-      <div className="mt-4 pt-4 border-t border-border/50 space-y-2">
-        <button
-          type="button"
-          onClick={() => setShowConfig(!showConfig)}
-          className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
-        >
-          <Icon icon={showConfig ? 'chevronDown' : 'chevronRight'} className="w-4 h-4" />
-          <span>Show Claude Desktop config</span>
-        </button>
-
-        {showConfig && (
-          <div className="mt-3">
-            <CodeBlock
-              language="json"
-              code={configSnippet}
-              onCopy={() => trackCollectionMcpCopy(collectionId, 'claude_config')}
-            />
-          </div>
-        )}
-
-        {!isOwner && (
-          <>
-            <button
-              type="button"
-              onClick={() => setShowApiExample(!showApiExample)}
-              className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
-            >
-              <Icon icon={showApiExample ? 'chevronDown' : 'chevronRight'} className="w-4 h-4" />
-              <span>Show API usage example</span>
-            </button>
-
-            {showApiExample && (
-              <div className="mt-3">
-                <CodeBlock
-                  language="typescript"
-                  code={apiExampleSnippet}
-                  onCopy={() => trackCollectionMcpCopy(collectionId, 'api_example')}
-                />
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      <p className="mt-3 text-xs text-foreground-tertiary">
-        Use these URLs with{' '}
-        <Link href="/docs/sharing" className="text-primary hover:underline">
-          Claude Desktop, Cursor, or any MCP client
-        </Link>
-      </p>
-    </section>
-  );
-}
-
 interface CollectionDetailClientProps {
   collection: PublicCollection;
   username: string;
@@ -327,14 +112,10 @@ export function CollectionDetailClient({
   collection: initialCollection,
   username,
 }: CollectionDetailClientProps) {
-  const { data: session } = useSession();
   const [collection, setCollection] = useState(initialCollection);
 
   // Track page view
   useTrackView('collection', collection.id);
-
-  // Check if current user is the owner
-  const isOwner = session?.user?.id && collection.createdBy?.id === session.user.id;
 
   // Handler for when use cases are generated
   const handleUseCasesGenerated = useCallback(
@@ -419,12 +200,13 @@ export function CollectionDetailClient({
             )}
           </div>
 
-          {/* MCP Server URLs - Available to everyone (non-owners must provide their own credentials) */}
-          <McpUrlSection
+          {/* Public collections are live HTTP MCP servers with a token-free connection path. */}
+          <CollectionActivationPanel
             collectionId={collection.id}
+            name={collection.name}
             username={username}
             slug={collection.slug}
-            isOwner={!!isOwner}
+            toolCount={collection.toolCount}
           />
 
           {/* Tools */}

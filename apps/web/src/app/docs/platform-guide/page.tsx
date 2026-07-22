@@ -738,26 +738,18 @@ Invalid usernames:
               </p>
               <DocSubSection title="MCP Server URLs">
                 <p className="text-foreground-secondary mb-4">
-                  Each collection provides two transport options:
+                  Every collection has one recommended, human-readable HTTP endpoint:
                 </p>
-                <div className="space-y-3">
-                  <div className="p-4 border border-border rounded-lg bg-surface">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="success" size="sm">
-                        Recommended
-                      </Badge>
-                      <code className="text-primary font-mono text-sm">HTTP Transport</code>
-                    </div>
-                    <code className="text-xs text-foreground-secondary block">
-                      https://tpmjs.com/api/mcp/{'{username}'}/{'{collection-slug}'}/http
-                    </code>
+                <div className="p-4 border border-border rounded-lg bg-surface">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="success" size="sm">
+                      Recommended
+                    </Badge>
+                    <code className="text-primary font-mono text-sm">HTTP Transport</code>
                   </div>
-                  <div className="p-4 border border-border rounded-lg bg-surface">
-                    <code className="text-primary font-mono text-sm block mb-2">SSE Transport</code>
-                    <code className="text-xs text-foreground-secondary block">
-                      https://tpmjs.com/api/mcp/{'{username}'}/{'{collection-slug}'}/sse
-                    </code>
-                  </div>
+                  <code className="text-xs text-foreground-secondary block">
+                    https://tpmjs.com/@{'{username}'}/collections/{'{collection-slug}'}/mcp
+                  </code>
                 </div>
               </DocSubSection>
               <DocSubSection title="Claude Desktop Configuration">
@@ -769,13 +761,8 @@ Invalid usernames:
                   code={`{
   "mcpServers": {
     "tpmjs-my-collection": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "https://tpmjs.com/@YOUR_USERNAME/collections/YOUR_COLLECTION_SLUG/mcp",
-        "--header",
-        "Authorization: Bearer YOUR_TPMJS_API_KEY"
-      ]
+      "type": "http",
+      "url": "https://tpmjs.com/@YOUR_USERNAME/collections/YOUR_COLLECTION_SLUG/mcp"
     }
   }
 }`}
@@ -802,8 +789,7 @@ Invalid usernames:
                 <CodeBlock
                   language="bash"
                   code={`claude mcp add --transport http tpmjs-my-collection \\
-  https://tpmjs.com/api/mcp/YOUR_USERNAME/YOUR_COLLECTION_SLUG/http \\
-  --header "Authorization: Bearer $TPMJS_API_KEY"`}
+  https://tpmjs.com/@YOUR_USERNAME/collections/YOUR_COLLECTION_SLUG/mcp`}
                 />
               </DocSubSection>
             </DocSection>

@@ -636,14 +636,13 @@ Use registrySearch to find tools, then registryExecute to run them.\`,
                 <CodeBlock
                   language="bash"
                   code={`# Add a collection to Claude Code as one MCP endpoint
-claude mcp add web-scraping \\
-  https://tpmjs.com/@ada/collections/web-scraping/mcp \\
-  -t http
+claude mcp add --transport http tpmjs-web-scraping \\
+  https://tpmjs.com/@ada/collections/web-scraping/mcp
 
 # Private collection? Pass your TPMJS API key
-claude mcp add web-scraping \\
+claude mcp add --transport http tpmjs-web-scraping \\
   https://tpmjs.com/@ada/collections/web-scraping/mcp \\
-  -t http -H "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
+  --header "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
                 />
               </div>
 

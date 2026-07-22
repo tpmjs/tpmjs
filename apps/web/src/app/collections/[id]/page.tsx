@@ -7,8 +7,8 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from '~/components/AppHeader';
+import { CollectionActivationPanel } from '~/components/collections/CollectionActivationPanel';
 import { LikeButton } from '~/components/LikeButton';
-import { trackCollectionMcpCopy } from '~/lib/analytics';
 
 interface CollectionTool {
   id: string;
@@ -45,145 +45,6 @@ interface PublicCollection {
     image: string | null;
   };
   tools: CollectionTool[];
-}
-
-function McpUrlSection({
-  collectionId,
-  username,
-  slug,
-}: {
-  collectionId: string;
-  username: string;
-  slug: string;
-}) {
-  const [copiedUrl, setCopiedUrl] = useState<'http' | 'sse' | null>(null);
-  const [showConfig, setShowConfig] = useState(false);
-
-  const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://tpmjs.com';
-  const httpUrl = `${baseUrl}/api/mcp/${username}/${slug}/http`;
-  const sseUrl = `${baseUrl}/api/mcp/${username}/${slug}/sse`;
-
-  const copyToClipboard = async (url: string, type: 'http' | 'sse') => {
-    await navigator.clipboard.writeText(url);
-    trackCollectionMcpCopy(collectionId, `${type}_url`);
-    setCopiedUrl(type);
-    setTimeout(() => setCopiedUrl(null), 2000);
-  };
-
-  const configSnippet = `{
-  "mcpServers": {
-    "tpmjs-collection": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "${httpUrl}",
-        "--header",
-        "Authorization: Bearer YOUR_TPMJS_API_KEY"
-      ]
-    }
-  }
-}`;
-
-  return (
-    <div className="mb-8 p-4 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 border border-primary/20 rounded-xl">
-      <div className="flex items-center gap-2 mb-4">
-        <div className="p-1.5 bg-primary/10 rounded-lg">
-          <Icon icon="link" size="sm" className="text-primary" />
-        </div>
-        <h3 className="font-semibold text-foreground">MCP Server URLs</h3>
-      </div>
-
-      <div className="space-y-3">
-        {/* HTTP Transport */}
-        <div className="group">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
-              HTTP Transport
-            </span>
-            <span className="text-xs text-foreground-tertiary">(recommended)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
-              {httpUrl}
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => copyToClipboard(httpUrl, 'http')}
-              className="shrink-0"
-            >
-              <Icon icon={copiedUrl === 'http' ? 'check' : 'copy'} size="xs" className="mr-1" />
-              {copiedUrl === 'http' ? 'Copied!' : 'Copy'}
-            </Button>
-          </div>
-        </div>
-
-        {/* SSE Transport */}
-        <div className="group">
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs font-medium text-foreground-secondary uppercase tracking-wide">
-              SSE Transport
-            </span>
-            <span className="text-xs text-foreground-tertiary">(streaming)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-foreground-secondary overflow-x-auto">
-              {sseUrl}
-            </div>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => copyToClipboard(sseUrl, 'sse')}
-              className="shrink-0"
-            >
-              <Icon icon={copiedUrl === 'sse' ? 'check' : 'copy'} size="xs" className="mr-1" />
-              {copiedUrl === 'sse' ? 'Copied!' : 'Copy'}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Config snippet toggle */}
-      <div className="mt-4 pt-4 border-t border-border/50">
-        <button
-          type="button"
-          onClick={() => setShowConfig(!showConfig)}
-          className="flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
-        >
-          <Icon icon={showConfig ? 'chevronDown' : 'chevronRight'} size="xs" />
-          <span>Show Claude Desktop config</span>
-        </button>
-
-        {showConfig && (
-          <div className="mt-3 relative">
-            <pre className="p-4 bg-surface border border-border rounded-lg text-xs font-mono text-foreground-secondary overflow-x-auto">
-              {configSnippet}
-            </pre>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={async () => {
-                await navigator.clipboard.writeText(configSnippet);
-                trackCollectionMcpCopy(collectionId, 'claude_config');
-                setCopiedUrl('http');
-                setTimeout(() => setCopiedUrl(null), 2000);
-              }}
-              className="absolute top-2 right-2"
-            >
-              <Icon icon="copy" size="xs" />
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <p className="mt-3 text-xs text-foreground-tertiary">
-        Use these URLs with{' '}
-        <Link href="/docs/tutorials/mcp" className="text-primary hover:underline">
-          Claude Desktop, Cursor, or any MCP client
-        </Link>
-      </p>
-    </div>
-  );
 }
 
 export default function PublicCollectionDetailPage(): React.ReactElement {
@@ -321,12 +182,14 @@ export default function PublicCollectionDetailPage(): React.ReactElement {
           </span>
         </div>
 
-        {/* MCP URLs */}
+        {/* Legacy ID URLs redirect here when a stable public identity is available. */}
         {collection.createdBy?.username && collection.slug && (
-          <McpUrlSection
+          <CollectionActivationPanel
             collectionId={collection.id}
+            name={collection.name}
             username={collection.createdBy.username}
             slug={collection.slug}
+            toolCount={collection.toolCount}
           />
         )}
 

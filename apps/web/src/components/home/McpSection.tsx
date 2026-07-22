@@ -5,12 +5,15 @@ import { Container } from '@tpmjs/ui/Container/Container';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import Link from 'next/link';
 import { useState } from 'react';
+import { buildClaudeCodeCollectionCommand, buildCollectionMcpUrl } from '~/lib/collection-mcp';
 
 interface McpSectionProps {
   toolCount: number;
 }
 
-const EXAMPLE_URL = 'https://tpmjs.com/@username/collections/my-tools/mcp';
+const EXAMPLE_TARGET = { username: 'username', slug: 'my-tools' };
+const EXAMPLE_URL = buildCollectionMcpUrl(EXAMPLE_TARGET);
+const EXAMPLE_COMMAND = buildClaudeCodeCollectionCommand(EXAMPLE_TARGET);
 
 type Provider = 'claude-code' | 'claude-desktop' | 'cursor' | 'windsurf' | 'any';
 
@@ -109,7 +112,7 @@ function ProviderConfig({ provider }: { provider: Provider }) {
                 one command — that&apos;s it
               </p>
             </div>
-            <CodeBlock code={`claude mcp add my-tools \\\n  ${EXAMPLE_URL} \\\n  -t http`} />
+            <CodeBlock code={EXAMPLE_COMMAND} />
           </div>
           <div className="flex items-start gap-3 p-3 bg-surface border border-dashed border-border">
             <span className="font-mono text-xs text-primary mt-0.5">tip</span>
@@ -260,10 +263,7 @@ Content-Type: application/json
               >
                 Model Context Protocol
               </a>{' '}
-              can connect. SSE transport is also available at{' '}
-              <code className="px-1 py-0.5 bg-background border border-border text-foreground">
-                /api/mcp/username/slug/sse
-              </code>
+              can connect to the same recommended HTTP endpoint.
             </p>
           </div>
         </div>

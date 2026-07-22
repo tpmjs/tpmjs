@@ -360,20 +360,15 @@ Invalid usernames:
               </DocSubSection>
               <DocSubSection title="MCP Server URLs">
                 <p className="text-foreground-secondary mb-4">
-                  Each collection provides HTTP and SSE transport URLs:
+                  Each collection provides one recommended HTTP endpoint:
                 </p>
                 <CodeBlock
                   language="json"
                   code={`{
   "mcpServers": {
     "tpmjs-collection": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "https://tpmjs.com/api/mcp/{username}/{collection-slug}/http",
-        "--header",
-        "Authorization: Bearer YOUR_TPMJS_API_KEY"
-      ]
+      "type": "http",
+      "url": "https://tpmjs.com/@{username}/collections/{collection-slug}/mcp"
     }
   }
 }`}

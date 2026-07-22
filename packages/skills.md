@@ -664,8 +664,8 @@ Per-API-key rate limit overrides are supported.
 {
   "mcpServers": {
     "tpmjs": {
-      "command": "npx",
-      "args": ["-y", "@anthropic/mcp-remote", "https://tpmjs.com/api/mcp/username/collection/sse"]
+      "type": "http",
+      "url": "https://tpmjs.com/@username/collections/collection/mcp"
     }
   }
 }
@@ -673,7 +673,7 @@ Per-API-key rate limit overrides are supported.
 
 ### Claude Code CLI
 ```bash
-claude mcp add tpmjs -- npx -y @anthropic/mcp-remote https://tpmjs.com/api/mcp/username/collection/sse
+claude mcp add --transport http tpmjs https://tpmjs.com/@username/collections/collection/mcp
 ```
 
 ### Cursor
@@ -681,7 +681,7 @@ claude mcp add tpmjs -- npx -y @anthropic/mcp-remote https://tpmjs.com/api/mcp/u
 {
   "mcpServers": {
     "tpmjs": {
-      "url": "https://tpmjs.com/api/mcp/username/collection/sse"
+      "url": "https://tpmjs.com/@username/collections/collection/mcp"
     }
   }
 }
@@ -692,7 +692,7 @@ claude mcp add tpmjs -- npx -y @anthropic/mcp-remote https://tpmjs.com/api/mcp/u
 {
   "mcpServers": {
     "tpmjs": {
-      "serverUrl": "https://tpmjs.com/api/mcp/username/collection/sse"
+      "serverUrl": "https://tpmjs.com/@username/collections/collection/mcp"
     }
   }
 }

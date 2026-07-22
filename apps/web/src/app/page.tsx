@@ -13,6 +13,7 @@ import { HeroSection } from '../components/home/HeroSection';
 import { McpSection } from '../components/home/McpSection';
 import { ProtocolSection } from '../components/home/ProtocolSection';
 import { SocialProofSection } from '../components/home/SocialProofSection';
+import { selectFeaturedCollection } from '../lib/featured-collection';
 import { defaultToolDiscoveryFilter } from '../lib/tool-health-policy';
 
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,7 @@ async function getHomePageData() {
       latestSnapshot,
       liveToolCount,
       livePackageCount,
+      featuredCollectionCandidates,
     ] = await Promise.all([
       // Top 6 featured tools by quality score (never feature an import-broken tool)
       prisma.tool.findMany({
@@ -125,6 +127,28 @@ async function getHomePageData() {
       // never trust the drift-prone counters/snapshot for the headline numbers).
       prisma.tool.count({ where: defaultToolDiscoveryFilter() }),
       prisma.package.count(),
+
+      // Build a bounded live candidate set. The final choice combines proven
+      // usage with collection breadth instead of pinning a hand-maintained ID.
+      prisma.collection.findMany({
+        where: {
+          isPublic: true,
+          slug: { not: null },
+          user: { username: { not: null } },
+          tools: { some: { tool: defaultToolDiscoveryFilter() } },
+        },
+        orderBy: [{ executionCount: 'desc' }, { likeCount: 'desc' }, { createdAt: 'desc' }],
+        take: 50,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          executionCount: true,
+          likeCount: true,
+          user: { select: { username: true } },
+          _count: { select: { tools: true } },
+        },
+      }),
     ]);
 
     // Always query all-time avg execution time (snapshot only has daily value)
@@ -185,6 +209,7 @@ async function getHomePageData() {
     // reconcile job). Small tables, so a direct count is instant.
     const packageCount = livePackageCount;
     const toolCount = liveToolCount;
+    const featuredCollection = selectFeaturedCollection(featuredCollectionCandidates);
 
     return {
       stats: {
@@ -201,6 +226,16 @@ async function getHomePageData() {
         count: c._count._all,
       })),
       featuredScenarios,
+      featuredCollection:
+        featuredCollection?.slug && featuredCollection.user.username
+          ? {
+              id: featuredCollection.id,
+              name: featuredCollection.name,
+              slug: featuredCollection.slug,
+              username: featuredCollection.user.username,
+              toolCount: featuredCollection._count.tools,
+            }
+          : null,
     };
   } catch (error) {
     console.error('Failed to fetch homepage data:', error);
@@ -222,6 +257,7 @@ async function getHomePageData() {
       featuredTools: [],
       categories: [],
       featuredScenarios: [],
+      featuredCollection: null,
     };
   }
 }
@@ -236,8 +272,8 @@ export default async function HomePage(): Promise<React.ReactElement> {
         {/* Hero Section - Dithered Design */}
         <HeroSection stats={data.stats} />
 
-        {/* Get Started - Install Script Section */}
-        <GetStartedSection />
+        {/* Get Started - live public collection activation */}
+        <GetStartedSection collection={data.featuredCollection} />
 
         {/* Ecosystem Stats */}
         <EcosystemStats stats={data.ecosystemStats} />

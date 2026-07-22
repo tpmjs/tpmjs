@@ -28,9 +28,8 @@ On top of that: every tool is import- and execution-**health-checked** (broken t
 Add a real public collection to Claude Code as one MCP endpoint — no signup:
 
 ```bash
-claude mcp add claude-code-tools \
-  https://tpmjs.com/@ajax/collections/claude-code-tools/mcp \
-  -t http
+claude mcp add --transport http tpmjs-claude-code-tools \
+  https://tpmjs.com/@ajax/collections/claude-code-tools/mcp
 ```
 
 Or hit a tool over plain REST (public, key-free):

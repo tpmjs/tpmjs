@@ -10,14 +10,14 @@ wiring. This example is config only; there is nothing to install or run.
 https://tpmjs.com/@{user}/collections/{slug}/mcp
 ```
 
-(Source of truth: [`InstallationSection.tsx`](../../apps/web/src/components/collections/InstallationSection.tsx).)
+(Source of truth: [`collection-mcp.ts`](../../apps/web/src/lib/collection-mcp.ts).)
 
 ## Add a public collection to Claude Code
 
-Positional args (name, url) come **before** flags so `-H` doesn't swallow them:
+Use the current Claude Code HTTP transport syntax:
 
 ```bash
-claude mcp add {slug} https://tpmjs.com/@{user}/collections/{slug}/mcp -t http
+claude mcp add --transport http tpmjs-{slug} https://tpmjs.com/@{user}/collections/{slug}/mcp
 ```
 
 Then verify the connection inside Claude Code:
@@ -34,8 +34,8 @@ Add your API key as a bearer header (get one at
 `https://tpmjs.com/dashboard/settings/tpmjs-api-keys`):
 
 ```bash
-claude mcp add {slug} https://tpmjs.com/@{user}/collections/{slug}/mcp -t http \
-  -H "Authorization: Bearer YOUR_TPMJS_API_KEY"
+claude mcp add --transport http tpmjs-{slug} https://tpmjs.com/@{user}/collections/{slug}/mcp \
+  --header "Authorization: Bearer YOUR_TPMJS_API_KEY"
 ```
 
 ## Add to Claude Desktop instead
@@ -68,7 +68,7 @@ Prefer *search‑then‑execute* over a curated collection? Point the client at 
 endpoint, which exposes `search_tools` and `execute_tool` across every tool:
 
 ```bash
-claude mcp add tpmjs-registry https://tpmjs.com/api/mcp/registry/http -t http
+claude mcp add --transport http tpmjs-registry https://tpmjs.com/api/mcp/registry/http
 ```
 
 (Streamable HTTP transport; source:
@@ -83,6 +83,6 @@ claude mcp add tpmjs-registry https://tpmjs.com/api/mcp/registry/http -t http
 ## Notes
 
 - Replace `{user}` and `{slug}` with a real username and collection slug. Everything else — the URL
-  shape, the `claude mcp add … -t http` command, the Claude Desktop JSON, the `/mcp` verify step — is
-  taken verbatim from the app's Installation UI and CLI.
+  shape, the `claude mcp add --transport http …` command, the Claude Desktop JSON, and the `/mcp`
+  verification step — is taken verbatim from the app's activation UI and CLI.
 - Docs: <https://tpmjs.com/docs>.

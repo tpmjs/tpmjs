@@ -26,8 +26,8 @@ Write the tool once. We serve all five.
 Add a real collection to Claude Code with one command — no signup:
 
 ```
-claude mcp add claude-code-tools \
-  https://tpmjs.com/@ajax/collections/claude-code-tools/mcp -t http
+claude mcp add --transport http tpmjs-claude-code-tools \
+  https://tpmjs.com/@ajax/collections/claude-code-tools/mcp
 ```
 
 Same collection is also a REST endpoint, a `tpm` CLI, an SDK import, and a Skill.
@@ -52,7 +52,7 @@ Tools are import/execution health-checked (~96.5% of 781 healthy) and run in a s
 
 Try it with no signup — add a real collection to Claude Code:
 ```
-claude mcp add claude-code-tools https://tpmjs.com/@ajax/collections/claude-code-tools/mcp -t http
+claude mcp add --transport http tpmjs-claude-code-tools https://tpmjs.com/@ajax/collections/claude-code-tools/mcp
 ```
 It's early and I'd love blunt feedback. Code: github.com/tpmjs/tpmjs · Site: tpmjs.com
 

@@ -87,9 +87,8 @@ Why CLI wins here:
 **Best for:** Claude Desktop, Cursor, Windsurf, any editor without a shell. And anywhere you need structured tool boundaries.
 
 \`\`\`bash
-claude mcp add my-tools \\
-  https://tpmjs.com/@you/collections/my-tools/mcp \\
-  -t http
+claude mcp add --transport http tpmjs-my-tools \\
+  https://tpmjs.com/@you/collections/my-tools/mcp
 \`\`\`
 
 Why MCP wins here:
