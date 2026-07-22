@@ -10,8 +10,31 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
+  validation_provenance:
+    name: Validation provenance
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      reuse: ${{ steps.provenance.outputs.reuse }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Find exact successful pull-request validation
+        id: provenance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/reuse-pr-validation.mjs
+
   lint:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -40,6 +63,8 @@ jobs:
           docker compose --file compose.dev.yaml config --quiet
 
   type-check:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     env:
       TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -85,6 +110,8 @@ jobs:
           pnpm exec turbo run type-check --affected
 
   type-coverage:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -113,6 +140,8 @@ jobs:
         run: pnpm type-coverage
 
   test:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -137,6 +166,7 @@ jobs:
           pnpm release:auth:test
           pnpm release:build:test
           pnpm verify:vercel-api:test
+          node --test scripts/reuse-pr-validation.test.mjs
           pnpm test
 
       - name: Report and enforce test coverage
@@ -151,6 +181,8 @@ jobs:
           if-no-files-found: error
 
   migrations:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -198,6 +230,8 @@ jobs:
           --exit-code
 
   build:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     env:
       TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -239,6 +273,8 @@ jobs:
           pnpm exec turbo run build --affected
 
   executor:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -338,6 +374,8 @@ jobs:
           ' /tmp/executor-missing-export.json
 
   architecture:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -358,6 +396,8 @@ jobs:
         run: pnpm check-architecture
 
   deadcode:
+    needs: validation_provenance
+    if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
