@@ -41,6 +41,9 @@ jobs:
 
   type-check:
     runs-on: ubuntu-latest
+    env:
+      TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+      TURBO_SCM_HEAD: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -194,6 +197,9 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+      TURBO_SCM_HEAD: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
         with:

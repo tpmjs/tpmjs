@@ -189,6 +189,11 @@ requireText(
   'turbo ls --affected --output=json',
   'CI must skip type checking cleanly when no workspaces are affected'
 );
+requireText(
+  typeCheckJob,
+  'github.event.pull_request.base.sha || github.event.before',
+  'affected type checking must compare exact event SHAs instead of a local branch name'
+);
 
 const buildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
 requireText(buildJob, '.turbo', 'the build job must preserve Turbo task artifacts');
@@ -202,6 +207,11 @@ requireText(
   buildJob,
   'turbo ls --affected --output=json',
   'CI must skip building cleanly when no workspaces are affected'
+);
+requireText(
+  buildJob,
+  'github.event.pull_request.base.sha || github.event.before',
+  'affected builds must compare exact event SHAs instead of a local branch name'
 );
 
 if (failures.length > 0) {

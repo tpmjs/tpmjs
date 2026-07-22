@@ -64,8 +64,11 @@ trigger hundreds of unrelated tool-package builds. Changes to shared packages
 still include every transitive dependent, while a missing comparison base
 safely falls back to the full graph. `pnpm build` and `pnpm type-check` remain
 the explicit full-repository commands. CI queries the affected package count
-first and exits successfully when it is zero, avoiding a runner-side empty-set
-edge case for documentation- or workflow-only changes. TypeScript cache paths
+first and exits successfully when it is zero. The comparison range uses exact
+GitHub event SHAs rather than a local `main` branch name: pull requests compare
+their base SHA with the checked merge SHA, and pushes compare the event's
+`before` SHA with the new SHA. This prevents a missing local branch from making
+Turbo conservatively rebuild all 235 workspaces. TypeScript cache paths
 enumerate only workspace output depths; a recursive `**/*.tsbuildinfo` glob is
 forbidden because it traverses the installed dependency tree during post-job
 cleanup. On-box compiler artifacts are namespaced by the absolute
