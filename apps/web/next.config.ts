@@ -4,6 +4,7 @@ import { withSentryConfig } from '@sentry/nextjs';
 import type { NextConfig } from 'next';
 
 const monorepoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const ciValidatedRelease = process.env.TPMJS_CI_VALIDATED_RELEASE === '1';
 
 const nextConfig: NextConfig = {
   // Produce a traced runtime instead of shipping the entire monorepo and its
@@ -11,6 +12,17 @@ const nextConfig: NextConfig = {
   // must include workspace packages imported by the web application.
   output: 'standalone',
   outputFileTracingRoot: monorepoRoot,
+  // Turbopack's production cache is opt-in. Keep compiler artifacts between
+  // builds so a release only recomputes the graph affected by the new commit.
+  experimental: {
+    turbopackFileSystemCacheForBuild: true,
+  },
+  // The transactional on-box deploy verifies that this exact origin/main SHA
+  // passed the main-branch CI build and type-check before setting this flag.
+  // Developer and CI builds retain Next's built-in type-check by default.
+  typescript: {
+    ignoreBuildErrors: ciValidatedRelease,
+  },
   transpilePackages: [
     '@tpmjs/ui',
     '@tpmjs/utils',

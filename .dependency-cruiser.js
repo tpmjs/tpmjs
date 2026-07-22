@@ -102,7 +102,12 @@ export default {
         "This module depends on a module that cannot be found ('resolved to disk'). If it's an npm " +
         'module: add it to your package.json. In all other cases you likely already know what to do.',
       severity: 'error',
-      from: {},
+      from: {
+        // These committed entrypoints intentionally target generated build output.
+        // Architecture checks must stay valid in a clean checkout without first
+        // paying for a production build just to materialize those files.
+        pathNot: ['(^|/)next-env\\.d\\.ts$', '^packages/executor-test/bin/run\\.js$'],
+      },
       to: {
         couldNotResolve: true,
         // Allow TypeScript path aliases and workspace packages that are resolved by the TS compiler

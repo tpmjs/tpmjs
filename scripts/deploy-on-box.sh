@@ -18,9 +18,16 @@ readonly EXECUTOR_HEALTH_URL='http://127.0.0.1:3210/health'
 readonly WEB_HEALTH_URL='http://127.0.0.1:3200/api/health'
 readonly PUBLIC_WEB_HEALTH_URL='https://tpmjs.com/api/health'
 readonly MIN_FREE_KB=$((5 * 1024 * 1024))
+readonly GITHUB_REPOSITORY='tpmjs/tpmjs'
+readonly RELEASE_ROOT=${TPMJS_RELEASE_ROOT:-/var/cache/tpmjs/release-worktree}
+readonly RELEASE_STAGING_ROOT=${TPMJS_RELEASE_STAGING_ROOT:-/var/cache/tpmjs/release-staging}
+readonly PNPM_STORE_ROOT=${TPMJS_PNPM_STORE_ROOT:-/var/cache/tpmjs/pnpm-store}
+readonly NEXT_BUILD_CACHE_ROOT=${TPMJS_NEXT_BUILD_CACHE_ROOT:-/var/cache/tpmjs/next-turbopack}
 
 COMMIT_SHA=''
+COMMIT_SHA_FULL=''
 COMMIT_MESSAGE=''
+CI_RUN_URL=''
 CURRENT_TARGET=''
 CURRENT_LIVE_IMAGE=''
 CURRENT_OLD_IMAGE=''
@@ -29,6 +36,9 @@ CURRENT_SERVICE=''
 CURRENT_ACTIVATED=0
 CANDIDATE_CONTAINER=''
 CANDIDATE_IMAGE=''
+DEPLOY_STARTED_AT=0
+RELEASE_PROVENANCE_FILES=()
+RELEASE_SNAPSHOT=''
 
 usage() {
   cat <<'USAGE'
@@ -43,6 +53,15 @@ USAGE
 
 log() {
   printf '[tpmjs-deploy] %s\n' "$*"
+}
+
+run_timed() {
+  local phase=$1
+  shift
+  local started_at=$SECONDS
+  log "$phase started"
+  "$@"
+  log "$phase completed in $((SECONDS - started_at))s"
 }
 
 fail() {
@@ -68,9 +87,42 @@ remove_candidate_tag() {
   fi
 }
 
+cleanup_provenance_files() {
+  local path
+  for path in "${RELEASE_PROVENANCE_FILES[@]}"; do
+    rm -f -- "$path"
+  done
+  RELEASE_PROVENANCE_FILES=()
+}
+
+cleanup_release_snapshot() {
+  if [[ -z "$RELEASE_SNAPSHOT" || ! -d "$RELEASE_SNAPSHOT" ]]; then
+    return 0
+  fi
+
+  case "$RELEASE_SNAPSHOT" in
+    "$RELEASE_STAGING_ROOT"/snapshot.*)
+      find "$RELEASE_SNAPSHOT" -depth -delete
+      RELEASE_SNAPSHOT=''
+      ;;
+    *)
+      printf '[tpmjs-deploy] refusing to remove unexpected snapshot path: %s\n' \
+        "$RELEASE_SNAPSHOT" >&2
+      ;;
+  esac
+}
+
+write_release_provenance() {
+  local path=$1
+  printf 'commit=%s\nmessage=%s\n' "$COMMIT_SHA_FULL" "$COMMIT_MESSAGE" >"$path"
+  RELEASE_PROVENANCE_FILES+=("$path")
+}
+
 cleanup() {
   stop_candidate_container
   remove_candidate_tag
+  cleanup_provenance_files
+  cleanup_release_snapshot
 }
 
 rollback_current_service() {
@@ -151,10 +203,115 @@ assert_migrations_applied() {
   fi
 }
 
+assert_ci_passed() {
+  local runs
+  runs=$(gh run list \
+    --repo "$GITHUB_REPOSITORY" \
+    --workflow ci.yml \
+    --commit "$COMMIT_SHA_FULL" \
+    --event push \
+    --status success \
+    --limit 10 \
+    --json conclusion,headSha,url)
+  CI_RUN_URL=$(jq --raw-output --arg sha "$COMMIT_SHA_FULL" \
+    '[.[] | select(.conclusion == "success" and .headSha == $sha)][0].url // empty' \
+    <<<"$runs")
+  [[ -n "$CI_RUN_URL" ]] ||
+    fail "origin/main $COMMIT_SHA_FULL has no successful main-branch CI run"
+  log "trusted CI proof: $CI_RUN_URL"
+}
+
+prepare_release_workspace() {
+  local include_web_dependencies=$1
+  local relative_env source_env target_env
+
+  sudo install -d \
+    --owner "$(id -u)" \
+    --group "$(id -g)" \
+    --mode 0755 \
+    "$RELEASE_ROOT" \
+    "$RELEASE_STAGING_ROOT" \
+    "$PNPM_STORE_ROOT"
+
+  RELEASE_SNAPSHOT=$(mktemp -d "$RELEASE_STAGING_ROOT/snapshot.XXXXXXXX")
+  git archive --format=tar "$COMMIT_SHA_FULL" | tar -xf - -C "$RELEASE_SNAPSHOT"
+
+  # The mirror contains only the exact, CI-proven commit. Dependencies and
+  # generated Next output survive source refreshes so warm releases avoid the
+  # contended data disk without ever mutating the canonical checkout.
+  rsync --archive --delete \
+    --exclude 'node_modules/' \
+    --exclude '/.turbo/' \
+    --exclude '/apps/web/.next/' \
+    "$RELEASE_SNAPSHOT/" \
+    "$RELEASE_ROOT/"
+  chmod 0755 "$RELEASE_ROOT"
+
+  for relative_env in apps/web/.env.local apps/web/.env.production; do
+    source_env="$REPO_ROOT/$relative_env"
+    target_env="$RELEASE_ROOT/$relative_env"
+    if [[ -f "$source_env" ]]; then
+      install -D --mode 0600 "$source_env" "$target_env"
+    else
+      rm -f -- "$target_env"
+    fi
+  done
+
+  cleanup_release_snapshot
+  log "prepared exact release workspace for $COMMIT_SHA at $RELEASE_ROOT"
+
+  if [[ "$include_web_dependencies" == 'yes' ]]; then
+    run_timed release-dependencies env CI=1 pnpm --dir "$RELEASE_ROOT" install \
+      --filter '@tpmjs/web...' \
+      --frozen-lockfile \
+      --prefer-offline \
+      --store-dir "$PNPM_STORE_ROOT"
+    run_timed release-workspaces pnpm --dir "$RELEASE_ROOT" exec turbo run build \
+      --filter='@tpmjs/web^...'
+  fi
+}
+
+prepare_next_build_cache() {
+  local cache_parent="$RELEASE_ROOT/apps/web/.next/cache"
+  local cache_link="$cache_parent/turbopack"
+  local cache_namespace=''
+  local cache_target=''
+  local current_target=''
+  local preserved=''
+
+  cache_namespace=$(printf '%s' "$RELEASE_ROOT" | sha256sum | cut -c1-16)
+  cache_target="$NEXT_BUILD_CACHE_ROOT/roots/$cache_namespace"
+  sudo install -d \
+    --owner "$(id -u)" \
+    --group "$(id -g)" \
+    --mode 0755 \
+    "$cache_target"
+  mkdir -p "$cache_parent"
+
+  if [[ -L "$cache_link" ]]; then
+    current_target=$(readlink -f "$cache_link")
+    if [[ "$current_target" == "$cache_target" ]]; then
+      return 0
+    fi
+    preserved="${cache_link}.previous-target-$(date -u +%Y%m%dT%H%M%SZ)"
+    mv "$cache_link" "$preserved"
+    log "preserved compiler-cache link for $current_target at $preserved"
+  fi
+
+  if [[ -e "$cache_link" ]]; then
+    preserved="${cache_link}.data-disk-$(date -u +%Y%m%dT%H%M%SZ)"
+    mv "$cache_link" "$preserved"
+    log "preserved previous data-disk compiler cache at $preserved"
+  fi
+
+  ln -s "$cache_target" "$cache_link"
+  log "Turbopack cache is namespaced for $RELEASE_ROOT at $cache_target"
+}
+
 preflight() {
   local target=$1
   local command
-  for command in git sudo podman systemctl curl jq pnpm df awk sed tr seq date find sort diff; do
+  for command in git gh sudo podman systemctl curl jq pnpm df awk sed tr seq date find sort diff install id readlink mv ln mktemp tar rsync rm sha256sum cut chmod; do
     need_command "$command"
   done
 
@@ -171,8 +328,11 @@ preflight() {
   [[ "$head" == "$remote_main" ]] ||
     fail "local HEAD $head does not equal origin/main $remote_main"
 
-  COMMIT_SHA=$(git rev-parse --short=8 HEAD)
+  COMMIT_SHA_FULL=$(git rev-parse HEAD)
+  COMMIT_SHA=${COMMIT_SHA_FULL:0:8}
   COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+
+  assert_ci_passed
 
   assert_free_space /
   assert_free_space /mnt/donto-data
@@ -366,16 +526,16 @@ finish_activation() {
 deploy_executor() {
   log 'building executor candidate'
   CANDIDATE_IMAGE="localhost/tpmjs-railway-executor:candidate-${COMMIT_SHA}"
-  # Podman's layer cache can reuse an ARG-expanded LABEL from an older build
-  # when the executor source itself is unchanged. That produces correct code
-  # with false provenance, so release candidates deliberately rebuild metadata.
-  sudo podman build --no-cache \
+  write_release_provenance "$RELEASE_ROOT/apps/railway-executor/.tpmjs-release-provenance"
+  # The changing provenance file invalidates the metadata tail while --layers
+  # safely reuses the OS packages and Deno dependency-check layers.
+  run_timed executor-image-build sudo podman build --layers \
     --build-arg "COMMIT_SHA=$COMMIT_SHA" \
     --build-arg "COMMIT_MESSAGE=$COMMIT_MESSAGE" \
     --tag "$CANDIDATE_IMAGE" \
-    apps/railway-executor/
+    "$RELEASE_ROOT/apps/railway-executor/"
   assert_image_revision "$CANDIDATE_IMAGE"
-  smoke_executor_candidate "$CANDIDATE_IMAGE"
+  run_timed executor-candidate-smoke smoke_executor_candidate "$CANDIDATE_IMAGE"
   log 'executor candidate passed protocol and real-tool smoke tests'
 
   prepare_activation executor "$EXECUTOR_IMAGE" "$EXECUTOR_SERVICE"
@@ -387,17 +547,23 @@ deploy_executor() {
 
 deploy_web() {
   log 'building Next.js standalone output'
-  pnpm --filter @tpmjs/web build
+  # This exact SHA already passed CI's full Next build and TypeScript checks.
+  # The release build retains compilation and generation but avoids repeating
+  # the six-to-twelve-minute type-check on the production host.
+  prepare_next_build_cache
+  run_timed web-next-build env TPMJS_CI_VALIDATED_RELEASE=1 \
+    pnpm --dir "$RELEASE_ROOT" --filter @tpmjs/web build:release
 
   CANDIDATE_IMAGE="localhost/tpmjs-web:candidate-${COMMIT_SHA}"
-  sudo podman build --no-cache --network=host \
+  write_release_provenance "$RELEASE_ROOT/apps/web/.next/.tpmjs-release-provenance"
+  run_timed web-image-build sudo podman build --layers --network=host \
     --build-arg "COMMIT_SHA=$COMMIT_SHA" \
     --build-arg "COMMIT_MESSAGE=$COMMIT_MESSAGE" \
     --tag "$CANDIDATE_IMAGE" \
-    --file Dockerfile \
-    apps/web/.next
+    --file "$RELEASE_ROOT/Dockerfile" \
+    "$RELEASE_ROOT/apps/web/.next"
   assert_image_revision "$CANDIDATE_IMAGE"
-  smoke_web_candidate "$CANDIDATE_IMAGE"
+  run_timed web-candidate-smoke smoke_web_candidate "$CANDIDATE_IMAGE"
   log 'web candidate passed database-aware runtime smoke test'
 
   prepare_activation web "$WEB_IMAGE" "$WEB_SERVICE"
@@ -434,6 +600,7 @@ verify_live() {
 
 main() {
   local target=${1:-}
+  DEPLOY_STARTED_AT=$SECONDS
   case "$target" in
     executor | web | all | verify) ;;
     -h | --help)
@@ -448,14 +615,24 @@ main() {
 
   preflight "$target"
   case "$target" in
-    executor) deploy_executor ;;
-    web) deploy_web ;;
+    executor)
+      prepare_release_workspace no
+      deploy_executor
+      ;;
+    web)
+      prepare_release_workspace yes
+      deploy_web
+      ;;
     all)
+      prepare_release_workspace yes
       deploy_executor
       deploy_web
       ;;
     verify) verify_live ;;
   esac
+  log "$target completed in $((SECONDS - DEPLOY_STARTED_AT))s"
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
