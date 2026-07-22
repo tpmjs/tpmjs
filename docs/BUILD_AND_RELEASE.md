@@ -67,6 +67,14 @@ file invalidates only the metadata tail of each Dockerfile, so a new Git commit
 cannot inherit stale labels while expensive operating-system and Deno layers
 remain reusable.
 
+The executor's static Deno dependencies use pinned `npm:` registry specifiers
+instead of build-time CDN imports. `deno.json` is copied before `server.ts`, and
+the dependency install plus type check both enforce the committed `deno.lock`
+with `--frozen`. This removes `esm.sh` from the executor image's static build
+graph, verifies dependency integrity, and lets normal source changes reuse the
+dependency layer. Dynamic tool packages are request-selected at runtime and
+retain their separate `esm.sh`-then-`npm:` resolution path.
+
 ## Measured baseline
 
 The 2026-07-22 baseline on the production host was approximately 28 minutes for
@@ -85,6 +93,10 @@ container packaging. This is an approximately 17x end-to-end improvement before
 image-layer reuse, and an approximately 84x improvement for repeated builds of
 the same source.
 
+After locking and separating the executor dependency graph, an on-box image
+build took 14.0s from the first new dependency layer and 4.6s unchanged. The
+finished image also passed its frozen type check with networking disabled.
+
 ## Regression gates
 
 `pnpm check-architecture` runs `scripts/check-build-performance.mjs`. The gate
@@ -95,6 +107,7 @@ fails if a maintainer accidentally:
 - moves release compilation back to the data volume;
 - restores the duplicate architecture build;
 - disables Podman layers; or
+- disables the executor lockfile or restores static CDN imports; or
 - permits stale image provenance.
 
 Use normal builds for local validation:

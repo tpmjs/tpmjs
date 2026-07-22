@@ -1,0 +1,24 @@
+{
+  "version": "4",
+  "specifiers": {
+    "npm:zod-to-json-schema@3.25.0": "3.25.0_zod@4.4.3",
+    "npm:zod@4.4.3": "4.4.3"
+  },
+  "npm": {
+    "zod-to-json-schema@3.25.0_zod@4.4.3": {
+      "integrity": "sha512-HvWtU2UG41LALjajJrML6uQejQhNJx+JBO9IflpSja4R03iNWfKXrj6W2h7ljuLyc1nKS+9yDyL/9tD1U/yBnQ==",
+      "dependencies": [
+        "zod"
+      ]
+    },
+    "zod@4.4.3": {
+      "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:zod-to-json-schema@3.25.0",
+      "npm:zod@4.4.3"
+    ]
+  }
+}

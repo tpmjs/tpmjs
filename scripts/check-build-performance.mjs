@@ -13,6 +13,9 @@ function requireText(source, expected, message) {
 const nextConfig = read('apps/web/next.config.ts');
 const deploy = read('scripts/deploy-on-box.sh');
 const executorDockerfile = read('apps/railway-executor/Dockerfile');
+const executorServer = read('apps/railway-executor/server.ts');
+const executorDenoConfig = JSON.parse(read('apps/railway-executor/deno.json'));
+const executorDenoLock = JSON.parse(read('apps/railway-executor/deno.lock'));
 const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
 
@@ -115,6 +118,43 @@ requireText(
   '> apps/railway-executor/.tpmjs-release-provenance',
   'CI must create the executor provenance marker before building its image'
 );
+
+requireText(
+  executorDockerfile,
+  'COPY deno.json deno.lock ./',
+  'executor dependencies must be copied before source for stable image-layer caching'
+);
+requireText(
+  executorDockerfile,
+  'deno install --lock=deno.lock --frozen',
+  'executor dependency installation must use the committed frozen lockfile'
+);
+requireText(
+  executorDockerfile,
+  'deno check --lock=deno.lock --frozen server.ts',
+  'executor type checking must use the committed frozen lockfile'
+);
+if (executorDockerfile.includes('deno check --no-lock')) {
+  failures.push('executor image builds must never disable dependency integrity locking');
+}
+if (/^import .*https:\/\/esm\.sh\//m.test(executorServer)) {
+  failures.push(
+    'executor build-time dependencies must use locked registry imports, not CDN imports'
+  );
+}
+if (
+  executorDenoConfig.imports?.['zod-to-json-schema'] !== 'npm:zod-to-json-schema@3.25.0' ||
+  executorDenoConfig.imports?.['zod-v4'] !== 'npm:zod@4.4.3'
+) {
+  failures.push('executor build-time dependency versions must remain explicitly pinned');
+}
+if (
+  executorDenoLock.version !== '4' ||
+  !executorDenoLock.specifiers?.['npm:zod-to-json-schema@3.25.0'] ||
+  !executorDenoLock.specifiers?.['npm:zod@4.4.3']
+) {
+  failures.push('executor lockfile must cover every pinned build-time dependency');
+}
 
 const architectureJob = ci.slice(ci.indexOf('  architecture:'), ci.indexOf('  deadcode:'));
 if (architectureJob.includes('pnpm build')) {
