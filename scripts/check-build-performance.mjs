@@ -110,7 +110,14 @@ for (const [name, dockerfile] of [
 }
 
 requireText(ci, 'apps/web/.next/cache', 'CI must preserve Next.js incremental compiler state');
-requireText(ci, '**/*.tsbuildinfo', 'CI must preserve incremental TypeScript state');
+requireText(
+  ci,
+  'packages/tools/official/*/tsconfig.tsbuildinfo',
+  'CI must preserve incremental TypeScript state without traversing dependency trees'
+);
+if (ci.includes('**/*.tsbuildinfo')) {
+  failures.push('TypeScript cache paths must not recursively traverse node_modules');
+}
 requireText(ci, '  type-coverage:', 'type coverage must run independently from type checking');
 requireText(ci, 'path: .type-coverage', 'CI must preserve incremental type-coverage analysis');
 requireText(
@@ -177,6 +184,16 @@ requireText(
   'turbo run type-check --affected',
   'CI must type-check only the dependency-aware affected workspace graph'
 );
+requireText(
+  typeCheckJob,
+  'turbo ls --affected --output=json',
+  'CI must skip type checking cleanly when no workspaces are affected'
+);
+requireText(
+  typeCheckJob,
+  'github.event.pull_request.base.sha || github.event.before',
+  'affected type checking must compare exact event SHAs instead of a local branch name'
+);
 
 const buildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
 requireText(buildJob, '.turbo', 'the build job must preserve Turbo task artifacts');
@@ -185,6 +202,16 @@ requireText(
   buildJob,
   'turbo run build --affected',
   'CI must build only the dependency-aware affected workspace graph'
+);
+requireText(
+  buildJob,
+  'turbo ls --affected --output=json',
+  'CI must skip building cleanly when no workspaces are affected'
+);
+requireText(
+  buildJob,
+  'github.event.pull_request.base.sha || github.event.before',
+  'affected builds must compare exact event SHAs instead of a local branch name'
 );
 
 if (failures.length > 0) {

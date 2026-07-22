@@ -41,6 +41,9 @@ jobs:
 
   type-check:
     runs-on: ubuntu-latest
+    env:
+      TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+      TURBO_SCM_HEAD: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -59,8 +62,12 @@ jobs:
         uses: actions/cache@v5
         with:
           path: |
-            **/*.tsbuildinfo
             .turbo
+            apps/*/tsconfig.tsbuildinfo
+            apps/*/.next/cache/tsconfig.tsbuildinfo
+            packages/*/tsconfig.tsbuildinfo
+            packages/tools/*/tsconfig.tsbuildinfo
+            packages/tools/official/*/tsconfig.tsbuildinfo
           key: ${{ runner.os }}-typescript-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-typescript-${{ hashFiles('pnpm-lock.yaml') }}-
@@ -69,7 +76,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Type check
-        run: pnpm exec turbo run type-check --affected
+        run: |
+          affected_count="$(pnpm exec turbo ls --affected --output=json | jq '.packages.count')"
+          if [ "$affected_count" -eq 0 ]; then
+            echo 'No workspaces require type checking'
+            exit 0
+          fi
+          pnpm exec turbo run type-check --affected
 
   type-coverage:
     runs-on: ubuntu-latest
@@ -184,6 +197,9 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    env:
+      TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+      TURBO_SCM_HEAD: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -212,7 +228,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm exec turbo run build --affected
+        run: |
+          affected_count="$(pnpm exec turbo ls --affected --output=json | jq '.packages.count')"
+          if [ "$affected_count" -eq 0 ]; then
+            echo 'No workspaces require building'
+            exit 0
+          fi
+          pnpm exec turbo run build --affected
 
   executor:
     runs-on: ubuntu-latest
