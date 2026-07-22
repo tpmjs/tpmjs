@@ -678,7 +678,7 @@ Remove the `needs-human-review` label and re-apply `auto-fix`. The retry loop al
 3. Update validation commands in the pipeline spec (`pnpm type-check`, `pnpm lint`, etc.) to match your project
 4. Adjust the "Prohibited" list in the pipeline spec for your codebase
 5. Update the `claude_args` allowed tools if you use yarn/bun instead of pnpm/npm
-6. Add any env vars Claude needs (e.g., `NPM_TOKEN`, `CRON_SECRET`) to the workflow
+6. Add only the narrowly scoped env vars Claude needs (for example, `CRON_SECRET`) to the workflow
 7. If not using Sentry, adapt the issue template fields to match your error monitoring tool
 
 ---

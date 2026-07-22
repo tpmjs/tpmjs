@@ -26,6 +26,7 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - 35 stale Vercel API routes and request contracts; deprecated checks migrated to v2
 
 ### Improved
+- Release administration no longer exposes a long-lived npm token to GitHub Actions; npm trust is bootstrapped from an audited interactive maintainer session and routine publishing is OIDC-only
 - Security: SECURITY.md, CODE_OF_CONDUCT.md, issue/PR templates
 - SEO: sitemap expanded from 7 to 40+ static pages
 - Homepage: removed `count()` calls, uses pre-computed snapshot data

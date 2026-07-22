@@ -50,9 +50,6 @@ function parseOptions(args: readonly string[]): CliOptions {
 
 function main(): void {
   const options = parseOptions(process.argv.slice(2));
-  if (!process.env.NODE_AUTH_TOKEN) {
-    throw new Error('NODE_AUTH_TOKEN is required for the one-time npm trust bootstrap');
-  }
 
   const packages = publishedPackageNames(JSON.parse(readFileSync(options.audit, 'utf8')));
   if (packages.length === 0) {
@@ -63,6 +60,28 @@ function main(): void {
   console.log(
     `npm trust bootstrap: configuring ${packages.length} package${packages.length === 1 ? '' : 's'} for ${options.repository}/${options.workflow}`
   );
+
+  const trustHelp = spawnSync('npm', ['trust', '--help'], {
+    stdio: 'ignore',
+    env: process.env,
+  });
+  if (trustHelp.error) throw trustHelp.error;
+  if (trustHelp.status !== 0) {
+    throw new Error('npm 11.18.0 or newer is required for `npm trust github`');
+  }
+
+  const identity = spawnSync('npm', ['whoami'], {
+    encoding: 'utf8',
+    env: process.env,
+  });
+  if (identity.error) throw identity.error;
+  if (identity.status !== 0) {
+    throw new Error(
+      'npm login required; run `npm login --auth-type=web` with a maintainer account'
+    );
+  }
+  console.log(`npm identity: ${identity.stdout.trim()}`);
+
   for (const [index, packageName] of packages.entries()) {
     console.log(`[${index + 1}/${packages.length}] ${packageName}`);
     const result = spawnSync(
