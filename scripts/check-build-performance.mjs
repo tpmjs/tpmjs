@@ -106,12 +106,8 @@ for (const [name, dockerfile] of [
   }
 }
 
-requireText(
-  ci,
-  'path: apps/web/.next/cache',
-  'CI must preserve Next.js incremental compiler state'
-);
-requireText(ci, "path: '**/*.tsbuildinfo'", 'CI must preserve incremental TypeScript state');
+requireText(ci, 'apps/web/.next/cache', 'CI must preserve Next.js incremental compiler state');
+requireText(ci, '**/*.tsbuildinfo', 'CI must preserve incremental TypeScript state');
 requireText(ci, '  type-coverage:', 'type coverage must run independently from type checking');
 requireText(ci, 'path: .type-coverage', 'CI must preserve incremental type-coverage analysis');
 requireText(
@@ -134,6 +130,10 @@ const typeCheckJob = ci.slice(ci.indexOf('  type-check:'), ci.indexOf('  type-co
 if (typeCheckJob.includes('pnpm type-coverage')) {
   failures.push('type coverage must not serialize behind the complete type-check job');
 }
+requireText(typeCheckJob, '.turbo', 'the type-check job must preserve Turbo task artifacts');
+
+const buildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
+requireText(buildJob, '.turbo', 'the build job must preserve Turbo task artifacts');
 
 if (failures.length > 0) {
   console.error('Build-performance contract failed:');
