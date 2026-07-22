@@ -37,7 +37,6 @@ jobs:
         id: claude
         uses: anthropics/claude-code-action@v1
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -87,7 +86,6 @@ jobs:
         if: steps.get-prompt.outputs.found == 'true'
         uses: anthropics/claude-code-action@v1
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
