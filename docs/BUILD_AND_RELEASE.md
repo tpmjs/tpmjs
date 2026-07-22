@@ -58,9 +58,14 @@ content-addressed build/type-check artifacts. Repository-wide type coverage
 remains a mandatory 95% gate, but runs in parallel with ordinary type checking
 and preserves its file-level analysis cache. The architecture job runs the
 architecture ratchets directly instead of rebuilding the entire monorepo a
-second time. On-box compiler artifacts are namespaced by the absolute
-release-workspace path because Turbopack caches are not portable between source
-roots.
+second time. Build and type-check jobs fetch complete Git history and use
+Turbo's dependency-aware `--affected` graph, so an executor-only change cannot
+trigger hundreds of unrelated tool-package builds. Changes to shared packages
+still include every transitive dependent, while a missing comparison base
+safely falls back to the full graph. `pnpm build` and `pnpm type-check` remain
+the explicit full-repository commands. On-box compiler artifacts are namespaced
+by the absolute release-workspace path because Turbopack caches are not portable
+between source roots.
 
 Podman layer reuse remains enabled for both images. A tiny release-provenance
 file invalidates only the metadata tail of each Dockerfile, so a new Git commit
@@ -107,6 +112,7 @@ fails if a maintainer accidentally:
 - bypasses TypeScript without exact-SHA CI proof;
 - moves release compilation back to the data volume;
 - restores the duplicate architecture build;
+- removes dependency-aware affected builds or their required Git history;
 - disables Podman layers; or
 - disables the executor lockfile or restores static CDN imports; or
 - permits stale image provenance.

@@ -171,9 +171,21 @@ if (typeCheckJob.includes('pnpm type-coverage')) {
   failures.push('type coverage must not serialize behind the complete type-check job');
 }
 requireText(typeCheckJob, '.turbo', 'the type-check job must preserve Turbo task artifacts');
+requireText(typeCheckJob, 'fetch-depth: 0', 'affected type checking requires complete Git history');
+requireText(
+  typeCheckJob,
+  'turbo run type-check --affected',
+  'CI must type-check only the dependency-aware affected workspace graph'
+);
 
 const buildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
 requireText(buildJob, '.turbo', 'the build job must preserve Turbo task artifacts');
+requireText(buildJob, 'fetch-depth: 0', 'affected builds require complete Git history');
+requireText(
+  buildJob,
+  'turbo run build --affected',
+  'CI must build only the dependency-aware affected workspace graph'
+);
 
 if (failures.length > 0) {
   console.error('Build-performance contract failed:');
