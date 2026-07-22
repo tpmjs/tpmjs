@@ -4,6 +4,15 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@typescript/native':
+      specifier: npm:typescript@^7.0.2
+      version: 7.0.2
+    typescript:
+      specifier: npm:@typescript/typescript6@^6.0.2
+      version: 6.0.2
+
 overrides:
   cheerio: 1.0.0-rc.12
   tailwindcss: 3.4.17
@@ -21,7 +30,7 @@ importers:
         version: 2.29.8(@types/node@25.0.3)
       '@prisma/client':
         specifier: ^6.19.1
-        version: 6.19.1(prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3)
+        version: 6.19.1(@typescript/typescript6@6.0.2)(prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
       '@total-typescript/ts-reset':
         specifier: ^0.6.1
         version: 0.6.1
@@ -31,15 +40,18 @@ importers:
       '@types/node':
         specifier: ^25.0.3
         version: 25.0.3
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
       '@vitest/coverage-v8':
         specifier: 4.0.16
-        version: 4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       dependency-cruiser:
         specifier: ^17.3.6
         version: 17.3.6
       knip:
         specifier: ^5.80.2
-        version: 5.80.2(@types/node@25.0.3)(typescript@5.9.3)
+        version: 5.80.2(@types/node@25.0.3)(@typescript/typescript6@6.0.2)
       lefthook:
         specifier: ^2.0.13
         version: 2.0.13
@@ -54,13 +66,13 @@ importers:
         version: 2.7.3
       type-coverage-core:
         specifier: 2.29.7
-        version: 2.29.7(typescript@5.9.3)
+        version: 2.29.7(@typescript/typescript6@6.0.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: 4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   apps/playground:
     dependencies:
@@ -141,8 +153,8 @@ importers:
         specifier: 3.4.17
         version: 3.4.17
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   apps/railway-executor:
     dependencies:
@@ -199,8 +211,8 @@ importers:
         specifier: 3.4.17
         version: 3.4.17
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   apps/web:
     dependencies:
@@ -227,7 +239,7 @@ importers:
         version: 1.29.0(zod@4.3.5)
       '@prisma/client':
         specifier: ^6.19.1
-        version: 6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3)
+        version: 6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2))
       '@sentry/nextjs':
         specifier: ^10.38.0
         version: 10.38.0(@opentelemetry/context-async-hooks@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(next@16.2.10(@opentelemetry/api@1.9.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(webpack@5.96.1(esbuild@0.25.12))
@@ -275,7 +287,7 @@ importers:
         version: 3.0.1(ajv@8.17.1)
       better-auth:
         specifier: ^1.6.23
-        version: 1.6.23(@opentelemetry/api@1.9.0)(@prisma/client@6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3))(better-sqlite3@12.5.0)(drizzle-kit@0.31.8)(mongodb@6.20.0)(mysql2@3.15.3)(next@16.2.10(@opentelemetry/api@1.9.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.16.3)(prisma@6.19.1(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 1.6.23(@opentelemetry/api@1.9.0)(@prisma/client@6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2)))(better-sqlite3@12.5.0)(drizzle-kit@0.31.8)(mongodb@6.20.0)(mysql2@3.15.3)(next@16.2.10(@opentelemetry/api@1.9.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.16.3)(prisma@6.19.1(@typescript/typescript6@6.0.2))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       d3:
         specifier: ^7.9.0
         version: 7.9.0
@@ -290,7 +302,7 @@ importers:
         version: 6.15.0(ws@8.19.0)(zod@4.3.5)
       prisma:
         specifier: ^6.19.1
-        version: 6.19.1(typescript@5.9.3)
+        version: 6.19.1(@typescript/typescript6@6.0.2)
       react:
         specifier: ^19.2.3
         version: 19.2.3
@@ -368,11 +380,11 @@ importers:
         specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/bridge:
     dependencies:
@@ -394,10 +406,10 @@ importers:
         version: 22.19.5
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/cli:
     dependencies:
@@ -437,19 +449,19 @@ importers:
         version: 22.19.5
       '@vitest/coverage-v8':
         specifier: 4.0.16
-        version: 4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       oclif:
         specifier: ^4.17.35
         version: 4.22.65(@types/node@22.19.5)
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/compose:
     dependencies:
@@ -465,13 +477,13 @@ importers:
         version: 6.0.49(zod@4.3.5)
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/config: {}
 
@@ -485,7 +497,7 @@ importers:
         version: 9.39.2(jiti@2.6.1)
       eslint-plugin-import:
         specifier: ^2.32.0
-        version: 2.32.0(@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))
+        version: 2.32.0(@typescript-eslint/parser@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))
       eslint-plugin-jsx-a11y:
         specifier: ^6.10.2
         version: 6.10.2(eslint@9.39.2(jiti@2.6.1))
@@ -496,8 +508,12 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1(eslint@9.39.2(jiti@2.6.1))
       typescript-eslint:
-        specifier: ^8.52.0
-        version: 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+        specifier: ^8.65.0
+        version: 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/config/tailwind:
     dependencies:
@@ -506,8 +522,8 @@ importers:
         version: 3.4.17
     devDependencies:
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/config/tsconfig: {}
 
@@ -515,7 +531,7 @@ importers:
     dependencies:
       '@prisma/client':
         specifier: ^6.19.1
-        version: 6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3)
+        version: 6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2))
       '@tpmjs/npm-client':
         specifier: workspace:*
         version: link:../npm-client
@@ -528,13 +544,13 @@ importers:
         version: 25.0.3
       prisma:
         specifier: ^6.19.1
-        version: 6.19.1(typescript@5.9.3)
+        version: 6.19.1(@typescript/typescript6@6.0.2)
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/env:
     dependencies:
@@ -550,10 +566,10 @@ importers:
         version: 25.0.3
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/executor-test:
     dependencies:
@@ -569,13 +585,13 @@ importers:
         version: 22.19.5
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/logger:
     devDependencies:
@@ -584,10 +600,10 @@ importers:
         version: link:../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/mcp-client:
     dependencies:
@@ -603,26 +619,26 @@ importers:
         version: 22.19.5
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/mocks:
     dependencies:
       msw:
         specifier: ^2.12.7
-        version: 2.12.7(@types/node@25.0.3)(typescript@5.9.3)
+        version: 2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2)
     devDependencies:
       '@tpmjs/tsconfig':
         specifier: workspace:*
         version: link:../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/npm-client:
     dependencies:
@@ -637,8 +653,8 @@ importers:
         specifier: ^25.0.3
         version: 25.0.3
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/package-executor:
     devDependencies:
@@ -649,8 +665,8 @@ importers:
         specifier: ^25.0.3
         version: 25.0.3
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/storybook:
     dependencies:
@@ -675,10 +691,10 @@ importers:
         version: 8.6.15(react@19.2.3)(storybook@8.6.15(prettier@2.8.8))
       '@storybook/react':
         specifier: ^8.6.15
-        version: 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@8.6.15(prettier@2.8.8))(typescript@5.9.3)
+        version: 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@8.6.15(prettier@2.8.8))(typescript@7.0.2)
       '@storybook/react-vite':
         specifier: ^8.6.15
-        version: 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)(storybook@8.6.15(prettier@2.8.8))(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)(storybook@8.6.15(prettier@2.8.8))(typescript@7.0.2)(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@storybook/test':
         specifier: ^8.6.15
         version: 8.6.15(storybook@8.6.15(prettier@2.8.8))
@@ -714,11 +730,11 @@ importers:
     dependencies:
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@7.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     devDependencies:
       '@vitest/coverage-v8':
         specifier: 4.0.16
-        version: 4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+        version: 4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@7.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/tool-ideas:
     dependencies:
@@ -739,7 +755,7 @@ importers:
         version: 14.0.2
       drizzle-orm:
         specifier: ^0.45.1
-        version: 0.45.1(@electric-sql/pglite@0.3.2)(@opentelemetry/api@1.9.0)(@prisma/client@7.2.0(prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(@types/better-sqlite3@7.6.13)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(better-sqlite3@12.5.0)(gel@2.2.0)(kysely@0.29.4)(mysql2@3.15.3)(pg@8.16.3)(postgres@3.4.7)(prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))
+        version: 0.45.1(@electric-sql/pglite@0.3.2)(@opentelemetry/api@1.9.0)(@prisma/client@7.2.0(@typescript/typescript6@6.0.2)(prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)))(@types/better-sqlite3@7.6.13)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(better-sqlite3@12.5.0)(gel@2.2.0)(kysely@0.29.4)(mysql2@3.15.3)(pg@8.16.3)(postgres@3.4.7)(prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
       ora:
         specifier: ^9.0.0
         version: 9.0.0
@@ -761,13 +777,13 @@ importers:
         version: 25.0.3
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tool-test-utils:
     dependencies:
@@ -780,10 +796,10 @@ importers:
         version: link:../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools:
     dependencies:
@@ -795,8 +811,8 @@ importers:
         specifier: workspace:*
         version: link:../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/create-basic-tools:
     dependencies:
@@ -815,10 +831,10 @@ importers:
         version: link:../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/discord-post:
     dependencies:
@@ -830,8 +846,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/discord-read:
     dependencies:
@@ -843,8 +859,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/emoji-magic:
     dependencies:
@@ -859,8 +875,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/hello:
     dependencies:
@@ -869,8 +885,8 @@ importers:
         version: 6.0.49(zod@4.4.3)
     devDependencies:
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/markdown-formatter:
     dependencies:
@@ -885,8 +901,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/acceptance-criteria:
     dependencies:
@@ -899,10 +915,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/access-control-matrix:
     dependencies:
@@ -915,10 +931,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/agentmail:
     dependencies:
@@ -931,10 +947,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/agnt:
     dependencies:
@@ -947,10 +963,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/anomaly-detect-mad:
     dependencies:
@@ -963,10 +979,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/audience-persona:
     dependencies:
@@ -979,10 +995,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/base64-decode:
     dependencies:
@@ -995,10 +1011,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/base64-encode:
     dependencies:
@@ -1011,10 +1027,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/beta-binomial-update:
     dependencies:
@@ -1027,10 +1043,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/bootstrap-ci:
     dependencies:
@@ -1043,10 +1059,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/budget-variance:
     dependencies:
@@ -1059,10 +1075,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/campaign-brief:
     dependencies:
@@ -1075,10 +1091,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/cash-flow-project:
     dependencies:
@@ -1091,10 +1107,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/changelog-entry:
     dependencies:
@@ -1107,10 +1123,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/churn-risk-score:
     dependencies:
@@ -1123,10 +1139,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/claim-checklist:
     dependencies:
@@ -1145,10 +1161,10 @@ importers:
         version: 1.0.5
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/cloudflare:
     dependencies:
@@ -1161,10 +1177,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/compare-pages:
     dependencies:
@@ -1180,10 +1196,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/compensation-band:
     dependencies:
@@ -1196,10 +1212,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/competitor-brief:
     dependencies:
@@ -1212,10 +1228,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/config-normalize:
     dependencies:
@@ -1228,10 +1244,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/content-calendar-plan:
     dependencies:
@@ -1244,10 +1260,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/contract-clause-scan:
     dependencies:
@@ -1260,10 +1276,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/conventional-commit-suggest:
     dependencies:
@@ -1276,10 +1292,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/copyright-notice:
     dependencies:
@@ -1292,10 +1308,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/coverage-tracker:
     dependencies:
@@ -1308,10 +1324,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/createBlogPost:
     dependencies:
@@ -1324,10 +1340,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/csp-compose:
     dependencies:
@@ -1340,10 +1356,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/csv-parse:
     dependencies:
@@ -1362,10 +1378,10 @@ importers:
         version: 5.5.2
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/csv-stringify:
     dependencies:
@@ -1384,10 +1400,10 @@ importers:
         version: 5.5.2
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/curriculum-map:
     dependencies:
@@ -1400,10 +1416,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/data-classification-heuristic:
     dependencies:
@@ -1416,10 +1432,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/date-parse:
     dependencies:
@@ -1435,10 +1451,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/decision-record-adr:
     dependencies:
@@ -1451,10 +1467,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/dedupe-by-key:
     dependencies:
@@ -1467,10 +1483,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/dependency-audit-lite:
     dependencies:
@@ -1483,10 +1499,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/diff-in-diff:
     dependencies:
@@ -1499,10 +1515,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/diff-text-unified:
     dependencies:
@@ -1518,10 +1534,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/discord:
     dependencies:
@@ -1534,10 +1550,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/dpia-outline:
     dependencies:
@@ -1550,10 +1566,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/e2b:
     dependencies:
@@ -1569,10 +1585,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/effect-size-suite:
     dependencies:
@@ -1585,10 +1601,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/email-subject-score:
     dependencies:
@@ -1601,10 +1617,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/env-var-docs-generate:
     dependencies:
@@ -1617,10 +1633,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/error-log-triage:
     dependencies:
@@ -1633,10 +1649,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/eval-fixture-build:
     dependencies:
@@ -1649,10 +1665,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/evals-blah:
     dependencies:
@@ -1665,10 +1681,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/exe-dev:
     dependencies:
@@ -1681,10 +1697,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/executive-brief:
     dependencies:
@@ -1697,10 +1713,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/exit-interview-summarize:
     dependencies:
@@ -1713,10 +1729,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/expense-categorize:
     dependencies:
@@ -1729,10 +1745,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/extract-json-ld:
     dependencies:
@@ -1748,10 +1764,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/extract-meta:
     dependencies:
@@ -1770,10 +1786,10 @@ importers:
         version: 25.0.3
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/faq-from-text:
     dependencies:
@@ -1786,10 +1802,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/feedback-themes:
     dependencies:
@@ -1802,10 +1818,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/fetch-text:
     dependencies:
@@ -1818,10 +1834,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/gdpr-data-map:
     dependencies:
@@ -1834,10 +1850,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/github:
     dependencies:
@@ -1850,10 +1866,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/glossary-build:
     dependencies:
@@ -1866,10 +1882,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/guardrail-policy-draft:
     dependencies:
@@ -1882,10 +1898,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/hardening-checklist-web:
     dependencies:
@@ -1898,10 +1914,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/hash-text:
     dependencies:
@@ -1914,10 +1930,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/health-score-calculate:
     dependencies:
@@ -1930,10 +1946,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/hllm:
     dependencies:
@@ -1946,10 +1962,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/html-sanitize:
     dependencies:
@@ -1965,10 +1981,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/html-to-markdown:
     dependencies:
@@ -1987,10 +2003,10 @@ importers:
         version: 5.0.6
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/interview-questions:
     dependencies:
@@ -2003,10 +2019,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/invoice-data-extract:
     dependencies:
@@ -2019,10 +2035,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/invoice-terms-extract:
     dependencies:
@@ -2035,10 +2051,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/job-description-draft:
     dependencies:
@@ -2051,10 +2067,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/jq:
     dependencies:
@@ -2067,13 +2083,13 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/tools/official/json-path-query:
     dependencies:
@@ -2089,10 +2105,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/json-repair:
     dependencies:
@@ -2108,10 +2124,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/json-schema-validate:
     dependencies:
@@ -2130,10 +2146,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/judge:
     dependencies:
@@ -2146,10 +2162,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/lead-score:
     dependencies:
@@ -2162,10 +2178,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/learning-objective-write:
     dependencies:
@@ -2178,10 +2194,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/lesson-plan-outline:
     dependencies:
@@ -2194,10 +2210,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/linear-regression-ols:
     dependencies:
@@ -2210,10 +2226,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/links-catalog:
     dependencies:
@@ -2229,10 +2245,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/logistic-regression:
     dependencies:
@@ -2245,10 +2261,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/markdown-lint-basic:
     dependencies:
@@ -2261,10 +2277,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/markdown-to-html:
     dependencies:
@@ -2280,10 +2296,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/meeting-minutes-format:
     dependencies:
@@ -2296,10 +2312,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/memory:
     dependencies:
@@ -2312,10 +2328,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/moltbook:
     dependencies:
@@ -2328,10 +2344,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/monitoring-gap-analysis:
     dependencies:
@@ -2344,10 +2360,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/multiple-testing-adjust:
     dependencies:
@@ -2360,10 +2376,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/nda-template-draft:
     dependencies:
@@ -2376,10 +2392,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/neon:
     dependencies:
@@ -2392,10 +2408,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/normalize-whitespace:
     dependencies:
@@ -2408,10 +2424,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/novelty-score-workflow:
     dependencies:
@@ -2424,10 +2440,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/nps-analysis:
     dependencies:
@@ -2440,10 +2456,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/objection-response:
     dependencies:
@@ -2456,10 +2472,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/offer-letter-draft:
     dependencies:
@@ -2472,10 +2488,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/onboarding-checklist:
     dependencies:
@@ -2488,10 +2504,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/openapi-snippet-build:
     dependencies:
@@ -2504,10 +2520,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/openrouter:
     dependencies:
@@ -2520,10 +2536,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/org-chart-format:
     dependencies:
@@ -2536,10 +2552,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/page-brief:
     dependencies:
@@ -2567,10 +2583,10 @@ importers:
         version: 1.0.5
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/pandoc:
     dependencies:
@@ -2583,13 +2599,13 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/tools/official/performance-review-draft:
     dependencies:
@@ -2602,10 +2618,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/permutation-test:
     dependencies:
@@ -2618,10 +2634,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/pivot:
     dependencies:
@@ -2634,10 +2650,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/policy-doc-format:
     dependencies:
@@ -2650,10 +2666,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/postgres:
     dependencies:
@@ -2672,13 +2688,13 @@ importers:
         version: 8.16.0
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/tools/official/postmark:
     dependencies:
@@ -2691,10 +2707,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/postmortem-action-extractor:
     dependencies:
@@ -2707,10 +2723,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/postmortem-draft:
     dependencies:
@@ -2723,10 +2739,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/prd-outline:
     dependencies:
@@ -2739,10 +2755,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/pricing-page-copy:
     dependencies:
@@ -2755,10 +2771,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/progress-report-draft:
     dependencies:
@@ -2771,10 +2787,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/prompt-to-workflow-skeleton:
     dependencies:
@@ -2787,10 +2803,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/proposal-outline:
     dependencies:
@@ -2803,10 +2819,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/quiz-generate:
     dependencies:
@@ -2819,10 +2835,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/railway:
     dependencies:
@@ -2835,10 +2851,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/ratio-analysis:
     dependencies:
@@ -2851,10 +2867,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/recipe-curate-rank:
     dependencies:
@@ -2867,10 +2883,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/recipe-emit:
     dependencies:
@@ -2883,10 +2899,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/recipe-generate-from-grammar:
     dependencies:
@@ -2899,10 +2915,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/recipe-hash:
     dependencies:
@@ -2921,10 +2937,10 @@ importers:
         version: 1.2.0
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/recipe-publish-manifest:
     dependencies:
@@ -2937,10 +2953,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/reconciliation-match:
     dependencies:
@@ -2953,10 +2969,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/redact-secrets:
     dependencies:
@@ -2969,10 +2985,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/redirect-trace:
     dependencies:
@@ -2985,10 +3001,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/redis:
     dependencies:
@@ -3004,13 +3020,13 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/tools/official/regex-extract:
     dependencies:
@@ -3023,10 +3039,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/release-checklist:
     dependencies:
@@ -3039,10 +3055,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/release-notes:
     dependencies:
@@ -3055,10 +3071,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/renewal-forecast:
     dependencies:
@@ -3071,10 +3087,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/resend:
     dependencies:
@@ -3087,10 +3103,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/response-template-suggest:
     dependencies:
@@ -3103,10 +3119,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/retention-policy-draft:
     dependencies:
@@ -3119,10 +3135,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/revenue-breakdown:
     dependencies:
@@ -3135,10 +3151,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/risk-clause-highlight:
     dependencies:
@@ -3151,10 +3167,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/robots-policy:
     dependencies:
@@ -3170,10 +3186,10 @@ importers:
         version: 25.0.3
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/rows-filter:
     dependencies:
@@ -3186,10 +3202,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/rows-group-aggregate:
     dependencies:
@@ -3202,10 +3218,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/rows-join:
     dependencies:
@@ -3218,10 +3234,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/rows-sort:
     dependencies:
@@ -3234,10 +3250,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/rss-read:
     dependencies:
@@ -3256,10 +3272,10 @@ importers:
         version: 25.0.3
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/rubric-create:
     dependencies:
@@ -3272,10 +3288,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/runbook-draft:
     dependencies:
@@ -3288,10 +3304,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sandbox-shell:
     dependencies:
@@ -3304,10 +3320,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/schema-infer:
     dependencies:
@@ -3323,10 +3339,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/secret-scan-text:
     dependencies:
@@ -3339,10 +3355,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sitemap-read:
     dependencies:
@@ -3361,10 +3377,10 @@ importers:
         version: 25.0.3
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/slack:
     dependencies:
@@ -3377,10 +3393,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/slo-draft:
     dependencies:
@@ -3393,10 +3409,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/social-post-draft:
     dependencies:
@@ -3409,10 +3425,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/source-credibility:
     dependencies:
@@ -3431,10 +3447,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-checkpoint-create:
     dependencies:
@@ -3447,10 +3463,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-checkpoint-list:
     dependencies:
@@ -3463,10 +3479,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-checkpoint-restore:
     dependencies:
@@ -3479,10 +3495,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-create:
     dependencies:
@@ -3495,10 +3511,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-delete:
     dependencies:
@@ -3511,10 +3527,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-exec:
     dependencies:
@@ -3527,10 +3543,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-get:
     dependencies:
@@ -3543,10 +3559,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-list:
     dependencies:
@@ -3559,10 +3575,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-policy-get:
     dependencies:
@@ -3575,10 +3591,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-policy-set:
     dependencies:
@@ -3591,10 +3607,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-sessions:
     dependencies:
@@ -3607,10 +3623,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-url-get:
     dependencies:
@@ -3623,10 +3639,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/sprites-url-set:
     dependencies:
@@ -3639,10 +3655,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/stacktrace-parse:
     dependencies:
@@ -3658,10 +3674,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/style-rewrite:
     dependencies:
@@ -3674,10 +3690,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/supabase:
     dependencies:
@@ -3690,10 +3706,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/survey-analyze:
     dependencies:
@@ -3706,10 +3722,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/syllabus-format:
     dependencies:
@@ -3722,10 +3738,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/table-extract:
     dependencies:
@@ -3741,10 +3757,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/tax-deduction-scan:
     dependencies:
@@ -3757,10 +3773,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/template-render:
     dependencies:
@@ -3779,10 +3795,10 @@ importers:
         version: 4.2.6
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/test-case-generate:
     dependencies:
@@ -3795,10 +3811,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/test-plan-matrix:
     dependencies:
@@ -3811,10 +3827,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/text-chunk:
     dependencies:
@@ -3833,10 +3849,10 @@ importers:
         version: 1.0.5
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/ticket-categorize:
     dependencies:
@@ -3849,10 +3865,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/time-series-decompose-lite:
     dependencies:
@@ -3865,10 +3881,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/timeline-from-text:
     dependencies:
@@ -3890,10 +3906,10 @@ importers:
         version: 1.0.5
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/toc-generate:
     dependencies:
@@ -3906,10 +3922,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/tool-call-accuracy-score:
     dependencies:
@@ -3922,10 +3938,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/tool-selection-plan:
     dependencies:
@@ -3938,10 +3954,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/tos-readability:
     dependencies:
@@ -3954,10 +3970,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/trademark-check:
     dependencies:
@@ -3970,10 +3986,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/unsandbox:
     dependencies:
@@ -3986,10 +4002,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/url-normalize:
     dependencies:
@@ -4002,10 +4018,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/url-parse:
     dependencies:
@@ -4018,10 +4034,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/url-risk-heuristic:
     dependencies:
@@ -4034,10 +4050,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/vercel:
     dependencies:
@@ -4050,10 +4066,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/workflow-auto-repair:
     dependencies:
@@ -4066,10 +4082,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/workflow-cost-estimate:
     dependencies:
@@ -4082,10 +4098,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/workflow-explain:
     dependencies:
@@ -4098,10 +4114,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/workflow-validate-io:
     dependencies:
@@ -4114,10 +4130,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/workflow-variant-generate:
     dependencies:
@@ -4130,10 +4146,10 @@ importers:
         version: link:../../../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/yaml-parse:
     dependencies:
@@ -4152,10 +4168,10 @@ importers:
         version: 4.0.9
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/yaml-stringify:
     dependencies:
@@ -4174,10 +4190,10 @@ importers:
         version: 4.0.9
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/registryExecute:
     dependencies:
@@ -4189,8 +4205,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/registrySearch:
     dependencies:
@@ -4202,8 +4218,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/search-registry:
     dependencies:
@@ -4218,8 +4234,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/test-file-writer:
     dependencies:
@@ -4235,10 +4251,10 @@ importers:
         version: 22.19.5
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/tools/unsandbox:
     dependencies:
@@ -4250,8 +4266,8 @@ importers:
         specifier: workspace:*
         version: link:../../config/tsconfig
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/types:
     dependencies:
@@ -4264,10 +4280,10 @@ importers:
         version: link:../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   packages/ui:
     dependencies:
@@ -4319,13 +4335,13 @@ importers:
         version: 19.2.3(react@19.2.3)
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/utils:
     dependencies:
@@ -4341,13 +4357,13 @@ importers:
         version: link:../config/tsconfig
       tsup:
         specifier: ^8.5.1
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2)
       typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
       vitest:
         specifier: ^4.0.16
-        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/video:
     dependencies:
@@ -4368,8 +4384,8 @@ importers:
         specifier: ^19.0.0
         version: 19.2.7
       typescript:
-        specifier: ^5.7.0
-        version: 5.9.3
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
 packages:
 
@@ -7809,64 +7825,188 @@ packages:
   '@types/yauzl@2.10.3':
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
 
-  '@typescript-eslint/eslint-plugin@8.52.0':
-    resolution: {integrity: sha512-okqtOgqu2qmZJ5iN4TWlgfF171dZmx2FzdOv2K/ixL2LZWDStL8+JgQerI2sa8eAEfoydG9+0V96m7V+P8yE1Q==}
+  '@typescript-eslint/eslint-plugin@8.65.0':
+    resolution: {integrity: sha512-IEgob78X12rHpUmtcwFsXhZdVGJtwTVP8FiCLZkR6GlYVrl2PcuB+KhCE5BlVC/eQpQnu8WXRtkHZuPar+gCRA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      '@typescript-eslint/parser': ^8.52.0
-      eslint: ^8.57.0 || ^9.0.0
-      typescript: '>=4.8.4 <6.0.0'
+      '@typescript-eslint/parser': ^8.65.0
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
 
-  '@typescript-eslint/parser@8.52.0':
-    resolution: {integrity: sha512-iIACsx8pxRnguSYhHiMn2PvhvfpopO9FXHyn1mG5txZIsAaB6F0KwbFnUQN3KCiG3Jcuad/Cao2FAs1Wp7vAyg==}
+  '@typescript-eslint/parser@8.65.0':
+    resolution: {integrity: sha512-CZ4nMxWwgu1HEEFNkeaCptra9QCtkmKdgf3sWh1rl1trIhmxLilgTV4cwcbQ4wemnT4sWQN8CaKOmdYx+g2gMA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      eslint: ^8.57.0 || ^9.0.0
-      typescript: '>=4.8.4 <6.0.0'
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
 
-  '@typescript-eslint/project-service@8.52.0':
-    resolution: {integrity: sha512-xD0MfdSdEmeFa3OmVqonHi+Cciab96ls1UhIF/qX/O/gPu5KXD0bY9lu33jj04fjzrXHcuvjBcBC+D3SNSadaw==}
+  '@typescript-eslint/project-service@8.65.0':
+    resolution: {integrity: sha512-SxnPhbTsGahizDgbu7oqFH/xVtzIqMd/s+WtnSxNxJZJpLbdT5IPdzg8EZxO3+PoKahXmwJLeNQOpKJb3/bi7Q==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      typescript: '>=4.8.4 <6.0.0'
+      typescript: '>=4.8.4 <6.1.0'
 
-  '@typescript-eslint/scope-manager@8.52.0':
-    resolution: {integrity: sha512-ixxqmmCcc1Nf8S0mS0TkJ/3LKcC8mruYJPOU6Ia2F/zUUR4pApW7LzrpU3JmtePbRUTes9bEqRc1Gg4iyRnDzA==}
+  '@typescript-eslint/scope-manager@8.65.0':
+    resolution: {integrity: sha512-Esbl8OSYiVxBokYgWPf7VVWg/BE798wXhimnn9ML9Pt5qoDf8bfQlgjlKXR/k98+AcNzlLKYrpCcrcuZ9DZLgg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@typescript-eslint/tsconfig-utils@8.52.0':
-    resolution: {integrity: sha512-jl+8fzr/SdzdxWJznq5nvoI7qn2tNYV/ZBAEcaFMVXf+K6jmXvAFrgo/+5rxgnL152f//pDEAYAhhBAZGrVfwg==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-    peerDependencies:
-      typescript: '>=4.8.4 <6.0.0'
-
-  '@typescript-eslint/type-utils@8.52.0':
-    resolution: {integrity: sha512-JD3wKBRWglYRQkAtsyGz1AewDu3mTc7NtRjR/ceTyGoPqmdS5oCdx/oZMWD5Zuqmo6/MpsYs0wp6axNt88/2EQ==}
+  '@typescript-eslint/tsconfig-utils@8.65.0':
+    resolution: {integrity: sha512-j6GzGqCiRdA7Qhur2VVmKZAkBLfnHFQfx4TaJGL9RMveZqCo48jSHHO0DTgizEnGhtWnqmbtCUSrqSkdiY/0Hg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      eslint: ^8.57.0 || ^9.0.0
-      typescript: '>=4.8.4 <6.0.0'
+      typescript: '>=4.8.4 <6.1.0'
 
-  '@typescript-eslint/types@8.52.0':
-    resolution: {integrity: sha512-LWQV1V4q9V4cT4H5JCIx3481iIFxH1UkVk+ZkGGAV1ZGcjGI9IoFOfg3O6ywz8QqCDEp7Inlg6kovMofsNRaGg==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@typescript-eslint/typescript-estree@8.52.0':
-    resolution: {integrity: sha512-XP3LClsCc0FsTK5/frGjolyADTh3QmsLp6nKd476xNI9CsSsLnmn4f0jrzNoAulmxlmNIpeXuHYeEQv61Q6qeQ==}
+  '@typescript-eslint/type-utils@8.65.0':
+    resolution: {integrity: sha512-YjaZ7PRI5qY7ax2L3PbvX0rRyGtipAReCWs0mhhDBHjH/vl0g0BonaGXrKdKpMbIIsMIwDgbk/xzkBTyAltS5g==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      typescript: '>=4.8.4 <6.0.0'
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
 
-  '@typescript-eslint/utils@8.52.0':
-    resolution: {integrity: sha512-wYndVMWkweqHpEpwPhwqE2lnD2DxC6WVLupU/DOt/0/v+/+iQbbzO3jOHjmBMnhu0DgLULvOaU4h4pwHYi2oRQ==}
+  '@typescript-eslint/types@8.65.0':
+    resolution: {integrity: sha512-JSSwWNy+H0E/01jJEM+hrX6N0OFDzFzeIhHFSAS01tlVaevpG8cFyYRPhS5yjGOvBUx3sqQHVMjCL1CAZZMxBg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript-eslint/typescript-estree@8.65.0':
+    resolution: {integrity: sha512-JboAE2swaYt4tb1fHhHTABE2K+OLy09XfcTbhnk4Pw96f9dd2e9iYsJ28gBggHlo5z5x1rkyWvcPoTuNTd4oGg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      eslint: ^8.57.0 || ^9.0.0
-      typescript: '>=4.8.4 <6.0.0'
+      typescript: '>=4.8.4 <6.1.0'
 
-  '@typescript-eslint/visitor-keys@8.52.0':
-    resolution: {integrity: sha512-ink3/Zofus34nmBsPjow63FP5M7IGff0RKAgqR6+CFpdk22M7aLwC9gOcLGYqr7MczLPzZVERW9hRog3O4n1sQ==}
+  '@typescript-eslint/utils@8.65.0':
+    resolution: {integrity: sha512-gXiwIHsYreboxeJucHKPvgwl7dXt50mF8s1/c00cP/WoVTyWKFdtfhRWwZiXYFU5H2O8vVoSLNrexFZjYS/SGA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
+
+  '@typescript-eslint/visitor-keys@8.65.0':
+    resolution: {integrity: sha512-8C71BQkGjiMmXtop7pHVJu1l2NNShFdkCyD6a2ezzs5vU/L3LRtb69EtcteFwz0mYMPzIgOw0n6OV4VBUWZd7A==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@typescript/typescript-aix-ppc64@7.0.2':
+    resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [ppc64]
+    os: [aix]
+
+  '@typescript/typescript-darwin-arm64@7.0.2':
+    resolution: {integrity: sha512-gowzar9MwS/aRWp6f3a4KUqzRjAZjOsmGNCM6LcTgXum+dBfgsBVMN+AgvOCCbguXyick6LJhpBszxMebJ8syA==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@typescript/typescript-darwin-x64@7.0.2':
+    resolution: {integrity: sha512-SZ9xZInqApNlNGc9s0W1VSsktYSOe9cFqNOIqmN1Gs8SmkjKZYFt017G4VwPxASInODuAdbTW7sXiFUf893RgA==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@typescript/typescript-freebsd-arm64@7.0.2':
+    resolution: {integrity: sha512-W5NH4y/J0plIIS5b2xvTEkU7JFxyqdMAOgf+Ilhl0vHQXKO5dZoxd+C/jEtq56c4F3wk71RB4BMRQ2XdI+bwYQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [freebsd]
+
+  '@typescript/typescript-freebsd-x64@7.0.2':
+    resolution: {integrity: sha512-UMGDx5sTpzNw3WiPebH7l90IWfJggEd+egHt/q6p7/Cm3zqoV7VxkGXt+3DxPIw8CcmvAB0j3sVVfbhX+M4Tpw==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@typescript/typescript-linux-arm64@7.0.2':
+    resolution: {integrity: sha512-Qh4eU4/y3yDjnfjjyPYihMj5/ODIlmt+Bzu17OI+fiSRDW57QmU5SiN63exPRNJPKUzcc1INa1NXdrJ+MqHjUQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@typescript/typescript-linux-arm@7.0.2':
+    resolution: {integrity: sha512-gffT3xPz9sR7j/YJExkyPntrI0P2EP9XbOyWzth2/Gs0RstK+90RBcO0ncXoXy/beYll1SXw846Nf2zdnEz0QQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm]
+    os: [linux]
+
+  '@typescript/typescript-linux-loong64@7.0.2':
+    resolution: {integrity: sha512-uEHck9i8hoAzXPiYRib1O7miOnz23SxIeVl6F4LXox+qov1K35jHcEW6VHKvZI+pyvl7fZEP4MCU5LYvIq1GuQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [loong64]
+    os: [linux]
+
+  '@typescript/typescript-linux-mips64el@7.0.2':
+    resolution: {integrity: sha512-R4KvAMnE43W5Qeqb0Ly56O3mWMWIAgsMyz36DCaycd5nbg/9kzm0liw3JocfRqyJY0KPmzFjbswozXyW0DnIYA==}
+    engines: {node: '>=16.20.0'}
+    cpu: [mips64el]
+    os: [linux]
+
+  '@typescript/typescript-linux-ppc64@7.0.2':
+    resolution: {integrity: sha512-DORx5b3sd/4S7eayxm4FQv+A7CrkUIGRaHiwI8oiHTAI1fAPWhF4J0vAlkC8biAlHSVVwxMQ3tjZ2/DVbnQiiA==}
+    engines: {node: '>=16.20.0'}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@typescript/typescript-linux-riscv64@7.0.2':
+    resolution: {integrity: sha512-wf0jqEDOjrPRnKwYRyyJDRo11KMbvMFrU+q4zqKyChODBzvlkbhNQfKvLxQCcwTpdDaXSHZTVuh0JoCrKCUMHQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@typescript/typescript-linux-s390x@7.0.2':
+    resolution: {integrity: sha512-IkwJc3L7yhytWd/ewjyxNDfOmswCm9GWMJT/ue/dU4aZNbwZeYAetq42VyLmsmSjvoX7z74X6ZaYCtzAr0EuGw==}
+    engines: {node: '>=16.20.0'}
+    cpu: [s390x]
+    os: [linux]
+
+  '@typescript/typescript-linux-x64@7.0.2':
+    resolution: {integrity: sha512-EYdf2cNg7rgCWJnxCdJ+F3V39O8ihb37eHAu1LK8oAFizgTQbPOK7zHHXbPt8rX24COqODXeI3sIf0fCXG7H/A==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [linux]
+
+  '@typescript/typescript-netbsd-arm64@7.0.2':
+    resolution: {integrity: sha512-+polYF4MF04aPpO5FTkHran9yUQDSXqy5GiSDKpsll5jy3l3+g9QLhpf39T+ePtefhXLOGrLl0QIjkQP6VnelA==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [netbsd]
+
+  '@typescript/typescript-netbsd-x64@7.0.2':
+    resolution: {integrity: sha512-8YIT0EHM/3dq10ZOVF/A7pc/YSMtbcecct4rWtexrnSCHOPcpC2KTLXfTCR6vDpnSiY12heNb1GiN/wu+T/FyA==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [netbsd]
+
+  '@typescript/typescript-openbsd-arm64@7.0.2':
+    resolution: {integrity: sha512-APT8+ClYnuYm1u9+kgGXoMj2VzWzcymwh2gNSQVySHfkRDGOTVkoWLjCmOQSaO+PoqQ57B0flRp9SA+7GnnkzQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [openbsd]
+
+  '@typescript/typescript-openbsd-x64@7.0.2':
+    resolution: {integrity: sha512-yX7s+Q0Dln0Dt9tEzZsAjXXR/+ytBM7AlglaqyeMPxQszJ1JhlJdZ6jLA+IzldHtflX81em7lDao1xXu+aRRkg==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [openbsd]
+
+  '@typescript/typescript-sunos-x64@7.0.2':
+    resolution: {integrity: sha512-dLJDGaLZ1D4HPQn62u1n8mBDkJREwMsAkCdkwd4Ieqw+x3TUyTsqY0YiBCtE6H6OzzgGk3iuZ3vFWRS+E8/d1g==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [sunos]
+
+  '@typescript/typescript-win32-arm64@7.0.2':
+    resolution: {integrity: sha512-Gyl1Vy6OsWesLzmq+EP0Fb7b4Nid5232AvcA2SFcdYreldpNtYFFofPjnt62y9hQy7VTaZp65ICJjuAQRaVcIQ==}
+    engines: {node: '>=16.20.0'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@typescript/typescript-win32-x64@7.0.2':
+    resolution: {integrity: sha512-0BQ3HkAHHlKLSp1qRvf3SUhGpGsDuhB/jgFw75guyqbxJqEaS0Cw/VFO8i2nHglJUzQCRtMMR/IBAKE3ETMC4g==}
+    engines: {node: '>=16.20.0'}
+    cpu: [x64]
+    os: [win32]
+
+  '@typescript/typescript6@6.0.2':
+    resolution: {integrity: sha512-mbCddXd+jm7hfx7w2YU64/Av4/NqqeG3GoRZgxPcgoTxYjhrcfJRw9ULch71SS4G+Q3bOXFhRvPqjguN0Hyp5w==}
+    hasBin: true
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -8244,6 +8384,10 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
+  balanced-match@4.0.4:
+    resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
+    engines: {node: 18 || 20 || >=22}
+
   base64-js@1.5.1:
     resolution: {integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==}
 
@@ -8379,6 +8523,10 @@ packages:
 
   brace-expansion@2.0.2:
     resolution: {integrity: sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ==}
+
+  brace-expansion@5.0.7:
+    resolution: {integrity: sha512-7oFy703dxfY3/NLxC1fh2SUCQ0H9rmAY+5EpDVfXjUTTs+HEwR2nYaqLv+GWcTsumwxPfiz6CzCNkwXwBUwqCA==}
+    engines: {node: 18 || 20 || >=22}
 
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
@@ -9431,6 +9579,10 @@ packages:
   eslint-visitor-keys@4.2.1:
     resolution: {integrity: sha512-Uhdk5sfqcee/9H/rCOJikYz67o0a2Tw2hGRPOG2Y1R2dg7brRe1uG0yaNQDHu+TO/uQPF/5eCapvYSmHUjt7JQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  eslint-visitor-keys@5.0.1:
+    resolution: {integrity: sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
   eslint@9.39.2:
     resolution: {integrity: sha512-LEyamqS7W5HB3ujJyvi0HQK/dtVINZvd5mAAp9eT5S/ujByGjiZLCzPcHVzuXbpJDJF/cxwHlfceVUDZ2lnSTw==}
@@ -11094,6 +11246,10 @@ packages:
   minimatch@10.1.1:
     resolution: {integrity: sha512-enIvLvRAFZYXJzkCYG5RKmPfrFArdLv+R+lbQ53BmIMLIry74bjKzX6iHAm8WYamJkhSSEabrWN5D97XnKObjQ==}
     engines: {node: 20 || >=22}
+
+  minimatch@10.2.5:
+    resolution: {integrity: sha512-MULkVLfKGYDFYejP07QOurDLLQpcjk7Fw+7jXS2R2czRQzR56yHRveU5NDJEOviH+hETZKSkIk5c+T23GjFUMg==}
+    engines: {node: 18 || 20 || >=22}
 
   minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
@@ -12875,8 +13031,8 @@ packages:
   trough@2.2.0:
     resolution: {integrity: sha512-tmMpK00BjZiUyVyvrBK7knerNgmgvcV/KLVyuma/SC+TQN167GrMRciANTz09+k3zW8L8t60jWO1GpfkZdjTaw==}
 
-  ts-api-utils@2.4.0:
-    resolution: {integrity: sha512-3TaVTaAv2gTiMB35i3FiGJaRfwb3Pyn/j3m/bfAvGe8FB7CF6u+LMYqYlDh7reQf7UNvoTvdfAqHGmPGOSsPmA==}
+  ts-api-utils@2.5.0:
+    resolution: {integrity: sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA==}
     engines: {node: '>=18.12'}
     peerDependencies:
       typescript: '>=4.8.4'
@@ -13023,16 +13179,21 @@ packages:
     resolution: {integrity: sha512-3KS2b+kL7fsuk/eJZ7EQdnEmQoaho/r6KUef7hxvltNA5DR8NAUM+8wJMbJyZ4G9/7i3v5zPBIMN5aybAh2/Jg==}
     engines: {node: '>= 0.4'}
 
-  typescript-eslint@8.52.0:
-    resolution: {integrity: sha512-atlQQJ2YkO4pfTVQmQ+wvYQwexPDOIgo+RaVcD7gHgzy/IQA+XTyuxNM9M9TVXvttkF7koBHmcwisKdOAf2EcA==}
+  typescript-eslint@8.65.0:
+    resolution: {integrity: sha512-/ggrHAwyjENDusvyxbuqxAC2dTnZg/Z8F+fgQtYIz+L6n/9HfSlEZcFGV/NsMNa6CkGk0xUjUAFwC0vHOflvIA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      eslint: ^8.57.0 || ^9.0.0
-      typescript: '>=4.8.4 <6.0.0'
+      eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
+      typescript: '>=4.8.4 <6.1.0'
 
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+  typescript@6.0.3:
+    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
+    hasBin: true
+
+  typescript@7.0.2:
+    resolution: {integrity: sha512-8FYau96o3NKOhbjKi/qNvG/W5jhzxkbdm5sj9AbZ/5T5sWqn3hJgLfGx27sRKZWTvyzCP8dLRBTf5tBTSRVUNA==}
+    engines: {node: '>=16.20.0'}
     hasBin: true
 
   ufo@1.6.2:
@@ -14387,13 +14548,13 @@ snapshots:
     optionalDependencies:
       mongodb: 6.20.0
 
-  '@better-auth/prisma-adapter@1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(@prisma/client@6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3))(prisma@6.19.1(typescript@5.9.3))':
+  '@better-auth/prisma-adapter@1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(@prisma/client@6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2)))(prisma@6.19.1(@typescript/typescript6@6.0.2))':
     dependencies:
       '@better-auth/core': 1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0)
       '@better-auth/utils': 0.4.2
     optionalDependencies:
-      '@prisma/client': 6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3)
-      prisma: 6.19.1(typescript@5.9.3)
+      '@prisma/client': 6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2))
+      prisma: 6.19.1(@typescript/typescript6@6.0.2)
 
   '@better-auth/telemetry@1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)':
     dependencies:
@@ -15413,14 +15574,14 @@ snapshots:
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: wrap-ansi@7.0.0
 
-  '@joshwooding/vite-plugin-react-docgen-typescript@0.5.0(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.5.0(typescript@7.0.2)(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       glob: 10.5.0
       magic-string: 0.27.0
-      react-docgen-typescript: 2.4.0(typescript@5.9.3)
+      react-docgen-typescript: 2.4.0(typescript@7.0.2)
       vite: 7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     optionalDependencies:
-      typescript: 5.9.3
+      typescript: 7.0.2
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
@@ -16008,22 +16169,22 @@ snapshots:
   '@prisma/client-runtime-utils@7.2.0':
     optional: true
 
-  '@prisma/client@6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3)':
+  '@prisma/client@6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2))':
     optionalDependencies:
-      prisma: 6.19.1(typescript@5.9.3)
-      typescript: 5.9.3
+      prisma: 6.19.1(@typescript/typescript6@6.0.2)
+      typescript: '@typescript/typescript6@6.0.2'
 
-  '@prisma/client@6.19.1(prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3)':
+  '@prisma/client@6.19.1(@typescript/typescript6@6.0.2)(prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))':
     optionalDependencies:
-      prisma: 7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
-      typescript: 5.9.3
+      prisma: 7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      typescript: '@typescript/typescript6@6.0.2'
 
-  '@prisma/client@7.2.0(prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3)':
+  '@prisma/client@7.2.0(@typescript/typescript6@6.0.2)(prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))':
     dependencies:
       '@prisma/client-runtime-utils': 7.2.0
     optionalDependencies:
-      prisma: 7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
-      typescript: 5.9.3
+      prisma: 7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      typescript: '@typescript/typescript6@6.0.2'
     optional: true
 
   '@prisma/config@6.19.1':
@@ -16053,7 +16214,7 @@ snapshots:
   '@prisma/debug@7.2.0':
     optional: true
 
-  '@prisma/dev@0.17.0(typescript@5.9.3)':
+  '@prisma/dev@0.17.0(@typescript/typescript6@6.0.2)':
     dependencies:
       '@electric-sql/pglite': 0.3.2
       '@electric-sql/pglite-socket': 0.0.6(@electric-sql/pglite@0.3.2)
@@ -16070,7 +16231,7 @@ snapshots:
       proper-lockfile: 4.1.2
       remeda: 2.21.3
       std-env: 3.9.0
-      valibot: 1.2.0(typescript@5.9.3)
+      valibot: 1.2.0(@typescript/typescript6@6.0.2)
       zeptomatch: 2.0.2
     transitivePeerDependencies:
       - typescript
@@ -17208,12 +17369,12 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
       storybook: 8.6.15(prettier@2.8.8)
 
-  '@storybook/react-vite@8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)(storybook@8.6.15(prettier@2.8.8))(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+  '@storybook/react-vite@8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(rollup@4.55.1)(storybook@8.6.15(prettier@2.8.8))(typescript@7.0.2)(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
-      '@joshwooding/vite-plugin-react-docgen-typescript': 0.5.0(typescript@5.9.3)(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+      '@joshwooding/vite-plugin-react-docgen-typescript': 0.5.0(typescript@7.0.2)(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@rollup/pluginutils': 5.3.0(rollup@4.55.1)
       '@storybook/builder-vite': 8.6.15(storybook@8.6.15(prettier@2.8.8))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
-      '@storybook/react': 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@8.6.15(prettier@2.8.8))(typescript@5.9.3)
+      '@storybook/react': 8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@8.6.15(prettier@2.8.8))(typescript@7.0.2)
       find-up: 5.0.0
       magic-string: 0.30.21
       react: 19.2.3
@@ -17230,7 +17391,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@storybook/react@8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@8.6.15(prettier@2.8.8))(typescript@5.9.3)':
+  '@storybook/react@8.6.15(@storybook/test@8.6.15(storybook@8.6.15(prettier@2.8.8)))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(storybook@8.6.15(prettier@2.8.8))(typescript@7.0.2)':
     dependencies:
       '@storybook/components': 8.6.15(storybook@8.6.15(prettier@2.8.8))
       '@storybook/global': 5.0.0
@@ -17243,7 +17404,7 @@ snapshots:
       storybook: 8.6.15(prettier@2.8.8)
     optionalDependencies:
       '@storybook/test': 8.6.15(storybook@8.6.15(prettier@2.8.8))
-      typescript: 5.9.3
+      typescript: 7.0.2
 
   '@storybook/test@8.6.14(storybook@8.6.15(prettier@2.8.8))':
     dependencies:
@@ -17662,96 +17823,160 @@ snapshots:
       '@types/node': 25.0.3
     optional: true
 
-  '@typescript-eslint/eslint-plugin@8.52.0(@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)':
+  '@typescript-eslint/eslint-plugin@8.65.0(@typescript-eslint/parser@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1)))(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
-      '@typescript-eslint/parser': 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/scope-manager': 8.52.0
-      '@typescript-eslint/type-utils': 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/visitor-keys': 8.52.0
+      '@typescript-eslint/parser': 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
+      '@typescript-eslint/scope-manager': 8.65.0
+      '@typescript-eslint/type-utils': 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
+      '@typescript-eslint/utils': 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
+      '@typescript-eslint/visitor-keys': 8.65.0
       eslint: 9.39.2(jiti@2.6.1)
       ignore: 7.0.5
       natural-compare: 1.4.0
-      ts-api-utils: 2.4.0(typescript@5.9.3)
-      typescript: 5.9.3
+      ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)':
+  '@typescript-eslint/parser@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))':
     dependencies:
-      '@typescript-eslint/scope-manager': 8.52.0
-      '@typescript-eslint/types': 8.52.0
-      '@typescript-eslint/typescript-estree': 8.52.0(typescript@5.9.3)
-      '@typescript-eslint/visitor-keys': 8.52.0
+      '@typescript-eslint/scope-manager': 8.65.0
+      '@typescript-eslint/types': 8.65.0
+      '@typescript-eslint/typescript-estree': 8.65.0(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/visitor-keys': 8.65.0
       debug: 4.4.3(supports-color@8.1.1)
       eslint: 9.39.2(jiti@2.6.1)
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/project-service@8.52.0(typescript@5.9.3)':
+  '@typescript-eslint/project-service@8.65.0(@typescript/typescript6@6.0.2)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.52.0(typescript@5.9.3)
-      '@typescript-eslint/types': 8.52.0
+      '@typescript-eslint/tsconfig-utils': 8.65.0(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/types': 8.65.0
       debug: 4.4.3(supports-color@8.1.1)
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/scope-manager@8.52.0':
+  '@typescript-eslint/scope-manager@8.65.0':
     dependencies:
-      '@typescript-eslint/types': 8.52.0
-      '@typescript-eslint/visitor-keys': 8.52.0
+      '@typescript-eslint/types': 8.65.0
+      '@typescript-eslint/visitor-keys': 8.65.0
 
-  '@typescript-eslint/tsconfig-utils@8.52.0(typescript@5.9.3)':
+  '@typescript-eslint/tsconfig-utils@8.65.0(@typescript/typescript6@6.0.2)':
     dependencies:
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
 
-  '@typescript-eslint/type-utils@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)':
+  '@typescript-eslint/type-utils@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))':
     dependencies:
-      '@typescript-eslint/types': 8.52.0
-      '@typescript-eslint/typescript-estree': 8.52.0(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/types': 8.65.0
+      '@typescript-eslint/typescript-estree': 8.65.0(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/utils': 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
       debug: 4.4.3(supports-color@8.1.1)
       eslint: 9.39.2(jiti@2.6.1)
-      ts-api-utils: 2.4.0(typescript@5.9.3)
-      typescript: 5.9.3
+      ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/types@8.52.0': {}
+  '@typescript-eslint/types@8.65.0': {}
 
-  '@typescript-eslint/typescript-estree@8.52.0(typescript@5.9.3)':
+  '@typescript-eslint/typescript-estree@8.65.0(@typescript/typescript6@6.0.2)':
     dependencies:
-      '@typescript-eslint/project-service': 8.52.0(typescript@5.9.3)
-      '@typescript-eslint/tsconfig-utils': 8.52.0(typescript@5.9.3)
-      '@typescript-eslint/types': 8.52.0
-      '@typescript-eslint/visitor-keys': 8.52.0
+      '@typescript-eslint/project-service': 8.65.0(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/tsconfig-utils': 8.65.0(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/types': 8.65.0
+      '@typescript-eslint/visitor-keys': 8.65.0
       debug: 4.4.3(supports-color@8.1.1)
-      minimatch: 9.0.5
+      minimatch: 10.2.5
       semver: 7.7.3
       tinyglobby: 0.2.15
-      ts-api-utils: 2.4.0(typescript@5.9.3)
-      typescript: 5.9.3
+      ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)':
+  '@typescript-eslint/utils@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))':
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.2(jiti@2.6.1))
-      '@typescript-eslint/scope-manager': 8.52.0
-      '@typescript-eslint/types': 8.52.0
-      '@typescript-eslint/typescript-estree': 8.52.0(typescript@5.9.3)
+      '@typescript-eslint/scope-manager': 8.65.0
+      '@typescript-eslint/types': 8.65.0
+      '@typescript-eslint/typescript-estree': 8.65.0(@typescript/typescript6@6.0.2)
       eslint: 9.39.2(jiti@2.6.1)
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/visitor-keys@8.52.0':
+  '@typescript-eslint/visitor-keys@8.65.0':
     dependencies:
-      '@typescript-eslint/types': 8.52.0
-      eslint-visitor-keys: 4.2.1
+      '@typescript-eslint/types': 8.65.0
+      eslint-visitor-keys: 5.0.1
+
+  '@typescript/typescript-aix-ppc64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-darwin-arm64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-darwin-x64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-freebsd-arm64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-freebsd-x64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-linux-arm64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-linux-arm@7.0.2':
+    optional: true
+
+  '@typescript/typescript-linux-loong64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-linux-mips64el@7.0.2':
+    optional: true
+
+  '@typescript/typescript-linux-ppc64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-linux-riscv64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-linux-s390x@7.0.2':
+    optional: true
+
+  '@typescript/typescript-linux-x64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-netbsd-arm64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-netbsd-x64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-openbsd-arm64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-openbsd-x64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-sunos-x64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-win32-arm64@7.0.2':
+    optional: true
+
+  '@typescript/typescript-win32-x64@7.0.2':
+    optional: true
+
+  '@typescript/typescript6@6.0.2':
+    dependencies:
+      '@typescript/old': typescript@6.0.3
 
   '@ungap/structured-clone@1.3.0': {}
 
@@ -17762,7 +17987,7 @@ snapshots:
 
   '@vercel/oidc@3.1.0': {}
 
-  '@vitest/coverage-v8@4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/coverage-v8@4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.16
@@ -17775,11 +18000,11 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.1.0
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-v8@4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/coverage-v8@4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@vitest/utils': 4.0.16
@@ -17792,7 +18017,24 @@ snapshots:
       obug: 2.1.1
       std-env: 3.10.0
       tinyrainbow: 3.1.0
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@vitest/coverage-v8@4.0.16(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@7.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+    dependencies:
+      '@bcoe/v8-coverage': 1.0.2
+      '@vitest/utils': 4.0.16
+      ast-v8-to-istanbul: 0.3.12
+      istanbul-lib-coverage: 3.2.2
+      istanbul-lib-report: 3.0.1
+      istanbul-lib-source-maps: 5.0.6
+      istanbul-reports: 3.2.0
+      magicast: 0.5.3
+      obug: 2.1.1
+      std-env: 3.10.0
+      tinyrainbow: 3.1.0
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@7.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -17812,22 +18054,31 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3))(vite@7.3.1(@types/node@22.19.5)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2))(vite@7.3.1(@types/node@22.19.5)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.0.16
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      msw: 2.12.7(@types/node@22.19.5)(typescript@5.9.3)
+      msw: 2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2)
       vite: 7.3.1(@types/node@22.19.5)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
       '@vitest/spy': 4.0.16
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      msw: 2.12.7(@types/node@25.0.3)(typescript@5.9.3)
+      msw: 2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2)
+      vite: 7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+
+  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@25.0.3)(typescript@7.0.2))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))':
+    dependencies:
+      '@vitest/spy': 4.0.16
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      msw: 2.12.7(@types/node@25.0.3)(typescript@7.0.2)
       vite: 7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   '@vitest/pretty-format@2.0.5':
@@ -18241,6 +18492,8 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
+  balanced-match@4.0.4: {}
+
   base64-js@1.5.1: {}
 
   baseline-browser-mapping@2.10.43: {}
@@ -18255,14 +18508,14 @@ snapshots:
     dependencies:
       tweetnacl: 0.14.5
 
-  better-auth@1.6.23(@opentelemetry/api@1.9.0)(@prisma/client@6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3))(better-sqlite3@12.5.0)(drizzle-kit@0.31.8)(mongodb@6.20.0)(mysql2@3.15.3)(next@16.2.10(@opentelemetry/api@1.9.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.16.3)(prisma@6.19.1(typescript@5.9.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
+  better-auth@1.6.23(@opentelemetry/api@1.9.0)(@prisma/client@6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2)))(better-sqlite3@12.5.0)(drizzle-kit@0.31.8)(mongodb@6.20.0)(mysql2@3.15.3)(next@16.2.10(@opentelemetry/api@1.9.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.16.3)(prisma@6.19.1(@typescript/typescript6@6.0.2))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
       '@better-auth/core': 1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0)
       '@better-auth/drizzle-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)
       '@better-auth/kysely-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(kysely@0.29.4)
       '@better-auth/memory-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)
       '@better-auth/mongo-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(mongodb@6.20.0)
-      '@better-auth/prisma-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(@prisma/client@6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3))(prisma@6.19.1(typescript@5.9.3))
+      '@better-auth/prisma-adapter': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(@prisma/client@6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2)))(prisma@6.19.1(@typescript/typescript6@6.0.2))
       '@better-auth/telemetry': 1.6.23(@better-auth/core@1.6.23(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)(@opentelemetry/api@1.9.0)(better-call@1.3.7(zod@4.3.5))(jose@6.1.3)(kysely@0.29.4)(nanostores@1.4.0))(@better-auth/utils@0.4.2)(@better-fetch/fetch@1.3.1)
       '@better-auth/utils': 0.4.2
       '@better-fetch/fetch': 1.3.1
@@ -18275,17 +18528,17 @@ snapshots:
       nanostores: 1.4.0
       zod: 4.4.3
     optionalDependencies:
-      '@prisma/client': 6.19.1(prisma@6.19.1(typescript@5.9.3))(typescript@5.9.3)
+      '@prisma/client': 6.19.1(@typescript/typescript6@6.0.2)(prisma@6.19.1(@typescript/typescript6@6.0.2))
       better-sqlite3: 12.5.0
       drizzle-kit: 0.31.8
       mongodb: 6.20.0
       mysql2: 3.15.3
       next: 16.2.10(@opentelemetry/api@1.9.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       pg: 8.16.3
-      prisma: 6.19.1(typescript@5.9.3)
+      prisma: 6.19.1(@typescript/typescript6@6.0.2)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
       - '@opentelemetry/api'
@@ -18358,6 +18611,10 @@ snapshots:
   brace-expansion@2.0.2:
     dependencies:
       balanced-match: 1.0.2
+
+  brace-expansion@5.0.7:
+    dependencies:
+      balanced-match: 4.0.4
 
   braces@3.0.3:
     dependencies:
@@ -19145,11 +19402,11 @@ snapshots:
       - supports-color
     optional: true
 
-  drizzle-orm@0.45.1(@electric-sql/pglite@0.3.2)(@opentelemetry/api@1.9.0)(@prisma/client@7.2.0(prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3))(@types/better-sqlite3@7.6.13)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(better-sqlite3@12.5.0)(gel@2.2.0)(kysely@0.29.4)(mysql2@3.15.3)(pg@8.16.3)(postgres@3.4.7)(prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)):
+  drizzle-orm@0.45.1(@electric-sql/pglite@0.3.2)(@opentelemetry/api@1.9.0)(@prisma/client@7.2.0(@typescript/typescript6@6.0.2)(prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)))(@types/better-sqlite3@7.6.13)(@types/pg@8.16.0)(@upstash/redis@1.36.1)(better-sqlite3@12.5.0)(gel@2.2.0)(kysely@0.29.4)(mysql2@3.15.3)(pg@8.16.3)(postgres@3.4.7)(prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)):
     optionalDependencies:
       '@electric-sql/pglite': 0.3.2
       '@opentelemetry/api': 1.9.0
-      '@prisma/client': 7.2.0(prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3))(typescript@5.9.3)
+      '@prisma/client': 7.2.0(@typescript/typescript6@6.0.2)(prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))
       '@types/better-sqlite3': 7.6.13
       '@types/pg': 8.16.0
       '@upstash/redis': 1.36.1
@@ -19159,7 +19416,7 @@ snapshots:
       mysql2: 3.15.3
       pg: 8.16.3
       postgres: 3.4.7
-      prisma: 7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
+      prisma: 7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
 
   dunder-proto@1.0.1:
     dependencies:
@@ -19472,17 +19729,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.39.2(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1)))(eslint-import-resolver-node@0.3.9)(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
-      '@typescript-eslint/parser': 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1)):
+  eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.9
@@ -19493,7 +19750,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.2(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint@9.39.2(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1)))(eslint-import-resolver-node@0.3.9)(eslint@9.39.2(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -19505,7 +19762,7 @@ snapshots:
       string.prototype.trimend: 1.0.9
       tsconfig-paths: 3.15.0
     optionalDependencies:
-      '@typescript-eslint/parser': 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
     transitivePeerDependencies:
       - eslint-import-resolver-typescript
       - eslint-import-resolver-webpack
@@ -19576,6 +19833,8 @@ snapshots:
   eslint-visitor-keys@3.4.3: {}
 
   eslint-visitor-keys@4.2.1: {}
+
+  eslint-visitor-keys@5.0.1: {}
 
   eslint@9.39.2(jiti@2.6.1):
     dependencies:
@@ -20845,7 +21104,7 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  knip@5.80.2(@types/node@25.0.3)(typescript@5.9.3):
+  knip@5.80.2(@types/node@25.0.3)(@typescript/typescript6@6.0.2):
     dependencies:
       '@nodelib/fs.walk': 1.2.8
       '@types/node': 25.0.3
@@ -20859,7 +21118,7 @@ snapshots:
       picomatch: 4.0.3
       smol-toml: 1.6.0
       strip-json-comments: 5.0.3
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
       zod: 4.3.5
 
   kysely@0.29.4: {}
@@ -21583,6 +21842,10 @@ snapshots:
     dependencies:
       '@isaacs/brace-expansion': 5.0.0
 
+  minimatch@10.2.5:
+    dependencies:
+      brace-expansion: 5.0.7
+
   minimatch@3.1.2:
     dependencies:
       brace-expansion: 1.1.12
@@ -21666,7 +21929,7 @@ snapshots:
 
   ms@2.1.3: {}
 
-  msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3):
+  msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2):
     dependencies:
       '@inquirer/confirm': 5.1.21(@types/node@22.19.5)
       '@mswjs/interceptors': 0.40.0
@@ -21687,12 +21950,12 @@ snapshots:
       until-async: 3.0.2
       yargs: 17.7.2
     optionalDependencies:
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - '@types/node'
     optional: true
 
-  msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3):
+  msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2):
     dependencies:
       '@inquirer/confirm': 5.1.21(@types/node@25.0.3)
       '@mswjs/interceptors': 0.40.0
@@ -21713,9 +21976,35 @@ snapshots:
       until-async: 3.0.2
       yargs: 17.7.2
     optionalDependencies:
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - '@types/node'
+
+  msw@2.12.7(@types/node@25.0.3)(typescript@7.0.2):
+    dependencies:
+      '@inquirer/confirm': 5.1.21(@types/node@25.0.3)
+      '@mswjs/interceptors': 0.40.0
+      '@open-draft/deferred-promise': 2.2.0
+      '@types/statuses': 2.0.6
+      cookie: 1.1.1
+      graphql: 16.12.0
+      headers-polyfill: 4.0.3
+      is-node-process: 1.2.0
+      outvariant: 1.4.3
+      path-to-regexp: 6.3.0
+      picocolors: 1.1.1
+      rettime: 0.7.0
+      statuses: 2.0.2
+      strict-event-emitter: 0.5.1
+      tough-cookie: 6.0.0
+      type-fest: 5.3.1
+      until-async: 3.0.2
+      yargs: 17.7.2
+    optionalDependencies:
+      typescript: 7.0.2
+    transitivePeerDependencies:
+      - '@types/node'
+    optional: true
 
   mustache@4.2.0: {}
 
@@ -22418,26 +22707,26 @@ snapshots:
       ansi-styles: 5.2.0
       react-is: 17.0.2
 
-  prisma@6.19.1(typescript@5.9.3):
+  prisma@6.19.1(@typescript/typescript6@6.0.2):
     dependencies:
       '@prisma/config': 6.19.1
       '@prisma/engines': 6.19.1
     optionalDependencies:
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - magicast
 
-  prisma@7.2.0(@types/react@19.2.7)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3):
+  prisma@7.2.0(@types/react@19.2.7)(@typescript/typescript6@6.0.2)(better-sqlite3@12.5.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
       '@prisma/config': 7.2.0
-      '@prisma/dev': 0.17.0(typescript@5.9.3)
+      '@prisma/dev': 0.17.0(@typescript/typescript6@6.0.2)
       '@prisma/engines': 7.2.0
       '@prisma/studio-core': 0.9.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       mysql2: 3.15.3
       postgres: 3.4.7
     optionalDependencies:
       better-sqlite3: 12.5.0
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - '@types/react'
       - magicast
@@ -22532,9 +22821,9 @@ snapshots:
       minimist: 1.2.8
       strip-json-comments: 2.0.1
 
-  react-docgen-typescript@2.4.0(typescript@5.9.3):
+  react-docgen-typescript@2.4.0(typescript@7.0.2):
     dependencies:
-      typescript: 5.9.3
+      typescript: 7.0.2
 
   react-docgen@7.1.1:
     dependencies:
@@ -23652,9 +23941,9 @@ snapshots:
 
   trough@2.2.0: {}
 
-  ts-api-utils@2.4.0(typescript@5.9.3):
+  ts-api-utils@2.5.0(@typescript/typescript6@6.0.2):
     dependencies:
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
 
   ts-dedent@2.2.0: {}
 
@@ -23684,7 +23973,7 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsup@8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.8.2):
+  tsup@8.5.1(@typescript/typescript6@6.0.2)(jiti@2.6.1)(postcss@8.5.6)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       bundle-require: 5.1.0(esbuild@0.27.2)
       cac: 6.7.14
@@ -23705,17 +23994,17 @@ snapshots:
       tree-kill: 1.2.2
     optionalDependencies:
       postcss: 8.5.6
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - jiti
       - supports-color
       - tsx
       - yaml
 
-  tsutils@3.21.0(typescript@5.9.3):
+  tsutils@3.21.0(@typescript/typescript6@6.0.2):
     dependencies:
       tslib: 1.14.1
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
 
   tsx@4.21.0:
     dependencies:
@@ -23765,14 +24054,14 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  type-coverage-core@2.29.7(typescript@5.9.3):
+  type-coverage-core@2.29.7(@typescript/typescript6@6.0.2):
     dependencies:
       fast-glob: 3.3.3
       minimatch: 10.1.1
       normalize-path: 3.0.0
       tslib: 2.8.1
-      tsutils: 3.21.0(typescript@5.9.3)
-      typescript: 5.9.3
+      tsutils: 3.21.0(@typescript/typescript6@6.0.2)
+      typescript: '@typescript/typescript6@6.0.2'
 
   type-fest@0.21.3: {}
 
@@ -23823,18 +24112,41 @@ snapshots:
       possible-typed-array-names: 1.1.0
       reflect.getprototypeof: 1.0.10
 
-  typescript-eslint@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3):
+  typescript-eslint@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1)):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.52.0(@typescript-eslint/parser@8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/parser': 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      '@typescript-eslint/typescript-estree': 8.52.0(typescript@5.9.3)
-      '@typescript-eslint/utils': 8.52.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      '@typescript-eslint/eslint-plugin': 8.65.0(@typescript-eslint/parser@8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1)))(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
+      '@typescript-eslint/parser': 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
+      '@typescript-eslint/typescript-estree': 8.65.0(@typescript/typescript6@6.0.2)
+      '@typescript-eslint/utils': 8.65.0(@typescript/typescript6@6.0.2)(eslint@9.39.2(jiti@2.6.1))
       eslint: 9.39.2(jiti@2.6.1)
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
 
-  typescript@5.9.3: {}
+  typescript@6.0.3: {}
+
+  typescript@7.0.2:
+    optionalDependencies:
+      '@typescript/typescript-aix-ppc64': 7.0.2
+      '@typescript/typescript-darwin-arm64': 7.0.2
+      '@typescript/typescript-darwin-x64': 7.0.2
+      '@typescript/typescript-freebsd-arm64': 7.0.2
+      '@typescript/typescript-freebsd-x64': 7.0.2
+      '@typescript/typescript-linux-arm': 7.0.2
+      '@typescript/typescript-linux-arm64': 7.0.2
+      '@typescript/typescript-linux-loong64': 7.0.2
+      '@typescript/typescript-linux-mips64el': 7.0.2
+      '@typescript/typescript-linux-ppc64': 7.0.2
+      '@typescript/typescript-linux-riscv64': 7.0.2
+      '@typescript/typescript-linux-s390x': 7.0.2
+      '@typescript/typescript-linux-x64': 7.0.2
+      '@typescript/typescript-netbsd-arm64': 7.0.2
+      '@typescript/typescript-netbsd-x64': 7.0.2
+      '@typescript/typescript-openbsd-arm64': 7.0.2
+      '@typescript/typescript-openbsd-x64': 7.0.2
+      '@typescript/typescript-sunos-x64': 7.0.2
+      '@typescript/typescript-win32-arm64': 7.0.2
+      '@typescript/typescript-win32-x64': 7.0.2
 
   ufo@1.6.2: {}
 
@@ -23963,9 +24275,9 @@ snapshots:
 
   uuid@9.0.1: {}
 
-  valibot@1.2.0(typescript@5.9.3):
+  valibot@1.2.0(@typescript/typescript6@6.0.2):
     optionalDependencies:
-      typescript: 5.9.3
+      typescript: '@typescript/typescript6@6.0.2'
     optional: true
 
   validate-npm-package-license@3.0.4:
@@ -24032,10 +24344,10 @@ snapshots:
       tsx: 4.21.0
       yaml: 2.8.2
 
-  vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.19.5)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 4.0.16
-      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@22.19.5)(typescript@5.9.3))(vite@7.3.1(@types/node@22.19.5)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@22.19.5)(@typescript/typescript6@6.0.2))(vite@7.3.1(@types/node@22.19.5)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@vitest/pretty-format': 4.0.16
       '@vitest/runner': 4.0.16
       '@vitest/snapshot': 4.0.16
@@ -24072,10 +24384,50 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2):
+  vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@vitest/expect': 4.0.16
-      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@25.0.3)(typescript@5.9.3))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@25.0.3)(@typescript/typescript6@6.0.2))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/pretty-format': 4.0.16
+      '@vitest/runner': 4.0.16
+      '@vitest/snapshot': 4.0.16
+      '@vitest/spy': 4.0.16
+      '@vitest/utils': 4.0.16
+      es-module-lexer: 1.7.0
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      pathe: 2.0.3
+      picomatch: 4.0.3
+      std-env: 3.10.0
+      tinybench: 2.9.0
+      tinyexec: 1.0.2
+      tinyglobby: 0.2.15
+      tinyrainbow: 3.0.3
+      vite: 7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@opentelemetry/api': 1.9.0
+      '@types/node': 25.0.3
+      happy-dom: 20.1.0
+      jsdom: 27.4.0
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - terser
+      - tsx
+      - yaml
+
+  vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(happy-dom@20.1.0)(jiti@2.6.1)(jsdom@27.4.0)(lightningcss@1.30.2)(msw@2.12.7(@types/node@25.0.3)(typescript@7.0.2))(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2):
+    dependencies:
+      '@vitest/expect': 4.0.16
+      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@25.0.3)(typescript@7.0.2))(vite@7.3.1(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@vitest/pretty-format': 4.0.16
       '@vitest/runner': 4.0.16
       '@vitest/snapshot': 4.0.16

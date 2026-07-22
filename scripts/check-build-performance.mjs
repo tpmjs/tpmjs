@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const failures = [];
@@ -8,6 +9,14 @@ function read(path) {
 
 function requireText(source, expected, message) {
   if (!source.includes(expected)) failures.push(message);
+}
+
+function trackedWorkspaceManifests() {
+  return execFileSync('git', ['ls-files', '-z', '--', 'package.json', 'apps', 'packages'], {
+    encoding: 'utf8',
+  })
+    .split('\0')
+    .filter((path) => path === 'package.json' || path.endsWith('/package.json'));
 }
 
 const nextConfig = read('apps/web/next.config.ts');
@@ -23,6 +32,43 @@ const releasePreview = read('.github/workflows/release-preview.yml');
 const releaseBuild = read('scripts/release-build-lib.ts');
 const rootPackage = JSON.parse(read('package.json'));
 const lefthook = read('lefthook.yml');
+const workspaceConfig = read('pnpm-workspace.yaml');
+const baseTypeScriptConfig = JSON.parse(read('packages/config/tsconfig/base.json'));
+
+requireText(
+  workspaceConfig,
+  "'@typescript/native': npm:typescript@^7.0.2",
+  'the compiler catalog must pin the native TypeScript 7 command-line implementation'
+);
+requireText(
+  workspaceConfig,
+  'typescript: npm:@typescript/typescript6@^6.0.2',
+  'the compiler catalog must retain the TypeScript 6 compatibility API for ecosystem tools'
+);
+if (rootPackage.devDependencies?.['@typescript/native'] !== 'catalog:') {
+  failures.push('the workspace root must expose the cataloged native TypeScript compiler');
+}
+if (baseTypeScriptConfig.compilerOptions?.stableTypeOrdering !== true) {
+  failures.push('TypeScript 6 compatibility must use TypeScript 7 stable type ordering');
+}
+if (!baseTypeScriptConfig.compilerOptions?.types?.includes('node')) {
+  failures.push('TypeScript 7 projects must declare their Node.js ambient types explicitly');
+}
+
+for (const path of trackedWorkspaceManifests()) {
+  const manifest = JSON.parse(read(path));
+  const typeScript = manifest.devDependencies?.typescript;
+  if (typeScript && typeScript !== 'catalog:') {
+    failures.push(`${path} must consume TypeScript through the workspace compiler catalog`);
+  }
+
+  for (const task of ['build', 'type-check']) {
+    const command = manifest.scripts?.[task];
+    if (command?.startsWith('tsc') && !command.includes('--checkers 1')) {
+      failures.push(`${path} ${task} must avoid nested TypeScript checker parallelism`);
+    }
+  }
+}
 
 for (const task of ['build', 'test', 'lint', 'type-check']) {
   if (!rootPackage.scripts?.[task]?.includes('--output-logs=new-only')) {
@@ -38,14 +84,15 @@ requireText(
 
 requireText(
   nextConfig,
-  'turbopackFileSystemCacheForBuild: true',
-  'Next.js production filesystem caching must remain enabled'
-);
-requireText(
-  nextConfig,
   'ignoreBuildErrors: ciValidatedRelease',
   'release-only type-check elision must remain gated by CI validation'
 );
+const webPackage = JSON.parse(read('apps/web/package.json'));
+for (const task of ['build', 'build:release']) {
+  if (!webPackage.scripts?.[task]?.includes('next build --webpack')) {
+    failures.push(`${task} must use the bounded Next.js production bundler`);
+  }
+}
 requireText(
   deploy,
   'assert_ci_passed',
@@ -58,8 +105,8 @@ requireText(
 );
 requireText(
   deploy,
-  '/var/cache/tpmjs/next-turbopack',
-  'on-box Turbopack cache must stay off the saturated data volume'
+  '/var/cache/tpmjs/next-build',
+  'on-box Next.js build cache must stay off the saturated data volume'
 );
 requireText(
   deploy,
@@ -99,7 +146,7 @@ requireText(
 requireText(
   deploy,
   'cache_namespace=$(printf',
-  'Turbopack state must be namespaced by the absolute release source root'
+  'Next.js build state must be namespaced by the absolute release source root'
 );
 requireText(deploy, 'podman build --layers', 'executor image builds must reuse Podman layers');
 requireText(

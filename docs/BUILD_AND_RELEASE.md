@@ -40,7 +40,7 @@ reconstructable caches on the root volume:
 | `/var/cache/tpmjs/release-worktree` | Exact source snapshot and generated standalone output |
 | `/var/cache/tpmjs/release-staging` | Short-lived exact-commit archive used to refresh the worktree |
 | `/var/cache/tpmjs/pnpm-store` | Content-addressed dependencies for the web workspace |
-| `/var/cache/tpmjs/next-turbopack` | Source-root-namespaced Turbopack production compiler state |
+| `/var/cache/tpmjs/next-build` | Source-root-namespaced Next.js production compiler state |
 
 The source snapshot comes from `git archive <full-sha>`, not from ambient
 untracked files. `rsync --delete` removes stale source paths while preserving
@@ -51,10 +51,16 @@ from this snapshot, so success never depends on ignored `dist/` files left in
 the canonical checkout. These directories contain no database or user data and
 can always be reconstructed from Git, pnpm, and the deployment environment.
 
-Turbopack's production filesystem cache is opt-in, so
-`apps/web/next.config.ts` enables it explicitly. GitHub Actions preserves both
-the Next compiler cache, TypeScript `.tsbuildinfo` files, and Turbo's
-content-addressed build/type-check artifacts. Repository-wide type coverage
+Production builds explicitly use Next.js's supported Webpack path. Next 16's
+default Turbopack path was rejected after a cold build leaked more than 1,500
+persistent PostCSS evaluator processes and still had not completed after
+22m36s on the production host. The Webpack build remained bounded to one main
+process and Next's seven-worker static-generation pool, and completed the same
+99-page output. Turbopack remains the development default for fast HMR.
+
+GitHub Actions preserves the Next compiler cache, TypeScript `.tsbuildinfo`
+files, and Turbo's content-addressed build/type-check artifacts.
+Repository-wide type coverage
 remains a mandatory 95% gate, but runs in parallel with ordinary type checking
 and preserves its file-level analysis cache. The architecture job runs the
 architecture ratchets directly instead of rebuilding the entire monorepo a
@@ -72,8 +78,41 @@ Turbo conservatively rebuild all 235 workspaces. TypeScript cache paths
 enumerate only workspace output depths; a recursive `**/*.tsbuildinfo` glob is
 forbidden because it traverses the installed dependency tree during post-job
 cleanup. On-box compiler artifacts are namespaced by the absolute
-release-workspace path because Turbopack caches are not portable between source
-roots.
+release-workspace path because Next compiler caches are not portable between
+source roots.
+
+### Native TypeScript split
+
+Direct `tsc` builds and checks run on TypeScript 7's native compiler. Tools that
+still import the JavaScript compiler API—currently tsup, typescript-eslint, and
+type-coverage—resolve the official TypeScript 6 compatibility package instead.
+Both identities live in the default pnpm catalog:
+
+```yaml
+catalog:
+  '@typescript/native': npm:typescript@^7.0.2
+  typescript: npm:@typescript/typescript6@^6.0.2
+```
+
+Every workspace manifest refers to `typescript` through `catalog:`. The root's
+`@typescript/native` alias owns the `tsc` binary, while the compatibility
+package exposes `tsc6` and the API imported by legacy tooling. pnpm replaces
+catalog references with ordinary version ranges when packages are packed or
+published.
+
+Turbo already runs independent packages concurrently, so each package-level
+`tsc` command uses `--checkers 1`. This avoids multiplying TypeScript's internal
+checker pool by Turbo's task pool. On the production host, the web compiler
+check fell from 39.46s and 1.5 GB RSS with four checkers to 13.38s and 1.21 GB
+with one checker. The first cold 238-task repository run completed in 3m10s
+despite the canonical checkout's saturated data volume; the prior cold baseline
+was approximately 4m06s.
+
+The shared config explicitly declares Node ambient types and stable type
+ordering. Its temporary `ignoreDeprecations: "6.0"` exists only because tsup's
+declaration worker injects `baseUrl` internally; repository configs themselves
+contain no removed TypeScript 7 option. Remove that compatibility flag when the
+declaration pipeline leaves tsup.
 
 Podman layer reuse remains enabled for both images. A tiny release-provenance
 file invalidates only the metadata tail of each Dockerfile, so a new Git commit
@@ -116,7 +155,8 @@ finished image also passed its frozen type check with networking disabled.
 `pnpm check-architecture` runs `scripts/check-build-performance.mjs`. The gate
 fails if a maintainer accidentally:
 
-- disables the production compiler cache;
+- bypasses the TypeScript 7/6 compiler catalog or restores nested checker pools;
+- restores the unbounded Turbopack production path;
 - bypasses TypeScript without exact-SHA CI proof;
 - moves release compilation back to the data volume;
 - restores the duplicate architecture build;
