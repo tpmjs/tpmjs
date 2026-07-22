@@ -39,7 +39,7 @@ const claudeCodePrompts = [
   },
   {
     label: 'search & execute',
-    text: 'Use `tpm tool search "weather"` to find weather tools on TPMJS, pick the best one, then run it with `tpm tool execute <package>/<tool> --input \'{"city":"London"}\'` to get the current weather.',
+    text: 'Use `tpm tool search "weather"` to find weather tools on TPMJS, pick the best one, then run its canonical ID with `tpm tool execute \'<package>::<toolName>\' --input \'{"city":"London"}\'`.',
   },
 ];
 
@@ -155,7 +155,8 @@ function ProtocolCard({
 
 export function ProtocolSection() {
   const [active, setActive] = useState<Protocol>('cli');
-  const activeProtocol = protocols.find((p) => p.id === active)!;
+  const activeProtocol = protocols.find((p) => p.id === active) ?? protocols[0];
+  if (!activeProtocol) throw new Error('Protocol contract is empty');
 
   return (
     <section className="py-20 bg-background border-t border-border">

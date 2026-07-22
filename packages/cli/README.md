@@ -24,7 +24,7 @@ tpm tool trending
 tpm tool info @tpmjs/official-firecrawl scrapeTool
 
 # Execute a tool
-tpm tool execute firecrawl-scrape --input '{"url":"https://example.com"}'
+tpm tool execute '@tpmjs/official-firecrawl::scrapeTool' --input '{"url":"https://example.com"}'
 
 # Generate MCP config for your AI client
 tpm mcp config ajax/my-collection
@@ -65,11 +65,10 @@ tpm tool info <package> <tool>    # Get detailed tool information
 Run a tool directly from the registry:
 
 ```bash
-tpm tool execute <tool>                              # Execute a tool
-tpm tool execute my-tool --input '{"key":"value"}'   # With JSON input
-tpm tool execute my-tool --input-file params.json    # Input from file
-tpm tool execute my-tool --stream                    # Stream output
-tpm tool execute my-tool --timeout 60                # Custom timeout (default: 300s)
+tpm tool execute '@scope/package::toolName' --input '{"key":"value"}' # Execute with JSON input
+tpm tool execute '@scope/package::toolName' --input-file params.json  # Read input from a file
+tpm tool execute '@scope/package::toolName' --stream                 # Stream-compatible output
+tpm tool execute '@scope/package::toolName' --timeout 60             # Custom timeout (default: 300s)
 ```
 
 Input can also be piped via stdin.

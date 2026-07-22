@@ -52,8 +52,8 @@ Execute any tool from the registry without installing it. The execution server i
 
 ```bash
 # CLI — direct execution
-tpm tool execute firecrawl-scrape --input '{"url":"https://example.com"}'
-tpm tool execute my-tool --input-file params.json --stream
+tpm tool execute '@tpmjs/official-firecrawl::scrapeTool' --input '{"url":"https://example.com"}'
+tpm tool execute '@scope/package::toolName' --input-file params.json --stream
 
 # CLI — execute from a collection via MCP
 tpm run -c username/collection -t toolName --args '{"key":"value"}' --env API_KEY=xxx

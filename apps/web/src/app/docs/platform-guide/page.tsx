@@ -801,9 +801,9 @@ Invalid usernames:
               <DocSubSection title="Claude Code CLI">
                 <CodeBlock
                   language="bash"
-                  code={`claude mcp add tpmjs-my-collection \\
-  https://tpmjs.com/@YOUR_USERNAME/collections/YOUR_COLLECTION_SLUG/mcp \\
-  -t http -H "Authorization: Bearer YOUR_TPMJS_API_KEY"`}
+                  code={`claude mcp add --transport http tpmjs-my-collection \\
+  https://tpmjs.com/api/mcp/YOUR_USERNAME/YOUR_COLLECTION_SLUG/http \\
+  --header "Authorization: Bearer $TPMJS_API_KEY"`}
                 />
               </DocSubSection>
             </DocSection>

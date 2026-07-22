@@ -1,6 +1,6 @@
 import * as readline from 'node:readline';
 import { Command, Flags } from '@oclif/core';
-import { getClient } from '../lib/api-client.js';
+import { canonicalToolId, getClient } from '../lib/api-client.js';
 import { createOutput } from '../lib/output.js';
 
 export default class Playground extends Command {
@@ -79,36 +79,7 @@ export default class Playground extends Command {
     const prompt = () => {
       const prefix = this.selectedTool ? `[${this.selectedTool}]` : '[no tool]';
       this.rl?.question(`${prefix} > `, async (input) => {
-        const trimmed = input.trim();
-
-        if (!trimmed) {
-          prompt();
-          return;
-        }
-
-        if (trimmed.startsWith('.')) {
-          await this.handleCommand(trimmed, output, verbose);
-          if (trimmed !== '.exit') {
-            prompt();
-          }
-          return;
-        }
-
-        // Try to execute as JSON input
-        if (!this.selectedTool) {
-          output.warning('No tool selected. Use .select to choose a tool first.');
-          prompt();
-          return;
-        }
-
-        try {
-          const params = JSON.parse(trimmed);
-          await this.executeTool(params, output, verbose);
-        } catch {
-          output.error('Invalid JSON input. Enter valid JSON or use a command (.help)');
-        }
-
-        prompt();
+        if (await this.processInput(input, output, verbose)) prompt();
       });
     };
 
@@ -118,6 +89,33 @@ export default class Playground extends Command {
     await new Promise<void>((resolve) => {
       this.rl?.on('close', resolve);
     });
+  }
+
+  private async processInput(
+    input: string,
+    output: ReturnType<typeof createOutput>,
+    verbose: boolean
+  ): Promise<boolean> {
+    const trimmed = input.trim();
+    if (!trimmed) return true;
+
+    if (trimmed.startsWith('.')) {
+      await this.handleCommand(trimmed, output, verbose);
+      return trimmed !== '.exit';
+    }
+
+    if (!this.selectedTool) {
+      output.warning('No tool selected. Use .select to choose a tool first.');
+      return true;
+    }
+
+    try {
+      const params = JSON.parse(trimmed) as Record<string, unknown>;
+      await this.executeTool(params, output, verbose);
+    } catch {
+      output.error('Invalid JSON input. Enter valid JSON or use a command (.help)');
+    }
+    return true;
   }
 
   private async handleCommand(
@@ -149,7 +147,7 @@ export default class Playground extends Command {
 
       case '.select':
         if (args.length === 0) {
-          output.warning('Usage: .select <tool-slug>');
+          output.warning('Usage: .select <package::toolName>');
         } else {
           this.selectedTool = args[0];
           output.success(`Selected: ${this.selectedTool}`);
@@ -191,11 +189,12 @@ export default class Playground extends Command {
       output.text('Available tools:');
 
       for (const tool of response.data) {
-        output.listItem(`${tool.slug} - ${tool.name}`);
+        const toolId = canonicalToolId(tool);
+        if (toolId) output.listItem(`${toolId} - ${tool.description}`);
       }
 
       output.text('');
-      output.text('Use .select <slug> to select a tool');
+      output.text('Use .select <package::toolName> to select a tool');
     } catch {
       spinner.fail('Failed to load tools');
     }

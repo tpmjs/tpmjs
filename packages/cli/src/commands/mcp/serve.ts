@@ -1,7 +1,8 @@
+import { createHash } from 'node:crypto';
 import * as http from 'node:http';
 import * as readline from 'node:readline';
 import { Command, Flags } from '@oclif/core';
-import { getClient } from '../../lib/api-client.js';
+import { canonicalToolId, getClient, type Tool } from '../../lib/api-client.js';
 import { createOutput } from '../../lib/output.js';
 
 interface MCPRequest {
@@ -20,6 +21,18 @@ interface MCPResponse {
     message: string;
     data?: unknown;
   };
+}
+
+interface ServedTool {
+  registryId: string;
+  tool: Tool;
+}
+
+/** Produce a spec-safe, readable, collision-resistant MCP tool name. */
+function mcpToolName(tool: Tool, registryId: string): string {
+  const readable = tool.name.replace(/[^A-Za-z0-9_.-]/g, '_').slice(0, 100) || 'tool';
+  const suffix = createHash('sha256').update(registryId).digest('hex').slice(0, 8);
+  return `${readable}__${suffix}`;
 }
 
 export default class MCPServe extends Command {
@@ -59,7 +72,33 @@ export default class MCPServe extends Command {
   };
 
   private client = getClient();
-  private tools: Map<string, unknown> = new Map();
+  private tools = new Map<string, ServedTool>();
+
+  private registerTool(tool: Tool): void {
+    const registryId = canonicalToolId(tool);
+    if (!registryId) return;
+    this.tools.set(mcpToolName(tool, registryId), { registryId, tool });
+  }
+
+  private async selectTools(flags: { collection?: string; tool?: string[] }): Promise<Tool[]> {
+    if (flags.collection) {
+      const collectionId = await this.client.resolveCollectionId(flags.collection);
+      const response = await this.client.getCollection(collectionId);
+      return response.data?.tools?.map(({ tool }) => tool) ?? [];
+    }
+
+    if (flags.tool && flags.tool.length > 0) {
+      const responses = await Promise.all(
+        flags.tool.map((toolId) => this.client.getToolBySlug(toolId))
+      );
+      return responses.flatMap((response) =>
+        response.success && response.data ? [response.data] : []
+      );
+    }
+
+    const response = await this.client.getTrendingTools({ limit: 10 });
+    return response.data ?? [];
+  }
 
   async run(): Promise<void> {
     const { flags } = await this.parse(MCPServe);
@@ -82,32 +121,8 @@ export default class MCPServe extends Command {
     const spinner = output.spinner('Loading tools...');
 
     try {
-      if (flags.collection) {
-        // Load tools from collection - search for tools with collection filter
-        // For now, just load trending tools if collection specified
-        const response = await this.client.getTrendingTools({ limit: 20 });
-        if (response.data && response.data.length > 0) {
-          for (const tool of response.data) {
-            this.tools.set(tool.slug, tool);
-          }
-        }
-      } else if (flags.tool && flags.tool.length > 0) {
-        // Load specific tools by slug
-        for (const toolId of flags.tool) {
-          const response = await this.client.getToolBySlug(toolId);
-          if (response.success && response.data) {
-            this.tools.set(response.data.slug, response.data);
-          }
-        }
-      } else {
-        // Load trending tools as default
-        const response = await this.client.getTrendingTools({ limit: 10 });
-        if (response.data && response.data.length > 0) {
-          for (const tool of response.data) {
-            this.tools.set(tool.slug, tool);
-          }
-        }
-      }
+      const selectedTools = await this.selectTools(flags);
+      for (const tool of selectedTools) this.registerTool(tool);
 
       spinner.stop();
       output.info(`Loaded ${this.tools.size} tool(s)`);
@@ -235,10 +250,10 @@ export default class MCPServe extends Command {
           jsonrpc: '2.0',
           id,
           result: {
-            tools: Array.from(this.tools.entries()).map(([slug, tool]) => ({
-              name: slug,
-              description: (tool as Record<string, unknown>).description || '',
-              inputSchema: (tool as Record<string, unknown>).inputSchema || {
+            tools: Array.from(this.tools.entries()).map(([name, served]) => ({
+              name,
+              description: served.tool.description || '',
+              inputSchema: served.tool.inputSchema || {
                 type: 'object',
                 properties: {},
               },
@@ -262,7 +277,16 @@ export default class MCPServe extends Command {
         }
 
         try {
-          const response = await this.client.executeTool(toolName, toolArgs || {});
+          const served = this.tools.get(toolName);
+          if (!served) {
+            return {
+              jsonrpc: '2.0',
+              id,
+              error: { code: -32602, message: `Unknown tool: ${toolName}` },
+            };
+          }
+
+          const response = await this.client.executeTool(served.registryId, toolArgs || {});
           return {
             jsonrpc: '2.0',
             id,

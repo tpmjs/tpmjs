@@ -36,14 +36,17 @@ describe('activation-funnel analytics', () => {
     const track = vi.fn();
     vi.stubGlobal('window', { umami: { track } });
 
-    trackInstallCommandCopy('tool-id', 'mcp');
+    trackInstallCommandCopy('tool-id', 'mcp', 'Connect with Claude Code');
     trackPlaygroundExecution('tool-id', 'success');
     trackCollectionMcpCopy('collection-id', 'http_url');
     trackSignup('started');
     trackSignup('completed');
 
     expect(track.mock.calls).toEqual([
-      ['install_command_copy', { tool: 'tool-id', surface: 'mcp' }],
+      [
+        'install_command_copy',
+        { tool: 'tool-id', surface: 'mcp', snippet: 'Connect with Claude Code' },
+      ],
       ['playground_execute', { tool: 'tool-id', outcome: 'success' }],
       ['collection_mcp_copy', { collection: 'collection-id', format: 'http_url' }],
       ['signup_started', { method: 'email' }],
