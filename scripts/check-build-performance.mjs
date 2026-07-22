@@ -110,7 +110,14 @@ for (const [name, dockerfile] of [
 }
 
 requireText(ci, 'apps/web/.next/cache', 'CI must preserve Next.js incremental compiler state');
-requireText(ci, '**/*.tsbuildinfo', 'CI must preserve incremental TypeScript state');
+requireText(
+  ci,
+  'packages/tools/official/*/tsconfig.tsbuildinfo',
+  'CI must preserve incremental TypeScript state without traversing dependency trees'
+);
+if (ci.includes('**/*.tsbuildinfo')) {
+  failures.push('TypeScript cache paths must not recursively traverse node_modules');
+}
 requireText(ci, '  type-coverage:', 'type coverage must run independently from type checking');
 requireText(ci, 'path: .type-coverage', 'CI must preserve incremental type-coverage analysis');
 requireText(

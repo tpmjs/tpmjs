@@ -63,9 +63,11 @@ Turbo's dependency-aware `--affected` graph, so an executor-only change cannot
 trigger hundreds of unrelated tool-package builds. Changes to shared packages
 still include every transitive dependent, while a missing comparison base
 safely falls back to the full graph. `pnpm build` and `pnpm type-check` remain
-the explicit full-repository commands. On-box compiler artifacts are namespaced
-by the absolute release-workspace path because Turbopack caches are not portable
-between source roots.
+the explicit full-repository commands. TypeScript cache paths enumerate only
+workspace output depths; a recursive `**/*.tsbuildinfo` glob is forbidden
+because it traverses the installed dependency tree during post-job cleanup.
+On-box compiler artifacts are namespaced by the absolute release-workspace path
+because Turbopack caches are not portable between source roots.
 
 Podman layer reuse remains enabled for both images. A tiny release-provenance
 file invalidates only the metadata tail of each Dockerfile, so a new Git commit
@@ -113,6 +115,7 @@ fails if a maintainer accidentally:
 - moves release compilation back to the data volume;
 - restores the duplicate architecture build;
 - removes dependency-aware affected builds or their required Git history;
+- restores recursive dependency-tree traversal to TypeScript cache collection;
 - disables Podman layers; or
 - disables the executor lockfile or restores static CDN imports; or
 - permits stale image provenance.
