@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       reuse: ${{ steps.provenance.outputs.reuse }}
+      source_run_id: ${{ steps.provenance.outputs.source_run_id }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -31,6 +32,75 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/reuse-pr-validation.mjs
+
+      - name: Import TypeScript state from validated pull request
+        id: typescript_state
+        if: steps.provenance.outputs.reuse == 'true'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: pr-compiler-state-typescript
+          path: .
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.provenance.outputs.source_run_id }}
+
+      - name: Promote validated TypeScript state to main cache scope
+        if: steps.typescript_state.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            .turbo
+            apps/*/tsconfig.tsbuildinfo
+            apps/*/.next/cache/tsconfig.tsbuildinfo
+            packages/*/tsconfig.tsbuildinfo
+            packages/tools/*/tsconfig.tsbuildinfo
+            packages/tools/official/*/tsconfig.tsbuildinfo
+          key: ${{ runner.os }}-typescript-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+
+      - name: Restore inherited main build state
+        id: inherited_build_state
+        if: steps.provenance.outputs.reuse == 'true'
+        continue-on-error: true
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            apps/web/.next/cache
+            .turbo
+          key: ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      - name: Import build delta from validated pull request
+        id: build_delta
+        if: steps.provenance.outputs.reuse == 'true'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: pr-compiler-state-build
+          path: .ci/imported-build-state
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.provenance.outputs.source_run_id }}
+
+      - name: Apply validated Turbo build delta
+        id: build_state
+        if: steps.build_delta.outcome == 'success'
+        continue-on-error: true
+        run: >-
+          node scripts/compiler-cache-delta.mjs apply
+          .ci/imported-build-state .turbo/cache
+
+      - name: Promote validated build state to main cache scope
+        if: >-
+          steps.inherited_build_state.outcome == 'success' &&
+          steps.build_state.outcome == 'success'
+        continue-on-error: true
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            apps/web/.next/cache
+            .turbo
+          key: ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
 
   lint:
     needs: validation_provenance
@@ -109,6 +179,24 @@ jobs:
           fi
           pnpm exec turbo run type-check --affected
 
+      - name: Export validated TypeScript state
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-compiler-state-typescript
+          path: |
+            .turbo
+            apps/*/tsconfig.tsbuildinfo
+            apps/*/.next/cache/tsconfig.tsbuildinfo
+            packages/*/tsconfig.tsbuildinfo
+            packages/tools/*/tsconfig.tsbuildinfo
+            packages/tools/official/*/tsconfig.tsbuildinfo
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 1
+          compression-level: 1
+
   type-coverage:
     needs: validation_provenance
     if: ${{ always() && (github.event_name != 'push' || needs.validation_provenance.outputs.reuse != 'true') }}
@@ -167,6 +255,7 @@ jobs:
           pnpm release:build:test
           pnpm verify:vercel-api:test
           node --test scripts/reuse-pr-validation.test.mjs
+          node --test scripts/compiler-cache-delta.test.mjs
           pnpm test
 
       - name: Report and enforce test coverage
@@ -260,6 +349,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-next-build-${{ hashFiles('pnpm-lock.yaml') }}-
 
+      - name: Snapshot inherited Turbo build state
+        run: >-
+          node scripts/compiler-cache-delta.mjs snapshot
+          .turbo/cache .ci/build-cache-before.json
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -271,6 +365,22 @@ jobs:
             exit 0
           fi
           pnpm exec turbo run build --affected
+
+      - name: Prepare validated Turbo build delta
+        run: >-
+          node scripts/compiler-cache-delta.mjs collect
+          .turbo/cache .ci/build-cache-before.json .ci/compiler-state-build
+
+      - name: Export validated build state
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-compiler-state-build
+          path: .ci/compiler-state-build/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
 
   executor:
     needs: validation_provenance

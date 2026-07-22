@@ -46,6 +46,29 @@ pull-request merge ref available to the base branch. The provenance proof
 therefore removes the truly duplicate main run without adding an external
 cache service or placing TPMJS infrastructure on Vercel.
 
+Successful pull-request type-check jobs export their small reconstructable
+Turbo and TypeScript incremental state as a one-day workflow artifact. Build
+jobs snapshot the inherited Turbo cache before compilation and export only the
+new content-addressed entries, not the inherited Turbo and Next.js baseline.
+For a documentation-only change this delta is just a manifest instead of the
+roughly 1 GB baseline observed during the implementation proof.
+
+Once the merge provenance check identifies the exact successful source run,
+the trusted `main` push saves the TypeScript state, restores the latest main
+build baseline, and overlays the validated Turbo delta without overwriting an
+existing content-addressed entry. It then saves the result under the existing
+default-branch cache key. The prior Next.js compiler cache remains part of that
+baseline; a Turbo hit restores the validated build output itself. Later pull
+requests can therefore reuse work from earlier merged changes even though
+GitHub keeps their original merge-ref caches isolated, without transferring
+the whole inherited build cache through a second artifact channel.
+
+Cache promotion is deliberately best-effort and is never validation evidence.
+An absent, expired, malformed, or temporarily unavailable artifact simply
+leaves the cache cold; future jobs rebuild it. Promotion errors cannot turn a
+failed PR into a valid merge, cannot replace the exact-tree proof, and cannot
+fail an already-proven `main` workflow.
+
 `verify` is read-only. It proves that both systemd services are active, both
 live images carry the expected revision, the executor serves protocol 1.1, the
 web app can reach PostgreSQL, and the public health endpoint reports the same
@@ -224,6 +247,8 @@ fails if a maintainer accidentally:
 - restores the duplicate architecture build;
 - repeats exact green pull-request validation on an identical merge tree or
   lets uncertain provenance skip full validation;
+- lets validated compiler state become stranded in pull-request-only cache
+  scope or makes optional cache promotion a correctness dependency;
 - removes dependency-aware affected builds or their required Git history;
 - restores recursive dependency-tree traversal to TypeScript cache collection;
 - restores duplicate standard tsup configs, uses a monolithic tsdown workspace
