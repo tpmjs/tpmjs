@@ -5,7 +5,7 @@
  * A lightweight HTTP server that executes TPMJS tools in isolated Unsandbox containers.
  * Since Unsandbox IS the sandbox, we don't need an additional isolation layer.
  *
- * API-compatible with the Vercel executor.
+ * Implements the TPMJS executor protocol.
  */
 
 const http = require('http');

@@ -120,7 +120,7 @@ npm install @tpmjs/tools-${toolName}
 \`\`\`typescript
 import { example${pascalName} } from '@tpmjs/tools-${toolName}';
 
-// Use with Vercel AI SDK
+// Use with the AI SDK
 import { generateText } from 'ai';
 
 const result = await generateText({

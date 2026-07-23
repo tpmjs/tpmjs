@@ -13,7 +13,6 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - Auto-close and auto-merge pipelines for CI
 - Fail-closed registry release audit with machine-readable CI evidence
 - Package-scoped npm Trusted Publishing preflight with short-lived GitHub OIDC credentials
-- Weekly Vercel OpenAPI contract-drift verification for all 167 Vercel tools
 
 ### Fixed
 - Pre-commit hooks no longer deadlock after parallel formatting by pinning the
@@ -26,7 +25,6 @@ This project uses [Changesets](https://github.com/changesets/changesets) for ver
 - Duplicate `browserTracingIntegration` causing `pushState` conflicts
 - Omega agent: chronological saving, error surfacing, white screen fix
 - Source/npm version drift across four packages without reusing published versions
-- 35 stale Vercel API routes and request contracts; deprecated checks migrated to v2
 
 ### Improved
 - `@tpmjs/mcp-client` now owns one leak-free connection lifecycle for local

@@ -66,7 +66,7 @@ export const DeveloperSDKScene = () => {
 
   const features = [
     'TypeScript support',
-    'Vercel AI SDK integration',
+    'AI SDK integration',
     'Auto schema extraction',
     'Zero config publish',
   ];

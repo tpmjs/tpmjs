@@ -281,7 +281,6 @@ jobs:
           pnpm release:audit:test
           pnpm release:auth:test
           pnpm release:build:test
-          pnpm verify:vercel-api:test
           node --test scripts/reuse-pr-validation.test.mjs
           node --test scripts/compiler-cache-delta.test.mjs
 

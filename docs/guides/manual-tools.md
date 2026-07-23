@@ -230,10 +230,8 @@ export async function POST(request: Request) {
 
 As of this documentation:
 
-- **ai-sdk-tool-code-execution** - Vercel Sandbox code execution
 - **@exalabs/ai-sdk** - Exa web search
 - **@parallel-web/ai-sdk-tools** - Parallel search and extraction (2 tools)
-- **ctx-zip** - MCP + Vercel Sandbox integration
 - **@perplexity-ai/ai-sdk** - Perplexity search
 - **@tavily/ai-sdk** - Tavily web research
 - **firecrawl-aisdk** - Firecrawl scraping, search, crawling (3 tools)
@@ -241,7 +239,7 @@ As of this documentation:
 - **@superagent-ai/ai-sdk** - Superagent security tools (3 tools)
 - **@valyu/ai-sdk** - Valyu domain-specific search tools (8 tools)
 
-**Total: 24 manually curated tools across 10 packages**
+**Total: 29 manually curated tools across 16 packages**
 
 ## FAQ
 

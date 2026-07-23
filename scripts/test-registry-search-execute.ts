@@ -125,7 +125,6 @@ async function main() {
     const data = await res.json();
     assert(data.results.tools.length > 0, 'Should find tools for @tpmjs/tools-hllm');
 
-    // biome-ignore lint/suspicious/noExplicitAny: test script
     const hllmTools = data.results.tools.filter(
       (t: { package: { npmPackageName: string } }) =>
         t.package.npmPackageName === '@tpmjs/tools-hllm'
@@ -315,7 +314,7 @@ async function main() {
       console.log(`        Error: ${JSON.stringify(data.error).slice(0, 200)}`);
       // Should not be a deployment error
       const errorStr = JSON.stringify(data.error);
-      assert(!errorStr.includes('DEPLOYMENT_NOT_FOUND'), `Got Vercel deployment error`);
+      assert(!errorStr.includes('DEPLOYMENT_NOT_FOUND'), `Got legacy deployment error`);
       assert(!errorStr.includes('deployment could not be found'), `Got deployment error`);
     } else {
       console.log(`        Unexpected success (API key may be pre-configured)`);

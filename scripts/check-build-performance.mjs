@@ -17,7 +17,9 @@ function trackedWorkspaceManifests() {
     encoding: 'utf8',
   })
     .split('\0')
-    .filter((path) => path === 'package.json' || path.endsWith('/package.json'));
+    .filter(
+      (path) => (path === 'package.json' || path.endsWith('/package.json')) && existsSync(path)
+    );
 }
 
 const nextConfig = read('apps/web/next.config.ts');
@@ -688,7 +690,6 @@ for (const contract of [
   'pnpm release:audit:test',
   'pnpm release:auth:test',
   'pnpm release:build:test',
-  'pnpm verify:vercel-api:test',
   'node --test scripts/reuse-pr-validation.test.mjs',
   'node --test scripts/compiler-cache-delta.test.mjs',
 ]) {

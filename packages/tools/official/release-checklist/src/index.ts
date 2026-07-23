@@ -126,7 +126,7 @@ function generateChecklistForStack(stack: string): ChecklistItem[] {
         item: 'Deployment previews tested',
         critical: true,
         category: 'ops',
-        description: 'Test on Vercel preview or similar',
+        description: 'Test in an isolated preview environment',
       }
     );
   } // Domain rule: stack_awareness - Node.js library stack specific items

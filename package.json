@@ -63,8 +63,6 @@
     "release:build": "tsx scripts/release-build.ts",
     "release:build:test": "tsx --test scripts/release-build.test.ts",
     "release:preview": "pnpm release:status && pnpm release:audit",
-    "verify:vercel-api": "tsx scripts/verify-vercel-api.ts",
-    "verify:vercel-api:test": "tsx --test scripts/vercel-contract.test.ts scripts/vercel-tools.test.ts",
     "prepare": "node -e \"if (!process.env.CI && require('fs').existsSync('.git')) { require('child_process').execSync('lefthook install', {stdio: 'inherit'}) }\""
   },
   "pnpm": {
@@ -91,7 +89,6 @@
     "dependency-cruiser": "^17.3.6",
     "knip": "^5.80.2",
     "lefthook": "2.1.10",
-    "openai": "^6.15.0",
     "publint": "0.3.21",
     "tsdown": "0.22.13",
     "tsx": "^4.21.0",
