@@ -41,12 +41,12 @@ const tutorials: Tutorial[] = [
     steps: 11,
   },
   {
-    title: 'Deploy Your Own Executor',
+    title: 'Connect Your Own Executor',
     description:
-      'Run TPMJS tools on your own infrastructure. Deploy a custom executor to Vercel in minutes for full privacy, control, and custom environment variables.',
+      'Run TPMJS tools on infrastructure you control. Connect an authenticated HTTP executor for private execution and custom environment variables.',
     icon: '🚀',
     href: '/docs/tutorials/custom-executor',
-    duration: '10 min',
+    duration: '6 min',
     steps: 6,
   },
 ];

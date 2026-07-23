@@ -25,7 +25,7 @@ const comparisonRows = [
   {
     capability: 'Schema format',
     langchain: 'LangChain StructuredTool class + Zod',
-    tpmjs: 'Vercel AI SDK tool() + Zod (framework-independent)',
+    tpmjs: 'AI SDK tool() + Zod (framework-independent)',
   },
   {
     capability: 'MCP support',
@@ -110,9 +110,9 @@ export default function CompareLangChainPage(): React.ReactElement {
               LangChain tools are classes that extend{' '}
               <code className="text-sm">StructuredTool</code> or{' '}
               <code className="text-sm">DynamicTool</code>. They require the LangChain runtime to
-              instantiate and call. TPMJS tools use the Vercel AI SDK{' '}
-              <code className="text-sm">tool()</code> function — a thin wrapper around a Zod schema
-              and an execute function with no framework runtime.
+              instantiate and call. TPMJS tools use AI SDK <code className="text-sm">tool()</code>{' '}
+              function — a thin wrapper around a Zod schema and an execute function with no
+              framework runtime.
             </p>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -162,7 +162,7 @@ export const search = tool({
 });
 
 // Works with any framework:
-// - Vercel AI SDK: generateText({ tools: { search } })
+// - AI SDK: generateText({ tools: { search } })
 // - Direct MCP: tpmjs.com/api/mcp/user/col/sse
 // - CLI: tpmjs tool execute @my/pkg
 // - Any MCP client: Claude, Cursor, Windsurf`}

@@ -40,7 +40,6 @@ pnpm-debug.log*
 .env.production
 .env.production.local
 .env.staging
-.env.vercel*
 
 # secret files
 *.pem
@@ -89,7 +88,6 @@ storybook-static
 
 # changesets: release-intent files (.changeset/*.md) ARE tracked in git so that
 # releases are reviewable and reproducible. Do not re-ignore them.
-.vercel
 packages/tool-ideas/data/tools-export.json
 .env*.local
 .helm-competitor/

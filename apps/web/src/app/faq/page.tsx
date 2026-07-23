@@ -239,13 +239,13 @@ export default function FAQPage(): React.ReactElement {
             {/* Question 8: Can I use TPMJS tools with any AI agent? */}
             <FAQItem question="Can I use TPMJS tools with any AI agent?">
               <p>
-                Yes. TPMJS tools use the Vercel AI SDK{' '}
+                Yes. TPMJS tools use the AI SDK{' '}
                 <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
                   tool()
                 </code>{' '}
                 format and are served via MCP — so they work with any MCP client (Claude Desktop,
-                Cursor, Windsurf) and any framework (Vercel AI SDK, LangChain, custom). Tools
-                specify supported frameworks in their metadata.
+                Cursor, Windsurf) and any framework (AI SDK, LangChain, custom). Tools specify
+                supported frameworks in their metadata.
               </p>
             </FAQItem>
 
@@ -372,7 +372,7 @@ export default function FAQPage(): React.ReactElement {
             {/* Question: What is the tool format? */}
             <FAQItem question="What format do tools need to be in?">
               <p>
-                Tools use the Vercel AI SDK{' '}
+                Tools use the AI SDK{' '}
                 <code className="text-foreground bg-background px-2 py-1 rounded border border-border">
                   tool()
                 </code>{' '}

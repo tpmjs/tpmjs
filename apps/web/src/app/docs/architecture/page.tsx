@@ -161,7 +161,7 @@ export default function ArchitecturePage(): React.ReactElement {
                     Database
                   </div>
                   <div className="space-y-2">
-                    <Cell>PostgreSQL (Neon)</Cell>
+                    <Cell>PostgreSQL 17</Cell>
                     <Cell>Prisma ORM</Cell>
                   </div>
                 </ArchBox>
@@ -170,7 +170,7 @@ export default function ArchitecturePage(): React.ReactElement {
                     Execution
                   </div>
                   <div className="space-y-2">
-                    <Cell>Vercel Sandbox</Cell>
+                    <Cell>Self-hosted Deno Executor</Cell>
                     <Cell>Custom Executors</Cell>
                   </div>
                 </ArchBox>
@@ -274,25 +274,25 @@ export default function ArchitecturePage(): React.ReactElement {
               <div className="border border-border rounded-xl p-5 bg-surface/50">
                 <div className="flex items-center gap-2 mb-4">
                   <Badge variant="default">Default</Badge>
-                  <span className="font-semibold text-foreground">Vercel Sandbox</span>
+                  <span className="font-semibold text-foreground">Self-hosted Deno Executor</span>
                 </div>
 
                 <ArchBox variant="muted" className="mb-4 p-3">
                   <div className="text-xs text-foreground-tertiary mb-2 font-mono uppercase">
-                    Sandbox VM
+                    Podman Container
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Cell>Node.js 22</Cell>
-                    <Cell>2 vCPUs</Cell>
-                    <Cell>2 min timeout</Cell>
-                    <Cell>Isolated FS</Cell>
+                    <Cell>Deno runtime</Cell>
+                    <Cell>Bounded resources</Cell>
+                    <Cell>Typed protocol</Cell>
+                    <Cell>Health checked</Cell>
                   </div>
                 </ArchBox>
 
                 <div className="space-y-2 text-sm text-foreground-secondary">
                   <div className="flex items-center gap-2">
                     <span className="text-foreground">✓</span>
-                    Network isolated
+                    Exact package versions
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-foreground">✓</span>
@@ -304,7 +304,7 @@ export default function ArchitecturePage(): React.ReactElement {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-foreground">✓</span>
-                    Cold start optimized
+                    Always-on service
                   </div>
                 </div>
               </div>
@@ -321,8 +321,8 @@ export default function ArchitecturePage(): React.ReactElement {
                     User Infrastructure
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <Cell>Vercel</Cell>
-                    <Cell>Railway</Cell>
+                    <Cell>Podman</Cell>
+                    <Cell>Unsandbox</Cell>
                     <Cell>AWS Lambda</Cell>
                     <Cell>Self-hosted</Cell>
                   </div>
@@ -474,7 +474,7 @@ export default function ArchitecturePage(): React.ReactElement {
               <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-center">
                 <ArchBox variant="muted" className="px-4 py-2">
                   <div className="text-xs text-foreground-tertiary">System Default</div>
-                  <div className="text-sm text-foreground">Vercel Sandbox</div>
+                  <div className="text-sm text-foreground">Self-hosted Deno Executor</div>
                 </ArchBox>
                 <span className="text-foreground-tertiary hidden md:block">→</span>
                 <span className="text-foreground-tertiary md:hidden">↓</span>

@@ -58,7 +58,7 @@ export function WhatIsTpmjsSlide(): React.ReactElement {
           transition={{ delay: 0.9 }}
           className="mt-10 text-white/40 text-sm font-mono"
         >
-          Built on the Vercel AI SDK tool specification
+          Built on the open AI SDK tool specification
         </motion.div>
       </motion.div>
     </div>

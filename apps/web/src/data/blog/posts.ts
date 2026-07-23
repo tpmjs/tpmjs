@@ -136,7 +136,7 @@ const result = await generateText({
 Why SDK wins here:
 
 - **Type safety.** Zod schemas, autocomplete, compile-time errors.
-- **Framework integration.** Works natively with Vercel AI SDK, LangChain, or any JS agent framework.
+- **Framework integration.** Works natively with AI SDK, LangChain, or any JS agent framework.
 - **Best DX** when you're building in code, not configuring a client.
 
 ## The arguments people get wrong

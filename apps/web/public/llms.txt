@@ -43,7 +43,6 @@
 
 - [Executors Overview](https://tpmjs.com/docs/executors): How tool execution works in TPMJS
 - [Unsandbox Executor](https://tpmjs.com/docs/executors/unsandbox): Sandboxed code execution environment
-- [Vercel Executor](https://tpmjs.com/docs/executors/vercel): Deploy executors on Vercel
 - [Railway Executor](https://tpmjs.com/docs/executors/railway): Deploy executors on Railway
 
 ## Explore

@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     'TPMJS',
     'agent tools',
     'AI SDK',
-    'Vercel AI',
+    'AI SDK',
     'Claude',
     'OpenAI',
     'npm tools',

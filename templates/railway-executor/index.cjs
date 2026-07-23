@@ -5,7 +5,7 @@
  * A lightweight HTTP server that executes TPMJS tools.
  * Designed for deployment on Railway with zero dependencies.
  *
- * API-compatible with the Vercel and Unsandbox executors.
+ * API-compatible with TPMJS custom executors.
  */
 
 const http = require('node:http');

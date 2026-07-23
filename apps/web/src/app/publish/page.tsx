@@ -45,7 +45,7 @@ export default function PublishPage(): React.ReactElement {
                   Scaffold a Tool Package
                 </h2>
                 <p className="text-lg text-foreground-secondary mb-6">
-                  One command generates a production-ready package with Zod schemas, Vercel AI SDK
+                  One command generates a production-ready package with Zod schemas, AI SDK
                   integration, and correct tpmjs metadata.
                 </p>
                 <CodeBlock language="bash" code="npx @tpmjs/create-basic-tools" size="md" />
@@ -163,7 +163,7 @@ export default function PublishPage(): React.ReactElement {
                     The <code className="text-foreground">tools</code> array is optional. TPMJS
                     scans your package exports and registers anything with{' '}
                     <code className="text-foreground">description</code> +{' '}
-                    <code className="text-foreground">execute</code> properties (Vercel AI SDK tool
+                    <code className="text-foreground">execute</code> properties (AI SDK tool
                     format).
                   </p>
                 </div>
@@ -210,7 +210,7 @@ export default function PublishPage(): React.ReactElement {
   "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": ["vercel-ai", "langchain"],
+    "frameworks": ["ai-sdk", "langchain"],
     "env": [
       {
         "name": "SENTIMENT_API_KEY",
@@ -335,7 +335,7 @@ npm publish --access public
   "keywords": ["tpmjs", "blog", "content"],
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": ["vercel-ai", "langchain"],
+    "frameworks": ["ai-sdk", "langchain"],
     "tools": [
       {
         "name": "createBlogPostTool",

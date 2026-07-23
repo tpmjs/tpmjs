@@ -33,9 +33,6 @@
     "packages/video": {
       "entry": ["remotion.config.ts", "src/index.ts"]
     },
-    "services/sandbox-executor": {},
-    "templates/vercel-executor": {
-      "ignoreBinaries": ["next"]
-    }
+    "services/sandbox-executor": {}
   }
 }

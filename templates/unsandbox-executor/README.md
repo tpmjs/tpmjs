@@ -32,7 +32,7 @@ This executor runs directly in an Unsandbox container to:
 3. Execute the tool with your parameters
 4. Return the result and cleanup
 
-Since Unsandbox containers are already isolated, we don't need an additional sandbox layer like Vercel Sandbox.
+Since Unsandbox containers are already isolated, no additional nested sandbox layer is required.
 
 ## API Endpoints
 

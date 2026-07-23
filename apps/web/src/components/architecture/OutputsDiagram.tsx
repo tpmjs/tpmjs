@@ -96,7 +96,7 @@ export function OutputsDiagram(): React.ReactElement {
         },
       },
       {
-        label: 'Vercel AI SDK',
+        label: 'AI SDK',
         tooltip: {
           title: 'SDK Compatibility',
           description: 'Works with useChat, streamText, and AI SDK primitives.',

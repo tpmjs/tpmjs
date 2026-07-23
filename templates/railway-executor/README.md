@@ -227,15 +227,15 @@ See [Railway Pricing](https://railway.app/pricing) for current rates.
 
 ## Comparison: Railway vs Other Platforms
 
-| Feature | Railway | Vercel | Unsandbox |
-|---------|---------|--------|-----------|
-| Deploy method | One-click / CLI | One-click | CLI |
-| Cold starts | None (always-on) | Yes (serverless) | None |
-| Max runtime | Unlimited | 45min / 5hr | Unlimited |
-| Free tier | $5/month credit | Limited | None |
-| Pricing | Per usage | Per compute | Per uptime |
-| Docker support | Yes | No | Yes |
-| Auto-scaling | Yes | Yes | Manual |
+| Feature | Railway | Unsandbox |
+|---------|---------|-----------|
+| Deploy method | One-click / CLI | CLI |
+| Cold starts | None (always-on) | None |
+| Max runtime | Unlimited | Unlimited |
+| Free tier | $5/month credit | None |
+| Pricing | Per usage | Per uptime |
+| Docker support | Yes | Yes |
+| Auto-scaling | Yes | Manual |
 
 ## Troubleshooting
 

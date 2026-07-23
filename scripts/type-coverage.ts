@@ -81,14 +81,28 @@ function loadTypeScriptFiles(): Set<string> {
 }
 
 function loadCacheNamespace(): string {
-  const inputs = commandOutput('git', ['ls-files', '-z'])
+  const inputs = commandOutput('git', [
+    'ls-files',
+    '-z',
+    '--cached',
+    '--others',
+    '--exclude-standard',
+  ])
     .split('\0')
     .filter(
       (file) =>
-        file === 'pnpm-lock.yaml' ||
-        file === 'scripts/type-coverage.ts' ||
-        /(^|\/)tsconfig[^/]*\.json$/.test(file)
+        Boolean(file) &&
+        (file === 'pnpm-lock.yaml' ||
+          file === 'scripts/type-coverage.ts' ||
+          /(^|\/)tsconfig[^/]*\.json$/.test(file))
     )
+    .filter((file) => {
+      try {
+        return statSync(resolve(REPOSITORY_ROOT, file)).isFile();
+      } catch {
+        return false;
+      }
+    })
     .sort();
   const hash = createHash('sha256');
 

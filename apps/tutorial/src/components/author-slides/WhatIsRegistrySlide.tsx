@@ -20,7 +20,7 @@ export function WhatIsRegistrySlide(): React.ReactElement {
         className="relative z-10 max-w-4xl w-full"
       >
         <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">What is TPMJS?</h2>
-        <p className="text-xl text-white/50 mb-12">A tool registry for the Vercel AI SDK</p>
+        <p className="text-xl text-white/50 mb-12">An open tool registry for AI agents</p>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
           {features.map((feature, index) => (
