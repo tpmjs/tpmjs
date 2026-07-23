@@ -36,7 +36,7 @@ const comparisons = [
       'TPMJS tools are standalone npm packages with Zod-validated schemas. No framework runtime, no transitive dependency tree, no vendor-specific adapters.',
     badge: 'Framework',
     highlights: [
-      'Vercel AI SDK 6 tool() format',
+      'AI SDK 6 tool() format',
       'Works with any MCP client natively',
       'Independent versioning per tool',
     ],

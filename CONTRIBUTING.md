@@ -163,7 +163,7 @@ import { TpmjsToolDefinition } from '@tpmjs/types';
 
 ### Code Example
 
-Tools are authored with the Vercel AI SDK's `tool()` helper (the `ai` package): a `description`, an `inputSchema`, and an `execute` function. This is the shape from the real official tool `packages/tools/official/csv-parse/src/index.ts`:
+Tools are authored with AI SDK's `tool()` helper (the `ai` package): a `description`, an `inputSchema`, and an `execute` function. This is the shape from the real official tool `packages/tools/official/csv-parse/src/index.ts`:
 
 ```typescript
 import { jsonSchema, tool } from 'ai';

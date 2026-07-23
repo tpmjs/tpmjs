@@ -66,14 +66,14 @@ test('derives all existing npm packages for one-time trust bootstrap', () => {
 
 test('constructs exact npm trust arguments without a shell', () => {
   assert.deepEqual(
-    npmTrustGithubArgs('@tpmjs/tools-vercel', {
+    npmTrustGithubArgs('@tpmjs/tools-cloudflare', {
       repository: 'tpmjs/tpmjs',
       workflow: 'release.yml',
     }),
     [
       'trust',
       'github',
-      '@tpmjs/tools-vercel',
+      '@tpmjs/tools-cloudflare',
       '--file',
       'release.yml',
       '--repo',
@@ -89,8 +89,8 @@ test('constructs exact GitHub audience and encoded npm package URLs', () => {
     'https://actions.example/token?api-version=1&audience=npm%3Aregistry.npmjs.org'
   );
   assert.equal(
-    npmOidcExchangeUrl('@tpmjs/tools-vercel'),
-    'https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/%40tpmjs%2Ftools-vercel'
+    npmOidcExchangeUrl('@tpmjs/tools-cloudflare'),
+    'https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/%40tpmjs%2Ftools-cloudflare'
   );
 });
 
@@ -129,17 +129,17 @@ test('verifies package-scoped npm exchange and retains no registry token', async
     );
   };
   const authorization = await authorizeNpmPackage(
-    { name: '@tpmjs/tools-vercel', version: '0.3.0', state: 'publish' },
+    { name: '@tpmjs/tools-cloudflare', version: '0.3.0', state: 'publish' },
     'github-identity',
     fetcher
   );
   assert.deepEqual(authorization, {
-    name: '@tpmjs/tools-vercel',
+    name: '@tpmjs/tools-cloudflare',
     version: '0.3.0',
     expires: '2026-07-21T11:00:00.000Z',
   });
   assert.deepEqual(request, {
-    url: 'https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/%40tpmjs%2Ftools-vercel',
+    url: 'https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/%40tpmjs%2Ftools-cloudflare',
     method: 'POST',
     authorization: 'Bearer github-identity',
   });
@@ -150,11 +150,11 @@ test('reports package identity and HTTP status when npm rejects trust', async ()
     Response.json({ message: 'trusted publisher not configured' }, { status: 401 });
   await assert.rejects(
     authorizeNpmPackage(
-      { name: '@tpmjs/tools-vercel', version: '0.3.0', state: 'publish' },
+      { name: '@tpmjs/tools-cloudflare', version: '0.3.0', state: 'publish' },
       'github-identity',
       fetcher
     ),
-    /@tpmjs\/tools-vercel@0\.3\.0.*HTTP 401.*trusted publisher not configured/
+    /@tpmjs\/tools-cloudflare@0\.3\.0.*HTTP 401.*trusted publisher not configured/
   );
 });
 
@@ -168,15 +168,15 @@ test('checks every publish candidate and reports all denied trust grants', async
   const report = await authorizeNpmPackages(
     [
       { name: '@tpmjs/tools-unsandbox', version: '0.1.5', state: 'publish' },
-      { name: '@tpmjs/tools-vercel', version: '0.3.0', state: 'publish' },
+      { name: '@tpmjs/tools-cloudflare', version: '0.3.0', state: 'publish' },
     ],
     'github-identity',
     fetcher
   );
 
-  assert.deepEqual(attempted, ['@tpmjs/tools-unsandbox', '@tpmjs/tools-vercel']);
+  assert.deepEqual(attempted, ['@tpmjs/tools-unsandbox', '@tpmjs/tools-cloudflare']);
   assert.deepEqual(report.authorized, []);
   assert.equal(report.denied.length, 2);
   assert.match(report.denied[0].error, /@tpmjs\/tools-unsandbox@0\.1\.5.*HTTP 404/);
-  assert.match(report.denied[1].error, /@tpmjs\/tools-vercel@0\.3\.0.*HTTP 404/);
+  assert.match(report.denied[1].error, /@tpmjs\/tools-cloudflare@0\.3\.0.*HTTP 404/);
 });

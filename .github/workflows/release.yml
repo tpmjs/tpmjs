@@ -40,12 +40,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Test release policy and external contracts
+      - name: Test release policy
         run: |
           pnpm release:audit:test
           pnpm release:auth:test
           pnpm release:build:test
-          pnpm verify:vercel-api:test
 
       - name: Audit release provenance
         run: pnpm release:audit --format json --output release-audit.json
@@ -62,10 +61,6 @@ jobs:
             release-audit.json
             release-auth.json
           if-no-files-found: error
-
-      - name: Verify live external contracts
-        run: |
-          pnpm verify:vercel-api
 
       - name: Install OIDC-capable npm client
         run: npm install --global npm@11.18.0

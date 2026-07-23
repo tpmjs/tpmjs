@@ -21,13 +21,13 @@ test('builds only release candidates and their workspace dependencies', () => {
     audit([
       { name: '@tpmjs/current', version: '1.0.0', state: 'current', safe: true },
       { name: '@tpmjs/tools-unsandbox', version: '0.1.5', state: 'publish', safe: true },
-      { name: '@tpmjs/tools-vercel', version: '0.3.0', state: 'publish', safe: true },
+      { name: '@tpmjs/tools-cloudflare', version: '0.3.0', state: 'publish', safe: true },
     ])
   );
 
   assert.deepEqual(plan.candidates, [
     { name: '@tpmjs/tools-unsandbox', version: '0.1.5', state: 'publish' },
-    { name: '@tpmjs/tools-vercel', version: '0.3.0', state: 'publish' },
+    { name: '@tpmjs/tools-cloudflare', version: '0.3.0', state: 'publish' },
   ]);
   assert.deepEqual(plan.turboArguments, [
     'exec',
@@ -36,7 +36,7 @@ test('builds only release candidates and their workspace dependencies', () => {
     'build',
     '--output-logs=new-only',
     '--filter=@tpmjs/tools-unsandbox...',
-    '--filter=@tpmjs/tools-vercel...',
+    '--filter=@tpmjs/tools-cloudflare...',
   ]);
 });
 

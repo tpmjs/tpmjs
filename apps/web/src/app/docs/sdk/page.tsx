@@ -55,7 +55,7 @@ export default function SdkPage(): React.ReactElement {
 
           <h4 className="font-semibold">Peer Dependencies</h4>
           <p className="text-foreground-secondary text-sm">
-            Both packages require <code className="text-primary">ai</code> (Vercel AI SDK) and{' '}
+            Both packages require <code className="text-primary">ai</code> (AI SDK) and{' '}
             <code className="text-primary">zod</code> as peer dependencies.
           </p>
           <CodeBlock code="npm install ai zod" language="bash" showCopy={true} />

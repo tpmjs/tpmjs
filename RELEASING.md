@@ -86,11 +86,10 @@ GitHub Actions.
 
 Trusted Publishing cannot bootstrap a name that does not exist on npm. A genuinely new package must be published once by a maintainer, then configured with the command above before normal automated releases. The preflight fails explicitly for that state.
 
-The equivalent package-specific commands are:
+An equivalent package-specific command is:
 
 ```bash
 npm trust github @tpmjs/tools-unsandbox --file release.yml --repo tpmjs/tpmjs --allow-publish
-npm trust github @tpmjs/tools-vercel --file release.yml --repo tpmjs/tpmjs --allow-publish
 ```
 
 ## Changelogs
@@ -112,6 +111,5 @@ The first complete registry audit found four packages whose source version lagge
 
 - `@tpmjs/social-post-draft` and `@tpmjs/ticket-categorize`: npm `0.1.1` and source `0.1.0` had byte-identical compiled JavaScript and declarations. Their source baselines were aligned to `0.1.1`; no release is needed.
 - `@tpmjs/tools-unsandbox`: npm `0.1.4` was published from git commit `ae0d5e37` with 59 tools. The later source commit `1be86cbe` deliberately expanded that surface to 85 tools with no removals, and the health-check work added 22 execution/cleanup contracts. Source was aligned to the existing `0.1.4` baseline and its committed patch changeset produces `0.1.5`.
-- `@tpmjs/tools-vercel`: npm `0.2.0` contains 14 tools, while a later unreleased source rewrite contains 167. Before release, all 167 routes were checked against Vercel's current official OpenAPI document, 35 stale routes/request shapes were repaired, and runtime mapping tests plus a weekly upstream-contract workflow were added. Source was aligned to the existing `0.2.0` baseline and its committed minor changeset produces `0.3.0`.
 
 The invariant is simple: a published version is immutable. Source may be aligned to an existing registry baseline only as part of a reviewed reconciliation with a pending changeset that lands above npm.

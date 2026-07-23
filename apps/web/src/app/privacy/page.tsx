@@ -31,7 +31,7 @@ export default function PrivacyPage(): React.ReactElement {
             <p className="text-xl text-foreground-secondary max-w-2xl mx-auto">
               How we collect, use, and protect your data
             </p>
-            <p className="text-sm text-foreground-tertiary mt-4">Last updated: December 2024</p>
+            <p className="text-sm text-foreground-tertiary mt-4">Last updated: July 22, 2026</p>
           </div>
 
           {/* Introduction */}
@@ -132,12 +132,12 @@ export default function PrivacyPage(): React.ReactElement {
                   Technical Logs & Error Data
                 </h3>
                 <p className="text-foreground-secondary mb-4">
-                  Our hosting infrastructure (Vercel) automatically logs:
+                  Our self-hosted application and traffic delivery infrastructure automatically log:
                 </p>
                 <ul className="space-y-2 text-foreground-secondary">
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
-                    <span>IP addresses (retained for 7 days for security purposes)</span>
+                    <span>IP addresses in technical request logs</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-primary mt-1">•</span>
@@ -279,23 +279,47 @@ export default function PrivacyPage(): React.ReactElement {
             <div className="space-y-4">
               <div className="p-6 border border-border rounded-lg bg-surface">
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <h3 className="text-xl font-semibold text-foreground">Vercel</h3>
+                  <h3 className="text-xl font-semibold text-foreground">OVHcloud</h3>
                   <span className="text-xs px-2 py-1 rounded bg-foreground/10 text-foreground-secondary">
                     Hosting
                   </span>
                 </div>
                 <p className="text-foreground-secondary mb-2">
-                  Our website and API are hosted on Vercel&apos;s infrastructure.
+                  Our website, API, executor, and database run on a TPMJS-managed OVHcloud VPS.
                 </p>
                 <p className="text-sm text-foreground-tertiary">
                   Privacy Policy:{' '}
                   <a
-                    href="https://vercel.com/legal/privacy-policy"
+                    href="https://www.ovhcloud.com/en/terms-and-conditions/privacy-policy/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline"
                   >
-                    vercel.com/legal/privacy-policy
+                    ovhcloud.com/terms-and-conditions/privacy-policy
+                  </a>
+                </p>
+              </div>
+
+              <div className="p-6 border border-border rounded-lg bg-surface">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <h3 className="text-xl font-semibold text-foreground">Cloudflare</h3>
+                  <span className="text-xs px-2 py-1 rounded bg-foreground/10 text-foreground-secondary">
+                    Traffic Delivery &amp; Security
+                  </span>
+                </div>
+                <p className="text-foreground-secondary mb-2">
+                  Cloudflare provides DNS, TLS termination, traffic proxying, caching, and network
+                  protection in front of the TPMJS host.
+                </p>
+                <p className="text-sm text-foreground-tertiary">
+                  Privacy Policy:{' '}
+                  <a
+                    href="https://www.cloudflare.com/privacypolicy/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    cloudflare.com/privacypolicy
                   </a>
                 </p>
               </div>
@@ -338,29 +362,6 @@ export default function PrivacyPage(): React.ReactElement {
                   </a>
                 </p>
               </div>
-
-              <div className="p-6 border border-border rounded-lg bg-surface">
-                <div className="flex items-start justify-between gap-4 mb-3">
-                  <h3 className="text-xl font-semibold text-foreground">Railway</h3>
-                  <span className="text-xs px-2 py-1 rounded bg-foreground/10 text-foreground-secondary">
-                    Sandbox Execution
-                  </span>
-                </div>
-                <p className="text-foreground-secondary mb-2">
-                  The playground uses Railway to execute tools in isolated Deno environments.
-                </p>
-                <p className="text-sm text-foreground-tertiary">
-                  Privacy Policy:{' '}
-                  <a
-                    href="https://railway.app/legal/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    railway.app/legal/privacy
-                  </a>
-                </p>
-              </div>
             </div>
           </section>
 
@@ -386,8 +387,9 @@ export default function PrivacyPage(): React.ReactElement {
               <div className="p-6 border border-border rounded-lg bg-surface">
                 <h3 className="text-lg font-semibold mb-2 text-foreground">Server Logs</h3>
                 <p>
-                  Technical logs including IP addresses are automatically deleted after 7 days per
-                  Vercel&apos;s retention policy.
+                  Application logs, including request IP addresses, follow the host logging policy
+                  and are retained only as long as needed for operation, debugging, and abuse
+                  prevention.
                 </p>
               </div>
             </div>

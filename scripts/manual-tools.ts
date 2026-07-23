@@ -63,47 +63,6 @@ export interface ManualTool {
 
 export const manualTools: ManualTool[] = [
   {
-    npmPackageName: 'ai-sdk-tool-code-execution',
-    category: 'code-generation',
-    frameworks: ['vercel-ai'],
-    name: 'executeCode',
-    description:
-      'Execute Python code in a sandboxed environment using Vercel Sandbox. Run calculations, data processing, and other computational tasks safely in an isolated environment with Python 3.13.',
-    tags: ['code-execution', 'sandbox'],
-    env: [
-      {
-        name: 'VERCEL_OIDC_TOKEN',
-        description: 'Vercel OIDC token for sandbox authentication',
-        required: true,
-      },
-    ],
-    parameters: [
-      {
-        name: 'code',
-        type: 'string',
-        description: 'Python code to execute in the sandbox',
-        required: true,
-      },
-    ],
-    returns: {
-      type: 'object',
-      description: 'Execution result with stdout, stderr, and return value',
-    },
-    aiAgent: {
-      useCase:
-        'Use when you need to perform calculations, data processing, or execute Python code safely',
-      limitations: 'Python 3.13 only. No network access. 30 second execution timeout.',
-      examples: [
-        'Perform complex mathematical calculations',
-        'Process data with pandas/numpy',
-        'Generate plots with matplotlib',
-      ],
-    },
-    docsUrl: 'https://vercel.com/docs/vercel-sandbox',
-    apiKeyUrl: 'https://vercel.com/docs/vercel-sandbox#authentication',
-    websiteUrl: 'https://vercel.com/docs/vercel-sandbox',
-  },
-  {
     npmPackageName: '@exalabs/ai-sdk',
     category: 'search',
     frameworks: ['vercel-ai'],
@@ -203,30 +162,6 @@ export const manualTools: ManualTool[] = [
       examples: ['Extract article content', 'Parse documentation pages'],
     },
     websiteUrl: 'https://parallel.ai',
-  },
-  {
-    npmPackageName: 'ctx-zip',
-    category: 'code-generation',
-    frameworks: ['vercel-ai'],
-    name: 'createVercelSandboxCodeMode',
-    description:
-      'Transform MCP tools and AI SDK tools into code, write to Vercel sandbox filesystem, and execute in isolated environment.',
-    tags: ['code-execution', 'sandbox', 'mcp', 'code-mode'],
-    env: [
-      {
-        name: 'VERCEL_OIDC_TOKEN',
-        description: 'Vercel OIDC token for sandbox authentication',
-        required: true,
-      },
-    ],
-    aiAgent: {
-      useCase: 'Use when you need to combine MCP tools with code execution in a sandbox',
-      limitations: 'Requires Vercel Sandbox access',
-      examples: ['Execute code using MCP server tools', 'Combine multiple tool sources'],
-    },
-    docsUrl: 'https://github.com/karthikscale3/ctx-zip/blob/main/README.md',
-    apiKeyUrl: 'https://vercel.com/docs/vercel-sandbox#authentication',
-    websiteUrl: 'https://github.com/karthikscale3/ctx-zip',
   },
   {
     npmPackageName: '@perplexity-ai/ai-sdk',
@@ -421,7 +356,7 @@ export const manualTools: ManualTool[] = [
       ],
     },
     docsUrl: 'https://github.com/aws/bedrock-agentcore-sdk-typescript',
-    apiKeyUrl: 'https://vercel.com/docs/oidc/aws',
+    apiKeyUrl: 'https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html',
     websiteUrl: 'https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/built-in-tools.html',
   },
   {

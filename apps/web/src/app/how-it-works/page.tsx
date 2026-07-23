@@ -51,8 +51,8 @@ export default function HowItWorksPage(): React.ReactElement {
                 scores quality, and serves them via MCP.
               </p>
               <p>
-                AI agents built with Vercel AI SDK, LangChain, or any MCP client can search the
-                registry and execute tools without manual integration.
+                AI agents built with AI SDK, LangChain, or any MCP client can search the registry
+                and execute tools without manual integration.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
                 <div className="p-6 border border-border rounded-lg bg-surface">
@@ -108,7 +108,7 @@ export default function HowItWorksPage(): React.ReactElement {
   "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": ["vercel-ai"],
+    "frameworks": ["ai-sdk"],
     "tools": [{
       "name": "analyzeSentiment",
       "description": "Analyze sentiment of text and return positive/negative/neutral"

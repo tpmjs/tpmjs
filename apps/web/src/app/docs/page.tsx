@@ -346,12 +346,12 @@ export default function DocsPage(): React.ReactElement {
               <p className="text-foreground-secondary">
                 TPMJS works with{' '}
                 <a
-                  href="https://sdk.vercel.ai"
+                  href="https://ai-sdk.dev"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"
                 >
-                  Vercel AI SDK
+                  AI SDK
                 </a>
                 , LangChain, LlamaIndex, and any framework that supports the AI SDK tool format.
               </p>
@@ -1090,7 +1090,7 @@ while (true) {
   "keywords": ["tpmjs"],
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": ["vercel-ai"],
+    "frameworks": ["ai-sdk"],
     "tools": [
       {
         "name": "myTool",
@@ -1601,7 +1601,7 @@ curl https://tpmjs.com/@username/collections/my-collection/usage.md`}
                   },
                   {
                     q: 'Can I use TPMJS with any AI framework?',
-                    a: 'TPMJS works with any framework that supports the AI SDK tool format, including Vercel AI SDK, LangChain, and LlamaIndex.',
+                    a: 'TPMJS works with any framework that supports the AI SDK tool format, including AI SDK, LangChain, and LlamaIndex.',
                   },
                   {
                     q: 'How are tools executed?',

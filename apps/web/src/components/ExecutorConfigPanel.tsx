@@ -232,14 +232,14 @@ export function ExecutorConfigPanel({
             required
             error={urlError ?? undefined}
             state={urlError ? 'error' : 'default'}
-            helperText="The base URL of your executor (e.g., https://my-executor.vercel.app)"
+            helperText="The base URL of your executor (e.g., https://executor.example.com)"
           >
             <Input
               id="executor-url"
               type="url"
               value={customUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
-              placeholder="https://my-executor.vercel.app"
+              placeholder="https://executor.example.com"
               state={urlError ? 'error' : 'default'}
               disabled={disabled}
             />

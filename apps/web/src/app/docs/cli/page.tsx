@@ -724,7 +724,7 @@ const tools = await client.searchTools('firecrawl');`}
               <Link href="/docs/sdk" className="text-primary hover:underline">
                 SDK Reference
               </Link>{' '}
-              — Use tools programmatically with the Vercel AI SDK
+              — Use tools programmatically with AI SDK
             </li>
             <li>
               <Link href="/docs#mcp-overview" className="text-primary hover:underline">

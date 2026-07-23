@@ -200,47 +200,6 @@ export default function ExecutorsDocsPage(): React.ReactElement {
                 </div>
               </Link>
 
-              {/* Vercel Card */}
-              <Link
-                href="/docs/executors/vercel"
-                className="group p-6 bg-surface border border-border rounded-lg hover:border-primary/50 transition-colors"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-black rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-6 h-6 text-white"
-                      viewBox="0 0 76 65"
-                      fill="currentColor"
-                      role="img"
-                      aria-labelledby="vercel-logo-title"
-                    >
-                      <title id="vercel-logo-title">Vercel logo</title>
-                      <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
-                    </svg>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                      Vercel
-                    </h3>
-                    <p className="text-sm text-foreground-secondary mt-1">
-                      Serverless execution with VM-level isolation using Vercel Sandbox.
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <span className="px-2 py-0.5 text-xs bg-surface-secondary rounded text-foreground-tertiary">
-                        One-click deploy
-                      </span>
-                      <span className="px-2 py-0.5 text-xs bg-surface-secondary rounded text-foreground-tertiary">
-                        Pay-per-use
-                      </span>
-                    </div>
-                  </div>
-                  <Icon
-                    icon="chevronRight"
-                    className="w-5 h-5 text-foreground-tertiary group-hover:text-primary transition-colors"
-                  />
-                </div>
-              </Link>
-
               {/* Agent Sandbox Card */}
               <Link
                 href="/docs/executors/sandbox"
@@ -290,76 +249,66 @@ export default function ExecutorsDocsPage(): React.ReactElement {
                   <tr className="border-b border-border">
                     <th className="text-left py-3 pr-4 font-medium text-foreground">Feature</th>
                     <th className="text-left py-3 px-4 font-medium text-foreground">Railway</th>
-                    <th className="text-left py-3 px-4 font-medium text-foreground">Unsandbox</th>
-                    <th className="text-left py-3 pl-4 font-medium text-foreground">Vercel</th>
+                    <th className="text-left py-3 pl-4 font-medium text-foreground">Unsandbox</th>
                   </tr>
                 </thead>
                 <tbody className="text-foreground-secondary">
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4">Deploy method</td>
                     <td className="py-3 px-4">One-click / CLI</td>
-                    <td className="py-3 px-4">CLI command</td>
-                    <td className="py-3 pl-4">One-click button</td>
+                    <td className="py-3 pl-4">CLI command</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4">Isolation</td>
                     <td className="py-3 px-4">Container-level</td>
-                    <td className="py-3 px-4">Container-level</td>
-                    <td className="py-3 pl-4">VM-level (Sandbox)</td>
+                    <td className="py-3 pl-4">Container-level</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4">Cold starts</td>
                     <td className="py-3 px-4">
                       <span className="text-success">None (always-on)</span>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 pl-4">
                       <span className="text-success">None (always-on)</span>
                     </td>
-                    <td className="py-3 pl-4">Yes (serverless)</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4">Max runtime</td>
                     <td className="py-3 px-4">
                       <span className="text-success">Unlimited</span>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-3 pl-4">
                       <span className="text-success">Unlimited</span>
                     </td>
-                    <td className="py-3 pl-4">45min (Hobby) / 5hr (Pro)</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4">Free tier</td>
                     <td className="py-3 px-4">
                       <span className="text-success">$5/month credit</span>
                     </td>
-                    <td className="py-3 px-4">None</td>
-                    <td className="py-3 pl-4">Limited</td>
+                    <td className="py-3 pl-4">None</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4">Pricing</td>
                     <td className="py-3 px-4">Per usage</td>
-                    <td className="py-3 px-4">Per uptime</td>
-                    <td className="py-3 pl-4">Per compute time</td>
+                    <td className="py-3 pl-4">Per uptime</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4">Auto-scaling</td>
                     <td className="py-3 px-4">
                       <span className="text-success">Yes</span>
                     </td>
-                    <td className="py-3 px-4">Manual</td>
-                    <td className="py-3 pl-4">Yes</td>
+                    <td className="py-3 pl-4">Manual</td>
                   </tr>
                   <tr className="border-b border-border/50">
                     <td className="py-3 pr-4">Custom domains</td>
-                    <td className="py-3 px-4">Yes</td>
                     <td className="py-3 px-4">Yes</td>
                     <td className="py-3 pl-4">Yes</td>
                   </tr>
                   <tr>
                     <td className="py-3 pr-4">Docker support</td>
                     <td className="py-3 px-4">Yes</td>
-                    <td className="py-3 px-4">Yes</td>
-                    <td className="py-3 pl-4">No</td>
+                    <td className="py-3 pl-4">Yes</td>
                   </tr>
                 </tbody>
               </table>
@@ -506,9 +455,8 @@ export default function ExecutorsDocsPage(): React.ReactElement {
                 <p className="text-foreground-secondary text-sm">
                   <strong>Railway</strong> is our official recommendation. It offers one-click
                   deployment, no cold starts, auto-scaling, and a generous $5/month free tier. Use{' '}
-                  <strong>Unsandbox</strong> if you prefer CLI deployment, or{' '}
-                  <strong>Vercel</strong> if you&apos;re already on Vercel and prefer pay-per-use
-                  serverless pricing.
+                  <strong>Unsandbox</strong> if you prefer a direct CLI deployment onto
+                  infrastructure you control.
                 </p>
               </div>
               <div>
@@ -532,10 +480,10 @@ export default function ExecutorsDocsPage(): React.ReactElement {
                   Are environment variables secure?
                 </h3>
                 <p className="text-foreground-secondary text-sm">
-                  Yes. Environment variables are stored encrypted by the platform (Vercel/Unsandbox)
-                  and only available during execution. You can also pass per-request environment
-                  variables in the <code className="px-1 bg-surface rounded">env</code> field of the
-                  execute-tool request.
+                  Yes. Environment variables are stored encrypted by the execution platform and only
+                  available during execution. You can also pass per-request environment variables in
+                  the <code className="px-1 bg-surface rounded">env</code> field of the execute-tool
+                  request.
                 </p>
               </div>
             </div>

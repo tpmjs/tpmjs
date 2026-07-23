@@ -1,6 +1,6 @@
 /**
  * AI-powered use case generation for tool collections
- * Uses Vercel AI SDK with structured output to generate realistic workflows
+ * Uses AI SDK structured output to generate realistic workflows
  */
 
 import { generateObject } from 'ai';

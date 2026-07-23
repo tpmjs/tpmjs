@@ -188,7 +188,7 @@ export default function TutorialHome(): React.ReactElement {
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">Learn TPMJS</h1>
           <p className="text-xl text-white/50 max-w-2xl mx-auto">
-            The tool registry for the Vercel AI SDK. Choose your path.
+            The open tool registry for AI agents. Choose your path.
           </p>
         </motion.div>
 

@@ -17,7 +17,9 @@ function trackedWorkspaceManifests() {
     encoding: 'utf8',
   })
     .split('\0')
-    .filter((path) => path === 'package.json' || path.endsWith('/package.json'));
+    .filter(
+      (path) => (path === 'package.json' || path.endsWith('/package.json')) && existsSync(path)
+    );
 }
 
 const nextConfig = read('apps/web/next.config.ts');
@@ -30,6 +32,8 @@ const webDockerfile = read('Dockerfile');
 const ci = read('.github/workflows/ci.yml');
 const reusePrValidation = read('scripts/reuse-pr-validation.mjs');
 const compilerCacheDelta = read('scripts/compiler-cache-delta.mjs');
+const coverageWorkspaces = read('scripts/coverage-workspaces.ts');
+const testCoverage = read('scripts/test-coverage.ts');
 const sandboxTests = read('.github/workflows/sandbox-tests.yml');
 const release = read('.github/workflows/release.yml');
 const releasePreview = read('.github/workflows/release-preview.yml');
@@ -65,6 +69,9 @@ if (
   rootPackage.devDependencies?.['@arethetypeswrong/core'] !== '0.18.5'
 ) {
   failures.push('the shared library builder and package-contract validators must stay pinned');
+}
+if (rootPackage.devDependencies?.turbo !== '2.9.15') {
+  failures.push('the task-input-aware Turbo build orchestrator must stay pinned to 2.9.15');
 }
 if (rootPackage.devDependencies?.lefthook !== '2.1.10') {
   failures.push('Lefthook must stay pinned to the stage_fixed-safe 2.1.10 release');
@@ -144,6 +151,42 @@ if (/\bsplitting\s*:/.test(tsdownConfig)) {
 if (!turboConfig.globalDependencies?.includes('tsdown.config.ts')) {
   failures.push('Turbo must invalidate package caches when the shared tsdown config changes');
 }
+if (turboConfig.futureFlags?.affectedUsingTaskInputs !== true) {
+  failures.push('affected CI tasks must honor their declared task-level inputs');
+}
+if (turboConfig.tasks?.test?.outputs?.length !== 0) {
+  failures.push('ordinary package tests must not claim coverage files they do not produce');
+}
+const coverageTask = turboConfig.tasks?.['//#test:coverage'];
+if (!coverageTask?.inputs?.includes('apps/**/src/**')) {
+  failures.push('the root coverage gate must treat application source as an explicit input');
+}
+if (!coverageTask?.inputs?.includes('packages/**/src/**')) {
+  failures.push('the root coverage gate must treat package source as an explicit input');
+}
+for (const input of [
+  'scripts/coverage-baselines.ts',
+  'scripts/coverage-workspaces.ts',
+  'scripts/test-coverage.ts',
+  'vitest.coverage.config.ts',
+]) {
+  if (!coverageTask?.inputs?.includes(input)) {
+    failures.push(`the root coverage gate must invalidate for ${input}`);
+  }
+}
+if (!coverageTask?.outputs?.includes('coverage/**')) {
+  failures.push('the root coverage gate must own its generated coverage report');
+}
+requireText(
+  coverageWorkspaces,
+  'discoverCoverageWorkspaces',
+  'coverage projects and their dependency build must share dynamic workspace discovery'
+);
+requireText(
+  testCoverage,
+  '`--filter=${workspace.name}^...`',
+  'coverage must build the dynamically discovered internal dependency graph first'
+);
 requireText(
   tsdownConfig,
   "profile: 'esm-only', level: 'error'",
@@ -608,12 +651,60 @@ requireText(
   'the architecture job must run the ratchet gates directly'
 );
 
+const lintJob = ci.slice(ci.indexOf('  lint:'), ci.indexOf('  type-check:'));
+requireText(lintJob, 'fetch-depth: 2', 'affected linting must use bounded Git history');
+requireText(
+  lintJob,
+  'turbo run lint --affected',
+  'CI must lint only the dependency-aware affected task graph'
+);
+requireText(
+  lintJob,
+  'github.event.pull_request.base.sha || github.event.before',
+  'affected linting must compare exact event SHAs instead of a local branch name'
+);
+if (lintJob.includes('run: pnpm lint')) {
+  failures.push('CI lint must not traverse the complete monorepo unconditionally');
+}
+
+const testJob = ci.slice(ci.indexOf('  test:'), ci.indexOf('  migrations:'));
+requireText(testJob, 'fetch-depth: 2', 'affected tests must use bounded Git history');
+requireText(
+  testJob,
+  'turbo run test:coverage --affected --dry=json',
+  'CI must plan coverage from the task-input-aware affected graph'
+);
+requireText(
+  testJob,
+  "steps.coverage_plan.outputs.required == 'true'",
+  'CI must run and preserve coverage only when its declared inputs are affected'
+);
+requireText(
+  testJob,
+  'github.event.pull_request.base.sha || github.event.before',
+  'affected tests must compare exact event SHAs instead of a local branch name'
+);
+for (const contract of [
+  'pnpm dev:setup:test',
+  'pnpm sync:manual:test',
+  'pnpm release:audit:test',
+  'pnpm release:auth:test',
+  'pnpm release:build:test',
+  'node --test scripts/reuse-pr-validation.test.mjs',
+  'node --test scripts/compiler-cache-delta.test.mjs',
+]) {
+  requireText(testJob, contract, `repository contract test must remain unconditional: ${contract}`);
+}
+if (/^\s+pnpm test\s*$/m.test(testJob)) {
+  failures.push('the test job must not execute package tests twice before coverage');
+}
+
 const typeCheckJob = ci.slice(ci.indexOf('  type-check:'), ci.indexOf('  type-coverage:'));
 if (typeCheckJob.includes('pnpm type-coverage')) {
   failures.push('type coverage must not serialize behind the complete type-check job');
 }
 requireText(typeCheckJob, '.turbo', 'the type-check job must preserve Turbo task artifacts');
-requireText(typeCheckJob, 'fetch-depth: 0', 'affected type checking requires complete Git history');
+requireText(typeCheckJob, 'fetch-depth: 2', 'affected type checking must use bounded Git history');
 requireText(
   typeCheckJob,
   'turbo run type-check --affected',
@@ -647,7 +738,7 @@ requireText(
 
 const buildJob = ci.slice(ci.indexOf('  build:'), ci.indexOf('  executor:'));
 requireText(buildJob, '.turbo', 'the build job must preserve Turbo task artifacts');
-requireText(buildJob, 'fetch-depth: 0', 'affected builds require complete Git history');
+requireText(buildJob, 'fetch-depth: 2', 'affected builds must use bounded Git history');
 requireText(
   buildJob,
   'turbo run build --affected',

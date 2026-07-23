@@ -249,7 +249,7 @@ The execution system provides sandboxed environments for safely running npm pack
 
 **2. Custom URL Executor**
 - User-deployed executor service
-- Deploy to Vercel, Railway, AWS Lambda, or self-host
+- Deploy on self-hosted containers or another standards-compatible HTTP runtime
 - Custom dependencies pre-installed
 - Your own API keys built-in
 
@@ -734,7 +734,7 @@ Remote executor client for tool execution.
 
 **Theme Support:**
 - Light mode (default)
-- Dark mode (Vercel/Cursor aesthetic)
+- Dark mode with a restrained developer-tool aesthetic
 - `next-themes` provider
 
 ### Dashboard Structure
@@ -836,7 +836,7 @@ pnpm build                        # Build all packages
 | Language | TypeScript 5.9 (strict) |
 | Database | PostgreSQL + Prisma 6.19 |
 | Auth | better-auth 1.4 |
-| AI SDK | Vercel AI SDK 6.0 |
+| AI SDK | AI SDK 6.0 |
 | Styling | Tailwind CSS 4.1 |
 | Build | Turborepo + pnpm |
 | Testing | Vitest + Testing Library |

@@ -58,7 +58,7 @@ function loadToolIdeas(): ToolIdeasData {
   }
 
   try {
-    // On Vercel, public files are in the project root under 'public'
+    // Public files are resolved from the application root.
     const filePath = join(process.cwd(), 'public', 'tools-export.json');
     const fileContent = readFileSync(filePath, 'utf-8');
     cachedData = JSON.parse(fileContent) as ToolIdeasData;

@@ -57,7 +57,7 @@ How it works:
 
 The registry has ~200 packages (thousands of individual tool functions). You can browse, search, create collections, build agents, or publish your own tools.
 
-Tech: Next.js 16, PostgreSQL/Prisma, Deno executor on Railway, deployed on Vercel. Full source at https://github.com/tpmjs/tpmjs (MIT).
+Tech: Next.js 16, PostgreSQL/Prisma, and a self-hosted Deno executor, deployed as rootless Podman services. Full source at https://github.com/tpmjs/tpmjs (MIT).
 
 Site: https://tpmjs.com
 

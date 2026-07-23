@@ -1,8 +1,8 @@
 # Build and release system
 
-TPMJS production releases are built and activated on the host. Vercel and
-Railway are not part of the production path. The supported operator interface
-is:
+TPMJS production releases are built and activated on the host. External
+hosting platforms are not part of the production path. The supported operator
+interface is:
 
 ```bash
 scripts/deploy-on-box.sh executor
@@ -44,7 +44,7 @@ that the deployment preflight requires.
 GitHub scopes cache visibility by branch and does not make caches created on a
 pull-request merge ref available to the base branch. The provenance proof
 therefore removes the truly duplicate main run without adding an external
-cache service or placing TPMJS infrastructure on Vercel.
+cache service or moving TPMJS infrastructure off the host.
 
 Successful pull-request type-check jobs export their small reconstructable
 Turbo and TypeScript incremental state as a one-day workflow artifact. Build

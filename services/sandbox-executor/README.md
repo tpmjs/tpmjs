@@ -92,7 +92,7 @@ railway up
 
 4. Set environment variables:
 ```bash
-railway variables set ALLOWED_ORIGINS=https://tpmjs.com,https://tpmjs-web.vercel.app
+railway variables set ALLOWED_ORIGINS=https://tpmjs.com
 ```
 
 5. Get the service URL:

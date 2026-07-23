@@ -32,7 +32,7 @@ const FULL_EXAMPLE = `{
   },
   "tpmjs": {
     "category": "text-analysis",
-    "frameworks": ["vercel-ai", "langchain"],
+    "frameworks": ["ai-sdk", "langchain"],
     "env": [
       {
         "name": "OPENAI_API_KEY",
@@ -300,7 +300,7 @@ function SpecificationView(): React.ReactElement {
           </div>
           <p className="text-foreground-secondary mb-4">Compatible AI frameworks:</p>
           <div className="flex flex-wrap gap-2">
-            {['vercel-ai', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel'].map((fw) => (
+            {['ai-sdk', 'langchain', 'llamaindex', 'haystack', 'semantic-kernel'].map((fw) => (
               <code
                 key={fw}
                 className="px-3 py-1.5 rounded bg-surface border border-border text-sm text-foreground font-mono"
@@ -429,9 +429,7 @@ function ExampleView(): React.ReactElement {
           </div>
           <div>
             <h2 className="text-2xl font-bold text-foreground">src/index.ts</h2>
-            <p className="text-foreground-tertiary text-sm">
-              Tool implementation with Vercel AI SDK
-            </p>
+            <p className="text-foreground-tertiary text-sm">Tool implementation with AI SDK</p>
           </div>
         </div>
         <div className="rounded-xl border border-border overflow-hidden">

@@ -31,7 +31,7 @@ export default function QuickstartPage(): React.ReactElement {
             <li>
               An AI provider API key (OpenAI, Anthropic, or{' '}
               <a
-                href="https://sdk.vercel.ai/providers/ai-sdk-providers"
+                href="https://ai-sdk.dev/providers/ai-sdk-providers"
                 className="text-primary hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -52,7 +52,7 @@ export default function QuickstartPage(): React.ReactElement {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-foreground-secondary">
-            Install the TPMJS SDK packages alongside the Vercel AI SDK:
+            Install the TPMJS SDK packages alongside AI SDK:
           </p>
 
           <h4 className="font-semibold">npm</h4>

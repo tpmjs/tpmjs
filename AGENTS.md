@@ -199,7 +199,7 @@ export function Button({ onClick, children, className }: ButtonProps) {
 
 ## Deployment & CI
 
-- Production runs ON-BOX as podman Quadlet services (quadlets in the `donto-infra` repo, `/mnt/donto-data/workspace/donto-infra/quadlets/tpmjs-*.container`) — NOT Vercel/Railway (both legacy, pending decommission; git deploys to Vercel are gated off)
+- Production runs ON-BOX as podman Quadlet services (quadlets in the `donto-infra` repo, `/mnt/donto-data/workspace/donto-infra/quadlets/tpmjs-*.container`). External platform deployments are retired.
 - There is NO auto-deploy: use `scripts/deploy-on-box.sh <executor|web|all|verify>`. It requires an exact CI-green `origin/main`, builds in the root-volume release workspace, smoke-tests candidates, preserves rollback images, and verifies live provenance. See `docs/BUILD_AND_RELEASE.md`.
 - CI is GitHub Actions (`.github/workflows/ci.yml`); pre-commit hooks run `format`, `lint`, and `type-check` — if hooks pass locally, CI should pass
 - Debug production with `sudo podman logs <tpmjs-web|tpmjs-playground|...>` and `journalctl -u <unit>`; check `https://tpmjs.com/api/health` to verify the app is up

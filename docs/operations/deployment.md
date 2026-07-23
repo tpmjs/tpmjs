@@ -3,9 +3,9 @@
 ## Current deployment (since 2026-07)
 
 tpmjs.com is **self-hosted**: the apps run as podman containers on a single box,
-built on-box from this repo, fronted by Caddy (with Cloudflare in front). There is
-no Vercel hosting or deployment path. The old deployment-protection guide remains
-[archived](../history/vercel-deployment.md) as historical context only.
+built on-box from this repo, fronted by Caddy (with Cloudflare in front). External
+platform deployment paths are retired; production is activated only by the
+transactional on-box deploy command after authoritative CI passes.
 
 | Component | Container | Port (localhost) |
 |---|---|---|

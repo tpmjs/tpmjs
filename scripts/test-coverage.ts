@@ -3,6 +3,7 @@ import { appendFileSync, existsSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { coverageBaselines } from './coverage-baselines.js';
+import { discoverCoverageWorkspaces } from './coverage-workspaces.js';
 
 interface CoverageMetric {
   covered: number;
@@ -23,6 +24,27 @@ const coverageDirectory = resolve(repositoryRoot, 'coverage');
 const summaryPath = resolve(coverageDirectory, 'coverage-summary.json');
 
 rmSync(coverageDirectory, { force: true, recursive: true });
+
+const workspaces = discoverCoverageWorkspaces(repositoryRoot);
+if (workspaces.length === 0) {
+  throw new Error('Coverage discovery found no test-bearing workspaces; refusing a vacuous pass.');
+}
+
+const build = spawnSync(
+  'pnpm',
+  [
+    'exec',
+    'turbo',
+    'run',
+    'build',
+    '--output-logs=new-only',
+    ...workspaces.map((workspace) => `--filter=${workspace.name}^...`),
+  ],
+  { cwd: repositoryRoot, stdio: 'inherit' }
+);
+
+if (build.error) throw build.error;
+if (build.status !== 0) process.exit(build.status ?? 1);
 
 const result = spawnSync(
   'pnpm',

@@ -91,12 +91,12 @@ export function ToolsDiagram(): React.ReactElement {
     // === AI SDK Format (right) ===
     drawNode(mainGroup, rightX, topY, 150, 60, {
       label: 'AI SDK Tool',
-      sublabel: 'Vercel AI',
+      sublabel: 'AI SDK',
       type: 'success',
       tooltip: {
         title: 'AI SDK Compatible',
         description:
-          'Tools work with Vercel AI SDK, LangChain, and any framework supporting the tool format.',
+          'Tools work with AI SDK, LangChain, and any framework supporting the tool format.',
       },
       delay: 250,
     });

@@ -93,7 +93,7 @@ const protocols: ProtocolInfo[] = [
     id: 'sdk',
     label: 'SDK',
     bestFor: 'TypeScript apps, agent frameworks',
-    why: 'Full type safety. Zod schemas. Works with Vercel AI SDK, LangChain, or any JS agent framework.',
+    why: 'Full type safety. Zod schemas. Works with AI SDK, LangChain, or any JS agent framework.',
     example: `import { registrySearchTool } from '@tpmjs/registry-search';
 import { registryExecuteTool } from '@tpmjs/registry-execute';
 
