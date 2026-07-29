@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-judge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AI conversation quality judge. Evaluates AI SDK messages across 10 metrics with scores, reasoning, suggestions, and actionable improvements.",
   "type": "module",
   "keywords": [

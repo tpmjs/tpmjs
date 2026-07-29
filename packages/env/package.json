@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/env",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Environment variable validation with Zod for TPMJS",
   "author": "TPMJS",
   "license": "MIT",
