@@ -10,7 +10,10 @@ Configuration guide for Sentry error monitoring on TPMJS.
 
 ## 2. Configure Environment Variables
 
-Set these in Vercel (Settings → Environment Variables):
+TPMJS is self-hosted (podman containers on the box, fronted by Caddy behind
+Cloudflare — see [operations/deployment.md](./operations/deployment.md)). Set
+these in the service's on-box environment file (the `EnvironmentFile=` read by
+the systemd/quadlet unit), not in any hosting-provider dashboard:
 
 | Variable | Where | Description |
 |----------|-------|-------------|
@@ -24,7 +27,8 @@ Set these in Vercel (Settings → Environment Variables):
 
 1. Go to [sentry.io/settings/auth-tokens/](https://sentry.io/settings/auth-tokens/)
 2. Create a new token with scopes: `project:releases`, `org:read`
-3. Add to Vercel as `SENTRY_AUTH_TOKEN`
+3. Add it to the build environment as `SENTRY_AUTH_TOKEN` (the on-box env file
+   used during the container build)
 
 ## 3. Install GitHub Integration
 

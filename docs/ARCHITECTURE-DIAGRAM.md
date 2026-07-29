@@ -195,7 +195,7 @@ Response: { status: "ok" }
 | Executor | Description | Use Case |
 |----------|-------------|----------|
 | **Railway** (Default) | Sandboxed Node.js, dynamic imports from esm.sh | Production default |
-| **Vercel Template** | Serverless functions, one-click deploy | Self-hosting |
+| **Unsandbox Template** | Isolated containers, one-command deploy, always-on HTTPS | Self-hosting |
 | **Custom** | User-provided URL endpoint | Private tools |
 
 ### Resolution Cascade
@@ -302,7 +302,7 @@ on-box `tpmjs-cron` timer. TPMJS does not use a hosted cron provider.
 
 ### Runtime
 - **esm.sh** - Dynamic ESM imports for tool loading
-- **Vercel** - Hosting, Edge, Cron jobs
+- **Self-hosted box** - podman containers built on-box, fronted by Caddy behind Cloudflare (see [operations/deployment.md](./operations/deployment.md)); cron via systemd timers / GitHub Actions
 - **Railway** - Default executor hosting
 
 ### Data

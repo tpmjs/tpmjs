@@ -129,7 +129,7 @@ Deploy to Railway at a stable URL. Store URL in `AGENT_SANDBOX_URL` env var.
 ## 7. Documentation
 
 ### New: `apps/web/src/app/docs/executors/sandbox/page.tsx`
-Following the pattern of existing executor doc pages (railway/page.tsx, vercel/page.tsx):
+Following the pattern of existing executor doc pages (railway/page.tsx, unsandbox/page.tsx):
 - What is the Agent Sandbox
 - When to use it (multi-step workflows, filesystem operations, data pipelines)
 - Default sandbox vs self-hosted

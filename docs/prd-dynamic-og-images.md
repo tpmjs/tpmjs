@@ -1,5 +1,10 @@
 # PRD: AI-Generated OG Images for TPMJS
 
+> **Historical** — TPMJS no longer deploys on Vercel (2026-07); it is self-hosted
+> on podman behind Caddy + Cloudflare (see [operations/deployment.md](./operations/deployment.md)).
+> This PRD's Vercel KV / Blob / Edge implementation details are superseded — treat
+> the storage/caching layers as on-box (e.g. Postgres / object storage / Cloudflare cache).
+
 ## Overview
 
 Implement a system where every page on tpmjs.com (both static and dynamic) has a unique, AI-generated Open Graph image created by Gemini. The OG images should be contextually relevant, visually distinctive, and reflect the actual content of each page.

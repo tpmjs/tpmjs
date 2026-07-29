@@ -1,6 +1,6 @@
 # Automated Production Error Fixing with Claude Code + GitHub Actions
 
-A complete guide to setting up an automated pipeline that detects production errors (via Vercel/Sentry logs), creates GitHub issues, triggers Claude Code to fix them, opens PRs, and optionally auto-merges.
+A complete guide to setting up an automated pipeline that detects production errors (via Sentry), creates GitHub issues, triggers Claude Code to fix them, opens PRs, and optionally auto-merges.
 
 ## How It Works (End-to-End Flow)
 

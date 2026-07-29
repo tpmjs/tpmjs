@@ -1,5 +1,11 @@
 # Next.js 16 API Route Timeout Issue - Comprehensive Debug Report
 
+> **Historical** — this report documents a January 2026 incident on the old
+> Vercel deployment. TPMJS no longer deploys on Vercel (2026-07); it is now
+> self-hosted on podman behind Caddy + Cloudflare (see
+> [operations/deployment.md](../operations/deployment.md)). Kept for its debugging
+> methodology; the Vercel-specific platform details no longer apply.
+
 **Date:** 2026-01-09
 **Project:** TPMJS (tpmjs.com)
 **Issue:** API routes at `/api/agents/[id]/conversation/[conversationId]` timeout without any Vercel function logs
