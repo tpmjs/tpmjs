@@ -102,7 +102,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -H 'Accept: application/json, text/event-stream' \
             -H "Authorization: Bearer $API_KEY" \
-            -d "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"execute_tool\",\"arguments\":{\"toolId\":\"$HEALTHY_TOOL\",\"params\":{\"csv\":\"name,age\\nalice,30\"}}}}" \
+            -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"execute_tool","arguments":{"packageName":"@tpmjs/tools-csv-parse","toolName":"csvParseTool","arguments":{"csv":"name,age\nalice,30"}}}}' \
             | /tmp/mcp-json.sh)
           if ! echo "$body" | jq -e '.result != null' >/dev/null; then
             echo "::error::authenticated tools/call did not return a result. Body: $body"
@@ -122,9 +122,9 @@ jobs:
             -H 'Content-Type: application/json' \
             -H 'Accept: application/json, text/event-stream' \
             -H "Authorization: Bearer $API_KEY" \
-            -d "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"execute_tool\",\"arguments\":{\"toolId\":\"$BROKEN_TOOL\",\"params\":{}}}}" \
+            -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"execute_tool","arguments":{"packageName":"@tpmjs/tools-recipe-hash","toolName":"recipeHash","arguments":{}}}}' \
             | /tmp/mcp-json.sh)
-          if ! echo "$body" | grep -q 'TOOL_BROKEN'; then
+          if ! echo "$body" | grep -qE 'TOOL_BROKEN|currently broken'; then
             echo "::error::expected TOOL_BROKEN in response. Body: $body"
             exit 1
           fi
