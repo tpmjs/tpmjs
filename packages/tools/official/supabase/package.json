@@ -1,7 +1,7 @@
 {
   "name": "@tpmjs/tools-supabase",
-  "version": "0.1.0",
-  "description": "Supabase REST API tools for AI agents \u2014 query, insert, update, delete rows, call RPC functions, and more",
+  "version": "0.1.1",
+  "description": "Supabase REST API tools for AI agents — query, insert, update, delete rows, call RPC functions, and more",
   "type": "module",
   "keywords": [
     "tpmjs",

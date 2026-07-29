@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/official-agnt",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Agnt.gg platform tools for AI agents. Manage agents, workflows, goals, and integrations with Google, GitHub, Stripe, Notion, Twitter, YouTube, Dropbox, and more.",
   "type": "module",
   "keywords": [
