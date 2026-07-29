@@ -18,6 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticPages: MetadataRoute.Sitemap = [
     // Core
     { url: baseUrl, lastModified: now, changeFrequency: 'daily', priority: 1 },
+    { url: `${baseUrl}/tools`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     {
       url: `${baseUrl}/tool/tool-search`,
       lastModified: now,
@@ -126,6 +127,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: 'yearly', priority: 0.3 },
   ];
 
+  let categoryPages: MetadataRoute.Sitemap = [];
+
+  try {
+    // One crawlable browse URL per category facet (small, ~31 entries).
+    const categories = await prisma.package.findMany({
+      distinct: ['category'],
+      select: { category: true },
+      orderBy: { category: 'asc' },
+    });
+    categoryPages = categories
+      .map((row) => row.category)
+      .filter((category): category is string => Boolean(category))
+      .map((category) => ({
+        url: `${baseUrl}/tools?category=${encodeURIComponent(category)}`,
+        lastModified: now,
+        changeFrequency: 'daily' as const,
+        priority: 0.6,
+      }));
+  } catch (error) {
+    console.error('sitemap: failed to fetch categories from DB, skipping category pages', error);
+  }
+
   let toolPages: MetadataRoute.Sitemap = [];
 
   try {
@@ -161,5 +184,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('sitemap: failed to fetch tools from DB, returning static pages only', error);
   }
 
-  return [...staticPages, ...toolPages];
+  return [...staticPages, ...categoryPages, ...toolPages];
 }

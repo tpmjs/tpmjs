@@ -206,7 +206,7 @@ export function AppHeader(): React.ReactElement {
             {/* Desktop Navigation - hidden on mobile */}
             <div className="hidden lg:flex items-center gap-1">
               {/* Primary Links */}
-              <Link href="/tool/tool-search">
+              <Link href="/tools">
                 <Button
                   variant="ghost"
                   size="sm"
