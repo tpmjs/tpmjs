@@ -92,6 +92,20 @@ An equivalent package-specific command is:
 npm trust github @tpmjs/tools-unsandbox --file release.yml --repo tpmjs/tpmjs --allow-publish
 ```
 
+### Publish exclusions (user-gated packages)
+
+Registering a trusted publisher is an interactive maintainer action (npm login + 2FA); CI cannot do it. Until a package's grant exists, npm rejects its OIDC token exchange with **HTTP 404**. The preflight is fail-closed, so — before this mechanism — one ungranted package failed the whole preflight and **froze the entire monorepo release** (every other package's queued changesets blocked with it). Per-package fail-closed is correct; whole-monorepo fail-closed on one known user-gated package is not.
+
+`scripts/release-exclusions.ts` is the single source of truth for packages that are **allowed to be held back** from publishing while their trusted publisher is pending. Listing a package there:
+
+1. reclassifies it to the audit `excluded` state (`SKIP` in `pnpm release:audit` / `release:preview`), so it is never an OIDC/build/publish candidate — the rest of the monorepo releases normally;
+2. makes the preflight print a loud `WARNING` (and a GitHub step-summary note); and
+3. makes the CI publish lane mark it `private` in the ephemeral checkout right before `changeset publish` (`scripts/release-exclude-private.ts`, wired into `changeset:publish:ci`). This is required because **`changeset publish` honours only `private`, not the changesets `ignore` config** — the mutation is never committed.
+
+Any package that is **not** on this list and still lacks a grant continues to fail the release loudly (correct fail-closed for an unexpected misconfiguration).
+
+**To release a held-back package:** register its trusted publisher (the package-specific `npm trust` command above), then delete its entry from `scripts/release-exclusions.ts`. Its source version is already ahead of npm, so it publishes on the next push. Currently listed: **`@tpmjs/tools-unsandbox`** (npm `0.1.4`, source `0.1.5`) — tracked in [#115](https://github.com/tpmjs/tpmjs/issues/115).
+
 ## Changelogs
 
 - **Per-package `CHANGELOG.md`** files are generated and maintained by Changesets — do not edit them by hand.

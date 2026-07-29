@@ -53,7 +53,7 @@
     "changeset": "changeset",
     "changeset:version": "changeset version && pnpm install --no-frozen-lockfile",
     "changeset:publish": "pnpm build && changeset publish",
-    "changeset:publish:ci": "pnpm release:build --audit release-audit.json && changeset publish",
+    "changeset:publish:ci": "pnpm release:build --audit release-audit.json && pnpm release:exclude-private --audit release-audit.json && changeset publish",
     "release:status": "changeset status --verbose",
     "release:audit": "tsx scripts/release-audit.ts",
     "release:audit:test": "tsx --test scripts/release-audit.test.ts",
@@ -62,6 +62,8 @@
     "release:trust-bootstrap": "tsx scripts/release-trust-bootstrap.ts",
     "release:build": "tsx scripts/release-build.ts",
     "release:build:test": "tsx --test scripts/release-build.test.ts",
+    "release:exclude-private": "tsx scripts/release-exclude-private.ts",
+    "release:exclude-private:test": "tsx --test scripts/release-exclude-private.test.ts",
     "release:preview": "pnpm release:status && pnpm release:audit",
     "prepare": "node -e \"if (!process.env.CI && require('fs').existsSync('.git')) { require('child_process').execSync('lefthook install', {stdio: 'inherit'}) }\""
   },

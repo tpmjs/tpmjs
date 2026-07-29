@@ -10,6 +10,7 @@ import {
   summarizeAudit,
   type WorkspacePackage,
 } from './release-audit-lib';
+import { isPublishExcluded } from './release-exclusions';
 
 type OutputFormat = 'text' | 'json' | 'markdown';
 
@@ -163,6 +164,11 @@ function importantEntries(entries: readonly ReleaseAuditEntry[]): ReleaseAuditEn
   return entries.filter((entry) => entry.state !== 'current');
 }
 
+function textGate(entry: ReleaseAuditEntry): string {
+  if (entry.state === 'excluded') return 'SKIP';
+  return entry.safe ? 'OK' : 'BLOCK';
+}
+
 function asText(entries: readonly ReleaseAuditEntry[]): string {
   const summary = summarizeAudit(entries);
   const lines = [
@@ -172,7 +178,7 @@ function asText(entries: readonly ReleaseAuditEntry[]): string {
   ];
   for (const entry of importantEntries(entries)) {
     lines.push(
-      `${entry.safe ? 'OK' : 'BLOCK'} ${entry.name} source=${entry.version} npm=${entry.latest ?? 'unpublished'} state=${entry.state}`,
+      `${textGate(entry)} ${entry.name} source=${entry.version} npm=${entry.latest ?? 'unpublished'} state=${entry.state}`,
       `  ${entry.reason}`
     );
   }
@@ -201,8 +207,9 @@ function asMarkdown(entries: readonly ReleaseAuditEntry[]): string {
     lines.push('| Gate | Package | Source | npm latest | State | Reason |');
     lines.push('| --- | --- | --- | --- | --- | --- |');
     for (const entry of important) {
+      const gate = entry.state === 'excluded' ? 'SKIP' : entry.safe ? 'PASS' : 'BLOCK';
       lines.push(
-        `| ${entry.safe ? 'PASS' : 'BLOCK'} | ${escapeTableCell(entry.name)} | ${entry.version} | ${entry.latest ?? 'unpublished'} | ${entry.state} | ${escapeTableCell(entry.reason)} |`
+        `| ${gate} | ${escapeTableCell(entry.name)} | ${entry.version} | ${entry.latest ?? 'unpublished'} | ${entry.state} | ${escapeTableCell(entry.reason)} |`
       );
     }
   }
@@ -221,7 +228,12 @@ async function main() {
   const workspaces = readWorkspaces();
   const concurrency = 16;
   const entries = await mapConcurrent(workspaces, concurrency, async (workspace) =>
-    classifyRelease(workspace, await fetchRegistryPackage(workspace.name), readChangelog(workspace))
+    classifyRelease(
+      workspace,
+      await fetchRegistryPackage(workspace.name),
+      readChangelog(workspace),
+      isPublishExcluded(workspace.name)
+    )
   );
   const output = render(entries, options.format);
   if (options.output) writeFileSync(options.output, output);

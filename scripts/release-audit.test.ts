@@ -71,6 +71,38 @@ test('applies the same provenance requirement to a new npm package', () => {
   assert.equal(allowed.safe, true);
 });
 
+test('holds back an excluded package from the publish set without failing the audit', () => {
+  const publishable = classifyRelease(
+    workspace,
+    registry('1.2.2', ['1.2.2']),
+    '# Changelog\n\n## 1.2.3\n',
+    true
+  );
+  assert.equal(publishable.state, 'excluded');
+  assert.equal(publishable.safe, true);
+  assert.match(publishable.reason, /trusted publisher/i);
+
+  // A new-to-npm package that would publish is also held back.
+  const newPackage = classifyRelease(workspace, null, '# Changelog\n\n## 1.2.3\n', true);
+  assert.equal(newPackage.state, 'excluded');
+  assert.equal(newPackage.safe, true);
+
+  const summary = summarizeAudit([publishable, newPackage]);
+  assert.equal(summary.safe, true);
+  assert.equal(summary.publishCount, 0);
+  assert.deepEqual(summary.counts, { excluded: 2 });
+});
+
+test('exclusion never masks a non-publishing or unsafe state', () => {
+  // `current` stays current even when excluded — nothing would publish anyway.
+  const current = classifyRelease(workspace, registry('1.2.3', ['1.2.3']), null, true);
+  assert.equal(current.state, 'current');
+  // `behind` is a genuine failure and must not be silenced by the exclusion.
+  const behind = classifyRelease(workspace, registry('1.3.0', ['1.3.0']), null, true);
+  assert.equal(behind.state, 'behind');
+  assert.equal(behind.safe, false);
+});
+
 test('summarizes the publish set and fails when any package is unsafe', () => {
   const current = classifyRelease(workspace, registry('1.2.3', ['1.2.3']), null);
   const behind = classifyRelease(workspace, registry('1.3.0', ['1.3.0']), null);

@@ -16,7 +16,11 @@ export type ReleaseState =
   | 'publish'
   | 'new-package'
   | 'behind'
-  | 'unproven-release';
+  | 'unproven-release'
+  // A package that WOULD publish but is deliberately held back because its npm
+  // trusted publisher is not yet registered. Safe, never a publish candidate.
+  // See scripts/release-exclusions.ts (tpmjs/tpmjs#115).
+  | 'excluded';
 
 export interface ReleaseAuditEntry extends WorkspacePackage {
   latest: string | null;
@@ -90,7 +94,34 @@ export function hasChangelogRelease(changelog: string | null, version: string): 
   return changelog.split('\n').some((line) => line.trim() === `## ${version}`);
 }
 
+/**
+ * Classify a workspace package against npm, then apply the publish exclusion.
+ *
+ * @param excluded  When true and the package would otherwise publish, it is
+ *   reclassified to the safe `excluded` state instead of `publish`/`new-package`
+ *   so it never becomes a publish/OIDC/build candidate. The caller decides which
+ *   packages are excluded (see scripts/release-exclusions.ts) — this library
+ *   stays free of the concrete list so it remains pure and unit-testable.
+ */
 export function classifyRelease(
+  workspace: WorkspacePackage,
+  registry: RegistryPackage | null,
+  changelog: string | null,
+  excluded = false
+): ReleaseAuditEntry {
+  const entry = classifyPublishableRelease(workspace, registry, changelog);
+  if (!excluded || (entry.state !== 'publish' && entry.state !== 'new-package')) {
+    return entry;
+  }
+  return {
+    ...entry,
+    state: 'excluded',
+    safe: true,
+    reason: `${entry.reason} Held back: npm trusted publisher not registered, so this version is excluded from the release. See scripts/release-exclusions.ts (tpmjs/tpmjs#115).`,
+  };
+}
+
+function classifyPublishableRelease(
   workspace: WorkspacePackage,
   registry: RegistryPackage | null,
   changelog: string | null

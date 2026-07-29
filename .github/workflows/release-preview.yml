@@ -33,6 +33,7 @@ jobs:
           pnpm release:audit:test
           pnpm release:auth:test
           pnpm release:build:test
+          pnpm release:exclude-private:test
 
       - name: Show pending Changesets releases
         run: |

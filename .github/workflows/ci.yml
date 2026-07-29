@@ -281,6 +281,7 @@ jobs:
           pnpm release:audit:test
           pnpm release:auth:test
           pnpm release:build:test
+          pnpm release:exclude-private:test
           node --test scripts/reuse-pr-validation.test.mjs
           node --test scripts/compiler-cache-delta.test.mjs
 

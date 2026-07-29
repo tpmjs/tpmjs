@@ -3,6 +3,7 @@ import test from 'node:test';
 import {
   authorizeNpmPackage,
   authorizeNpmPackages,
+  excludedReleases,
   githubOidcUrl,
   npmOidcExchangeUrl,
   npmTrustGithubArgs,
@@ -43,6 +44,31 @@ test('extracts only safe publish candidates and preserves their state', () => {
     { name: '@tpmjs/existing', version: '1.1.0', state: 'publish' },
     { name: '@tpmjs/new', version: '0.1.0', state: 'new-package' },
   ]);
+});
+
+test('never treats an excluded package as a publish candidate', () => {
+  const auditWithExcluded = {
+    summary: { safe: true, publishCount: 1 },
+    packages: [
+      { name: '@tpmjs/existing', version: '1.1.0', latest: '1.0.0', state: 'publish', safe: true },
+      {
+        name: '@tpmjs/tools-unsandbox',
+        version: '0.1.5',
+        latest: '0.1.4',
+        state: 'excluded',
+        safe: true,
+      },
+    ],
+  };
+  // Only the granted package is a candidate; the excluded one is dropped, and
+  // the publishCount (which does not count excluded) still reconciles.
+  assert.deepEqual(releaseCandidates(auditWithExcluded), [
+    { name: '@tpmjs/existing', version: '1.1.0', state: 'publish' },
+  ]);
+  assert.deepEqual(excludedReleases(auditWithExcluded), [
+    { name: '@tpmjs/tools-unsandbox', version: '0.1.5' },
+  ]);
+  assert.deepEqual(excludedReleases(audit), []);
 });
 
 test('fails closed on an unsafe audit or inconsistent publish count', () => {

@@ -86,6 +86,27 @@ export function releaseCandidates(audit: unknown): ReleaseCandidate[] {
 }
 
 /**
+ * Return the packages the audit deliberately held back from publishing because
+ * their npm trusted publisher is not yet registered (audit state `excluded`).
+ * These are surfaced as a loud warning; they are never OIDC/publish candidates.
+ * See scripts/release-exclusions.ts (tpmjs/tpmjs#115).
+ */
+export function excludedReleases(audit: unknown): { name: string; version: string }[] {
+  const document = asRecord(audit, 'Release audit');
+  if (!Array.isArray(document.packages)) return [];
+  const excluded: { name: string; version: string }[] = [];
+  for (const [index, value] of document.packages.entries()) {
+    const entry = asRecord(value, `Release audit package ${index}`);
+    if (entry.state !== 'excluded') continue;
+    excluded.push({
+      name: requiredString(entry, 'name', `Release audit package ${index}`),
+      version: requiredString(entry, 'version', `Release audit package ${index}`),
+    });
+  }
+  return excluded;
+}
+
+/**
  * Return every public workspace package that already exists on npm.
  *
  * Trusted publishers are configured per package, not per npm scope. Bootstrapping

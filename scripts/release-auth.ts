@@ -3,6 +3,7 @@
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import {
   authorizeNpmPackages,
+  excludedReleases,
   type OidcAuthorization,
   type OidcDenial,
   releaseCandidates,
@@ -108,9 +109,23 @@ function writeEvidence(
   appendGithubFile(process.env.GITHUB_STEP_SUMMARY, `${lines.join('\n')}\n`);
 }
 
+function warnPublishExclusions(excluded: readonly { name: string; version: string }[]): void {
+  if (excluded.length === 0) return;
+  const list = excluded.map((entry) => `${entry.name}@${entry.version}`);
+  console.warn(
+    `WARNING: ${excluded.length} package${excluded.length === 1 ? '' : 's'} held back from publishing (user-gated npm trusted publisher, tpmjs/tpmjs#115): ${list.join(', ')}. These are NOT published; remove them from scripts/release-exclusions.ts once their trusted publisher is registered.`
+  );
+  appendGithubFile(
+    process.env.GITHUB_STEP_SUMMARY,
+    `\n> [!WARNING]\n> Publish exclusions active — skipped ${excluded.length} user-gated package${excluded.length === 1 ? '' : 's'}: ${list.map((entry) => `\`${entry}\``).join(', ')}. Their npm trusted publisher is not yet registered; see \`scripts/release-exclusions.ts\` (tpmjs/tpmjs#115).\n`
+  );
+}
+
 async function main(): Promise<void> {
   const options = parseOptions(process.argv.slice(2));
-  const candidates = releaseCandidates(JSON.parse(readFileSync(options.audit, 'utf8')));
+  const audit = JSON.parse(readFileSync(options.audit, 'utf8'));
+  warnPublishExclusions(excludedReleases(audit));
+  const candidates = releaseCandidates(audit);
   if (candidates.length === 0) {
     writeEvidence(options, 'none', [], []);
     console.log('npm authorization: not needed (nothing would publish)');

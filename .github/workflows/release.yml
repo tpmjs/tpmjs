@@ -45,6 +45,7 @@ jobs:
           pnpm release:audit:test
           pnpm release:auth:test
           pnpm release:build:test
+          pnpm release:exclude-private:test
 
       - name: Audit release provenance
         run: pnpm release:audit --format json --output release-audit.json
