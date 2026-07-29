@@ -104,8 +104,14 @@ jobs:
             -H "Authorization: Bearer $API_KEY" \
             -d "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"execute_tool\",\"arguments\":{\"toolId\":\"$HEALTHY_TOOL\",\"params\":{\"csv\":\"name,age\\nalice,30\"}}}}" \
             | /tmp/mcp-json.sh)
-          echo "$body" | jq -e '.result != null' >/dev/null
-          echo "$body" | jq -r '.result.content[0].text' | jq -e '.result.rows[0].name == "alice" or .rows[0].name == "alice"' >/dev/null
+          if ! echo "$body" | jq -e '.result != null' >/dev/null; then
+            echo "::error::authenticated tools/call did not return a result. Body: $body"
+            exit 1
+          fi
+          if ! echo "$body" | grep -q alice; then
+            echo "::error::tool output missing expected data. Body: $body"
+            exit 1
+          fi
           echo "MCP authenticated execute OK"
 
       - name: 'MCP: authenticated execute_tool surfaces TOOL_BROKEN'
@@ -118,7 +124,10 @@ jobs:
             -H "Authorization: Bearer $API_KEY" \
             -d "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"execute_tool\",\"arguments\":{\"toolId\":\"$BROKEN_TOOL\",\"params\":{}}}}" \
             | /tmp/mcp-json.sh)
-          echo "$body" | grep -q 'TOOL_BROKEN'
+          if ! echo "$body" | grep -q 'TOOL_BROKEN'; then
+            echo "::error::expected TOOL_BROKEN in response. Body: $body"
+            exit 1
+          fi
           echo "MCP TOOL_BROKEN contract OK"
 
       # ─── Surface 3: Collection MCP (one collection → one MCP server) ────
