@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-evals-blah",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "evals.blah.dev API tools — list models, evals, runs, results, leaderboard, and create models/evals/runs on the open LLM evaluation platform",
   "type": "module",
   "keywords": [

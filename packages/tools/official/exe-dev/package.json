@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-exe-dev",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Manage exe.dev virtual machines. Create, list, delete, restart VMs, manage sharing, and execute commands via SSH.",
   "type": "module",
   "keywords": [

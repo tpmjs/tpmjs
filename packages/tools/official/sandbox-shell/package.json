@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/official-sandbox-shell",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shell execution, file I/O, and directory listing tools for the TPMJS Agent Sandbox",
   "type": "module",
   "keywords": [

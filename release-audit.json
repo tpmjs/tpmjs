@@ -1,0 +1,2143 @@
+{
+  "summary": {
+    "total": 213,
+    "safe": true,
+    "publishCount": 0,
+    "counts": {
+      "current": 212,
+      "excluded": 1
+    }
+  },
+  "packages": [
+    {
+      "name": "@tpmjs/audience-persona",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/audience-persona",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/bridge",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/bridge",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/churn-risk-score",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/churn-risk-score",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/cli",
+      "version": "0.1.8",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/cli",
+      "private": false,
+      "latest": "0.1.8",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/compose",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/compose",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/content-calendar-plan",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/content-calendar-plan",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/create-basic-tools",
+      "version": "1.0.7",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/create-basic-tools",
+      "private": false,
+      "latest": "1.0.7",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/createblogpost",
+      "version": "0.3.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/createBlogPost",
+      "private": false,
+      "latest": "0.3.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/discord-post",
+      "version": "0.2.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/discord-post",
+      "private": false,
+      "latest": "0.2.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/discord-read",
+      "version": "0.2.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/discord-read",
+      "private": false,
+      "latest": "0.2.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/email-subject-score",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/email-subject-score",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/emoji-magic",
+      "version": "0.2.2",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/emoji-magic",
+      "private": false,
+      "latest": "0.2.2",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/env",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/env",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/executor-test",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/executor-test",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/feedback-themes",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/feedback-themes",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/hello",
+      "version": "0.0.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/hello",
+      "private": false,
+      "latest": "0.0.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/markdown-formatter",
+      "version": "0.2.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/markdown-formatter",
+      "private": false,
+      "latest": "0.2.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/mcp-client",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/mcp-client",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/nps-analysis",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/nps-analysis",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-agnt",
+      "version": "0.1.4",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/agnt",
+      "private": false,
+      "latest": "0.1.4",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-base64-decode",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/base64-decode",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-base64-encode",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/base64-encode",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-budget-variance",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/budget-variance",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-cash-flow-project",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/cash-flow-project",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-contract-clause-scan",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/contract-clause-scan",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-exit-interview-summarize",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/exit-interview-summarize",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-hash-text",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/hash-text",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-invoice-terms-extract",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/invoice-terms-extract",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-memory",
+      "version": "0.1.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/memory",
+      "private": false,
+      "latest": "0.1.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-nda-template-draft",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/nda-template-draft",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-offer-letter-draft",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/offer-letter-draft",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-org-chart-format",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/org-chart-format",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-policy-doc-format",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/policy-doc-format",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-ratio-analysis",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/ratio-analysis",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-regex-extract",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/regex-extract",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-revenue-breakdown",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/revenue-breakdown",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-risk-clause-highlight",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/risk-clause-highlight",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-sandbox-shell",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sandbox-shell",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-survey-analyze",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/survey-analyze",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-tax-deduction-scan",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/tax-deduction-scan",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/official-tos-readability",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/tos-readability",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/pricing-page-copy",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/pricing-page-copy",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/reconciliation-match",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/reconciliation-match",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/registry-execute",
+      "version": "0.1.5",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/registryExecute",
+      "private": false,
+      "latest": "0.1.5",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/registry-search",
+      "version": "0.1.5",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/registrySearch",
+      "private": false,
+      "latest": "0.1.5",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/search-registry",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/search-registry",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/social-post-draft",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/social-post-draft",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/ticket-categorize",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/ticket-categorize",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-acceptance-criteria",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/acceptance-criteria",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-access-control-matrix",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/access-control-matrix",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-agentmail",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/agentmail",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-anomaly-detect-mad",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/anomaly-detect-mad",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-beta-binomial-update",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/beta-binomial-update",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-bootstrap-ci",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/bootstrap-ci",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-campaign-brief",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/campaign-brief",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-changelog-entry",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/changelog-entry",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-claim-checklist",
+      "version": "0.3.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/claim-checklist",
+      "private": false,
+      "latest": "0.3.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-cloudflare",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/cloudflare",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-compare-pages",
+      "version": "0.3.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/compare-pages",
+      "private": false,
+      "latest": "0.3.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-compensation-band",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/compensation-band",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-competitor-brief",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/competitor-brief",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-config-normalize",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/config-normalize",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-conventional-commit-suggest",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/conventional-commit-suggest",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-copyright-notice",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/copyright-notice",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-coverage-tracker",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/coverage-tracker",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-csp-compose",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/csp-compose",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-csv-parse",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/csv-parse",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-csv-stringify",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/csv-stringify",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-curriculum-map",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/curriculum-map",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-data-classification-heuristic",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/data-classification-heuristic",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-date-parse",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/date-parse",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-decision-record-adr",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/decision-record-adr",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-dedupe-by-key",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/dedupe-by-key",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-dependency-audit-lite",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/dependency-audit-lite",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-diff-in-diff",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/diff-in-diff",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-diff-text-unified",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/diff-text-unified",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-discord",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/discord",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-dpia-outline",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/dpia-outline",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-e2b",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/e2b",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-effect-size-suite",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/effect-size-suite",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-env-var-docs-generate",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/env-var-docs-generate",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-error-log-triage",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/error-log-triage",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-eval-fixture-build",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/eval-fixture-build",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-evals-blah",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/evals-blah",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-exe-dev",
+      "version": "0.2.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/exe-dev",
+      "private": false,
+      "latest": "0.2.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-executive-brief",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/executive-brief",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-expense-categorize",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/expense-categorize",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-extract-json-ld",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/extract-json-ld",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-extract-meta",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/extract-meta",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-faq-from-text",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/faq-from-text",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-fetch-text",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/fetch-text",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-gdpr-data-map",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/gdpr-data-map",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-github",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/github",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-glossary-build",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/glossary-build",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-guardrail-policy-draft",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/guardrail-policy-draft",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-hardening-checklist-web",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/hardening-checklist-web",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-health-score-calculate",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/health-score-calculate",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-hllm",
+      "version": "0.1.5",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/hllm",
+      "private": false,
+      "latest": "0.1.5",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-html-sanitize",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/html-sanitize",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-html-to-markdown",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/html-to-markdown",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-interview-questions",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/interview-questions",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-invoice-data-extract",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/invoice-data-extract",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-job-description-draft",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/job-description-draft",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-jq",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/jq",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-json-path-query",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/json-path-query",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-json-repair",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/json-repair",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-json-schema-validate",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/json-schema-validate",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-judge",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/judge",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-lead-score",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/lead-score",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-learning-objective-write",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/learning-objective-write",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-lesson-plan-outline",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/lesson-plan-outline",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-linear-regression-ols",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/linear-regression-ols",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-links-catalog",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/links-catalog",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-logistic-regression",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/logistic-regression",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-markdown-lint-basic",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/markdown-lint-basic",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-markdown-to-html",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/markdown-to-html",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-meeting-minutes-format",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/meeting-minutes-format",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-moltbook",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/moltbook",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-monitoring-gap-analysis",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/monitoring-gap-analysis",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-multiple-testing-adjust",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/multiple-testing-adjust",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-neon",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/neon",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-normalize-whitespace",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/normalize-whitespace",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-novelty-score-workflow",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/novelty-score-workflow",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-objection-response",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/objection-response",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-onboarding-checklist",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/onboarding-checklist",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-openapi-snippet-build",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/openapi-snippet-build",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-openrouter",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/openrouter",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-page-brief",
+      "version": "0.3.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/page-brief",
+      "private": false,
+      "latest": "0.3.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-pandoc",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/pandoc",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-performance-review-draft",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/performance-review-draft",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-permutation-test",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/permutation-test",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-pivot",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/pivot",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-postgres",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/postgres",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-postmark",
+      "version": "0.2.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/postmark",
+      "private": false,
+      "latest": "0.2.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-postmortem-action-extractor",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/postmortem-action-extractor",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-postmortem-draft",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/postmortem-draft",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-prd-outline",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/prd-outline",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-progress-report-draft",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/progress-report-draft",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-prompt-to-workflow-skeleton",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/prompt-to-workflow-skeleton",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-proposal-outline",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/proposal-outline",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-quiz-generate",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/quiz-generate",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-railway",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/railway",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-recipe-curate-rank",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/recipe-curate-rank",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-recipe-emit",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/recipe-emit",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-recipe-generate-from-grammar",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/recipe-generate-from-grammar",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-recipe-hash",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/recipe-hash",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-recipe-publish-manifest",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/recipe-publish-manifest",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-redact-secrets",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/redact-secrets",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-redirect-trace",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/redirect-trace",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-redis",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/redis",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-release-checklist",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/release-checklist",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-release-notes",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/release-notes",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-renewal-forecast",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/renewal-forecast",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-resend",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/resend",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-response-template-suggest",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/response-template-suggest",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-retention-policy-draft",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/retention-policy-draft",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-robots-policy",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/robots-policy",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-rows-filter",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/rows-filter",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-rows-group-aggregate",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/rows-group-aggregate",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-rows-join",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/rows-join",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-rows-sort",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/rows-sort",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-rss-read",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/rss-read",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-rubric-create",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/rubric-create",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-runbook-draft",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/runbook-draft",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-schema-infer",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/schema-infer",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-secret-scan-text",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/secret-scan-text",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sitemap-read",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sitemap-read",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-slack",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/slack",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-slo-draft",
+      "version": "0.2.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/slo-draft",
+      "private": false,
+      "latest": "0.2.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-source-credibility",
+      "version": "0.3.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/source-credibility",
+      "private": false,
+      "latest": "0.3.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-checkpoint-create",
+      "version": "0.1.5",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-checkpoint-create",
+      "private": false,
+      "latest": "0.1.5",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-checkpoint-list",
+      "version": "0.1.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-checkpoint-list",
+      "private": false,
+      "latest": "0.1.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-checkpoint-restore",
+      "version": "0.1.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-checkpoint-restore",
+      "private": false,
+      "latest": "0.1.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-create",
+      "version": "0.1.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-create",
+      "private": false,
+      "latest": "0.1.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-delete",
+      "version": "0.1.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-delete",
+      "private": false,
+      "latest": "0.1.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-exec",
+      "version": "0.1.7",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-exec",
+      "private": false,
+      "latest": "0.1.7",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-get",
+      "version": "0.1.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-get",
+      "private": false,
+      "latest": "0.1.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-list",
+      "version": "0.1.5",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-list",
+      "private": false,
+      "latest": "0.1.5",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-policy-get",
+      "version": "0.1.4",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-policy-get",
+      "private": false,
+      "latest": "0.1.4",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-policy-set",
+      "version": "0.1.4",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-policy-set",
+      "private": false,
+      "latest": "0.1.4",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-sessions",
+      "version": "0.1.4",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-sessions",
+      "private": false,
+      "latest": "0.1.4",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-url-get",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-url-get",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-sprites-url-set",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/sprites-url-set",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-stacktrace-parse",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/stacktrace-parse",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-style-rewrite",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/style-rewrite",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-supabase",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/supabase",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-syllabus-format",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/syllabus-format",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-table-extract",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/table-extract",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-template-render",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/template-render",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-test-case-generate",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/test-case-generate",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-test-plan-matrix",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/test-plan-matrix",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-text-chunk",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/text-chunk",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-time-series-decompose-lite",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/time-series-decompose-lite",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-timeline-from-text",
+      "version": "0.3.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/timeline-from-text",
+      "private": false,
+      "latest": "0.3.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-toc-generate",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/toc-generate",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-tool-call-accuracy-score",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/tool-call-accuracy-score",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-tool-selection-plan",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/tool-selection-plan",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-trademark-check",
+      "version": "0.1.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/trademark-check",
+      "private": false,
+      "latest": "0.1.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-unsandbox",
+      "version": "0.1.5",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/unsandbox",
+      "private": false,
+      "latest": "0.1.4",
+      "state": "excluded",
+      "safe": true,
+      "reason": "Source version is unpublished and its changelog records this version. Held back: npm trusted publisher not registered, so this version is excluded from the release. See scripts/release-exclusions.ts (tpmjs/tpmjs#115)."
+    },
+    {
+      "name": "@tpmjs/tools-url-normalize",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/url-normalize",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-url-parse",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/url-parse",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-url-risk-heuristic",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/url-risk-heuristic",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-workflow-auto-repair",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/workflow-auto-repair",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-workflow-cost-estimate",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/workflow-cost-estimate",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-workflow-explain",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/workflow-explain",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-workflow-validate-io",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/workflow-validate-io",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-workflow-variant-generate",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/workflow-variant-generate",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-yaml-parse",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/yaml-parse",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/tools-yaml-stringify",
+      "version": "0.2.0",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/official/yaml-stringify",
+      "private": false,
+      "latest": "0.2.0",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/types",
+      "version": "0.2.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/types",
+      "private": false,
+      "latest": "0.2.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/ui",
+      "version": "0.1.3",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/ui",
+      "private": false,
+      "latest": "0.1.3",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/unsandbox",
+      "version": "0.0.2",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/tools/unsandbox",
+      "private": false,
+      "latest": "0.0.2",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    },
+    {
+      "name": "@tpmjs/utils",
+      "version": "0.1.1",
+      "path": "/home/runner/work/tpmjs/tpmjs/packages/utils",
+      "private": false,
+      "latest": "0.1.1",
+      "state": "current",
+      "safe": true,
+      "reason": "Source version is already the npm latest version."
+    }
+  ]
+}

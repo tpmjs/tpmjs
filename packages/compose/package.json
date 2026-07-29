@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/compose",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Typed, chainable API for assembling AI SDK tool sets",
   "author": "TPMJS",
   "license": "MIT",

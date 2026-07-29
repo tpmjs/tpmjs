@@ -1,0 +1,8 @@
+{
+  "checkedAt": "2026-07-29T01:33:03.554Z",
+  "mode": "none",
+  "repository": "tpmjs/tpmjs",
+  "workflow": "tpmjs/tpmjs/.github/workflows/release.yml@refs/heads/main",
+  "authorized": [],
+  "denied": []
+}

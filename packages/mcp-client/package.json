@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/mcp-client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP client library for connecting to Model Context Protocol servers",
   "author": "TPMJS",
   "license": "MIT",
