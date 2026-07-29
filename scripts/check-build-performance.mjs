@@ -811,9 +811,11 @@ if (/\n\s+- name: Build\n/.test(releasePreview) || releasePreview.includes('run:
 }
 if (
   rootPackage.scripts?.['changeset:publish:ci'] !==
-  'pnpm release:build --audit release-audit.json && changeset publish'
+  'pnpm release:build --audit release-audit.json && pnpm release:exclude-private --audit release-audit.json && changeset publish'
 ) {
-  failures.push('CI publishing must build the audited release candidates exactly once');
+  failures.push(
+    'CI publishing must build the audited release candidates exactly once, then apply publish exclusions (scripts/release-exclusions.ts, #115) before changeset publish'
+  );
 }
 requireText(
   releaseBuild,
