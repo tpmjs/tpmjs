@@ -43,6 +43,15 @@ const STATIC_PAGES: Array<{ slug: string; content: PageContent }> = [
     },
   },
   {
+    slug: 'trending',
+    content: {
+      pageType: 'stats',
+      title: 'Trending Tools',
+      description: 'AI-agent tools gaining momentum on TPMJS',
+      keywords: ['trending', 'popular', 'momentum'],
+    },
+  },
+  {
     slug: 'publish',
     content: {
       pageType: 'publish',

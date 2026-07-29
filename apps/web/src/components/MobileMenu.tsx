@@ -24,6 +24,7 @@ const navSections: NavSection[] = [
       { href: '/tool/tool-search', label: 'Tools', description: 'Browse all tools' },
       { href: '/collections', label: 'Collections', description: 'Discover curated tool sets' },
       { href: '/agents', label: 'Agents', description: 'AI agents with tools' },
+      { href: '/trending', label: 'Trending', description: 'Tools gaining momentum now' },
     ],
   },
   {

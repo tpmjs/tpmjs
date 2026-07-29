@@ -225,6 +225,11 @@ export function AppHeader(): React.ReactElement {
                   Agents
                 </Button>
               </Link>
+              <Link href="/trending">
+                <Button variant="ghost" size="sm" className="text-foreground hover:text-foreground">
+                  Trending
+                </Button>
+              </Link>
 
               {/* Separator */}
               <span className="text-foreground-tertiary mx-2">|</span>

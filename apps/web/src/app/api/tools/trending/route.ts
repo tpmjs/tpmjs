@@ -1,11 +1,18 @@
-import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import {
+  EXECUTION_WINDOW_DAYS,
+  getTrendingTools,
+  type RankedTrendingEntry,
+  TREND_WINDOW_DAYS,
+} from '~/lib/trending';
 
 export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+// Cache at the edge/CDN and revalidate every 15 minutes — the underlying board
+// is ISR-backed and does not need per-request recomputation.
+export const revalidate = 900;
 export const maxDuration = 60;
 
-const API_VERSION = '1.0.0';
+const API_VERSION = '2.0.0';
 
 interface ApiResponse<T = unknown> {
   success: boolean;
@@ -19,6 +26,13 @@ interface ApiResponse<T = unknown> {
     version: string;
     timestamp: string;
     requestId?: string;
+    window?: {
+      dataMode: 'live' | 'sparse';
+      viewWindowDays: number;
+      executionWindowDays: number;
+      totalRecentViews: number;
+      totalRecentExecutions: number;
+    };
   };
   pagination?: {
     limit: number;
@@ -27,156 +41,84 @@ interface ApiResponse<T = unknown> {
   };
 }
 
+function serializeEntry(entry: RankedTrendingEntry) {
+  return {
+    id: entry.toolId,
+    name: entry.toolName,
+    description: entry.description,
+    rank: entry.rank,
+    trendingScore: Math.round(entry.trendingScore * 100) / 100,
+    momentum: entry.momentum,
+    movement: entry.movement,
+    movementDeltaPct: entry.movementDeltaPct,
+    hasRecentActivity: entry.hasRecentActivity,
+    recentViews: entry.signals.recentViews,
+    previousViews: entry.signals.previousViews,
+    recentExecutions: entry.signals.recentExecutions,
+    qualityScore: entry.signals.qualityScore,
+    averageRating: entry.averageRating,
+    ratingCount: entry.ratingCount,
+    likeCount: entry.signals.likeCount,
+    importHealth: entry.importHealth,
+    executionHealth: entry.executionHealth,
+    package: {
+      npmPackageName: entry.packageName,
+      npmVersion: entry.npmVersion,
+      category: entry.category,
+      isOfficial: entry.isOfficial,
+      npmDownloadsLastMonth: entry.signals.downloads,
+      githubStars: entry.githubStars,
+    },
+  };
+}
+
 /**
  * GET /api/tools/trending
- * Get trending tools based on a composite score of downloads, ratings, and likes
  *
- * Trending score = (normalized_downloads * 0.4) + (average_rating * 0.3) + (like_count * 0.2) + (recency * 0.1)
+ * Trending tools ranked by *recent momentum* — page views over the last
+ * {@link TREND_WINDOW_DAYS} days plus tool executions over the last
+ * {@link EXECUTION_WINDOW_DAYS} days — with all-time popularity (downloads,
+ * quality, likes) breaking ties and ordering the long tail. When recent signal
+ * is thin, `meta.window.dataMode` is `'sparse'` to signal the popularity blend.
+ *
+ * Query params: `limit` (1–50, default 20), `offset` (default 0),
+ * `category` (optional filter).
  */
 export async function GET(request: NextRequest): Promise<NextResponse<ApiResponse>> {
   const requestId = crypto.randomUUID();
-
   const { searchParams } = new URL(request.url);
-
-  // Parse comma-separated fields for response shaping
-  const fields = searchParams.get('fields');
-  const fieldList = fields ? fields.split(',') : [];
-  const requestedFieldCount = fieldList.length;
 
   try {
     const limit = Math.min(50, Math.max(1, Number(searchParams.get('limit')) || 20));
     const offset = Math.max(0, Number(searchParams.get('offset')) || 0);
     const category = searchParams.get('category');
-    const period = searchParams.get('period') || 'week'; // 'day', 'week', 'month', 'all'
 
-    // Build where clause
-    const where: Record<string, unknown> = {
-      isActive: true,
-      importHealth: 'HEALTHY',
-    };
+    // Rank the whole discoverable set, then apply category filter + pagination.
+    const result = await getTrendingTools(Number.MAX_SAFE_INTEGER);
 
-    if (category) {
-      where.package = { category };
-    }
+    const filtered = category
+      ? result.entries.filter((entry) => entry.category === category)
+      : result.entries;
 
-    // Get date cutoff for recency boost
-    const now = new Date();
-    let recencyPeriodMs: number;
-    switch (period) {
-      case 'day':
-        recencyPeriodMs = 24 * 60 * 60 * 1000;
-        break;
-      case 'week':
-        recencyPeriodMs = 7 * 24 * 60 * 60 * 1000;
-        break;
-      case 'month':
-        recencyPeriodMs = 30 * 24 * 60 * 60 * 1000;
-        break;
-      default:
-        recencyPeriodMs = 365 * 24 * 60 * 60 * 1000; // 1 year
-    }
-
-    // Fetch tools with package data
-    // For trending, we order by a combination of factors
-    const tools = await prisma.tool.findMany({
-      where,
-      include: {
-        package: {
-          select: {
-            id: true,
-            npmPackageName: true,
-            npmVersion: true,
-            npmDescription: true,
-            category: true,
-            isOfficial: true,
-            npmDownloadsLastMonth: true,
-            githubStars: true,
-            tier: true,
-          },
-        },
-      },
-      orderBy: [
-        // Primary: quality score (includes downloads)
-        { qualityScore: 'desc' },
-        // Secondary: average rating
-        { averageRating: 'desc' },
-        // Tertiary: like count
-        { likeCount: 'desc' },
-        // Finally: recency
-        { createdAt: 'desc' },
-      ],
-      take: limit + 1,
-      skip: offset,
-    });
-
-    const hasMore = tools.length > limit;
-    const actualTools = hasMore ? tools.slice(0, limit) : tools;
-
-    // Calculate trending scores for display
-    const maxDownloads = Math.max(
-      ...actualTools.map((t) => t.package.npmDownloadsLastMonth || 0),
-      1
-    );
-    const maxLikes = Math.max(...actualTools.map((t) => t.likeCount), 1);
-
-    const toolsWithScores = actualTools.map((tool) => {
-      const downloads = tool.package.npmDownloadsLastMonth || 0;
-      const rating = tool.averageRating ? Number(tool.averageRating) : 0;
-      const likes = tool.likeCount;
-      const ageMs = now.getTime() - tool.createdAt.getTime();
-      const recencyScore = Math.max(0, 1 - ageMs / recencyPeriodMs); // 0-1, higher for newer
-
-      // Trending score calculation
-      const trendingScore =
-        (downloads / maxDownloads) * 0.4 +
-        (rating / 5) * 0.3 +
-        (likes / maxLikes) * 0.2 +
-        recencyScore * 0.1;
-
-      return {
-        id: tool.id,
-        name: tool.name,
-        description: tool.description,
-        qualityScore: tool.qualityScore ? Number(tool.qualityScore) : null,
-        averageRating: tool.averageRating ? Number(tool.averageRating) : null,
-        ratingCount: tool.ratingCount,
-        reviewCount: tool.reviewCount,
-        likeCount: tool.likeCount,
-        importHealth: tool.importHealth,
-        executionHealth: tool.executionHealth,
-        trendingScore: Math.round(trendingScore * 100) / 100,
-        createdAt: tool.createdAt.toISOString(),
-        package: {
-          id: tool.package.id,
-          npmPackageName: tool.package.npmPackageName,
-          npmVersion: tool.package.npmVersion,
-          npmDescription: tool.package.npmDescription,
-          category: tool.package.category,
-          isOfficial: tool.package.isOfficial,
-          npmDownloadsLastMonth: tool.package.npmDownloadsLastMonth,
-          githubStars: tool.package.githubStars,
-          tier: tool.package.tier,
-        },
-      };
-    });
-
-    // Sort by trending score
-    toolsWithScores.sort((a, b) => b.trendingScore - a.trendingScore);
+    const page = filtered.slice(offset, offset + limit);
+    const hasMore = offset + limit < filtered.length;
 
     return NextResponse.json({
       success: true,
-      data: toolsWithScores,
+      data: page.map(serializeEntry),
       meta: {
         version: API_VERSION,
         timestamp: new Date().toISOString(),
         requestId,
-        fieldCount: requestedFieldCount,
+        window: {
+          dataMode: result.dataMode,
+          viewWindowDays: TREND_WINDOW_DAYS,
+          executionWindowDays: EXECUTION_WINDOW_DAYS,
+          totalRecentViews: result.totalRecentViews,
+          totalRecentExecutions: result.totalRecentExecutions,
+        },
       },
-      pagination: {
-        limit,
-        offset,
-        hasMore,
-      },
+      pagination: { limit, offset, hasMore },
     });
   } catch (error) {
     console.error('[API Error] GET /api/tools/trending:', error);

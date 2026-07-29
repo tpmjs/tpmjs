@@ -159,25 +159,28 @@ console.log(result.output);`}
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-foreground-secondary">
-            Get trending tools based on downloads, ratings, and activity.
+            Get trending tools ranked by recent momentum — page views and tool executions over a
+            rolling window — with all-time popularity (downloads, quality, likes) breaking ties.
+            When recent activity is sparse, <code>meta.window.dataMode</code> is{' '}
+            <code>&quot;sparse&quot;</code> and the ranking leans on popularity.
           </p>
 
           <h4 className="font-semibold">Query Parameters</h4>
           <ul className="list-disc list-inside space-y-1 text-foreground-secondary">
             <li>
-              <code>period</code> - Time period: day, week, month, all (default: week)
-            </li>
-            <li>
               <code>category</code> - Filter by category
             </li>
             <li>
-              <code>limit</code> - Number of results (default: 20)
+              <code>limit</code> - Number of results, 1–50 (default: 20)
+            </li>
+            <li>
+              <code>offset</code> - Pagination offset (default: 0)
             </li>
           </ul>
 
           <h4 className="font-semibold">Example Request</h4>
           <CodeBlock
-            code={`curl "https://tpmjs.com/api/tools/trending?period=week&limit=10"`}
+            code={`curl "https://tpmjs.com/api/tools/trending?limit=10"`}
             language="bash"
             showCopy={true}
           />
