@@ -17,17 +17,18 @@ export function createEnv<T extends Record<string, z.ZodTypeAny>>(
   const parsed = envSchema.safeParse(processedEnv);
 
   if (!parsed.success) {
-    const fieldErrors = parsed.error.flatten().fieldErrors;
+    const fieldErrors = parsed.error.flatten().fieldErrors as Record<string, string[] | undefined>;
     const failedKeys = Object.keys(fieldErrors);
-    console.error(
-      `[createEnv] Invalid environment variables: ${failedKeys.join(', ')}`,
-      JSON.stringify(fieldErrors)
-    );
-    // Log which values failed (redact to first 4 chars for security)
-    for (const key of failedKeys) {
-      const raw = process.env[key];
-      const preview = raw ? `${raw.slice(0, 4)}...` : '(undefined)';
-      console.error(`[createEnv]   ${key} = ${preview}`);
+    console.error(`[createEnv] Invalid environment variables: ${failedKeys.join(', ')}`);
+    // Report the variable NAME and the failure reason only. NEVER log any part
+    // of the value — environment variables are frequently secrets, and even a
+    // short prefix leaks entropy into logs (issue #119). The Zod messages
+    // describe the constraint that failed, not the offending value.
+    for (const [key, messages] of Object.entries(fieldErrors)) {
+      const rawValue = process.env[key];
+      const presence = rawValue === undefined || rawValue === '' ? 'missing' : 'set but invalid';
+      const reason = messages?.join('; ') ?? 'failed validation';
+      console.error(`[createEnv]   ${key}: ${presence} (${reason})`);
     }
     throw new Error(`Invalid environment variables: ${failedKeys.join(', ')}`);
   }

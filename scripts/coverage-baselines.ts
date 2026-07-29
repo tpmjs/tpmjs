@@ -27,6 +27,10 @@ export const coverageBaselines: Record<string, CoverageBaseline> = {
     directory: 'packages/compose',
     thresholds: { branches: 93.1, functions: 91.6, lines: 100, statements: 97.9 },
   },
+  '@tpmjs/env': {
+    directory: 'packages/env',
+    thresholds: { branches: 75, functions: 100, lines: 90, statements: 90 },
+  },
   '@tpmjs/executor-test': {
     directory: 'packages/executor-test',
     thresholds: { lines: 2.5, statements: 2.3 },

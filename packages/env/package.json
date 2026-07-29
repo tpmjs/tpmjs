@@ -30,6 +30,8 @@
   "scripts": {
     "build": "tsdown --logLevel warn",
     "dev": "tsdown --watch",
+    "test": "vitest run",
+    "test:ui": "vitest --ui",
     "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
     "clean": "rm -rf dist .turbo"
   },
@@ -39,7 +41,8 @@
   "devDependencies": {
     "@tpmjs/tsconfig": "workspace:*",
     "@types/node": "^25.0.3",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "^4.0.16"
   },
   "publishConfig": {
     "access": "public"
