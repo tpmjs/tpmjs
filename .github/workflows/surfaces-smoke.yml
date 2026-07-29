@@ -1,0 +1,186 @@
+name: Surfaces Smoke
+
+# End-to-end smoke of the five product surfaces (REST, MCP, Collection MCP,
+# Skill, CLI/SDK) against the LIVE https://tpmjs.com deployment, exactly as an
+# outside consumer experiences them (published npm artifacts, public endpoints,
+# a real API key). This is the executable form of the "one collection, every
+# surface" guarantee.
+#
+# Runs on demand. Promote to a schedule once it has a track record.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: surfaces-smoke
+  cancel-in-progress: false
+
+env:
+  BASE_URL: https://tpmjs.com
+  HEALTHY_TOOL: '@tpmjs/tools-csv-parse::csvParseTool'
+  BROKEN_TOOL: '@tpmjs/tools-recipe-hash::recipeHash'
+  COLLECTION_MCP_PATH: /@ajax/collections/unsandbox/mcp
+  SKILL_PATH: /@ajax/collections/unsandbox/skills
+
+jobs:
+  smoke:
+    if: github.repository_owner == 'tpmjs'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      # jq is preinstalled on ubuntu runners. MCP responses may arrive as SSE
+      # ("data: {...}") or plain JSON depending on transport negotiation, so
+      # every MCP assertion goes through this normalizer.
+      - name: Install response normalizer
+        run: |
+          cat > /tmp/mcp-json.sh <<'EOF'
+          #!/usr/bin/env bash
+          # Reads an MCP HTTP response body on stdin, emits the JSON payload.
+          sed -n 's/^data: //p; /^[{[]/p' | head -n 1
+          EOF
+          chmod +x /tmp/mcp-json.sh
+
+      # ─── Surface 1: REST ────────────────────────────────────────────────
+      - name: 'REST: search returns tools with health metadata'
+        run: |
+          body=$(curl -sS -m 30 "$BASE_URL/api/tools/search?q=csv")
+          echo "$body" | jq -e '.success == true' >/dev/null
+          echo "$body" | jq -e '.results.tools | length >= 1' >/dev/null
+          echo "$body" | jq -e '.results.tools[] | select(.name == "csvParseTool") | .importHealth' >/dev/null
+          echo "search OK: $(echo "$body" | jq -r '.results.total') total hits"
+
+      - name: 'REST: execute a healthy tool end-to-end'
+        run: |
+          body=$(curl -sS -m 60 -X POST "$BASE_URL/api/registry/execute" \
+            -H 'Content-Type: application/json' \
+            -d "{\"toolId\":\"$HEALTHY_TOOL\",\"params\":{\"csv\":\"name,age\\nalice,30\"}}")
+          echo "$body" | jq -e '.success == true' >/dev/null
+          echo "$body" | jq -e '.result.rows[0].name == "alice"' >/dev/null
+          echo "execute OK in $(echo "$body" | jq -r '.executionTimeMs')ms"
+
+      - name: 'REST: broken tool returns structured TOOL_BROKEN'
+        run: |
+          body=$(curl -sS -m 60 -X POST "$BASE_URL/api/registry/execute" \
+            -H 'Content-Type: application/json' \
+            -d "{\"toolId\":\"$BROKEN_TOOL\",\"params\":{}}")
+          echo "$body" | jq -e '.success == false' >/dev/null
+          echo "$body" | jq -e '.error.code == "TOOL_BROKEN"' >/dev/null
+          echo "TOOL_BROKEN contract OK"
+
+      # ─── Surface 2: Registry MCP ────────────────────────────────────────
+      - name: 'MCP: initialize handshake'
+        run: |
+          body=$(curl -sS -m 30 -X POST "$BASE_URL/api/mcp/registry/http" \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"surfaces-smoke","version":"1.0"}}}' \
+            | /tmp/mcp-json.sh)
+          echo "$body" | jq -e '.result.serverInfo.name == "TPMJS Registry"' >/dev/null
+          echo "MCP initialize OK"
+
+      - name: 'MCP: tools/list exposes execute_tool'
+        run: |
+          body=$(curl -sS -m 30 -X POST "$BASE_URL/api/mcp/registry/http" \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
+            | /tmp/mcp-json.sh)
+          echo "$body" | jq -e '.result.tools | map(.name) | index("execute_tool") != null' >/dev/null
+          echo "MCP tools/list OK: $(echo "$body" | jq -r '.result.tools | length') tools"
+
+      - name: 'MCP: authenticated execute_tool runs a healthy tool'
+        env:
+          API_KEY: ${{ secrets.INTEGRATION_TEST_API_KEY }}
+        run: |
+          body=$(curl -sS -m 60 -X POST "$BASE_URL/api/mcp/registry/http" \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -H "Authorization: Bearer $API_KEY" \
+            -d "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"execute_tool\",\"arguments\":{\"toolId\":\"$HEALTHY_TOOL\",\"params\":{\"csv\":\"name,age\\nalice,30\"}}}}" \
+            | /tmp/mcp-json.sh)
+          echo "$body" | jq -e '.result != null' >/dev/null
+          echo "$body" | jq -r '.result.content[0].text' | jq -e '.result.rows[0].name == "alice" or .rows[0].name == "alice"' >/dev/null
+          echo "MCP authenticated execute OK"
+
+      - name: 'MCP: authenticated execute_tool surfaces TOOL_BROKEN'
+        env:
+          API_KEY: ${{ secrets.INTEGRATION_TEST_API_KEY }}
+        run: |
+          body=$(curl -sS -m 60 -X POST "$BASE_URL/api/mcp/registry/http" \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -H "Authorization: Bearer $API_KEY" \
+            -d "{\"jsonrpc\":\"2.0\",\"id\":4,\"method\":\"tools/call\",\"params\":{\"name\":\"execute_tool\",\"arguments\":{\"toolId\":\"$BROKEN_TOOL\",\"params\":{}}}}" \
+            | /tmp/mcp-json.sh)
+          echo "$body" | grep -q 'TOOL_BROKEN'
+          echo "MCP TOOL_BROKEN contract OK"
+
+      # ─── Surface 3: Collection MCP (one collection → one MCP server) ────
+      - name: 'Collection MCP: initialize + tools/list'
+        run: |
+          init=$(curl -sS -m 30 -X POST "$BASE_URL$COLLECTION_MCP_PATH" \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"surfaces-smoke","version":"1.0"}}}' \
+            | /tmp/mcp-json.sh)
+          echo "$init" | jq -e '.result.serverInfo.name | startswith("TPMJS")' >/dev/null
+          tools=$(curl -sS -m 30 -X POST "$BASE_URL$COLLECTION_MCP_PATH" \
+            -H 'Content-Type: application/json' \
+            -H 'Accept: application/json, text/event-stream' \
+            -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
+            | /tmp/mcp-json.sh)
+          count=$(echo "$tools" | jq -r '.result.tools | length')
+          test "$count" -ge 1
+          echo "Collection MCP OK: $count tools"
+
+      # ─── Surface 4: Skill ───────────────────────────────────────────────
+      - name: 'Skill: collection skills endpoint serves content'
+        run: |
+          code=$(curl -sS -m 30 -o /tmp/skill.out -w '%{http_code}' "$BASE_URL$SKILL_PATH")
+          test "$code" = "200"
+          test -s /tmp/skill.out
+          echo "Skill endpoint OK ($(wc -c < /tmp/skill.out) bytes)"
+
+      # ─── Surface 5: CLI (published artifact — what users actually get) ──
+      - name: 'CLI: published tpm tool search + trending'
+        run: |
+          npx -y @tpmjs/cli@latest tool search csv --limit 3 | grep -q csvParseTool
+          npx -y @tpmjs/cli@latest tool trending | grep -qE '#1'
+          echo "CLI search + trending OK"
+
+      # KNOWN BROKEN in published 0.1.8: `tool execute` predates the canonical
+      # registry execution contract. Fixed in unreleased 0.1.9 (blocked on npm
+      # trusted-publisher grants — see issue #115). Flip continue-on-error to
+      # false once 0.1.9 is on npm.
+      - name: 'CLI: published tpm tool execute (expected-fail until 0.1.9)'
+        continue-on-error: true
+        run: |
+          out=$(npx -y @tpmjs/cli@latest tool execute "$HEALTHY_TOOL" -i '{"csv":"a,b\n1,2"}' --json)
+          echo "$out" | jq -e '.rows or .result' >/dev/null
+          echo "CLI execute OK — 0.1.9 is live; remove continue-on-error from this step"
+
+      # ─── Surface 5b: SDK (published @tpmjs/compose) ─────────────────────
+      # Published 0.1.0 predates fromRegistry (unreleased 0.1.1, same npm
+      # gate). Until then this validates the published install + entrypoint.
+      - name: 'SDK: published @tpmjs/compose installs and exposes builder'
+        run: |
+          mkdir -p /tmp/sdk-smoke && cd /tmp/sdk-smoke
+          npm init -y >/dev/null 2>&1
+          npm install @tpmjs/compose@latest >/dev/null 2>&1
+          node -e "
+            const compose = require('@tpmjs/compose');
+            if (typeof compose.createToolSet !== 'function') { throw new Error('createToolSet missing'); }
+            console.log('SDK entrypoint OK:', Object.keys(compose).join(', '));
+          "
+
+      - name: Summary
+        if: always()
+        run: |
+          echo '### Surfaces smoke — REST · MCP · Collection MCP · Skill · CLI · SDK' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Target: ${{ env.BASE_URL }} (live production)' >> "$GITHUB_STEP_SUMMARY"
