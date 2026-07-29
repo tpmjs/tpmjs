@@ -94,4 +94,22 @@ export interface ToolCardProps extends HTMLAttributes<HTMLDivElement> {
    * Icon/logo for the tool
    */
   icon?: ReactNode;
+
+  /**
+   * Import health from the registry health protocol. When BROKEN the card is
+   * muted and flagged so the tool is never visually indistinguishable from a
+   * healthy one.
+   */
+  importHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN' | null;
+
+  /**
+   * Execution health from the registry health protocol.
+   */
+  executionHealth?: 'HEALTHY' | 'BROKEN' | 'UNKNOWN' | null;
+
+  /**
+   * Honest, data-derived health explanation used as the broken-badge tooltip
+   * (e.g. "Failing to import for N consecutive checks — last checked <date>.").
+   */
+  healthSummary?: string | null;
 }

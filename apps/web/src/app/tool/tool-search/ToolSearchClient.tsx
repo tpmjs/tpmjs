@@ -24,6 +24,7 @@ import {
 } from '~/components/PackageManagerSelector';
 import { type Tool, useTools } from '~/hooks/useTools';
 import { trackEvent } from '~/lib/analytics';
+import { describeToolHealth } from '~/lib/tool-health-policy';
 
 type SortOption = 'downloads' | 'likes' | 'recent' | 'name';
 
@@ -185,18 +186,26 @@ export function ToolSearchClient({
 
   const TableRow = useCallback(
     (_index: number, tool: Tool) => {
-      const isBroken = tool.importHealth === 'BROKEN' || tool.executionHealth === 'BROKEN';
+      const health = describeToolHealth(tool);
       const displayName = tool.name !== 'default' ? tool.name : tool.package.npmPackageName;
       const installCommand = getInstallCommand(tool.package.npmPackageName, packageManager);
 
       return (
         <>
           <td className="px-4 py-3">
-            <Link href={`/tool/${tool.package.npmPackageName}/${tool.name}`} className="block">
+            <Link
+              href={`/tool/${tool.package.npmPackageName}/${tool.name}`}
+              className={`block${health.isBroken ? ' opacity-60' : ''}`}
+            >
               <div className="font-semibold text-foreground group-hover:text-primary transition-colors">
                 {displayName}
-                {isBroken && (
-                  <Badge variant="error" size="sm" className="ml-2">
+                {health.isBroken && (
+                  <Badge
+                    variant="error"
+                    size="sm"
+                    className="ml-2"
+                    title={health.summary ?? undefined}
+                  >
                     Broken
                   </Badge>
                 )}
@@ -204,6 +213,11 @@ export function ToolSearchClient({
               <div className="text-xs text-foreground-tertiary truncate max-w-[230px]">
                 {tool.package.npmPackageName}
               </div>
+              {health.isBroken && health.summary && (
+                <div className="text-[11px] text-error/80 mt-0.5 truncate max-w-[230px]">
+                  {health.summary}
+                </div>
+              )}
             </Link>
           </td>
           <td className="px-4 py-3 text-sm text-foreground-secondary">

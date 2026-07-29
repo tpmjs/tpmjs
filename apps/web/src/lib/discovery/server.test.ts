@@ -54,18 +54,20 @@ describe('discovery server loaders', () => {
       }),
     ]);
 
-    expect(dbMocks.toolFindMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        take: 7,
-        where: expect.objectContaining({
-          consecutiveImportFailures: { lt: 3 },
-          OR: expect.arrayContaining([
-            { name: { contains: 'hello', mode: 'insensitive' } },
-            { description: { contains: 'hello', mode: 'insensitive' } },
-          ]),
-        }),
-      })
-    );
+    // Broken tools are NOT delisted (no consecutiveImportFailures quarantine);
+    // they stay in the candidate set and are demoted below healthy tools via the
+    // importHealth-ascending ordering.
+    const call = dbMocks.toolFindMany.mock.calls[0]?.[0];
+    expect(call.where).toMatchObject({
+      isActive: true,
+      OR: expect.arrayContaining([
+        { name: { contains: 'hello', mode: 'insensitive' } },
+        { description: { contains: 'hello', mode: 'insensitive' } },
+      ]),
+    });
+    expect(call.where).not.toHaveProperty('consecutiveImportFailures');
+    expect(call.take).toBe(7);
+    expect(call.orderBy[0]).toEqual({ importHealth: 'asc' });
   });
 
   it('normalizes malformed repository metadata instead of leaking arbitrary JSON', async () => {

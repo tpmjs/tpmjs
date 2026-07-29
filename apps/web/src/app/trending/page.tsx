@@ -227,7 +227,8 @@ function MethodologyBanner({ result }: { result: TrendingResult }): React.ReactE
               Ranked by <strong>momentum over the last {result.windowDays} days</strong> — page
               views plus tool executions ({result.executionWindowDays}d window) — with all-time
               popularity (npm downloads, quality, community likes) breaking ties and ordering the
-              long tail.
+              long tail. Tools that are persistently import-broken are excluded from the
+              leaderboard.
             </p>
           )}
         </div>

@@ -8,6 +8,8 @@ export interface DiscoveryTool {
   likeCount?: number;
   importHealth?: HealthStatus | null;
   executionHealth?: HealthStatus | null;
+  consecutiveImportFailures?: number;
+  lastHealthCheck?: string | null;
   createdAt: string;
   package: {
     npmPackageName: string;

@@ -43,10 +43,16 @@ export default function ToolsApiPage(): React.ReactElement {
               <code>q</code> - Search query
             </li>
             <li>
-              <code>includePersistentBroken</code> - Include tools hidden after repeated import
-              failures (default: false; explicit broken-health filters also include them)
+              <code>broken</code> - Return only tools whose import or execution health check failed
+              (<code>true</code>/<code>false</code>)
             </li>
           </ul>
+          <p className="text-foreground-secondary">
+            Chronically broken tools are never delisted. They are returned after all healthy tools
+            (ordered by import health) and carry their <code>importHealth</code>,{' '}
+            <code>consecutiveImportFailures</code>, and <code>lastHealthCheck</code> fields so
+            clients can label them.
+          </p>
 
           <h4 className="font-semibold">Example Request</h4>
           <CodeBlock

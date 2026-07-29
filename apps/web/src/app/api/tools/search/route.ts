@@ -4,7 +4,7 @@ import { authenticateRequest } from '~/lib/api-keys/middleware';
 import { checkApiKeyRateLimit, getRateLimitHeaders } from '~/lib/api-keys/rate-limit';
 import { checkRateLimit, STRICT_RATE_LIMIT } from '~/lib/rate-limit';
 import { calculateBM25, hasExactNameMatch, hasPackageNameMatch, tokenize } from '~/lib/search/bm25';
-import { activeToolFilter, defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
+import { activeToolFilter, compareSearchHits } from '~/lib/tool-health-policy';
 import { trackSearch } from '~/lib/tracking/search';
 
 export const runtime = 'nodejs';
@@ -45,7 +45,6 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q') || searchParams.get('query') || '';
     const category = searchParams.get('category');
     const tag = searchParams.get('tag'); // Exact tag filter
-    const includePersistentBroken = searchParams.get('includePersistentBroken') === 'true';
     const limit = Math.min(Number.parseInt(searchParams.get('limit') || '10', 10), 100);
 
     // Parse excludeIds to filter out tools already in user's collection
@@ -76,9 +75,12 @@ export async function GET(request: NextRequest) {
     const hasSearchQuery = searchTokens.length > 0;
 
     // Build database filter - pre-filter at DB level to reduce in-memory processing
-    // Use OR conditions to find tools that match ANY search token
+    // Use OR conditions to find tools that match ANY search token.
+    // Chronically broken tools stay in the candidate set (an exact-name search
+    // must still find its tool) — they are demoted below every healthy match in
+    // the ranking step, not delisted here.
     const dbFilter = {
-      ...(includePersistentBroken ? activeToolFilter() : defaultToolDiscoveryFilter()),
+      ...activeToolFilter(),
       // Exclude tools already in collection (if provided)
       ...(excludeIds.length > 0 && { id: { notIn: excludeIds } }),
       ...(category && { package: { category } }),
@@ -177,10 +179,25 @@ export async function GET(request: NextRequest) {
       return { tool, score: finalScore };
     });
 
-    // Sort by score and take top N
+    // Sort by score and take top N. Broken tools are demoted below every
+    // healthy match (never interleaved, never dropped) so the registry is
+    // honest about health without hiding a tool someone searched for by name.
     const topResults = scoredResults
       .filter(({ score }) => score > 0) // Only include results with matches
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) =>
+        compareSearchHits(
+          {
+            importHealth: a.tool.importHealth,
+            executionHealth: a.tool.executionHealth,
+            score: a.score,
+          },
+          {
+            importHealth: b.tool.importHealth,
+            executionHealth: b.tool.executionHealth,
+            score: b.score,
+          }
+        )
+      )
       .slice(0, limit + 1);
 
     const hasMore = topResults.length > limit;
@@ -226,6 +243,7 @@ export async function GET(request: NextRequest) {
             signature: tool.signature,
             importHealth: tool.importHealth,
             executionHealth: tool.executionHealth,
+            consecutiveImportFailures: tool.consecutiveImportFailures,
             healthCheckError: tool.healthCheckError,
             lastHealthCheck: tool.lastHealthCheck,
             package: {

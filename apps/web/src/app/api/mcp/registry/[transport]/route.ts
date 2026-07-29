@@ -10,7 +10,7 @@ import {
 import { trackUsage } from '~/lib/api-keys/usage';
 import { executeWithExecutor } from '~/lib/executors';
 import { calculateBM25, tokenize } from '~/lib/search/bm25';
-import { defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
+import { brokenToolExecutionError, defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
 import { trackExecution } from '~/lib/tracking/executions';
 
 export const runtime = 'nodejs';
@@ -306,6 +306,41 @@ async function handleExecuteTool(
         error: {
           code: -32602,
           message: `Tool "${args.toolName}" not found in package "${args.packageName}"`,
+        },
+      };
+    }
+
+    // Honest short-circuit for a chronically import-broken tool: agents get a
+    // clear "tool currently broken since <date>" result instead of a raw
+    // import failure from the executor. Transient failures still attempt to run.
+    const brokenError = brokenToolExecutionError({
+      importHealth: tool.importHealth,
+      consecutiveImportFailures: tool.consecutiveImportFailures,
+      lastHealthCheck: tool.lastHealthCheck,
+      toolLabel: tool.name,
+    });
+    if (brokenError) {
+      if (trackingCtx) {
+        trackExecution({
+          eventType: 'tool_call',
+          source: 'mcp_http',
+          userId: trackingCtx.userId,
+          apiKeyId: trackingCtx.apiKeyId,
+          toolId: tool.id,
+          toolName: tool.name,
+          packageName: args.packageName,
+          status: 'error',
+          durationMs: 0,
+          errorMessage: brokenError.message,
+          inputArgs: args.arguments,
+        });
+      }
+      return {
+        jsonrpc: '2.0',
+        id: requestId,
+        result: {
+          content: [{ type: 'text', text: brokenError.message }],
+          isError: true,
         },
       };
     }

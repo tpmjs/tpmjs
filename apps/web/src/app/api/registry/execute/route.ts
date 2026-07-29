@@ -44,6 +44,7 @@ import {
 } from '~/lib/api-keys/rate-limit';
 import { executorAuthHeaders } from '~/lib/executors/internal-auth';
 import { checkRateLimit } from '~/lib/rate-limit';
+import { brokenToolExecutionError } from '~/lib/tool-health-policy';
 import { trackExecution } from '~/lib/tracking/executions';
 
 export const runtime = 'nodejs';
@@ -187,6 +188,9 @@ export async function POST(request: NextRequest) {
       },
       select: {
         id: true,
+        importHealth: true,
+        consecutiveImportFailures: true,
+        lastHealthCheck: true,
         package: {
           select: { npmVersion: true },
         },
@@ -200,6 +204,45 @@ export async function POST(request: NextRequest) {
           error: { code: 'TOOL_NOT_FOUND', message: `Active registry tool not found: ${toolId}` },
         },
         { status: 404 }
+      );
+    }
+
+    // Honest short-circuit: a chronically import-broken tool returns a clear
+    // "tool currently broken since <date>" error instead of a raw executor
+    // import stack trace. Transient failures still attempt execution.
+    const brokenError = brokenToolExecutionError({
+      importHealth: tool.importHealth,
+      consecutiveImportFailures: tool.consecutiveImportFailures,
+      lastHealthCheck: tool.lastHealthCheck,
+      toolLabel: exportName,
+    });
+    if (brokenError) {
+      trackExecution({
+        eventType: 'tool_call',
+        source: 'mcp_http',
+        userId: authResult.userId,
+        apiKeyId: authResult.apiKeyId,
+        toolId: tool.id,
+        toolName: exportName,
+        packageName,
+        status: 'error',
+        durationMs: Math.round(performance.now() - startTime),
+        errorCode: brokenError.code,
+        errorMessage: brokenError.message,
+        inputArgs: params,
+      });
+      return NextResponse.json(
+        {
+          success: false,
+          toolId,
+          error: brokenError,
+          meta: {
+            package: packageName,
+            version: tool.package.npmVersion,
+            authenticated: isAuthenticated,
+          },
+        },
+        { status: 422 }
       );
     }
 

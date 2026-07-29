@@ -1,5 +1,5 @@
 import { type Prisma, prisma } from '@tpmjs/db';
-import { defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
+import { activeToolFilter } from '~/lib/tool-health-policy';
 import type { DiscoveryTool, PublicCollection } from './types';
 
 export const INITIAL_DISCOVERY_LIMIT = 50;
@@ -12,6 +12,8 @@ const discoveryToolSelect = {
   likeCount: true,
   importHealth: true,
   executionHealth: true,
+  consecutiveImportFailures: true,
+  lastHealthCheck: true,
   createdAt: true,
   package: {
     select: {
@@ -46,6 +48,8 @@ export function serializeDiscoveryTool(tool: DiscoveryToolRow): DiscoveryTool {
     likeCount: tool.likeCount,
     importHealth: tool.importHealth,
     executionHealth: tool.executionHealth,
+    consecutiveImportFailures: tool.consecutiveImportFailures,
+    lastHealthCheck: tool.lastHealthCheck?.toISOString() ?? null,
     createdAt: tool.createdAt.toISOString(),
     package: {
       npmPackageName: tool.package.npmPackageName,
@@ -66,7 +70,9 @@ export async function loadInitialTools(
   const query = searchQuery.trim();
   const tools = await prisma.tool.findMany({
     where: {
-      ...defaultToolDiscoveryFilter(),
+      // Keep chronically broken tools in the registry (never delist); the
+      // health-tier ordering below sinks them beneath every healthy tool.
+      ...activeToolFilter(),
       ...(query && {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
@@ -77,6 +83,7 @@ export async function loadInitialTools(
     },
     select: discoveryToolSelect,
     orderBy: [
+      { importHealth: 'asc' }, // Demote BROKEN below HEALTHY/UNKNOWN (enum order)
       { qualityScore: 'desc' },
       { package: { npmDownloadsLastMonth: 'desc' } },
       { createdAt: 'desc' },

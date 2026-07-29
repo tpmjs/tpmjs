@@ -3,6 +3,7 @@
 import { cn } from '@tpmjs/utils/cn';
 import { forwardRef, useMemo } from 'react';
 import { Icon } from '../Icon/Icon';
+import { ToolHealthBadge } from '../ToolHealthBadge/ToolHealthBadge';
 import type { ToolCardProps } from './types';
 import {
   toolCardActionVariants,
@@ -93,6 +94,9 @@ export const ToolCard = forwardRef<HTMLDivElement, ToolCardProps>(
       href,
       action,
       icon,
+      importHealth,
+      executionHealth,
+      healthSummary,
       className,
       ...props
     },
@@ -100,6 +104,7 @@ export const ToolCard = forwardRef<HTMLDivElement, ToolCardProps>(
   ) => {
     const displayTitle = displayName || name;
     const isClickable = !!href;
+    const isBroken = importHealth === 'BROKEN' || executionHealth === 'BROKEN';
 
     // Format downloads
     const formattedDownloads = useMemo(() => {
@@ -115,6 +120,9 @@ export const ToolCard = forwardRef<HTMLDivElement, ToolCardProps>(
 
     const cardClassName = cn(
       toolCardVariants({ variant, clickable: isClickable ? 'true' : 'false' }),
+      // Broken tools stay listed but are visually muted so they are never
+      // indistinguishable from healthy ones.
+      isBroken && 'opacity-60',
       className
     );
 
@@ -144,6 +152,11 @@ export const ToolCard = forwardRef<HTMLDivElement, ToolCardProps>(
               {category && (
                 <span className="font-mono text-[10px] text-foreground-muted">{category}</span>
               )}
+              <ToolHealthBadge
+                importHealth={importHealth}
+                executionHealth={executionHealth}
+                summary={healthSummary}
+              />
             </div>
           </div>
 

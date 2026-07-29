@@ -289,7 +289,7 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
             )}
             {isPersistentlyBroken && (
               <Badge variant="error" size="sm">
-                Hidden from discovery
+                Demoted in discovery
               </Badge>
             )}
           </div>
@@ -332,9 +332,9 @@ export function ToolDetailClient({ tool, slug }: ToolDetailClientProps): React.R
                 {isPersistentlyBroken && (
                   <p className="text-sm text-error/80 mb-3 max-w-3xl">
                     It has failed {tool.consecutiveImportFailures.toLocaleString()} consecutive
-                    import checks (threshold: {PERSISTENT_IMPORT_FAILURE_THRESHOLD}) and is hidden
-                    from default search and browse results. This evidence page remains available,
-                    and a healthy check will automatically restore discovery.
+                    import checks (threshold: {PERSISTENT_IMPORT_FAILURE_THRESHOLD}). It stays in
+                    the registry but is ranked below every healthy tool in search and browse and
+                    clearly labeled. A healthy check will automatically restore its normal ranking.
                   </p>
                 )}
                 <div className="space-y-1 text-sm text-error/80">
