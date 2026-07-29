@@ -46,7 +46,7 @@
     ],
     "tools": [
       {
-        "name": "workflowCostEstimate",
+        "name": "workflowCostEstimateTool",
         "description": "Estimates cost of running a workflow based on step count and estimated API calls",
         "parameters": [
           {

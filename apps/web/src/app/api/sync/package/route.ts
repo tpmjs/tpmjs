@@ -10,6 +10,7 @@ import {
   extractToolSchema,
   listToolExports,
 } from '~/lib/schema-extraction';
+import { reconcileDeclaredToolNames } from '~/lib/sync/reconcile-tool-names';
 import {
   newToolLifecycle,
   refreshedToolLifecycle,
@@ -183,6 +184,26 @@ export async function POST(request: NextRequest) {
     });
     const existingByName = new Map(existingTools.map((tool) => [tool.name, tool]));
     const syncedTools: string[] = [];
+
+    // Correct export-name drift before upserting: a manifest whose declared
+    // tool name does not match the code's real export leaves a phantom row that
+    // can never pass a health check. Re-point it to the real export (executor
+    // is only consulted when a confirmed phantom is present).
+    const reconciliation = await reconcileDeclaredToolNames({
+      packageName: pkg.name,
+      version: pkg.version,
+      env: (packageData.env as Record<string, unknown> | null | undefined) ?? null,
+      declaredTools: toolsToProcess,
+      existingByName,
+    });
+    toolsToProcess = reconciliation.tools;
+    if (reconciliation.reconciled.length > 0) {
+      console.log(
+        `Reconciled export-name drift for ${pkg.name}: ${reconciliation.reconciled
+          .map((entry) => `${entry.from}->${entry.to}`)
+          .join(', ')}`
+      );
+    }
 
     // Upsert each tool
     for (const toolDef of toolsToProcess) {

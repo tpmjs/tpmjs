@@ -3,6 +3,7 @@ import { fetchLatestPackageWithMetadata, searchByKeyword } from '@tpmjs/npm-clie
 import { validateTpmjsField } from '@tpmjs/types/tpmjs';
 import { type NextRequest, NextResponse } from 'next/server';
 import { requireCronAuth } from '~/lib/cron-auth';
+import { reconcileDeclaredToolNames } from '~/lib/sync/reconcile-tool-names';
 import {
   newToolLifecycle,
   refreshedToolLifecycle,
@@ -156,12 +157,31 @@ export async function POST(request: NextRequest) {
         }
 
         // Upsert tools from the tpmjs.tools array (manual discovery only)
-        const toolsToProcess = validation.tools || [];
+        const declaredTools = validation.tools || [];
 
         const existingTools = await prisma.tool.findMany({
           where: { packageId: packageRecord.id },
         });
         const existingByName = new Map(existingTools.map((tool) => [tool.name, tool]));
+
+        // Correct export-name drift: a manifest whose declared tool name does
+        // not match the code's real export leaves a phantom row that can never
+        // pass a health check. Re-point it to the real export (executor is only
+        // consulted when a confirmed phantom is present).
+        const { tools: toolsToProcess, reconciled } = await reconcileDeclaredToolNames({
+          packageName: pkg.name,
+          version: pkg.version,
+          env: (packageData.env as Record<string, unknown> | null | undefined) ?? null,
+          declaredTools,
+          existingByName,
+        });
+        if (reconciled.length > 0) {
+          console.log(
+            `Reconciled export-name drift for ${pkg.name}: ${reconciled
+              .map((entry) => `${entry.from}->${entry.to}`)
+              .join(', ')}`
+          );
+        }
 
         for (const toolDef of toolsToProcess) {
           const toolName = toolDef.name;

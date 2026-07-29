@@ -47,7 +47,7 @@
     ],
     "tools": [
       {
-        "name": "recipeHash",
+        "name": "recipeHashTool",
         "description": "Generates a deterministic hash for a recipe/workflow using SHA-256",
         "parameters": [
           {

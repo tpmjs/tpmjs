@@ -45,7 +45,7 @@
     ],
     "tools": [
       {
-        "name": "workflowValidateIO",
+        "name": "workflowValidateIOTool",
         "description": "Validates that workflow step inputs/outputs are compatible and checks type chains between steps",
         "parameters": [
           {
