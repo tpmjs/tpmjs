@@ -97,8 +97,10 @@ async function processJsonRpcRequest(
   const requestId = body.id ?? null;
 
   switch (body.method) {
-    case 'initialize':
-      return handleInitialize(collectionName, requestId);
+    case 'initialize': {
+      const params = body.params as { protocolVersion?: string } | undefined;
+      return handleInitialize(collectionName, requestId, params?.protocolVersion);
+    }
 
     case 'tools/list':
       return await handleToolsList(collectionId, requestId);
@@ -246,6 +248,15 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       );
     }
 
+    // Notifications (JSON-RPC messages with no id, e.g. notifications/initialized)
+    // MUST get HTTP 202 Accepted with no body per the MCP streamable-HTTP spec.
+    // Returning a JSON-RPC response with `id: null` makes strict clients (e.g.
+    // codex's Rust MCP client) error and kill the session.
+    const isNotification = body.id === undefined || body.id === null;
+    if (isNotification && body.method !== 'initialize') {
+      return new NextResponse(null, { status: 202 });
+    }
+
     // Build tracking context for execution event tracking
     const trackingCtx: TrackingContext = {
       userId: authResult.authenticated ? (authResult.userId ?? undefined) : undefined,
@@ -262,6 +273,13 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
       isOwner,
       trackingCtx
     );
+    // Deliberately STATELESS: no Mcp-Session-Id header. The server holds no
+    // per-session state, and returning a session id makes strict clients (e.g.
+    // codex's Rust MCP client) enter stateful mode — they then open a
+    // server->client GET SSE stream we don't offer (405) and issue a session
+    // DELETE, and when that channel is unavailable they abort their tool calls
+    // (verified: the tool call never reaches the server). Omitting the header
+    // keeps such clients on the stateless POST-request/JSON-response path.
     const jsonResponse = NextResponse.json(response);
 
     // Track usage for authenticated requests
@@ -326,9 +344,18 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
 /**
  * GET /@username/collections/[slug]/mcp
- * Returns server info for the MCP endpoint
+ *
+ * A spec-compliant MCP client issues GET (with `Accept: text/event-stream`) to
+ * open a server-initiated SSE stream. This endpoint does not offer one, so per
+ * the MCP streamable-HTTP spec we MUST return 405 Method Not Allowed for such
+ * requests. Plain (non-SSE) GETs still receive a human-friendly info document.
  */
-export async function GET(_request: NextRequest, context: RouteContext): Promise<Response> {
+export async function GET(request: NextRequest, context: RouteContext): Promise<Response> {
+  const acceptsEventStream = (request.headers.get('accept') || '').includes('text/event-stream');
+  if (acceptsEventStream) {
+    return new NextResponse(null, { status: 405, headers: { Allow: 'POST' } });
+  }
+
   try {
     const { username, slug } = await context.params;
 

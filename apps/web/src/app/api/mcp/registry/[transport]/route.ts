@@ -9,6 +9,7 @@ import {
 } from '~/lib/api-keys/rate-limit';
 import { trackUsage } from '~/lib/api-keys/usage';
 import { executeWithExecutor } from '~/lib/executors';
+import { negotiateProtocolVersion } from '~/lib/mcp/protocol';
 import { calculateBM25, tokenize } from '~/lib/search/bm25';
 import { brokenToolExecutionError, defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
 import { trackExecution } from '~/lib/tracking/executions';
@@ -41,14 +42,18 @@ function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): 
 }
 
 /**
- * Handle MCP initialize for the master registry
+ * Handle MCP initialize for the master registry.
+ * Echoes the client's requested protocol version when supported, else the latest.
  */
-function handleInitialize(requestId: string | number | null): JsonRpcResponse {
+function handleInitialize(
+  requestId: string | number | null,
+  requestedProtocolVersion?: unknown
+): JsonRpcResponse {
   return {
     jsonrpc: '2.0',
     id: requestId,
     result: {
-      protocolVersion: '2024-11-05',
+      protocolVersion: negotiateProtocolVersion(requestedProtocolVersion),
       serverInfo: {
         name: 'TPMJS Registry',
         version: '1.0.0',
@@ -428,8 +433,10 @@ async function processJsonRpcRequest(
   const requestId = body.id ?? null;
 
   switch (body.method) {
-    case 'initialize':
-      return handleInitialize(requestId);
+    case 'initialize': {
+      const params = body.params as { protocolVersion?: string } | undefined;
+      return handleInitialize(requestId, params?.protocolVersion);
+    }
 
     case 'tools/list':
       return handleToolsList(requestId);
@@ -594,13 +601,13 @@ export async function POST(
       });
     }
 
-    // HTTP transport
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (body.method === 'initialize') {
-      headers['Mcp-Session-Id'] = crypto.randomUUID();
-    }
-
-    const nextResponse = NextResponse.json(response, { headers });
+    // HTTP transport — deliberately STATELESS: no Mcp-Session-Id (see the
+    // collection /mcp route note). Returning one pushes strict clients into a
+    // stateful session whose server->client GET SSE stream we don't offer,
+    // aborting their tool calls.
+    const nextResponse = NextResponse.json(response, {
+      headers: { 'Content-Type': 'application/json' },
+    });
 
     // Rate limit headers
     if (authResult.apiKeyId) {
@@ -646,13 +653,22 @@ export async function POST(
  * GET /api/mcp/registry/sse — SSE connection
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ transport: string }> }
 ): Promise<Response> {
   const { transport } = await params;
 
   if (transport !== 'http' && transport !== 'sse') {
     return NextResponse.json({ error: `Invalid transport: ${transport}` }, { status: 400 });
+  }
+
+  // The streamable-HTTP transport offers no server-initiated SSE stream; a
+  // spec-compliant client's `Accept: text/event-stream` GET MUST get 405.
+  if (transport === 'http') {
+    const acceptsEventStream = (request.headers.get('accept') || '').includes('text/event-stream');
+    if (acceptsEventStream) {
+      return new NextResponse(null, { status: 405, headers: { Allow: 'POST' } });
+    }
   }
 
   if (transport === 'sse') {

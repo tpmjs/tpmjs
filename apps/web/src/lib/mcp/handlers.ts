@@ -4,6 +4,7 @@ import { queueBridgeToolCall, waitForBridgeResult } from '~/app/api/bridge/route
 import { logActivity } from '~/lib/activity';
 import { type TrackExecutionParams, trackExecution } from '~/lib/tracking/executions';
 import { executeWithExecutor, parseExecutorConfig } from '../executors';
+import { negotiateProtocolVersion } from './protocol';
 import { callRemoteTool } from './remote-client';
 import {
   type BridgeTool,
@@ -36,14 +37,21 @@ function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage: string): 
 }
 
 /**
- * Handle MCP initialize request
+ * Handle MCP initialize request.
+ *
+ * Echoes the client's requested protocol version when supported, otherwise the
+ * server's latest (see {@link negotiateProtocolVersion}).
  */
-export function handleInitialize(collectionName: string, requestId: JsonRpcId): JsonRpcResponse {
+export function handleInitialize(
+  collectionName: string,
+  requestId: JsonRpcId,
+  requestedProtocolVersion?: unknown
+): JsonRpcResponse {
   return {
     jsonrpc: '2.0',
     id: requestId,
     result: {
-      protocolVersion: '2024-11-05',
+      protocolVersion: negotiateProtocolVersion(requestedProtocolVersion),
       serverInfo: {
         name: `TPMJS: ${collectionName}`,
         version: '1.0.0',

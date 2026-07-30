@@ -37,7 +37,7 @@ vi.mock('~/lib/mcp/handlers', () => ({
   handleToolsCall: mocks.handleToolsCall,
 }));
 
-import { POST } from './route';
+import { GET, POST } from './route';
 
 const context = {
   params: Promise.resolve({ username: 'ajax', slug: 'public-tools', transport: 'http' }),
@@ -48,6 +48,22 @@ function request(method: string, id = 1): NextRequest {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jsonrpc: '2.0', id, method }),
+  });
+}
+
+// A JSON-RPC notification omits the `id` entirely.
+function notification(method: string): NextRequest {
+  return new NextRequest('https://tpmjs.test/api/mcp/ajax/public-tools/http', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', method }),
+  });
+}
+
+function getRequest(accept?: string): NextRequest {
+  return new NextRequest('https://tpmjs.test/api/mcp/ajax/public-tools/http', {
+    method: 'GET',
+    headers: accept ? { Accept: accept } : {},
   });
 }
 
@@ -85,7 +101,9 @@ describe('public collection MCP contract', () => {
     const response = await POST(request('initialize'), context);
 
     expect(response.status).toBe(200);
-    expect(response.headers.get('mcp-session-id')).toBeTruthy();
+    // Stateless server: no Mcp-Session-Id (a session id pushes strict clients
+    // into a stateful GET-SSE session we don't offer, which aborts tool calls).
+    expect(response.headers.get('mcp-session-id')).toBeNull();
     await expect(response.json()).resolves.toMatchObject({
       jsonrpc: '2.0',
       id: 1,
@@ -102,6 +120,21 @@ describe('public collection MCP contract', () => {
       id: 2,
       result: { tools: [] },
     });
+  });
+
+  it('returns 202 with no body for a notification (no id)', async () => {
+    const response = await POST(notification('notifications/initialized'), context);
+
+    expect(response.status).toBe(202);
+    await expect(response.text()).resolves.toBe('');
+    expect(mocks.handleInitialize).not.toHaveBeenCalled();
+  });
+
+  it('returns 405 for a GET that requests an SSE stream on the http transport', async () => {
+    const response = await GET(getRequest('text/event-stream'), context);
+
+    expect(response.status).toBe(405);
+    expect(response.headers.get('allow')).toBe('POST');
   });
 
   it('does not expose a private collection to an anonymous caller', async () => {

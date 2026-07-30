@@ -97,8 +97,10 @@ async function processJsonRpcRequest(
   const requestId = body.id ?? null;
 
   switch (body.method) {
-    case 'initialize':
-      return handleInitialize(collectionName, requestId);
+    case 'initialize': {
+      const params = body.params as { protocolVersion?: string } | undefined;
+      return handleInitialize(collectionName, requestId, params?.protocolVersion);
+    }
 
     case 'tools/list':
       return await handleToolsList(collectionId, requestId);
@@ -190,16 +192,10 @@ async function handleHttpTransport(
     Object.keys(headerEnvVars).length > 0 ? headerEnvVars : undefined
   );
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  // Include session ID on initialize response per MCP streamable HTTP spec
-  if (body.method === 'initialize') {
-    headers['Mcp-Session-Id'] = crypto.randomUUID();
-  }
-
-  return NextResponse.json(response, { headers });
+  // Deliberately STATELESS: no Mcp-Session-Id (see the collection /mcp route
+  // note) — returning one drives strict clients into a stateful session whose
+  // server->client GET SSE stream we don't offer, which aborts their tool calls.
+  return NextResponse.json(response, { headers: { 'Content-Type': 'application/json' } });
 }
 
 /**
@@ -228,6 +224,12 @@ async function handleSseTransport(
         },
       }
     );
+  }
+
+  // Notifications (no id) get 202 Accepted with no body — no JSON-RPC response.
+  const isNotification = body.id === undefined || body.id === null;
+  if (isNotification && body.method !== 'initialize') {
+    return new Response(null, { status: 202 });
   }
 
   const headerEnvVars = extractEnvVarsFromHeaders(request);
@@ -492,12 +494,25 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
  * Returns server info (for http) or establishes SSE connection (for sse)
  * Allows owners to access their private collections when authenticated
  */
-export async function GET(_request: NextRequest, context: RouteContext): Promise<Response> {
+export async function GET(request: NextRequest, context: RouteContext): Promise<Response> {
   try {
     const { username, slug, transport } = await context.params;
 
     if (transport !== 'http' && transport !== 'sse') {
       return NextResponse.json({ error: `Invalid transport: ${transport}` }, { status: 400 });
+    }
+
+    // The streamable-HTTP transport does not offer a server-initiated SSE stream.
+    // A spec-compliant client GETs with `Accept: text/event-stream` to open one;
+    // we MUST answer 405 Method Not Allowed. (The dedicated `sse` transport below
+    // is the legacy HTTP+SSE channel and still streams.)
+    if (transport === 'http') {
+      const acceptsEventStream = (request.headers.get('accept') || '').includes(
+        'text/event-stream'
+      );
+      if (acceptsEventStream) {
+        return new NextResponse(null, { status: 405, headers: { Allow: 'POST' } });
+      }
     }
 
     // First, find the user by username
