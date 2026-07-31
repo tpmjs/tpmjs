@@ -10,8 +10,8 @@ import {
 import { trackUsage } from '~/lib/api-keys/usage';
 import { executeWithExecutor } from '~/lib/executors';
 import { negotiateProtocolVersion } from '~/lib/mcp/protocol';
-import { calculateBM25, tokenize } from '~/lib/search/bm25';
-import { brokenToolExecutionError, defaultToolDiscoveryFilter } from '~/lib/tool-health-policy';
+import { searchTools, toolIdOf } from '~/lib/search/tool-search';
+import { brokenToolExecutionError } from '~/lib/tool-health-policy';
 import { trackExecution } from '~/lib/tracking/executions';
 
 export const runtime = 'nodejs';
@@ -75,7 +75,7 @@ function handleToolsList(requestId: string | number | null): JsonRpcResponse {
         {
           name: 'search_tools',
           description:
-            'Search the TPMJS registry for AI tools. Returns tool names, descriptions, package names, and input schemas. Use this to find tools by keyword or intent.',
+            'Search the TPMJS registry for AI tools. Matches over tool and package names, descriptions, and keywords. Returns each tool\'s toolId (the "package::export" id to pass to execute_tool), name, description, package, category, input schema and health. Broken tools rank last. Use this to find tools by keyword or intent.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -89,7 +89,7 @@ function handleToolsList(requestId: string | number | null): JsonRpcResponse {
               },
               limit: {
                 type: 'number',
-                description: 'Maximum number of results (default: 10, max: 50)',
+                description: 'Maximum number of results (default: 25, max: 100)',
               },
             },
             required: ['query'],
@@ -127,10 +127,22 @@ function handleToolsList(requestId: string | number | null): JsonRpcResponse {
   };
 }
 
+/** Default number of search hits when the caller gives no `limit`. */
+const SEARCH_DEFAULT_LIMIT = 25;
+/** Hard ceiling on search hits regardless of the requested `limit`. */
+const SEARCH_MAX_LIMIT = 100;
+/** Candidate rows pulled from the DB for scoring (matches the ranker's ceiling). */
+const SEARCH_CANDIDATE_LIMIT = 2000;
+
 /**
- * Handle search_tools call — searches the full TPMJS registry
+ * Handle search_tools call — searches the full TPMJS registry.
+ *
+ * Delegates to the SHARED {@link searchTools} ranker (also used by the REST
+ * `/api/tools/search` endpoint) so the two surfaces can never diverge again.
+ * Each hit carries its `toolId` (`package::export` — pass `packageName` +
+ * `toolName` to execute_tool) plus health so an agent can choose well and avoid
+ * broken tools (which rank last).
  */
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: BM25 scoring logic requires branching
 async function handleSearchTools(
   args: { query?: string; category?: string; limit?: number },
   requestId: string | number | null
@@ -138,92 +150,32 @@ async function handleSearchTools(
   try {
     const query = args.query || '';
     const category = args.category || null;
-    const limit = Math.min(args.limit || 10, 50);
+    const limit = Math.min(
+      Math.max(1, Math.floor(args.limit || SEARCH_DEFAULT_LIMIT)),
+      SEARCH_MAX_LIMIT
+    );
 
-    // Fetch tools from DB
-    const where: Record<string, unknown> = defaultToolDiscoveryFilter();
-    if (category) {
-      where.package = { category };
-    }
-
-    // Prefilter candidates in the DB: BM25 only keeps docs containing at least
-    // one query token, and every token is a contiguous substring of its source
-    // field, so an insensitive `contains` OR-filter is recall-equivalent to
-    // scoring the whole table (which a fixed take:200 was not — it silently
-    // excluded 3/4 of the registry from search).
-    if (query) {
-      const queryTokens = tokenize(query);
-      if (queryTokens.length > 0) {
-        where.OR = queryTokens.flatMap((token) => [
-          { name: { contains: token, mode: 'insensitive' } },
-          { description: { contains: token, mode: 'insensitive' } },
-          { tags: { has: token } },
-          { package: { npmPackageName: { contains: token, mode: 'insensitive' } } },
-        ]);
-      }
-    }
-
-    const tools = await withTimeout(
-      prisma.tool.findMany({
-        where,
-        include: { package: true },
-        take: query ? 2000 : limit, // candidate ceiling for BM25 scoring
-      }),
+    const scored = await withTimeout(
+      searchTools({ query, category, candidateLimit: SEARCH_CANDIDATE_LIMIT }),
       DB_TIMEOUT_MS,
       'Database query timed out'
     );
 
-    let results = tools;
+    const total = scored.length;
+    const results = scored.slice(0, limit);
 
-    // Apply BM25 scoring if query provided
-    if (query) {
-      // Build document texts and compute doc frequencies
-      const docTexts = tools.map((tool) =>
-        [tool.name, tool.description, tool.package.npmPackageName, ...(tool.tags || [])]
-          .filter(Boolean)
-          .join(' ')
-      );
-
-      const avgDocLength =
-        docTexts.reduce((sum, text) => sum + tokenize(text).length, 0) / (docTexts.length || 1);
-
-      // Build document frequencies for each token
-      const docFrequencies = new Map<string, number>();
-      for (const text of docTexts) {
-        const uniqueTokens = new Set(tokenize(text));
-        for (const token of uniqueTokens) {
-          docFrequencies.set(token, (docFrequencies.get(token) || 0) + 1);
-        }
-      }
-
-      const scored = tools
-        .map((tool, i) => {
-          const score = calculateBM25(
-            query,
-            docTexts[i] ?? '',
-            avgDocLength,
-            tools.length,
-            docFrequencies
-          );
-          return { tool, score };
-        })
-        .filter((item) => item.score > 0)
-        .sort((a, b) => b.score - a.score)
-        .slice(0, limit);
-
-      results = scored.map((s) => s.tool);
-    } else {
-      results = tools.slice(0, limit);
-    }
-
-    const formattedTools = results.map((tool) => ({
+    const formattedTools = results.map(({ tool }) => ({
+      // Canonical id an agent passes (as packageName + toolName) to execute_tool.
+      toolId: toolIdOf(tool),
       packageName: tool.package.npmPackageName,
       toolName: tool.name,
+      name: tool.name,
       description: tool.description,
       category: tool.package.category,
       inputSchema: tool.inputSchema,
       version: tool.package.npmVersion,
       qualityScore: tool.qualityScore ? Number(tool.qualityScore) : null,
+      downloads: tool.package.npmDownloadsLastMonth ?? 0,
       importHealth: tool.importHealth,
       executionHealth: tool.executionHealth,
       env: tool.package.env,
@@ -240,6 +192,7 @@ async function handleSearchTools(
               {
                 query,
                 count: formattedTools.length,
+                total,
                 tools: formattedTools,
               },
               null,

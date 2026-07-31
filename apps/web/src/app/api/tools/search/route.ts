@@ -1,10 +1,8 @@
-import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest } from '~/lib/api-keys/middleware';
 import { checkApiKeyRateLimit, getRateLimitHeaders } from '~/lib/api-keys/rate-limit';
 import { checkRateLimit, STRICT_RATE_LIMIT } from '~/lib/rate-limit';
-import { calculateBM25, hasExactNameMatch, hasPackageNameMatch, tokenize } from '~/lib/search/bm25';
-import { activeToolFilter, compareSearchHits } from '~/lib/tool-health-policy';
+import { searchTools } from '~/lib/search/tool-search';
 import { trackSearch } from '~/lib/tracking/search';
 
 export const runtime = 'nodejs';
@@ -70,140 +68,26 @@ export async function GET(request: NextRequest) {
       `🔎 [SEARCH API] Query: "${query}", Category: ${category}, Limit: ${limit}, Messages: ${recentMessages.length}`
     );
 
-    // Extract search tokens for database-level pre-filtering
-    const searchTokens = tokenize(query).filter((t) => t.length >= 2);
-    const hasSearchQuery = searchTokens.length > 0;
-
-    // Build database filter - pre-filter at DB level to reduce in-memory processing
-    // Use OR conditions to find tools that match ANY search token.
-    // Chronically broken tools stay in the candidate set (an exact-name search
-    // must still find its tool) — they are demoted below every healthy match in
-    // the ranking step, not delisted here.
-    const dbFilter = {
-      ...activeToolFilter(),
-      // Exclude tools already in collection (if provided)
-      ...(excludeIds.length > 0 && { id: { notIn: excludeIds } }),
-      ...(category && { package: { category } }),
-      ...(tag && { tags: { has: tag } }),
-      ...(hasSearchQuery && {
-        OR: [
-          // Match tool name
-          { name: { contains: query, mode: 'insensitive' as const } },
-          // Match tool description
-          { description: { contains: query, mode: 'insensitive' as const } },
-          // Match package name
-          { package: { npmPackageName: { contains: query, mode: 'insensitive' as const } } },
-          // Match package description
-          { package: { npmDescription: { contains: query, mode: 'insensitive' as const } } },
-          // Also try individual tokens for partial matches
-          ...searchTokens
-            .slice(0, 3)
-            .flatMap((token) => [
-              { name: { contains: token, mode: 'insensitive' as const } },
-              { description: { contains: token, mode: 'insensitive' as const } },
-            ]),
-        ],
-      }),
-    };
-
-    // Fetch filtered tools with package info (max 500 for BM25 scoring)
-    const tools = await prisma.tool.findMany({
-      include: { package: true },
-      where: dbFilter,
-      take: hasSearchQuery ? 500 : 100, // Limit results for performance
-      orderBy: hasSearchQuery ? undefined : { qualityScore: 'desc' },
+    // Unified registry search — the SAME ranking the MCP `search_tools` meta-tool
+    // uses, so the REST and MCP surfaces can never diverge again (see
+    // ~/lib/search/tool-search). It matches over tool name/description AND the
+    // package description + npm keywords, and demotes broken tools below every
+    // healthy match.
+    const scored = await searchTools({
+      query,
+      category,
+      tag,
+      excludeIds,
+      contextMessages: recentMessages,
     });
 
-    console.log(`📊 [SEARCH API] Found ${tools.length} tools in database`);
+    const total = scored.length;
+    const hasMore = total > limit;
+    const results = scored.slice(0, limit);
 
-    // Combine query with recent messages for better context
-    const fullQuery = [query, ...recentMessages].filter(Boolean).join(' ');
-    console.log(`🔍 [SEARCH API] Full search context: "${fullQuery.slice(0, 100)}..."`);
-
-    // Build all documents first (include tags in document text for BM25)
-    const documents = tools.map((tool) => ({
-      tool,
-      text: [
-        tool.description,
-        tool.name,
-        tool.package.npmPackageName,
-        tool.package.npmDescription || '',
-        ...(tool.package.npmKeywords || []),
-        ...(tool.tags || []),
-      ].join(' '),
-    }));
-
-    // Calculate document frequencies (IDF)
-    const docFrequencies = new Map<string, number>();
-    const queryTokens = tokenize(fullQuery);
-
-    for (const term of queryTokens) {
-      let count = 0;
-      for (const doc of documents) {
-        const docTokens = tokenize(doc.text);
-        if (docTokens.includes(term)) {
-          count++;
-        }
-      }
-      docFrequencies.set(term, count);
-    }
-
-    // Calculate average document length
-    const totalTokens = documents.reduce((sum, doc) => sum + tokenize(doc.text).length, 0);
-    const avgDocLength = totalTokens / documents.length;
-
-    // Calculate BM25 scores
-    const scoredResults = documents.map(({ tool, text }) => {
-      const bm25Score = calculateBM25(fullQuery, text, avgDocLength, tools.length, docFrequencies);
-      const qualityBoost = Number(tool.qualityScore ?? 0) * 0.5;
-      const downloadBoost = Math.log10((tool.package.npmDownloadsLastMonth || 0) + 1) * 0.1;
-
-      // Massive boost for exact tool name match (when user mentions tool by name)
-      const exactNameBoost = hasExactNameMatch(query, tool.name) ? 100 : 0;
-
-      // Boost for package name match (when user searches by package name like @tpmjs/tools-unsandbox)
-      const packageNameBoost = hasPackageNameMatch(query, tool.package.npmPackageName) ? 50 : 0;
-
-      // Tag-match boost: +5 when a query token matches a tag exactly
-      let tagBoost = 0;
-      if (tool.tags && tool.tags.length > 0) {
-        const qTokens = tokenize(query);
-        for (const token of qTokens) {
-          if (tool.tags.includes(token)) tagBoost += 5;
-        }
-      }
-
-      const finalScore =
-        bm25Score + qualityBoost + downloadBoost + exactNameBoost + packageNameBoost + tagBoost;
-
-      return { tool, score: finalScore };
-    });
-
-    // Sort by score and take top N. Broken tools are demoted below every
-    // healthy match (never interleaved, never dropped) so the registry is
-    // honest about health without hiding a tool someone searched for by name.
-    const topResults = scoredResults
-      .filter(({ score }) => score > 0) // Only include results with matches
-      .sort((a, b) =>
-        compareSearchHits(
-          {
-            importHealth: a.tool.importHealth,
-            executionHealth: a.tool.executionHealth,
-            score: a.score,
-          },
-          {
-            importHealth: b.tool.importHealth,
-            executionHealth: b.tool.executionHealth,
-            score: b.score,
-          }
-        )
-      )
-      .slice(0, limit + 1);
-
-    const hasMore = topResults.length > limit;
-    const results = hasMore ? topResults.slice(0, limit) : topResults;
-
-    console.log(`✅ [SEARCH API] Returning ${results.length} results (hasMore: ${hasMore})`);
+    console.log(
+      `✅ [SEARCH API] Returning ${results.length} of ${total} results (hasMore: ${hasMore})`
+    );
 
     // Track search query (fire-and-forget)
     if (query) {
@@ -230,7 +114,7 @@ export async function GET(request: NextRequest) {
         query,
         filters: { category },
         results: {
-          total: scoredResults.filter(({ score }) => score > 0).length,
+          total,
           returned: results.length,
           tools: results.map(({ tool }) => ({
             id: tool.id,
