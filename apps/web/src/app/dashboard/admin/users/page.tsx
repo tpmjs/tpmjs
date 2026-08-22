@@ -1,61 +1,68 @@
 'use client';
 
-import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Button } from '@tpmjs/ui/Button/Button';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
 import { Input } from '@tpmjs/ui/Input/Input';
-import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
+import { Select } from '@tpmjs/ui/Select/Select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@tpmjs/ui/Table/Table';
 import { useCallback, useEffect, useState } from 'react';
+import { useSession } from '@/lib/auth-client';
+import { PageState, StatusBadge, TimeAgo } from '~/components/admin/AdminUi';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
+import type { AdminUserRow } from '~/lib/admin/types';
 
-interface AdminUser {
-  id: string;
-  name: string;
-  email: string;
-  username: string | null;
-  image: string | null;
-  tier: string;
-  role: string;
-  signupSource: string | null;
-  emailVerified: boolean;
-  createdAt: string;
-  _count: {
-    collections: number;
-    agents: number;
-    activities: number;
-    toolLikes: number;
-    apiKeys: number;
-    tpmjsApiKeys: number;
-  };
+const ROLE_OPTIONS = [
+  { value: 'USER', label: 'USER' },
+  { value: 'ADMIN', label: 'ADMIN' },
+];
+const TIER_OPTIONS = [
+  { value: 'FREE', label: 'FREE' },
+  { value: 'PRO', label: 'PRO' },
+  { value: 'ENTERPRISE', label: 'ENTERPRISE' },
+];
+
+interface UsersPayload {
+  users: AdminUserRow[];
+  pagination: { hasMore: boolean };
 }
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<AdminUser[]>([]);
+  const { data: session } = useSession();
+  const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: String(page),
-        limit: '20',
+        limit: '25',
         sortBy: 'createdAt',
         sortOrder: 'desc',
       });
       if (search) params.set('search', search);
-
       const res = await fetch(`/api/admin/users?${params}`);
-      if (res.status === 403) throw new Error('Access denied. Admin role required.');
+      if (res.status === 403 || res.status === 401)
+        throw new Error('Access denied. Admin role required.');
       if (!res.ok) throw new Error('Failed to load users');
-
-      const json = await res.json();
+      const json = (await res.json()) as { data: UsersPayload };
       setUsers(json.data.users);
       setHasMore(json.data.pagination.hasMore);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -64,133 +71,159 @@ export default function AdminUsersPage() {
   }, [page, search]);
 
   useEffect(() => {
-    fetchUsers();
+    void fetchUsers();
   }, [fetchUsers]);
 
-  const handleSearch = () => {
-    setPage(1);
-    setSearch(searchInput);
+  const updateUser = async (user: AdminUserRow, patch: { role?: string; tier?: string }) => {
+    const what = patch.role ? `role → ${patch.role}` : `tier → ${patch.tier}`;
+    if (patch.role && !window.confirm(`Set ${user.email} ${what}?`)) return;
+    setBusyId(user.id);
+    setNotice(null);
+    try {
+      const res = await fetch(`/api/admin/users/${user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      const json = (await res.json()) as { success: boolean; error?: string };
+      if (!res.ok || !json.success) throw new Error(json.error ?? `HTTP ${res.status}`);
+      setNotice(`${user.email}: ${what}`);
+      await fetchUsers();
+    } catch (err) {
+      setNotice(`Failed: ${err instanceof Error ? err.message : 'unknown error'}`);
+    } finally {
+      setBusyId(null);
+    }
   };
 
-  if (error) {
-    return (
-      <DashboardLayout
-        title="Users"
-        subtitle="Admin user management"
-        showBackButton
-        backUrl="/dashboard/admin"
-      >
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Icon icon="alertCircle" size="lg" className="text-danger" />
-          <p className="text-foreground-secondary">{error}</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
+  const admins = users.filter((u) => u.role === 'ADMIN').length;
 
   return (
     <DashboardLayout
       title="Users"
-      subtitle="Admin user management"
+      subtitle="Accounts, roles and tiers — promote or demote admins here"
       showBackButton
       backUrl="/dashboard/admin"
     >
       <div className="space-y-6">
-        {/* Search bar */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Input
-            placeholder="Search by name, email, or username..."
+            aria-label="Search users"
+            placeholder="Search by name, email, or username…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setPage(1);
+                setSearch(searchInput);
+              }
+            }}
+            className="w-80"
           />
-          <Button variant="secondary" onClick={handleSearch}>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setPage(1);
+              setSearch(searchInput);
+            }}
+          >
             <Icon icon="search" size="sm" />
           </Button>
+          <span className="ml-auto text-xs text-foreground-tertiary">
+            {admins} admin{admins === 1 ? '' : 's'} on this page · you are{' '}
+            {session?.user?.email ?? '…'}
+          </span>
         </div>
 
-        {/* Users table */}
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Spinner size="lg" />
-          </div>
-        ) : (
-          <div className="bg-surface border border-border rounded-xl overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border bg-surface-secondary">
-                  <th className="text-left px-4 py-3 text-foreground-secondary font-medium">
-                    User
-                  </th>
-                  <th className="text-left px-4 py-3 text-foreground-secondary font-medium">
-                    Role
-                  </th>
-                  <th className="text-left px-4 py-3 text-foreground-secondary font-medium">
-                    Tier
-                  </th>
-                  <th className="text-left px-4 py-3 text-foreground-secondary font-medium">
-                    Source
-                  </th>
-                  <th className="text-right px-4 py-3 text-foreground-secondary font-medium">
-                    Collections
-                  </th>
-                  <th className="text-right px-4 py-3 text-foreground-secondary font-medium">
-                    Agents
-                  </th>
-                  <th className="text-right px-4 py-3 text-foreground-secondary font-medium">
-                    Activities
-                  </th>
-                  <th className="text-left px-4 py-3 text-foreground-secondary font-medium">
-                    Joined
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b border-border last:border-0 hover:bg-surface-secondary/50"
-                  >
-                    <td className="px-4 py-3">
-                      <div>
-                        <div className="font-medium text-foreground">{user.name}</div>
-                        <div className="text-xs text-foreground-tertiary">{user.email}</div>
-                        {user.username && (
-                          <div className="text-xs text-foreground-tertiary">@{user.username}</div>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={user.role === 'ADMIN' ? 'default' : 'secondary'}>
-                        {user.role}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant="secondary">{user.tier}</Badge>
-                    </td>
-                    <td className="px-4 py-3 text-foreground-secondary text-xs">
-                      {user.signupSource || '-'}
-                    </td>
-                    <td className="text-right px-4 py-3 text-foreground-secondary">
-                      {user._count.collections}
-                    </td>
-                    <td className="text-right px-4 py-3 text-foreground-secondary">
-                      {user._count.agents}
-                    </td>
-                    <td className="text-right px-4 py-3 text-foreground-secondary">
-                      {user._count.activities}
-                    </td>
-                    <td className="px-4 py-3 text-foreground-secondary text-xs">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {notice && (
+          <div
+            className={`text-sm px-4 py-2 rounded-lg border ${notice.startsWith('Failed') ? 'border-error text-error bg-error/10' : 'border-success text-success bg-success/10'}`}
+          >
+            {notice}
           </div>
         )}
 
-        {/* Pagination */}
+        <PageState
+          loading={loading && users.length === 0}
+          error={error}
+          onRetry={() => void fetchUsers()}
+        >
+          <div className="bg-surface border border-border rounded-xl overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Tier</TableHead>
+                  <TableHead>Source</TableHead>
+                  <TableHead className="text-right">Collections</TableHead>
+                  <TableHead className="text-right">Agents</TableHead>
+                  <TableHead className="text-right">API keys</TableHead>
+                  <TableHead className="text-right">Joined</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => {
+                  const isSelf = user.id === session?.user?.id;
+                  return (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div className="font-medium text-foreground flex items-center gap-2">
+                          {user.name}
+                          {user.role === 'ADMIN' && <StatusBadge status="admin" />}
+                          {isSelf && (
+                            <span className="text-xs text-foreground-tertiary">(you)</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-foreground-tertiary">
+                          {user.email}
+                          {user.username && ` · @${user.username}`}
+                          {!user.emailVerified && ' · unverified'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          size="sm"
+                          aria-label={`Role for ${user.email}`}
+                          value={user.role}
+                          options={ROLE_OPTIONS}
+                          disabled={busyId === user.id || isSelf}
+                          onChange={(e) => void updateUser(user, { role: e.target.value })}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Select
+                          size="sm"
+                          aria-label={`Tier for ${user.email}`}
+                          value={user.tier}
+                          options={TIER_OPTIONS}
+                          disabled={busyId === user.id}
+                          onChange={(e) => void updateUser(user, { tier: e.target.value })}
+                        />
+                      </TableCell>
+                      <TableCell className="text-foreground-secondary text-xs">
+                        {user.signupSource || '—'}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {user._count.collections}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {user._count.agents}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {user._count.tpmjsApiKeys}
+                      </TableCell>
+                      <TableCell className="text-right text-foreground-tertiary">
+                        <TimeAgo iso={user.createdAt} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </PageState>
+
         <div className="flex items-center justify-between">
           <Button
             variant="secondary"

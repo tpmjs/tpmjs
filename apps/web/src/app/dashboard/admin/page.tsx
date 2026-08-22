@@ -1,45 +1,44 @@
 'use client';
 
-import { Badge } from '@tpmjs/ui/Badge/Badge';
 import { Icon } from '@tpmjs/ui/Icon/Icon';
-import { Spinner } from '@tpmjs/ui/Spinner/Spinner';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@tpmjs/ui/Table/Table';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import {
+  BarList,
+  formatMs,
+  formatNumber,
+  formatPercent,
+  HourlyChart,
+  Kpi,
+  PageState,
+  Panel,
+  RefreshBar,
+  StatusBadge,
+  TimeAgo,
+} from '~/components/admin/AdminUi';
+import { useAdminResource } from '~/components/admin/useAdminResource';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { AreaChart } from '~/components/stats/AreaChart';
+import type { AdminOverview, WindowStats } from '~/lib/admin/types';
 
 interface StatsSnapshot {
   date: string;
   totalTools: number;
-  totalPackages: number;
-  officialTools: number;
   executionsTotal: number;
-  executionsSuccessful: number;
   executionsFailed: number;
-  tokensTotal: number;
   dauCount: number;
   wauCount: number;
   mauCount: number;
   searchCount: number;
-  avgSearchLatencyMs: number | null;
-  topSearchQueries: Array<{ query: string; count: number }> | null;
-  mcpUniqueClients: number;
-  activeDevs7d: number;
-  totalCollections: number;
-  totalAgents: number;
-  totalSimulations: number;
   eventToolCalls: number;
-  eventAgentRuns: number;
-  importHealthy: number;
-  importBroken: number;
-  executionHealthy: number;
-  executionBroken: number;
-  errorCategories: Record<string, number> | null;
-  conversationStatuses: Record<string, number> | null;
-  avgContextMessages: number | null;
-  avgContextTokens: number | null;
-  avgAvailableTools: number | null;
-  totalConversationsDay: number;
+  mcpUniqueClients: number;
 }
 
 interface AdminStatsData {
@@ -49,312 +48,309 @@ interface AdminStatsData {
   totalSessions: number;
 }
 
-function StatCard({
-  label,
-  value,
-  icon,
-  trend,
-}: {
-  label: string;
-  value: string | number;
-  icon: string;
-  trend?: string;
-}) {
+const SECTIONS: Array<{ href: string; label: string; description: string }> = [
+  {
+    href: '/dashboard/admin/activity',
+    label: 'Live activity',
+    description: 'Everything as it happens',
+  },
+  {
+    href: '/dashboard/admin/executions',
+    label: 'Executions',
+    description: 'Tool calls, errors, latency',
+  },
+  {
+    href: '/dashboard/admin/api-usage',
+    label: 'API usage',
+    description: 'Keys, endpoints, rate limits',
+  },
+  {
+    href: '/dashboard/admin/health',
+    label: 'Health & jobs',
+    description: 'Registry health, crons, executor',
+  },
+  {
+    href: '/dashboard/admin/collections',
+    label: 'Collections',
+    description: 'All collections & MCP servers',
+  },
+  { href: '/dashboard/admin/agents', label: 'Agents', description: 'Agents & conversations' },
+  { href: '/dashboard/admin/search', label: 'Search', description: 'Queries, misses, latency' },
+  { href: '/dashboard/admin/users', label: 'Users', description: 'Roles, tiers, activity' },
+];
+
+function WindowRow({ label, stats, unit }: { label: string; stats: WindowStats[]; unit: string }) {
   return (
-    <div className="bg-surface border border-border rounded-xl p-5">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-foreground-tertiary text-sm">{label}</span>
-        <Icon icon={icon as 'home'} size="sm" className="text-foreground-tertiary" />
-      </div>
-      <div className="text-2xl font-bold text-foreground">{value}</div>
-      {trend && <div className="text-xs text-foreground-tertiary mt-1">{trend}</div>}
-    </div>
+    <TableRow>
+      <TableCell className="font-medium">{label}</TableCell>
+      {stats.map((w) => (
+        <TableCell key={w.window} className="text-right tabular-nums">
+          <div>{formatNumber(w.total)}</div>
+          <div className="text-xs text-foreground-tertiary">
+            {w.error ? (
+              <span className="text-error">{formatNumber(w.error)} err</span>
+            ) : (
+              'no errors'
+            )}
+            {w.p50Ms !== null && ` · p50 ${formatMs(w.p50Ms)}`}
+          </div>
+        </TableCell>
+      ))}
+      <TableCell className="text-right text-xs text-foreground-tertiary">{unit}</TableCell>
+    </TableRow>
   );
 }
 
 export default function AdminDashboardPage() {
-  const [data, setData] = useState<AdminStatsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch('/api/admin/stats')
-      .then((res) => {
-        if (res.status === 403) throw new Error('Access denied. Admin role required.');
-        if (!res.ok) throw new Error('Failed to load stats');
-        return res.json();
-      })
-      .then((json) => setData(json.data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <DashboardLayout title="Admin" subtitle="Platform overview">
-        <div className="flex items-center justify-center py-20">
-          <Spinner size="lg" />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  if (error) {
-    return (
-      <DashboardLayout title="Admin" subtitle="Platform overview">
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Icon icon="alertCircle" size="lg" className="text-danger" />
-          <p className="text-foreground-secondary">{error}</p>
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  const latest = data?.latest;
+  const live = useAdminResource<AdminOverview>('/api/admin/overview', { refreshMs: 30_000 });
+  const daily = useAdminResource<AdminStatsData>('/api/admin/stats');
+  const o = live.data;
 
   return (
-    <DashboardLayout title="Admin" subtitle="Platform overview">
-      <div className="space-y-8">
-        {/* Key Metrics */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Key Metrics</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard label="Total Users" value={data?.totalUsers ?? 0} icon="user" />
-            <StatCard label="DAU" value={latest?.dauCount ?? 0} icon="barChart" />
-            <StatCard label="WAU" value={latest?.wauCount ?? 0} icon="barChart" />
-            <StatCard label="MAU" value={latest?.mauCount ?? 0} icon="barChart" />
-          </div>
-        </section>
+    <DashboardLayout title="Admin" subtitle="Everything happening on TPMJS, live">
+      <RefreshBar updatedAt={live.updatedAt} refreshing={live.refreshing} onRefresh={live.refresh}>
+        <nav className="flex flex-wrap gap-2" aria-label="Admin sections">
+          {SECTIONS.map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              title={s.description}
+              className="text-xs px-2.5 py-1.5 rounded-md border border-border bg-surface hover:border-primary/60 hover:text-primary transition-colors"
+            >
+              {s.label}
+            </Link>
+          ))}
+        </nav>
+      </RefreshBar>
 
-        {/* Registry Stats */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Registry</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard label="Total Tools" value={latest?.totalTools ?? 0} icon="puzzle" />
-            <StatCard label="Total Packages" value={latest?.totalPackages ?? 0} icon="folder" />
-            <StatCard label="Collections" value={latest?.totalCollections ?? 0} icon="folder" />
-            <StatCard label="Agents" value={latest?.totalAgents ?? 0} icon="terminal" />
-          </div>
-        </section>
+      <PageState loading={live.loading} error={live.error} onRetry={live.refresh}>
+        {o && (
+          <div className="space-y-8">
+            <section className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
+              <Kpi
+                label="Tool calls · 24h"
+                value={formatNumber(o.executions[1]?.total)}
+                hint={`${formatNumber(o.executions[0]?.total)} in the last hour`}
+                icon="arrowRight"
+              />
+              <Kpi
+                label="Error rate · 24h"
+                value={formatPercent(o.executions[1]?.error ?? 0, o.executions[1]?.total ?? 0)}
+                hint={`${formatNumber(o.executions[1]?.error)} failed`}
+                tone={(o.executions[1]?.error ?? 0) > 0 ? 'warn' : 'good'}
+                icon="alertCircle"
+              />
+              <Kpi
+                label="p95 latency · 24h"
+                value={formatMs(o.executions[1]?.p95Ms)}
+                hint={`p50 ${formatMs(o.executions[1]?.p50Ms)}`}
+                icon="clock"
+              />
+              <Kpi
+                label="API requests · 24h"
+                value={formatNumber(o.apiUsage[1]?.total)}
+                hint={`${o.keys.used24h} of ${o.keys.active} active keys used`}
+                icon="key"
+              />
+              <Kpi
+                label="Executor"
+                value={o.executor.reachable ? 'up' : 'down'}
+                hint={
+                  o.executor.reachable
+                    ? `${o.executor.implementationVersion ?? '?'} · ${formatMs(o.executor.latencyMs)}`
+                    : (o.executor.error ?? 'unreachable')
+                }
+                tone={o.executor.reachable ? 'good' : 'bad'}
+                icon="terminal"
+              />
+              <Kpi
+                label="Registry health"
+                value={formatPercent(o.registry.toolsHealthy, o.registry.toolsActive)}
+                hint={`${o.registry.toolsBroken} broken · ${o.registry.toolsUnknown} unknown`}
+                tone={o.registry.toolsBroken > 0 ? 'warn' : 'good'}
+                icon="checkCircle"
+              />
+            </section>
 
-        {/* Execution & Search Stats */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Activity (Daily)</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard label="Tool Calls" value={latest?.eventToolCalls ?? 0} icon="play" />
-            <StatCard label="Agent Runs" value={latest?.eventAgentRuns ?? 0} icon="terminal" />
-            <StatCard
-              label="Searches"
-              value={latest?.searchCount ?? 0}
-              icon="search"
-              trend={latest?.avgSearchLatencyMs ? `Avg ${latest.avgSearchLatencyMs}ms` : undefined}
-            />
-            <StatCard label="MCP Clients (7d)" value={latest?.mcpUniqueClients ?? 0} icon="globe" />
-          </div>
-        </section>
+            <div className="grid gap-6 xl:grid-cols-3">
+              <Panel
+                title="Tool calls · last 24 hours"
+                description="Executions per hour; red = failures"
+                className="xl:col-span-2"
+              >
+                <HourlyChart
+                  points={o.hourly}
+                  labels={{ primary: 'calls', secondary: 'failures' }}
+                  secondaryColor="#ef4444"
+                />
+              </Panel>
+              <Panel title="Health checks · 24h" description="Outcomes across all checks">
+                <BarList items={o.healthChecks24h} linkFor={() => '/dashboard/admin/health'} />
+              </Panel>
+            </div>
 
-        {/* Health Status */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Health</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-              label="Import Healthy"
-              value={latest?.importHealthy ?? 0}
-              icon="checkCircle"
-            />
-            <StatCard label="Import Broken" value={latest?.importBroken ?? 0} icon="alertCircle" />
-            <StatCard
-              label="Exec Healthy"
-              value={latest?.executionHealthy ?? 0}
-              icon="checkCircle"
-            />
-            <StatCard label="Exec Broken" value={latest?.executionBroken ?? 0} icon="alertCircle" />
-          </div>
-        </section>
+            <Panel
+              title="Traffic windows"
+              description="Counts, failures and median latency by window"
+            >
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Stream</TableHead>
+                      <TableHead className="text-right">1h</TableHead>
+                      <TableHead className="text-right">24h</TableHead>
+                      <TableHead className="text-right">7d</TableHead>
+                      <TableHead className="text-right" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <WindowRow label="Tool executions" stats={o.executions} unit="executor" />
+                    <WindowRow label="Platform API (keys)" stats={o.apiUsage} unit="MCP / REST" />
+                  </TableBody>
+                </Table>
+              </div>
+            </Panel>
 
-        {/* ML Tracking Metrics */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">ML Tracking (Daily)</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <StatCard
-              label="Conversations"
-              value={latest?.totalConversationsDay ?? 0}
-              icon="message"
-            />
-            <StatCard
-              label="Avg Context Msgs"
-              value={latest?.avgContextMessages ?? '—'}
-              icon="terminal"
-            />
-            <StatCard
-              label="Avg Context Tokens"
-              value={latest?.avgContextTokens ?? '—'}
-              icon="barChart"
-            />
-            <StatCard
-              label="Avg Tools Available"
-              value={latest?.avgAvailableTools != null ? latest.avgAvailableTools.toFixed(1) : '—'}
-              icon="puzzle"
-            />
-          </div>
-        </section>
+            <section className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4">
+              <Kpi
+                label="Users"
+                value={formatNumber(o.users.total)}
+                hint={`${o.users.admins} admins · +${o.users.new7d} this week`}
+                icon="user"
+              />
+              <Kpi
+                label="Active sessions"
+                value={formatNumber(o.users.activeSessions)}
+                icon="globe"
+              />
+              <Kpi
+                label="API keys"
+                value={formatNumber(o.keys.active)}
+                hint={`${o.keys.total} total`}
+                icon="key"
+              />
+              <Kpi
+                label="Collections"
+                value={formatNumber(o.collections.total)}
+                hint={`${o.collections.public} public`}
+                icon="folder"
+              />
+              <Kpi
+                label="MCP servers"
+                value={formatNumber(o.collections.customServers)}
+                hint={`${o.collections.bridgesConnected} bridges live`}
+                icon="link"
+              />
+              <Kpi
+                label="Agents"
+                value={formatNumber(o.agents.total)}
+                hint={`${o.agents.conversations24h} convs · ${o.agents.messages24h} msgs / 24h`}
+                icon="terminal"
+              />
+              <Kpi
+                label="Tools"
+                value={formatNumber(o.registry.toolsActive)}
+                hint={`${o.registry.packages} packages · ${o.registry.officialPackages} official`}
+                icon="puzzle"
+              />
+              <Kpi label="Searches · 24h" value={formatNumber(o.searches24h)} icon="search" />
+            </section>
 
-        {/* Error Categories + Conversation Status */}
-        {(latest?.errorCategories || latest?.conversationStatuses) && (
-          <section>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {latest?.errorCategories && Object.keys(latest.errorCategories).length > 0 && (
-                <div className="bg-surface border border-border rounded-xl p-5">
-                  <h3 className="text-sm font-medium text-foreground mb-3">Error Categories</h3>
-                  <div className="space-y-2">
-                    {Object.entries(latest.errorCategories)
-                      .sort(([, a], [, b]) => b - a)
-                      .map(([category, count]) => (
-                        <div key={category} className="flex justify-between items-center">
-                          <span className="text-sm text-foreground-secondary">
-                            {category.replace(/_/g, ' ')}
-                          </span>
-                          <Badge variant="error" className="text-xs">
-                            {count}
-                          </Badge>
-                        </div>
-                      ))}
-                  </div>
+            <Panel
+              title="Background jobs"
+              description="Latest run per sync source (cron timers on the box)"
+              actions={
+                <Link
+                  href="/dashboard/admin/health"
+                  className="text-xs text-primary hover:underline"
+                >
+                  details →
+                </Link>
+              }
+            >
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Source</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Processed</TableHead>
+                      <TableHead className="text-right">Errors</TableHead>
+                      <TableHead>Message</TableHead>
+                      <TableHead className="text-right">When</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {o.syncRuns.map((r) => (
+                      <TableRow key={r.source}>
+                        <TableCell className="font-medium">{r.source}</TableCell>
+                        <TableCell>
+                          <StatusBadge status={r.status} />
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatNumber(r.processed)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {r.errors ? <span className="text-error">{r.errors}</span> : '0'}
+                        </TableCell>
+                        <TableCell
+                          className="max-w-md truncate text-foreground-secondary"
+                          title={r.message ?? ''}
+                        >
+                          {r.message ?? '—'}
+                        </TableCell>
+                        <TableCell className="text-right text-foreground-tertiary">
+                          <TimeAgo iso={r.createdAt} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </Panel>
+
+            <Panel
+              title="Daily snapshots"
+              description="Rolled up once a day by the tpmjs-cron timer"
+            >
+              {daily.error ? (
+                <p className="text-sm text-foreground-tertiary">{daily.error}</p>
+              ) : daily.data?.trend.length ? (
+                <div className="grid gap-6 lg:grid-cols-2">
+                  <AreaChart
+                    title="Tool calls per day"
+                    data={daily.data.trend.map((s) => ({
+                      date: s.date,
+                      value: s.eventToolCalls,
+                      secondaryValue: s.executionsFailed,
+                    }))}
+                    showSecondary
+                    labels={{ primary: 'tool calls', secondary: 'failed' }}
+                    secondaryColor="#ef4444"
+                    height={200}
+                  />
+                  <AreaChart
+                    title="Daily / weekly active users"
+                    data={daily.data.trend.map((s) => ({
+                      date: s.date,
+                      value: s.dauCount,
+                      secondaryValue: s.wauCount,
+                    }))}
+                    showSecondary
+                    labels={{ primary: 'DAU', secondary: 'WAU' }}
+                    height={200}
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 text-sm text-foreground-tertiary">
+                  <Icon icon="info" size="xs" /> No snapshots yet.
                 </div>
               )}
-              {latest?.conversationStatuses &&
-                Object.keys(latest.conversationStatuses).length > 0 && (
-                  <div className="bg-surface border border-border rounded-xl p-5">
-                    <h3 className="text-sm font-medium text-foreground mb-3">
-                      Conversation Outcomes
-                    </h3>
-                    <div className="space-y-2">
-                      {Object.entries(latest.conversationStatuses)
-                        .sort(([, a], [, b]) => b - a)
-                        .map(([status, count]) => (
-                          <div key={status} className="flex justify-between items-center">
-                            <span className="text-sm text-foreground-secondary">{status}</span>
-                            <Badge
-                              variant={
-                                status === 'completed'
-                                  ? 'success'
-                                  : status === 'error'
-                                    ? 'error'
-                                    : 'secondary'
-                              }
-                              className="text-xs"
-                            >
-                              {count}
-                            </Badge>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-            </div>
-          </section>
-        )}
-
-        {/* Trend Charts */}
-        {data?.trend && data.trend.length > 1 && (
-          <section>
-            <h2 className="text-lg font-semibold text-foreground mb-4">Trends (30 days)</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-surface border border-border rounded-xl p-4">
-                <AreaChart
-                  data={data.trend.map((s) => ({
-                    date: s.date,
-                    value: s.totalTools,
-                  }))}
-                  title="Total Tools"
-                  height={200}
-                />
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4">
-                <AreaChart
-                  data={data.trend.map((s) => ({
-                    date: s.date,
-                    value: s.dauCount,
-                    secondaryValue: s.wauCount,
-                  }))}
-                  title="Active Users"
-                  showSecondary
-                  labels={{ primary: 'DAU', secondary: 'WAU' }}
-                  height={200}
-                />
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4">
-                <AreaChart
-                  data={data.trend.map((s) => ({
-                    date: s.date,
-                    value: s.eventToolCalls,
-                    secondaryValue: s.eventAgentRuns,
-                  }))}
-                  title="Executions"
-                  showSecondary
-                  labels={{ primary: 'Tool Calls', secondary: 'Agent Runs' }}
-                  height={200}
-                />
-              </div>
-              <div className="bg-surface border border-border rounded-xl p-4">
-                <AreaChart
-                  data={data.trend.map((s) => ({
-                    date: s.date,
-                    value: s.searchCount,
-                  }))}
-                  title="Search Volume"
-                  height={200}
-                />
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Top Search Queries */}
-        {latest?.topSearchQueries && latest.topSearchQueries.length > 0 && (
-          <section>
-            <h2 className="text-lg font-semibold text-foreground mb-4">Top Searches (Today)</h2>
-            <div className="bg-surface border border-border rounded-xl overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border bg-surface-secondary">
-                    <th className="text-left px-4 py-3 text-foreground-secondary font-medium">
-                      Query
-                    </th>
-                    <th className="text-right px-4 py-3 text-foreground-secondary font-medium">
-                      Count
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {latest.topSearchQueries.map((q) => (
-                    <tr key={q.query} className="border-b border-border last:border-0">
-                      <td className="px-4 py-3 text-foreground font-mono text-xs">{q.query}</td>
-                      <td className="text-right px-4 py-3">
-                        <Badge variant="secondary">{q.count}</Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-        {/* Quick Links */}
-        <section>
-          <h2 className="text-lg font-semibold text-foreground mb-4">Manage</h2>
-          <div className="flex gap-4">
-            <Link
-              href="/dashboard/admin/users"
-              className="flex items-center gap-2 px-4 py-3 bg-surface border border-border rounded-xl hover:bg-surface-secondary transition-colors"
-            >
-              <Icon icon="user" size="sm" />
-              <span className="text-sm font-medium">Users</span>
-            </Link>
+            </Panel>
           </div>
-        </section>
-      </div>
+        )}
+      </PageState>
     </DashboardLayout>
   );
 }

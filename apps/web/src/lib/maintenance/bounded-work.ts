@@ -36,14 +36,40 @@ function stableJitter(key: string, windowMs: number): number {
  * every tool every day. Newly published and on-demand tools can be enqueued
  * immediately; the background lane revisits definitive results without waves.
  */
-export function nextHealthCheckAt(toolId: string, status: HealthStatus, now = new Date()): Date {
+export function nextHealthCheckAt(
+  toolId: string,
+  status: HealthStatus,
+  now = new Date(),
+  inconclusiveStreak = 0
+): Date {
+  // An UNKNOWN verdict is retried soon, but a tool that keeps coming back inconclusive
+  // (e.g. an unpublished package whose import can never resolve) backs off
+  // exponentially — 15m, 30m, 1h, 2h, 4h, 8h, then 12h — instead of burning an
+  // executor import every quarter hour forever.
+  const inconclusiveBase = Math.min(
+    15 * MINUTE_MS * 2 ** Math.min(inconclusiveStreak, 6),
+    12 * HOUR_MS
+  );
   const [base, jitterWindow] =
     status === 'HEALTHY'
       ? [7 * DAY_MS, 12 * HOUR_MS]
       : status === 'BROKEN'
         ? [DAY_MS, 6 * HOUR_MS]
-        : [15 * MINUTE_MS, 15 * MINUTE_MS];
+        : [inconclusiveBase, 15 * MINUTE_MS];
   return new Date(now.getTime() + base + stableJitter(toolId, jitterWindow));
+}
+
+/** Consecutive inconclusive (UNKNOWN) outcomes for a tool within the last two days. */
+export async function recentInconclusiveStreak(toolId: string): Promise<number> {
+  const rows = await prisma.$queryRaw<Array<{ streak: number }>>(Prisma.sql`
+    SELECT count(*)::int AS streak FROM (
+      SELECT overall_status FROM health_checks
+      WHERE tool_id = ${toolId} AND created_at > now() - interval '2 days'
+      ORDER BY created_at DESC LIMIT 64
+    ) recent
+    WHERE overall_status = 'UNKNOWN'
+  `);
+  return rows[0]?.streak ?? 0;
 }
 
 export function retryHealthCheckAt(toolId: string, now = new Date()): Date {

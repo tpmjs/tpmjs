@@ -21,7 +21,11 @@ import {
   renderHealthCheckParams,
   resolveCleanupParams,
 } from '~/lib/health-check/health-check-config';
-import { nextHealthCheckAt, releaseHealthLease } from '~/lib/maintenance/bounded-work';
+import {
+  nextHealthCheckAt,
+  recentInconclusiveStreak,
+  releaseHealthLease,
+} from '~/lib/maintenance/bounded-work';
 import { importFailureStreakUpdate } from '~/lib/tool-health-policy';
 
 const RAILWAY_EXECUTOR_URL = env.RAILWAY_EXECUTOR_URL;
@@ -358,7 +362,9 @@ export async function performHealthCheck(
   const nextExecution =
     executionResult.status === 'UNKNOWN' ? tool.executionHealth : executionResult.status;
   const checkedAt = new Date();
-  const nextAt = nextHealthCheckAt(tool.id, overallStatus, checkedAt);
+  const inconclusiveStreak =
+    overallStatus === 'UNKNOWN' ? await recentInconclusiveStreak(tool.id) : 0;
+  const nextAt = nextHealthCheckAt(tool.id, overallStatus, checkedAt, inconclusiveStreak);
 
   // The audit row, current status, schedule, and lease release are one commit.
   // A worker whose lease expired and was reassigned cannot publish a stale
