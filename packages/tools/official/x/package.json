@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-x",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Post to X (Twitter) as yourself: tweets with media, threads, replies, delete, read mentions and search \u2014 OAuth 1.0a user context",
   "type": "module",
   "keywords": [

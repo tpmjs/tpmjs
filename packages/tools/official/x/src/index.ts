@@ -148,12 +148,10 @@ interface UserData {
   name: string;
 }
 
-let me: UserData | null = null;
+// Not memoised at module scope: the executor shares one module instance across callers.
 async function whoami(): Promise<UserData> {
-  if (me) return me;
   const res = await xFetch<{ data: UserData }>('GET', `${V2}/users/me`);
-  me = res.data;
-  return me;
+  return res.data;
 }
 
 async function uploadMedia(url: string): Promise<string> {

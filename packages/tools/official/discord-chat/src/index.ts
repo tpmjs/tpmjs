@@ -95,10 +95,9 @@ async function listGuilds(): Promise<RawGuild[]> {
   return api<RawGuild[]>('GET', '/users/@me/guilds');
 }
 
-let channelCache: { at: number; channels: ChannelInfo[] } | null = null;
-
+// No module-level memoisation: the executor shares one module instance across callers,
+// so anything cached here would leak one caller's data to the next.
 async function allChannels(): Promise<ChannelInfo[]> {
-  if (channelCache && Date.now() - channelCache.at < 60_000) return channelCache.channels;
   const guilds = await listGuilds();
   const out: ChannelInfo[] = [];
   for (const guild of guilds) {
@@ -115,7 +114,6 @@ async function allChannels(): Promise<ChannelInfo[]> {
       });
     }
   }
-  channelCache = { at: Date.now(), channels: out };
   return out;
 }
 

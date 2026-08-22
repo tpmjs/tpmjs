@@ -1,6 +1,6 @@
 {
   "name": "@tpmjs/tools-discord-chat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Read and post in Discord the way a person does: channels by name, catch up on what happened since a time, post or reply, react \u2014 bot token or plain webhook",
   "type": "module",
   "keywords": [
