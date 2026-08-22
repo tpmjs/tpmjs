@@ -49,8 +49,8 @@ await remember.execute(
 );
 ```
 
-Every tool resolves to `{ tool, text, data? }` — HAM's textual reply plus the parsed JSON payload
-when HAM returned JSON. HAM-side errors (`isError`, scope denials, version conflicts) are thrown
+Every tool resolves to `{ tool, data }` when HAM replied with JSON, otherwise `{ tool, text }`
+(HAM's formatted text). HAM-side errors (`isError`, scope denials, version conflicts) are thrown
 so the agent sees them.
 
 ## Tools
