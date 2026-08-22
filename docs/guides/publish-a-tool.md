@@ -268,6 +268,15 @@ If your tool requires environment variables:
 ]
 ```
 
+## Health checks run your tool
+
+After every sync TPMJS imports each declared tool **and calls `execute()` once** with generated placeholder parameters (required params only: strings become `"test"`, enums use their first value, numbers `1`) and **no environment variables**. A typed error thrown by your tool counts as healthy (it proves the tool is callable); only load failures mark it broken.
+
+Consequences for authors:
+
+- Tools that need credentials should fail fast when the env var is missing (as the examples above do) — that is what keeps the health check side-effect free.
+- A tool that can perform a side effect **without** a credential will be executed for real. Declare a safe configuration per tool in `tpmjs.tools[].healthCheck`: `{ "skipExecution": true }` to import-only, or `{ "testParams": { ... }, "cleanup": [ ... ] }` for a known-safe call (string values may use `{{timestamp}}`).
+
 ## Quality Score
 
 Your tool's quality score is computed by `calculateQualityScore` in `apps/web/src/app/api/sync/metrics/route.ts`:
