@@ -1,0 +1,104 @@
+{
+  "name": "@tpmjs/tools-x",
+  "version": "0.1.0",
+  "description": "Post to X (Twitter) as yourself: tweets with media, threads, replies, delete, read mentions and search \u2014 OAuth 1.0a user context",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "communication",
+    "twitter",
+    "x",
+    "tweet",
+    "social"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --sourcemap --logLevel warn",
+    "dev": "tsdown --sourcemap --watch",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/x"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "communication",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "X_API_KEY",
+        "description": "X app API key (consumer key); TWITTER_API_KEY is accepted as an alias",
+        "required": true
+      },
+      {
+        "name": "X_API_SECRET",
+        "description": "X app API secret; TWITTER_API_SECRET alias",
+        "required": true
+      },
+      {
+        "name": "X_ACCESS_TOKEN",
+        "description": "User access token; TWITTER_ACCESS_TOKEN alias",
+        "required": true
+      },
+      {
+        "name": "X_ACCESS_SECRET",
+        "description": "User access token secret; TWITTER_ACCESS_SECRET alias",
+        "required": true
+      }
+    ],
+    "tools": [
+      {
+        "name": "tweet",
+        "description": "Post a tweet, optionally as a reply or quote, with up to 4 images attached from URLs."
+      },
+      {
+        "name": "tweetThread",
+        "description": "Post a thread: each text becomes a reply to the previous tweet."
+      },
+      {
+        "name": "deleteTweet",
+        "description": "Delete one of your tweets by id."
+      },
+      {
+        "name": "getTweet",
+        "description": "Fetch a tweet by id with author, metrics and referenced tweets."
+      },
+      {
+        "name": "myMentions",
+        "description": "Read recent tweets that mention the authenticated account."
+      },
+      {
+        "name": "searchTweets",
+        "description": "Search recent tweets (last 7 days) with the X search syntax."
+      },
+      {
+        "name": "xWhoAmI",
+        "description": "Show which X account the configured credentials belong to \u2014 use it to verify setup."
+      }
+    ]
+  }
+}

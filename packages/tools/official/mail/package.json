@@ -1,0 +1,97 @@
+{
+  "name": "@tpmjs/tools-mail",
+  "version": "0.1.0",
+  "description": "Send email through whichever provider you have a key for \u2014 Resend, Postmark, SendGrid or Mailgun \u2014 with one consistent sendEmail tool",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "communication",
+    "email",
+    "mail",
+    "resend",
+    "postmark",
+    "sendgrid",
+    "mailgun"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --sourcemap --logLevel warn",
+    "dev": "tsdown --sourcemap --watch",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/mail"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "communication",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "RESEND_API_KEY",
+        "description": "Resend API key (https://resend.com) \u2014 one of the provider keys is required",
+        "required": false
+      },
+      {
+        "name": "POSTMARK_SERVER_TOKEN",
+        "description": "Postmark server token (https://postmarkapp.com)",
+        "required": false
+      },
+      {
+        "name": "SENDGRID_API_KEY",
+        "description": "SendGrid API key",
+        "required": false
+      },
+      {
+        "name": "MAILGUN_API_KEY",
+        "description": "Mailgun API key (needs MAILGUN_DOMAIN)",
+        "required": false
+      },
+      {
+        "name": "MAILGUN_DOMAIN",
+        "description": "Mailgun sending domain",
+        "required": false
+      },
+      {
+        "name": "EMAIL_FROM",
+        "description": "Default sender, e.g. \"Ajax <ajax@example.com>\"",
+        "required": false
+      },
+      {
+        "name": "EMAIL_PROVIDER",
+        "description": "Force a provider: resend | postmark | sendgrid | mailgun (default: auto-detect from keys)",
+        "required": false
+      }
+    ],
+    "tools": [
+      {
+        "name": "sendEmail",
+        "description": "Send an email (text and/or HTML, cc/bcc/reply-to) through the first configured provider: Resend, Postmark, SendGrid or Mailgun."
+      }
+    ]
+  }
+}

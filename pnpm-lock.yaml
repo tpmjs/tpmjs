@@ -1417,6 +1417,19 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
+  packages/tools/official/discord-chat:
+    dependencies:
+      ai:
+        specifier: 6.0.49
+        version: 6.0.49(zod@4.4.3)
+    devDependencies:
+      '@tpmjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../../config/tsconfig
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
   packages/tools/official/dpia-outline:
     dependencies:
       ai:
@@ -1802,6 +1815,19 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
+  packages/tools/official/image-gen:
+    dependencies:
+      ai:
+        specifier: 6.0.49
+        version: 6.0.49(zod@4.4.3)
+    devDependencies:
+      '@tpmjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../../config/tsconfig
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
   packages/tools/official/interview-questions:
     dependencies:
       ai:
@@ -2003,6 +2029,19 @@ importers:
         version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/logistic-regression:
+    dependencies:
+      ai:
+        specifier: 6.0.49
+        version: 6.0.49(zod@4.4.3)
+    devDependencies:
+      '@tpmjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../../config/tsconfig
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
+  packages/tools/official/mail:
     dependencies:
       ai:
         specifier: 6.0.49
@@ -3486,6 +3525,19 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
+  packages/tools/official/web-research:
+    dependencies:
+      ai:
+        specifier: 6.0.49
+        version: 6.0.49(zod@4.4.3)
+    devDependencies:
+      '@tpmjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../../config/tsconfig
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
   packages/tools/official/workflow-auto-repair:
     dependencies:
       ai:
@@ -3539,6 +3591,19 @@ importers:
         version: '@typescript/typescript6@6.0.2'
 
   packages/tools/official/workflow-variant-generate:
+    dependencies:
+      ai:
+        specifier: 6.0.49
+        version: 6.0.49(zod@4.4.3)
+    devDependencies:
+      '@tpmjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../../config/tsconfig
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
+  packages/tools/official/x:
     dependencies:
       ai:
         specifier: 6.0.49
