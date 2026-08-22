@@ -1,0 +1,97 @@
+{
+  "name": "@tpmjs/tools-image-gen",
+  "version": "0.1.0",
+  "description": "Generate and describe images with whichever AI provider you have a key for \u2014 OpenAI, Gemini/Imagen, fal.ai or Replicate \u2014 and deliver results as URLs (Discord) instead of megabytes of base64",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "ai-ml",
+    "image",
+    "generation",
+    "ai",
+    "openai",
+    "imagen",
+    "flux",
+    "vision"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --sourcemap --logLevel warn",
+    "dev": "tsdown --sourcemap --watch",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/image-gen"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "ai-ml",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "OPENAI_API_KEY",
+        "description": "OpenAI key (gpt-image-1 / dall-e-3 and vision)",
+        "required": false
+      },
+      {
+        "name": "GEMINI_API_KEY",
+        "description": "Google AI Studio key (Imagen 3 and Gemini vision)",
+        "required": false
+      },
+      {
+        "name": "FAL_KEY",
+        "description": "fal.ai key (FLUX models; returns hosted URLs)",
+        "required": false
+      },
+      {
+        "name": "REPLICATE_API_TOKEN",
+        "description": "Replicate token (FLUX models; returns hosted URLs)",
+        "required": false
+      },
+      {
+        "name": "DISCORD_WEBHOOK_URL",
+        "description": "If set, generated images are posted there and returned as durable Discord CDN URLs",
+        "required": false
+      },
+      {
+        "name": "IMAGE_PROVIDER",
+        "description": "Force a provider: openai | gemini | fal | replicate (default: first configured, preferring URL-returning providers)",
+        "required": false
+      }
+    ],
+    "tools": [
+      {
+        "name": "generateImage",
+        "description": "Generate one or more images from a prompt using the first configured provider, returning URLs (via Discord delivery or the provider) or inline data."
+      },
+      {
+        "name": "describeImage",
+        "description": "Describe an image or answer a question about it using a vision model (OpenAI or Gemini)."
+      }
+    ]
+  }
+}

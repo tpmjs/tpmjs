@@ -1,0 +1,91 @@
+{
+  "name": "@tpmjs/tools-discord-chat",
+  "version": "0.1.0",
+  "description": "Read and post in Discord the way a person does: channels by name, catch up on what happened since a time, post or reply, react \u2014 bot token or plain webhook",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "communication",
+    "discord",
+    "chat",
+    "messages",
+    "webhook"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --sourcemap --logLevel warn",
+    "dev": "tsdown --sourcemap --watch",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/discord-chat"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "communication",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "DISCORD_BOT_TOKEN",
+        "description": "Discord bot token (required for reading; posting can fall back to DISCORD_WEBHOOK_URL)",
+        "required": false
+      },
+      {
+        "name": "DISCORD_GUILD_ID",
+        "description": "Default server (guild) id used to resolve channel names",
+        "required": false
+      },
+      {
+        "name": "DISCORD_WEBHOOK_URL",
+        "description": "Webhook URL used by discordPost when no bot token / channel is given",
+        "required": false
+      }
+    ],
+    "tools": [
+      {
+        "name": "discordChannels",
+        "description": "List the text channels the bot can see (id, name, topic, server), optionally filtered by name."
+      },
+      {
+        "name": "discordRead",
+        "description": "Read recent messages from a channel by name or id, newest last, with authors, attachments and reply links."
+      },
+      {
+        "name": "discordCatchUp",
+        "description": "Catch up on everything posted since a point in time (e.g. \"24h\") across one, several or all text channels."
+      },
+      {
+        "name": "discordPost",
+        "description": "Post a message to a channel by name or id (optionally as a reply), or to DISCORD_WEBHOOK_URL when no channel is given."
+      },
+      {
+        "name": "discordReact",
+        "description": "Add an emoji reaction to a message in a channel."
+      }
+    ]
+  }
+}

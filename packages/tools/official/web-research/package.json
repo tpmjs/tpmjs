@@ -1,0 +1,109 @@
+{
+  "name": "@tpmjs/tools-web-research",
+  "version": "0.1.0",
+  "description": "The everyday research kit: read any page as markdown, search the web through your preferred provider, ask Perplexity with citations, find Wayback snapshots and search archive.org",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "research",
+    "research",
+    "web",
+    "search",
+    "wayback",
+    "archive",
+    "perplexity",
+    "reader"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --sourcemap --logLevel warn",
+    "dev": "tsdown --sourcemap --watch",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/web-research"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "research",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "FIRECRAWL_API_KEY",
+        "description": "Firecrawl key for webSearch (one of the search keys is required for webSearch)",
+        "required": false
+      },
+      {
+        "name": "BRAVE_SEARCH_API_KEY",
+        "description": "Brave Search API key for webSearch",
+        "required": false
+      },
+      {
+        "name": "SERPER_API_KEY",
+        "description": "Serper (Google) key for webSearch",
+        "required": false
+      },
+      {
+        "name": "TAVILY_API_KEY",
+        "description": "Tavily key for webSearch",
+        "required": false
+      },
+      {
+        "name": "PERPLEXITY_API_KEY",
+        "description": "Perplexity key for askPerplexity",
+        "required": false
+      },
+      {
+        "name": "JINA_API_KEY",
+        "description": "Optional Jina key for higher readPage rate limits",
+        "required": false
+      }
+    ],
+    "tools": [
+      {
+        "name": "readPage",
+        "description": "Fetch a web page and return its readable content as markdown (title, text, links), with length control."
+      },
+      {
+        "name": "webSearch",
+        "description": "Search the web through the first configured provider (Firecrawl, Brave, Serper or Tavily) and return normalised results."
+      },
+      {
+        "name": "askPerplexity",
+        "description": "Ask Perplexity (sonar) a research question and get a sourced answer with citations."
+      },
+      {
+        "name": "waybackSnapshot",
+        "description": "Find the closest Wayback Machine snapshot of a URL, optionally near a date."
+      },
+      {
+        "name": "archiveSearch",
+        "description": "Search the Internet Archive catalog (books, texts, audio, video) and return items with identifiers and links."
+      }
+    ]
+  }
+}
