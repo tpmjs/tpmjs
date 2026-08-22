@@ -302,3 +302,7 @@ pnpm changeset:version      # Version packages
 pnpm changeset:publish      # Publish to npm
 git push --follow-tags       # Push with tags
 ```
+
+## Admin monitoring (2026-08-22)
+
+`/dashboard/admin/*` (ADMIN role; `users.role`) is the operator console: Overview (live 1h/24h/7d windows, executor health, job runs), Live activity (unified feed), Executions, API usage (per-key rolling-hour rate-limit consumption), Health & jobs (tool health, broken tools, sync/cron runs, endpoint reports), Collections (+ custom MCP servers; env var *names* only), Agents, Search, Users (promote/demote ADMIN, change tier). Backed by `apps/web/src/lib/admin/{types,metrics}.ts` (bounded raw SQL, `::int`/`::float8` casts — Prisma binds numbers as `bigint`, so interval/limit params need explicit casts) and `app/api/admin/*` (all `requireAdmin()`). Pages share `components/admin/{AdminUi,useAdminResource}`. Smoke-test the queries against the real DB before shipping SQL changes (`scripts`-free one-liner: `npx tsx --tsconfig apps/web/tsconfig.json` importing `lib/admin/metrics`).

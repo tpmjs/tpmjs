@@ -90,7 +90,7 @@ async function executionWindow(hours: number, label: string): Promise<WindowStat
            percentile_cont(0.5) WITHIN GROUP (ORDER BY duration_ms)::float8 AS p50,
            percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms)::float8 AS p95
     FROM execution_events
-    WHERE created_at > now() - make_interval(hours => ${hours})
+    WHERE created_at > now() - make_interval(hours => ${hours}::int)
   `);
   return {
     window: label,
@@ -113,7 +113,7 @@ async function apiUsageWindow(hours: number, label: string): Promise<WindowStats
            percentile_cont(0.5) WITHIN GROUP (ORDER BY latency_ms)::float8 AS p50,
            percentile_cont(0.95) WITHIN GROUP (ORDER BY latency_ms)::float8 AS p95
     FROM api_usage_records
-    WHERE created_at > now() - make_interval(hours => ${hours})
+    WHERE created_at > now() - make_interval(hours => ${hours}::int)
   `);
   return {
     window: label,
@@ -134,7 +134,7 @@ async function executionHourly(hours: number): Promise<SeriesPoint[]> {
            count(*)::int AS value,
            count(*) FILTER (WHERE status <> 'success')::int AS secondary
     FROM execution_events
-    WHERE created_at > now() - make_interval(hours => ${hours})
+    WHERE created_at > now() - make_interval(hours => ${hours}::int)
     GROUP BY 1 ORDER BY 1
   `);
   return fillHourly(rows, hours);
@@ -478,7 +478,7 @@ export async function getExecutionStats(options: {
 }): Promise<ExecutionStats> {
   const { hours, status, packageName, source, tool, limit, offset } = options;
   const where = Prisma.sql`
-    e.created_at > now() - make_interval(hours => ${hours})
+    e.created_at > now() - make_interval(hours => ${hours}::int)
     AND (${status}::text IS NULL OR e.status = ${status}::text)
     AND (${packageName}::text IS NULL OR e.package_name = ${packageName}::text)
     AND (${source}::text IS NULL OR e.source = ${source}::text)
@@ -577,13 +577,13 @@ export async function getExecutionStats(options: {
       Prisma.sql`SELECT count(*)::int AS c FROM execution_events e WHERE ${where}`
     ),
     prisma.$queryRaw<Array<{ key: string }>>(Prisma.sql`
-        SELECT DISTINCT package_name AS key FROM execution_events WHERE package_name IS NOT NULL AND created_at > now() - make_interval(hours => ${hours}) ORDER BY 1
+        SELECT DISTINCT package_name AS key FROM execution_events WHERE package_name IS NOT NULL AND created_at > now() - make_interval(hours => ${hours}::int) ORDER BY 1
       `),
     prisma.$queryRaw<Array<{ key: string }>>(Prisma.sql`
-        SELECT DISTINCT source AS key FROM execution_events WHERE created_at > now() - make_interval(hours => ${hours}) ORDER BY 1
+        SELECT DISTINCT source AS key FROM execution_events WHERE created_at > now() - make_interval(hours => ${hours}::int) ORDER BY 1
       `),
     prisma.$queryRaw<Array<{ key: string }>>(Prisma.sql`
-        SELECT DISTINCT status AS key FROM execution_events WHERE created_at > now() - make_interval(hours => ${hours}) ORDER BY 1
+        SELECT DISTINCT status AS key FROM execution_events WHERE created_at > now() - make_interval(hours => ${hours}::int) ORDER BY 1
       `),
   ]);
 
@@ -650,12 +650,12 @@ export async function getApiUsageStats(hours: number): Promise<ApiUsageStats> {
              count(*) FILTER (WHERE status_code >= 400)::int AS errors,
              percentile_cont(0.5) WITHIN GROUP (ORDER BY latency_ms)::float8 AS "p50Ms",
              percentile_cont(0.95) WITHIN GROUP (ORDER BY latency_ms)::float8 AS "p95Ms"
-      FROM api_usage_records WHERE created_at > now() - make_interval(hours => ${hours})
+      FROM api_usage_records WHERE created_at > now() - make_interval(hours => ${hours}::int)
       GROUP BY 1 ORDER BY 2 DESC LIMIT 40
     `),
     prisma.$queryRaw<NamedCount[]>(Prisma.sql`
       SELECT status_code::text AS key, count(*)::int AS count
-      FROM api_usage_records WHERE created_at > now() - make_interval(hours => ${hours})
+      FROM api_usage_records WHERE created_at > now() - make_interval(hours => ${hours}::int)
       GROUP BY 1 ORDER BY 2 DESC
     `),
     prisma.$queryRaw<
@@ -676,9 +676,9 @@ export async function getApiUsageStats(hours: number): Promise<ApiUsageStats> {
       }>
     >(Prisma.sql`
       SELECT k.id, k.name, k.key_prefix, k.is_active, k.rate_limit, k.last_used_at, u.username, u.email, u.tier::text AS tier,
-             (SELECT count(*) FROM api_usage_records r WHERE r.api_key_id = k.id AND r.created_at > now() - make_interval(hours => ${hours}))::int AS total,
-             (SELECT count(*) FROM api_usage_records r WHERE r.api_key_id = k.id AND r.created_at > now() - make_interval(hours => ${hours}) AND r.status_code >= 400)::int AS errors,
-             (SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY r.latency_ms) FROM api_usage_records r WHERE r.api_key_id = k.id AND r.created_at > now() - make_interval(hours => ${hours}))::float8 AS p50,
+             (SELECT count(*) FROM api_usage_records r WHERE r.api_key_id = k.id AND r.created_at > now() - make_interval(hours => ${hours}::int))::int AS total,
+             (SELECT count(*) FROM api_usage_records r WHERE r.api_key_id = k.id AND r.created_at > now() - make_interval(hours => ${hours}::int) AND r.status_code >= 400)::int AS errors,
+             (SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY r.latency_ms) FROM api_usage_records r WHERE r.api_key_id = k.id AND r.created_at > now() - make_interval(hours => ${hours}::int))::float8 AS p50,
              (SELECT count(*) FROM api_usage_records r WHERE r.api_key_id = k.id AND r.created_at > now() - interval '1 hour')::int AS used_hour
       FROM tpmjs_api_keys k JOIN users u ON u.id = k.user_id
       ORDER BY total DESC, k.last_used_at DESC NULLS LAST
@@ -686,7 +686,7 @@ export async function getApiUsageStats(hours: number): Promise<ApiUsageStats> {
     prisma.$queryRaw<Array<{ at: Date; value: number; secondary: number }>>(Prisma.sql`
       SELECT date_trunc('hour', created_at) AS at, count(*)::int AS value,
              count(*) FILTER (WHERE status_code >= 400)::int AS secondary
-      FROM api_usage_records WHERE created_at > now() - make_interval(hours => ${hours})
+      FROM api_usage_records WHERE created_at > now() - make_interval(hours => ${hours}::int)
       GROUP BY 1 ORDER BY 1
     `),
     prisma.$queryRaw<
@@ -702,7 +702,7 @@ export async function getApiUsageStats(hours: number): Promise<ApiUsageStats> {
     >(Prisma.sql`
       SELECT r.created_at, r.endpoint, r.method, r.status_code, k.name AS key_name, r.error_code, left(r.error_message, 200) AS error_message
       FROM api_usage_records r LEFT JOIN tpmjs_api_keys k ON k.id = r.api_key_id
-      WHERE r.status_code >= 400 AND r.created_at > now() - make_interval(hours => ${hours})
+      WHERE r.status_code >= 400 AND r.created_at > now() - make_interval(hours => ${hours}::int)
       ORDER BY r.created_at DESC LIMIT 40
     `),
   ]);
@@ -1091,19 +1091,19 @@ export async function getSearchAdmin(hours: number): Promise<SearchAdmin> {
     prisma.$queryRaw<Array<{ total: number; zero: number; p50: number | null }>>(Prisma.sql`
       SELECT count(*)::int AS total, count(*) FILTER (WHERE result_count = 0)::int AS zero,
              percentile_cont(0.5) WITHIN GROUP (ORDER BY latency_ms)::float8 AS p50
-      FROM search_logs WHERE created_at > now() - make_interval(hours => ${hours})
+      FROM search_logs WHERE created_at > now() - make_interval(hours => ${hours}::int)
     `),
     prisma.$queryRaw<NamedCount[]>(Prisma.sql`
       SELECT lower(query) AS key, count(*)::int AS count FROM search_logs
-      WHERE created_at > now() - make_interval(hours => ${hours}) GROUP BY 1 ORDER BY 2 DESC LIMIT 25
+      WHERE created_at > now() - make_interval(hours => ${hours}::int) GROUP BY 1 ORDER BY 2 DESC LIMIT 25
     `),
     prisma.$queryRaw<NamedCount[]>(Prisma.sql`
       SELECT lower(query) AS key, count(*)::int AS count FROM search_logs
-      WHERE created_at > now() - make_interval(hours => ${hours}) AND result_count = 0 GROUP BY 1 ORDER BY 2 DESC LIMIT 25
+      WHERE created_at > now() - make_interval(hours => ${hours}::int) AND result_count = 0 GROUP BY 1 ORDER BY 2 DESC LIMIT 25
     `),
     prisma.$queryRaw<Array<{ at: Date; value: number; secondary: number }>>(Prisma.sql`
       SELECT date_trunc('hour', created_at) AS at, count(*)::int AS value, count(*) FILTER (WHERE result_count = 0)::int AS secondary
-      FROM search_logs WHERE created_at > now() - make_interval(hours => ${hours}) GROUP BY 1 ORDER BY 1
+      FROM search_logs WHERE created_at > now() - make_interval(hours => ${hours}::int) GROUP BY 1 ORDER BY 1
     `),
     prisma.$queryRaw<
       Array<{
