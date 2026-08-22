@@ -684,12 +684,12 @@ async function executeTool(req: Request): Promise<Response> {
     packageName = typeof pkg === 'string' ? pkg : 'unknown';
     toolName = typeof name === 'string' ? name : 'unknown';
 
+    // Never log env VALUES: they are caller credentials (collection env vars / API keys).
     console.log('📥 Execute request:', {
       packageName,
       name: toolName,
       version,
-      envKeys: env ? Object.keys(env) : [],
-      envValues: env || {},
+      envKeys: env && typeof env === 'object' ? Object.keys(env) : [],
     });
 
     if (typeof pkg !== 'string' || typeof name !== 'string' || typeof version !== 'string') {
@@ -735,7 +735,7 @@ async function executeTool(req: Request): Promise<Response> {
             globalThis.process.env[key] = stringValue;
           }
 
-          console.log(`  ✅ Set ${key} = ${stringValue.substring(0, 10)}...`);
+          console.log(`  ✅ Set ${key} (${stringValue.length} chars)`);
         }
       } else {
         console.log('⚠️  No env vars provided in request');

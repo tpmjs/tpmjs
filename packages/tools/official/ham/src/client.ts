@@ -15,10 +15,10 @@ const REQUEST_TIMEOUT_MS = 30_000;
 export interface HamCallResult {
   /** The HAM tool that was called */
   tool: string;
-  /** Parsed JSON payload when HAM returned JSON text, otherwise undefined */
+  /** Parsed JSON payload when HAM returned JSON (then `text` is omitted to avoid a duplicate copy) */
   data?: unknown;
-  /** HAM's textual response (always present) */
-  text: string;
+  /** HAM's textual response when it was not JSON */
+  text?: string;
 }
 
 interface JsonRpcResponse {
@@ -119,16 +119,16 @@ export async function callHam(
     throw new Error(`HAM ${toolName} failed: ${text || 'unknown error'}`);
   }
 
-  let data: unknown;
   const probe = text.trim();
   if (probe.startsWith('{') || probe.startsWith('[')) {
     try {
-      data = JSON.parse(probe);
+      // Structured reply: return the parsed payload once, not the JSON text as well.
+      return { tool: toolName, data: JSON.parse(probe) };
     } catch {
-      data = undefined;
+      // fall through: not valid JSON after all
     }
   }
-  return { tool: toolName, data, text };
+  return { tool: toolName, text };
 }
 
 function specFor(name: string): HamToolSpec {

@@ -1,7 +1,7 @@
 {
   "name": "@tpmjs/tools-ham",
-  "version": "0.1.0",
-  "description": "HAM shared agent memory tools for AI agents — remember/recall/context, directed messages, handoffs, task board, typed links, supersede/retract, projects and repository mirroring",
+  "version": "0.1.1",
+  "description": "HAM shared agent memory tools for AI agents \u2014 remember/recall/context, directed messages, handoffs, task board, typed links, supersede/retract, projects and repository mirroring",
   "type": "module",
   "keywords": [
     "tpmjs",
