@@ -51,6 +51,12 @@ export const PUBLISH_EXCLUSIONS: readonly PublishExclusion[] = [
       'npm trusted publisher (OIDC) not yet registered; registering it is a user-gated maintainer action.',
     issue: 'https://github.com/tpmjs/tpmjs/issues/115',
   },
+  {
+    name: '@tpmjs/tools-ham',
+    reason:
+      'npm trusted publisher (OIDC) not yet registered; registering it is a user-gated maintainer action.',
+    issue: 'https://github.com/tpmjs/tpmjs/issues/192',
+  },
 ];
 
 const EXCLUDED_NAMES = new Set(PUBLISH_EXCLUSIONS.map((entry) => entry.name));
