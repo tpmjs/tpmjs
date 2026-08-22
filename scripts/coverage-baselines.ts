@@ -55,6 +55,10 @@ export const coverageBaselines: Record<string, CoverageBaseline> = {
     directory: 'packages/tools/official/redis',
     thresholds: { branches: 100, functions: 100, lines: 100, statements: 100 },
   },
+  '@tpmjs/tools-youtube': {
+    directory: 'packages/tools/official/youtube',
+    thresholds: { branches: 45, functions: 58, lines: 60, statements: 58 },
+  },
   '@tpmjs/ui': {
     directory: 'packages/ui',
     thresholds: { branches: 25.1, functions: 15, lines: 16.5, statements: 16 },

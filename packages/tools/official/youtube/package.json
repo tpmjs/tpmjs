@@ -1,0 +1,126 @@
+{
+  "name": "@tpmjs/tools-youtube",
+  "version": "0.1.0",
+  "description": "Upload and manage videos on your own YouTube channel: resumable uploads from a URL (continued across calls), status, updates, thumbnails, playlists — headless OAuth with a refresh token",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "communication",
+    "youtube",
+    "video",
+    "upload",
+    "publishing"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --sourcemap --logLevel warn",
+    "dev": "tsdown --sourcemap --watch",
+    "test": "vitest run",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "catalog:",
+    "vitest": "^4.0.16"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/youtube"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "communication",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "YOUTUBE_CLIENT_ID",
+        "description": "Google OAuth client id (a \"Desktop app\" client with the YouTube Data API v3 enabled)",
+        "required": true
+      },
+      {
+        "name": "YOUTUBE_CLIENT_SECRET",
+        "description": "Google OAuth client secret",
+        "required": true
+      },
+      {
+        "name": "YOUTUBE_REFRESH_TOKEN",
+        "description": "Refresh token for the channel owner, minted once with youtubeAuthUrl → youtubeExchangeCode",
+        "required": true
+      },
+      {
+        "name": "YOUTUBE_ACCESS_TOKEN",
+        "description": "Optional short-lived access token used instead of the refresh-token flow",
+        "required": false
+      }
+    ],
+    "tools": [
+      {
+        "name": "youtubeAuthUrl",
+        "description": "One-time setup step 1: build the Google consent URL that authorises this OAuth client to manage your channel."
+      },
+      {
+        "name": "youtubeExchangeCode",
+        "description": "One-time setup step 2: exchange the consent code for the long-lived refresh token to store as YOUTUBE_REFRESH_TOKEN."
+      },
+      {
+        "name": "myChannel",
+        "description": "Show the channel these credentials control: id, title, handle, subscriber/video/view counts, uploads playlist."
+      },
+      {
+        "name": "uploadVideo",
+        "description": "Upload a video from a URL in resumable chunks; long files continue across calls via the returned sessionUri. Optional playlist and thumbnail."
+      },
+      {
+        "name": "videoStatus",
+        "description": "Upload/processing status, privacy, schedule, failure reasons and stats for one of your videos."
+      },
+      {
+        "name": "myVideos",
+        "description": "List your most recent uploads with privacy, processing state and view/like/comment counts."
+      },
+      {
+        "name": "updateVideo",
+        "description": "Change title, description, tags, category, privacy, schedule or made-for-kids on a video; untouched fields are preserved."
+      },
+      {
+        "name": "setThumbnail",
+        "description": "Set a custom thumbnail on a video from an image URL (≤ 2 MB)."
+      },
+      {
+        "name": "myPlaylists",
+        "description": "List your playlists with ids, privacy and item counts."
+      },
+      {
+        "name": "addToPlaylist",
+        "description": "Add a video to one of your playlists."
+      },
+      {
+        "name": "deleteVideo",
+        "description": "Permanently delete one of your videos (irreversible)."
+      },
+      {
+        "name": "videoCategories",
+        "description": "List the assignable YouTube category ids for a region."
+      }
+    ]
+  }
+}
