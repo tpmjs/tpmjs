@@ -1,0 +1,222 @@
+{
+  "name": "@tpmjs/tools-ham",
+  "version": "0.1.0",
+  "description": "HAM shared agent memory tools for AI agents — remember/recall/context, directed messages, handoffs, task board, typed links, supersede/retract, projects and repository mirroring",
+  "type": "module",
+  "keywords": [
+    "tpmjs",
+    "agent",
+    "memory",
+    "ai",
+    "agents",
+    "ham",
+    "mcp",
+    "pgvector"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown --sourcemap --logLevel warn",
+    "dev": "tsdown --sourcemap --watch",
+    "generate": "node scripts/generate.mjs",
+    "type-check": "tsc --checkers 1 --noEmit --incremental --tsBuildInfoFile tsconfig.tsbuildinfo",
+    "clean": "rm -rf dist .turbo"
+  },
+  "devDependencies": {
+    "@tpmjs/tsconfig": "workspace:*",
+    "typescript": "catalog:"
+  },
+  "dependencies": {
+    "ai": "6.0.49"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tpmjs/tpmjs.git",
+    "directory": "packages/tools/official/ham"
+  },
+  "homepage": "https://tpmjs.com",
+  "license": "MIT",
+  "tpmjs": {
+    "category": "agent",
+    "frameworks": [
+      "vercel-ai"
+    ],
+    "env": [
+      {
+        "name": "HAM_API_KEY",
+        "description": "HAM per-agent credential (bearer) for the HAM instance at HAM_API_URL",
+        "required": true
+      },
+      {
+        "name": "HAM_API_URL",
+        "description": "Base URL of the HAM instance",
+        "required": false,
+        "default": "https://ham.donto.org"
+      }
+    ],
+    "tools": [
+      {
+        "name": "ask",
+        "description": "Send a directed asynchronous question to another agent without adding it to recall memory."
+      },
+      {
+        "name": "changes",
+        "description": "Catch up on memories created, superseded, retracted, or resolved since a cursor."
+      },
+      {
+        "name": "claimHandoff",
+        "description": "Record that this agent picked up an active handoff without adding a recall memory."
+      },
+      {
+        "name": "completeHandoff",
+        "description": "Mark a claimed handoff complete using its current receipt version."
+      },
+      {
+        "name": "context",
+        "description": "Load relevant background context for a topic. Use at the start of a session to recall prior discussions."
+      },
+      {
+        "name": "get",
+        "description": "Fetch a complete memory by ID, including provenance, state, and version."
+      },
+      {
+        "name": "handoff",
+        "description": "Publish a structured handoff so another agent can continue the task with completed work, next steps, blockers, and files."
+      },
+      {
+        "name": "inbox",
+        "description": "Check directed agent messages. Call at session start; open inbox items are returned by default."
+      },
+      {
+        "name": "issue",
+        "description": "Create one explicit HAM-controlled commitment and its durable GitHub mirror operation."
+      },
+      {
+        "name": "issueResolveConflict",
+        "description": "Explicitly keep HAM's canonical issue state after reviewing a GitHub-side conflict."
+      },
+      {
+        "name": "issueTransition",
+        "description": "Resolve or reopen a tracked commitment with optimistic concurrency; the mirror converges durably."
+      },
+      {
+        "name": "link",
+        "description": "Create an explicit typed relation from one memory to another."
+      },
+      {
+        "name": "links",
+        "description": "List active typed relations connected to a memory."
+      },
+      {
+        "name": "message",
+        "description": "Fetch one directed message by its deterministic ID, including reply and provenance."
+      },
+      {
+        "name": "projects",
+        "description": "List projects visible to the current credential, including canonical scope and repository."
+      },
+      {
+        "name": "recall",
+        "description": "Search shared memory with local learned semantics, harmonic resonance, and lexical matching."
+      },
+      {
+        "name": "recallDeep",
+        "description": "Scoped semantic search followed by bounded cue, reference, and typed-link traversal with visible hop provenance."
+      },
+      {
+        "name": "recallSequence",
+        "description": "Retrieve a deterministic chronological window around one scoped memory anchor."
+      },
+      {
+        "name": "recent",
+        "description": "See recent shared work, decisions, blockers, and handoffs in the active project/repo/task context."
+      },
+      {
+        "name": "reflect",
+        "description": "End-of-session reflection. Stores observations and runs durability-aware tier consolidation."
+      },
+      {
+        "name": "remember",
+        "description": "Store a memory in the Galaxy Brain knowledge base. Use this to save findings, decisions, observations, or any information worth remembering across sessions."
+      },
+      {
+        "name": "reply",
+        "description": "Answer an open directed message using optimistic concurrency."
+      },
+      {
+        "name": "repositories",
+        "description": "List enrolled repositories visible to the current credential and their mirror state."
+      },
+      {
+        "name": "repositorySync",
+        "description": "Run one bounded repository poll and durable reconciliation pass; read-only agents process only remote polling."
+      },
+      {
+        "name": "retract",
+        "description": "Retract an incorrect memory without deleting its audit history."
+      },
+      {
+        "name": "review",
+        "description": "Read the latest concise exception review for one enrolled repository; reviews stay outside recall."
+      },
+      {
+        "name": "reviewCurrent",
+        "description": "List current unresolved repository exceptions, including items omitted from unchanged reports."
+      },
+      {
+        "name": "reviewRun",
+        "description": "Build a deterministic exception review for one enrolled repository; returns nothing noisy on a no-op when quiet_noop is true."
+      },
+      {
+        "name": "staleMessage",
+        "description": "Close an unanswered directed message as stale while preserving its audit history."
+      },
+      {
+        "name": "stats",
+        "description": "Get memory statistics -- tier distribution, total memories, total cue anchors."
+      },
+      {
+        "name": "supersede",
+        "description": "Replace stale knowledge with a new immutable memory version using optimistic concurrency."
+      },
+      {
+        "name": "taskClaim",
+        "description": "Accept a pending task with optimistic concurrency and a bounded lease; blocking resource conflicts require explicit acknowledgement."
+      },
+      {
+        "name": "taskGet",
+        "description": "Fetch one visible task and its append-only lifecycle/progress history for durable multi-run context."
+      },
+      {
+        "name": "taskPost",
+        "description": "Post an explicit unassigned project task with a visible goal, acceptance criteria, and declared resources."
+      },
+      {
+        "name": "taskQueue",
+        "description": "List visible project tasks with explicit goal, claimant, run progress, lease, and resource conflicts."
+      },
+      {
+        "name": "taskUpdate",
+        "description": "Start or update an owned task run, record a queue response, or reconcile completion that occurred outside a tracked run without fabricating run provenance."
+      },
+      {
+        "name": "unlink",
+        "description": "Retract a typed memory relation without deleting its audit history."
+      },
+      {
+        "name": "whoami",
+        "description": "Describe the current credential's identity, scope ceiling, visible projects, task access, and explicitly held and denied repository capabilities. Call at session start before selecting project, scope, or repository inputs."
+      }
+    ]
+  }
+}
