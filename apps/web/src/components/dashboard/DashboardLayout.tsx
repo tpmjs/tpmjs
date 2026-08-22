@@ -45,6 +45,13 @@ const navSections: NavSection[] = [
 
 const adminNavItems: NavItem[] = [
   { href: '/dashboard/admin', label: 'Overview', icon: 'barChart' },
+  { href: '/dashboard/admin/activity', label: 'Live activity', icon: 'bell' },
+  { href: '/dashboard/admin/executions', label: 'Executions', icon: 'arrowRight' },
+  { href: '/dashboard/admin/api-usage', label: 'API usage', icon: 'key' },
+  { href: '/dashboard/admin/health', label: 'Health & jobs', icon: 'alertCircle' },
+  { href: '/dashboard/admin/collections', label: 'Collections', icon: 'folder' },
+  { href: '/dashboard/admin/agents', label: 'Agents', icon: 'terminal' },
+  { href: '/dashboard/admin/search', label: 'Search', icon: 'search' },
   { href: '/dashboard/admin/users', label: 'Users', icon: 'user' },
 ];
 
@@ -129,7 +136,7 @@ export function DashboardLayout({
   }, [pathname]);
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
+    if (href === '/dashboard' || href === '/dashboard/admin') {
       return pathname === '/dashboard';
     }
     return pathname.startsWith(href);
