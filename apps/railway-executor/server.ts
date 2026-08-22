@@ -370,7 +370,8 @@ async function loadAndDescribe(req: Request): Promise<Response> {
       );
     }
 
-    const cacheKey = `${packageName}::${name}`;
+    // Version-scoped: a re-synced package must never be served from the previous version's module.
+    const cacheKey = `${packageName}@${version}::${name}`;
 
     // biome-ignore lint/suspicious/noImplicitAnyLet: Tool type is determined dynamically after import
     let toolModule;
@@ -704,7 +705,8 @@ async function executeTool(req: Request): Promise<Response> {
       );
     }
 
-    const cacheKey = `${packageName}::${toolName}`;
+    // Version-scoped: a re-synced package must never be served from the previous version's module.
+    const cacheKey = `${packageName}@${version}::${toolName}`;
 
     // Inject environment variables FIRST - before cache check and factory calls
     // This ensures process.env is set when factory functions read from it.
