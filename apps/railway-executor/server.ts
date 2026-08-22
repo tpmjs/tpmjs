@@ -661,8 +661,43 @@ async function loadAndDescribe(req: Request): Promise<Response> {
 /**
  * Execute a tool with parameters
  */
+// Injected env vars are process-wide (Deno.env / process.env), so an execution must never
+// see another caller's credentials: executions are serialized and every injected key is
+// restored to its previous value (or removed) when the execution ends.
+let executionChain: Promise<unknown> = Promise.resolve();
+function withExecutionLock<T>(fn: () => Promise<T>): Promise<T> {
+  const run = executionChain.then(fn, fn);
+  executionChain = run.then(
+    () => undefined,
+    () => undefined
+  );
+  return run;
+}
+
+function restoreInjectedEnv(previous: Map<string, string | undefined>): void {
+  for (const [key, value] of previous) {
+    if (value === undefined) {
+      Deno.env.delete(key);
+      // @ts-expect-error - process.env exists in Node compat mode
+      if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
+        // @ts-expect-error - process.env exists in Node compat mode
+        delete globalThis.process.env[key];
+      }
+    } else {
+      Deno.env.set(key, value);
+      // @ts-expect-error - process.env exists in Node compat mode
+      if (typeof globalThis.process !== 'undefined' && globalThis.process.env) {
+        // @ts-expect-error - process.env exists in Node compat mode
+        globalThis.process.env[key] = value;
+      }
+    }
+  }
+  previous.clear();
+}
+
 async function executeTool(req: Request): Promise<Response> {
   const startTime = Date.now();
+  const injectedEnv = new Map<string, string | undefined>();
   // Declare these before try block so they're available in catch for error reporting
   let packageName = 'unknown';
   let toolName = 'unknown';
@@ -726,6 +761,7 @@ async function executeTool(req: Request): Promise<Response> {
         );
         for (const [key, value] of envEntries) {
           const stringValue = String(value);
+          if (!injectedEnv.has(key)) injectedEnv.set(key, Deno.env.get(key));
 
           // Set in Deno environment (for esm.sh imports)
           Deno.env.set(key, stringValue);
@@ -952,6 +988,8 @@ async function executeTool(req: Request): Promise<Response> {
     reportToolHealth(packageName, toolName, false, failure).catch(() => {});
 
     return failureResponse(failure, { status: 500, executionTimeMs });
+  } finally {
+    restoreInjectedEnv(injectedEnv);
   }
 }
 
@@ -1148,7 +1186,7 @@ async function handler(req: Request): Promise<Response> {
     } else if (url.pathname === '/list-exports' && req.method === 'POST') {
       response = await listExports(req);
     } else if (url.pathname === '/execute-tool' && req.method === 'POST') {
-      response = await executeTool(req);
+      response = await withExecutionLock(() => executeTool(req));
     } else if (url.pathname === '/cache/stats' && req.method === 'GET') {
       response = cacheStats();
     } else if (url.pathname === '/cache/clear' && req.method === 'POST') {
