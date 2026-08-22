@@ -277,6 +277,10 @@ Consequences for authors:
 - Tools that need credentials should fail fast when the env var is missing (as the examples above do) — that is what keeps the health check side-effect free.
 - A tool that can perform a side effect **without** a credential will be executed for real. Declare a safe configuration per tool in `tpmjs.tools[].healthCheck`: `{ "skipExecution": true }` to import-only, or `{ "testParams": { ... }, "cleanup": [ ... ] }` for a known-safe call (string values may use `{{timestamp}}`).
 
+## Tools run in a shared process — never cache across calls
+
+The executor keeps one instance of your module per package version and serves every caller from it (any user, any collection). Anything you store at module scope — a memoised API response, a resolved account id, a client built from `process.env` at import time — is visible to the next caller, who may not be the same person. Read credentials from `process.env` **inside** `execute()` on every call and keep per-call state inside the call. The executor restores injected env vars after each execution and serializes executions, but it cannot un-share your module's variables.
+
 ## Quality Score
 
 Your tool's quality score is computed by `calculateQualityScore` in `apps/web/src/app/api/sync/metrics/route.ts`:
