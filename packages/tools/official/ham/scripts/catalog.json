@@ -5,12 +5,22 @@
     "inputSchema": {
       "type": "object",
       "properties": {
-        "content": { "type": "string", "description": "The memory content to store" },
-        "title": { "type": "string", "description": "Short title for the memory" },
+        "content": {
+          "type": "string",
+          "description": "The memory content to store"
+        },
+        "title": {
+          "type": "string",
+          "description": "Short title for the memory"
+        },
         "cues": {
           "type": "array",
           "maxItems": 32,
-          "items": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
           "description": "Exact agent-authored anchors for multi-hop retrieval; omitted means no cues"
         },
         "type": {
@@ -31,16 +41,46 @@
         },
         "scopes": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Shared scopes such as shared, project:ham, or repo:MonumentalSystems/ham"
         },
-        "project": { "type": "string" },
-        "repo": { "type": "string" },
-        "task": { "type": "string" },
-        "thread": { "type": "string" },
+        "project": {
+          "type": "string"
+        },
+        "repo": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "thread": {
+          "type": "string"
+        },
         "sequence": {
           "type": "string",
           "description": "Explicit temporal lane; thread is used only as a compatibility fallback"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Event time; defaults to ingestion time"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the evidence was observed; defaults to ingestion time"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Start of the claim's real-world validity; defaults to event time"
+        },
+        "valid_to": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional exclusive end of the claim's real-world validity"
         },
         "status": {
           "type": "string",
@@ -51,7 +91,11 @@
           "enum": ["ephemeral", "short", "project", "durable", "foundational"],
           "description": "Expected lifetime: debug/session, bug/deploy state, project state, architecture, or enduring invariant"
         },
-        "visibility": { "type": "string", "enum": ["shared", "private"], "default": "shared" },
+        "visibility": {
+          "type": "string",
+          "enum": ["shared", "private"],
+          "default": "shared"
+        },
         "idempotency_key": {
           "type": "string",
           "description": "Stable retry key to prevent duplicate writes"
@@ -62,7 +106,9 @@
           "items": {
             "type": "object",
             "properties": {
-              "target_id": { "type": "integer" },
+              "target_id": {
+                "type": "integer"
+              },
               "relation": {
                 "type": "string",
                 "enum": ["cites", "verifies", "contradicts", "depends-on"]
@@ -150,6 +196,71 @@
         { "required": ["query"], "not": { "required": ["anchor_id"] } },
         { "required": ["anchor_id"], "not": { "required": ["query"] } }
       ]
+    }
+  },
+  {
+    "name": "ham_recall_temporal",
+    "description": "Recall memory at an exact valid, known, or event time. Hydrates visible supersession chains and exposes a bounded rotor-resonance diagnostic; exact timestamps and validity intervals remain authoritative.",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "Natural language search query"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "mode": {
+          "type": "string",
+          "enum": ["valid_at", "known_at", "event_before", "event_after", "event_near"],
+          "default": "valid_at",
+          "description": "valid_at asks when a claim was true; known_at asks what HAM knew; event modes rank events around the anchor"
+        },
+        "include_history": {
+          "type": "boolean",
+          "default": true
+        },
+        "rotor_weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.2,
+          "default": 0.05
+        },
+        "top_k": {
+          "type": "integer",
+          "default": 5
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "project": {
+          "type": "string"
+        },
+        "repo": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "source_agents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["query", "as_of"]
     }
   },
   {
@@ -641,36 +752,99 @@
     "inputSchema": {
       "type": "object",
       "properties": {
-        "summary": { "type": "string" },
-        "completed": { "type": "array", "items": { "type": "string" } },
-        "next_steps": { "type": "array", "items": { "type": "string" } },
-        "blockers": { "type": "array", "items": { "type": "string" } },
-        "files": { "type": "array", "items": { "type": "string" } },
-        "branch": { "type": "string" },
+        "summary": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "next_steps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blockers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "branch": {
+          "type": "string"
+        },
         "cues": {
           "type": "array",
           "maxItems": 32,
-          "items": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
           "description": "Exact agent-authored anchors; omitted means no cues"
         },
-        "scopes": { "type": "array", "items": { "type": "string" } },
-        "project": { "type": "string" },
-        "repo": { "type": "string" },
-        "task": { "type": "string" },
-        "thread": { "type": "string" },
-        "sequence": { "type": "string" },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "project": {
+          "type": "string"
+        },
+        "repo": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "thread": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_to": {
+          "type": "string",
+          "format": "date-time"
+        },
         "durability": {
           "type": "string",
           "enum": ["ephemeral", "short", "project", "durable", "foundational"],
           "default": "short"
         },
-        "idempotency_key": { "type": "string" },
+        "idempotency_key": {
+          "type": "string"
+        },
         "links": {
           "type": "array",
           "items": {
             "type": "object",
             "properties": {
-              "target_id": { "type": "integer" },
+              "target_id": {
+                "type": "integer"
+              },
               "relation": {
                 "type": "string",
                 "enum": ["cites", "verifies", "contradicts", "depends-on"]
@@ -716,36 +890,87 @@
     "inputSchema": {
       "type": "object",
       "properties": {
-        "memory_id": { "type": "integer" },
-        "expected_version": { "type": "integer" },
-        "content": { "type": "string" },
-        "title": { "type": "string" },
-        "reason": { "type": "string" },
-        "type": { "type": "string" },
+        "memory_id": {
+          "type": "integer"
+        },
+        "expected_version": {
+          "type": "integer"
+        },
+        "content": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
         "cues": {
           "type": "array",
           "maxItems": 32,
-          "items": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
           "description": "Omit to inherit the superseded memory's authored cues; send an empty list to clear them deliberately."
         },
-        "scopes": { "type": "array", "items": { "type": "string" } },
-        "project": { "type": "string" },
-        "repo": { "type": "string" },
-        "task": { "type": "string" },
-        "thread": { "type": "string" },
-        "sequence": { "type": "string" },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "project": {
+          "type": "string"
+        },
+        "repo": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "thread": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_from": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "valid_to": {
+          "type": "string",
+          "format": "date-time"
+        },
         "durability": {
           "type": "string",
           "enum": ["ephemeral", "short", "project", "durable", "foundational"]
         },
-        "idempotency_key": { "type": "string" },
+        "idempotency_key": {
+          "type": "string"
+        },
         "links": {
           "type": "array",
           "description": "Typed relations from the replacement memory to existing memory IDs",
           "items": {
             "type": "object",
             "properties": {
-              "target_id": { "type": "integer" },
+              "target_id": {
+                "type": "integer"
+              },
               "relation": {
                 "type": "string",
                 "enum": ["cites", "verifies", "contradicts", "depends-on"]
