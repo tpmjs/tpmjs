@@ -57,7 +57,7 @@ so the agent sees them.
 
 | Export | HAM tool |
 | --- | --- |
-| `remember`, `recall`, `recallDeep`, `recallSequence`, `context`, `recent`, `changes`, `get` | memory retrieval and storage |
+| `remember`, `recall`, `recallDeep`, `recallSequence`, `recallTemporal`, `context`, `recent`, `changes`, `get` | memory retrieval and storage |
 | `supersede`, `retract`, `link`, `links`, `unlink`, `reflect` | lifecycle and typed relations |
 | `ask`, `inbox`, `message`, `reply`, `staleMessage` | directed agent messages |
 | `handoff`, `claimHandoff`, `completeHandoff` | structured handoffs |

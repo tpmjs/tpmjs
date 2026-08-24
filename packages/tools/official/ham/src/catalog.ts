@@ -240,6 +240,22 @@ export const HAM_TOOL_CATALOG: readonly HamToolSpec[] = [
         sequence: {
           type: 'string',
         },
+        timestamp: {
+          type: 'string',
+          format: 'date-time',
+        },
+        observed_at: {
+          type: 'string',
+          format: 'date-time',
+        },
+        valid_from: {
+          type: 'string',
+          format: 'date-time',
+        },
+        valid_to: {
+          type: 'string',
+          format: 'date-time',
+        },
         durability: {
           type: 'string',
           enum: ['ephemeral', 'short', 'project', 'durable', 'foundational'],
@@ -637,6 +653,73 @@ export const HAM_TOOL_CATALOG: readonly HamToolSpec[] = [
     },
   },
   {
+    name: 'ham_recall_temporal',
+    description:
+      'Recall memory at an exact valid, known, or event time. Hydrates visible supersession chains and exposes a bounded rotor-resonance diagnostic; exact timestamps and validity intervals remain authoritative.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Natural language search query',
+        },
+        as_of: {
+          type: 'string',
+          format: 'date-time',
+        },
+        mode: {
+          type: 'string',
+          enum: ['valid_at', 'known_at', 'event_before', 'event_after', 'event_near'],
+          default: 'valid_at',
+          description:
+            'valid_at asks when a claim was true; known_at asks what HAM knew; event modes rank events around the anchor',
+        },
+        include_history: {
+          type: 'boolean',
+          default: true,
+        },
+        rotor_weight: {
+          type: 'number',
+          minimum: 0,
+          maximum: 0.2,
+          default: 0.05,
+        },
+        top_k: {
+          type: 'integer',
+          default: 5,
+        },
+        scopes: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+        project: {
+          type: 'string',
+        },
+        repo: {
+          type: 'string',
+        },
+        task: {
+          type: 'string',
+        },
+        types: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+        source_agents: {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        },
+      },
+      required: ['query', 'as_of'],
+    },
+  },
+  {
     name: 'ham_recent',
     description:
       'See recent shared work, decisions, blockers, and handoffs in the active project/repo/task context.',
@@ -801,6 +884,26 @@ export const HAM_TOOL_CATALOG: readonly HamToolSpec[] = [
         sequence: {
           type: 'string',
           description: 'Explicit temporal lane; thread is used only as a compatibility fallback',
+        },
+        timestamp: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Event time; defaults to ingestion time',
+        },
+        observed_at: {
+          type: 'string',
+          format: 'date-time',
+          description: 'When the evidence was observed; defaults to ingestion time',
+        },
+        valid_from: {
+          type: 'string',
+          format: 'date-time',
+          description: "Start of the claim's real-world validity; defaults to event time",
+        },
+        valid_to: {
+          type: 'string',
+          format: 'date-time',
+          description: "Optional exclusive end of the claim's real-world validity",
         },
         status: {
           type: 'string',
@@ -1055,6 +1158,22 @@ export const HAM_TOOL_CATALOG: readonly HamToolSpec[] = [
         },
         sequence: {
           type: 'string',
+        },
+        timestamp: {
+          type: 'string',
+          format: 'date-time',
+        },
+        observed_at: {
+          type: 'string',
+          format: 'date-time',
+        },
+        valid_from: {
+          type: 'string',
+          format: 'date-time',
+        },
+        valid_to: {
+          type: 'string',
+          format: 'date-time',
         },
         durability: {
           type: 'string',

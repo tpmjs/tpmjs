@@ -72,6 +72,9 @@ export const recallDeep = hamTool('ham_recall_deep');
 /** Retrieve a deterministic chronological window around one scoped memory anchor. */
 export const recallSequence = hamTool('ham_recall_sequence');
 
+/** Recall memory at an exact valid, known, or event time. Hydrates visible supersession chains and exposes a bounded rotor-resonance diagnostic; exact timestamps and validity intervals remain authoritative. */
+export const recallTemporal = hamTool('ham_recall_temporal');
+
 /** See recent shared work, decisions, blockers, and handoffs in the active project/repo/task context. */
 export const recent = hamTool('ham_recent');
 
