@@ -135,8 +135,9 @@ export async function GET(
         isPublic: collection.isPublic,
         toolCount: collection._count.tools,
         executorType: collection.executorType,
-        executorConfig: collection.executorConfig,
-        envVars: collection.envVars,
+        executorConfig: collection.userId === authResult.userId ? collection.executorConfig : null,
+        // A public collection exposes its tool catalog, never the owner's credentials.
+        envVars: collection.userId === authResult.userId ? collection.envVars : null,
         createdAt: collection.createdAt,
         updatedAt: collection.updatedAt,
         isOwner: collection.userId === authResult.userId,
