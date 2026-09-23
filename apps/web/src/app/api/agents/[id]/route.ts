@@ -97,6 +97,9 @@ export async function GET(_request: NextRequest, context: RouteContext) {
     return apiSuccess(
       {
         ...agent,
+        // Public agents may be inspected, but their execution credentials remain private.
+        envVars: isOwner ? agent.envVars : null,
+        executorConfig: isOwner ? agent.executorConfig : null,
         isOwner,
         toolCount: agent._count.tools,
         collectionCount: agent._count.collections,

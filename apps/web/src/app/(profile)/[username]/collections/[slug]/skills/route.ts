@@ -8,8 +8,8 @@
  * POST - Ask a question (RAG + LLM response)
  */
 
+import { createHash } from 'node:crypto';
 import { prisma } from '@tpmjs/db';
-import { createHash } from 'crypto';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -103,6 +103,8 @@ async function loadCollection(
   // Flatten the tools structure
   const collectionWithTools = {
     ...collection,
+    envVars: null,
+    executorConfig: null,
     tools: collection.tools.map((ct) => ({
       ...ct.tool,
       package: ct.tool.package,

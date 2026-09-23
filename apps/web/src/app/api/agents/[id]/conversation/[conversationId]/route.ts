@@ -1035,6 +1035,14 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
  * With after: Returns messages newer than the timestamp (for refreshing)
  */
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+  const authResult = await authenticateRequest();
+  if (!authResult.authenticated || !authResult.userId) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  if (!authResult.isSessionAuth && !hasScope(authResult, 'agent:chat')) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+  }
+
   const { id: agentId, conversationId } = await context.params;
   const { searchParams } = new URL(request.url);
 
@@ -1049,18 +1057,21 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       where: { id: agentId },
       select: {
         id: true,
+        userId: true,
         uid: true,
         name: true,
         provider: true,
         modelId: true,
         sandboxEnabled: true,
         executorType: true,
-        executorConfig: true,
       },
     });
 
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+    }
+    if (agent.userId !== authResult.userId) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
     // Fetch conversation
@@ -1100,7 +1111,6 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
           provider: agent.provider,
           modelId: agent.modelId,
           executorType: agent.executorType,
-          executorConfig: agent.executorConfig,
         },
         conversation: {
           id: conversation.id,
