@@ -85,6 +85,7 @@ export default function GoogleSettingsPage() {
           <label
             key={tool.name}
             htmlFor={`google-tool-${tool.name}`}
+            aria-label={`Select ${tool.name.replaceAll('_', ' ')}`}
             className="flex gap-3 rounded-lg border border-border bg-background p-3"
           >
             <input
