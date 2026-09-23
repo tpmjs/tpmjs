@@ -6,6 +6,7 @@
 
 import { prisma } from '@tpmjs/db';
 import { type NextRequest, NextResponse } from 'next/server';
+import { authenticateRequest, hasScope } from '~/lib/api-keys/middleware';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,14 @@ type RouteContext = {
  * List all conversations for an agent (accepts id or uid)
  */
 export async function GET(request: NextRequest, context: RouteContext): Promise<NextResponse> {
+  const authResult = await authenticateRequest();
+  if (!authResult.authenticated || !authResult.userId) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+  }
+  if (!authResult.isSessionAuth && !hasScope(authResult, 'agent:chat')) {
+    return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+  }
+
   const { id: idOrUid } = await context.params;
   const { searchParams } = new URL(request.url);
 
@@ -32,11 +41,14 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       where: {
         OR: [{ id: idOrUid }, { uid: idOrUid }],
       },
-      select: { id: true },
+      select: { id: true, userId: true },
     });
 
     if (!agent) {
       return NextResponse.json({ success: false, error: 'Agent not found' }, { status: 404 });
+    }
+    if (agent.userId !== authResult.userId) {
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
     // Fetch conversations with message count
