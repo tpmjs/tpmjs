@@ -43,7 +43,10 @@ export function ConsentForm({
       for (const tool of collection.tools) tools.delete(tool.id);
     } else {
       next.add(collection.id);
-      for (const tool of collection.tools) tools.add(tool.id);
+      for (const tool of collection.tools) {
+        // Sending mail requires an explicit tool-level choice, even when its account is selected.
+        if (tool.name !== 'gmail_send') tools.add(tool.id);
+      }
     }
     setSelectedCollections(next);
     setSelectedTools(tools);

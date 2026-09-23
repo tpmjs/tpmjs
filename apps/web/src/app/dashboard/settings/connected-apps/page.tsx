@@ -83,6 +83,12 @@ export default function ConnectedAppsPage() {
           <div className="mt-4 flex flex-wrap gap-2 text-sm">
             <Link
               className="rounded-lg border border-border bg-surface px-3 py-2 hover:border-primary/40"
+              href="/dashboard/settings/google"
+            >
+              Connect Google Drive & Gmail
+            </Link>
+            <Link
+              className="rounded-lg border border-border bg-surface px-3 py-2 hover:border-primary/40"
               href="/dashboard/settings/api-keys"
             >
               Manage provider keys

@@ -2,6 +2,7 @@ import { prisma } from '@tpmjs/db';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { auth } from '~/lib/auth';
+import { googleCollections } from '~/lib/google/catalog';
 import { ConsentForm } from './consent-form';
 
 export const dynamic = 'force-dynamic';
@@ -50,7 +51,7 @@ export default async function ConsentPage({
       </main>
     );
   }
-  const [collections, previous] = await Promise.all([
+  const [collections, previous, google] = await Promise.all([
     prisma.collection.findMany({
       where: { userId: session.user.id },
       select: {
@@ -75,6 +76,7 @@ export default async function ConsentPage({
       where: { userId_clientId: { userId: session.user.id, clientId: client.clientId } },
       select: { collectionIds: true, toolIds: true },
     }),
+    googleCollections(session.user.id),
   ]);
   const requestedScopes = new Set((signedQuery.get('scope') ?? '').split(/\s+/).filter(Boolean));
   return (
@@ -84,16 +86,19 @@ export default async function ConsentPage({
       clientName={client.name || 'An application'}
       clientDomain={domain(client.uri)}
       scopes={[...requestedScopes]}
-      collections={collections.map((collection) => ({
-        id: collection.id,
-        name: collection.name,
-        description: collection.description,
-        tools: collection.tools.map(({ tool }) => ({
-          id: `${tool.package.npmPackageName}::${tool.name}`,
-          name: tool.name,
-          description: tool.description,
+      collections={[
+        ...collections.map((collection) => ({
+          id: collection.id,
+          name: collection.name,
+          description: collection.description,
+          tools: collection.tools.map(({ tool }) => ({
+            id: `${tool.package.npmPackageName}::${tool.name}`,
+            name: tool.name,
+            description: tool.description,
+          })),
         })),
-      }))}
+        ...google,
+      ]}
       previous={previous}
     />
   );

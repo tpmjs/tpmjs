@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '~/lib/auth';
+import { googleCollections } from '~/lib/google/catalog';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -53,14 +54,17 @@ export async function POST(request: Request) {
       },
     },
   });
-  if (collections.length !== uniqueCollections.length) {
+  const google = await googleCollections(session.user.id);
+  const selectedGoogle = google.filter((collection) => uniqueCollections.includes(collection.id));
+  if (collections.length + selectedGoogle.length !== uniqueCollections.length) {
     return NextResponse.json({ error: 'Collection not owned by this account' }, { status: 403 });
   }
-  const available = new Set(
-    collections.flatMap(({ tools }) =>
+  const available = new Set([
+    ...selectedGoogle.flatMap((collection) => collection.tools.map((tool) => tool.id)),
+    ...collections.flatMap(({ tools }) =>
       tools.map(({ tool }) => `${tool.package.npmPackageName}::${tool.name}`)
-    )
-  );
+    ),
+  ]);
   if (uniqueTools.some((toolId) => !available.has(toolId))) {
     return NextResponse.json({ error: 'Tool outside selected collections' }, { status: 403 });
   }

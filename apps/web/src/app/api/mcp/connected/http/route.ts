@@ -6,6 +6,8 @@ import { z } from 'zod';
 import { checkApiKeyRateLimit, createRateLimitResponse } from '~/lib/api-keys/rate-limit';
 import { decryptApiKey } from '~/lib/crypto/api-keys';
 import { executeWithExecutor } from '~/lib/executors';
+import { googleCollections } from '~/lib/google/catalog';
+import { executeGoogleTool } from '~/lib/google/tools';
 import { negotiateProtocolVersion } from '~/lib/mcp/protocol';
 import { searchTools } from '~/lib/search/tool-search';
 import { trackExecution } from '~/lib/tracking/executions';
@@ -108,6 +110,21 @@ async function availableTools(userId: string, clientId: string) {
   );
 }
 
+async function availableGoogleTools(userId: string, clientId: string) {
+  const grant = await prisma.oAuthToolGrant.findUnique({
+    where: { userId_clientId: { userId, clientId } },
+    select: { collectionIds: true, toolIds: true },
+  });
+  if (!grant) return [];
+  const selected = new Set(grant.toolIds);
+  const collections = await googleCollections(userId);
+  return collections
+    .filter((collection) => grant.collectionIds.includes(collection.id))
+    .flatMap((collection) =>
+      collection.tools.filter((tool) => selected.has(tool.id)).map((tool) => ({ collection, tool }))
+    );
+}
+
 async function boundEnvironment(userId: string, bindings: { envName: string; keyName: string }[]) {
   if (bindings.length === 0) return {};
   const keys = await prisma.userApiKey.findMany({
@@ -176,6 +193,25 @@ export async function POST(request: Request) {
     });
   }
   if (method === 'tools/list') {
+    const [native, google] = await Promise.all([
+      availableTools(user.userId, user.clientId),
+      availableGoogleTools(user.userId, user.clientId),
+    ]);
+    const directTools = user.scopes.has('mcp:execute')
+      ? [
+          ...native.map(({ tool }) => ({
+            name: `${tool.package.npmPackageName}::${tool.name}`,
+            description: tool.description ?? tool.name,
+            inputSchema: tool.inputSchema ?? { type: 'object', properties: {} },
+          })),
+          ...google.map(({ tool }) => ({
+            name: `${tool.packageName}::${tool.name}`,
+            description: tool.description,
+            inputSchema: tool.inputSchema,
+            annotations: { readOnlyHint: tool.name !== 'gmail_send' },
+          })),
+        ]
+      : [];
     return rpc(id, {
       tools: [
         {
@@ -192,6 +228,7 @@ export async function POST(request: Request) {
           },
           annotations: { readOnlyHint: true },
         },
+        ...directTools,
         ...(user.scopes.has('mcp:execute')
           ? [
               {
@@ -218,7 +255,10 @@ export async function POST(request: Request) {
     .object({ name: z.string(), arguments: z.unknown().optional() })
     .safeParse(parsed.data.params);
   if (!params.success) return fault(id, -32602, 'Invalid tool call');
-  const allowed = await availableTools(user.userId, user.clientId);
+  const [allowed, allowedGoogle] = await Promise.all([
+    availableTools(user.userId, user.clientId),
+    availableGoogleTools(user.userId, user.clientId),
+  ]);
   if (params.data.name === 'search_tools') {
     const args = z
       .object({
@@ -241,44 +281,106 @@ export async function POST(request: Request) {
     ]);
     const keyNames = new Set(existingKeys.map((key) => key.keyName));
     const byId = new Map(allowed.map((item) => [item.tool.id, item]));
-    const tools = results
-      .flatMap(({ tool }) => {
-        const owner = byId.get(tool.id);
-        return owner
-          ? [
-              {
-                packageName: tool.package.npmPackageName,
-                toolName: tool.name,
-                description: tool.description,
-                inputSchema: tool.inputSchema,
-                collection: owner.collection.name,
-                ready: configured(
+    const catalogTools = results.flatMap(({ tool }) => {
+      const owner = byId.get(tool.id);
+      return owner
+        ? [
+            {
+              packageName: tool.package.npmPackageName,
+              toolName: tool.name,
+              description: tool.description,
+              inputSchema: tool.inputSchema,
+              collection: owner.collection.name,
+              ready: configured(
+                tool.package.env,
+                envFor(
                   tool.package.env,
-                  envFor(
-                    tool.package.env,
-                    owner.collection.envVars,
-                    Object.fromEntries(
-                      owner.collection.credentialBindings
-                        .filter(
-                          (binding) =>
-                            binding.packageName === tool.package.npmPackageName &&
-                            keyNames.has(binding.keyName)
-                        )
-                        .map((binding) => [binding.envName, 'configured'])
-                    )
+                  owner.collection.envVars,
+                  Object.fromEntries(
+                    owner.collection.credentialBindings
+                      .filter(
+                        (binding) =>
+                          binding.packageName === tool.package.npmPackageName &&
+                          keyNames.has(binding.keyName)
+                      )
+                      .map((binding) => [binding.envName, 'configured'])
                   )
-                ),
-              },
-            ]
-          : [];
-      })
-      .slice(0, args.data.limit ?? 20);
+                )
+              ),
+            },
+          ]
+        : [];
+    });
+    const terms = args.data.query.toLocaleLowerCase().split(/\s+/).filter(Boolean);
+    const googleTools = allowedGoogle
+      .filter(({ collection, tool }) =>
+        terms.every((term) =>
+          `${tool.name} ${tool.description} ${collection.name}`.toLocaleLowerCase().includes(term)
+        )
+      )
+      .map(({ collection, tool }) => ({
+        packageName: tool.packageName,
+        toolName: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+        collection: collection.name,
+        ready: true,
+      }));
+    const tools = [...googleTools, ...catalogTools].slice(0, args.data.limit ?? 20);
     return rpc(id, { content: [{ type: 'text', text: JSON.stringify({ tools }) }] });
   }
-  if (params.data.name !== 'execute_tool') return fault(id, -32602, 'Unknown tool');
   if (!user.scopes.has('mcp:execute')) return fault(id, -32003, 'Missing mcp:execute scope', 403);
-  const args = executeArgs.safeParse(params.data.arguments);
+  const direct = [
+    ...allowed.map(({ tool }) => ({
+      packageName: tool.package.npmPackageName,
+      toolName: tool.name,
+    })),
+    ...allowedGoogle.map(({ tool }) => ({ packageName: tool.packageName, toolName: tool.name })),
+  ].find((tool) => `${tool.packageName}::${tool.toolName}` === params.data.name);
+  if (params.data.name !== 'execute_tool' && !direct) return fault(id, -32602, 'Unknown tool');
+  const args = executeArgs.safeParse(
+    direct ? { ...direct, arguments: params.data.arguments } : params.data.arguments
+  );
   if (!args.success) return fault(id, -32602, 'Invalid execution arguments');
+  const google = allowedGoogle.find(
+    ({ tool }) => tool.packageName === args.data.packageName && tool.name === args.data.toolName
+  );
+  if (google) {
+    const rate = await checkApiKeyRateLimit(`oauth:${user.userId}:${user.clientId}`, 'FREE', 120);
+    if (!rate.allowed) return createRateLimitResponse(rate);
+    const started = Date.now();
+    try {
+      const output = await executeGoogleTool(
+        user.userId,
+        google.tool.connectionId,
+        google.tool.name,
+        args.data.arguments ?? {}
+      );
+      trackExecution({
+        eventType: 'tool_call',
+        source: 'mcp_http',
+        userId: user.userId,
+        toolName: google.tool.name,
+        packageName: google.tool.packageName,
+        status: 'success',
+        durationMs: Date.now() - started,
+      });
+      return rpc(id, {
+        content: [{ type: 'text', text: JSON.stringify(output).slice(0, 1_000_000) }],
+      });
+    } catch (cause) {
+      trackExecution({
+        eventType: 'tool_call',
+        source: 'mcp_http',
+        userId: user.userId,
+        toolName: google.tool.name,
+        packageName: google.tool.packageName,
+        status: 'error',
+        durationMs: Date.now() - started,
+      });
+      return rpc(id, cause instanceof Error ? cause.message : 'Google tool failed', true);
+    }
+  }
   const candidate = allowed.find(
     ({ tool }) =>
       tool.package.npmPackageName === args.data.packageName && tool.name === args.data.toolName

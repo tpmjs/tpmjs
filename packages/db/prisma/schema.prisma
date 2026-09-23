@@ -497,6 +497,7 @@ model User {
   oauthconsents                OauthConsent[]
   oauthToolGrants              OAuthToolGrant[]
   collectionCredentialBindings CollectionCredentialBinding[]
+  googleConnections            GoogleConnection[]
 
   @@index([username])
   @@map("users")
@@ -2610,6 +2611,24 @@ model OAuthToolGrant {
   @@unique([userId, clientId])
   @@index([clientId])
   @@map("oauth_tool_grants")
+}
+
+/// User-owned Google OAuth credential. Refresh tokens are encrypted before storage.
+model GoogleConnection {
+  id               String   @id @default(cuid())
+  userId           String
+  googleSubject    String
+  email            String
+  encryptedRefresh String
+  refreshIv        String
+  scopes           String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, googleSubject])
+  @@index([userId])
+  @@map("google_connections")
 }
 
 /// Explicit per-package binding from an owned collection to a vaulted key.
