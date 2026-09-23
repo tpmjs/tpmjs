@@ -104,8 +104,10 @@ export function ConsentForm({
           <h2 className="text-sm font-semibold">Permission</h2>
           <p className="mt-1 text-xs text-foreground-secondary">Search the selected tool catalog</p>
           {scopes.includes('mcp:execute') && (
-            <label className="mt-4 flex cursor-pointer items-start gap-3 border-t border-border pt-4">
+            <div className="mt-4 flex items-start gap-3 border-t border-border pt-4">
               <input
+                id="mcp-execute-scope"
+                aria-label="Run selected tools"
                 type="checkbox"
                 checked={execute}
                 onChange={(event) => setExecute(event.target.checked)}
@@ -117,7 +119,7 @@ export function ConsentForm({
                   Tool calls can act on external services using your stored keys.
                 </span>
               </span>
-            </label>
+            </div>
           )}
         </div>
 
