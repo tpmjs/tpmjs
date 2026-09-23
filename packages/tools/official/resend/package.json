@@ -41,6 +41,13 @@
   "license": "MIT",
   "tpmjs": {
     "category": "ops",
+    "env": [
+      {
+        "name": "RESEND_API_KEY",
+        "description": "Resend API key stored in TPMJS",
+        "required": true
+      }
+    ],
     "frameworks": [
       "vercel-ai"
     ],

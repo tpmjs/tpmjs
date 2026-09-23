@@ -1,6 +1,8 @@
+import { oauthProvider } from '@better-auth/oauth-provider';
 import { prisma } from '@tpmjs/db';
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
+import { jwt } from 'better-auth/plugins';
 import { sendResetPasswordEmail, sendVerificationEmail } from './email';
 
 // The configured URL must match the domain users are browsing on. Production
@@ -11,12 +13,34 @@ const getBaseURL = () => {
   return 'https://tpmjs.com';
 };
 
-export const auth = betterAuth({
+export const auth: ReturnType<typeof betterAuth> = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: getBaseURL(),
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
+  plugins: [
+    jwt({ jwt: { issuer: 'https://tpmjs.com/api/auth' } }),
+    oauthProvider({
+      loginPage: '/sign-in',
+      consentPage: '/consent',
+      scopes: ['openid', 'profile', 'email', 'offline_access', 'mcp:read', 'mcp:execute'],
+      validAudiences: ['https://tpmjs.com/api/mcp/connected/http'],
+      grantTypes: ['authorization_code', 'refresh_token'],
+      accessTokenExpiresIn: 900,
+      allowDynamicClientRegistration: true,
+      allowUnauthenticatedClientRegistration: true,
+      clientRegistrationDefaultScopes: ['mcp:read'],
+      clientRegistrationAllowedScopes: [
+        'openid',
+        'profile',
+        'email',
+        'offline_access',
+        'mcp:read',
+        'mcp:execute',
+      ],
+    }),
+  ],
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -87,4 +111,4 @@ export const auth = betterAuth({
       httpOnly: true,
     },
   },
-});
+}) as unknown as ReturnType<typeof betterAuth>;

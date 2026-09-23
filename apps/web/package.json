@@ -28,6 +28,7 @@
     "@ai-sdk/groq": "^3.0.4",
     "@ai-sdk/mistral": "^3.0.5",
     "@ai-sdk/openai": "3.0.7",
+    "@better-auth/oauth-provider": "1.6.23",
     "@prisma/client": "^6.19.1",
     "@sentry/nextjs": "^10.38.0",
     "@tpmjs/db": "workspace:*",
@@ -41,6 +42,7 @@
     "@tpmjs/ui": "workspace:*",
     "@types/d3": "^7.4.3",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "@xyflow/react": "^12.6.0",
     "ai": "6.0.49",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
@@ -62,7 +64,6 @@
     "sonner": "^2.0.7",
     "streamdown": "^1.6.11",
     "swr": "^2.2.5",
-    "@xyflow/react": "^12.6.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {

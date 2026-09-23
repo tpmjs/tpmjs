@@ -37,6 +37,7 @@ const navSections: NavSection[] = [
       { href: '/dashboard/settings/profile', label: 'Profile', icon: 'user' },
       { href: '/dashboard/settings/api-keys', label: 'AI Provider Keys', icon: 'puzzle' },
       { href: '/dashboard/settings/tpmjs-api-keys', label: 'Platform API Keys', icon: 'key' },
+      { href: '/dashboard/settings/connected-apps', label: 'Connected apps', icon: 'link' },
       { href: '/dashboard/settings/bridge', label: 'Bridge', icon: 'link' },
       { href: '/dashboard/usage', label: 'Usage', icon: 'globe' },
     ],

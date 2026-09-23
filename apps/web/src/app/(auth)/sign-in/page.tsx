@@ -17,7 +17,10 @@ export default function SignInPage() {
 
   function getRedirectUrl() {
     const params = new URLSearchParams(window.location.search);
-    return params.get('callbackUrl') || params.get('redirect') || '/dashboard';
+    const value = params.get('callbackUrl') || params.get('redirect') || '/dashboard';
+    return value.startsWith('/') && !value.startsWith('//') && !value.includes('\\')
+      ? value
+      : '/dashboard';
   }
 
   async function handleSubmit(e: React.FormEvent) {
