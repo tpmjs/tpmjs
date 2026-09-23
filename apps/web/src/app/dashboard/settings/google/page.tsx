@@ -84,9 +84,11 @@ export default function GoogleSettingsPage() {
         {tools.map((tool) => (
           <label
             key={tool.name}
+            htmlFor={`google-tool-${tool.name}`}
             className="flex gap-3 rounded-lg border border-border bg-background p-3"
           >
             <input
+              id={`google-tool-${tool.name}`}
               type="checkbox"
               className="mt-1"
               checked={selected.includes(tool.name)}

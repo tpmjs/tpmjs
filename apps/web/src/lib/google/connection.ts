@@ -30,8 +30,6 @@ export const GOOGLE_TOOLS = [
   },
 ] as const;
 
-export const GOOGLE_COLLECTION_PREFIX = 'google:';
-export const GOOGLE_PACKAGE = '@tpmjs/google-workspace';
 export const GOOGLE_IDENTITY_SCOPES = ['openid', 'https://www.googleapis.com/auth/userinfo.email'];
 
 export function googleConfig() {

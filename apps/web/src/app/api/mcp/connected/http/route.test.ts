@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   verifyAccessToken: vi.fn(),
   grant: vi.fn(),
   collections: vi.fn(),
+  googleConnections: vi.fn(),
   keys: vi.fn(),
   searchTools: vi.fn(),
   executeWithExecutor: vi.fn(),
@@ -15,6 +16,7 @@ vi.mock('@tpmjs/db', () => ({
   prisma: {
     oAuthToolGrant: { findUnique: mocks.grant },
     collection: { findMany: mocks.collections },
+    googleConnection: { findMany: mocks.googleConnections },
     userApiKey: { findMany: mocks.keys },
   },
 }));
@@ -70,6 +72,7 @@ describe('connected MCP grant boundary', () => {
         tools: [{ tool }],
       },
     ]);
+    mocks.googleConnections.mockResolvedValue([]);
     mocks.keys.mockResolvedValue([
       { keyName: 'RESEND_API_KEY', encryptedKey: 'cipher', keyIv: 'iv' },
       { keyName: 'OTHER_SECRET', encryptedKey: 'cipher', keyIv: 'iv' },
