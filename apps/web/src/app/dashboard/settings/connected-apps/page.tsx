@@ -24,6 +24,7 @@ function domain(uri: string | null): string | null {
 
 export default function ConnectedAppsPage() {
   const [grants, setGrants] = useState<Grant[]>([]);
+  const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -92,6 +93,36 @@ export default function ConnectedAppsPage() {
             >
               Manage collections
             </Link>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-border bg-surface p-6">
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            ChatGPT and other MCP apps
+          </p>
+          <h2 className="mt-2 text-xl font-semibold">Take your tools with you</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground-secondary">
+            Add this MCP server URL as a custom connector in ChatGPT. Sign in to TPMJS when
+            prompted, then choose exactly which collections and tools it may search or run. Your
+            provider keys stay in TPMJS.
+          </p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <code className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border bg-background px-3 py-2.5 text-sm">
+              https://tpmjs.com/api/mcp/connected/http
+            </code>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText('https://tpmjs.com/api/mcp/connected/http');
+                  setCopied(true);
+                } catch {
+                  setError('Could not copy the MCP URL');
+                }
+              }}
+              className="rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+            >
+              {copied ? 'Copied' : 'Copy MCP URL'}
+            </button>
           </div>
         </div>
         {error && (

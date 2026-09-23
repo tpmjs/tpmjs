@@ -11,6 +11,7 @@ interface Collection {
 
 export function ConsentForm({
   clientId,
+  oauthQuery,
   clientName,
   clientDomain,
   scopes,
@@ -18,6 +19,7 @@ export function ConsentForm({
   previous,
 }: {
   clientId: string;
+  oauthQuery: string;
   clientName: string;
   clientDomain: string | null;
   scopes: string[];
@@ -69,7 +71,11 @@ export function ConsentForm({
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ accept, ...(accept ? { scope: allowedScopes.join(' ') } : {}) }),
+        body: JSON.stringify({
+          accept,
+          oauth_query: oauthQuery,
+          ...(accept ? { scope: allowedScopes.join(' ') } : {}),
+        }),
       });
       const body = await response.json();
       if (!response.ok || !body.url) throw new Error('Authorization could not be completed');

@@ -18,19 +18,25 @@ function domain(uri: string | null): string | null {
 export default async function ConsentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ client_id?: string; scope?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
+  const signedQuery = new URLSearchParams();
+  for (const [name, value] of Object.entries(params)) {
+    if (Array.isArray(value)) {
+      for (const item of value) signedQuery.append(name, item);
+    } else if (value !== undefined) {
+      signedQuery.set(name, value);
+    }
+  }
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id) {
-    const query = new URLSearchParams();
-    if (params.client_id) query.set('client_id', params.client_id);
-    if (params.scope) query.set('scope', params.scope);
-    redirect(`/sign-in?callbackUrl=${encodeURIComponent(`/consent?${query}`)}`);
+    redirect(`/sign-in?callbackUrl=${encodeURIComponent(`/consent?${signedQuery}`)}`);
   }
-  const client = params.client_id
+  const clientId = signedQuery.get('client_id');
+  const client = clientId
     ? await prisma.oauthClient.findUnique({
-        where: { clientId: params.client_id },
+        where: { clientId },
         select: { clientId: true, name: true, uri: true, disabled: true },
       })
     : null;
@@ -70,10 +76,11 @@ export default async function ConsentPage({
       select: { collectionIds: true, toolIds: true },
     }),
   ]);
-  const requestedScopes = new Set((params.scope ?? '').split(/\s+/).filter(Boolean));
+  const requestedScopes = new Set((signedQuery.get('scope') ?? '').split(/\s+/).filter(Boolean));
   return (
     <ConsentForm
       clientId={client.clientId}
+      oauthQuery={signedQuery.toString()}
       clientName={client.name || 'An application'}
       clientDomain={domain(client.uri)}
       scopes={[...requestedScopes]}
