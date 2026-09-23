@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { DashboardLayout } from '~/components/dashboard/DashboardLayout';
 import { CredentialBindings } from './credential-bindings';
+import { type GrantCollection, GrantEditor } from './grant-editor';
 
 interface Grant {
   clientId: string;
@@ -24,16 +25,24 @@ function domain(uri: string | null): string | null {
 
 export default function ConnectedAppsPage() {
   const [grants, setGrants] = useState<Grant[]>([]);
+  const [collections, setCollections] = useState<GrantCollection[]>([]);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [suggestedTool, setSuggestedTool] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState('');
   const load = useCallback(async () => {
     try {
-      const response = await fetch('/api/oauth/tool-grants', { cache: 'no-store' });
-      if (!response.ok) throw new Error('Could not load connected apps');
+      const [response, catalogResponse] = await Promise.all([
+        fetch('/api/oauth/tool-grants', { cache: 'no-store' }),
+        fetch('/api/oauth/tool-catalog', { cache: 'no-store' }),
+      ]);
+      if (!response.ok || !catalogResponse.ok) throw new Error('Could not load connected apps');
       const data = (await response.json()) as { grants: Grant[] };
+      const catalog = (await catalogResponse.json()) as { collections: GrantCollection[] };
       setGrants(data.grants);
+      setCollections(catalog.collections);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not load connected apps');
     } finally {
@@ -42,6 +51,9 @@ export default function ConnectedAppsPage() {
   }, []);
   useEffect(() => {
     void load();
+    const params = new URLSearchParams(window.location.search);
+    setEditing(params.get('client'));
+    setSuggestedTool(params.get('tool'));
   }, [load]);
 
   async function revoke(clientId: string) {
@@ -182,7 +194,15 @@ export default function ConnectedAppsPage() {
                     <span className="text-xs text-foreground-secondary">last changed</span>
                   </div>
                 </div>
-                <div className="mt-5 flex justify-end">
+                <div className="mt-5 flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditing(editing === grant.clientId ? null : grant.clientId)}
+                    className="rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-background"
+                    aria-expanded={editing === grant.clientId}
+                  >
+                    {editing === grant.clientId ? 'Close tools' : 'Change tools'}
+                  </button>
                   <button
                     type="button"
                     disabled={busy === grant.clientId}
@@ -192,13 +212,27 @@ export default function ConnectedAppsPage() {
                     {busy === grant.clientId ? 'Revoking…' : 'Revoke access'}
                   </button>
                 </div>
+                {editing === grant.clientId && (
+                  <GrantEditor
+                    clientId={grant.clientId}
+                    initialCollections={grant.collectionIds}
+                    initialTools={grant.toolIds}
+                    suggestedToolId={suggestedTool}
+                    collections={collections}
+                    onSaved={async () => {
+                      await load();
+                      setEditing(null);
+                    }}
+                    onCancel={() => setEditing(null)}
+                  />
+                )}
               </section>
             ))}
           </div>
         )}
         <p className="text-xs leading-5 text-foreground-secondary">
-          Revoking a grant removes its active and refresh tokens. To change its collections or
-          scope, reconnect the application and choose a new grant.
+          Changing tools updates the grant immediately. Revoking access removes the app’s active and
+          refresh tokens; reconnect the app to change its OAuth scopes.
         </p>
         <CredentialBindings />
       </div>

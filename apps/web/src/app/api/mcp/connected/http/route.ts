@@ -7,6 +7,7 @@ import { checkApiKeyRateLimit, createRateLimitResponse } from '~/lib/api-keys/ra
 import { decryptApiKey } from '~/lib/crypto/api-keys';
 import { executeWithExecutor } from '~/lib/executors';
 import { googleCollections } from '~/lib/google/catalog';
+import { GOOGLE_TOOLS } from '~/lib/google/connection';
 import { executeGoogleTool } from '~/lib/google/tools';
 import { negotiateProtocolVersion } from '~/lib/mcp/protocol';
 import { searchTools } from '~/lib/search/tool-search';
@@ -174,6 +175,49 @@ function configured(packageEnv: unknown, env: Record<string, string>) {
   );
 }
 
+function readyForNativeTool(
+  tool: Awaited<ReturnType<typeof searchTools>>[number]['tool'],
+  owner: Awaited<ReturnType<typeof availableTools>>[number],
+  keyNames: Set<string>
+) {
+  const configuredBindings = Object.fromEntries(
+    owner.collection.credentialBindings
+      .filter(
+        (binding) =>
+          binding.packageName === tool.package.npmPackageName && keyNames.has(binding.keyName)
+      )
+      .map((binding) => [binding.envName, 'configured'])
+  );
+  return configured(
+    tool.package.env,
+    envFor(tool.package.env, owner.collection.envVars, configuredBindings)
+  );
+}
+
+function nativeAccess(owner: boolean, ready: boolean, owned: boolean) {
+  if (ready) return 'ready';
+  if (owner) return 'needs_key';
+  return owned ? 'needs_grant' : 'needs_collection';
+}
+
+function nativeSetupUrl(access: string, clientId: string, toolId: string) {
+  if (access === 'needs_collection') return 'https://tpmjs.com/dashboard/collections';
+  if (access === 'needs_grant') return grantSetupUrl(clientId, toolId);
+  if (access === 'needs_key') return 'https://tpmjs.com/dashboard/settings/api-keys';
+  return null;
+}
+
+function accessError(code: string, message: string, setupUrl: string) {
+  return JSON.stringify({ code, message, setupUrl });
+}
+
+function grantSetupUrl(clientId: string, toolId: string) {
+  const url = new URL('https://tpmjs.com/dashboard/settings/connected-apps');
+  url.searchParams.set('client', clientId);
+  url.searchParams.set('tool', toolId);
+  return url.toString();
+}
+
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: MCP dispatch keeps authentication, grant checks, and execution in one fail-closed route.
 export async function POST(request: Request) {
   const user = await delegatedUser(request);
@@ -193,31 +237,12 @@ export async function POST(request: Request) {
     });
   }
   if (method === 'tools/list') {
-    const [native, google] = await Promise.all([
-      availableTools(user.userId, user.clientId),
-      availableGoogleTools(user.userId, user.clientId),
-    ]);
-    const directTools = user.scopes.has('mcp:execute')
-      ? [
-          ...native.map(({ tool }) => ({
-            name: `${tool.package.npmPackageName}::${tool.name}`,
-            description: tool.description ?? tool.name,
-            inputSchema: tool.inputSchema ?? { type: 'object', properties: {} },
-          })),
-          ...google.map(({ tool }) => ({
-            name: `${tool.packageName}::${tool.name}`,
-            description: tool.description,
-            inputSchema: tool.inputSchema,
-            annotations: { readOnlyHint: tool.name !== 'gmail_send' },
-          })),
-        ]
-      : [];
     return rpc(id, {
       tools: [
         {
           name: 'search_tools',
           description:
-            'Search only tools you allowed for this application in TPMJS. Results say whether a required API key is configured.',
+            'Search TPMJS capabilities, including tools that need access. Results include access status and a setup URL. Search before saying a tool is unavailable.',
           inputSchema: {
             type: 'object',
             properties: {
@@ -228,13 +253,12 @@ export async function POST(request: Request) {
           },
           annotations: { readOnlyHint: true },
         },
-        ...directTools,
         ...(user.scopes.has('mcp:execute')
           ? [
               {
                 name: 'execute_tool',
                 description:
-                  'Run an allowed TPMJS tool using credentials stored in TPMJS. Select a tool with search_tools first.',
+                  'Run a TPMJS tool using credentials stored in TPMJS. Search first. Missing access returns an actionable setup URL; never claim a tool succeeded on an access error.',
                 inputSchema: {
                   type: 'object',
                   properties: {
@@ -272,47 +296,49 @@ export async function POST(request: Request) {
         (binding) => binding.packageName === tool.package.npmPackageName
       )
     );
-    const [results, existingKeys] = await Promise.all([
+    const [results, existingKeys, googleCollectionsForUser] = await Promise.all([
       searchTools({ query: args.data.query, candidateLimit: 2000 }),
       prisma.userApiKey.findMany({
         where: { userId: user.userId, keyName: { in: bindings.map((binding) => binding.keyName) } },
         select: { keyName: true },
       }),
+      googleCollections(user.userId),
     ]);
+    const ownedCollections = await prisma.collection.findMany({
+      where: {
+        userId: user.userId,
+        tools: { some: { toolId: { in: results.slice(0, 100).map(({ tool }) => tool.id) } } },
+      },
+      select: { tools: { select: { toolId: true } } },
+    });
+    const ownedToolIds = new Set(
+      ownedCollections.flatMap((collection) => collection.tools.map((entry) => entry.toolId))
+    );
     const keyNames = new Set(existingKeys.map((key) => key.keyName));
     const byId = new Map(allowed.map((item) => [item.tool.id, item]));
-    const catalogTools = results.flatMap(({ tool }) => {
+    const catalogTools = results.map(({ tool }) => {
       const owner = byId.get(tool.id);
-      return owner
-        ? [
-            {
-              packageName: tool.package.npmPackageName,
-              toolName: tool.name,
-              description: tool.description,
-              inputSchema: tool.inputSchema,
-              collection: owner.collection.name,
-              ready: configured(
-                tool.package.env,
-                envFor(
-                  tool.package.env,
-                  owner.collection.envVars,
-                  Object.fromEntries(
-                    owner.collection.credentialBindings
-                      .filter(
-                        (binding) =>
-                          binding.packageName === tool.package.npmPackageName &&
-                          keyNames.has(binding.keyName)
-                      )
-                      .map((binding) => [binding.envName, 'configured'])
-                  )
-                )
-              ),
-            },
-          ]
-        : [];
+      const ready = owner ? readyForNativeTool(tool, owner, keyNames) : false;
+      const access = nativeAccess(Boolean(owner), ready, ownedToolIds.has(tool.id));
+      const setupUrl = nativeSetupUrl(
+        access,
+        user.clientId,
+        `${tool.package.npmPackageName}::${tool.name}`
+      );
+      return {
+        packageName: tool.package.npmPackageName,
+        toolName: tool.name,
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+        collection: owner?.collection.name ?? null,
+        ready,
+        access,
+        setupUrl,
+      };
     });
     const terms = args.data.query.toLocaleLowerCase().split(/\s+/).filter(Boolean);
-    const googleTools = allowedGoogle
+    const googleTools = googleCollectionsForUser
+      .flatMap((collection) => collection.tools.map((tool) => ({ collection, tool })))
       .filter(({ collection, tool }) =>
         terms.every((term) =>
           `${tool.name} ${tool.description} ${collection.name}`.toLocaleLowerCase().includes(term)
@@ -324,9 +350,38 @@ export async function POST(request: Request) {
         description: tool.description,
         inputSchema: tool.inputSchema,
         collection: collection.name,
-        ready: true,
+        ready: allowedGoogle.some((allowed) => allowed.tool.id === tool.id),
+        access: allowedGoogle.some((allowed) => allowed.tool.id === tool.id)
+          ? 'ready'
+          : 'needs_grant',
+        setupUrl: allowedGoogle.some((allowed) => allowed.tool.id === tool.id)
+          ? null
+          : grantSetupUrl(user.clientId, tool.id),
       }));
-    const tools = [...googleTools, ...catalogTools].slice(0, args.data.limit ?? 20);
+    const connectedGoogleToolNames = new Set(
+      googleCollectionsForUser.flatMap((collection) => collection.tools.map((tool) => tool.name))
+    );
+    const googleDiscoverable = GOOGLE_TOOLS.filter(
+      (tool) => !connectedGoogleToolNames.has(tool.name)
+    )
+      .filter((tool) =>
+        terms.every((term) =>
+          `google workspace ${tool.name} ${tool.description}`.toLocaleLowerCase().includes(term)
+        )
+      )
+      .map((tool) => ({
+        packageName: null,
+        toolName: tool.name,
+        description: tool.description,
+        collection: 'Google Workspace',
+        ready: false,
+        access: 'needs_connection',
+        setupUrl: 'https://tpmjs.com/dashboard/settings/google',
+      }));
+    const tools = [...googleTools, ...googleDiscoverable, ...catalogTools].slice(
+      0,
+      args.data.limit ?? 20
+    );
     return rpc(id, { content: [{ type: 'text', text: JSON.stringify({ tools }) }] });
   }
   if (!user.scopes.has('mcp:execute')) return fault(id, -32003, 'Missing mcp:execute scope', 403);
@@ -385,7 +440,31 @@ export async function POST(request: Request) {
     ({ tool }) =>
       tool.package.npmPackageName === args.data.packageName && tool.name === args.data.toolName
   );
-  if (!candidate) return fault(id, -32003, 'Tool is outside this application grant', 403);
+  if (!candidate) {
+    const googleTool =
+      args.data.packageName.startsWith('@tpmjs/google-workspace/') ||
+      GOOGLE_TOOLS.some((tool) => tool.name === args.data.toolName);
+    const linkedGoogle =
+      googleTool &&
+      (await googleCollections(user.userId)).some((collection) =>
+        collection.tools.some((tool) => tool.name === args.data.toolName)
+      );
+    return rpc(
+      id,
+      accessError(
+        'access_required',
+        googleTool
+          ? linkedGoogle
+            ? 'Enable this Google tool for this app in TPMJS.'
+            : 'Connect Google with this permission in TPMJS, then enable the tool for this app.'
+          : 'Enable this tool for this app in TPMJS.',
+        googleTool && !linkedGoogle
+          ? 'https://tpmjs.com/dashboard/settings/google'
+          : grantSetupUrl(user.clientId, `${args.data.packageName}::${args.data.toolName}`)
+      ),
+      true
+    );
+  }
   const rate = await checkApiKeyRateLimit(`oauth:${user.userId}:${user.clientId}`, 'FREE', 120);
   if (!rate.allowed) return createRateLimitResponse(rate);
   const env = envFor(
@@ -399,7 +478,15 @@ export async function POST(request: Request) {
     )
   );
   if (!configured(candidate.tool.package.env, env)) {
-    return rpc(id, 'Required API keys are not configured in TPMJS', true);
+    return rpc(
+      id,
+      accessError(
+        'credential_required',
+        'Add the required API key in TPMJS and grant this tool to Bode.',
+        'https://tpmjs.com/dashboard/settings/api-keys'
+      ),
+      true
+    );
   }
   const started = Date.now();
   const result = await executeWithExecutor(null, {

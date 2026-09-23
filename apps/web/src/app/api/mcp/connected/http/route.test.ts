@@ -84,7 +84,68 @@ describe('connected MCP grant boundary', () => {
     const response = await POST(
       request('execute_tool', { packageName: '@tpmjs/tools-mail', toolName: 'deleteAll' })
     );
-    expect(response.status).toBe(403);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.result.isError).toBe(true);
+    expect(JSON.parse(body.result.content[0].text)).toMatchObject({ code: 'access_required' });
+    expect(JSON.parse(body.result.content[0].text).setupUrl).toContain(
+      'https://tpmjs.com/dashboard/settings/connected-apps?client=client-1'
+    );
+    expect(mocks.executeWithExecutor).not.toHaveBeenCalled();
+  });
+
+  it('discovers a registry tool outside the user collections without granting execution', async () => {
+    mocks.grant.mockResolvedValue({ collectionIds: [], toolIds: [] });
+    mocks.collections.mockResolvedValue([]);
+    mocks.searchTools.mockResolvedValue([{ tool: { ...tool, description: 'Send email' } }]);
+    const response = await POST(request('search_tools', { query: 'email' }));
+    const body = await response.json();
+    const result = JSON.parse(body.result.content[0].text);
+    expect(result.tools).toContainEqual(
+      expect.objectContaining({
+        packageName: '@tpmjs/tools-mail',
+        toolName: 'sendEmail',
+        access: 'needs_collection',
+        ready: false,
+      })
+    );
+    expect(mocks.executeWithExecutor).not.toHaveBeenCalled();
+  });
+
+  it('points Gmail discovery at Google connection when no account is linked', async () => {
+    mocks.searchTools.mockResolvedValue([]);
+    const response = await POST(request('search_tools', { query: 'gmail' }));
+    const body = await response.json();
+    const result = JSON.parse(body.result.content[0].text);
+    expect(result.tools).toContainEqual(
+      expect.objectContaining({
+        toolName: 'gmail_search',
+        access: 'needs_connection',
+        setupUrl: 'https://tpmjs.com/dashboard/settings/google',
+      })
+    );
+  });
+
+  it('shows linked but ungranted Gmail as a grant choice without running it', async () => {
+    mocks.googleConnections.mockResolvedValue([
+      {
+        id: 'google-1',
+        email: 'person@example.com',
+        scopes: ['https://www.googleapis.com/auth/gmail.readonly'],
+      },
+    ]);
+    mocks.searchTools.mockResolvedValue([]);
+    const response = await POST(request('search_tools', { query: 'gmail' }));
+    const body = await response.json();
+    const result = JSON.parse(body.result.content[0].text);
+    expect(result.tools).toContainEqual(
+      expect.objectContaining({
+        packageName: '@tpmjs/google-workspace/google-1',
+        toolName: 'gmail_search',
+        access: 'needs_grant',
+        ready: false,
+      })
+    );
     expect(mocks.executeWithExecutor).not.toHaveBeenCalled();
   });
 
@@ -135,5 +196,20 @@ describe('connected MCP grant boundary', () => {
     );
     const body = await response.json();
     expect(body.result.tools.map((item: { name: string }) => item.name)).toEqual(['search_tools']);
+  });
+
+  it('offers only search and execute even when the app has direct tool grants', async () => {
+    const response = await POST(
+      new Request('https://tpmjs.com/api/mcp/connected/http', {
+        method: 'POST',
+        headers: { authorization: 'Bearer test-token', 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' }),
+      })
+    );
+    const body = await response.json();
+    expect(body.result.tools.map((item: { name: string }) => item.name)).toEqual([
+      'search_tools',
+      'execute_tool',
+    ]);
   });
 });
