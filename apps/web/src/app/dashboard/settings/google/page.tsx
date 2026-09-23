@@ -26,6 +26,7 @@ export default function GoogleSettingsPage() {
     'gmail_read',
   ]);
   const [configured, setConfigured] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const load = useCallback(async () => {
@@ -42,9 +43,13 @@ export default function GoogleSettingsPage() {
       setConfigured(body.configured);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Could not load Google accounts');
+    } finally {
+      setLoading(false);
     }
   }, []);
   useEffect(() => {
+    const callbackError = new URLSearchParams(window.location.search).get('error');
+    if (callbackError) setError(callbackError);
     void load();
   }, [load]);
 
@@ -66,6 +71,56 @@ export default function GoogleSettingsPage() {
     }
   }
 
+  const accessForm = (
+    <div>
+      <h2 className="text-lg font-semibold">
+        {connections.length ? 'Connect another Google account' : 'Choose Google access'}
+      </h2>
+      <p className="mt-2 text-sm leading-6 text-foreground-secondary">
+        Choose what TPMJS can access in the Google account you connect. Sending mail is a separate
+        permission. TPMJS stores the renewable credential encrypted.
+      </p>
+      <div className="mt-5 space-y-2">
+        {tools.map((tool) => (
+          <label
+            key={tool.name}
+            className="flex gap-3 rounded-lg border border-border bg-background p-3"
+          >
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={selected.includes(tool.name)}
+              onChange={(event) =>
+                setSelected((current) =>
+                  event.target.checked
+                    ? [...current, tool.name]
+                    : current.filter((name) => name !== tool.name)
+                )
+              }
+            />
+            <span>
+              <strong className="block text-sm">{tool.name.replaceAll('_', ' ')}</strong>
+              <span className="text-xs text-foreground-secondary">{tool.description}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      <a
+        href={`/api/google/start?${new URLSearchParams(selected.map((scope) => ['scope', scope])).toString()}`}
+        aria-disabled={!configured || selected.length === 0}
+        className={`mt-5 inline-flex rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white ${!configured || !selected.length ? 'pointer-events-none opacity-50' : ''}`}
+      >
+        Continue with Google
+      </a>
+      {!configured && (
+        <p className="mt-3 text-sm text-foreground-secondary">
+          Google OAuth setup is pending for TPMJS. An administrator must add the Google client
+          credentials.
+        </p>
+      )}
+    </div>
+  );
+
   return (
     <DashboardLayout
       title="Google Workspace"
@@ -74,54 +129,30 @@ export default function GoogleSettingsPage() {
       backUrl="/dashboard/settings/connected-apps"
     >
       <div className="mx-auto max-w-3xl space-y-5">
-        <section className="rounded-2xl border border-border bg-surface p-6">
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            Your account · your scope
-          </p>
-          <h2 className="mt-2 text-xl font-semibold">Choose Google access</h2>
-          <p className="mt-2 text-sm leading-6 text-foreground-secondary">
-            Link a Google account here, then choose which tools each connected app may use. Sending
-            mail is a separate permission. TPMJS stores the renewable credential encrypted.
-          </p>
-          <div className="mt-5 space-y-2">
-            {tools.map((tool) => (
-              <label
-                key={tool.name}
-                className="flex gap-3 rounded-lg border border-border bg-background p-3"
-              >
-                <input
-                  type="checkbox"
-                  className="mt-1"
-                  checked={selected.includes(tool.name)}
-                  onChange={(event) =>
-                    setSelected((current) =>
-                      event.target.checked
-                        ? [...current, tool.name]
-                        : current.filter((name) => name !== tool.name)
-                    )
-                  }
-                />
-                <span>
-                  <strong className="block text-sm">{tool.name.replaceAll('_', ' ')}</strong>
-                  <span className="text-xs text-foreground-secondary">{tool.description}</span>
-                </span>
-              </label>
-            ))}
-          </div>
-          <a
-            href={`/api/google/start?${new URLSearchParams(selected.map((scope) => ['scope', scope])).toString()}`}
-            aria-disabled={!configured || selected.length === 0}
-            className={`mt-5 inline-flex rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white ${!configured || !selected.length ? 'pointer-events-none opacity-50' : ''}`}
-          >
-            Connect Google account
-          </a>
-          {!configured && (
-            <p className="mt-3 text-sm text-foreground-secondary">
-              Google OAuth setup is pending for TPMJS. An administrator must add the Google client
-              credentials.
+        {loading ? (
+          <output className="block rounded-2xl border border-border bg-surface p-6">
+            Checking Google connection…
+          </output>
+        ) : connections.length ? (
+          <section className="rounded-2xl border border-success/30 bg-success/10 p-6">
+            <p className="text-sm font-semibold text-success">Google connected</p>
+            <h2 className="mt-2 text-xl font-semibold">Your Google tools are ready in TPMJS</h2>
+            <p className="mt-2 text-sm leading-6 text-foreground-secondary">
+              To use them in Bode, choose Change permissions on its TPMJS connection, grant this
+              Google Workspace collection, then refresh its tools.
             </p>
-          )}
-        </section>
+            <a
+              className="mt-4 inline-flex rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+              href="https://bode.blah.dev/settings/mcp"
+            >
+              Continue in Bode
+            </a>
+          </section>
+        ) : (
+          <section className="rounded-2xl border border-border bg-surface p-6">
+            {accessForm}
+          </section>
+        )}
         {error && (
           <p
             role="alert"
@@ -130,9 +161,9 @@ export default function GoogleSettingsPage() {
             {error}
           </p>
         )}
-        <section className="rounded-2xl border border-border bg-surface p-6">
-          <h2 className="text-lg font-semibold">Linked accounts</h2>
-          {connections.length ? (
+        {!loading && connections.length > 0 && (
+          <section className="rounded-2xl border border-border bg-surface p-6">
+            <h2 className="text-lg font-semibold">Linked accounts</h2>
             <div className="mt-4 space-y-3">
               {connections.map((connection) => (
                 <div
@@ -159,17 +190,23 @@ export default function GoogleSettingsPage() {
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="mt-3 text-sm text-foreground-secondary">No Google account linked yet.</p>
-          )}
-          <p className="mt-4 text-xs text-foreground-secondary">
-            After linking,{' '}
-            <Link href="/dashboard/settings/connected-apps" className="text-primary underline">
-              review connected app grants
-            </Link>
-            . A new app must explicitly receive the Google tools before it can use them.
-          </p>
-        </section>
+            <p className="mt-4 text-xs text-foreground-secondary">
+              After linking,{' '}
+              <Link href="/dashboard/settings/connected-apps" className="text-primary underline">
+                review connected app grants
+              </Link>
+              . A new app must explicitly receive the Google tools before it can use them.
+            </p>
+          </section>
+        )}
+        {!loading && connections.length > 0 && (
+          <details className="rounded-2xl border border-border bg-surface p-6">
+            <summary className="cursor-pointer text-sm font-semibold">
+              Connect another Google account
+            </summary>
+            <div className="mt-5 border-t border-border pt-5">{accessForm}</div>
+          </details>
+        )}
       </div>
     </DashboardLayout>
   );
