@@ -6,12 +6,13 @@
  * tool result full of base64 is useless to an agent, base64 results are delivered to
  * DISCORD_WEBHOOK_URL when configured and come back as durable Discord CDN URLs.
  *
- * @env OPENAI_API_KEY | GEMINI_API_KEY | FAL_KEY | REPLICATE_API_TOKEN, DISCORD_WEBHOOK_URL (optional), IMAGE_PROVIDER (optional)
+ * @env OPENAI_API_KEY | GEMINI_API_KEY | FAL_KEY | REPLICATE_API_TOKEN | MAGIC_HOUR_API_KEY, DISCORD_WEBHOOK_URL (optional), IMAGE_PROVIDER (optional)
  */
 
 import { jsonSchema, tool } from 'ai';
+import { generateMagicHourImages } from './magic-hour.js';
 
-type Provider = 'fal' | 'replicate' | 'openai' | 'gemini';
+type Provider = 'fal' | 'replicate' | 'openai' | 'gemini' | 'magichour';
 type Aspect = 'square' | 'landscape' | 'portrait';
 
 function envValue(name: string): string | undefined {
@@ -24,6 +25,7 @@ const PROVIDER_KEYS: Array<[Provider, string]> = [
   ['replicate', 'REPLICATE_API_TOKEN'],
   ['openai', 'OPENAI_API_KEY'],
   ['gemini', 'GEMINI_API_KEY'],
+  ['magichour', 'MAGIC_HOUR_API_KEY'],
 ];
 
 function detectProvider(force?: string): Provider {
@@ -31,14 +33,16 @@ function detectProvider(force?: string): Provider {
   if (wanted) {
     const hit = PROVIDER_KEYS.find(([p]) => p === wanted);
     if (!hit)
-      throw new Error(`Unknown image provider "${wanted}" (fal | replicate | openai | gemini).`);
+      throw new Error(
+        `Unknown image provider "${wanted}" (fal | replicate | openai | gemini | magichour).`
+      );
     if (!envValue(hit[1])) throw new Error(`${hit[1]} is not configured for provider ${wanted}.`);
     return wanted;
   }
   const first = PROVIDER_KEYS.find(([, key]) => envValue(key));
   if (!first) {
     throw new Error(
-      'No image provider configured. Set FAL_KEY, REPLICATE_API_TOKEN, OPENAI_API_KEY or GEMINI_API_KEY.'
+      'No image provider configured. Set FAL_KEY, REPLICATE_API_TOKEN, OPENAI_API_KEY, GEMINI_API_KEY or MAGIC_HOUR_API_KEY.'
     );
   }
   return first[0];
@@ -179,9 +183,21 @@ function produce(
   n: number,
   aspect: Aspect,
   quality: string,
-  model?: string
+  model?: string,
+  projectId?: string
 ): Promise<Generated[]> {
+  if (projectId && provider !== 'magichour')
+    throw new Error('projectId is supported only for provider=magichour.');
   switch (provider) {
+    case 'magichour':
+      return generateMagicHourImages({
+        token: envValue('MAGIC_HOUR_API_KEY') ?? '',
+        prompt,
+        count: n,
+        aspect,
+        model,
+        projectId,
+      });
     case 'fal':
       return viaFal(prompt, n, aspect, model);
     case 'replicate':
@@ -227,6 +243,8 @@ export interface GenerateImageInput {
   provider?: Provider;
   model?: string;
   deliver?: 'auto' | 'inline' | 'discord';
+  /** Resume an accepted Magic Hour image project without another creation call. */
+  projectId?: string;
 }
 
 interface GenerateImageResult {
@@ -248,6 +266,7 @@ async function generate(input: GenerateImageInput): Promise<GenerateImageResult>
     provider,
     model,
     deliver = 'auto',
+    projectId,
   } = input;
   const chosen = detectProvider(provider);
   const images = await produce(
@@ -256,7 +275,8 @@ async function generate(input: GenerateImageInput): Promise<GenerateImageResult>
     Math.min(4, Math.max(1, count)),
     aspect,
     quality,
-    model
+    model,
+    projectId
   );
   const hosted = images.filter((i) => i.url).map((i) => i.url as string);
   const pending = images.filter((i) => !i.url && i.b64);
@@ -290,7 +310,7 @@ async function generate(input: GenerateImageInput): Promise<GenerateImageResult>
 
 export const generateImage = tool({
   description:
-    'Generate one or more images from a prompt using the first configured provider (fal.ai, Replicate, OpenAI gpt-image-1/dall-e-3, Gemini Imagen). Returns image URLs — via the provider or Discord delivery — or inline data URLs when asked.',
+    'Generate one or more images from a prompt using the first configured provider (fal.ai, Replicate, OpenAI gpt-image-1/dall-e-3, Gemini Imagen, Magic Hour). Returns image URLs — via the provider or Discord delivery — or inline data URLs when asked.',
   inputSchema: jsonSchema<GenerateImageInput>({
     type: 'object',
     properties: {
@@ -305,8 +325,13 @@ export const generateImage = tool({
       },
       provider: {
         type: 'string',
-        enum: ['fal', 'replicate', 'openai', 'gemini'],
+        enum: ['fal', 'replicate', 'openai', 'gemini', 'magichour'],
         description: 'Force a provider',
+      },
+      projectId: {
+        type: 'string',
+        description:
+          'Magic Hour only: resume this accepted project with GET; no new generation charge.',
       },
       model: {
         type: 'string',
